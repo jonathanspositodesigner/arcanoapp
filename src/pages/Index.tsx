@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Library, Users } from "lucide-react";
+import { Library, Users } from "lucide-react";
+import baaLogo from "@/assets/BAA.png";
 const Index = () => {
   const navigate = useNavigate();
   return <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-secondary">
       <div className="text-center space-y-8 p-8">
         <div className="space-y-4">
           <div className="flex justify-center">
-            <Sparkles className="h-20 w-20 text-primary animate-pulse" />
+            <img src={baaLogo} alt="BAA Logo" className="h-20 w-20 animate-pulse" />
           </div>
           <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Biblioteca de Prompts  
