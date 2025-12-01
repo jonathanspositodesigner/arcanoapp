@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_prompts: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          image_url: string
+          prompt: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          image_url: string
+          prompt: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          prompt?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       community_prompts: {
         Row: {
           category: string

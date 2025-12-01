@@ -40,6 +40,16 @@ const Index = () => {
             Contribua com a Comunidade Arcana
           </Button>
         </div>
+
+        <div className="mt-8">
+          <Button
+            onClick={() => navigate("/admin-upload")}
+            variant="link"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            Envio de administrador
+          </Button>
+        </div>
       </div>
     </div>
   );
