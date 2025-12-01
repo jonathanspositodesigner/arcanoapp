@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Copy, Download, Sparkles } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -165,16 +165,15 @@ const BibliotecaPrompts = () => {
           {/* Featured Card */}
           <Card className="mb-8 p-8 bg-gradient-primary text-primary-foreground shadow-hover">
             <div className="flex items-center gap-4 mb-4">
-              <Sparkles className="h-12 w-12" />
+              <Zap className="h-12 w-12" />
               <div>
                 <h1 className="text-3xl font-bold mb-2">Conheça a Forja de Selos 3D</h1>
-                <p className="text-lg opacity-90">
-                  Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.
-                </p>
+                <p className="text-lg opacity-90">Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.
+Sem precisar mais pagar ChatGPT e VEO3.</p>
               </div>
             </div>
             <a href="https://youtu.be/XmPDm7ikUbU" target="_blank" rel="noopener noreferrer">
-              <Button variant="secondary" size="lg" className="mt-4 font-semibold hover:scale-105 transition-transform bg-[#2b85fa]">
+              <Button variant="secondary" size="lg" className="mt-4 font-semibold hover:scale-105 transition-transform bg-[#0095ff]">
                 Acessar Forja de Selos 3D
                 <ExternalLink className="ml-2 h-5 w-5" />
               </Button>
@@ -204,7 +203,7 @@ const BibliotecaPrompts = () => {
                 </div>
 
                 {/* Card Content */}
-                <div className="p-5 space-y-4">
+                <div className="p-5 space-y-4 bg-sidebar-accent">
                   <div>
                     <h3 className="font-bold text-lg text-foreground">{item.title}</h3>
                     {item.isExclusive && <Badge className="mt-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
