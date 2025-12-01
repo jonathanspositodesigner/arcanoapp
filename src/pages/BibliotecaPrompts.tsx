@@ -114,7 +114,7 @@ const BibliotecaPrompts = () => {
         {/* Main Content */}
         <main className="flex-1 p-8 bg-background">
           {/* Featured Card */}
-          <Card className="mb-8 p-8 bg-gradient-primary text-primary-foreground shadow-hover bg-destructive">
+          <Card className="mb-8 p-8 bg-gradient-primary text-primary-foreground shadow-hover bg-primary">
             <div className="flex items-center gap-4 mb-4">
               <Zap className="h-12 w-12" />
               <div>
