@@ -6,6 +6,7 @@ import { ExternalLink, Copy, Download, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import logoHorizontal from "@/assets/LOGO_HORIZONTAL_4.png";
 
 interface PromptItem {
   id: string | number;
@@ -176,6 +177,9 @@ const BibliotecaPrompts = () => {
       <div className="flex">
         {/* Sidebar */}
         <aside className="w-72 min-h-screen bg-card border-r border-border p-6 space-y-4">
+          <div className="mb-6">
+            <img src={logoHorizontal} alt="Biblioteca de Artes Arcanas" className="w-full mb-4" />
+          </div>
           <h2 className="text-xl font-bold text-foreground mb-6">Ferramentas de IA</h2>
           {externalLinks.map((link) => (
             <a
