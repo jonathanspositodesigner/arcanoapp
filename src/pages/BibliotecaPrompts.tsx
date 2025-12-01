@@ -150,18 +150,18 @@ const BibliotecaPrompts = () => {
           </div>
           <h2 className="text-xl font-bold text-foreground mb-6">Ferramentas de IA</h2>
           {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
-              <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300">
-                <span className="font-medium">{link.name}</span>
-                <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0" />
+              <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
+                <span className="font-medium text-foreground">{link.name}</span>
+                <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
               </Button>
             </a>)}
-          <Button onClick={() => navigate("/contribuir")} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold mt-4">
+          <Button onClick={() => navigate("/contribuir")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mt-4">
             Envie o seu
           </Button>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8 bg-primary-foreground">
+        <main className="flex-1 p-8 bg-background">
           {/* Featured Card */}
           <Card className="mb-8 p-8 bg-gradient-primary text-primary-foreground shadow-hover">
             <div className="flex items-center gap-4 mb-4">
@@ -173,7 +173,7 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
               </div>
             </div>
             <a href="https://youtu.be/XmPDm7ikUbU" target="_blank" rel="noopener noreferrer">
-              <Button variant="secondary" size="lg" className="mt-4 font-semibold hover:scale-105 transition-transform bg-[#0095ff]">
+              <Button variant="secondary" size="lg" className="mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90">
                 Acessar Forja de Selos 3D
                 <ExternalLink className="ml-2 h-5 w-5" />
               </Button>
@@ -182,13 +182,13 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
 
           {/* Page Title and Category Filters */}
           <div className="mb-8">
-            <h2 className="text-4xl font-bold mb-4 text-primary">Biblioteca de Prompts</h2>
-            <p className="text-lg mb-6 text-secondary">
+            <h2 className="text-4xl font-bold mb-4 text-foreground">Biblioteca de Prompts</h2>
+            <p className="text-lg mb-6 text-muted-foreground">
               Explore nossa coleção de prompts para criar selos 3D incríveis
             </p>
             
             <div className="flex gap-3 flex-wrap">
-              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => setSelectedCategory(cat)} className={selectedCategory === cat ? "bg-gradient-primary hover:opacity-90" : "hover:bg-secondary"}>
+              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => setSelectedCategory(cat)} className={selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary border-border"}>
                   {cat}
                 </Button>)}
             </div>
@@ -196,37 +196,33 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
 
           {/* Prompts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredPrompts.map(item => <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02]">
+            {filteredPrompts.map(item => <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
                 {/* Image Preview */}
-                <div className="aspect-square overflow-hidden bg-muted">
+                <div className="aspect-square overflow-hidden bg-secondary">
                   <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
                 </div>
 
                 {/* Card Content */}
-                <div className="p-5 space-y-4 bg-sidebar-accent">
+                <div className="p-5 space-y-4">
                   <div>
-                    <h3 className="font-bold text-lg text-foreground">{item.title}</h3>
-                    {item.isExclusive && <Badge className="mt-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                    <h3 className="font-bold text-lg text-foreground mb-2">{item.title}</h3>
+                    {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0">
                         Selo Exclusivo
                       </Badge>}
-                    {item.isCommunity && !item.isExclusive && <Badge variant="secondary" className="mt-2">
+                    {item.isCommunity && !item.isExclusive && <Badge variant="secondary" className="bg-secondary text-foreground">
                         Enviado pela comunidade
                       </Badge>}
                   </div>
 
                   {/* Prompt Box */}
-                  <div className="bg-muted p-4 rounded-lg border border-border">
-                    <p className="text-sm text-muted-foreground line-clamp-4">{item.prompt}</p>
+                  <div className="bg-secondary p-3 rounded-lg">
+                    <p className="text-xs text-muted-foreground line-clamp-3">{item.prompt}</p>
                   </div>
 
                   {/* Action Buttons */}
                   <div className="flex gap-2">
-                    <Button onClick={() => copyToClipboard(item.prompt, item.title)} className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity">
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copiar Prompt
-                    </Button>
-                    <Button onClick={() => downloadImage(item.imageUrl, item.title)} variant="outline" className="hover:bg-secondary">
-                      <Download className="h-4 w-4" />
+                    <Button onClick={() => copyToClipboard(item.prompt, item.title)} className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-white">
+                      Utilizar
                     </Button>
                   </div>
                 </div>
