@@ -24,7 +24,7 @@ const Index = () => {
             Acessar Biblioteca
           </Button>
           
-          <Button onClick={() => navigate("/contribuir")} size="lg" variant="secondary" className="transition-all text-lg px-8 py-6 hover:scale-105">
+          <Button onClick={() => navigate("/contribuir")} size="lg" variant="secondary" className="transition-all text-lg px-8 py-6 hover:scale-105 border-solid border-primary border-2">
             <Users className="mr-2 h-6 w-6" />
             Contribua com a Comunidade Arcana
           </Button>
