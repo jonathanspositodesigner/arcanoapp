@@ -8,7 +8,7 @@ const Index = () => {
       <div className="text-center space-y-8 p-8">
         <div className="space-y-4">
           <div className="flex justify-center">
-            <img src={baaLogo} alt="BAA Logo" className="h-20 w-20 animate-pulse" />
+            <img src={baaLogo} alt="BAA Logo" className="h-20 w-auto animate-pulse" />
           </div>
           <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Biblioteca de Prompts  
