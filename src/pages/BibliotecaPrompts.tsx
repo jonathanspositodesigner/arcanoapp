@@ -89,6 +89,7 @@ const BibliotecaPrompts = () => {
     const { data: communityData, error: communityError } = await supabase
       .from('community_prompts')
       .select('*')
+      .eq('approved', true)
       .order('created_at', { ascending: false });
 
     if (communityError) {
