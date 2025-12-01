@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Copy, Download, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface PromptItem {
   id: string | number;
@@ -13,9 +14,11 @@ interface PromptItem {
   imageUrl: string;
   category?: string;
   isCommunity?: boolean;
+  isExclusive?: boolean;
 }
 
 const BibliotecaPrompts = () => {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
   
@@ -83,18 +86,25 @@ const BibliotecaPrompts = () => {
   }, []);
 
   const fetchCommunityPrompts = async () => {
-    const { data, error } = await supabase
+    const { data: communityData, error: communityError } = await supabase
       .from('community_prompts')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error("Error fetching community prompts:", error);
-      setAllPrompts(defaultPrompts);
-      return;
+    if (communityError) {
+      console.error("Error fetching community prompts:", communityError);
     }
 
-    const communityPrompts: PromptItem[] = data.map((item) => ({
+    const { data: adminData, error: adminError } = await supabase
+      .from('admin_prompts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (adminError) {
+      console.error("Error fetching admin prompts:", adminError);
+    }
+
+    const communityPrompts: PromptItem[] = (communityData || []).map((item) => ({
       id: item.id,
       title: item.title,
       prompt: item.prompt,
@@ -103,7 +113,16 @@ const BibliotecaPrompts = () => {
       isCommunity: true,
     }));
 
-    setAllPrompts([...communityPrompts, ...defaultPrompts]);
+    const adminPrompts: PromptItem[] = (adminData || []).map((item) => ({
+      id: item.id,
+      title: item.title,
+      prompt: item.prompt,
+      imageUrl: item.image_url,
+      category: item.category,
+      isExclusive: true,
+    }));
+
+    setAllPrompts([...adminPrompts, ...communityPrompts, ...defaultPrompts]);
   };
 
   const filteredPrompts =
@@ -174,6 +193,12 @@ const BibliotecaPrompts = () => {
               </Button>
             </a>
           ))}
+          <Button
+            onClick={() => navigate("/contribuir")}
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold mt-4"
+          >
+            Envie o seu
+          </Button>
         </aside>
 
         {/* Main Content */}
@@ -190,7 +215,7 @@ const BibliotecaPrompts = () => {
               </div>
             </div>
             <a
-              href="https://payfast.greenn.com.br/145734/offer/KTNZe0"
+              href="https://youtu.be/XmPDm7ikUbU"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -250,7 +275,12 @@ const BibliotecaPrompts = () => {
                 <div className="p-5 space-y-4">
                   <div>
                     <h3 className="font-bold text-lg text-foreground">{item.title}</h3>
-                    {item.isCommunity && (
+                    {item.isExclusive && (
+                      <Badge className="mt-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                        Selo Exclusivo
+                      </Badge>
+                    )}
+                    {item.isCommunity && !item.isExclusive && (
                       <Badge variant="secondary" className="mt-2">
                         Enviado pela comunidade
                       </Badge>

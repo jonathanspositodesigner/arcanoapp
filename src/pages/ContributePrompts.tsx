@@ -31,6 +31,28 @@ const ContributePrompts = () => {
     }
   };
 
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      toast.error("Por favor, envie apenas imagens");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -144,6 +166,8 @@ const ContributePrompts = () => {
               <div className="mt-2">
                 <label
                   htmlFor="image"
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
                   className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
                 >
                   {imagePreview ? (
@@ -156,7 +180,7 @@ const ContributePrompts = () => {
                     <div className="flex flex-col items-center">
                       <Upload className="h-12 w-12 text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground">
-                        Clique para fazer upload
+                        Clique ou arraste uma imagem aqui
                       </p>
                     </div>
                   )}
