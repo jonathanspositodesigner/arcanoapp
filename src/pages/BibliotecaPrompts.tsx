@@ -178,7 +178,7 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
                     </Button>
                     <Button onClick={() => downloadImage(item.imageUrl, item.title)} variant="outline" className="flex-1 border-border hover:bg-secondary">
                       <Download className="h-4 w-4 mr-2" />
-                      Baixar Referência
+                      Baixar Ref.
                     </Button>
                   </div>
                 </div>
