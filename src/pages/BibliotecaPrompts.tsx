@@ -173,7 +173,12 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
                   {/* Action Buttons */}
                   <div className="flex gap-2">
                     <Button onClick={() => copyToClipboard(item.prompt, item.title)} className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-white">
-                      Utilizar
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copiar Prompt
+                    </Button>
+                    <Button onClick={() => downloadImage(item.imageUrl, item.title)} variant="outline" className="flex-1 border-border hover:bg-secondary">
+                      <Download className="h-4 w-4 mr-2" />
+                      Baixar Referência
                     </Button>
                   </div>
                 </div>
