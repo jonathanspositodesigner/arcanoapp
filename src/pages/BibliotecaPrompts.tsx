@@ -1,67 +1,117 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Copy, Download, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PromptItem {
-  id: number;
+  id: string | number;
   title: string;
   prompt: string;
   imageUrl: string;
+  category?: string;
+  isCommunity?: boolean;
 }
 
 const BibliotecaPrompts = () => {
-  const [prompts] = useState<PromptItem[]>([
+  const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
+  const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
+  
+  const defaultPrompts: PromptItem[] = [
     {
       id: 1,
       title: "Selo 3D de Desconto",
       prompt: "Crie um ícone 3D de uma etiqueta de preço em forma de porcentagem, com design moderno e elegante. A superfície apresenta acabamento em plástico brilhante ou vermelho metálico na cor vermelho e detalhes em tons de cinza escuro. A iluminação suave e realista destaca as curvas e relevos do objeto, criando sombras delicadas e reflexos suaves. A composição é centralizada e apresentada em um fundo branco limpo, transmitindo minimalismo e sofisticação. Renderização em estilo hiper-realista, com texturas detalhadas e qualidade de imagem ultra nítida (4K).",
       imageUrl: "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=400&h=400&fit=crop",
+      category: "Selos 3D",
     },
     {
       id: 2,
       title: "Selo 3D de Sacola de Compras",
       prompt: "Crie um ícone 3D de uma sacola de compras, com design moderno e elegante. A sacola tem acabamento em couro sintético preto com alças vermelhas brilhantes. A superfície apresenta textura realista com reflexos suaves. A iluminação suave destaca os detalhes e cria sombras delicadas. A composição é centralizada em um fundo branco limpo, transmitindo elegância e sofisticação. Renderização em estilo hiper-realista, com texturas detalhadas e qualidade de imagem ultra nítida (4K).",
       imageUrl: "https://images.unsplash.com/photo-1557821552-17105176677c?w=400&h=400&fit=crop",
+      category: "Selos 3D",
     },
     {
       id: 3,
       title: "Selo 3D de Game Over",
       prompt: "Crie uma composição 3D vibrante e divertida com o tema 'Game Over'. A cena deve incluir elementos coloridos como cogumelos estilizados inspirados em jogos retrô (vermelho com bolinhas brancas, verde e roxo), nuvens pixeladas brancas e o texto 'GAME OVER' em fonte pixelada preta e branca. Os elementos devem ter acabamento brilhante e textura plástica. A composição transmite nostalgia dos jogos clássicos com um toque moderno. Fundo branco limpo, iluminação suave criando sombras delicadas. Renderização hiper-realista em 4K.",
       imageUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=400&fit=crop",
+      category: "Selos 3D",
     },
     {
       id: 4,
       title: "Selo 3D de Halloween",
       prompt: "Crie uma composição 3D encantadora de Halloween com uma placa de madeira rústica pendurada. A placa apresenta o texto 'FELIZ HALLOWEEN' em letras douradas brilhantes com contorno laranja vibrante. Ao redor da placa, adicione elementos temáticos: um chapéu de bruxa roxo escuro, uma abóbora laranja, folhas de outono e teias de aranha delicadas. O acabamento deve ser texturizado e realista, com iluminação suave destacando os detalhes. Fundo branco limpo. Renderização hiper-realista em 4K.",
       imageUrl: "https://images.unsplash.com/photo-1509557965875-b88c97052f0e?w=400&h=400&fit=crop",
+      category: "Selos 3D",
     },
     {
       id: 5,
       title: "Selo 3D de Halloween Festivo",
       prompt: "Crie uma composição 3D festiva de Halloween com o texto 'FELIZ HALLOWEEN' em letras laranja e preto com efeito 3D expressivo. Adicione elementos decorativos: morcegos voando, abóboras laranja brilhantes, teias de aranha delicadas e folhas de outono. O design deve ser vibrante e alegre, com acabamento plástico brilhante. Iluminação dramática criando sombras e realces. Fundo branco limpo. Renderização hiper-realista em 4K.",
       imageUrl: "https://images.unsplash.com/photo-1508424897578-1451d6c18f1f?w=400&h=400&fit=crop",
+      category: "Selos 3D",
     },
     {
       id: 6,
       title: "Selo 3D de Dia do Nordestino",
       prompt: "Crie uma composição 3D alegre celebrando o Dia do Nordestino. O texto 'Dia do Nordestino' deve estar em letras 3D com textura de madeira natural. Ao redor, adicione elementos típicos: cactos verdes, um chapéu de palha tradicional, e outros símbolos da cultura nordestina. As cores devem ser quentes e terrosas (verde, bege, marrom). Acabamento texturizado e realista com iluminação suave. Fundo branco limpo. Renderização hiper-realista em 4K.",
       imageUrl: "https://images.unsplash.com/photo-1464047736614-af63643285bf?w=400&h=400&fit=crop",
+      category: "Cenários",
     },
     {
       id: 7,
       title: "Selo 3D de Feliz Natal",
       prompt: "Crie uma composição 3D festiva de Natal com uma estrela vermelha brilhante ao centro. O texto 'Feliz Natal' deve estar em letras 3D verde-esmeralda com acabamento metálico brilhante. Adicione elementos natalinos: melancia estilizada, fitas vermelhas e verdes. O design deve transmitir alegria e celebração. Iluminação suave com reflexos metálicos. Fundo branco limpo. Renderização hiper-realista em 4K.",
       imageUrl: "https://images.unsplash.com/photo-1512389142860-9c449e58a543?w=400&h=400&fit=crop",
+      category: "Selos 3D",
     },
     {
       id: 8,
       title: "Selo 3D de Volta às Aulas",
       prompt: "Crie uma composição 3D colorida e alegre com o tema 'Volta às Aulas'. O texto 'VOLTA ÀS AULAS' deve estar em letras 3D vibrantes e multicoloridas (amarelo, rosa, azul, roxo). Ao redor, adicione elementos escolares: caderno espiral, lápis colorido, borracha rosa. O design deve ser jovem e energético com acabamento plástico brilhante. Iluminação suave criando sombras delicadas. Fundo branco limpo. Renderização hiper-realista em 4K.",
       imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=400&fit=crop",
+      category: "Fotos",
     },
-  ]);
+  ];
+
+  useEffect(() => {
+    fetchCommunityPrompts();
+  }, []);
+
+  const fetchCommunityPrompts = async () => {
+    const { data, error } = await supabase
+      .from('community_prompts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error("Error fetching community prompts:", error);
+      setAllPrompts(defaultPrompts);
+      return;
+    }
+
+    const communityPrompts: PromptItem[] = data.map((item) => ({
+      id: item.id,
+      title: item.title,
+      prompt: item.prompt,
+      imageUrl: item.image_url,
+      category: item.category,
+      isCommunity: true,
+    }));
+
+    setAllPrompts([...communityPrompts, ...defaultPrompts]);
+  };
+
+  const filteredPrompts =
+    selectedCategory === "Ver Tudo"
+      ? allPrompts
+      : allPrompts.filter((p) => p.category === selectedCategory);
+
+  const categories = ["Ver Tudo", "Selos 3D", "Fotos", "Cenários"];
 
   const copyToClipboard = (prompt: string, title: string) => {
     navigator.clipboard.writeText(prompt);
@@ -155,17 +205,34 @@ const BibliotecaPrompts = () => {
             </a>
           </Card>
 
-          {/* Page Title */}
+          {/* Page Title and Category Filters */}
           <div className="mb-8">
-            <h2 className="text-4xl font-bold text-foreground mb-2">Biblioteca de Prompts</h2>
-            <p className="text-muted-foreground text-lg">
+            <h2 className="text-4xl font-bold text-foreground mb-4">Biblioteca de Prompts</h2>
+            <p className="text-muted-foreground text-lg mb-6">
               Explore nossa coleção de prompts para criar selos 3D incríveis
             </p>
+            
+            <div className="flex gap-3 flex-wrap">
+              {categories.map((cat) => (
+                <Button
+                  key={cat}
+                  variant={selectedCategory === cat ? "default" : "outline"}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={
+                    selectedCategory === cat
+                      ? "bg-gradient-primary hover:opacity-90"
+                      : "hover:bg-secondary"
+                  }
+                >
+                  {cat}
+                </Button>
+              ))}
+            </div>
           </div>
 
           {/* Prompts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {prompts.map((item) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredPrompts.map((item) => (
               <Card
                 key={item.id}
                 className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02]"
@@ -181,7 +248,14 @@ const BibliotecaPrompts = () => {
 
                 {/* Card Content */}
                 <div className="p-5 space-y-4">
-                  <h3 className="font-bold text-lg text-foreground">{item.title}</h3>
+                  <div>
+                    <h3 className="font-bold text-lg text-foreground">{item.title}</h3>
+                    {item.isCommunity && (
+                      <Badge variant="secondary" className="mt-2">
+                        Enviado pela comunidade
+                      </Badge>
+                    )}
+                  </div>
 
                   {/* Prompt Box */}
                   <div className="bg-muted p-4 rounded-lg border border-border">
