@@ -23,6 +23,7 @@ const AdminUpload = () => {
   const navigate = useNavigate();
   const [images, setImages] = useState<ImageData[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -141,10 +142,9 @@ const AdminUpload = () => {
         if (insertError) throw insertError;
       }
 
-      toast.success("Selos exclusivos enviados com sucesso!");
       setImages([]);
       setShowModal(false);
-      navigate("/biblioteca-prompts");
+      setShowSuccessModal(true);
     } catch (error) {
       console.error("Error submitting admin prompts:", error);
       toast.error("Erro ao enviar selos. Tente novamente.");
@@ -328,6 +328,35 @@ const AdminUpload = () => {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Envio Concluído!</DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground">
+            Selos exclusivos enviados com sucesso! Deseja enviar mais?
+          </p>
+          <div className="flex gap-4 mt-4">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                setShowSuccessModal(false);
+                navigate("/biblioteca-prompts");
+              }}
+            >
+              Não, ir para Biblioteca
+            </Button>
+            <Button
+              className="flex-1 bg-gradient-primary hover:opacity-90"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              Sim, enviar mais
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

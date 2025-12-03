@@ -62,9 +62,14 @@ const BibliotecaPrompts = () => {
   };
   const filteredPrompts = selectedCategory === "Ver Tudo" ? allPrompts : allPrompts.filter(p => p.category === selectedCategory);
   const categories = ["Ver Tudo", "Selos 3D", "Fotos", "Cenários"];
-  const copyToClipboard = (prompt: string, title: string) => {
-    navigator.clipboard.writeText(prompt);
-    toast.success(`Prompt "${title}" copiado!`);
+  const copyToClipboard = async (prompt: string, title: string) => {
+    try {
+      await navigator.clipboard.writeText(prompt);
+      toast.success(`Prompt "${title}" copiado!`);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+      toast.error("Erro ao copiar prompt");
+    }
   };
   const downloadImage = (imageUrl: string, title: string) => {
     const link = document.createElement("a");
@@ -157,8 +162,8 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
                 <div className="p-5 space-y-4">
                   <div>
                     <h3 className="font-bold text-lg text-foreground mb-2">{item.title}</h3>
-                    {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0">
-                        Selo Exclusivo
+                  {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0">
+                        {item.category === "Fotos" ? "Foto Exclusiva" : item.category === "Cenários" ? "Cenário Exclusivo" : "Selo Exclusivo"}
                       </Badge>}
                     {item.isCommunity && !item.isExclusive && <Badge variant="secondary" className="bg-secondary text-foreground">
                         Enviado pela comunidade
