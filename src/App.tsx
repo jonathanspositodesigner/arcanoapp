@@ -12,6 +12,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminCommunityReview from "./pages/AdminCommunityReview";
 import AdminManageImages from "./pages/AdminManageImages";
 import SetupAdmin from "./pages/SetupAdmin";
+import UserLogin from "./pages/UserLogin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/admin-upload" element={<AdminUpload />} />
           <Route path="/admin-community-review" element={<AdminCommunityReview />} />
           <Route path="/admin-manage-images" element={<AdminManageImages />} />
+          <Route path="/login" element={<UserLogin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

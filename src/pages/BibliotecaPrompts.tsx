@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import logoHorizontal from "@/assets/LOGO_HORIZONTAL_4.png";
+
 interface PromptItem {
   id: string | number;
   title: string;
@@ -16,6 +18,7 @@ interface PromptItem {
   category?: string;
   isCommunity?: boolean;
   isExclusive?: boolean;
+  isPremium?: boolean;
 }
 
 const isVideoUrl = (url: string) => {
@@ -27,69 +30,74 @@ const ITEMS_PER_PAGE = 16;
 
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
+  const { user, isPremium, logout } = usePremiumStatus();
   const [selectedCategory, setSelectedCategory] = useState<string>("Selos 3D");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchCommunityPrompts();
   }, []);
 
-  // Reset page when category changes
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory]);
 
   const fetchCommunityPrompts = async () => {
-    const {
-      data: communityData,
-      error: communityError
-    } = await supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', {
-      ascending: false
-    });
+    const { data: communityData, error: communityError } = await supabase
+      .from('community_prompts')
+      .select('*')
+      .eq('approved', true)
+      .order('created_at', { ascending: false });
+
     if (communityError) {
       console.error("Error fetching community prompts:", communityError);
     }
-    const {
-      data: adminData,
-      error: adminError
-    } = await supabase.from('admin_prompts').select('*').order('created_at', {
-      ascending: false
-    });
+
+    const { data: adminData, error: adminError } = await supabase
+      .from('admin_prompts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
     if (adminError) {
       console.error("Error fetching admin prompts:", adminError);
     }
+
     const communityPrompts: PromptItem[] = (communityData || []).map(item => ({
       id: item.id,
       title: item.title,
       prompt: item.prompt,
       imageUrl: item.image_url,
       category: item.category,
-      isCommunity: true
+      isCommunity: true,
+      isPremium: false
     }));
+
     const adminPrompts: PromptItem[] = (adminData || []).map(item => ({
       id: item.id,
       title: item.title,
       prompt: item.prompt,
       imageUrl: item.image_url,
       category: item.category,
-      isExclusive: true
+      isExclusive: true,
+      isPremium: (item as any).is_premium || false
     }));
+
     setAllPrompts([...adminPrompts, ...communityPrompts]);
   };
 
-  // Filter out camera controls from "Ver Tudo" - they only appear in their own tab
   const filteredPrompts = selectedCategory === "Ver Tudo" 
     ? allPrompts.filter(p => p.category !== "Controles de Câmera")
     : allPrompts.filter(p => p.category === selectedCategory);
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   
   const categories = ["Selos 3D", "Fotos", "Cenários", "Controles de Câmera", "Ver Tudo"];
+
   const copyToClipboard = async (prompt: string, title: string) => {
     try {
       await navigator.clipboard.writeText(prompt);
@@ -99,6 +107,7 @@ const BibliotecaPrompts = () => {
       toast.error("Erro ao copiar prompt");
     }
   };
+
   const downloadMedia = (mediaUrl: string, title: string) => {
     const isVideo = isVideoUrl(mediaUrl);
     const extension = isVideo ? 'mp4' : 'jpg';
@@ -110,37 +119,93 @@ const BibliotecaPrompts = () => {
     document.body.removeChild(link);
     toast.success(`${isVideo ? 'Vídeo' : 'Imagem'} "${title}" baixado!`);
   };
-  const externalLinks = [{
-    name: "Gerar no ChatGPT",
-    url: "https://chatgpt.com/",
-    icon: Sparkles
-  }, {
-    name: "Gerar no Nano Banana",
-    url: "https://aistudio.google.com/prompts/new_chat?model=gemini-2.5-flash-image",
-    icon: Sparkles
-  }, {
-    name: "Gerar no Whisk",
-    url: "https://labs.google/fx/pt/tools/whisk",
-    icon: Sparkles
-  }, {
-    name: "Gerar no Flux 2",
-    url: "https://www.runninghub.ai/workflow/1995538803421020162",
-    icon: Sparkles
-  }];
-  return <div className="min-h-screen bg-background">
+
+  const handleItemClick = (item: PromptItem) => {
+    if (item.isPremium && !isPremium) {
+      setShowPremiumModal(true);
+    } else {
+      setSelectedPrompt(item);
+    }
+  };
+
+  const externalLinks = [
+    { name: "Gerar no ChatGPT", url: "https://chatgpt.com/", icon: Sparkles },
+    { name: "Gerar no Nano Banana", url: "https://aistudio.google.com/prompts/new_chat?model=gemini-2.5-flash-image", icon: Sparkles },
+    { name: "Gerar no Whisk", url: "https://labs.google/fx/pt/tools/whisk", icon: Sparkles },
+    { name: "Gerar no Flux 2", url: "https://www.runninghub.ai/workflow/1995538803421020162", icon: Sparkles }
+  ];
+
+  const getBadgeContent = (item: PromptItem) => {
+    if (item.isPremium) {
+      return (
+        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
+          <Star className="h-3 w-3 mr-1" fill="currentColor" />
+          Premium
+        </Badge>
+      );
+    }
+    if (item.isExclusive) {
+      return (
+        <Badge className="bg-gradient-primary text-white border-0">
+          {item.category === "Fotos" ? "Foto Exclusiva" : 
+           item.category === "Cenários" ? "Cenário Exclusivo" : 
+           item.category === "Controles de Câmera" ? "Controle de Câmera" : "Selo Exclusivo"}
+        </Badge>
+      );
+    }
+    if (item.isCommunity) {
+      return (
+        <Badge variant="secondary" className="bg-secondary text-foreground">
+          Enviado pela comunidade
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="border-green-500 text-green-600">
+        Grátis
+      </Badge>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
       <div className="flex">
         {/* Sidebar */}
         <aside className="w-72 min-h-screen bg-card border-r border-border p-6 space-y-4">
           <div className="mb-6">
             <img src={logoHorizontal} alt="Biblioteca de Artes Arcanas" className="w-full mb-4" />
           </div>
+
+          {/* User Status */}
+          {isPremium ? (
+            <div className="p-4 rounded-lg bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Star className="h-5 w-5 text-yellow-500" fill="currentColor" />
+                <span className="font-semibold text-foreground">Premium Ativo</span>
+              </div>
+              <Button onClick={logout} variant="ghost" size="sm" className="w-full text-muted-foreground hover:text-foreground">
+                Sair
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              onClick={() => navigate("/login")} 
+              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-4"
+            >
+              <Star className="h-4 w-4 mr-2" fill="currentColor" />
+              Área Premium
+            </Button>
+          )}
+
           <h2 className="text-xl font-bold text-foreground mb-6">Ferramentas de IA</h2>
-          {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
+          {externalLinks.map(link => (
+            <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
               <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
                 <span className="font-medium text-foreground">{link.name}</span>
                 <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
               </Button>
-            </a>)}
+            </a>
+          ))}
           <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block">
             <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
               <span className="font-medium text-foreground">Gerar Video no VEO 3</span>
@@ -160,8 +225,10 @@ const BibliotecaPrompts = () => {
               <Zap className="h-12 w-12" />
               <div>
                 <h1 className="text-3xl font-bold mb-2">Conheça a Forja de Selos 3D</h1>
-                <p className="text-lg opacity-90">Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.
-Sem precisar mais pagar ChatGPT e VEO3.</p>
+                <p className="text-lg opacity-90">
+                  Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.
+                  Sem precisar mais pagar ChatGPT e VEO3.
+                </p>
               </div>
             </div>
             <a href="https://youtu.be/XmPDm7ikUbU" target="_blank" rel="noopener noreferrer">
@@ -180,9 +247,16 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
             </p>
             
             <div className="flex gap-3 flex-wrap">
-              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => setSelectedCategory(cat)} className={selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}>
+              {categories.map(cat => (
+                <Button 
+                  key={cat} 
+                  variant={selectedCategory === cat ? "default" : "outline"} 
+                  onClick={() => setSelectedCategory(cat)} 
+                  className={selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}
+                >
                   {cat}
-                </Button>)}
+                </Button>
+              ))}
             </div>
           </div>
 
@@ -190,6 +264,8 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {paginatedPrompts.map(item => {
               const isVideo = isVideoUrl(item.imageUrl);
+              const canAccess = !item.isPremium || isPremium;
+              
               return (
                 <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
                   {/* Media Preview */}
@@ -203,7 +279,7 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
                           loop
                           autoPlay
                           playsInline
-                          onClick={() => setSelectedPrompt(item)}
+                          onClick={() => handleItemClick(item)}
                         />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="bg-black/50 rounded-full p-3">
@@ -216,8 +292,13 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
                         src={item.imageUrl} 
                         alt={item.title} 
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                        onClick={() => setSelectedPrompt(item)}
+                        onClick={() => handleItemClick(item)}
                       />
+                    )}
+                    {item.isPremium && !isPremium && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <Lock className="h-10 w-10 text-white/80" />
+                      </div>
                     )}
                   </div>
 
@@ -225,12 +306,7 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
                   <div className="p-5 space-y-4">
                     <div>
                       <h3 className="font-bold text-lg text-foreground mb-2">{item.title}</h3>
-                    {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0">
-                          {item.category === "Fotos" ? "Foto Exclusiva" : item.category === "Cenários" ? "Cenário Exclusivo" : item.category === "Controles de Câmera" ? "Controle de Câmera" : "Selo Exclusivo"}
-                        </Badge>}
-                      {item.isCommunity && !item.isExclusive && <Badge variant="secondary" className="bg-secondary text-foreground">
-                          Enviado pela comunidade
-                        </Badge>}
+                      {getBadgeContent(item)}
                     </div>
 
                     {/* Prompt Box */}
@@ -240,14 +316,26 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
 
                     {/* Action Buttons */}
                     <div className="flex gap-2">
-                      <Button onClick={() => copyToClipboard(item.prompt, item.title)} className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-white">
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copiar Prompt
-                      </Button>
-                      <Button onClick={() => downloadMedia(item.imageUrl, item.title)} variant="outline" className="flex-1 border-border hover:bg-secondary">
-                        <Download className="h-4 w-4 mr-2" />
-                        Baixar Ref.
-                      </Button>
+                      {canAccess ? (
+                        <>
+                          <Button onClick={() => copyToClipboard(item.prompt, item.title)} className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-white">
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copiar Prompt
+                          </Button>
+                          <Button onClick={() => downloadMedia(item.imageUrl, item.title)} variant="outline" className="flex-1 border-border hover:bg-secondary">
+                            <Download className="h-4 w-4 mr-2" />
+                            Baixar Ref.
+                          </Button>
+                        </>
+                      ) : (
+                        <Button 
+                          onClick={() => setShowPremiumModal(true)} 
+                          className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+                        >
+                          <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                          Torne-se Premium
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -339,8 +427,53 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
               )}
             </DialogContent>
           </Dialog>
+
+          {/* Premium Access Modal */}
+          <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
+            <DialogContent className="max-w-md bg-card">
+              <div className="text-center space-y-6 py-4">
+                <div className="flex justify-center">
+                  <div className="p-4 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20">
+                    <Star className="h-12 w-12 text-yellow-500" fill="currentColor" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Conteúdo Premium</h3>
+                  <p className="text-muted-foreground">
+                    Este conteúdo está disponível apenas para assinantes premium.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Button 
+                    onClick={() => {
+                      setShowPremiumModal(false);
+                      navigate("/login");
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Fazer Login
+                  </Button>
+                  <a 
+                    href="https://pay.kiwify.com.br/seu-link" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                      <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                      Torne-se Premium
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </main>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default BibliotecaPrompts;

@@ -20,6 +20,7 @@ export type Database = {
           created_at: string | null
           id: string
           image_url: string
+          is_premium: boolean
           prompt: string
           title: string
           updated_at: string | null
@@ -29,6 +30,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           image_url: string
+          is_premium?: boolean
           prompt: string
           title: string
           updated_at?: string | null
@@ -38,6 +40,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           image_url?: string
+          is_premium?: boolean
           prompt?: string
           title?: string
           updated_at?: string | null
@@ -80,6 +83,30 @@ export type Database = {
           prompt?: string
           title?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      premium_users: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          user_id?: string
         }
         Relationships: []
       }

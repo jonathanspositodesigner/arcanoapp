@@ -6,7 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, ArrowLeft, X } from "lucide-react";
+import { Upload, ArrowLeft, X, Star } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,7 @@ interface MediaData {
   prompt: string;
   category: string;
   isVideo: boolean;
+  isPremium: boolean;
 }
 
 const AdminUpload = () => {
@@ -67,7 +69,8 @@ const AdminUpload = () => {
           title: "",
           prompt: "",
           category: "",
-          isVideo
+          isVideo,
+          isPremium: false
         });
         
         if (newMedia.length === files.length) {
@@ -140,6 +143,7 @@ const AdminUpload = () => {
             prompt: media.prompt,
             category: media.category,
             image_url: publicUrl,
+            is_premium: media.isPremium,
           });
 
         if (insertError) throw insertError;
@@ -311,6 +315,20 @@ const AdminUpload = () => {
                     <SelectItem value="Controles de Câmera">Controles de Câmera</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                <div className="flex items-center gap-2">
+                  <Star className={`h-5 w-5 ${currentMedia.isPremium ? 'text-yellow-500' : 'text-muted-foreground'}`} fill={currentMedia.isPremium ? 'currentColor' : 'none'} />
+                  <Label htmlFor="isPremium" className="font-medium">
+                    {currentMedia.isPremium ? 'Conteúdo Premium' : 'Conteúdo Gratuito'}
+                  </Label>
+                </div>
+                <Switch
+                  id="isPremium"
+                  checked={currentMedia.isPremium}
+                  onCheckedChange={(checked) => updateMediaData('isPremium', checked)}
+                />
               </div>
 
               <div>
