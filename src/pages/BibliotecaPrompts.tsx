@@ -19,6 +19,7 @@ interface PromptItem {
   isCommunity?: boolean;
   isExclusive?: boolean;
   isPremium?: boolean;
+  referenceImages?: string[];
 }
 
 const isVideoUrl = (url: string) => {
@@ -82,7 +83,8 @@ const BibliotecaPrompts = () => {
       imageUrl: item.image_url,
       category: item.category,
       isExclusive: true,
-      isPremium: (item as any).is_premium || false
+      isPremium: (item as any).is_premium || false,
+      referenceImages: (item as any).reference_images || []
     }));
 
     setAllPrompts([...adminPrompts, ...communityPrompts]);
@@ -108,16 +110,35 @@ const BibliotecaPrompts = () => {
     }
   };
 
-  const downloadMedia = (mediaUrl: string, title: string) => {
+  const downloadMedia = (mediaUrl: string, title: string, referenceImages?: string[]) => {
     const isVideo = isVideoUrl(mediaUrl);
     const extension = isVideo ? 'mp4' : 'jpg';
+    const baseTitle = title.toLowerCase().replace(/\s+/g, "-");
+    
+    // Download main media
     const link = document.createElement("a");
     link.href = mediaUrl;
-    link.download = `${title.toLowerCase().replace(/\s+/g, "-")}.${extension}`;
+    link.download = `${baseTitle}.${extension}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success(`${isVideo ? 'Vídeo' : 'Imagem'} "${title}" baixado!`);
+    
+    // Download reference images if it's a video with references
+    if (isVideo && referenceImages && referenceImages.length > 0) {
+      referenceImages.forEach((refUrl, index) => {
+        setTimeout(() => {
+          const refLink = document.createElement("a");
+          refLink.href = refUrl;
+          refLink.download = `${baseTitle}-ref-${index + 1}.jpg`;
+          document.body.appendChild(refLink);
+          refLink.click();
+          document.body.removeChild(refLink);
+        }, (index + 1) * 500); // Delay each download by 500ms
+      });
+      toast.success(`Vídeo e ${referenceImages.length} imagem(ns) de referência baixados!`);
+    } else {
+      toast.success(`${isVideo ? 'Vídeo' : 'Imagem'} "${title}" baixado!`);
+    }
   };
 
   const handleItemClick = (item: PromptItem) => {
@@ -322,7 +343,7 @@ const BibliotecaPrompts = () => {
                             <Copy className="h-4 w-4 mr-2" />
                             Copiar Prompt
                           </Button>
-                          <Button onClick={() => downloadMedia(item.imageUrl, item.title)} variant="outline" className="flex-1 border-border hover:bg-secondary">
+                          <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages)} variant="outline" className="flex-1 border-border hover:bg-secondary">
                             <Download className="h-4 w-4 mr-2" />
                             Baixar Ref.
                           </Button>
@@ -413,7 +434,7 @@ const BibliotecaPrompts = () => {
                         Copiar Prompt
                       </Button>
                       <Button 
-                        onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title)} 
+                        onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages)} 
                         variant="outline" 
                         className="flex-1 border-border hover:bg-secondary"
                         size="sm"
