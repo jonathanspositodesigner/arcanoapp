@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -22,14 +22,25 @@ const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
   return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
+
+const ITEMS_PER_PAGE = 16;
+
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     fetchCommunityPrompts();
   }, []);
+
+  // Reset page when category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
+
   const fetchCommunityPrompts = async () => {
     const {
       data: communityData,
@@ -67,10 +78,16 @@ const BibliotecaPrompts = () => {
     }));
     setAllPrompts([...adminPrompts, ...communityPrompts]);
   };
+
   // Filter out camera controls from "Ver Tudo" - they only appear in their own tab
   const filteredPrompts = selectedCategory === "Ver Tudo" 
     ? allPrompts.filter(p => p.category !== "Controles de Câmera")
     : allPrompts.filter(p => p.category === selectedCategory);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   
   const categories = ["Ver Tudo", "Selos 3D", "Fotos", "Cenários", "Controles de Câmera"];
   const copyToClipboard = async (prompt: string, title: string) => {
@@ -165,7 +182,7 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
 
           {/* Prompts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredPrompts.map(item => {
+            {paginatedPrompts.map(item => {
               const isVideo = isVideoUrl(item.imageUrl);
               return (
                 <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
@@ -231,6 +248,33 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
               );
             })}
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="border-border hover:bg-secondary"
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Anterior
+              </Button>
+              <span className="text-muted-foreground">
+                Página {currentPage} de {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="border-border hover:bg-secondary"
+              >
+                Próxima
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          )}
 
           {/* Media Preview Modal */}
           <Dialog open={!!selectedPrompt} onOpenChange={() => setSelectedPrompt(null)}>
