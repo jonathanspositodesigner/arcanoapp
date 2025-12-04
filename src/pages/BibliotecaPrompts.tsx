@@ -98,7 +98,7 @@ const BibliotecaPrompts = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   
-  const categories = ["Selos 3D", "Fotos", "Cenários", "Controles de Câmera", "Ver Tudo"];
+  const categories = ["Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
 
   const copyToClipboard = async (prompt: string, title: string) => {
     try {

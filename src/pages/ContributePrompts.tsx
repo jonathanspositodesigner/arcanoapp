@@ -149,6 +149,7 @@ const ContributePrompts = () => {
                   <SelectItem value="Selos 3D">Selos 3D</SelectItem>
                   <SelectItem value="Fotos">Fotos</SelectItem>
                   <SelectItem value="Cenários">Cenários</SelectItem>
+                  <SelectItem value="Movies para Telão">Movies para Telão</SelectItem>
                 </SelectContent>
               </Select>
             </div>
