@@ -11,17 +11,18 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-interface ImageData {
+interface MediaData {
   file: File;
   preview: string;
   title: string;
   prompt: string;
   category: string;
+  isVideo: boolean;
 }
 
 const AdminUpload = () => {
   const navigate = useNavigate();
-  const [images, setImages] = useState<ImageData[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<MediaData[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,11 +43,11 @@ const AdminUpload = () => {
     e.stopPropagation();
     
     const files = Array.from(e.dataTransfer.files).filter(file => 
-      file.type.startsWith('image/')
+      file.type.startsWith('image/') || file.type.startsWith('video/')
     );
     
     if (files.length === 0) {
-      toast.error("Por favor, envie apenas imagens");
+      toast.error("Por favor, envie apenas imagens ou vídeos");
       return;
     }
     
@@ -54,21 +55,23 @@ const AdminUpload = () => {
   };
 
   const processFiles = (files: File[]) => {
-    const newImages: ImageData[] = [];
+    const newMedia: MediaData[] = [];
     
     files.forEach(file => {
+      const isVideo = file.type.startsWith('video/');
       const reader = new FileReader();
       reader.onloadend = () => {
-        newImages.push({
+        newMedia.push({
           file,
           preview: reader.result as string,
           title: "",
           prompt: "",
-          category: ""
+          category: "",
+          isVideo
         });
         
-        if (newImages.length === files.length) {
-          setImages(prev => [...prev, ...newImages]);
+        if (newMedia.length === files.length) {
+          setMediaFiles(prev => [...prev, ...newMedia]);
           setShowModal(true);
           setCurrentIndex(0);
         }
@@ -77,18 +80,18 @@ const AdminUpload = () => {
     });
   };
 
-  const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+  const removeMedia = (index: number) => {
+    setMediaFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateImageData = (field: keyof ImageData, value: string) => {
-    setImages(prev => prev.map((img, idx) => 
-      idx === currentIndex ? { ...img, [field]: value } : img
+  const updateMediaData = (field: keyof MediaData, value: string | boolean) => {
+    setMediaFiles(prev => prev.map((media, idx) => 
+      idx === currentIndex ? { ...media, [field]: value } : media
     ));
   };
 
   const goToNext = () => {
-    if (currentIndex < images.length - 1) {
+    if (currentIndex < mediaFiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
   };
@@ -99,8 +102,8 @@ const AdminUpload = () => {
     }
   };
 
-  const allFieldsFilled = images.every(img => 
-    img.title && img.prompt && img.category
+  const allFieldsFilled = mediaFiles.every(media => 
+    media.title && media.prompt && media.category
   );
 
   const handleSubmitAll = async () => {
@@ -112,15 +115,15 @@ const AdminUpload = () => {
     setIsSubmitting(true);
 
     try {
-      for (const image of images) {
-        // Upload image to storage
-        const fileExt = image.file.name.split('.').pop();
+      for (const media of mediaFiles) {
+        // Upload media to storage
+        const fileExt = media.file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('admin-prompts')
-          .upload(filePath, image.file);
+          .upload(filePath, media.file);
 
         if (uploadError) throw uploadError;
 
@@ -133,27 +136,27 @@ const AdminUpload = () => {
         const { error: insertError } = await supabase
           .from('admin_prompts')
           .insert({
-            title: image.title,
-            prompt: image.prompt,
-            category: image.category,
+            title: media.title,
+            prompt: media.prompt,
+            category: media.category,
             image_url: publicUrl,
           });
 
         if (insertError) throw insertError;
       }
 
-      setImages([]);
+      setMediaFiles([]);
       setShowModal(false);
       setShowSuccessModal(true);
     } catch (error) {
       console.error("Error submitting admin prompts:", error);
-      toast.error("Erro ao enviar selos. Tente novamente.");
+      toast.error("Erro ao enviar. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const currentImage = images[currentIndex];
+  const currentMedia = mediaFiles[currentIndex];
 
   return (
     <div className="min-h-screen bg-background">
@@ -183,49 +186,60 @@ const AdminUpload = () => {
             className="border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer"
           >
             <input
-              id="images"
+              id="media"
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               multiple
               onChange={handleFileSelect}
               className="hidden"
             />
-            <label htmlFor="images" className="cursor-pointer">
+            <label htmlFor="media" className="cursor-pointer">
               <Upload className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg text-foreground mb-2">
-                Arraste múltiplas imagens aqui ou clique para selecionar
+                Arraste imagens ou vídeos aqui ou clique para selecionar
               </p>
               <p className="text-sm text-muted-foreground">
-                Você pode enviar vários selos de uma vez
+                Você pode enviar vários arquivos de uma vez
               </p>
             </label>
           </div>
 
-          {images.length > 0 && (
+          {mediaFiles.length > 0 && (
             <div className="mt-8">
               <h3 className="text-lg font-semibold mb-4">
-                Imagens selecionadas: {images.length}
+                Arquivos selecionados: {mediaFiles.length}
               </h3>
               <div className="grid grid-cols-4 gap-4">
-                {images.map((img, idx) => (
+                {mediaFiles.map((media, idx) => (
                   <div key={idx} className="relative group">
-                    <img
-                      src={img.preview}
-                      alt={`Preview ${idx + 1}`}
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
+                    {media.isVideo ? (
+                      <video
+                        src={media.preview}
+                        className="w-full h-32 object-cover rounded-lg"
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        src={media.preview}
+                        alt={`Preview ${idx + 1}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                    )}
                     <button
-                      onClick={() => removeImage(idx)}
+                      onClick={() => removeMedia(idx)}
                       className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X className="h-4 w-4" />
                     </button>
                     <div className={`absolute bottom-2 left-2 right-2 text-xs ${
-                      img.title && img.prompt && img.category 
+                      media.title && media.prompt && media.category 
                         ? 'bg-green-500' 
                         : 'bg-yellow-500'
                     } text-white px-2 py-1 rounded`}>
-                      {img.title && img.prompt && img.category ? 'Completo' : 'Pendente'}
+                      {media.title && media.prompt && media.category ? 'Completo' : 'Pendente'}
                     </div>
                   </div>
                 ))}
@@ -234,7 +248,7 @@ const AdminUpload = () => {
                 onClick={() => setShowModal(true)}
                 className="w-full mt-6 bg-gradient-primary hover:opacity-90"
               >
-                Preencher Informações dos Selos
+                Preencher Informações
               </Button>
             </div>
           )}
@@ -245,26 +259,37 @@ const AdminUpload = () => {
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>
-              Informações do Selo {currentIndex + 1} de {images.length}
+              Informações {currentIndex + 1} de {mediaFiles.length}
             </DialogTitle>
           </DialogHeader>
 
-          {currentImage && (
+          {currentMedia && (
             <div className="space-y-6">
               <div className="flex justify-center">
-                <img
-                  src={currentImage.preview}
-                  alt="Preview"
-                  className="max-h-64 object-contain rounded-lg"
-                />
+                {currentMedia.isVideo ? (
+                  <video
+                    src={currentMedia.preview}
+                    className="max-h-64 object-contain rounded-lg"
+                    controls
+                    muted
+                    autoPlay
+                    loop
+                  />
+                ) : (
+                  <img
+                    src={currentMedia.preview}
+                    alt="Preview"
+                    className="max-h-64 object-contain rounded-lg"
+                  />
+                )}
               </div>
 
               <div>
-                <Label htmlFor="title">Título do Selo</Label>
+                <Label htmlFor="title">Título</Label>
                 <Input
                   id="title"
-                  value={currentImage.title}
-                  onChange={(e) => updateImageData('title', e.target.value)}
+                  value={currentMedia.title}
+                  onChange={(e) => updateMediaData('title', e.target.value)}
                   placeholder="Ex: Selo 3D de Natal"
                   className="mt-2"
                 />
@@ -273,8 +298,8 @@ const AdminUpload = () => {
               <div>
                 <Label htmlFor="category">Categoria</Label>
                 <Select 
-                  value={currentImage.category} 
-                  onValueChange={(value) => updateImageData('category', value)}
+                  value={currentMedia.category} 
+                  onValueChange={(value) => updateMediaData('category', value)}
                 >
                   <SelectTrigger className="mt-2">
                     <SelectValue placeholder="Selecione uma categoria" />
@@ -292,8 +317,8 @@ const AdminUpload = () => {
                 <Label htmlFor="prompt">Prompt</Label>
                 <Textarea
                   id="prompt"
-                  value={currentImage.prompt}
-                  onChange={(e) => updateImageData('prompt', e.target.value)}
+                  value={currentMedia.prompt}
+                  onChange={(e) => updateMediaData('prompt', e.target.value)}
                   placeholder="Cole ou escreva seu prompt aqui..."
                   className="mt-2 min-h-32"
                 />
@@ -310,7 +335,7 @@ const AdminUpload = () => {
                 </Button>
                 <Button
                   onClick={goToNext}
-                  disabled={currentIndex === images.length - 1}
+                  disabled={currentIndex === mediaFiles.length - 1}
                   variant="outline"
                   className="flex-1"
                 >
@@ -324,7 +349,7 @@ const AdminUpload = () => {
                   disabled={isSubmitting}
                   className="w-full bg-gradient-primary hover:opacity-90 text-lg py-6"
                 >
-                  {isSubmitting ? "Enviando..." : "Upload de Todos os Selos"}
+                  {isSubmitting ? "Enviando..." : "Upload de Todos"}
                 </Button>
               )}
             </div>

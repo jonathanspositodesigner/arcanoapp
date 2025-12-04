@@ -15,17 +15,19 @@ const ContributePrompts = () => {
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [category, setCategory] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string>("");
+  const [isVideo, setIsVideo] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
+      setMediaFile(file);
+      setIsVideo(file.type.startsWith('video/'));
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        setMediaPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -41,22 +43,23 @@ const ContributePrompts = () => {
     e.stopPropagation();
     
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      setImageFile(file);
+    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+      setMediaFile(file);
+      setIsVideo(file.type.startsWith('video/'));
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        setMediaPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     } else {
-      toast.error("Por favor, envie apenas imagens");
+      toast.error("Por favor, envie apenas imagens ou vídeos");
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !prompt || !category || !imageFile) {
+    if (!title || !prompt || !category || !mediaFile) {
       toast.error("Por favor, preencha todos os campos");
       return;
     }
@@ -64,14 +67,14 @@ const ContributePrompts = () => {
     setIsSubmitting(true);
 
     try {
-      // Upload image to storage
-      const fileExt = imageFile.name.split('.').pop();
+      // Upload media to storage
+      const fileExt = mediaFile.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('community-prompts')
-        .upload(filePath, imageFile);
+        .upload(filePath, mediaFile);
 
       if (uploadError) throw uploadError;
 
@@ -162,34 +165,45 @@ const ContributePrompts = () => {
             </div>
 
             <div>
-              <Label htmlFor="image">Imagem de Referência</Label>
+              <Label htmlFor="media">Imagem ou Vídeo de Referência</Label>
               <div className="mt-2">
                 <label
-                  htmlFor="image"
+                  htmlFor="media"
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                   className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
                 >
-                  {imagePreview ? (
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="h-full object-contain"
-                    />
+                  {mediaPreview ? (
+                    isVideo ? (
+                      <video
+                        src={mediaPreview}
+                        className="h-full object-contain"
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        src={mediaPreview}
+                        alt="Preview"
+                        className="h-full object-contain"
+                      />
+                    )
                   ) : (
                     <div className="flex flex-col items-center">
                       <Upload className="h-12 w-12 text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground">
-                        Clique ou arraste uma imagem aqui
+                        Clique ou arraste uma imagem ou vídeo aqui
                       </p>
                     </div>
                   )}
                 </label>
                 <input
-                  id="image"
+                  id="media"
                   type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
+                  accept="image/*,video/*"
+                  onChange={handleMediaChange}
                   className="hidden"
                 />
               </div>

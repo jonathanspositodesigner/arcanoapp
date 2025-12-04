@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +17,11 @@ interface PromptItem {
   isCommunity?: boolean;
   isExclusive?: boolean;
 }
+
+const isVideoUrl = (url: string) => {
+  const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
+  return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+};
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
@@ -77,14 +82,16 @@ const BibliotecaPrompts = () => {
       toast.error("Erro ao copiar prompt");
     }
   };
-  const downloadImage = (imageUrl: string, title: string) => {
+  const downloadMedia = (mediaUrl: string, title: string) => {
+    const isVideo = isVideoUrl(mediaUrl);
+    const extension = isVideo ? 'mp4' : 'jpg';
     const link = document.createElement("a");
-    link.href = imageUrl;
-    link.download = `${title.toLowerCase().replace(/\s+/g, "-")}.jpg`;
+    link.href = mediaUrl;
+    link.download = `${title.toLowerCase().replace(/\s+/g, "-")}.${extension}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success(`Imagem "${title}" baixada!`);
+    toast.success(`${isVideo ? 'Vídeo' : 'Imagem'} "${title}" baixado!`);
   };
   const externalLinks = [{
     name: "Gerar no ChatGPT",
@@ -158,50 +165,74 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
 
           {/* Prompts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredPrompts.map(item => <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
-                {/* Image Preview */}
-                <div className="aspect-square overflow-hidden bg-secondary">
-                  <img 
-                    src={item.imageUrl} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                    onClick={() => setSelectedPrompt(item)}
-                  />
-                </div>
-
-                {/* Card Content */}
-                <div className="p-5 space-y-4">
-                  <div>
-                    <h3 className="font-bold text-lg text-foreground mb-2">{item.title}</h3>
-                  {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0">
-                        {item.category === "Fotos" ? "Foto Exclusiva" : item.category === "Cenários" ? "Cenário Exclusivo" : item.category === "Controles de Câmera" ? "Controle de Câmera" : "Selo Exclusivo"}
-                      </Badge>}
-                    {item.isCommunity && !item.isExclusive && <Badge variant="secondary" className="bg-secondary text-foreground">
-                        Enviado pela comunidade
-                      </Badge>}
+            {filteredPrompts.map(item => {
+              const isVideo = isVideoUrl(item.imageUrl);
+              return (
+                <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
+                  {/* Media Preview */}
+                  <div className="aspect-square overflow-hidden bg-secondary relative">
+                    {isVideo ? (
+                      <>
+                        <video 
+                          src={item.imageUrl} 
+                          className="w-full h-full object-cover cursor-pointer"
+                          muted
+                          loop
+                          autoPlay
+                          playsInline
+                          onClick={() => setSelectedPrompt(item)}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="bg-black/50 rounded-full p-3">
+                            <Play className="h-8 w-8 text-white" fill="white" />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <img 
+                        src={item.imageUrl} 
+                        alt={item.title} 
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        onClick={() => setSelectedPrompt(item)}
+                      />
+                    )}
                   </div>
 
-                  {/* Prompt Box */}
-                  <div className="bg-secondary p-3 rounded-lg">
-                    <p className="text-xs text-muted-foreground line-clamp-3">{item.prompt}</p>
-                  </div>
+                  {/* Card Content */}
+                  <div className="p-5 space-y-4">
+                    <div>
+                      <h3 className="font-bold text-lg text-foreground mb-2">{item.title}</h3>
+                    {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0">
+                          {item.category === "Fotos" ? "Foto Exclusiva" : item.category === "Cenários" ? "Cenário Exclusivo" : item.category === "Controles de Câmera" ? "Controle de Câmera" : "Selo Exclusivo"}
+                        </Badge>}
+                      {item.isCommunity && !item.isExclusive && <Badge variant="secondary" className="bg-secondary text-foreground">
+                          Enviado pela comunidade
+                        </Badge>}
+                    </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Button onClick={() => copyToClipboard(item.prompt, item.title)} className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-white">
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copiar Prompt
-                    </Button>
-                    <Button onClick={() => downloadImage(item.imageUrl, item.title)} variant="outline" className="flex-1 border-border hover:bg-secondary">
-                      <Download className="h-4 w-4 mr-2" />
-                      Baixar Ref.
-                    </Button>
+                    {/* Prompt Box */}
+                    <div className="bg-secondary p-3 rounded-lg">
+                      <p className="text-xs text-muted-foreground line-clamp-3">{item.prompt}</p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <Button onClick={() => copyToClipboard(item.prompt, item.title)} className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-white">
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copiar Prompt
+                      </Button>
+                      <Button onClick={() => downloadMedia(item.imageUrl, item.title)} variant="outline" className="flex-1 border-border hover:bg-secondary">
+                        <Download className="h-4 w-4 mr-2" />
+                        Baixar Ref.
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </Card>)}
+                </Card>
+              );
+            })}
           </div>
 
-          {/* Image Preview Modal */}
+          {/* Media Preview Modal */}
           <Dialog open={!!selectedPrompt} onOpenChange={() => setSelectedPrompt(null)}>
             <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden bg-card">
               <button 
@@ -213,11 +244,21 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
               {selectedPrompt && (
                 <div className="flex flex-col max-h-[90vh]">
                   <div className="flex-shrink-0">
-                    <img 
-                      src={selectedPrompt.imageUrl} 
-                      alt={selectedPrompt.title} 
-                      className="w-full h-auto max-h-[50vh] object-contain bg-black"
-                    />
+                    {isVideoUrl(selectedPrompt.imageUrl) ? (
+                      <video 
+                        src={selectedPrompt.imageUrl} 
+                        className="w-full h-auto max-h-[50vh] object-contain bg-black"
+                        controls
+                        autoPlay
+                        playsInline
+                      />
+                    ) : (
+                      <img 
+                        src={selectedPrompt.imageUrl} 
+                        alt={selectedPrompt.title} 
+                        className="w-full h-auto max-h-[50vh] object-contain bg-black"
+                      />
+                    )}
                   </div>
                   <div className="p-4 space-y-3 flex-shrink-0">
                     <h3 className="font-bold text-lg text-foreground">{selectedPrompt.title}</h3>
@@ -234,13 +275,13 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
                         Copiar Prompt
                       </Button>
                       <Button 
-                        onClick={() => downloadImage(selectedPrompt.imageUrl, selectedPrompt.title)} 
+                        onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title)} 
                         variant="outline" 
                         className="flex-1 border-border hover:bg-secondary"
                         size="sm"
                       >
                         <Download className="h-4 w-4 mr-2" />
-                        Baixar Imagem
+                        Baixar {isVideoUrl(selectedPrompt.imageUrl) ? 'Vídeo' : 'Imagem'}
                       </Button>
                     </div>
                   </div>
