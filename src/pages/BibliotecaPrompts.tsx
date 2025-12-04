@@ -157,34 +157,34 @@ const BibliotecaPrompts = () => {
   ];
 
   const getBadgeContent = (item: PromptItem) => {
-    if (item.isPremium) {
-      return (
-        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
-          <Star className="h-3 w-3 mr-1" fill="currentColor" />
-          Premium
-        </Badge>
-      );
-    }
-    if (item.isExclusive) {
-      return (
-        <Badge className="bg-gradient-primary text-white border-0">
-          {item.category === "Fotos" ? "Foto Exclusiva" : 
-           item.category === "Cenários" ? "Cenário Exclusivo" : 
-           item.category === "Controles de Câmera" ? "Controle de Câmera" : "Selo Exclusivo"}
-        </Badge>
-      );
-    }
-    if (item.isCommunity) {
-      return (
-        <Badge variant="secondary" className="bg-secondary text-foreground">
-          Enviado pela comunidade
-        </Badge>
-      );
-    }
     return (
-      <Badge variant="outline" className="border-green-500 text-green-600">
-        Grátis
-      </Badge>
+      <div className="flex flex-wrap gap-1">
+        {/* Premium or Grátis badge - always show one */}
+        {item.isPremium ? (
+          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
+            <Star className="h-3 w-3 mr-1" fill="currentColor" />
+            Premium
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="border-green-500 text-green-600">
+            Grátis
+          </Badge>
+        )}
+        {/* Category badge */}
+        {item.isExclusive && (
+          <Badge className="bg-gradient-primary text-white border-0">
+            {item.category === "Fotos" ? "Foto Exclusiva" : 
+             item.category === "Cenários" ? "Cenário Exclusivo" : 
+             item.category === "Controles de Câmera" ? "Controle de Câmera" :
+             item.category === "Movies para Telão" ? "Movie Exclusivo" : "Selo Exclusivo"}
+          </Badge>
+        )}
+        {item.isCommunity && (
+          <Badge variant="secondary" className="bg-secondary text-foreground">
+            Enviado pela comunidade
+          </Badge>
+        )}
+      </div>
     );
   };
 
