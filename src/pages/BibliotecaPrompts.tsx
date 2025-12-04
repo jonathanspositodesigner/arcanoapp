@@ -317,8 +317,8 @@ const BibliotecaPrompts = () => {
                       />
                     )}
                     {item.isPremium && !isPremium && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <Lock className="h-10 w-10 text-white/80" />
+                      <div className="absolute top-2 right-2 bg-black/60 rounded-full p-2">
+                        <Lock className="h-5 w-5 text-white" />
                       </div>
                     )}
                   </div>
