@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -27,7 +27,7 @@ const ITEMS_PER_PAGE = 16;
 
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
+  const [selectedCategory, setSelectedCategory] = useState<string>("Selos 3D");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -89,7 +89,7 @@ const BibliotecaPrompts = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   
-  const categories = ["Ver Tudo", "Selos 3D", "Fotos", "Cenários", "Controles de Câmera"];
+  const categories = ["Selos 3D", "Fotos", "Cenários", "Controles de Câmera", "Ver Tudo"];
   const copyToClipboard = async (prompt: string, title: string) => {
     try {
       await navigator.clipboard.writeText(prompt);
@@ -141,6 +141,12 @@ const BibliotecaPrompts = () => {
                 <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
               </Button>
             </a>)}
+          <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block">
+            <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
+              <span className="font-medium text-foreground">Gerar Video no VEO 3</span>
+              <Video className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
+            </Button>
+          </a>
           <Button onClick={() => navigate("/contribuir")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mt-4">
             Envie o seu
           </Button>
