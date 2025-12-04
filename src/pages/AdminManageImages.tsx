@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -21,6 +21,7 @@ interface Prompt {
   image_url: string;
   type: 'admin' | 'community';
   is_premium?: boolean;
+  created_at?: string;
 }
 
 const AdminManageImages = () => {
@@ -32,6 +33,7 @@ const AdminManageImages = () => {
   const [editPromptText, setEditPromptText] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [editIsPremium, setEditIsPremium] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
@@ -64,14 +66,14 @@ const AdminManageImages = () => {
   const fetchPrompts = async () => {
     try {
       const [adminData, communityData] = await Promise.all([
-        supabase.from('admin_prompts').select('*'),
-        supabase.from('community_prompts').select('*').eq('approved', true)
+        supabase.from('admin_prompts').select('*').order('created_at', { ascending: false }),
+        supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', { ascending: false })
       ]);
 
       const allPrompts: Prompt[] = [
         ...(adminData.data || []).map(p => ({ ...p, type: 'admin' as const })),
         ...(communityData.data || []).map(p => ({ ...p, type: 'community' as const, is_premium: false }))
-      ];
+      ].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
 
       setPrompts(allPrompts);
     } catch (error) {
@@ -81,6 +83,10 @@ const AdminManageImages = () => {
       setIsLoading(false);
     }
   };
+
+  const filteredPrompts = prompts.filter(p => 
+    p.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleEdit = (prompt: Prompt) => {
     setEditingPrompt(prompt);
@@ -181,13 +187,22 @@ const AdminManageImages = () => {
           <h1 className="text-4xl font-bold text-foreground mb-2">
             Gerenciar Imagens Enviadas
           </h1>
-          <p className="text-muted-foreground text-lg">
-            {prompts.length} selos publicados
+          <p className="text-muted-foreground text-lg mb-4">
+            {filteredPrompts.length} selos {searchTerm ? 'encontrados' : 'publicados'}
           </p>
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {prompts.map((prompt) => {
+          {filteredPrompts.map((prompt) => {
             const isVideo = isVideoUrl(prompt.image_url);
             return (
               <Card key={`${prompt.type}-${prompt.id}`} className="overflow-hidden">
@@ -258,10 +273,10 @@ const AdminManageImages = () => {
           })}
         </div>
 
-        {prompts.length === 0 && (
+        {filteredPrompts.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-lg">
-              Nenhum selo encontrado
+              {searchTerm ? 'Nenhum selo encontrado com esse nome' : 'Nenhum selo encontrado'}
             </p>
           </div>
         )}
