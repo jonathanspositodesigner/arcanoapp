@@ -6,11 +6,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, ArrowLeft, X, Star } from "lucide-react";
+import { Upload, ArrowLeft, X, Star, ImagePlus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+
+interface ReferenceImage {
+  file: File;
+  preview: string;
+}
 
 interface MediaData {
   file: File;
@@ -20,6 +25,7 @@ interface MediaData {
   category: string;
   isVideo: boolean;
   isPremium: boolean;
+  referenceImages: ReferenceImage[];
 }
 
 const AdminUpload = () => {
@@ -70,7 +76,8 @@ const AdminUpload = () => {
           prompt: "",
           category: "",
           isVideo,
-          isPremium: false
+          isPremium: false,
+          referenceImages: []
         });
         
         if (newMedia.length === files.length) {
@@ -81,6 +88,31 @@ const AdminUpload = () => {
       };
       reader.readAsDataURL(file);
     });
+  };
+
+  const handleReferenceImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
+    if (files.length === 0) return;
+
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMediaFiles(prev => prev.map((media, idx) => 
+          idx === currentIndex 
+            ? { ...media, referenceImages: [...media.referenceImages, { file, preview: reader.result as string }] }
+            : media
+        ));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeReferenceImage = (refIndex: number) => {
+    setMediaFiles(prev => prev.map((media, idx) => 
+      idx === currentIndex 
+        ? { ...media, referenceImages: media.referenceImages.filter((_, i) => i !== refIndex) }
+        : media
+    ));
   };
 
   const removeMedia = (index: number) => {
@@ -135,6 +167,27 @@ const AdminUpload = () => {
           .from('admin-prompts')
           .getPublicUrl(filePath);
 
+        // Upload reference images if it's a video
+        let referenceImageUrls: string[] = [];
+        if (media.isVideo && media.referenceImages.length > 0) {
+          for (const refImg of media.referenceImages) {
+            const refExt = refImg.file.name.split('.').pop();
+            const refFileName = `ref_${Math.random().toString(36).substring(2)}.${refExt}`;
+            
+            const { error: refUploadError } = await supabase.storage
+              .from('admin-prompts')
+              .upload(refFileName, refImg.file);
+
+            if (refUploadError) throw refUploadError;
+
+            const { data: { publicUrl: refPublicUrl } } = supabase.storage
+              .from('admin-prompts')
+              .getPublicUrl(refFileName);
+
+            referenceImageUrls.push(refPublicUrl);
+          }
+        }
+
         // Insert into database
         const { error: insertError } = await supabase
           .from('admin_prompts')
@@ -144,6 +197,7 @@ const AdminUpload = () => {
             category: media.category,
             image_url: publicUrl,
             is_premium: media.isPremium,
+            reference_images: referenceImageUrls.length > 0 ? referenceImageUrls : null,
           });
 
         if (insertError) throw insertError;
@@ -330,6 +384,38 @@ const AdminUpload = () => {
                   onCheckedChange={(checked) => updateMediaData('isPremium', checked)}
                 />
               </div>
+
+              {currentMedia.isVideo && (
+                <div>
+                  <Label>Imagens de Referência (opcional)</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Adicione imagens que serão baixadas junto com o vídeo
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {currentMedia.referenceImages.map((ref, idx) => (
+                      <div key={idx} className="relative group">
+                        <img src={ref.preview} alt={`Ref ${idx + 1}`} className="w-16 h-16 object-cover rounded-lg" />
+                        <button
+                          onClick={() => removeReferenceImage(idx)}
+                          className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                    <label className="w-16 h-16 border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleReferenceImageSelect}
+                        className="hidden"
+                      />
+                      <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                    </label>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="prompt">Prompt</Label>

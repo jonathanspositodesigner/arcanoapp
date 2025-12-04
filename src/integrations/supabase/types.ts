@@ -22,6 +22,7 @@ export type Database = {
           image_url: string
           is_premium: boolean
           prompt: string
+          reference_images: string[] | null
           title: string
           updated_at: string | null
         }
@@ -32,6 +33,7 @@ export type Database = {
           image_url: string
           is_premium?: boolean
           prompt: string
+          reference_images?: string[] | null
           title: string
           updated_at?: string | null
         }
@@ -42,6 +44,7 @@ export type Database = {
           image_url?: string
           is_premium?: boolean
           prompt?: string
+          reference_images?: string[] | null
           title?: string
           updated_at?: string | null
         }
