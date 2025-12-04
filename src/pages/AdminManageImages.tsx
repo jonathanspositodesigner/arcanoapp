@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Pencil, Trash2, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -283,12 +284,18 @@ const AdminManageImages = () => {
             </div>
             <div>
               <Label htmlFor="edit-category">Categoria</Label>
-              <Input
-                id="edit-category"
-                value={editCategory}
-                onChange={(e) => setEditCategory(e.target.value)}
-                className="mt-2"
-              />
+              <Select value={editCategory} onValueChange={setEditCategory}>
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Selecione uma categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Selos 3D">Selos 3D</SelectItem>
+                  <SelectItem value="Fotos">Fotos</SelectItem>
+                  <SelectItem value="Cenários">Cenários</SelectItem>
+                  <SelectItem value="Movies para Telão">Movies para Telão</SelectItem>
+                  <SelectItem value="Controles de Câmera">Controles de Câmera</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             {editingPrompt?.type === 'admin' && (
