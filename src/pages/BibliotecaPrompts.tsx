@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Copy, Download, Zap, Sparkles } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,7 @@ const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
+  const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   useEffect(() => {
     fetchCommunityPrompts();
   }, []);
@@ -154,8 +156,11 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredPrompts.map(item => <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
                 {/* Image Preview */}
-                <div className="aspect-square overflow-hidden bg-secondary">
-                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                <div 
+                  className="aspect-square overflow-hidden bg-secondary cursor-pointer"
+                  onClick={() => setSelectedPrompt(item)}
+                >
+                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                 </div>
 
                 {/* Card Content */}
@@ -189,6 +194,46 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
                 </div>
               </Card>)}
           </div>
+
+          {/* Image Preview Modal */}
+          <Dialog open={!!selectedPrompt} onOpenChange={() => setSelectedPrompt(null)}>
+            <DialogContent className="max-w-3xl p-0 overflow-hidden bg-card">
+              {selectedPrompt && (
+                <>
+                  <div className="relative">
+                    <img 
+                      src={selectedPrompt.imageUrl} 
+                      alt={selectedPrompt.title} 
+                      className="w-full h-auto max-h-[70vh] object-contain"
+                    />
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <h3 className="font-bold text-xl text-foreground">{selectedPrompt.title}</h3>
+                    <div className="bg-secondary p-4 rounded-lg">
+                      <p className="text-sm text-muted-foreground">{selectedPrompt.prompt}</p>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button 
+                        onClick={() => copyToClipboard(selectedPrompt.prompt, selectedPrompt.title)} 
+                        className="flex-1 bg-gradient-primary hover:opacity-90 text-white"
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copiar Prompt
+                      </Button>
+                      <Button 
+                        onClick={() => downloadImage(selectedPrompt.imageUrl, selectedPrompt.title)} 
+                        variant="outline" 
+                        className="flex-1 border-border hover:bg-secondary"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Baixar Imagem
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
         </main>
       </div>
     </div>;
