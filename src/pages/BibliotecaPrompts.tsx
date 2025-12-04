@@ -62,8 +62,12 @@ const BibliotecaPrompts = () => {
     }));
     setAllPrompts([...adminPrompts, ...communityPrompts]);
   };
-  const filteredPrompts = selectedCategory === "Ver Tudo" ? allPrompts : allPrompts.filter(p => p.category === selectedCategory);
-  const categories = ["Ver Tudo", "Selos 3D", "Fotos", "Cenários"];
+  // Filter out camera controls from "Ver Tudo" - they only appear in their own tab
+  const filteredPrompts = selectedCategory === "Ver Tudo" 
+    ? allPrompts.filter(p => p.category !== "Controles de Câmera")
+    : allPrompts.filter(p => p.category === selectedCategory);
+  
+  const categories = ["Ver Tudo", "Selos 3D", "Fotos", "Cenários", "Controles de Câmera"];
   const copyToClipboard = async (prompt: string, title: string) => {
     try {
       await navigator.clipboard.writeText(prompt);
@@ -170,7 +174,7 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
                   <div>
                     <h3 className="font-bold text-lg text-foreground mb-2">{item.title}</h3>
                   {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0">
-                        {item.category === "Fotos" ? "Foto Exclusiva" : item.category === "Cenários" ? "Cenário Exclusivo" : "Selo Exclusivo"}
+                        {item.category === "Fotos" ? "Foto Exclusiva" : item.category === "Cenários" ? "Cenário Exclusivo" : item.category === "Controles de Câmera" ? "Controle de Câmera" : "Selo Exclusivo"}
                       </Badge>}
                     {item.isCommunity && !item.isExclusive && <Badge variant="secondary" className="bg-secondary text-foreground">
                         Enviado pela comunidade
