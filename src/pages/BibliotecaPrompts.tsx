@@ -156,11 +156,13 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredPrompts.map(item => <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
                 {/* Image Preview */}
-                <div 
-                  className="aspect-square overflow-hidden bg-secondary cursor-pointer"
-                  onClick={() => setSelectedPrompt(item)}
-                >
-                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                <div className="aspect-square overflow-hidden bg-secondary">
+                  <img 
+                    src={item.imageUrl} 
+                    alt={item.title} 
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                    onClick={() => setSelectedPrompt(item)}
+                  />
                 </div>
 
                 {/* Card Content */}
