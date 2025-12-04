@@ -199,25 +199,32 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
 
           {/* Image Preview Modal */}
           <Dialog open={!!selectedPrompt} onOpenChange={() => setSelectedPrompt(null)}>
-            <DialogContent className="max-w-3xl p-0 overflow-hidden bg-card">
+            <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden bg-card">
+              <button 
+                onClick={() => setSelectedPrompt(null)}
+                className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
               {selectedPrompt && (
-                <>
-                  <div className="relative">
+                <div className="flex flex-col max-h-[90vh]">
+                  <div className="flex-shrink-0">
                     <img 
                       src={selectedPrompt.imageUrl} 
                       alt={selectedPrompt.title} 
-                      className="w-full h-auto max-h-[70vh] object-contain"
+                      className="w-full h-auto max-h-[50vh] object-contain bg-black"
                     />
                   </div>
-                  <div className="p-6 space-y-4">
-                    <h3 className="font-bold text-xl text-foreground">{selectedPrompt.title}</h3>
-                    <div className="bg-secondary p-4 rounded-lg">
-                      <p className="text-sm text-muted-foreground">{selectedPrompt.prompt}</p>
+                  <div className="p-4 space-y-3 flex-shrink-0">
+                    <h3 className="font-bold text-lg text-foreground">{selectedPrompt.title}</h3>
+                    <div className="bg-secondary p-3 rounded-lg max-h-24 overflow-y-auto">
+                      <p className="text-xs text-muted-foreground">{selectedPrompt.prompt}</p>
                     </div>
                     <div className="flex gap-3">
                       <Button 
                         onClick={() => copyToClipboard(selectedPrompt.prompt, selectedPrompt.title)} 
                         className="flex-1 bg-gradient-primary hover:opacity-90 text-white"
+                        size="sm"
                       >
                         <Copy className="h-4 w-4 mr-2" />
                         Copiar Prompt
@@ -226,13 +233,14 @@ Sem precisar mais pagar ChatGPT e VEO3.</p>
                         onClick={() => downloadImage(selectedPrompt.imageUrl, selectedPrompt.title)} 
                         variant="outline" 
                         className="flex-1 border-border hover:bg-secondary"
+                        size="sm"
                       >
                         <Download className="h-4 w-4 mr-2" />
                         Baixar Imagem
                       </Button>
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </DialogContent>
           </Dialog>
