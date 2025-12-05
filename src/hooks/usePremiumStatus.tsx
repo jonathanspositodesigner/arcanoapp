@@ -8,15 +8,9 @@ export const usePremiumStatus = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkPremiumStatus = async (userId: string) => {
-      const { data } = await supabase
-        .from('premium_users')
-        .select('is_active')
-        .eq('user_id', userId)
-        .eq('is_active', true)
-        .maybeSingle();
-      
-      setIsPremium(!!data);
+    const checkPremiumStatus = async () => {
+      const { data, error } = await supabase.rpc('is_premium');
+      setIsPremium(!error && data === true);
     };
 
     // Set up auth state listener
@@ -25,7 +19,7 @@ export const usePremiumStatus = () => {
         setUser(session?.user ?? null);
         if (session?.user) {
           setTimeout(() => {
-            checkPremiumStatus(session.user.id);
+            checkPremiumStatus();
           }, 0);
         } else {
           setIsPremium(false);
@@ -38,7 +32,7 @@ export const usePremiumStatus = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkPremiumStatus(session.user.id);
+        checkPremiumStatus();
       }
       setIsLoading(false);
     });

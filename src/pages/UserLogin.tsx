@@ -18,14 +18,8 @@ const UserLogin = () => {
     const checkPremiumStatus = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: premiumData } = await supabase
-          .from('premium_users')
-          .select('is_active')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .maybeSingle();
-        
-        if (premiumData) {
+        const { data: isPremium } = await supabase.rpc('is_premium');
+        if (isPremium) {
           navigate('/biblioteca-prompts');
         }
       }
@@ -45,14 +39,10 @@ const UserLogin = () => {
 
       if (error) throw error;
 
-      // Check if user is premium and active
-      const { data: premiumData, error: premiumError } = await supabase
-        .from('premium_users')
-        .select('is_active')
-        .eq('user_id', data.user.id)
-        .maybeSingle();
+      // Check if user is premium and active using secure RPC function
+      const { data: isPremium, error: premiumError } = await supabase.rpc('is_premium');
 
-      if (premiumError || !premiumData || !premiumData.is_active) {
+      if (premiumError || !isPremium) {
         await supabase.auth.signOut();
         toast.error("Acesso negado. Sua assinatura premium não está ativa.");
         return;
