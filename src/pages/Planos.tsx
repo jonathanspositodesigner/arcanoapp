@@ -190,20 +190,20 @@ const Planos = () => {
         </div>
 
         {/* Discount Banner */}
-        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-t-xl py-3 text-center max-w-5xl mx-auto">
+        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none py-3 text-center max-w-5xl mx-auto">
           <span className="text-primary-foreground font-semibold tracking-wide">
             ATÉ {billingPeriod === "anual" ? "33" : "25"}% DE DESCONTO
           </span>
         </div>
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-3 gap-0 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-0 max-w-5xl mx-auto">
           {currentPlans.map((plan, index) => (
             <Card
               key={plan.name}
-              className={`relative bg-card border-border rounded-none p-6 flex flex-col ${
-                index === 0 ? "rounded-bl-xl" : ""
-              } ${index === 2 ? "rounded-br-xl" : ""} ${
+              className={`relative bg-card border-border p-6 flex flex-col rounded-xl lg:rounded-none ${
+                index === 0 ? "lg:rounded-bl-xl" : ""
+              } ${index === 2 ? "lg:rounded-br-xl" : ""} ${
                 plan.popular ? "border-2 border-primary" : ""
               }`}
             >
