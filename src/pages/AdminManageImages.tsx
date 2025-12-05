@@ -304,7 +304,7 @@ const AdminManageImages = () => {
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Arquivo">Arquivo</SelectItem>
+                  <SelectItem value="Selos 3D">Selos 3D</SelectItem>
                   <SelectItem value="Fotos">Fotos</SelectItem>
                   <SelectItem value="Cenários">Cenários</SelectItem>
                   <SelectItem value="Movies para Telão">Movies para Telão</SelectItem>

@@ -17,7 +17,7 @@ import { z } from "zod";
 const promptSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
   prompt: z.string().trim().min(1, "Prompt é obrigatório").max(10000, "Prompt deve ter no máximo 10.000 caracteres"),
-  category: z.enum(["Arquivo", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera"], { 
+  category: z.enum(["Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera"], { 
     errorMap: () => ({ message: "Selecione uma categoria válida" })
   }),
 });
@@ -411,7 +411,7 @@ const AdminUpload = () => {
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Arquivo">Arquivo</SelectItem>
+                    <SelectItem value="Selos 3D">Selos 3D</SelectItem>
                     <SelectItem value="Fotos">Fotos</SelectItem>
                     <SelectItem value="Cenários">Cenários</SelectItem>
                     <SelectItem value="Movies para Telão">Movies para Telão</SelectItem>
