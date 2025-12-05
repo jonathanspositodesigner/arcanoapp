@@ -111,31 +111,39 @@ const BibliotecaPrompts = () => {
       toast.error("Erro ao copiar prompt");
     }
   };
-  const downloadMedia = (mediaUrl: string, title: string, referenceImages?: string[]) => {
+  const downloadFile = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Download failed:", error);
+      // Fallback: open in new tab
+      window.open(url, "_blank");
+    }
+  };
+
+  const downloadMedia = async (mediaUrl: string, title: string, referenceImages?: string[]) => {
     const isVideo = isVideoUrl(mediaUrl);
     const extension = isVideo ? 'mp4' : 'jpg';
     const baseTitle = title.toLowerCase().replace(/\s+/g, "-");
 
     // Download main media
-    const link = document.createElement("a");
-    link.href = mediaUrl;
-    link.download = `${baseTitle}.${extension}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    await downloadFile(mediaUrl, `${baseTitle}.${extension}`);
 
     // Download reference images if it's a video with references
     if (isVideo && referenceImages && referenceImages.length > 0) {
-      referenceImages.forEach((refUrl, index) => {
-        setTimeout(() => {
-          const refLink = document.createElement("a");
-          refLink.href = refUrl;
-          refLink.download = `${baseTitle}-ref-${index + 1}.jpg`;
-          document.body.appendChild(refLink);
-          refLink.click();
-          document.body.removeChild(refLink);
-        }, (index + 1) * 500); // Delay each download by 500ms
-      });
+      for (let i = 0; i < referenceImages.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await downloadFile(referenceImages[i], `${baseTitle}-ref-${i + 1}.jpg`);
+      }
       toast.success(`Vídeo e ${referenceImages.length} imagem(ns) de referência baixados!`);
     } else {
       toast.success(`${isVideo ? 'Vídeo' : 'Imagem'} "${title}" baixado!`);
