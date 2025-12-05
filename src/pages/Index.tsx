@@ -39,18 +39,19 @@ const Index = () => {
             <Users className="mr-2 h-6 w-6" />
             Contribua com a Comunidade Arcana
           </Button>
-        </div>
 
-        <div className="flex flex-col items-center gap-2 mt-8">
           <Button
             onClick={() => navigate("/install")}
+            size="lg"
             variant="outline"
-            className="text-primary hover:text-primary border-primary/30 hover:border-primary hover:bg-primary/5"
+            className="transition-all text-lg px-8 py-6 hover:scale-105 border-primary/50 hover:border-primary text-primary hover:bg-primary/5"
           >
-            <Download className="mr-2 h-4 w-4" />
+            <Download className="mr-2 h-6 w-6" />
             Instalar App
           </Button>
-          
+        </div>
+
+        <div className="mt-8">
           <Button
             onClick={() => navigate("/admin-login")}
             variant="link"
