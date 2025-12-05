@@ -97,11 +97,17 @@ const BibliotecaPrompts = () => {
     }));
     setAllPrompts([...adminPrompts, ...communityPrompts]);
   };
-  const filteredPrompts = selectedCategory === "Ver Tudo" ? allPrompts.filter(p => p.category !== "Controles de Câmera") : selectedCategory === "Novos" ? allPrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16) : allPrompts.filter(p => p.category === selectedCategory);
+  const filteredPrompts = selectedCategory === "Ver Tudo" 
+    ? allPrompts.filter(p => p.category !== "Controles de Câmera") 
+    : selectedCategory === "Novos" 
+    ? allPrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16) 
+    : selectedCategory === "Grátis"
+    ? allPrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera")
+    : allPrompts.filter(p => p.category === selectedCategory);
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  const categories = ["Novos", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
+  const categories = ["Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
   const copyToClipboard = async (prompt: string, title: string) => {
     try {
       await navigator.clipboard.writeText(prompt);
