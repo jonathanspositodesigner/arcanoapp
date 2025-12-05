@@ -164,18 +164,18 @@ const BibliotecaPrompts = () => {
       <div className="flex flex-wrap gap-1">
         {/* Premium or Grátis badge - always show one */}
         {item.isPremium ? (
-          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
-            <Star className="h-3 w-3 mr-1" fill="currentColor" />
+          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px] sm:text-xs">
+            <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
             Premium
           </Badge>
         ) : (
-          <Badge variant="outline" className="border-green-500 text-green-600">
+          <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] sm:text-xs">
             Grátis
           </Badge>
         )}
         {/* Category badge */}
         {item.isExclusive && (
-          <Badge className="bg-gradient-primary text-white border-0">
+          <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs hidden sm:flex">
             {item.category === "Fotos" ? "Foto Exclusiva" : 
              item.category === "Cenários" ? "Cenário Exclusivo" : 
              item.category === "Controles de Câmera" ? "Controle de Câmera" :
@@ -183,8 +183,8 @@ const BibliotecaPrompts = () => {
           </Badge>
         )}
         {item.isCommunity && (
-          <Badge variant="secondary" className="bg-secondary text-foreground">
-            Enviado pela comunidade
+          <Badge variant="secondary" className="bg-secondary text-foreground text-[10px] sm:text-xs hidden sm:flex">
+            Comunidade
           </Badge>
         )}
       </div>
@@ -255,41 +255,41 @@ const BibliotecaPrompts = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8 bg-background">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pt-16 lg:pt-8">
           {/* Featured Card */}
-          <Card className="mb-8 p-8 bg-gradient-primary text-primary-foreground shadow-hover bg-primary">
-            <div className="flex items-center gap-4 mb-4">
-              <Zap className="h-12 w-12" />
+          <Card className="mb-6 sm:mb-8 p-4 sm:p-6 lg:p-8 bg-gradient-primary text-primary-foreground shadow-hover bg-primary">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
+              <Zap className="h-8 w-8 sm:h-12 sm:w-12 flex-shrink-0" />
               <div>
-                <h1 className="text-3xl font-bold mb-2">Conheça a Forja de Selos 3D</h1>
-                <p className="text-lg opacity-90">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Conheça a Forja de Selos 3D</h1>
+                <p className="text-sm sm:text-base lg:text-lg opacity-90">
                   Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.
-                  Sem precisar mais pagar ChatGPT e VEO3.
                 </p>
               </div>
             </div>
             <a href="https://youtu.be/XmPDm7ikUbU" target="_blank" rel="noopener noreferrer">
-              <Button variant="secondary" size="lg" className="mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90">
+              <Button variant="secondary" size="default" className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
                 Acessar Forja de Selos 3D
-                <ExternalLink className="ml-2 h-5 w-5" />
+                <ExternalLink className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </a>
           </Card>
 
           {/* Page Title and Category Filters */}
-          <div className="mb-8">
-            <h2 className="text-4xl font-bold mb-4 text-foreground">Biblioteca de Prompts</h2>
-            <p className="text-lg mb-6 text-muted-foreground">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground">Biblioteca de Prompts</h2>
+            <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">
               Explore nossa coleção de prompts para criar selos 3D incríveis
             </p>
             
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-2 sm:gap-3 flex-wrap">
               {categories.map(cat => (
                 <Button 
                   key={cat} 
                   variant={selectedCategory === cat ? "default" : "outline"} 
                   onClick={() => setSelectedCategory(cat)} 
-                  className={selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}
+                  size="sm"
+                  className={`text-xs sm:text-sm ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}
                 >
                   {cat}
                 </Button>
@@ -298,7 +298,7 @@ const BibliotecaPrompts = () => {
           </div>
 
           {/* Prompts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             {paginatedPrompts.map(item => {
               const isVideo = isVideoUrl(item.imageUrl);
               const canAccess = !item.isPremium || isPremium;
@@ -340,36 +340,37 @@ const BibliotecaPrompts = () => {
                   </div>
 
                   {/* Card Content */}
-                  <div className="p-5 space-y-4">
+                  <div className="p-3 sm:p-5 space-y-2 sm:space-y-4">
                     <div>
-                      <h3 className="font-bold text-lg text-foreground mb-2">{item.title}</h3>
+                      <h3 className="font-bold text-sm sm:text-lg text-foreground mb-1 sm:mb-2 line-clamp-2">{item.title}</h3>
                       {getBadgeContent(item)}
                     </div>
 
                     {/* Prompt Box */}
-                    <div className="bg-secondary p-3 rounded-lg">
-                      <p className="text-xs text-muted-foreground line-clamp-3">{item.prompt}</p>
+                    <div className="bg-secondary p-2 sm:p-3 rounded-lg">
+                      <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-3">{item.prompt}</p>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       {canAccess ? (
                         <>
-                          <Button onClick={() => copyToClipboard(item.prompt, item.title)} className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-white">
-                            <Copy className="h-4 w-4 mr-2" />
-                            Copiar Prompt
+                          <Button onClick={() => copyToClipboard(item.prompt, item.title)} size="sm" className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm">
+                            <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            Copiar
                           </Button>
-                          <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages)} variant="outline" className="flex-1 border-border hover:bg-secondary">
-                            <Download className="h-4 w-4 mr-2" />
-                            Baixar Ref.
+                          <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages)} variant="outline" size="sm" className="flex-1 border-border hover:bg-secondary text-xs sm:text-sm">
+                            <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            Baixar
                           </Button>
                         </>
                       ) : (
                         <Button 
                           onClick={() => setShowPremiumModal(true)} 
-                          className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+                          size="sm"
+                          className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm"
                         >
-                          <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                          <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" fill="currentColor" />
                           Torne-se Premium
                         </Button>
                       )}
@@ -382,27 +383,29 @@ const BibliotecaPrompts = () => {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 mt-8">
+            <div className="flex items-center justify-center gap-2 sm:gap-4 mt-6 sm:mt-8">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className="border-border hover:bg-secondary"
               >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Anterior
+                <ChevronLeft className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Anterior</span>
               </Button>
-              <span className="text-muted-foreground">
-                Página {currentPage} de {totalPages}
+              <span className="text-sm text-muted-foreground">
+                {currentPage} / {totalPages}
               </span>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="border-border hover:bg-secondary"
               >
-                Próxima
-                <ChevronRight className="h-4 w-4 ml-2" />
+                <span className="hidden sm:inline">Próxima</span>
+                <ChevronRight className="h-4 w-4 sm:ml-2" />
               </Button>
             </div>
           )}
