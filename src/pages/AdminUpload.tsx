@@ -11,6 +11,31 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+// Validation schema
+const promptSchema = z.object({
+  title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
+  prompt: z.string().trim().min(1, "Prompt é obrigatório").max(10000, "Prompt deve ter no máximo 10.000 caracteres"),
+  category: z.enum(["Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera"], { 
+    errorMap: () => ({ message: "Selecione uma categoria válida" })
+  }),
+});
+
+// File validation constants
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB for admin uploads
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+
+const validateFile = (file: File): string | null => {
+  if (file.size > MAX_FILE_SIZE) {
+    return `Arquivo "${file.name}" muito grande. Máximo 100MB.`;
+  }
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type) && !ALLOWED_VIDEO_TYPES.includes(file.type)) {
+    return `Tipo de arquivo "${file.name}" não permitido. Use JPEG, PNG, GIF, WebP, MP4, WebM ou MOV.`;
+  }
+  return null;
+};
 
 interface ReferenceImage {
   file: File;
@@ -63,9 +88,23 @@ const AdminUpload = () => {
   };
 
   const processFiles = (files: File[]) => {
+    const validFiles: File[] = [];
+    
+    // Validate all files first
+    for (const file of files) {
+      const validationError = validateFile(file);
+      if (validationError) {
+        toast.error(validationError);
+        continue;
+      }
+      validFiles.push(file);
+    }
+    
+    if (validFiles.length === 0) return;
+    
     const newMedia: MediaData[] = [];
     
-    files.forEach(file => {
+    validFiles.forEach(file => {
       const isVideo = file.type.startsWith('video/');
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -80,7 +119,7 @@ const AdminUpload = () => {
           referenceImages: []
         });
         
-        if (newMedia.length === files.length) {
+        if (newMedia.length === validFiles.length) {
           setMediaFiles(prev => [...prev, ...newMedia]);
           setShowModal(true);
           setCurrentIndex(0);
@@ -142,9 +181,18 @@ const AdminUpload = () => {
   );
 
   const handleSubmitAll = async () => {
-    if (!allFieldsFilled) {
-      toast.error("Preencha todos os campos antes de enviar");
-      return;
+    // Validate all media items with zod
+    for (const media of mediaFiles) {
+      const validationResult = promptSchema.safeParse({
+        title: media.title,
+        prompt: media.prompt,
+        category: media.category,
+      });
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast.error(`Erro em "${media.title || 'item sem título'}": ${firstError.message}`);
+        return;
+      }
     }
 
     setIsSubmitting(true);

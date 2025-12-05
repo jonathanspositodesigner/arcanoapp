@@ -9,6 +9,31 @@ import { Upload, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+// Validation schema
+const promptSchema = z.object({
+  title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
+  prompt: z.string().trim().min(1, "Prompt é obrigatório").max(10000, "Prompt deve ter no máximo 10.000 caracteres"),
+  category: z.enum(["Selos 3D", "Fotos", "Cenários", "Movies para Telão"], { 
+    errorMap: () => ({ message: "Selecione uma categoria válida" })
+  }),
+});
+
+// File validation constants
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+
+const validateFile = (file: File): string | null => {
+  if (file.size > MAX_FILE_SIZE) {
+    return "Arquivo muito grande. Máximo 50MB.";
+  }
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type) && !ALLOWED_VIDEO_TYPES.includes(file.type)) {
+    return "Tipo de arquivo não permitido. Use JPEG, PNG, GIF, WebP, MP4, WebM ou MOV.";
+  }
+  return null;
+};
 
 const ContributePrompts = () => {
   const navigate = useNavigate();
@@ -23,6 +48,11 @@ const ContributePrompts = () => {
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const validationError = validateFile(file);
+      if (validationError) {
+        toast.error(validationError);
+        return;
+      }
       setMediaFile(file);
       setIsVideo(file.type.startsWith('video/'));
       const reader = new FileReader();
@@ -43,7 +73,12 @@ const ContributePrompts = () => {
     e.stopPropagation();
     
     const file = e.dataTransfer.files?.[0];
-    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+    if (file) {
+      const validationError = validateFile(file);
+      if (validationError) {
+        toast.error(validationError);
+        return;
+      }
       setMediaFile(file);
       setIsVideo(file.type.startsWith('video/'));
       const reader = new FileReader();
@@ -59,8 +94,16 @@ const ContributePrompts = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !prompt || !category || !mediaFile) {
-      toast.error("Por favor, preencha todos os campos");
+    if (!mediaFile) {
+      toast.error("Por favor, envie uma imagem ou vídeo");
+      return;
+    }
+
+    // Validate inputs with zod
+    const validationResult = promptSchema.safeParse({ title, prompt, category });
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
