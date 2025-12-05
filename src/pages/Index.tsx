@@ -2,11 +2,9 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Library, Users, Download } from "lucide-react";
 import logoHorizontal from "@/assets/logo_horizontal.png";
-
 const Index = () => {
   const navigate = useNavigate();
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-secondary px-4 py-6">
+  return <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-secondary px-4 py-6">
       <div className="text-center space-y-6 sm:space-y-8 w-full max-w-2xl">
         <div className="space-y-3 sm:space-y-4">
           <div className="flex justify-center">
@@ -21,31 +19,17 @@ const Index = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-2">
-          <Button 
-            onClick={() => navigate("/biblioteca-prompts")} 
-            size="lg" 
-            className="bg-gradient-primary hover:opacity-90 transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-hover hover:scale-105 w-full sm:w-auto"
-          >
+          <Button onClick={() => navigate("/biblioteca-prompts")} size="lg" className="bg-gradient-primary hover:opacity-90 transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-hover hover:scale-105 w-full sm:w-auto">
             <Library className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-            Acessar Biblioteca
+            Acessar Prompts      
           </Button>
 
-          <Button 
-            onClick={() => navigate("/contribuir")} 
-            size="lg" 
-            variant="secondary" 
-            className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-solid border-primary border-2 w-full sm:w-auto"
-          >
+          <Button onClick={() => navigate("/contribuir")} size="lg" variant="secondary" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-solid border-primary border-2 w-full sm:w-auto">
             <Users className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             Contribua com a Comunidade
           </Button>
 
-          <Button 
-            onClick={() => navigate("/install")} 
-            size="lg" 
-            variant="outline" 
-            className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-primary/50 hover:border-primary text-primary hover:bg-primary/5 w-full sm:w-auto"
-          >
+          <Button onClick={() => navigate("/install")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-primary/50 hover:border-primary text-primary hover:bg-primary/5 w-full sm:w-auto">
             <Download className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             Instalar App
           </Button>
@@ -57,8 +41,6 @@ const Index = () => {
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
