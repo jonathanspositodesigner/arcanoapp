@@ -77,7 +77,7 @@ const Planos = () => {
       {
         name: "ARCANO BÁSICO",
         price: "9,90",
-        originalPrice: null,
+        originalPrice: "14,90",
         perMonth: true,
         yearlyTotal: "118,80",
         features: [
@@ -98,7 +98,7 @@ const Planos = () => {
       {
         name: "ARCANO PRO",
         price: "14,90",
-        originalPrice: null,
+        originalPrice: "20,90",
         perMonth: true,
         yearlyTotal: "178,80",
         features: [
