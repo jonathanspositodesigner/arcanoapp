@@ -146,6 +146,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_premium: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
