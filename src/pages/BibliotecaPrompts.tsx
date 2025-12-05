@@ -175,7 +175,7 @@ const BibliotecaPrompts = () => {
         )}
         {/* Category badge */}
         {item.isExclusive && (
-          <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs hidden sm:flex">
+          <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs">
             {item.category === "Fotos" ? "Foto Exclusiva" : 
              item.category === "Cenários" ? "Cenário Exclusivo" : 
              item.category === "Controles de Câmera" ? "Controle de Câmera" :
@@ -183,7 +183,7 @@ const BibliotecaPrompts = () => {
           </Badge>
         )}
         {item.isCommunity && (
-          <Badge variant="secondary" className="bg-secondary text-foreground text-[10px] sm:text-xs hidden sm:flex">
+          <Badge variant="secondary" className="bg-secondary text-foreground text-[10px] sm:text-xs">
             Comunidade
           </Badge>
         )}
@@ -256,6 +256,15 @@ const BibliotecaPrompts = () => {
 
         {/* Main Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pt-16 lg:pt-8">
+          {/* Mobile Install App Button */}
+          <Button 
+            onClick={() => navigate("/install")} 
+            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden"
+          >
+            <Smartphone className="h-4 w-4 mr-2" />
+            Instalar App
+          </Button>
+
           {/* Featured Card */}
           <Card className="mb-6 sm:mb-8 p-4 sm:p-6 lg:p-8 bg-gradient-primary text-primary-foreground shadow-hover bg-primary">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
