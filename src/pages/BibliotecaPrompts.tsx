@@ -339,10 +339,12 @@ const BibliotecaPrompts = () => {
                       {getBadgeContent(item)}
                     </div>
 
-                    {/* Prompt Box */}
-                    <div className="bg-secondary p-2 sm:p-3 rounded-lg">
-                      <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-3">{item.prompt}</p>
-                    </div>
+                    {/* Prompt Box - Hidden for premium items when user is not premium */}
+                    {canAccess && (
+                      <div className="bg-secondary p-2 sm:p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-3">{item.prompt}</p>
+                      </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2">
