@@ -228,11 +228,32 @@ const BibliotecaPrompts = () => {
           {/* Install App Button */}
           <Button 
             onClick={() => navigate("/install")} 
-            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4"
+            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-2"
           >
             <Smartphone className="h-4 w-4 mr-2" />
             Instalar App
           </Button>
+
+          {/* Premium & Login Buttons */}
+          {!isPremium && (
+            <>
+              <Button 
+                onClick={() => window.open("https://pay.kiwify.com.br/pkANpvp", "_blank")} 
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2"
+              >
+                <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                Torne-se Premium
+              </Button>
+              <Button 
+                onClick={() => navigate("/login")} 
+                variant="outline"
+                className="w-full border-border hover:bg-secondary font-semibold mb-4"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                Fazer Login
+              </Button>
+            </>
+          )}
 
           <h2 className="text-xl font-bold text-foreground mb-6">Ferramentas de IA</h2>
           {externalLinks.map(link => (
@@ -259,11 +280,32 @@ const BibliotecaPrompts = () => {
           {/* Mobile Install App Button */}
           <Button 
             onClick={() => navigate("/install")} 
-            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden"
+            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-2 lg:hidden"
           >
             <Smartphone className="h-4 w-4 mr-2" />
             Instalar App
           </Button>
+
+          {/* Mobile Premium & Login Buttons */}
+          {!isPremium && (
+            <div className="flex flex-col gap-2 mb-4 lg:hidden">
+              <Button 
+                onClick={() => window.open("https://pay.kiwify.com.br/pkANpvp", "_blank")} 
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold"
+              >
+                <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                Torne-se Premium
+              </Button>
+              <Button 
+                onClick={() => navigate("/login")} 
+                variant="outline"
+                className="w-full border-border hover:bg-secondary font-semibold"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                Fazer Login
+              </Button>
+            </div>
+          )}
 
           {/* Featured Card */}
           <Card className="mb-6 sm:mb-8 p-4 sm:p-6 lg:p-8 bg-gradient-primary text-primary-foreground shadow-hover bg-primary">
