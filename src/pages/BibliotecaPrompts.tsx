@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -199,26 +199,14 @@ const BibliotecaPrompts = () => {
             <img src={logoHorizontal} alt="Biblioteca de Artes Arcanas" className="w-full mb-4" />
           </div>
 
-          {/* User Status */}
-          {isPremium ? (
-            <div className="p-4 rounded-lg bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="h-5 w-5 text-yellow-500" fill="currentColor" />
-                <span className="font-semibold text-foreground">Premium Ativo</span>
-              </div>
-              <Button onClick={logout} variant="ghost" size="sm" className="w-full text-muted-foreground hover:text-foreground">
-                Sair
-              </Button>
-            </div>
-          ) : (
-            <Button 
-              onClick={() => navigate("/login")} 
-              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-4"
-            >
-              <Star className="h-4 w-4 mr-2" fill="currentColor" />
-              Área Premium
-            </Button>
-          )}
+          {/* Install App Button */}
+          <Button 
+            onClick={() => navigate("/install")} 
+            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4"
+          >
+            <Smartphone className="h-4 w-4 mr-2" />
+            Instalar App
+          </Button>
 
           <h2 className="text-xl font-bold text-foreground mb-6">Ferramentas de IA</h2>
           {externalLinks.map(link => (
