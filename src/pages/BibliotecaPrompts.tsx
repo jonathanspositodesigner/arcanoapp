@@ -24,6 +24,19 @@ const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
   return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
+
+const getThumbnailUrl = (url: string, width: number = 400) => {
+  if (isVideoUrl(url)) return url;
+  
+  // Convert Supabase storage URL to render URL for image transformation
+  if (url.includes('supabase.co/storage/v1/object/public/')) {
+    return url.replace(
+      '/storage/v1/object/public/',
+      `/storage/v1/render/image/public/`
+    ) + `?width=${width}&height=${width}&resize=cover`;
+  }
+  return url;
+};
 const ITEMS_PER_PAGE = 16;
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
@@ -305,7 +318,7 @@ const BibliotecaPrompts = () => {
                             <Play className="h-8 w-8 text-white" fill="white" />
                           </div>
                         </div>
-                      </> : <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onClick={() => handleItemClick(item)} />}
+                      </> : <img src={getThumbnailUrl(item.imageUrl)} alt={item.title} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onClick={() => handleItemClick(item)} />}
                     {item.isPremium && !isPremium && <div className="absolute top-2 right-2 bg-black/60 rounded-full p-2">
                         <Lock className="h-5 w-5 text-white" />
                       </div>}
