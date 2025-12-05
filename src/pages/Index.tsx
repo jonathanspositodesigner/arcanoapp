@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Library, Users, Download } from "lucide-react";
 import logoHorizontal from "@/assets/logo_horizontal.png";
+import baaIcon from "@/assets/BAA.png";
 const Index = () => {
   const navigate = useNavigate();
   return <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-secondary px-4 py-6">
@@ -33,6 +34,21 @@ const Index = () => {
             <Download className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             Instalar App
           </Button>
+        </div>
+
+        {/* Seção separada - Biblioteca de Artes Arcanas */}
+        <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-border/30">
+          <Button 
+            onClick={() => window.open("https://artesarcanas.com", "_blank")} 
+            size="lg" 
+            className="bg-[#2d4a5e] hover:bg-[#3a5d74] transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto"
+          >
+            <img src={baaIcon} alt="" className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
+            Acessar Biblioteca de Artes Arcanas
+          </Button>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-2">
+            Artes editáveis psd e canva para eventos
+          </p>
         </div>
 
         <div className="mt-6 sm:mt-8">
