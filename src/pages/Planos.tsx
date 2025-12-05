@@ -1,13 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, X, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
 const Planos = () => {
   const navigate = useNavigate();
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
+  const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const plans = {
     mensal: [{
       name: "ARCANO BÁSICO",
@@ -314,7 +323,10 @@ const Planos = () => {
               </div>
 
               {/* CTA Button */}
-              <Button className={`w-full mb-6 ${plan.popular ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-muted hover:bg-muted/80 text-foreground"}`}>
+              <Button 
+                onClick={() => setShowComingSoonModal(true)}
+                className={`w-full mb-6 ${plan.popular ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-muted hover:bg-muted/80 text-foreground"}`}
+              >
                 {plan.popular ? "Teste grátis por 7 dias" : "Assinar"}
               </Button>
 
@@ -341,6 +353,24 @@ const Planos = () => {
             </Card>)}
         </div>
       </div>
+
+      {/* Coming Soon Modal */}
+      <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="text-center">
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <Clock className="w-8 h-8 text-primary" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-center">Em Breve</DialogTitle>
+            <DialogDescription className="text-center text-muted-foreground">
+              Estamos trabalhando para disponibilizar os planos de assinatura em breve. Fique atento às novidades!
+            </DialogDescription>
+          </DialogHeader>
+          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4">
+            Entendi
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>;
 };
 export default Planos;
