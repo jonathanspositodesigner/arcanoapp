@@ -24,16 +24,12 @@ const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
   return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
-
 const getThumbnailUrl = (url: string, width: number = 400) => {
   if (isVideoUrl(url)) return url;
-  
+
   // Convert Supabase storage URL to render URL for image transformation
   if (url.includes('supabase.co/storage/v1/object/public/')) {
-    return url.replace(
-      '/storage/v1/object/public/',
-      `/storage/v1/render/image/public/`
-    ) + `?width=${width}&height=${width}&resize=cover`;
+    return url.replace('/storage/v1/object/public/', `/storage/v1/render/image/public/`) + `?width=${width}&height=${width}&resize=cover`;
   }
   return url;
 };
@@ -97,13 +93,7 @@ const BibliotecaPrompts = () => {
     }));
     setAllPrompts([...adminPrompts, ...communityPrompts]);
   };
-  const filteredPrompts = selectedCategory === "Ver Tudo" 
-    ? allPrompts.filter(p => p.category !== "Controles de Câmera") 
-    : selectedCategory === "Novos" 
-    ? allPrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16) 
-    : selectedCategory === "Grátis"
-    ? allPrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera")
-    : allPrompts.filter(p => p.category === selectedCategory);
+  const filteredPrompts = selectedCategory === "Ver Tudo" ? allPrompts.filter(p => p.category !== "Controles de Câmera") : selectedCategory === "Novos" ? allPrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16) : selectedCategory === "Grátis" ? allPrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera") : allPrompts.filter(p => p.category === selectedCategory);
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -135,7 +125,6 @@ const BibliotecaPrompts = () => {
       window.open(url, "_blank");
     }
   };
-
   const downloadMedia = async (mediaUrl: string, title: string, referenceImages?: string[]) => {
     const isVideo = isVideoUrl(mediaUrl);
     const extension = isVideo ? 'mp4' : 'jpg';
@@ -272,7 +261,7 @@ const BibliotecaPrompts = () => {
             </Button>
           </a>
           <Button onClick={() => navigate("/contribuir")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mt-4">
-            Envie o seu
+            Envie o seu prompt 
           </Button>
         </aside>
 
@@ -346,11 +335,9 @@ const BibliotecaPrompts = () => {
                     </div>
 
                     {/* Prompt Box - Hidden for premium items when user is not premium */}
-                    {canAccess && (
-                      <div className="bg-secondary p-2 sm:p-3 rounded-lg">
+                    {canAccess && <div className="bg-secondary p-2 sm:p-3 rounded-lg">
                         <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-3">{item.prompt}</p>
-                      </div>
-                    )}
+                      </div>}
 
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2">
@@ -435,16 +422,16 @@ const BibliotecaPrompts = () => {
                 </div>
                 <div className="flex flex-col gap-3">
                   <Button onClick={() => {
-                    setShowPremiumModal(false);
-                    navigate("/login");
-                  }} variant="outline" className="w-full">
+                  setShowPremiumModal(false);
+                  navigate("/login");
+                }} variant="outline" className="w-full">
                     <LogIn className="h-4 w-4 mr-2" />
                     Fazer Login
                   </Button>
                   <Button onClick={() => {
-                    setShowPremiumModal(false);
-                    navigate("/planos");
-                  }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                  setShowPremiumModal(false);
+                  navigate("/planos");
+                }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                     <Star className="h-4 w-4 mr-2" fill="currentColor" />
                     Torne-se Premium
                   </Button>
