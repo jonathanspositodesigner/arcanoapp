@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +37,7 @@ const BibliotecaPrompts = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     fetchCommunityPrompts();
@@ -192,9 +193,34 @@ const BibliotecaPrompts = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Mobile Menu Button */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Button 
+          onClick={() => setSidebarOpen(!sidebarOpen)} 
+          size="icon" 
+          variant="outline"
+          className="bg-card border-border shadow-lg"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-72 min-h-screen bg-card border-r border-border p-6 space-y-4">
+        <aside className={`
+          fixed lg:static inset-y-0 left-0 z-40
+          w-72 min-h-screen bg-card border-r border-border p-6 space-y-4
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
           <div className="mb-6">
             <img src={logoHorizontal} alt="Biblioteca de Artes Arcanas" className="w-full mb-4" />
           </div>
