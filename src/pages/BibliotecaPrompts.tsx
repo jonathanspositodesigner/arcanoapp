@@ -45,6 +45,7 @@ const BibliotecaPrompts = () => {
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [premiumModalItem, setPremiumModalItem] = useState<PromptItem | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   useEffect(() => {
@@ -146,6 +147,7 @@ const BibliotecaPrompts = () => {
   };
   const handleItemClick = (item: PromptItem) => {
     if (item.isPremium && !isPremium) {
+      setPremiumModalItem(item);
       setShowPremiumModal(true);
     } else {
       setSelectedPrompt(item);
@@ -406,35 +408,69 @@ const BibliotecaPrompts = () => {
           </Dialog>
 
           {/* Premium Access Modal */}
-          <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
-            <DialogContent className="max-w-md bg-card">
-              <div className="text-center space-y-6 py-4">
-                <div className="flex justify-center">
-                  <div className="p-4 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20">
-                    <Star className="h-12 w-12 text-yellow-500" fill="currentColor" />
+          <Dialog open={showPremiumModal} onOpenChange={(open) => {
+            setShowPremiumModal(open);
+            if (!open) setPremiumModalItem(null);
+          }}>
+            <DialogContent className="max-w-lg p-0 overflow-hidden bg-card">
+              <button onClick={() => setShowPremiumModal(false)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+              <div className="flex flex-col max-h-[90vh]">
+                {/* Media Preview */}
+                {premiumModalItem && (
+                  <div className="flex-shrink-0 relative">
+                    {isVideoUrl(premiumModalItem.imageUrl) ? (
+                      <video 
+                        src={premiumModalItem.imageUrl} 
+                        className="w-full h-auto max-h-[40vh] object-contain bg-black" 
+                        controls 
+                        playsInline 
+                      />
+                    ) : (
+                      <img 
+                        src={premiumModalItem.imageUrl} 
+                        alt={premiumModalItem.title} 
+                        className="w-full h-auto max-h-[40vh] object-contain bg-black" 
+                      />
+                    )}
+                    {/* Lock overlay */}
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center pointer-events-none">
+                      <div className="p-3 rounded-full bg-black/60">
+                        <Lock className="h-8 w-8 text-white" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-foreground mb-2">Conteúdo Premium</h3>
-                  <p className="text-muted-foreground">
-                    Este conteúdo está disponível apenas para assinantes premium.
-                  </p>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <Button onClick={() => {
-                  setShowPremiumModal(false);
-                  navigate("/login");
-                }} variant="outline" className="w-full">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Fazer Login
-                  </Button>
-                  <Button onClick={() => {
-                  setShowPremiumModal(false);
-                  navigate("/planos");
-                }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
-                    <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                    Torne-se Premium
-                  </Button>
+                )}
+                
+                <div className="text-center space-y-4 p-6">
+                  <div className="flex justify-center">
+                    <div className="p-3 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20">
+                      <Star className="h-10 w-10 text-yellow-500" fill="currentColor" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">Conteúdo Premium</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Este conteúdo está disponível apenas para assinantes premium.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <Button onClick={() => {
+                      setShowPremiumModal(false);
+                      navigate("/login");
+                    }} variant="outline" className="w-full">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Fazer Login
+                    </Button>
+                    <Button onClick={() => {
+                      setShowPremiumModal(false);
+                      navigate("/planos");
+                    }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                      <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                      Torne-se Premium
+                    </Button>
+                  </div>
                 </div>
               </div>
             </DialogContent>
