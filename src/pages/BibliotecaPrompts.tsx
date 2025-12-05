@@ -419,7 +419,7 @@ const BibliotecaPrompts = () => {
               <div className="flex flex-col max-h-[90vh]">
                 {/* Media Preview */}
                 {premiumModalItem && (
-                  <div className="flex-shrink-0 relative">
+                  <div className="flex-shrink-0">
                     {isVideoUrl(premiumModalItem.imageUrl) ? (
                       <video 
                         src={premiumModalItem.imageUrl} 
@@ -434,12 +434,6 @@ const BibliotecaPrompts = () => {
                         className="w-full h-auto max-h-[40vh] object-contain bg-black" 
                       />
                     )}
-                    {/* Lock overlay */}
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center pointer-events-none">
-                      <div className="p-3 rounded-full bg-black/60">
-                        <Lock className="h-8 w-8 text-white" />
-                      </div>
-                    </div>
                   </div>
                 )}
                 
