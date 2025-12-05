@@ -107,6 +107,21 @@ const InstallApp = () => {
           </Card>
         ) : (
           <div className="space-y-6">
+            {/* Video Tutorial */}
+            <Card className="p-4 overflow-hidden">
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                controls
+                className="w-full rounded-lg"
+              >
+                <source src="/videos/install-tutorial.mp4" type="video/mp4" />
+                Seu navegador não suporta vídeos.
+              </video>
+            </Card>
+
             {isIOS ? (
               <Card className="p-6">
                 <div className="flex items-start gap-4">
