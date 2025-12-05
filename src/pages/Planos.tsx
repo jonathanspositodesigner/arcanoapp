@@ -178,8 +178,11 @@ const Planos = () => {
               </TabsTrigger>
               <TabsTrigger
                 value="anual"
-                className="data-[state=active]:bg-background data-[state=active]:text-foreground px-6"
+                className="data-[state=active]:bg-background data-[state=active]:text-foreground px-6 relative"
               >
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-500 font-medium whitespace-nowrap">
+                  +Desconto
+                </span>
                 ANUAL PARCELADO
               </TabsTrigger>
             </TabsList>
@@ -189,7 +192,7 @@ const Planos = () => {
         {/* Discount Banner */}
         <div className="bg-gradient-to-r from-primary to-primary/80 rounded-t-xl py-3 text-center max-w-5xl mx-auto">
           <span className="text-primary-foreground font-semibold tracking-wide">
-            ATÉ 25% DE DESCONTO
+            ATÉ {billingPeriod === "anual" ? "33" : "25"}% DE DESCONTO
           </span>
         </div>
 
@@ -209,7 +212,7 @@ const Planos = () => {
                 <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${
                   plan.promo 
                     ? "bg-orange-500 text-white" 
-                    : "bg-primary text-primary-foreground"
+                    : "bg-emerald-500 text-white"
                 }`}>
                   {plan.promo ? "PROMOÇÃO DE LANÇAMENTO" : "Popular"}
                 </Badge>
