@@ -172,7 +172,7 @@ const BibliotecaPrompts = () => {
   };
   return <div className="min-h-screen bg-background">
       {/* Mobile Top Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
+      <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
         <img alt="Arcano Lab" className="h-8" src="/lovable-uploads/ea4c204d-433a-43a8-97ab-728ae5b79720.png" />
         {!isPremium && <div className="flex items-center gap-2">
             <Button onClick={() => navigate("/login")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
@@ -250,7 +250,7 @@ const BibliotecaPrompts = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pt-20 lg:pt-8 pb-24 lg:pb-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pb-24 lg:pb-8">
           {/* Mobile Install App Button */}
           <Button onClick={() => navigate("/install")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden">
             <Smartphone className="h-4 w-4 mr-2" />
