@@ -34,6 +34,16 @@ const getThumbnailUrl = (url: string, width: number = 400) => {
   return url;
 };
 const ITEMS_PER_PAGE = 16;
+// Fisher-Yates shuffle function
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const {
@@ -43,6 +53,7 @@ const BibliotecaPrompts = () => {
   } = usePremiumStatus();
   const [selectedCategory, setSelectedCategory] = useState<string>("Novos");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
+  const [shuffledNovos, setShuffledNovos] = useState<PromptItem[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [premiumModalItem, setPremiumModalItem] = useState<PromptItem | null>(null);
@@ -51,6 +62,12 @@ const BibliotecaPrompts = () => {
   useEffect(() => {
     fetchCommunityPrompts();
   }, []);
+  
+  // Shuffle "Novos" items when allPrompts changes
+  useEffect(() => {
+    const novosItems = allPrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16);
+    setShuffledNovos(shuffleArray(novosItems));
+  }, [allPrompts]);
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory]);
@@ -94,7 +111,7 @@ const BibliotecaPrompts = () => {
     }));
     setAllPrompts([...adminPrompts, ...communityPrompts]);
   };
-  const filteredPrompts = selectedCategory === "Ver Tudo" ? allPrompts.filter(p => p.category !== "Controles de Câmera") : selectedCategory === "Novos" ? allPrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16) : selectedCategory === "Grátis" ? allPrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera") : allPrompts.filter(p => p.category === selectedCategory);
+  const filteredPrompts = selectedCategory === "Ver Tudo" ? allPrompts.filter(p => p.category !== "Controles de Câmera") : selectedCategory === "Novos" ? shuffledNovos : selectedCategory === "Grátis" ? allPrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera") : allPrompts.filter(p => p.category === selectedCategory);
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
