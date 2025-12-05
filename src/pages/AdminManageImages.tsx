@@ -120,17 +120,17 @@ const AdminManageImages = () => {
 
       if (error) throw error;
 
-      toast.success("Selo atualizado com sucesso!");
+      toast.success("Arquivo atualizado com sucesso!");
       setEditingPrompt(null);
       fetchPrompts();
     } catch (error) {
       console.error("Error updating prompt:", error);
-      toast.error("Erro ao atualizar selo");
+      toast.error("Erro ao atualizar arquivo");
     }
   };
 
   const handleDelete = async (prompt: Prompt) => {
-    if (!confirm("Tem certeza que deseja deletar este selo?")) return;
+    if (!confirm("Tem certeza que deseja deletar este arquivo?")) return;
 
     try {
       const bucket = prompt.type === 'admin' ? 'admin-prompts' : 'community-prompts';
@@ -150,11 +150,11 @@ const AdminManageImages = () => {
 
       if (error) throw error;
 
-      toast.success("Selo deletado com sucesso!");
+      toast.success("Arquivo deletado com sucesso!");
       fetchPrompts();
     } catch (error) {
       console.error("Error deleting prompt:", error);
-      toast.error("Erro ao deletar selo");
+      toast.error("Erro ao deletar arquivo");
     }
   };
 
@@ -185,10 +185,10 @@ const AdminManageImages = () => {
 
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            Gerenciar Imagens Enviadas
+            Gerenciar Arquivos Enviados
           </h1>
           <p className="text-muted-foreground text-lg mb-4">
-            {filteredPrompts.length} selos {searchTerm ? 'encontrados' : 'publicados'}
+            {filteredPrompts.length} arquivos {searchTerm ? 'encontrados' : 'publicados'}
           </p>
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -276,7 +276,7 @@ const AdminManageImages = () => {
         {filteredPrompts.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-lg">
-              {searchTerm ? 'Nenhum selo encontrado com esse nome' : 'Nenhum selo encontrado'}
+              {searchTerm ? 'Nenhum arquivo encontrado com esse nome' : 'Nenhum arquivo encontrado'}
             </p>
           </div>
         )}
@@ -285,7 +285,7 @@ const AdminManageImages = () => {
       <Dialog open={!!editingPrompt} onOpenChange={() => setEditingPrompt(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Editar Selo</DialogTitle>
+            <DialogTitle>Editar Arquivo</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -304,7 +304,7 @@ const AdminManageImages = () => {
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Selos 3D">Selos 3D</SelectItem>
+                  <SelectItem value="Arquivo">Arquivo</SelectItem>
                   <SelectItem value="Fotos">Fotos</SelectItem>
                   <SelectItem value="Cenários">Cenários</SelectItem>
                   <SelectItem value="Movies para Telão">Movies para Telão</SelectItem>

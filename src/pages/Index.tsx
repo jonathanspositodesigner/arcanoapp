@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Library, Users } from "lucide-react";
-import baaLogo from "@/assets/BAA.png";
+import logoHorizontal from "@/assets/logo_horizontal.png";
 const Index = () => {
   const navigate = useNavigate();
   return <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-secondary">
       <div className="text-center space-y-8 p-8">
         <div className="space-y-4">
           <div className="flex justify-center">
-            <img src={baaLogo} alt="BAA Logo" className="h-20 w-auto animate-pulse" />
+            <img src={logoHorizontal} alt="Arcano Lab" className="h-20 w-auto" />
           </div>
           <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Biblioteca de Prompts  
+            A plataforma dos criadores do futuro  
           </h1>
           <p className="text-xl text-foreground max-w-2xl">
             Descubra uma coleção incrível de prompts para criar selos e elementos 3D profissionais

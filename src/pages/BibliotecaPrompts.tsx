@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
-import logoHorizontal from "@/assets/LOGO_HORIZONTAL_4.png";
+import logoHorizontal from "@/assets/logo_horizontal.png";
 
 interface PromptItem {
   id: string | number;
@@ -32,7 +32,7 @@ const ITEMS_PER_PAGE = 16;
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const { user, isPremium, logout } = usePremiumStatus();
-  const [selectedCategory, setSelectedCategory] = useState<string>("Selos 3D");
+  const [selectedCategory, setSelectedCategory] = useState<string>("Arquivo");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
@@ -98,7 +98,7 @@ const BibliotecaPrompts = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   
-  const categories = ["Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
+  const categories = ["Arquivo", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
 
   const copyToClipboard = async (prompt: string, title: string) => {
     try {
@@ -176,7 +176,7 @@ const BibliotecaPrompts = () => {
             {item.category === "Fotos" ? "Foto Exclusiva" : 
              item.category === "Cenários" ? "Cenário Exclusivo" : 
              item.category === "Controles de Câmera" ? "Controle de Câmera" :
-             item.category === "Movies para Telão" ? "Movie Exclusivo" : "Selo Exclusivo"}
+             item.category === "Movies para Telão" ? "Movie Exclusivo" : "Arquivo Exclusivo"}
           </Badge>
         )}
         {item.isCommunity && (
