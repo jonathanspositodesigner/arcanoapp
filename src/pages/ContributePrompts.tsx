@@ -15,7 +15,7 @@ import { z } from "zod";
 const promptSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
   prompt: z.string().trim().min(1, "Prompt é obrigatório").max(10000, "Prompt deve ter no máximo 10.000 caracteres"),
-  category: z.enum(["Selos 3D", "Fotos", "Cenários", "Movies para Telão"], { 
+  category: z.enum(["Arquivo", "Fotos", "Cenários", "Movies para Telão"], { 
     errorMap: () => ({ message: "Selecione uma categoria válida" })
   }),
 });
@@ -172,12 +172,12 @@ const ContributePrompts = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="title">Título do Selo</Label>
+              <Label htmlFor="title">Título do Arquivo</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Selo 3D de Natal"
+                placeholder="Ex: Arquivo de Natal"
                 className="mt-2"
               />
             </div>
@@ -189,7 +189,7 @@ const ContributePrompts = () => {
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Selos 3D">Selos 3D</SelectItem>
+                  <SelectItem value="Arquivo">Arquivo</SelectItem>
                   <SelectItem value="Fotos">Fotos</SelectItem>
                   <SelectItem value="Cenários">Cenários</SelectItem>
                   <SelectItem value="Movies para Telão">Movies para Telão</SelectItem>
