@@ -200,7 +200,7 @@ const BibliotecaPrompts = () => {
               <LogIn className="h-4 w-4 mr-1" />
               Login
             </Button>
-            <Button onClick={() => window.open("https://pay.kiwify.com.br/pkANpvp", "_blank")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
+            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Button>
@@ -242,7 +242,7 @@ const BibliotecaPrompts = () => {
 
           {/* Premium & Login Buttons */}
           {!isPremium && <>
-              <Button onClick={() => window.open("https://pay.kiwify.com.br/pkANpvp", "_blank")} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2">
+              <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2">
                 <Star className="h-4 w-4 mr-2" fill="currentColor" />
                 Torne-se Premium
               </Button>
@@ -355,7 +355,7 @@ const BibliotecaPrompts = () => {
                             <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                             Baixar Referência
                           </Button>
-                        </> : <Button onClick={() => setShowPremiumModal(true)} size="sm" className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm">
+                        </> : <Button onClick={() => navigate("/planos")} size="sm" className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm">
                           <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" fill="currentColor" />
                           Torne-se Premium
                         </Button>}
@@ -427,18 +427,19 @@ const BibliotecaPrompts = () => {
                 </div>
                 <div className="flex flex-col gap-3">
                   <Button onClick={() => {
-                  setShowPremiumModal(false);
-                  navigate("/login");
-                }} variant="outline" className="w-full">
+                    setShowPremiumModal(false);
+                    navigate("/login");
+                  }} variant="outline" className="w-full">
                     <LogIn className="h-4 w-4 mr-2" />
                     Fazer Login
                   </Button>
-                  <a href="https://pay.kiwify.com.br/seu-link" target="_blank" rel="noopener noreferrer" className="w-full">
-                    <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
-                      <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                      Torne-se Premium
-                    </Button>
-                  </a>
+                  <Button onClick={() => {
+                    setShowPremiumModal(false);
+                    navigate("/planos");
+                  }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                    <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                    Torne-se Premium
+                  </Button>
                 </div>
               </div>
             </DialogContent>

@@ -13,6 +13,7 @@ import AdminCommunityReview from "./pages/AdminCommunityReview";
 import AdminManageImages from "./pages/AdminManageImages";
 import UserLogin from "./pages/UserLogin";
 import InstallApp from "./pages/InstallApp";
+import Planos from "./pages/Planos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/admin-manage-images" element={<AdminManageImages />} />
           <Route path="/login" element={<UserLogin />} />
           <Route path="/install" element={<InstallApp />} />
+          <Route path="/planos" element={<Planos />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
