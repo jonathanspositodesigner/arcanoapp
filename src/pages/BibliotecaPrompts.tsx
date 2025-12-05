@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import logoHorizontal from "@/assets/logo_horizontal.png";
-
 interface PromptItem {
   id: string | number;
   title: string;
@@ -21,52 +20,49 @@ interface PromptItem {
   isPremium?: boolean;
   referenceImages?: string[];
 }
-
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
   return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
-
 const ITEMS_PER_PAGE = 16;
-
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
-  const { user, isPremium, logout } = usePremiumStatus();
+  const {
+    user,
+    isPremium,
+    logout
+  } = usePremiumStatus();
   const [selectedCategory, setSelectedCategory] = useState<string>("Novos");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   useEffect(() => {
     fetchCommunityPrompts();
   }, []);
-
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory]);
-
   const fetchCommunityPrompts = async () => {
-    const { data: communityData, error: communityError } = await supabase
-      .from('community_prompts')
-      .select('*')
-      .eq('approved', true)
-      .order('created_at', { ascending: false });
-
+    const {
+      data: communityData,
+      error: communityError
+    } = await supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', {
+      ascending: false
+    });
     if (communityError) {
       console.error("Error fetching community prompts:", communityError);
     }
-
-    const { data: adminData, error: adminError } = await supabase
-      .from('admin_prompts')
-      .select('*')
-      .order('created_at', { ascending: false });
-
+    const {
+      data: adminData,
+      error: adminError
+    } = await supabase.from('admin_prompts').select('*').order('created_at', {
+      ascending: false
+    });
     if (adminError) {
       console.error("Error fetching admin prompts:", adminError);
     }
-
     const communityPrompts: PromptItem[] = (communityData || []).map(item => ({
       id: item.id,
       title: item.title,
@@ -76,7 +72,6 @@ const BibliotecaPrompts = () => {
       isCommunity: true,
       isPremium: false
     }));
-
     const adminPrompts: PromptItem[] = (adminData || []).map(item => ({
       id: item.id,
       title: item.title,
@@ -87,22 +82,13 @@ const BibliotecaPrompts = () => {
       isPremium: (item as any).is_premium || false,
       referenceImages: (item as any).reference_images || []
     }));
-
     setAllPrompts([...adminPrompts, ...communityPrompts]);
   };
-
-  const filteredPrompts = selectedCategory === "Ver Tudo" 
-    ? allPrompts.filter(p => p.category !== "Controles de Câmera")
-    : selectedCategory === "Novos"
-    ? allPrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16)
-    : allPrompts.filter(p => p.category === selectedCategory);
-
+  const filteredPrompts = selectedCategory === "Ver Tudo" ? allPrompts.filter(p => p.category !== "Controles de Câmera") : selectedCategory === "Novos" ? allPrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16) : allPrompts.filter(p => p.category === selectedCategory);
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  
   const categories = ["Novos", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
-
   const copyToClipboard = async (prompt: string, title: string) => {
     try {
       await navigator.clipboard.writeText(prompt);
@@ -112,12 +98,11 @@ const BibliotecaPrompts = () => {
       toast.error("Erro ao copiar prompt");
     }
   };
-
   const downloadMedia = (mediaUrl: string, title: string, referenceImages?: string[]) => {
     const isVideo = isVideoUrl(mediaUrl);
     const extension = isVideo ? 'mp4' : 'jpg';
     const baseTitle = title.toLowerCase().replace(/\s+/g, "-");
-    
+
     // Download main media
     const link = document.createElement("a");
     link.href = mediaUrl;
@@ -125,7 +110,7 @@ const BibliotecaPrompts = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // Download reference images if it's a video with references
     if (isVideo && referenceImages && referenceImages.length > 0) {
       referenceImages.forEach((refUrl, index) => {
@@ -143,7 +128,6 @@ const BibliotecaPrompts = () => {
       toast.success(`${isVideo ? 'Vídeo' : 'Imagem'} "${title}" baixado!`);
     }
   };
-
   const handleItemClick = (item: PromptItem) => {
     if (item.isPremium && !isPremium) {
       setShowPremiumModal(true);
@@ -151,98 +135,71 @@ const BibliotecaPrompts = () => {
       setSelectedPrompt(item);
     }
   };
-
-  const externalLinks = [
-    { name: "Gerar no ChatGPT", url: "https://chatgpt.com/", icon: Sparkles },
-    { name: "Gerar no Nano Banana", url: "https://aistudio.google.com/prompts/new_chat?model=gemini-2.5-flash-image", icon: Sparkles },
-    { name: "Gerar no Whisk", url: "https://labs.google/fx/pt/tools/whisk", icon: Sparkles },
-    { name: "Gerar no Flux 2", url: "https://www.runninghub.ai/workflow/1995538803421020162", icon: Sparkles }
-  ];
-
+  const externalLinks = [{
+    name: "Gerar no ChatGPT",
+    url: "https://chatgpt.com/",
+    icon: Sparkles
+  }, {
+    name: "Gerar no Nano Banana",
+    url: "https://aistudio.google.com/prompts/new_chat?model=gemini-2.5-flash-image",
+    icon: Sparkles
+  }, {
+    name: "Gerar no Whisk",
+    url: "https://labs.google/fx/pt/tools/whisk",
+    icon: Sparkles
+  }, {
+    name: "Gerar no Flux 2",
+    url: "https://www.runninghub.ai/workflow/1995538803421020162",
+    icon: Sparkles
+  }];
   const getBadgeContent = (item: PromptItem) => {
-    return (
-      <div className="flex flex-wrap gap-1">
+    return <div className="flex flex-wrap gap-1">
         {/* Premium or Grátis badge - always show one */}
-        {item.isPremium ? (
-          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px] sm:text-xs">
+        {item.isPremium ? <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px] sm:text-xs">
             <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
             Premium
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] sm:text-xs">
+          </Badge> : <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] sm:text-xs">
             Grátis
-          </Badge>
-        )}
+          </Badge>}
         {/* Category badge */}
-        {item.isExclusive && (
-          <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs">
-            {item.category === "Fotos" ? "Foto Exclusiva" : 
-             item.category === "Cenários" ? "Cenário Exclusivo" : 
-             item.category === "Controles de Câmera" ? "Controle de Câmera" :
-             item.category === "Movies para Telão" ? "Movie Exclusivo" : "Selo Exclusivo"}
-          </Badge>
-        )}
-        {item.isCommunity && (
-          <Badge variant="secondary" className="bg-secondary text-foreground text-[10px] sm:text-xs">
+        {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs">
+            {item.category === "Fotos" ? "Foto Exclusiva" : item.category === "Cenários" ? "Cenário Exclusivo" : item.category === "Controles de Câmera" ? "Controle de Câmera" : item.category === "Movies para Telão" ? "Movie Exclusivo" : "Selo Exclusivo"}
+          </Badge>}
+        {item.isCommunity && <Badge variant="secondary" className="bg-secondary text-foreground text-[10px] sm:text-xs">
             Comunidade
-          </Badge>
-        )}
-      </div>
-    );
+          </Badge>}
+      </div>;
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Mobile Top Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
-        <img src={logoHorizontal} alt="Arcano Lab" className="h-8" />
-        {!isPremium && (
-          <div className="flex items-center gap-2">
-            <Button 
-              onClick={() => navigate("/login")} 
-              size="sm"
-              variant="ghost"
-              className="text-white hover:bg-white/20 text-xs"
-            >
+        <img alt="Arcano Lab" className="h-8" src="/lovable-uploads/ea4c204d-433a-43a8-97ab-728ae5b79720.png" />
+        {!isPremium && <div className="flex items-center gap-2">
+            <Button onClick={() => navigate("/login")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
               Login
             </Button>
-            <Button 
-              onClick={() => window.open("https://pay.kiwify.com.br/pkANpvp", "_blank")} 
-              size="sm"
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"
-            >
+            <Button onClick={() => window.open("https://pay.kiwify.com.br/pkANpvp", "_blank")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Button>
-          </div>
-        )}
-        {isPremium && (
-          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+          </div>}
+        {isPremium && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
             <Star className="h-3 w-3 mr-1" fill="currentColor" />
             Premium Ativo
-          </Badge>
-        )}
+          </Badge>}
       </header>
 
       {/* Mobile Bottom Menu Button */}
       <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-        <Button 
-          onClick={() => setSidebarOpen(!sidebarOpen)} 
-          className="bg-primary hover:bg-primary/90 text-white shadow-xl px-6 py-6 rounded-full"
-        >
+        <Button onClick={() => setSidebarOpen(!sidebarOpen)} className="bg-primary hover:bg-primary/90 text-white shadow-xl px-6 py-6 rounded-full">
           <Menu className="h-6 w-6 mr-2" />
-          <span className="font-semibold">Menu</span>
+          <span className="font-semibold">​Menu  </span>
         </Button>
       </div>
 
       {/* Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />}
 
       <div className="flex">
         {/* Sidebar */}
@@ -257,44 +214,30 @@ const BibliotecaPrompts = () => {
           </div>
 
           {/* Install App Button */}
-          <Button 
-            onClick={() => navigate("/install")} 
-            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-2"
-          >
+          <Button onClick={() => navigate("/install")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-2">
             <Smartphone className="h-4 w-4 mr-2" />
             Instalar App
           </Button>
 
           {/* Premium & Login Buttons */}
-          {!isPremium && (
-            <>
-              <Button 
-                onClick={() => window.open("https://pay.kiwify.com.br/pkANpvp", "_blank")} 
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2"
-              >
+          {!isPremium && <>
+              <Button onClick={() => window.open("https://pay.kiwify.com.br/pkANpvp", "_blank")} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2">
                 <Star className="h-4 w-4 mr-2" fill="currentColor" />
                 Torne-se Premium
               </Button>
-              <Button 
-                onClick={() => navigate("/login")} 
-                variant="outline"
-                className="w-full border-border hover:bg-secondary font-semibold mb-4"
-              >
+              <Button onClick={() => navigate("/login")} variant="outline" className="w-full border-border hover:bg-secondary font-semibold mb-4">
                 <LogIn className="h-4 w-4 mr-2" />
                 Fazer Login
               </Button>
-            </>
-          )}
+            </>}
 
           <h2 className="text-xl font-bold text-foreground mb-6">Ferramentas de IA</h2>
-          {externalLinks.map(link => (
-            <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
+          {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
               <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
                 <span className="font-medium text-foreground">{link.name}</span>
                 <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
               </Button>
-            </a>
-          ))}
+            </a>)}
           <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block">
             <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
               <span className="font-medium text-foreground">Gerar Video no VEO 3</span>
@@ -309,10 +252,7 @@ const BibliotecaPrompts = () => {
         {/* Main Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pt-20 lg:pt-8 pb-24 lg:pb-8">
           {/* Mobile Install App Button */}
-          <Button 
-            onClick={() => navigate("/install")} 
-            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden"
-          >
+          <Button onClick={() => navigate("/install")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden">
             <Smartphone className="h-4 w-4 mr-2" />
             Instalar App
           </Button>
@@ -330,7 +270,7 @@ const BibliotecaPrompts = () => {
             </div>
             <a href="https://youtu.be/XmPDm7ikUbU" target="_blank" rel="noopener noreferrer">
               <Button variant="secondary" size="default" className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
-                Acessar Forja de Selos 3D
+                 Forja de Selos 3D
                 <ExternalLink className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </a>
@@ -344,60 +284,31 @@ const BibliotecaPrompts = () => {
             </p>
             
             <div className="flex gap-2 sm:gap-3 flex-wrap">
-              {categories.map(cat => (
-                <Button 
-                  key={cat} 
-                  variant={selectedCategory === cat ? "default" : "outline"} 
-                  onClick={() => setSelectedCategory(cat)} 
-                  size="sm"
-                  className={`text-xs sm:text-sm ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}
-                >
+              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => setSelectedCategory(cat)} size="sm" className={`text-xs sm:text-sm ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}>
                   {cat}
-                </Button>
-              ))}
+                </Button>)}
             </div>
           </div>
 
           {/* Prompts Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             {paginatedPrompts.map(item => {
-              const isVideo = isVideoUrl(item.imageUrl);
-              const canAccess = !item.isPremium || isPremium;
-              
-              return (
-                <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
+            const isVideo = isVideoUrl(item.imageUrl);
+            const canAccess = !item.isPremium || isPremium;
+            return <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
                   {/* Media Preview */}
                   <div className="aspect-square overflow-hidden bg-secondary relative">
-                    {isVideo ? (
-                      <>
-                        <video 
-                          src={item.imageUrl} 
-                          className="w-full h-full object-cover cursor-pointer"
-                          muted
-                          loop
-                          autoPlay
-                          playsInline
-                          onClick={() => handleItemClick(item)}
-                        />
+                    {isVideo ? <>
+                        <video src={item.imageUrl} className="w-full h-full object-cover cursor-pointer" muted loop autoPlay playsInline onClick={() => handleItemClick(item)} />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="bg-black/50 rounded-full p-3">
                             <Play className="h-8 w-8 text-white" fill="white" />
                           </div>
                         </div>
-                      </>
-                    ) : (
-                      <img 
-                        src={item.imageUrl} 
-                        alt={item.title} 
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                        onClick={() => handleItemClick(item)}
-                      />
-                    )}
-                    {item.isPremium && !isPremium && (
-                      <div className="absolute top-2 right-2 bg-black/60 rounded-full p-2">
+                      </> : <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onClick={() => handleItemClick(item)} />}
+                    {item.isPremium && !isPremium && <div className="absolute top-2 right-2 bg-black/60 rounded-full p-2">
                         <Lock className="h-5 w-5 text-white" />
-                      </div>
-                    )}
+                      </div>}
                   </div>
 
                   {/* Card Content */}
@@ -414,8 +325,7 @@ const BibliotecaPrompts = () => {
 
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2">
-                      {canAccess ? (
-                        <>
+                      {canAccess ? <>
                           <Button onClick={() => copyToClipboard(item.prompt, item.title)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm">
                             <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                             Copiar Prompt
@@ -424,80 +334,40 @@ const BibliotecaPrompts = () => {
                             <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                             Baixar Referência
                           </Button>
-                        </>
-                      ) : (
-                        <Button 
-                          onClick={() => setShowPremiumModal(true)} 
-                          size="sm"
-                          className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm"
-                        >
+                        </> : <Button onClick={() => setShowPremiumModal(true)} size="sm" className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm">
                           <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" fill="currentColor" />
                           Torne-se Premium
-                        </Button>
-                      )}
+                        </Button>}
                     </div>
                   </div>
-                </Card>
-              );
-            })}
+                </Card>;
+          })}
           </div>
 
           {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 sm:gap-4 mt-6 sm:mt-8">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="border-border hover:bg-secondary"
-              >
+          {totalPages > 1 && <div className="flex items-center justify-center gap-2 sm:gap-4 mt-6 sm:mt-8">
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="border-border hover:bg-secondary">
                 <ChevronLeft className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Anterior</span>
               </Button>
               <span className="text-sm text-muted-foreground">
                 {currentPage} / {totalPages}
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="border-border hover:bg-secondary"
-              >
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="border-border hover:bg-secondary">
                 <span className="hidden sm:inline">Próxima</span>
                 <ChevronRight className="h-4 w-4 sm:ml-2" />
               </Button>
-            </div>
-          )}
+            </div>}
 
           {/* Media Preview Modal */}
           <Dialog open={!!selectedPrompt} onOpenChange={() => setSelectedPrompt(null)}>
             <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden bg-card">
-              <button 
-                onClick={() => setSelectedPrompt(null)}
-                className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors"
-              >
+              <button onClick={() => setSelectedPrompt(null)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
                 <X className="h-4 w-4" />
               </button>
-              {selectedPrompt && (
-                <div className="flex flex-col max-h-[90vh]">
+              {selectedPrompt && <div className="flex flex-col max-h-[90vh]">
                   <div className="flex-shrink-0">
-                    {isVideoUrl(selectedPrompt.imageUrl) ? (
-                      <video 
-                        src={selectedPrompt.imageUrl} 
-                        className="w-full h-auto max-h-[50vh] object-contain bg-black"
-                        controls
-                        autoPlay
-                        playsInline
-                      />
-                    ) : (
-                      <img 
-                        src={selectedPrompt.imageUrl} 
-                        alt={selectedPrompt.title} 
-                        className="w-full h-auto max-h-[50vh] object-contain bg-black"
-                      />
-                    )}
+                    {isVideoUrl(selectedPrompt.imageUrl) ? <video src={selectedPrompt.imageUrl} className="w-full h-auto max-h-[50vh] object-contain bg-black" controls autoPlay playsInline /> : <img src={selectedPrompt.imageUrl} alt={selectedPrompt.title} className="w-full h-auto max-h-[50vh] object-contain bg-black" />}
                   </div>
                   <div className="p-4 space-y-3 flex-shrink-0">
                     <h3 className="font-bold text-lg text-foreground">{selectedPrompt.title}</h3>
@@ -505,27 +375,17 @@ const BibliotecaPrompts = () => {
                       <p className="text-xs text-muted-foreground">{selectedPrompt.prompt}</p>
                     </div>
                     <div className="flex gap-3">
-                      <Button 
-                        onClick={() => copyToClipboard(selectedPrompt.prompt, selectedPrompt.title)} 
-                        className="flex-1 bg-gradient-primary hover:opacity-90 text-white"
-                        size="sm"
-                      >
+                      <Button onClick={() => copyToClipboard(selectedPrompt.prompt, selectedPrompt.title)} className="flex-1 bg-gradient-primary hover:opacity-90 text-white" size="sm">
                         <Copy className="h-4 w-4 mr-2" />
                         Copiar Prompt
                       </Button>
-                      <Button 
-                        onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages)} 
-                        variant="outline" 
-                        className="flex-1 border-border hover:bg-secondary"
-                        size="sm"
-                      >
+                      <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
                         <Download className="h-4 w-4 mr-2" />
                         Baixar {isVideoUrl(selectedPrompt.imageUrl) ? 'Vídeo' : 'Imagem'}
                       </Button>
                     </div>
                   </div>
-                </div>
-              )}
+                </div>}
             </DialogContent>
           </Dialog>
 
@@ -545,23 +405,14 @@ const BibliotecaPrompts = () => {
                   </p>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <Button 
-                    onClick={() => {
-                      setShowPremiumModal(false);
-                      navigate("/login");
-                    }}
-                    variant="outline"
-                    className="w-full"
-                  >
+                  <Button onClick={() => {
+                  setShowPremiumModal(false);
+                  navigate("/login");
+                }} variant="outline" className="w-full">
                     <LogIn className="h-4 w-4 mr-2" />
                     Fazer Login
                   </Button>
-                  <a 
-                    href="https://pay.kiwify.com.br/seu-link" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full"
-                  >
+                  <a href="https://pay.kiwify.com.br/seu-link" target="_blank" rel="noopener noreferrer" className="w-full">
                     <Button className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
                       Torne-se Premium
@@ -573,8 +424,6 @@ const BibliotecaPrompts = () => {
           </Dialog>
         </main>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default BibliotecaPrompts;
