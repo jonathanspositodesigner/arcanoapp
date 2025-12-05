@@ -13,7 +13,7 @@ const Index = () => {
           <h1 className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             A plataforma dos criadores do futuro  
           </h1>
-          <p className="text-xl text-foreground max-w-2xl">
+          <p className="text-xl text-foreground max-w-2xl mx-auto text-center">
             Descubra uma coleção incrível de prompts para criar selos e elementos 3D profissionais
           </p>
         </div>

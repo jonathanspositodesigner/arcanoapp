@@ -67,7 +67,7 @@ const AdminDashboard = () => {
               Painel Administrativo
             </h1>
             <p className="text-muted-foreground text-lg">
-              Gerencie selos e contribuições da comunidade
+              Gerencie arquivos e contribuições da comunidade
             </p>
           </div>
           <Button
@@ -90,10 +90,10 @@ const AdminDashboard = () => {
                 <Upload className="h-12 w-12 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-foreground">
-                Enviar Selo 3D
+                Enviar Arquivo
               </h2>
               <p className="text-muted-foreground">
-                Faça upload de novos selos exclusivos para a biblioteca
+                Faça upload de novos arquivos exclusivos para a biblioteca
               </p>
             </div>
           </Card>
@@ -107,7 +107,7 @@ const AdminDashboard = () => {
                 <CheckCircle className="h-12 w-12 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-foreground">
-                Analisar Selos da Comunidade
+                Analisar Arquivos da Comunidade
               </h2>
               <p className="text-muted-foreground">
                 Aprove ou rejeite contribuições enviadas pela comunidade
@@ -127,7 +127,7 @@ const AdminDashboard = () => {
                 Gerenciar Imagens Enviadas
               </h2>
               <p className="text-muted-foreground">
-                Edite ou exclua todos os selos já publicados
+                Edite ou exclua todos os arquivos já publicados
               </p>
             </div>
           </Card>
