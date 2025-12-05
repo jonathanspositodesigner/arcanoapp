@@ -32,7 +32,7 @@ const ITEMS_PER_PAGE = 16;
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const { user, isPremium, logout } = usePremiumStatus();
-  const [selectedCategory, setSelectedCategory] = useState<string>("Arquivo");
+  const [selectedCategory, setSelectedCategory] = useState<string>("Novos");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
@@ -92,13 +92,15 @@ const BibliotecaPrompts = () => {
 
   const filteredPrompts = selectedCategory === "Ver Tudo" 
     ? allPrompts.filter(p => p.category !== "Controles de Câmera")
+    : selectedCategory === "Novos"
+    ? allPrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16)
     : allPrompts.filter(p => p.category === selectedCategory);
 
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   
-  const categories = ["Arquivo", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
+  const categories = ["Novos", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
 
   const copyToClipboard = async (prompt: string, title: string) => {
     try {
@@ -176,7 +178,7 @@ const BibliotecaPrompts = () => {
             {item.category === "Fotos" ? "Foto Exclusiva" : 
              item.category === "Cenários" ? "Cenário Exclusivo" : 
              item.category === "Controles de Câmera" ? "Controle de Câmera" :
-             item.category === "Movies para Telão" ? "Movie Exclusivo" : "Arquivo Exclusivo"}
+             item.category === "Movies para Telão" ? "Movie Exclusivo" : "Selo Exclusivo"}
           </Badge>
         )}
         {item.isCommunity && (
