@@ -43,7 +43,6 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   }
   return shuffled;
 };
-
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const {
@@ -62,7 +61,7 @@ const BibliotecaPrompts = () => {
   useEffect(() => {
     fetchCommunityPrompts();
   }, []);
-  
+
   // Shuffle "Ver Tudo" items when allPrompts changes
   useEffect(() => {
     const verTudoItems = allPrompts.filter(p => p.category !== "Controles de Câmera");
@@ -229,7 +228,7 @@ const BibliotecaPrompts = () => {
       <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
         <Button onClick={() => setSidebarOpen(!sidebarOpen)} className="bg-primary hover:bg-primary/90 text-white shadow-xl px-6 py-6 rounded-full">
           <Menu className="h-6 w-6 mr-2" />
-          <span className="font-semibold">​Menu  </span>
+          <span className="font-semibold">Gere sua imagem    </span>
         </Button>
       </div>
 
@@ -425,34 +424,19 @@ const BibliotecaPrompts = () => {
           </Dialog>
 
           {/* Premium Access Modal */}
-          <Dialog open={showPremiumModal} onOpenChange={(open) => {
-            setShowPremiumModal(open);
-            if (!open) setPremiumModalItem(null);
-          }}>
+          <Dialog open={showPremiumModal} onOpenChange={open => {
+          setShowPremiumModal(open);
+          if (!open) setPremiumModalItem(null);
+        }}>
             <DialogContent className="max-w-lg p-0 overflow-hidden bg-card">
               <button onClick={() => setShowPremiumModal(false)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
                 <X className="h-4 w-4" />
               </button>
               <div className="flex flex-col max-h-[90vh]">
                 {/* Media Preview */}
-                {premiumModalItem && (
-                  <div className="flex-shrink-0">
-                    {isVideoUrl(premiumModalItem.imageUrl) ? (
-                      <video 
-                        src={premiumModalItem.imageUrl} 
-                        className="w-full h-auto max-h-[40vh] object-contain bg-black" 
-                        controls 
-                        playsInline 
-                      />
-                    ) : (
-                      <img 
-                        src={premiumModalItem.imageUrl} 
-                        alt={premiumModalItem.title} 
-                        className="w-full h-auto max-h-[40vh] object-contain bg-black" 
-                      />
-                    )}
-                  </div>
-                )}
+                {premiumModalItem && <div className="flex-shrink-0">
+                    {isVideoUrl(premiumModalItem.imageUrl) ? <video src={premiumModalItem.imageUrl} className="w-full h-auto max-h-[40vh] object-contain bg-black" controls playsInline /> : <img src={premiumModalItem.imageUrl} alt={premiumModalItem.title} className="w-full h-auto max-h-[40vh] object-contain bg-black" />}
+                  </div>}
                 
                 <div className="text-center space-y-4 p-6">
                   <div className="flex justify-center">
@@ -468,16 +452,16 @@ const BibliotecaPrompts = () => {
                   </div>
                   <div className="flex flex-col gap-3">
                     <Button onClick={() => {
-                      setShowPremiumModal(false);
-                      navigate("/login");
-                    }} variant="outline" className="w-full">
+                    setShowPremiumModal(false);
+                    navigate("/login");
+                  }} variant="outline" className="w-full">
                       <LogIn className="h-4 w-4 mr-2" />
                       Fazer Login
                     </Button>
                     <Button onClick={() => {
-                      setShowPremiumModal(false);
-                      navigate("/planos");
-                    }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                    setShowPremiumModal(false);
+                    navigate("/planos");
+                  }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
                       Torne-se Premium
                     </Button>
