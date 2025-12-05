@@ -352,16 +352,16 @@ const BibliotecaPrompts = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex flex-col gap-2">
                       {canAccess ? (
                         <>
-                          <Button onClick={() => copyToClipboard(item.prompt, item.title)} size="sm" className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm">
+                          <Button onClick={() => copyToClipboard(item.prompt, item.title)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm">
                             <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                            Copiar
+                            Copiar Prompt
                           </Button>
-                          <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages)} variant="outline" size="sm" className="flex-1 border-border hover:bg-secondary text-xs sm:text-sm">
+                          <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
                             <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                            Baixar
+                            Baixar Referência
                           </Button>
                         </>
                       ) : (
