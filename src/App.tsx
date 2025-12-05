@@ -11,7 +11,6 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCommunityReview from "./pages/AdminCommunityReview";
 import AdminManageImages from "./pages/AdminManageImages";
-import SetupAdmin from "./pages/SetupAdmin";
 import UserLogin from "./pages/UserLogin";
 import NotFound from "./pages/NotFound";
 
@@ -27,7 +26,6 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
           <Route path="/contribuir" element={<ContributePrompts />} />
-          <Route path="/setup-admin" element={<SetupAdmin />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/admin-upload" element={<AdminUpload />} />
