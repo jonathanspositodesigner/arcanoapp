@@ -44,10 +44,10 @@ const Planos = () => {
           { text: "Atualizações diárias", included: true },
           { text: "Liberação imediata", included: true },
           { text: "Suporte exclusivo via WhatsApp", included: true },
-          { text: "Upscale Arcano", included: true },
-          { text: "Forja de Selos 3D", included: true },
-          { text: "IA que muda a roupa", included: false },
-          { text: "IA que muda pose", included: false },
+          { text: "Upscale Arcano", included: false },
+          { text: "Forja de Selos 3D", included: false },
+          { text: "IA que muda a roupa", included: true },
+          { text: "IA que muda pose", included: true },
         ],
         popular: true,
         promo: false,
@@ -108,10 +108,10 @@ const Planos = () => {
           { text: "Atualizações diárias", included: true },
           { text: "Liberação imediata", included: true },
           { text: "Suporte exclusivo via WhatsApp", included: true },
-          { text: "Upscale Arcano", included: true },
-          { text: "Forja de Selos 3D", included: true },
-          { text: "IA que muda a roupa", included: false },
-          { text: "IA que muda pose", included: false },
+          { text: "Upscale Arcano", included: false },
+          { text: "Forja de Selos 3D", included: false },
+          { text: "IA que muda a roupa", included: true },
+          { text: "IA que muda pose", included: true },
         ],
         popular: true,
         promo: false,
@@ -204,25 +204,24 @@ const Planos = () => {
                 plan.popular ? "border-2 border-primary" : ""
               }`}
             >
-              {/* Promo Badge */}
-              {plan.promo && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white border-0 text-xs whitespace-nowrap">
-                  PROMOÇÃO DE LANÇAMENTO
+              {/* Badge above card - Promo or Popular */}
+              {(plan.promo || plan.popular) && (
+                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${
+                  plan.promo 
+                    ? "bg-orange-500 text-white" 
+                    : "bg-primary text-primary-foreground"
+                }`}>
+                  {plan.promo ? "PROMOÇÃO DE LANÇAMENTO" : "Popular"}
                 </Badge>
               )}
 
               {/* Plan Name */}
-              <div className="text-center mb-4">
+              <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
                 <h2 className="text-xl font-bold text-foreground">{plan.name}</h2>
-                {plan.popular && (
-                  <Badge className="mt-2 bg-primary text-primary-foreground">
-                    Popular
-                  </Badge>
-                )}
               </div>
 
               {/* Price */}
-              <div className="text-center mb-6">
+              <div className="text-center mb-6 min-h-[80px]">
                 {plan.originalPrice && (
                   <p className="text-muted-foreground line-through text-sm">
                     R${plan.originalPrice}/mês
