@@ -117,18 +117,18 @@ const InstallApp = () => {
                     <h3 className="text-xl font-bold text-foreground mb-3">
                       No iPhone/iPad
                     </h3>
-                    <ol className="space-y-3 text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">1</span>
-                        Toque no botão <Share className="inline h-4 w-4 mx-1" /> Compartilhar na barra do Safari
+                      <ol className="space-y-4 text-muted-foreground">
+                      <li className="flex items-start gap-3">
+                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</span>
+                        <span>Toque no botão <Share className="inline h-4 w-4 mx-1" /> Compartilhar na barra do Safari</span>
                       </li>
-                      <li className="flex items-center gap-2">
-                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">2</span>
-                        Role e toque em <Plus className="inline h-4 w-4 mx-1" /> "Adicionar à Tela de Início"
+                      <li className="flex items-start gap-3">
+                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</span>
+                        <span>Role e toque em <Plus className="inline h-4 w-4 mx-1" /> "Adicionar à Tela de Início"</span>
                       </li>
-                      <li className="flex items-center gap-2">
-                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">3</span>
-                        Toque em "Adicionar" no canto superior direito
+                      <li className="flex items-start gap-3">
+                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</span>
+                        <span>Toque em "Adicionar" no canto superior direito</span>
                       </li>
                     </ol>
                   </div>
@@ -145,18 +145,18 @@ const InstallApp = () => {
                       <h3 className="text-xl font-bold text-foreground mb-3">
                         No Android
                       </h3>
-                      <ol className="space-y-3 text-muted-foreground">
-                        <li className="flex items-center gap-2">
-                          <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">1</span>
-                          Toque no menu <MoreVertical className="inline h-4 w-4 mx-1" /> (três pontos) do Chrome
+                      <ol className="space-y-4 text-muted-foreground">
+                        <li className="flex items-start gap-3">
+                          <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</span>
+                          <span>Toque no menu <MoreVertical className="inline h-4 w-4 mx-1" /> (três pontos) do Chrome</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                          <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">2</span>
-                          Toque em "Instalar app" ou "Adicionar à tela inicial"
+                        <li className="flex items-start gap-3">
+                          <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</span>
+                          <span>Toque em "Instalar app" ou "Adicionar à tela inicial"</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                          <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">3</span>
-                          Confirme a instalação
+                        <li className="flex items-start gap-3">
+                          <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</span>
+                          <span>Confirme a instalação</span>
                         </li>
                       </ol>
                     </div>
@@ -172,18 +172,18 @@ const InstallApp = () => {
                       <h3 className="text-xl font-bold text-foreground mb-3">
                         No Computador
                       </h3>
-                      <ol className="space-y-3 text-muted-foreground">
-                        <li className="flex items-center gap-2">
-                          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">1</span>
-                          No Chrome, clique no ícone de instalação <Download className="inline h-4 w-4 mx-1" /> na barra de endereço
+                      <ol className="space-y-4 text-muted-foreground">
+                        <li className="flex items-start gap-3">
+                          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</span>
+                          <span>No Chrome, clique no ícone de instalação <Download className="inline h-4 w-4 mx-1" /> na barra de endereço</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">2</span>
-                          Ou clique no menu (três pontos) e depois "Instalar Arcano Lab"
+                        <li className="flex items-start gap-3">
+                          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</span>
+                          <span>Ou clique no menu (três pontos) e depois "Instalar Arcano Lab"</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">3</span>
-                          Confirme a instalação
+                        <li className="flex items-start gap-3">
+                          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</span>
+                          <span>Confirme a instalação</span>
                         </li>
                       </ol>
                     </div>
