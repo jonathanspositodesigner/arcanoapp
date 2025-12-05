@@ -121,16 +121,14 @@ const UserLogin = () => {
           <p className="text-sm text-muted-foreground mb-4">
             Ainda não é premium?
           </p>
-          <a 
-            href="https://pay.kiwify.com.br/seu-link" 
-            target="_blank" 
-            rel="noopener noreferrer"
+          <Button 
+            onClick={() => navigate("/planos")} 
+            variant="outline" 
+            className="w-full border-yellow-500 text-yellow-600 hover:bg-yellow-50"
           >
-            <Button variant="outline" className="w-full border-yellow-500 text-yellow-600 hover:bg-yellow-50">
-              <Star className="h-4 w-4 mr-2" />
-              Torne-se Premium
-            </Button>
-          </a>
+            <Star className="h-4 w-4 mr-2" />
+            Torne-se Premium
+          </Button>
         </div>
       </Card>
     </div>
