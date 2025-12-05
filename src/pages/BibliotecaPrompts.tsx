@@ -193,15 +193,46 @@ const BibliotecaPrompts = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      {/* Mobile Top Header */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
+        <img src={logoHorizontal} alt="Arcano Lab" className="h-8" />
+        {!isPremium && (
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => navigate("/login")} 
+              size="sm"
+              variant="ghost"
+              className="text-white hover:bg-white/20 text-xs"
+            >
+              <LogIn className="h-4 w-4 mr-1" />
+              Login
+            </Button>
+            <Button 
+              onClick={() => window.open("https://pay.kiwify.com.br/pkANpvp", "_blank")} 
+              size="sm"
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"
+            >
+              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+              Premium
+            </Button>
+          </div>
+        )}
+        {isPremium && (
+          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+            <Star className="h-3 w-3 mr-1" fill="currentColor" />
+            Premium Ativo
+          </Badge>
+        )}
+      </header>
+
+      {/* Mobile Bottom Menu Button */}
+      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
         <Button 
           onClick={() => setSidebarOpen(!sidebarOpen)} 
-          size="icon" 
-          variant="outline"
-          className="bg-card border-border shadow-lg"
+          className="bg-primary hover:bg-primary/90 text-white shadow-xl px-6 py-6 rounded-full"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-6 w-6 mr-2" />
+          <span className="font-semibold">Menu</span>
         </Button>
       </div>
 
@@ -276,36 +307,15 @@ const BibliotecaPrompts = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pt-16 lg:pt-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pt-20 lg:pt-8 pb-24 lg:pb-8">
           {/* Mobile Install App Button */}
           <Button 
             onClick={() => navigate("/install")} 
-            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-2 lg:hidden"
+            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden"
           >
             <Smartphone className="h-4 w-4 mr-2" />
             Instalar App
           </Button>
-
-          {/* Mobile Premium & Login Buttons */}
-          {!isPremium && (
-            <div className="flex flex-col gap-2 mb-4 lg:hidden">
-              <Button 
-                onClick={() => window.open("https://pay.kiwify.com.br/pkANpvp", "_blank")} 
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold"
-              >
-                <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                Torne-se Premium
-              </Button>
-              <Button 
-                onClick={() => navigate("/login")} 
-                variant="outline"
-                className="w-full border-border hover:bg-secondary font-semibold"
-              >
-                <LogIn className="h-4 w-4 mr-2" />
-                Fazer Login
-              </Button>
-            </div>
-          )}
 
           {/* Featured Card */}
           <Card className="mb-6 sm:mb-8 p-4 sm:p-6 lg:p-8 bg-gradient-primary text-primary-foreground shadow-hover bg-primary">
