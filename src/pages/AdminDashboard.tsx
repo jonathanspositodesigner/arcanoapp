@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle, Settings, LogOut, Bell, Users } from "lucide-react";
+import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminAnalyticsDashboard from "@/components/AdminAnalyticsDashboard";
@@ -79,14 +79,24 @@ const AdminDashboard = () => {
               Gerencie arquivos e contribuições da comunidade
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={handleLogout}
-            className="gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            Sair
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/')}
+              className="gap-2"
+            >
+              <Home className="h-4 w-4" />
+              Home
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
+          </div>
         </div>
 
         {/* Stats Card */}
