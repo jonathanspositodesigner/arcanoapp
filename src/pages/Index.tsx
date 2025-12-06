@@ -41,7 +41,7 @@ const Index = () => {
 
         {/* Seção separada - Biblioteca de Artes Arcanas */}
         <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-border/30">
-          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-[#15496e]">
+          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-primary-foreground border-primary text-primary border-2">
             <img alt="" className="mr-2 h-6 sm:h-7 w-auto object-contain" src="/lovable-uploads/53db2877-63c8-4fb8-bbf3-4aa471ca6154.png" />
             Acessar Biblioteca de Artes Arcanas
           </Button>
