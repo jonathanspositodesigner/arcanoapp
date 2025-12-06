@@ -335,35 +335,31 @@ const AdminManageImages = () => {
                   />
                 </div>
 
-                {isVideoUrl(editingPrompt.image_url) && (
-                  <>
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
-                      <div className="flex items-center gap-2">
-                        <Video className={`h-5 w-5 ${editHasTutorial ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <Label htmlFor="edit-hasTutorial" className="font-medium">
-                          {editHasTutorial ? 'Tem Tutorial' : 'Sem Tutorial'}
-                        </Label>
-                      </div>
-                      <Switch
-                        id="edit-hasTutorial"
-                        checked={editHasTutorial}
-                        onCheckedChange={setEditHasTutorial}
-                      />
-                    </div>
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                  <div className="flex items-center gap-2">
+                    <Video className={`h-5 w-5 ${editHasTutorial ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <Label htmlFor="edit-hasTutorial" className="font-medium">
+                      {editHasTutorial ? 'Tem Tutorial' : 'Sem Tutorial'}
+                    </Label>
+                  </div>
+                  <Switch
+                    id="edit-hasTutorial"
+                    checked={editHasTutorial}
+                    onCheckedChange={setEditHasTutorial}
+                  />
+                </div>
 
-                    {editHasTutorial && (
-                      <div>
-                        <Label htmlFor="edit-tutorialUrl">Link do Tutorial (YouTube, Vimeo, etc.)</Label>
-                        <Input
-                          id="edit-tutorialUrl"
-                          value={editTutorialUrl}
-                          onChange={(e) => setEditTutorialUrl(e.target.value)}
-                          placeholder="https://www.youtube.com/watch?v=..."
-                          className="mt-2"
-                        />
-                      </div>
-                    )}
-                  </>
+                {editHasTutorial && (
+                  <div>
+                    <Label htmlFor="edit-tutorialUrl">Link do Tutorial (YouTube, Vimeo, etc.)</Label>
+                    <Input
+                      id="edit-tutorialUrl"
+                      value={editTutorialUrl}
+                      onChange={(e) => setEditTutorialUrl(e.target.value)}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      className="mt-2"
+                    />
+                  </div>
                 )}
               </>
             )}
