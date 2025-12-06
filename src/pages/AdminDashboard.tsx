@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown } from "lucide-react";
+import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminAnalyticsDashboard from "@/components/AdminAnalyticsDashboard";
@@ -194,6 +194,23 @@ const AdminDashboard = () => {
               </h2>
               <p className="text-muted-foreground">
                 Adicione manualmente usuários ao sistema premium
+              </p>
+            </div>
+          </Card>
+
+          <Card
+            className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105"
+            onClick={() => navigate('/admin-premium-dashboard')}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full">
+                <LayoutDashboard className="h-12 w-12 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground">
+                Gerenciar Premium
+              </h2>
+              <p className="text-muted-foreground">
+                Dashboard e gestão de assinaturas premium
               </p>
             </div>
           </Card>
