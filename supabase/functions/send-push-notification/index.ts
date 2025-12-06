@@ -13,77 +13,151 @@ interface PushNotificationRequest {
   url?: string;
 }
 
-// Web Push implementation using crypto API
-async function generateVapidHeaders(
-  endpoint: string,
-  vapidPublicKey: string,
+// Base64URL encode/decode utilities
+function base64UrlEncode(buffer: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < buffer.length; i++) {
+    binary += String.fromCharCode(buffer[i]);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+function base64UrlDecode(str: string): Uint8Array {
+  // Add padding if necessary
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) {
+    str += '=';
+  }
+  const binary = atob(str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+// Generate VAPID JWT token
+async function generateVapidJwt(
+  audience: string,
+  subject: string,
   vapidPrivateKey: string
-): Promise<{ authorization: string; cryptoKey: string }> {
-  const urlParts = new URL(endpoint);
-  const audience = `${urlParts.protocol}//${urlParts.host}`;
-  
-  const header = { typ: "JWT", alg: "ES256" };
+): Promise<string> {
+  const header = { typ: 'JWT', alg: 'ES256' };
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     aud: audience,
-    exp: now + 12 * 60 * 60,
-    sub: "mailto:admin@arcanolab.com"
+    exp: now + 12 * 60 * 60, // 12 hours
+    sub: subject,
   };
-  
-  const base64UrlEncode = (data: Uint8Array | string): string => {
-    const str = typeof data === "string" ? data : String.fromCharCode(...data);
-    return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-  };
-  
-  const headerB64 = base64UrlEncode(JSON.stringify(header));
-  const payloadB64 = base64UrlEncode(JSON.stringify(payload));
+
+  const headerB64 = base64UrlEncode(new TextEncoder().encode(JSON.stringify(header)));
+  const payloadB64 = base64UrlEncode(new TextEncoder().encode(JSON.stringify(payload)));
   const unsignedToken = `${headerB64}.${payloadB64}`;
+
+  // Decode the raw private key (32 bytes)
+  const rawPrivateKey = base64UrlDecode(vapidPrivateKey);
   
-  // Import private key
-  const privateKeyBuffer = Uint8Array.from(atob(vapidPrivateKey.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
-  
+  // Import the key as raw EC private key
   const key = await crypto.subtle.importKey(
-    "pkcs8",
-    privateKeyBuffer,
-    { name: "ECDSA", namedCurve: "P-256" },
+    'jwk',
+    {
+      kty: 'EC',
+      crv: 'P-256',
+      d: vapidPrivateKey, // Already base64url
+      x: '', // Will be derived
+      y: '', // Will be derived
+    },
+    { name: 'ECDSA', namedCurve: 'P-256' },
     false,
-    ["sign"]
-  );
-  
+    ['sign']
+  ).catch(async () => {
+    // Alternative: try to construct JWK from raw private key
+    // For a 32-byte raw key, we need to construct the full JWK
+    const privateKeyBytes = base64UrlDecode(vapidPrivateKey);
+    
+    // Use PKCS8 format for import
+    const pkcs8Header = new Uint8Array([
+      0x30, 0x41, 0x02, 0x01, 0x00, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48,
+      0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03,
+      0x01, 0x07, 0x04, 0x27, 0x30, 0x25, 0x02, 0x01, 0x01, 0x04, 0x20
+    ]);
+    
+    const pkcs8Key = new Uint8Array(pkcs8Header.length + privateKeyBytes.length);
+    pkcs8Key.set(pkcs8Header);
+    pkcs8Key.set(privateKeyBytes, pkcs8Header.length);
+    
+    return crypto.subtle.importKey(
+      'pkcs8',
+      pkcs8Key,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['sign']
+    );
+  });
+
   const signature = await crypto.subtle.sign(
-    { name: "ECDSA", hash: "SHA-256" },
+    { name: 'ECDSA', hash: 'SHA-256' },
     key,
     new TextEncoder().encode(unsignedToken)
   );
+
+  // Convert DER signature to raw format (64 bytes: r || s)
+  const sigBytes = new Uint8Array(signature);
+  let rawSig: Uint8Array;
   
-  const signatureB64 = base64UrlEncode(new Uint8Array(signature));
-  const jwt = `${unsignedToken}.${signatureB64}`;
-  
-  return {
-    authorization: `vapid t=${jwt}, k=${vapidPublicKey}`,
-    cryptoKey: `p256ecdsa=${vapidPublicKey}`
-  };
+  if (sigBytes.length === 64) {
+    rawSig = sigBytes;
+  } else {
+    // DER encoded, need to extract r and s
+    rawSig = new Uint8Array(64);
+    let offset = 2;
+    const rLen = sigBytes[offset + 1];
+    offset += 2;
+    const rStart = rLen === 33 ? offset + 1 : offset;
+    rawSig.set(sigBytes.slice(rStart, rStart + 32), 0);
+    offset += rLen;
+    const sLen = sigBytes[offset + 1];
+    offset += 2;
+    const sStart = sLen === 33 ? offset + 1 : offset;
+    rawSig.set(sigBytes.slice(sStart, sStart + 32), 32);
+  }
+
+  const signatureB64 = base64UrlEncode(rawSig);
+  return `${unsignedToken}.${signatureB64}`;
 }
 
-async function sendPushNotification(
+async function sendWebPush(
   subscription: { endpoint: string; p256dh: string; auth: string },
   payload: string,
   vapidPublicKey: string,
   vapidPrivateKey: string
 ): Promise<Response> {
-  // For simplicity, we'll send an unencrypted request with proper VAPID
-  // Most modern browsers accept this for basic notifications
-  
-  const response = await fetch(subscription.endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "TTL": "86400",
-    },
-    body: payload
-  });
-  
-  return response;
+  const url = new URL(subscription.endpoint);
+  const audience = `${url.protocol}//${url.host}`;
+
+  try {
+    const jwt = await generateVapidJwt(
+      audience,
+      'mailto:admin@arcanolab.com',
+      vapidPrivateKey
+    );
+
+    const response = await fetch(subscription.endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `vapid t=${jwt}, k=${vapidPublicKey}`,
+        'Content-Type': 'application/octet-stream',
+        'Content-Encoding': 'aes128gcm',
+        'TTL': '86400',
+      },
+      body: new TextEncoder().encode(payload),
+    });
+
+    return response;
+  } catch (error) {
+    console.error('Error in sendWebPush:', error);
+    throw error;
+  }
 }
 
 serve(async (req) => {
@@ -143,8 +217,11 @@ serve(async (req) => {
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
 
     if (!vapidPublicKey || !vapidPrivateKey) {
+      console.error("VAPID keys missing - Public:", !!vapidPublicKey, "Private:", !!vapidPrivateKey);
       throw new Error("VAPID keys not configured");
     }
+
+    console.log("VAPID keys loaded successfully");
 
     const results = {
       success: 0,
@@ -161,25 +238,25 @@ serve(async (req) => {
 
     for (const subscription of subscriptions || []) {
       try {
-        const response = await fetch(subscription.endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/octet-stream",
-            "TTL": "86400",
-          },
-          body: payload
-        });
+        console.log(`Sending to: ${subscription.endpoint.substring(0, 60)}...`);
+        
+        const response = await sendWebPush(
+          subscription,
+          payload,
+          vapidPublicKey,
+          vapidPrivateKey
+        );
 
         if (response.ok || response.status === 201) {
           results.success++;
-          console.log(`Push sent to ${subscription.endpoint.substring(0, 50)}...`);
+          console.log(`Push sent successfully`);
         } else if (response.status === 410 || response.status === 404) {
           // Subscription expired, remove it
           await supabaseClient
             .from("push_subscriptions")
             .delete()
             .eq("endpoint", subscription.endpoint);
-          console.log(`Removed expired subscription: ${subscription.endpoint.substring(0, 50)}...`);
+          console.log(`Removed expired subscription`);
           results.failed++;
         } else {
           results.failed++;
@@ -190,9 +267,11 @@ serve(async (req) => {
       } catch (error: any) {
         results.failed++;
         results.errors.push(error.message);
-        console.error(`Error sending to ${subscription.endpoint.substring(0, 50)}...`, error.message);
+        console.error(`Error:`, error.message);
       }
     }
+
+    console.log(`Results: ${results.success} success, ${results.failed} failed`);
 
     return new Response(
       JSON.stringify({
