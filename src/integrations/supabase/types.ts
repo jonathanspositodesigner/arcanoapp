@@ -24,6 +24,7 @@ export type Database = {
           prompt: string
           reference_images: string[] | null
           title: string
+          tutorial_url: string | null
           updated_at: string | null
         }
         Insert: {
@@ -35,6 +36,7 @@ export type Database = {
           prompt: string
           reference_images?: string[] | null
           title: string
+          tutorial_url?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -46,6 +48,7 @@ export type Database = {
           prompt?: string
           reference_images?: string[] | null
           title?: string
+          tutorial_url?: string | null
           updated_at?: string | null
         }
         Relationships: []

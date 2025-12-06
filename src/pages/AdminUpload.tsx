@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, ArrowLeft, X, Star, ImagePlus } from "lucide-react";
+import { Upload, ArrowLeft, X, Star, ImagePlus, Video } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -51,6 +51,8 @@ interface MediaData {
   isVideo: boolean;
   isPremium: boolean;
   referenceImages: ReferenceImage[];
+  hasTutorial: boolean;
+  tutorialUrl: string;
 }
 
 const AdminUpload = () => {
@@ -116,7 +118,9 @@ const AdminUpload = () => {
           category: "",
           isVideo,
           isPremium: false,
-          referenceImages: []
+          referenceImages: [],
+          hasTutorial: false,
+          tutorialUrl: ""
         });
         
         if (newMedia.length === validFiles.length) {
@@ -246,6 +250,7 @@ const AdminUpload = () => {
             image_url: publicUrl,
             is_premium: media.isPremium,
             reference_images: referenceImageUrls.length > 0 ? referenceImageUrls : null,
+            tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
           });
 
         if (insertError) throw insertError;
@@ -435,35 +440,64 @@ const AdminUpload = () => {
               </div>
 
               {currentMedia.isVideo && (
-                <div>
-                  <Label>Imagens de Referência (opcional)</Label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Adicione imagens que serão baixadas junto com o vídeo
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {currentMedia.referenceImages.map((ref, idx) => (
-                      <div key={idx} className="relative group">
-                        <img src={ref.preview} alt={`Ref ${idx + 1}`} className="w-16 h-16 object-cover rounded-lg" />
-                        <button
-                          onClick={() => removeReferenceImage(idx)}
-                          className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                    <label className="w-16 h-16 border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleReferenceImageSelect}
-                        className="hidden"
-                      />
-                      <ImagePlus className="h-6 w-6 text-muted-foreground" />
-                    </label>
+                <>
+                  <div>
+                    <Label>Imagens de Referência (opcional)</Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Adicione imagens que serão baixadas junto com o vídeo
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {currentMedia.referenceImages.map((ref, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={ref.preview} alt={`Ref ${idx + 1}`} className="w-16 h-16 object-cover rounded-lg" />
+                          <button
+                            onClick={() => removeReferenceImage(idx)}
+                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                      <label className="w-16 h-16 border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleReferenceImageSelect}
+                          className="hidden"
+                        />
+                        <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                      </label>
+                    </div>
                   </div>
-                </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                    <div className="flex items-center gap-2">
+                      <Video className={`h-5 w-5 ${currentMedia.hasTutorial ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <Label htmlFor="hasTutorial" className="font-medium">
+                        {currentMedia.hasTutorial ? 'Tem Tutorial' : 'Sem Tutorial'}
+                      </Label>
+                    </div>
+                    <Switch
+                      id="hasTutorial"
+                      checked={currentMedia.hasTutorial}
+                      onCheckedChange={(checked) => updateMediaData('hasTutorial', checked)}
+                    />
+                  </div>
+
+                  {currentMedia.hasTutorial && (
+                    <div>
+                      <Label htmlFor="tutorialUrl">Link do Tutorial (YouTube, Vimeo, etc.)</Label>
+                      <Input
+                        id="tutorialUrl"
+                        value={currentMedia.tutorialUrl}
+                        onChange={(e) => updateMediaData('tutorialUrl', e.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        className="mt-2"
+                      />
+                    </div>
+                  )}
+                </>
               )}
 
               <div>
