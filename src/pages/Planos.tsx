@@ -328,11 +328,9 @@ const Planos = () => {
               <Button 
                 onClick={() => setShowComingSoonModal(true)}
                 className={`w-full mb-6 ${
-                  plan.promo 
-                    ? "bg-orange-500 hover:bg-orange-600 text-white" 
-                    : plan.popular 
-                      ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
-                      : "bg-muted hover:bg-muted/80 text-foreground"
+                  plan.popular 
+                    ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
+                    : "bg-muted hover:bg-muted/80 text-foreground"
                 }`}
               >
                 {(plan as any).hasTrial ? "Teste grátis por 7 dias" : "Assinar"}
