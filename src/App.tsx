@@ -18,6 +18,7 @@ import UpgradePlano from "./pages/UpgradePlano";
 import AdminPushNotifications from "./pages/AdminPushNotifications";
 import AdminInstallStats from "./pages/AdminInstallStats";
 import AdminManagePremium from "./pages/AdminManagePremium";
+import AdminPremiumDashboard from "./pages/AdminPremiumDashboard";
 import NotFound from "./pages/NotFound";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
@@ -51,6 +52,7 @@ const AppContent = () => {
         <Route path="/admin-push-notifications" element={<AdminPushNotifications />} />
         <Route path="/admin-install-stats" element={<AdminInstallStats />} />
         <Route path="/admin-manage-premium" element={<AdminManagePremium />} />
+        <Route path="/admin-premium-dashboard" element={<AdminPremiumDashboard />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
