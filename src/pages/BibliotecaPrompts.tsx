@@ -258,6 +258,11 @@ const BibliotecaPrompts = () => {
           </Badge> : <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] sm:text-xs">
             Grátis
           </Badge>}
+        {/* Tutorial badge */}
+        {item.tutorialUrl && <Badge className="bg-red-600 text-white border-0 text-[10px] sm:text-xs">
+            <Youtube className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+            Tutorial
+          </Badge>}
         {/* Category badge */}
         {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs">
             {item.category === "Fotos" ? "Foto Exclusiva" : item.category === "Cenários" ? "Cenário Exclusivo" : item.category === "Controles de Câmera" ? "Controle de Câmera" : item.category === "Movies para Telão" ? "Movie Exclusivo" : "Selo Exclusivo"}
