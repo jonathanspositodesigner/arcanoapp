@@ -19,6 +19,10 @@ interface GreennWebhookPayload {
     name?: string
     period?: number
   }
+  offer?: {
+    name?: string
+    id?: number
+  }
   contract?: {
     id?: string
     start_date?: string
@@ -26,6 +30,10 @@ interface GreennWebhookPayload {
   }
   sale?: {
     id?: string
+  }
+  trial?: {
+    days?: number
+    end_date?: string
   }
 }
 
@@ -68,24 +76,45 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Get offer name for better plan detection
+    const offerName = payload.offer?.name || ''
+    const trialDays = payload.trial?.days || 7
+    const trialEndDate = payload.trial?.end_date
+    
     console.log(`Processing webhook for email: ${email}, name: ${clientName}, phone: ${clientPhone}, status: ${status}`)
+    console.log(`Product: ${productName}, Offer: ${offerName}, Period: ${productPeriod} days`)
 
-    // Determine plan type based on product name
+    // Determine plan type based on product name OR offer name
+    // Products: "Arcano Básico - App ArcanoLab", "Arcano Pro - App ArcanoLab", "Arcano IA Unlimited - App ArcanoLab"
+    // Offers: "#Arcano Pro Anual", "#Arcano Pro Mensal", "#Arcano Unlimited Anual", "#Arcano Unlimited Mensal"
     let planType = 'arcano_basico'
-    if (productName.toLowerCase().includes('pro')) {
-      planType = 'arcano_pro'
-    } else if (productName.toLowerCase().includes('unlimited') || productName.toLowerCase().includes('ilimitado')) {
+    const productLower = productName.toLowerCase()
+    const offerLower = offerName.toLowerCase()
+    
+    if (productLower.includes('unlimited') || productLower.includes('ilimitado') || 
+        offerLower.includes('unlimited') || offerLower.includes('ilimitado')) {
       planType = 'arcano_unlimited'
+    } else if (productLower.includes('pro') || offerLower.includes('pro')) {
+      planType = 'arcano_pro'
     }
+    
+    console.log(`Detected plan type: ${planType}`)
 
-    // Determine billing period
+    // Determine billing period based on offer name or product period
     let billingPeriod = 'monthly'
-    if (productPeriod >= 365) {
+    if (offerLower.includes('anual') || productPeriod >= 365) {
       billingPeriod = 'yearly'
     }
+    
+    console.log(`Detected billing period: ${billingPeriod}`)
 
-    // Handle paid status - activate or renew premium
-    if (status === 'paid' || status === 'approved') {
+    // Check if this is a trial status
+    const isTrialStatus = status === 'trial' || status === 'trial_started' || status === 'trialing' || status === 'waiting_payment'
+    
+    // Handle paid status OR trial status - activate or renew premium
+    if (status === 'paid' || status === 'approved' || isTrialStatus) {
+      const statusType = isTrialStatus ? 'TRIAL' : 'PAID'
+      console.log(`Processing ${statusType} status - activating/renewing premium`)
       console.log('Processing PAID status - activating/renewing premium')
       
       // Check if user exists in auth
@@ -140,20 +169,34 @@ Deno.serve(async (req) => {
 
       // Calculate expiration date with validation
       let expiresAt: Date
-      const payloadDate = payload.contract?.current_period_end 
-        ? new Date(payload.contract.current_period_end) 
-        : null
       const now = new Date()
-
-      // Use payload date only if it's valid and in the future
-      if (payloadDate && payloadDate > now) {
-        expiresAt = payloadDate
-        console.log(`Using payload date: ${expiresAt.toISOString()}`)
+      
+      // For trial status, use trial end date or calculate 7 days from now
+      if (isTrialStatus) {
+        if (trialEndDate) {
+          expiresAt = new Date(trialEndDate)
+          console.log(`Using trial end date: ${expiresAt.toISOString()}`)
+        } else {
+          expiresAt = new Date()
+          expiresAt.setDate(expiresAt.getDate() + trialDays)
+          console.log(`Calculated trial expiration (${trialDays} days): ${expiresAt.toISOString()}`)
+        }
       } else {
-        // Calculate based on product period
-        expiresAt = new Date()
-        expiresAt.setDate(expiresAt.getDate() + productPeriod)
-        console.log(`Calculated date (payload invalid/past): ${expiresAt.toISOString()}`)
+        // For paid status, use payload date or calculate based on period
+        const payloadDate = payload.contract?.current_period_end 
+          ? new Date(payload.contract.current_period_end) 
+          : null
+
+        // Use payload date only if it's valid and in the future
+        if (payloadDate && payloadDate > now) {
+          expiresAt = payloadDate
+          console.log(`Using payload date: ${expiresAt.toISOString()}`)
+        } else {
+          // Calculate based on product period
+          expiresAt = new Date()
+          expiresAt.setDate(expiresAt.getDate() + productPeriod)
+          console.log(`Calculated date (payload invalid/past): ${expiresAt.toISOString()}`)
+        }
       }
 
       console.log(`Setting expires_at to: ${expiresAt.toISOString()}`)
