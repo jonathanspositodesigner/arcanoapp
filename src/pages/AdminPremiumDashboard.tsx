@@ -1,41 +1,50 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, UserPlus, Loader2, Crown, Users, Clock, Pencil, Trash2, 
-  RefreshCw, AlertTriangle, Search, X
-} from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { 
+  ArrowLeft, Plus, RefreshCw, Pencil, Trash2, Users, Crown, Clock, 
+  AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, MessageCircle
+} from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface PremiumUser {
   id: string;
   user_id: string;
-  email?: string;
-  is_active: boolean;
   plan_type: string | null;
   billing_period: string | null;
+  is_active: boolean;
   expires_at: string | null;
   subscribed_at: string | null;
-  created_at: string | null;
   greenn_product_id: number | null;
   greenn_contract_id: string | null;
+  created_at: string | null;
+  name?: string;
+  phone?: string;
+  email?: string;
 }
 
-const PLAN_COLORS: Record<string, string> = {
-  arcano_basico: "#f59e0b",
-  arcano_pro: "#8b5cf6",
-  arcano_unlimited: "#10b981"
-};
+type SortColumn = 'name' | 'plan_type' | 'billing_period' | 'is_active' | 'expires_at' | 'subscribed_at';
+type SortDirection = 'asc' | 'desc';
+
+const ITEMS_PER_PAGE = 20;
 
 const PLAN_LABELS: Record<string, string> = {
   arcano_basico: "Arcano Básico",
@@ -43,168 +52,259 @@ const PLAN_LABELS: Record<string, string> = {
   arcano_unlimited: "Arcano Unlimited"
 };
 
+const PLAN_COLORS: Record<string, string> = {
+  arcano_basico: "#f59e0b",
+  arcano_pro: "#8b5cf6",
+  arcano_unlimited: "#10b981"
+};
+
 const AdminPremiumDashboard = () => {
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [premiumUsers, setPremiumUsers] = useState<PremiumUser[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<PremiumUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [periodFilter, setPeriodFilter] = useState("all");
   
-  // Modal states
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [sortColumn, setSortColumn] = useState<SortColumn>('expires_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<PremiumUser | null>(null);
+  
+  const [formEmail, setFormEmail] = useState("");
+  const [formName, setFormName] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [formPlanType, setFormPlanType] = useState("arcano_basico");
+  const [formBillingPeriod, setFormBillingPeriod] = useState("monthly");
+  const [formIsActive, setFormIsActive] = useState(true);
+  const [formExpiresInDays, setFormExpiresInDays] = useState(30);
+  const [formGreennProductId, setFormGreennProductId] = useState("");
+  const [formGreennContractId, setFormGreennContractId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Form state
-  const [formData, setFormData] = useState({
-    email: "",
-    planType: "arcano_basico",
-    billingPeriod: "monthly",
-    isActive: true,
-    expiresInDays: "30",
-    greennProductId: "",
-    greennContractId: ""
-  });
 
   useEffect(() => {
     checkAdminAndFetch();
   }, []);
 
-  useEffect(() => {
-    filterUsers();
-  }, [premiumUsers, searchTerm, periodFilter]);
-
   const checkAdminAndFetch = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      navigate('/admin-login');
-      return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/admin-login");
+        return;
+      }
+
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!roleData) {
+        toast.error("Acesso não autorizado");
+        navigate("/");
+        return;
+      }
+
+      setIsAdmin(true);
+      await fetchPremiumUsers();
+    } catch (error) {
+      console.error("Error checking admin:", error);
+      toast.error("Erro ao verificar permissões");
+    } finally {
+      setIsLoading(false);
     }
-
-    const { data: roleData } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
-
-    if (!roleData) {
-      toast.error("Acesso negado");
-      navigate('/');
-      return;
-    }
-
-    setIsAdmin(true);
-    await fetchPremiumUsers();
-    setIsLoading(false);
   };
 
   const fetchPremiumUsers = async () => {
-    setIsRefreshing(true);
     try {
-      const { data, error } = await supabase
-        .from('premium_users')
-        .select('*')
-        .order('expires_at', { ascending: true });
+      const { data: premiumData, error: premiumError } = await supabase
+        .from("premium_users")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (premiumError) throw premiumError;
 
-      // Fetch user emails
-      const usersWithEmails = await Promise.all(
-        (data || []).map(async (user) => {
-          // We need to get email from auth - using edge function would be better
-          // For now, return without email
-          return { ...user, email: undefined };
-        })
-      );
+      const userIds = premiumData?.map(u => u.user_id) || [];
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, name, phone, email")
+        .in("id", userIds);
 
-      setPremiumUsers(usersWithEmails);
+      const mergedData = premiumData?.map(premium => {
+        const profile = profilesData?.find(p => p.id === premium.user_id);
+        return {
+          ...premium,
+          name: profile?.name || '',
+          phone: profile?.phone || '',
+          email: profile?.email || '',
+        };
+      }) || [];
+
+      setPremiumUsers(mergedData);
     } catch (error) {
       console.error("Error fetching premium users:", error);
       toast.error("Erro ao carregar usuários premium");
-    } finally {
-      setIsRefreshing(false);
     }
   };
 
-  const filterUsers = () => {
+  const filterUsers = useMemo(() => {
     let filtered = [...premiumUsers];
 
-    // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(user => 
-        user.user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.plan_type?.toLowerCase().includes(searchTerm.toLowerCase())
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(u => 
+        u.name?.toLowerCase().includes(term) ||
+        u.email?.toLowerCase().includes(term) ||
+        u.plan_type?.toLowerCase().includes(term)
       );
     }
 
-    // Filter by period (subscription date)
     if (periodFilter !== "all") {
       const now = new Date();
-      const daysMap: Record<string, number> = {
-        "1": 1,
-        "3": 3,
-        "15": 15,
-        "30": 30,
-        "90": 90,
-        "365": 365
-      };
-      const days = daysMap[periodFilter];
-      if (days) {
-        const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-        filtered = filtered.filter(user => {
-          const subscribedAt = user.subscribed_at ? new Date(user.subscribed_at) : null;
-          return subscribedAt && subscribedAt >= cutoffDate;
-        });
+      let cutoffDate = new Date();
+      
+      switch (periodFilter) {
+        case "1": cutoffDate.setDate(now.getDate() - 1); break;
+        case "3": cutoffDate.setDate(now.getDate() - 3); break;
+        case "15": cutoffDate.setDate(now.getDate() - 15); break;
+        case "30": cutoffDate.setDate(now.getDate() - 30); break;
+        case "90": cutoffDate.setDate(now.getDate() - 90); break;
+        case "365": cutoffDate.setFullYear(now.getFullYear() - 1); break;
       }
+
+      filtered = filtered.filter(u => {
+        if (!u.subscribed_at) return false;
+        return new Date(u.subscribed_at) >= cutoffDate;
+      });
     }
 
-    setFilteredUsers(filtered);
+    filtered.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortColumn) {
+        case 'name':
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+          break;
+        case 'plan_type':
+          aValue = a.plan_type?.toLowerCase() || '';
+          bValue = b.plan_type?.toLowerCase() || '';
+          break;
+        case 'billing_period':
+          aValue = a.billing_period?.toLowerCase() || '';
+          bValue = b.billing_period?.toLowerCase() || '';
+          break;
+        case 'is_active':
+          aValue = a.is_active ? 1 : 0;
+          bValue = b.is_active ? 1 : 0;
+          break;
+        case 'expires_at':
+          aValue = a.expires_at ? new Date(a.expires_at).getTime() : Infinity;
+          bValue = b.expires_at ? new Date(b.expires_at).getTime() : Infinity;
+          break;
+        case 'subscribed_at':
+          aValue = a.subscribed_at ? new Date(a.subscribed_at).getTime() : 0;
+          bValue = b.subscribed_at ? new Date(b.subscribed_at).getTime() : 0;
+          break;
+        default:
+          return 0;
+      }
+
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+    return filtered;
+  }, [premiumUsers, searchTerm, periodFilter, sortColumn, sortDirection]);
+
+  const totalPages = Math.ceil(filterUsers.length / ITEMS_PER_PAGE);
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filterUsers.slice(start, start + ITEMS_PER_PAGE);
+  }, [filterUsers, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, periodFilter, sortColumn, sortDirection]);
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (column: SortColumn) => {
+    if (sortColumn !== column) {
+      return <ArrowUpDown className="h-4 w-4 ml-1 opacity-50" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="h-4 w-4 ml-1" />
+      : <ArrowDown className="h-4 w-4 ml-1" />;
   };
 
   const resetForm = () => {
-    setFormData({
-      email: "",
-      planType: "arcano_basico",
-      billingPeriod: "monthly",
-      isActive: true,
-      expiresInDays: "30",
-      greennProductId: "",
-      greennContractId: ""
-    });
+    setFormEmail("");
+    setFormName("");
+    setFormPhone("");
+    setFormPlanType("arcano_basico");
+    setFormBillingPeriod("monthly");
+    setFormIsActive(true);
+    setFormExpiresInDays(30);
+    setFormGreennProductId("");
+    setFormGreennContractId("");
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("pt-BR");
+  };
+
+  const getDaysUntilExpiry = (expiresAt: string | null) => {
+    if (!expiresAt) return null;
+    const diff = new Date(expiresAt).getTime() - new Date().getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
   const handleCreate = async () => {
-    if (!formData.email.trim()) {
+    if (!formEmail) {
       toast.error("Email é obrigatório");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-premium-user', {
+      const response = await supabase.functions.invoke("create-premium-user", {
         body: {
-          email: formData.email.trim(),
-          planType: formData.planType,
-          billingPeriod: formData.billingPeriod,
-          expiresInDays: parseInt(formData.expiresInDays),
-          isActive: formData.isActive,
-          greennProductId: formData.greennProductId ? parseInt(formData.greennProductId) : undefined,
-          greennContractId: formData.greennContractId || undefined
-        }
+          email: formEmail,
+          name: formName,
+          phone: formPhone,
+          planType: formPlanType,
+          billingPeriod: formBillingPeriod,
+          expiresInDays: formExpiresInDays,
+          isActive: formIsActive,
+          greennProductId: formGreennProductId ? parseInt(formGreennProductId) : null,
+          greennContractId: formGreennContractId || null,
+        },
       });
 
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      if (response.error) throw response.error;
 
       toast.success("Usuário premium criado com sucesso!");
-      setShowCreateModal(false);
+      setIsCreateModalOpen(false);
       resetForm();
       await fetchPremiumUsers();
     } catch (error: any) {
@@ -221,30 +321,43 @@ const AdminPremiumDashboard = () => {
     setIsSubmitting(true);
     try {
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + parseInt(formData.expiresInDays));
+      expiresAt.setDate(expiresAt.getDate() + formExpiresInDays);
 
-      const { error } = await supabase
-        .from('premium_users')
+      const { error: premiumError } = await supabase
+        .from("premium_users")
         .update({
-          plan_type: formData.planType,
-          billing_period: formData.billingPeriod,
-          is_active: formData.isActive,
+          plan_type: formPlanType,
+          billing_period: formBillingPeriod,
+          is_active: formIsActive,
           expires_at: expiresAt.toISOString(),
-          greenn_product_id: formData.greennProductId ? parseInt(formData.greennProductId) : null,
-          greenn_contract_id: formData.greennContractId || null
+          greenn_product_id: formGreennProductId ? parseInt(formGreennProductId) : null,
+          greenn_contract_id: formGreennContractId || null,
         })
-        .eq('id', selectedUser.id);
+        .eq("id", selectedUser.id);
 
-      if (error) throw error;
+      if (premiumError) throw premiumError;
 
-      toast.success("Usuário premium atualizado com sucesso!");
-      setShowEditModal(false);
-      setSelectedUser(null);
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert({
+          id: selectedUser.user_id,
+          name: formName,
+          phone: formPhone.replace(/\D/g, ''),
+          email: formEmail,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'id' });
+
+      if (profileError) {
+        console.error("Error updating profile:", profileError);
+      }
+
+      toast.success("Usuário atualizado com sucesso!");
+      setIsEditModalOpen(false);
       resetForm();
       await fetchPremiumUsers();
     } catch (error: any) {
-      console.error("Error updating premium user:", error);
-      toast.error(error.message || "Erro ao atualizar usuário premium");
+      console.error("Error updating user:", error);
+      toast.error("Erro ao atualizar usuário");
     } finally {
       setIsSubmitting(false);
     }
@@ -256,19 +369,19 @@ const AdminPremiumDashboard = () => {
     setIsSubmitting(true);
     try {
       const { error } = await supabase
-        .from('premium_users')
+        .from("premium_users")
         .delete()
-        .eq('id', selectedUser.id);
+        .eq("id", selectedUser.id);
 
       if (error) throw error;
 
-      toast.success("Usuário premium removido com sucesso!");
-      setShowDeleteModal(false);
+      toast.success("Usuário removido com sucesso!");
+      setIsDeleteModalOpen(false);
       setSelectedUser(null);
       await fetchPremiumUsers();
-    } catch (error: any) {
-      console.error("Error deleting premium user:", error);
-      toast.error(error.message || "Erro ao remover usuário premium");
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      toast.error("Erro ao remover usuário");
     } finally {
       setIsSubmitting(false);
     }
@@ -276,37 +389,39 @@ const AdminPremiumDashboard = () => {
 
   const openEditModal = (user: PremiumUser) => {
     setSelectedUser(user);
-    const daysUntilExpiry = user.expires_at 
-      ? Math.max(0, Math.ceil((new Date(user.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-      : 30;
-    
-    setFormData({
-      email: "",
-      planType: user.plan_type || "arcano_basico",
-      billingPeriod: user.billing_period || "monthly",
-      isActive: user.is_active,
-      expiresInDays: String(daysUntilExpiry || 30),
-      greennProductId: user.greenn_product_id?.toString() || "",
-      greennContractId: user.greenn_contract_id || ""
-    });
-    setShowEditModal(true);
+    setFormEmail(user.email || '');
+    setFormName(user.name || '');
+    setFormPhone(user.phone || '');
+    setFormPlanType(user.plan_type || "arcano_basico");
+    setFormBillingPeriod(user.billing_period || "monthly");
+    setFormIsActive(user.is_active);
+    setFormExpiresInDays(getDaysUntilExpiry(user.expires_at) || 30);
+    setFormGreennProductId(user.greenn_product_id?.toString() || "");
+    setFormGreennContractId(user.greenn_contract_id || "");
+    setIsEditModalOpen(true);
   };
 
   const openDeleteModal = (user: PremiumUser) => {
     setSelectedUser(user);
-    setShowDeleteModal(true);
+    setIsDeleteModalOpen(true);
   };
 
-  // Stats calculations
+  const openWhatsApp = (phone: string) => {
+    if (!phone) {
+      toast.error("Telefone não cadastrado");
+      return;
+    }
+    const formattedPhone = phone.startsWith('55') ? phone : `55${phone}`;
+    window.open(`https://wa.me/${formattedPhone}`, '_blank');
+  };
+
   const totalUsers = premiumUsers.length;
   const activeUsers = premiumUsers.filter(u => u.is_active).length;
   const expiringUsers = premiumUsers.filter(u => {
-    if (!u.expires_at) return false;
-    const daysUntil = (new Date(u.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-    return daysUntil > 0 && daysUntil <= 7;
+    const days = getDaysUntilExpiry(u.expires_at);
+    return days !== null && days <= 7 && days > 0 && u.is_active;
   });
 
-  // Chart data
   const planDistribution = Object.entries(
     premiumUsers.reduce((acc, user) => {
       const plan = user.plan_type || "unknown";
@@ -319,31 +434,15 @@ const AdminPremiumDashboard = () => {
     color: PLAN_COLORS[name] || "#6b7280"
   }));
 
-  const billingDistribution = Object.entries(
-    premiumUsers.reduce((acc, user) => {
-      const period = user.billing_period || "unknown";
-      acc[period] = (acc[period] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>)
-  ).map(([name, value]) => ({
-    name: name === "monthly" ? "Mensal" : name === "yearly" ? "Anual" : name,
-    value
-  }));
-
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleDateString('pt-BR');
-  };
-
-  const getDaysUntilExpiry = (expiresAt: string | null) => {
-    if (!expiresAt) return null;
-    return Math.ceil((new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  };
+  const billingDistribution = [
+    { name: "Mensal", value: premiumUsers.filter(u => u.billing_period === "monthly").length },
+    { name: "Anual", value: premiumUsers.filter(u => u.billing_period === "yearly").length },
+  ];
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <RefreshCw className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -351,302 +450,370 @@ const AdminPremiumDashboard = () => {
   if (!isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-7xl mx-auto py-8 px-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-background p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/admin-dashboard')}
-              size="icon"
-            >
-              <ArrowLeft className="h-4 w-4" />
+            <Button variant="ghost" size="icon" onClick={() => navigate("/admin-dashboard")}>
+              <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Gerenciar Usuários Premium
-              </h1>
-              <p className="text-muted-foreground">
-                Dashboard e gestão de assinaturas
-              </p>
-            </div>
+            <h1 className="text-2xl font-bold">Gerenciar Premium</h1>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={fetchPremiumUsers}
-              disabled={isRefreshing}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Atualizar
+            <Button variant="outline" size="icon" onClick={fetchPremiumUsers}>
+              <RefreshCw className="h-4 w-4" />
             </Button>
-            <Button
-              onClick={() => {
-                resetForm();
-                setShowCreateModal(true);
-              }}
-              className="bg-gradient-primary hover:opacity-90"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
+            <Button onClick={() => { resetForm(); setIsCreateModalOpen(true); }}>
+              <Plus className="h-4 w-4 mr-2" />
               Novo Usuário
             </Button>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/20 rounded-full">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <Users className="h-8 w-8 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">Total de Assinantes</p>
-                <p className="text-3xl font-bold text-foreground">{totalUsers}</p>
-                <p className="text-xs text-green-500">{activeUsers} ativos</p>
+                <p className="text-2xl font-bold">{totalUsers}</p>
               </div>
-            </div>
+            </CardContent>
           </Card>
-
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-yellow-500/20 rounded-full">
-                <Crown className="h-6 w-6 text-yellow-500" />
-              </div>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <Crown className="h-8 w-8 text-yellow-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Planos</p>
-                <div className="flex gap-2 mt-1">
-                  {planDistribution.map(plan => (
-                    <Badge key={plan.name} style={{ backgroundColor: plan.color }} className="text-white">
-                      {plan.value}
-                    </Badge>
-                  ))}
-                </div>
+                <p className="text-sm text-muted-foreground">Ativos</p>
+                <p className="text-2xl font-bold">{activeUsers}</p>
               </div>
-            </div>
+            </CardContent>
           </Card>
-
-          <Card className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-orange-500/20 rounded-full">
-                <Clock className="h-6 w-6 text-orange-500" />
-              </div>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <Clock className="h-8 w-8 text-orange-500" />
               <div>
                 <p className="text-sm text-muted-foreground">Expirando em 7 dias</p>
-                <p className="text-3xl font-bold text-foreground">{expiringUsers.length}</p>
-                <p className="text-xs text-orange-500">Atenção necessária</p>
+                <p className="text-2xl font-bold">{expiringUsers.length}</p>
               </div>
-            </div>
+            </CardContent>
           </Card>
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Distribuição por Plano</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={planDistribution}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`}
-                >
-                  {planDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Período de Cobrança</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={billingDistribution}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </div>
-
-        {/* Expiring Soon Alert */}
-        {expiringUsers.length > 0 && (
-          <Card className="p-4 mb-6 border-orange-500/50 bg-orange-500/10">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <AlertTriangle className="h-8 w-8 text-red-500" />
               <div>
-                <p className="font-medium text-foreground">
-                  {expiringUsers.length} usuário(s) com assinatura expirando em 7 dias
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {expiringUsers.map(u => u.user_id.slice(0, 8)).join(", ")}...
-                </p>
+                <p className="text-sm text-muted-foreground">Inativos</p>
+                <p className="text-2xl font-bold">{totalUsers - activeUsers}</p>
               </div>
-            </div>
+            </CardContent>
           </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Distribuição por Plano</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={planDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({ name, value }) => `${name}: ${value}`}
+                    >
+                      {planDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Distribuição por Período</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={billingDistribution}>
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {expiringUsers.length > 0 && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Atenção!</AlertTitle>
+            <AlertDescription>
+              {expiringUsers.length} usuário(s) com assinatura expirando nos próximos 7 dias.
+            </AlertDescription>
+          </Alert>
         )}
 
-        {/* Filters */}
-        <Card className="p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por ID ou plano..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Input
+            placeholder="Buscar por nome, email ou plano..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
+          <Select value={periodFilter} onValueChange={setPeriodFilter}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Período" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todo o período</SelectItem>
+              <SelectItem value="1">Último dia</SelectItem>
+              <SelectItem value="3">Últimos 3 dias</SelectItem>
+              <SelectItem value="15">Últimos 15 dias</SelectItem>
+              <SelectItem value="30">Últimos 30 dias</SelectItem>
+              <SelectItem value="90">Últimos 90 dias</SelectItem>
+              <SelectItem value="365">Último ano</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('name')}
+                    >
+                      <div className="flex items-center">
+                        Nome {getSortIcon('name')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('plan_type')}
+                    >
+                      <div className="flex items-center">
+                        Plano {getSortIcon('plan_type')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('billing_period')}
+                    >
+                      <div className="flex items-center">
+                        Período {getSortIcon('billing_period')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('is_active')}
+                    >
+                      <div className="flex items-center">
+                        Status {getSortIcon('is_active')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('expires_at')}
+                    >
+                      <div className="flex items-center">
+                        Expira em {getSortIcon('expires_at')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('subscribed_at')}
+                    >
+                      <div className="flex items-center">
+                        Assinado em {getSortIcon('subscribed_at')}
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedUsers.map((user) => {
+                    const daysUntilExpiry = getDaysUntilExpiry(user.expires_at);
+                    const isExpiring = daysUntilExpiry !== null && daysUntilExpiry <= 7 && daysUntilExpiry > 0;
+                    
+                    return (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{user.name || 'Sem nome'}</p>
+                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>{PLAN_LABELS[user.plan_type || ''] || user.plan_type || "-"}</TableCell>
+                        <TableCell className="capitalize">
+                          {user.billing_period === 'monthly' ? 'Mensal' : user.billing_period === 'yearly' ? 'Anual' : user.billing_period || "-"}
+                        </TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            user.is_active 
+                              ? "bg-green-500/20 text-green-500" 
+                              : "bg-red-500/20 text-red-500"
+                          }`}>
+                            {user.is_active ? "Ativo" : "Inativo"}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className={isExpiring ? "text-orange-500 font-medium" : ""}>
+                            {formatDate(user.expires_at)}
+                            {daysUntilExpiry !== null && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({daysUntilExpiry}d)
+                              </span>
+                            )}
+                          </span>
+                        </TableCell>
+                        <TableCell>{formatDate(user.subscribed_at)}</TableCell>
+                        <TableCell>
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openWhatsApp(user.phone || '')}
+                              disabled={!user.phone}
+                              title={user.phone ? "Enviar WhatsApp" : "Telefone não cadastrado"}
+                            >
+                              <MessageCircle className="h-4 w-4 text-green-500" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditModal(user)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openDeleteModal(user)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
-            <Select value={periodFilter} onValueChange={setPeriodFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Período" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todo período</SelectItem>
-                <SelectItem value="1">Último dia</SelectItem>
-                <SelectItem value="3">Últimos 3 dias</SelectItem>
-                <SelectItem value="15">Últimos 15 dias</SelectItem>
-                <SelectItem value="30">Últimos 30 dias</SelectItem>
-                <SelectItem value="90">Últimos 90 dias</SelectItem>
-                <SelectItem value="365">Último ano</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          </CardContent>
         </Card>
 
-        {/* Users Table */}
-        <Card className="overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User ID</TableHead>
-                <TableHead>Plano</TableHead>
-                <TableHead>Período</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Expira em</TableHead>
-                <TableHead>Assinado em</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    Nenhum usuário encontrado
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredUsers.map((user) => {
-                  const daysUntil = getDaysUntilExpiry(user.expires_at);
-                  const isExpiringSoon = daysUntil !== null && daysUntil <= 7 && daysUntil > 0;
-                  const isExpired = daysUntil !== null && daysUntil <= 0;
+        {totalPages > 1 && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(pageNum)}
+                      isActive={currentPage === pageNum}
+                      className="cursor-pointer"
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
 
-                  return (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-mono text-xs">
-                        {user.user_id.slice(0, 8)}...
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          style={{ backgroundColor: PLAN_COLORS[user.plan_type || ""] || "#6b7280" }}
-                          className="text-white"
-                        >
-                          {PLAN_LABELS[user.plan_type || ""] || user.plan_type || "-"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {user.billing_period === "monthly" ? "Mensal" : 
-                         user.billing_period === "yearly" ? "Anual" : user.billing_period || "-"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={user.is_active ? "default" : "secondary"}>
-                          {user.is_active ? "Ativo" : "Inativo"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`${isExpired ? 'text-red-500' : isExpiringSoon ? 'text-orange-500' : ''}`}>
-                          {formatDate(user.expires_at)}
-                          {daysUntil !== null && (
-                            <span className="text-xs ml-1">
-                              ({daysUntil <= 0 ? 'expirado' : `${daysUntil}d`})
-                            </span>
-                          )}
-                        </span>
-                      </TableCell>
-                      <TableCell>{formatDate(user.subscribed_at)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => openEditModal(user)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => openDeleteModal(user)}
-                            className="text-red-500 hover:text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </Card>
+        <p className="text-sm text-muted-foreground text-center">
+          Mostrando {paginatedUsers.length} de {filterUsers.length} usuários
+        </p>
 
-        {/* Create Modal */}
-        <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-          <DialogContent className="max-w-md">
+        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Novo Usuário Premium</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Email do usuário *</Label>
+              <div>
+                <Label>Email *</Label>
                 <Input
                   type="email"
-                  placeholder="usuario@exemplo.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
+                  placeholder="usuario@email.com"
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Tipo do Plano</Label>
-                <Select value={formData.planType} onValueChange={(v) => setFormData({ ...formData, planType: v })}>
+              <div>
+                <Label>Nome</Label>
+                <Input
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  placeholder="Nome do usuário"
+                />
+              </div>
+              <div>
+                <Label>Telefone/WhatsApp</Label>
+                <Input
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value)}
+                  placeholder="11999999999"
+                />
+              </div>
+              <div>
+                <Label>Plano</Label>
+                <Select value={formPlanType} onValueChange={setFormPlanType}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="arcano_basico">Arcano Básico</SelectItem>
                     <SelectItem value="arcano_pro">Arcano Pro</SelectItem>
-                    <SelectItem value="arcano_unlimited">Arcano IA Unlimited</SelectItem>
+                    <SelectItem value="arcano_unlimited">Arcano Unlimited</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div>
                 <Label>Período de Cobrança</Label>
-                <Select value={formData.billingPeriod} onValueChange={(v) => setFormData({ ...formData, billingPeriod: v })}>
+                <Select value={formBillingPeriod} onValueChange={setFormBillingPeriod}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -656,57 +823,91 @@ const AdminPremiumDashboard = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div>
                 <Label>Expira em (dias)</Label>
                 <Input
                   type="number"
-                  min="1"
-                  value={formData.expiresInDays}
-                  onChange={(e) => setFormData({ ...formData, expiresInDays: e.target.value })}
+                  value={formExpiresInDays}
+                  onChange={(e) => setFormExpiresInDays(parseInt(e.target.value) || 30)}
                 />
               </div>
-              <div className="flex items-center justify-between">
-                <Label>Status Ativo</Label>
-                <Switch
-                  checked={formData.isActive}
-                  onCheckedChange={(v) => setFormData({ ...formData, isActive: v })}
+              <div className="flex items-center gap-2">
+                <Switch checked={formIsActive} onCheckedChange={setFormIsActive} />
+                <Label>Ativo</Label>
+              </div>
+              <div>
+                <Label>Greenn Product ID (opcional)</Label>
+                <Input
+                  value={formGreennProductId}
+                  onChange={(e) => setFormGreennProductId(e.target.value)}
                 />
               </div>
-              <Button onClick={handleCreate} className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Criar Usuário Premium
-              </Button>
+              <div>
+                <Label>Greenn Contract ID (opcional)</Label>
+                <Input
+                  value={formGreennContractId}
+                  onChange={(e) => setFormGreennContractId(e.target.value)}
+                />
+              </div>
             </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreate} disabled={isSubmitting}>
+                {isSubmitting ? "Criando..." : "Criar"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Edit Modal */}
-        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-          <DialogContent className="max-w-md">
+        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Editar Usuário Premium</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="p-3 bg-secondary rounded-lg">
-                <p className="text-sm text-muted-foreground">User ID</p>
-                <p className="font-mono text-sm">{selectedUser?.user_id}</p>
+              <div>
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
+                  disabled
+                />
               </div>
-              <div className="space-y-2">
-                <Label>Tipo do Plano</Label>
-                <Select value={formData.planType} onValueChange={(v) => setFormData({ ...formData, planType: v })}>
+              <div>
+                <Label>Nome</Label>
+                <Input
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  placeholder="Nome do usuário"
+                />
+              </div>
+              <div>
+                <Label>Telefone/WhatsApp</Label>
+                <Input
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value)}
+                  placeholder="11999999999"
+                />
+              </div>
+              <div>
+                <Label>Plano</Label>
+                <Select value={formPlanType} onValueChange={setFormPlanType}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="arcano_basico">Arcano Básico</SelectItem>
                     <SelectItem value="arcano_pro">Arcano Pro</SelectItem>
-                    <SelectItem value="arcano_unlimited">Arcano IA Unlimited</SelectItem>
+                    <SelectItem value="arcano_unlimited">Arcano Unlimited</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div>
                 <Label>Período de Cobrança</Label>
-                <Select value={formData.billingPeriod} onValueChange={(v) => setFormData({ ...formData, billingPeriod: v })}>
+                <Select value={formBillingPeriod} onValueChange={setFormBillingPeriod}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -716,63 +917,61 @@ const AdminPremiumDashboard = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Nova expiração em (dias a partir de hoje)</Label>
+              <div>
+                <Label>Expira em (dias a partir de hoje)</Label>
                 <Input
                   type="number"
-                  min="1"
-                  value={formData.expiresInDays}
-                  onChange={(e) => setFormData({ ...formData, expiresInDays: e.target.value })}
+                  value={formExpiresInDays}
+                  onChange={(e) => setFormExpiresInDays(parseInt(e.target.value) || 30)}
                 />
               </div>
-              <div className="flex items-center justify-between">
-                <Label>Status Ativo</Label>
-                <Switch
-                  checked={formData.isActive}
-                  onCheckedChange={(v) => setFormData({ ...formData, isActive: v })}
+              <div className="flex items-center gap-2">
+                <Switch checked={formIsActive} onCheckedChange={setFormIsActive} />
+                <Label>Ativo</Label>
+              </div>
+              <div>
+                <Label>Greenn Product ID (opcional)</Label>
+                <Input
+                  value={formGreennProductId}
+                  onChange={(e) => setFormGreennProductId(e.target.value)}
                 />
               </div>
-              <Button onClick={handleEdit} className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Salvar Alterações
-              </Button>
+              <div>
+                <Label>Greenn Contract ID (opcional)</Label>
+                <Input
+                  value={formGreennContractId}
+                  onChange={(e) => setFormGreennContractId(e.target.value)}
+                />
+              </div>
             </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEdit} disabled={isSubmitting}>
+                {isSubmitting ? "Salvando..." : "Salvar"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Delete Modal */}
-        <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-          <DialogContent className="max-w-sm">
+        <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Confirmar Exclusão</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-muted-foreground">
-                Tem certeza que deseja remover este usuário premium?
-              </p>
-              <div className="p-3 bg-secondary rounded-lg">
-                <p className="text-sm text-muted-foreground">User ID</p>
-                <p className="font-mono text-sm">{selectedUser?.user_id}</p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteModal(false)}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDelete}
-                  className="flex-1"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Excluir
-                </Button>
-              </div>
-            </div>
+            <p>
+              Tem certeza que deseja remover o usuário premium{" "}
+              <strong>{selectedUser?.name || selectedUser?.email}</strong>?
+            </p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={handleDelete} disabled={isSubmitting}>
+                {isSubmitting ? "Removendo..." : "Remover"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

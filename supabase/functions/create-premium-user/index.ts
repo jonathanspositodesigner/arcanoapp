@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -8,6 +7,8 @@ const corsHeaders = {
 
 interface CreatePremiumUserPayload {
   email: string;
+  name?: string;
+  phone?: string;
   planType: string;
   billingPeriod: string;
   expiresInDays: number;
@@ -16,7 +17,7 @@ interface CreatePremiumUserPayload {
   greennContractId?: string;
 }
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -64,7 +65,7 @@ serve(async (req: Request) => {
     const payload: CreatePremiumUserPayload = await req.json();
     console.log('Creating premium user:', payload.email);
 
-    const { email, planType, billingPeriod, expiresInDays, isActive, greennProductId, greennContractId } = payload;
+    const { email, name, phone, planType, billingPeriod, expiresInDays, isActive, greennProductId, greennContractId } = payload;
 
     if (!email || !planType || !billingPeriod || !expiresInDays) {
       return new Response(
@@ -73,11 +74,14 @@ serve(async (req: Request) => {
       );
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+    const cleanPhone = phone?.replace(/\D/g, '') || '';
+
     // Check if user exists
     const { data: existingUsers } = await supabase.auth.admin.listUsers();
     let userId: string | null = null;
     
-    const existingUser = existingUsers?.users.find(u => u.email === email.toLowerCase().trim());
+    const existingUser = existingUsers?.users.find(u => u.email === normalizedEmail);
     
     if (existingUser) {
       userId = existingUser.id;
@@ -86,7 +90,7 @@ serve(async (req: Request) => {
       // Create new user with random password
       const randomPassword = Math.random().toString(36).slice(-12) + "Aa1!";
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email: email.toLowerCase().trim(),
+        email: normalizedEmail,
         password: randomPassword,
         email_confirm: true
       });
@@ -108,6 +112,24 @@ serve(async (req: Request) => {
         JSON.stringify({ error: 'Failed to get user ID' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Upsert profile with name and phone
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .upsert({
+        id: userId,
+        name: name || '',
+        phone: cleanPhone,
+        email: normalizedEmail,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+
+    if (profileError) {
+      console.error('Error upserting profile:', profileError);
+      // Don't fail, profile is supplementary
+    } else {
+      console.log('Profile upserted for user:', userId);
     }
 
     // Calculate expiration date
