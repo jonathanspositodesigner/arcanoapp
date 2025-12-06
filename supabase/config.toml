@@ -2,3 +2,6 @@ project_id = "jooojbaljrshgpaxdlou"
 
 [functions.setup-admin-users]
 verify_jwt = false
+
+[functions.webhook-greenn]
+verify_jwt = false

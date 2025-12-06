@@ -142,24 +142,39 @@ export type Database = {
       }
       premium_users: {
         Row: {
+          billing_period: string | null
           created_at: string | null
           expires_at: string | null
+          greenn_contract_id: string | null
+          greenn_product_id: number | null
           id: string
           is_active: boolean
+          plan_type: string | null
+          subscribed_at: string | null
           user_id: string
         }
         Insert: {
+          billing_period?: string | null
           created_at?: string | null
           expires_at?: string | null
+          greenn_contract_id?: string | null
+          greenn_product_id?: number | null
           id?: string
           is_active?: boolean
+          plan_type?: string | null
+          subscribed_at?: string | null
           user_id: string
         }
         Update: {
+          billing_period?: string | null
           created_at?: string | null
           expires_at?: string | null
+          greenn_contract_id?: string | null
+          greenn_product_id?: number | null
           id?: string
           is_active?: boolean
+          plan_type?: string | null
+          subscribed_at?: string | null
           user_id?: string
         }
         Relationships: []
