@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
 import { trackPromptClick } from "@/hooks/usePromptClickTracker";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 interface PromptItem {
@@ -52,8 +53,15 @@ const BibliotecaPrompts = () => {
   const {
     user,
     isPremium,
+    planType,
     logout
   } = usePremiumStatus();
+  const { 
+    copiesUsed, 
+    remainingCopies, 
+    hasReachedLimit, 
+    recordCopy 
+  } = useDailyPromptLimit(user, planType);
   const { isSupported: pushSupported, isSubscribed: pushSubscribed, isLoading: pushLoading, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushNotifications();
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
@@ -61,6 +69,7 @@ const BibliotecaPrompts = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [premiumModalItem, setPremiumModalItem] = useState<PromptItem | null>(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
   const [tutorialUrl, setTutorialUrl] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -140,6 +149,20 @@ const BibliotecaPrompts = () => {
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   const categories = ["Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
   const copyToClipboard = async (promptItem: PromptItem) => {
+    // Check daily limit for premium items on basic plan
+    if (promptItem.isPremium && planType === "arcano_basico") {
+      if (hasReachedLimit) {
+        setShowLimitModal(true);
+        return;
+      }
+      // Record the copy
+      const recorded = await recordCopy(String(promptItem.id));
+      if (!recorded) {
+        setShowLimitModal(true);
+        return;
+      }
+    }
+
     try {
       await navigator.clipboard.writeText(promptItem.prompt);
       toast.success(`Prompt "${promptItem.title}" copiado!`);
@@ -466,19 +489,31 @@ const BibliotecaPrompts = () => {
 
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2">
-                      {canAccess ? <>
-                          <Button onClick={() => copyToClipboard(item)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm">
-                            <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                            Copiar Prompt
+                      {canAccess ? (
+                        // Check if user has reached daily limit for premium items
+                        item.isPremium && hasReachedLimit && planType === "arcano_basico" ? (
+                          <Button onClick={() => setShowLimitModal(true)} size="sm" className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white text-xs sm:text-sm">
+                            <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            Limite diário atingido
                           </Button>
-                          <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
-                            <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                            Baixar Referência
-                          </Button>
-                        </> : <Button onClick={() => navigate("/planos")} size="sm" className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm">
+                        ) : (
+                          <>
+                            <Button onClick={() => copyToClipboard(item)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm">
+                              <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                              Copiar Prompt {item.isPremium && planType === "arcano_basico" && `(${remainingCopies} restantes)`}
+                            </Button>
+                            <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
+                              <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                              Baixar Referência
+                            </Button>
+                          </>
+                        )
+                      ) : (
+                        <Button onClick={() => navigate("/planos")} size="sm" className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm">
                           <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" fill="currentColor" />
                           Torne-se Premium
-                        </Button>}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>;
@@ -516,14 +551,26 @@ const BibliotecaPrompts = () => {
                       <p className="text-xs text-muted-foreground">{selectedPrompt.prompt}</p>
                     </div>
                     <div className="flex gap-3 flex-wrap">
-                      <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-gradient-primary hover:opacity-90 text-white" size="sm">
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copiar Prompt
-                      </Button>
-                      <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Baixar {isVideoUrl(selectedPrompt.imageUrl) ? 'Vídeo' : 'Imagem'}
-                      </Button>
+                      {selectedPrompt.isPremium && hasReachedLimit && planType === "arcano_basico" ? (
+                        <Button onClick={() => {
+                          handleCloseModal();
+                          setShowLimitModal(true);
+                        }} className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white" size="sm">
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          Limite atingido
+                        </Button>
+                      ) : (
+                        <>
+                          <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-gradient-primary hover:opacity-90 text-white" size="sm">
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copiar Prompt
+                          </Button>
+                          <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            Baixar {isVideoUrl(selectedPrompt.imageUrl) ? 'Vídeo' : 'Imagem'}
+                          </Button>
+                        </>
+                      )}
                       {selectedPrompt.tutorialUrl && (
                         <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} variant="outline" className="w-full border-red-500 text-red-500 hover:bg-red-500/10" size="sm">
                           <Youtube className="h-4 w-4 mr-2" />
@@ -597,6 +644,43 @@ const BibliotecaPrompts = () => {
                   />
                 </div>
               )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Daily Limit Reached Modal */}
+          <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
+            <DialogContent className="max-w-md p-0 overflow-hidden bg-card">
+              <button onClick={() => setShowLimitModal(false)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+              <div className="text-center space-y-4 p-6">
+                <div className="flex justify-center">
+                  <div className="p-3 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20">
+                    <AlertTriangle className="h-10 w-10 text-orange-500" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Limite diário atingido!</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Você já utilizou seus {copiesUsed} prompts premium do dia no plano Arcano Básico.
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Faça upgrade para continuar explorando ou aguarde até amanhã.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Button onClick={() => {
+                    setShowLimitModal(false);
+                    navigate("/upgrade");
+                  }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                    <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                    Fazer Upgrade
+                  </Button>
+                  <Button onClick={() => setShowLimitModal(false)} variant="outline" className="w-full">
+                    Continuar navegando
+                  </Button>
+                </div>
+              </div>
             </DialogContent>
           </Dialog>
         </main>

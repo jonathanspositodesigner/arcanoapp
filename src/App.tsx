@@ -14,6 +14,7 @@ import AdminManageImages from "./pages/AdminManageImages";
 import UserLogin from "./pages/UserLogin";
 import InstallApp from "./pages/InstallApp";
 import Planos from "./pages/Planos";
+import UpgradePlano from "./pages/UpgradePlano";
 import AdminPushNotifications from "./pages/AdminPushNotifications";
 import AdminInstallStats from "./pages/AdminInstallStats";
 import NotFound from "./pages/NotFound";
@@ -45,6 +46,7 @@ const AppContent = () => {
         <Route path="/login" element={<UserLogin />} />
         <Route path="/install" element={<InstallApp />} />
         <Route path="/planos" element={<Planos />} />
+        <Route path="/upgrade" element={<UpgradePlano />} />
         <Route path="/admin-push-notifications" element={<AdminPushNotifications />} />
         <Route path="/admin-install-stats" element={<AdminInstallStats />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
