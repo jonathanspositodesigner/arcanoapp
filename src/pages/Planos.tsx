@@ -93,7 +93,8 @@ const Planos = () => {
         included: false
       }],
       popular: true,
-      promo: false
+      promo: false,
+      hasTrial: false
     }, {
       name: "ARCANO IA UNLIMITED",
       price: "24,90",
@@ -210,7 +211,8 @@ const Planos = () => {
         included: false
       }],
       popular: true,
-      promo: false
+      promo: false,
+      hasTrial: true
     }, {
       name: "ARCANO IA UNLIMITED",
       price: "19,90",
@@ -325,9 +327,9 @@ const Planos = () => {
               {/* CTA Button */}
               <Button 
                 onClick={() => setShowComingSoonModal(true)}
-                className={`w-full mb-6 ${plan.popular ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-muted hover:bg-muted/80 text-foreground"}`}
+                className={`w-full mb-6 ${(plan as any).hasTrial ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
               >
-                {plan.popular ? "Teste grátis por 7 dias" : "Assinar"}
+                {(plan as any).hasTrial ? "Teste grátis por 7 dias" : "Assinar"}
               </Button>
 
               {/* Features */}
