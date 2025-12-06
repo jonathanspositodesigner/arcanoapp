@@ -148,9 +148,12 @@ const BibliotecaPrompts = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   const categories = ["Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
+  // Helper to check if user has a plan with daily limit
+  const hasLimitPlan = planType === "arcano_basico" || planType === "arcano_pro";
+
   const copyToClipboard = async (promptItem: PromptItem) => {
-    // Check daily limit for premium items on basic plan
-    if (promptItem.isPremium && planType === "arcano_basico") {
+    // Check daily limit for premium items on basic and pro plans
+    if (promptItem.isPremium && hasLimitPlan) {
       if (hasReachedLimit) {
         setShowLimitModal(true);
         return;
@@ -491,7 +494,7 @@ const BibliotecaPrompts = () => {
                     <div className="flex flex-col gap-2">
                       {canAccess ? (
                         // Check if user has reached daily limit for premium items
-                        item.isPremium && hasReachedLimit && planType === "arcano_basico" ? (
+                        item.isPremium && hasReachedLimit && hasLimitPlan ? (
                           <Button onClick={() => setShowLimitModal(true)} size="sm" className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white text-xs sm:text-sm">
                             <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                             Limite diário atingido
@@ -500,7 +503,7 @@ const BibliotecaPrompts = () => {
                           <>
                             <Button onClick={() => copyToClipboard(item)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm">
                               <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                              Copiar Prompt {item.isPremium && planType === "arcano_basico" && `(${remainingCopies} restantes)`}
+                              Copiar Prompt {item.isPremium && hasLimitPlan && `(${remainingCopies} restantes)`}
                             </Button>
                             <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
                               <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
@@ -551,7 +554,7 @@ const BibliotecaPrompts = () => {
                       <p className="text-xs text-muted-foreground">{selectedPrompt.prompt}</p>
                     </div>
                     <div className="flex gap-3 flex-wrap">
-                      {selectedPrompt.isPremium && hasReachedLimit && planType === "arcano_basico" ? (
+                      {selectedPrompt.isPremium && hasReachedLimit && hasLimitPlan ? (
                         <Button onClick={() => {
                           handleCloseModal();
                           setShowLimitModal(true);
