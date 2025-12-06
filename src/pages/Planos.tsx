@@ -23,6 +23,7 @@ const Planos = () => {
       price: "14,90",
       originalPrice: null,
       perMonth: true,
+      paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
       features: [{
         text: "10 prompts premium por dia",
         included: true
@@ -61,6 +62,7 @@ const Planos = () => {
       price: "20,90",
       originalPrice: null,
       perMonth: true,
+      paymentUrl: "https://payfast.greenn.com.br/148936/offer/kbgwmH",
       features: [{
         text: "24 prompts premium por dia",
         included: true
@@ -100,6 +102,7 @@ const Planos = () => {
       price: "24,90",
       originalPrice: "29,90",
       perMonth: true,
+      paymentUrl: "https://payfast.greenn.com.br/148937/offer/CiCenB",
       features: [{
         text: "Prompts premium ilimitados",
         included: true
@@ -140,6 +143,7 @@ const Planos = () => {
       originalPrice: "14,90",
       perMonth: true,
       yearlyTotal: "118,80",
+      paymentUrl: "https://payfast.greenn.com.br/148926/offer/RaLcc5",
       features: [{
         text: "10 prompts premium por dia",
         included: true
@@ -179,6 +183,7 @@ const Planos = () => {
       originalPrice: "20,90",
       perMonth: true,
       yearlyTotal: "178,80",
+      paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
       features: [{
         text: "24 prompts premium por dia",
         included: true
@@ -219,6 +224,7 @@ const Planos = () => {
       originalPrice: "29,90",
       perMonth: true,
       yearlyTotal: "238,80",
+      paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
       features: [{
         text: "Prompts premium ilimitados",
         included: true
@@ -326,7 +332,7 @@ const Planos = () => {
 
               {/* CTA Button */}
               <Button 
-                onClick={() => setShowComingSoonModal(true)}
+                onClick={() => window.open((plan as any).paymentUrl, '_blank')}
                 className={`w-full mb-6 ${
                   plan.popular 
                     ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
