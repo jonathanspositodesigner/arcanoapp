@@ -16,6 +16,7 @@ import InstallApp from "./pages/InstallApp";
 import Planos from "./pages/Planos";
 import AdminPushNotifications from "./pages/AdminPushNotifications";
 import NotFound from "./pages/NotFound";
+import { PushNotificationPrompt } from "./components/PushNotificationPrompt";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <PushNotificationPrompt />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
