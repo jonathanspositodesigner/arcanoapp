@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import AdminAnalyticsDashboard from "@/components/AdminAnalyticsDashboard";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -187,6 +188,9 @@ const AdminDashboard = () => {
             </div>
           </Card>
         </div>
+
+        {/* Analytics Dashboard */}
+        <AdminAnalyticsDashboard />
       </div>
     </div>
   );

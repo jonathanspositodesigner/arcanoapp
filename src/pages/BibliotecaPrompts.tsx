@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { trackPromptClick } from "@/hooks/usePromptClickTracker";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 interface PromptItem {
   id: string | number;
@@ -138,10 +139,12 @@ const BibliotecaPrompts = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   const categories = ["Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
-  const copyToClipboard = async (prompt: string, title: string) => {
+  const copyToClipboard = async (promptItem: PromptItem) => {
     try {
-      await navigator.clipboard.writeText(prompt);
-      toast.success(`Prompt "${title}" copiado!`);
+      await navigator.clipboard.writeText(promptItem.prompt);
+      toast.success(`Prompt "${promptItem.title}" copiado!`);
+      // Track the click
+      trackPromptClick(String(promptItem.id), promptItem.title, !!promptItem.isExclusive);
     } catch (error) {
       console.error("Failed to copy:", error);
       toast.error("Erro ao copiar prompt");
@@ -459,7 +462,7 @@ const BibliotecaPrompts = () => {
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2">
                       {canAccess ? <>
-                          <Button onClick={() => copyToClipboard(item.prompt, item.title)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm">
+                          <Button onClick={() => copyToClipboard(item)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm">
                             <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                             Copiar Prompt
                           </Button>
@@ -508,7 +511,7 @@ const BibliotecaPrompts = () => {
                       <p className="text-xs text-muted-foreground">{selectedPrompt.prompt}</p>
                     </div>
                     <div className="flex gap-3 flex-wrap">
-                      <Button onClick={() => copyToClipboard(selectedPrompt.prompt, selectedPrompt.title)} className="flex-1 bg-gradient-primary hover:opacity-90 text-white" size="sm">
+                      <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-gradient-primary hover:opacity-90 text-white" size="sm">
                         <Copy className="h-4 w-4 mr-2" />
                         Copiar Prompt
                       </Button>
