@@ -76,9 +76,11 @@ export const usePushNotifications = () => {
 
     if (!VAPID_PUBLIC_KEY) {
       toast.error("Chave VAPID não configurada");
+      console.error("VAPID_PUBLIC_KEY is missing");
       return false;
     }
 
+    console.log("Using VAPID key:", VAPID_PUBLIC_KEY.substring(0, 30) + "...");
     setIsLoading(true);
 
     try {
@@ -96,7 +98,20 @@ export const usePushNotifications = () => {
       await registerServiceWorker();
       const registration = await navigator.serviceWorker.ready;
 
-      // Subscribe to push
+      // FORCE CLEAR any existing subscription first
+      const existingSubscription = await registration.pushManager.getSubscription();
+      if (existingSubscription) {
+        console.log("Removing existing subscription...");
+        await existingSubscription.unsubscribe();
+        // Also remove from database
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('endpoint', existingSubscription.endpoint);
+      }
+
+      // Create NEW subscription with current VAPID key
+      console.log("Creating new subscription with VAPID key...");
       const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -104,6 +119,7 @@ export const usePushNotifications = () => {
       });
 
       const subscriptionJson = subscription.toJSON();
+      console.log("New subscription created:", subscriptionJson.endpoint?.substring(0, 50) + "...");
       
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
@@ -130,7 +146,7 @@ export const usePushNotifications = () => {
       return true;
     } catch (error: any) {
       console.error('Error subscribing to push notifications:', error);
-      toast.error("Erro ao ativar notificações");
+      toast.error("Erro ao ativar notificações: " + error.message);
       return false;
     } finally {
       setIsLoading(false);
