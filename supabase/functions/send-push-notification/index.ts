@@ -129,35 +129,38 @@ async function hkdf(
   return new Uint8Array(bits);
 }
 
-// Create encryption info
+// Create encryption info for aesgcm
 function createInfo(type: string, clientPublicKey: Uint8Array, serverPublicKey: Uint8Array): Uint8Array {
-  const typeBuffer = new TextEncoder().encode(type);
-  const info = new Uint8Array(18 + 1 + 5 + 1 + 2 + 65 + 2 + 65);
+  const typeBytes = new TextEncoder().encode(type);
+  const prefix = new TextEncoder().encode('Content-Encoding: ');
+  const curve = new TextEncoder().encode('P-256');
+  
+  // Calculate total size dynamically
+  const totalSize = prefix.length + typeBytes.length + 1 + curve.length + 1 + 2 + clientPublicKey.length + 2 + serverPublicKey.length;
+  const info = new Uint8Array(totalSize);
   let offset = 0;
 
   // "Content-Encoding: " + type + "\0"
-  const prefix = new TextEncoder().encode('Content-Encoding: ');
   info.set(prefix, offset);
   offset += prefix.length;
-  info.set(typeBuffer, offset);
-  offset += typeBuffer.length;
+  info.set(typeBytes, offset);
+  offset += typeBytes.length;
   info[offset++] = 0;
 
   // "P-256" + "\0"
-  const curve = new TextEncoder().encode('P-256');
   info.set(curve, offset);
   offset += curve.length;
   info[offset++] = 0;
 
-  // Client public key length (65) + key
+  // Client public key length (2 bytes big-endian) + key
   info[offset++] = 0;
-  info[offset++] = 65;
+  info[offset++] = clientPublicKey.length;
   info.set(clientPublicKey, offset);
-  offset += 65;
+  offset += clientPublicKey.length;
 
-  // Server public key length (65) + key
+  // Server public key length (2 bytes big-endian) + key
   info[offset++] = 0;
-  info[offset++] = 65;
+  info[offset++] = serverPublicKey.length;
   info.set(serverPublicKey, offset);
 
   return info;
