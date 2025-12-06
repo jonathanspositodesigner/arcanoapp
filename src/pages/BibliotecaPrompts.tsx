@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,7 @@ interface PromptItem {
   isExclusive?: boolean;
   isPremium?: boolean;
   referenceImages?: string[];
+  tutorialUrl?: string;
 }
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -59,6 +60,8 @@ const BibliotecaPrompts = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [premiumModalItem, setPremiumModalItem] = useState<PromptItem | null>(null);
+  const [showTutorialModal, setShowTutorialModal] = useState(false);
+  const [tutorialUrl, setTutorialUrl] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   useEffect(() => {
@@ -125,7 +128,8 @@ const BibliotecaPrompts = () => {
       category: item.category,
       isExclusive: true,
       isPremium: (item as any).is_premium || false,
-      referenceImages: (item as any).reference_images || []
+      referenceImages: (item as any).reference_images || [],
+      tutorialUrl: (item as any).tutorial_url || null
     }));
     setAllPrompts([...adminPrompts, ...communityPrompts]);
   };
@@ -207,6 +211,26 @@ const BibliotecaPrompts = () => {
       searchParams.delete("item");
       setSearchParams(searchParams);
     }
+  };
+
+  const getEmbedUrl = (url: string): string => {
+    // YouTube
+    const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+    // Vimeo
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) {
+      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    }
+    // Return original if no match (might be a direct embed URL)
+    return url;
+  };
+
+  const openTutorial = (url: string) => {
+    setTutorialUrl(getEmbedUrl(url));
+    setShowTutorialModal(true);
   };
   const externalLinks = [{
     name: "Gerar no ChatGPT",
@@ -478,7 +502,7 @@ const BibliotecaPrompts = () => {
                     <div className="bg-secondary p-3 rounded-lg max-h-24 overflow-y-auto">
                       <p className="text-xs text-muted-foreground">{selectedPrompt.prompt}</p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 flex-wrap">
                       <Button onClick={() => copyToClipboard(selectedPrompt.prompt, selectedPrompt.title)} className="flex-1 bg-gradient-primary hover:opacity-90 text-white" size="sm">
                         <Copy className="h-4 w-4 mr-2" />
                         Copiar Prompt
@@ -487,6 +511,12 @@ const BibliotecaPrompts = () => {
                         <Download className="h-4 w-4 mr-2" />
                         Baixar {isVideoUrl(selectedPrompt.imageUrl) ? 'Vídeo' : 'Imagem'}
                       </Button>
+                      {selectedPrompt.tutorialUrl && (
+                        <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} variant="outline" className="w-full border-red-500 text-red-500 hover:bg-red-500/10" size="sm">
+                          <Youtube className="h-4 w-4 mr-2" />
+                          Tutorial
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>}
@@ -535,6 +565,25 @@ const BibliotecaPrompts = () => {
                   </div>
                 </div>
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Tutorial Modal */}
+          <Dialog open={showTutorialModal} onOpenChange={setShowTutorialModal}>
+            <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black">
+              <button onClick={() => setShowTutorialModal(false)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+              {tutorialUrl && (
+                <div className="aspect-video">
+                  <iframe
+                    src={tutorialUrl}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </main>
