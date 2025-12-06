@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard, FolderOpen } from "lucide-react";
+import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard, FolderOpen, Inbox } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminAnalyticsDashboard from "@/components/AdminAnalyticsDashboard";
@@ -12,6 +12,7 @@ const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [subscriberCount, setSubscriberCount] = useState(0);
+  const [pendingCommunityCount, setPendingCommunityCount] = useState(0);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -39,11 +40,19 @@ const AdminDashboard = () => {
       setIsLoading(false);
 
       // Fetch subscriber count
-      const { count } = await supabase
+      const { count: subCount } = await supabase
         .from('push_subscriptions')
         .select('*', { count: 'exact', head: true });
       
-      setSubscriberCount(count || 0);
+      setSubscriberCount(subCount || 0);
+
+      // Fetch pending community submissions
+      const { count: pendingCount } = await supabase
+        .from('community_prompts')
+        .select('*', { count: 'exact', head: true })
+        .eq('approved', false);
+      
+      setPendingCommunityCount(pendingCount || 0);
     };
 
     checkAdminStatus();
@@ -99,18 +108,35 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Card */}
-        <Card className="p-6 mb-6 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/20 rounded-full">
-              <Users className="h-8 w-8 text-primary" />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <Card className="p-6 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/20 rounded-full">
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Notificações ativas</p>
+                <p className="text-3xl font-bold text-foreground">{subscriberCount}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Usuários com notificações ativas</p>
-              <p className="text-3xl font-bold text-foreground">{subscriberCount}</p>
+          </Card>
+
+          <Card 
+            className="p-6 bg-gradient-to-r from-orange-500/10 to-orange-500/5 border-orange-500/20 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/admin-community-review')}
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-orange-500/20 rounded-full">
+                <Inbox className="h-8 w-8 text-orange-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Envios para aprovar</p>
+                <p className="text-3xl font-bold text-foreground">{pendingCommunityCount}</p>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card
