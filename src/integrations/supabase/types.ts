@@ -113,6 +113,27 @@ export type Database = {
         }
         Relationships: []
       }
+      page_views: {
+        Row: {
+          id: string
+          page_path: string
+          user_agent: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          page_path: string
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          page_path?: string
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Relationships: []
+      }
       premium_users: {
         Row: {
           created_at: string | null
@@ -134,6 +155,30 @@ export type Database = {
           id?: string
           is_active?: boolean
           user_id?: string
+        }
+        Relationships: []
+      }
+      prompt_clicks: {
+        Row: {
+          clicked_at: string
+          id: string
+          is_admin_prompt: boolean
+          prompt_id: string
+          prompt_title: string
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          is_admin_prompt?: boolean
+          prompt_id: string
+          prompt_title: string
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          is_admin_prompt?: boolean
+          prompt_id?: string
+          prompt_title?: string
         }
         Relationships: []
       }

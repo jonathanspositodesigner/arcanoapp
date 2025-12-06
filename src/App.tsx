@@ -19,12 +19,14 @@ import AdminInstallStats from "./pages/AdminInstallStats";
 import NotFound from "./pages/NotFound";
 import { PushNotificationPrompt } from "./components/PushNotificationPrompt";
 import { useInstallTracker } from "./hooks/useInstallTracker";
+import { usePageViewTracker } from "./hooks/usePageViewTracker";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  // Track app installations
+  // Track app installations and page views
   useInstallTracker();
+  usePageViewTracker();
 
   return (
     <TooltipProvider>
