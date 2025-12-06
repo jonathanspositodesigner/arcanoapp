@@ -14,6 +14,7 @@ import AdminManageImages from "./pages/AdminManageImages";
 import UserLogin from "./pages/UserLogin";
 import InstallApp from "./pages/InstallApp";
 import Planos from "./pages/Planos";
+import AdminPushNotifications from "./pages/AdminPushNotifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/login" element={<UserLogin />} />
           <Route path="/install" element={<InstallApp />} />
           <Route path="/planos" element={<Planos />} />
+          <Route path="/admin-push-notifications" element={<AdminPushNotifications />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

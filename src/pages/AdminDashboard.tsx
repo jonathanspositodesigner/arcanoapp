@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle, Settings, LogOut } from "lucide-react";
+import { Upload, CheckCircle, Settings, LogOut, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -80,7 +80,7 @@ const AdminDashboard = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card
             className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105"
             onClick={() => navigate('/admin-upload')}
@@ -128,6 +128,23 @@ const AdminDashboard = () => {
               </h2>
               <p className="text-muted-foreground">
                 Edite ou exclua todos os arquivos já publicados
+              </p>
+            </div>
+          </Card>
+
+          <Card
+            className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105"
+            onClick={() => navigate('/admin-push-notifications')}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-orange-500 rounded-full">
+                <Bell className="h-12 w-12 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground">
+                Notificações Push
+              </h2>
+              <p className="text-muted-foreground">
+                Envie notificações para todos os usuários inscritos
               </p>
             </div>
           </Card>
