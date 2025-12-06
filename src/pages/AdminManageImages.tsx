@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -22,6 +22,7 @@ interface Prompt {
   type: 'admin' | 'community';
   is_premium?: boolean;
   created_at?: string;
+  tutorial_url?: string;
 }
 
 const AdminManageImages = () => {
@@ -33,6 +34,8 @@ const AdminManageImages = () => {
   const [editPromptText, setEditPromptText] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [editIsPremium, setEditIsPremium] = useState(false);
+  const [editHasTutorial, setEditHasTutorial] = useState(false);
+  const [editTutorialUrl, setEditTutorialUrl] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -94,6 +97,8 @@ const AdminManageImages = () => {
     setEditPromptText(prompt.prompt);
     setEditCategory(prompt.category);
     setEditIsPremium(prompt.is_premium || false);
+    setEditHasTutorial(!!prompt.tutorial_url);
+    setEditTutorialUrl(prompt.tutorial_url || "");
   };
 
   const handleSaveEdit = async () => {
@@ -108,9 +113,10 @@ const AdminManageImages = () => {
         category: editCategory
       };
 
-      // Only add is_premium for admin prompts
+      // Only add is_premium and tutorial_url for admin prompts
       if (editingPrompt.type === 'admin') {
         updateData.is_premium = editIsPremium;
+        updateData.tutorial_url = editHasTutorial && editTutorialUrl ? editTutorialUrl : null;
       }
 
       const { error } = await supabase
@@ -314,19 +320,52 @@ const AdminManageImages = () => {
             </div>
             
             {editingPrompt?.type === 'admin' && (
-              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
-                <div className="flex items-center gap-2">
-                  <Star className={`h-5 w-5 ${editIsPremium ? 'text-yellow-500' : 'text-muted-foreground'}`} fill={editIsPremium ? 'currentColor' : 'none'} />
-                  <Label htmlFor="edit-isPremium" className="font-medium">
-                    {editIsPremium ? 'Conteúdo Premium' : 'Conteúdo Gratuito'}
-                  </Label>
+              <>
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                  <div className="flex items-center gap-2">
+                    <Star className={`h-5 w-5 ${editIsPremium ? 'text-yellow-500' : 'text-muted-foreground'}`} fill={editIsPremium ? 'currentColor' : 'none'} />
+                    <Label htmlFor="edit-isPremium" className="font-medium">
+                      {editIsPremium ? 'Conteúdo Premium' : 'Conteúdo Gratuito'}
+                    </Label>
+                  </div>
+                  <Switch
+                    id="edit-isPremium"
+                    checked={editIsPremium}
+                    onCheckedChange={setEditIsPremium}
+                  />
                 </div>
-                <Switch
-                  id="edit-isPremium"
-                  checked={editIsPremium}
-                  onCheckedChange={setEditIsPremium}
-                />
-              </div>
+
+                {isVideoUrl(editingPrompt.image_url) && (
+                  <>
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                      <div className="flex items-center gap-2">
+                        <Video className={`h-5 w-5 ${editHasTutorial ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <Label htmlFor="edit-hasTutorial" className="font-medium">
+                          {editHasTutorial ? 'Tem Tutorial' : 'Sem Tutorial'}
+                        </Label>
+                      </div>
+                      <Switch
+                        id="edit-hasTutorial"
+                        checked={editHasTutorial}
+                        onCheckedChange={setEditHasTutorial}
+                      />
+                    </div>
+
+                    {editHasTutorial && (
+                      <div>
+                        <Label htmlFor="edit-tutorialUrl">Link do Tutorial (YouTube, Vimeo, etc.)</Label>
+                        <Input
+                          id="edit-tutorialUrl"
+                          value={editTutorialUrl}
+                          onChange={(e) => setEditTutorialUrl(e.target.value)}
+                          placeholder="https://www.youtube.com/watch?v=..."
+                          className="mt-2"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
             )}
 
             <div>
