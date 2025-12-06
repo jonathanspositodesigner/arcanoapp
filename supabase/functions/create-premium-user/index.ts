@@ -87,11 +87,10 @@ Deno.serve(async (req: Request) => {
       userId = existingUser.id;
       console.log('Found existing user:', userId);
     } else {
-      // Create new user with random password
-      const randomPassword = Math.random().toString(36).slice(-12) + "Aa1!";
+      // Create new user with password equal to email
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email: normalizedEmail,
-        password: randomPassword,
+        password: normalizedEmail,
         email_confirm: true
       });
 
@@ -115,6 +114,8 @@ Deno.serve(async (req: Request) => {
     }
 
     // Upsert profile with name and phone
+    console.log('Upserting profile with data:', { id: userId, name: name || '', phone: cleanPhone, email: normalizedEmail });
+    
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
@@ -129,7 +130,7 @@ Deno.serve(async (req: Request) => {
       console.error('Error upserting profile:', profileError);
       // Don't fail, profile is supplementary
     } else {
-      console.log('Profile upserted for user:', userId);
+      console.log('Profile upserted successfully for user:', userId);
     }
 
     // Calculate expiration date

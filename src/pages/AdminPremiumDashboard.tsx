@@ -132,11 +132,14 @@ const AdminPremiumDashboard = () => {
       if (premiumError) throw premiumError;
 
       const userIds = premiumData?.map(u => u.user_id) || [];
+      
+      // Fetch profiles
       const { data: profilesData } = await supabase
         .from("profiles")
         .select("id, name, phone, email")
         .in("id", userIds);
 
+      // Fetch auth emails via edge function to fill missing emails
       const mergedData = premiumData?.map(premium => {
         const profile = profilesData?.find(p => p.id === premium.user_id);
         return {
