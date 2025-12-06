@@ -7,7 +7,7 @@ import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, Chev
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 interface PromptItem {
@@ -46,6 +46,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     user,
     isPremium,
@@ -63,6 +64,22 @@ const BibliotecaPrompts = () => {
   useEffect(() => {
     fetchCommunityPrompts();
   }, []);
+
+  // Open modal from URL parameter
+  useEffect(() => {
+    const itemId = searchParams.get("item");
+    if (itemId && allPrompts.length > 0) {
+      const item = allPrompts.find(p => p.id === itemId);
+      if (item) {
+        if (item.isPremium && !isPremium) {
+          setPremiumModalItem(item);
+          setShowPremiumModal(true);
+        } else {
+          setSelectedPrompt(item);
+        }
+      }
+    }
+  }, [searchParams, allPrompts, isPremium]);
 
   // Shuffle "Ver Tudo" items when allPrompts changes
   useEffect(() => {
@@ -164,11 +181,31 @@ const BibliotecaPrompts = () => {
     }
   };
   const handleItemClick = (item: PromptItem) => {
+    // Update URL with item ID for sharing
+    setSearchParams({ item: String(item.id) });
+    
     if (item.isPremium && !isPremium) {
       setPremiumModalItem(item);
       setShowPremiumModal(true);
     } else {
       setSelectedPrompt(item);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedPrompt(null);
+    // Remove item from URL when closing
+    searchParams.delete("item");
+    setSearchParams(searchParams);
+  };
+
+  const handleClosePremiumModal = (open: boolean) => {
+    setShowPremiumModal(open);
+    if (!open) {
+      setPremiumModalItem(null);
+      // Remove item from URL when closing
+      searchParams.delete("item");
+      setSearchParams(searchParams);
     }
   };
   const externalLinks = [{
@@ -427,9 +464,9 @@ const BibliotecaPrompts = () => {
             </div>}
 
           {/* Media Preview Modal */}
-          <Dialog open={!!selectedPrompt} onOpenChange={() => setSelectedPrompt(null)}>
+          <Dialog open={!!selectedPrompt} onOpenChange={() => handleCloseModal()}>
             <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden bg-card">
-              <button onClick={() => setSelectedPrompt(null)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
+              <button onClick={() => handleCloseModal()} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
                 <X className="h-4 w-4" />
               </button>
               {selectedPrompt && <div className="flex flex-col max-h-[90vh]">
@@ -457,12 +494,9 @@ const BibliotecaPrompts = () => {
           </Dialog>
 
           {/* Premium Access Modal */}
-          <Dialog open={showPremiumModal} onOpenChange={open => {
-          setShowPremiumModal(open);
-          if (!open) setPremiumModalItem(null);
-        }}>
+          <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
             <DialogContent className="max-w-lg p-0 overflow-hidden bg-card">
-              <button onClick={() => setShowPremiumModal(false)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
+              <button onClick={() => handleClosePremiumModal(false)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
                 <X className="h-4 w-4" />
               </button>
               <div className="flex flex-col max-h-[90vh]">
