@@ -52,6 +52,8 @@ Deno.serve(async (req) => {
     console.log('Payload:', JSON.stringify(payload, null, 2))
 
     const email = payload.client?.email?.toLowerCase().trim()
+    const clientName = payload.client?.name || ''
+    const clientPhone = payload.client?.phone?.replace(/\D/g, '') || '' // Remove non-digits
     const productName = payload.product?.name || ''
     const productId = payload.product?.id
     const productPeriod = payload.product?.period || 30
@@ -66,7 +68,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log(`Processing webhook for email: ${email}, status: ${status}, product: ${productName}`)
+    console.log(`Processing webhook for email: ${email}, name: ${clientName}, phone: ${clientPhone}, status: ${status}`)
 
     // Determine plan type based on product name
     let planType = 'arcano_basico'
@@ -116,6 +118,24 @@ Deno.serve(async (req) => {
 
         userId = newUser.user.id
         console.log(`New user created with ID: ${userId}`)
+      }
+
+      // Upsert profile with name and phone
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          name: clientName,
+          phone: clientPhone,
+          email: email,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' })
+
+      if (profileError) {
+        console.error('Error upserting profile:', profileError)
+        // Don't fail the webhook, profile is supplementary data
+      } else {
+        console.log(`Profile upserted for user: ${userId}, name: ${clientName}, phone: ${clientPhone}`)
       }
 
       // Calculate expiration date with validation
