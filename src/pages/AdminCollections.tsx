@@ -292,7 +292,8 @@ const AdminCollections = () => {
   };
 
   const copyLink = (slug: string) => {
-    const url = `${window.location.origin}/biblioteca-prompts?colecao=${slug}`;
+    const baseUrl = "https://arcanolab.voxvisual.com.br";
+    const url = `${baseUrl}/biblioteca-prompts?colecao=${slug}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copiado!");
   };
