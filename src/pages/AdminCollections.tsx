@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Copy, Pencil, Trash2, Check, X, Search, FolderOpen } from "lucide-react";
+import { ArrowLeft, Plus, Copy, Pencil, Trash2, Check, Search, FolderOpen, Star, Play } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -26,12 +27,16 @@ interface PromptItem {
   type: 'admin' | 'community';
 }
 
-interface CollectionItem {
-  id: string;
-  prompt_id: string;
-  prompt_type: string;
-  item_order: number;
-}
+const isVideoUrl = (url: string) => {
+  const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
+  return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+};
+
+const getThumbnailUrl = (url: string) => {
+  if (!url || isVideoUrl(url)) return url;
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}width=400&height=400&resize=cover&format=webp`;
+};
 
 const AdminCollections = () => {
   const navigate = useNavigate();
@@ -39,7 +44,11 @@ const AdminCollections = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [availablePrompts, setAvailablePrompts] = useState<PromptItem[]>([]);
+  
+  // Use refs for values that shouldn't trigger re-renders
+  const searchQueryRef = useRef("");
   const [searchQuery, setSearchQuery] = useState("");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -89,7 +98,6 @@ const AdminCollections = () => {
       return;
     }
 
-    // Fetch item counts for each collection
     const collectionsWithCounts = await Promise.all(
       (data || []).map(async (collection) => {
         const { count } = await supabase
@@ -166,7 +174,6 @@ const AdminCollections = () => {
       return;
     }
 
-    // Insert collection items
     const items = selectedItems.map((promptId, index) => {
       const prompt = availablePrompts.find(p => p.id === promptId);
       return {
@@ -191,6 +198,7 @@ const AdminCollections = () => {
     setShowCreateModal(false);
     setCollectionName("");
     setSelectedItems([]);
+    setSearchQuery("");
     fetchCollections();
   };
 
@@ -205,7 +213,6 @@ const AdminCollections = () => {
       return;
     }
 
-    // Update collection name
     const { error: updateError } = await supabase
       .from('admin_collections')
       .update({ name: collectionName.trim() })
@@ -217,7 +224,6 @@ const AdminCollections = () => {
       return;
     }
 
-    // Delete existing items and insert new ones
     await supabase
       .from('admin_collection_items')
       .delete()
@@ -248,6 +254,7 @@ const AdminCollections = () => {
     setEditingCollection(null);
     setCollectionName("");
     setSelectedItems([]);
+    setSearchQuery("");
     fetchCollections();
   };
 
@@ -272,8 +279,8 @@ const AdminCollections = () => {
   const openEditModal = async (collection: Collection) => {
     setEditingCollection(collection);
     setCollectionName(collection.name);
+    setSearchQuery("");
 
-    // Fetch existing items
     const { data } = await supabase
       .from('admin_collection_items')
       .select('prompt_id')
@@ -290,13 +297,14 @@ const AdminCollections = () => {
     toast.success("Link copiado!");
   };
 
-  const toggleItem = (id: string) => {
+  // Use useCallback to prevent function recreation
+  const toggleItem = useCallback((id: string) => {
     setSelectedItems(prev => 
       prev.includes(id) 
         ? prev.filter(i => i !== id)
         : [...prev, id]
     );
-  };
+  }, []);
 
   const filteredPrompts = availablePrompts.filter(p => 
     p.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -312,16 +320,18 @@ const AdminCollections = () => {
 
   if (!isAdmin) return null;
 
-  const PromptSelector = () => (
+  // Render the prompt grid content - now inline but with stable callbacks
+  const renderPromptGrid = () => (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="name">Nome da Coleção</Label>
+        <Label htmlFor="collection-name">Nome da Coleção</Label>
         <Input
-          id="name"
+          id="collection-name"
           value={collectionName}
           onChange={(e) => setCollectionName(e.target.value)}
           placeholder="Ex: Stranger Things"
           className="mt-1"
+          autoComplete="off"
         />
       </div>
 
@@ -334,38 +344,80 @@ const AdminCollections = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por título..."
             className="pl-10"
+            autoComplete="off"
           />
         </div>
       </div>
 
       <div>
         <Label>Selecione os Prompts ({selectedItems.length} selecionados)</Label>
-        <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-[400px] overflow-y-auto p-2 border rounded-lg">
-          {filteredPrompts.map(prompt => (
-            <div
-              key={prompt.id}
-              onClick={() => toggleItem(prompt.id)}
-              className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                selectedItems.includes(prompt.id) 
-                  ? 'border-primary ring-2 ring-primary/50' 
-                  : 'border-transparent hover:border-muted-foreground/30'
-              }`}
-            >
-              <img
-                src={prompt.imageUrl}
-                alt={prompt.title}
-                className="w-full aspect-square object-cover"
-              />
-              {selectedItems.includes(prompt.id) && (
-                <div className="absolute inset-0 bg-primary/30 flex items-center justify-center">
-                  <Check className="h-8 w-8 text-white" />
+        <div 
+          ref={scrollContainerRef}
+          className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-[400px] overflow-y-auto p-2 border rounded-lg"
+        >
+          {filteredPrompts.map(prompt => {
+            const isSelected = selectedItems.includes(prompt.id);
+            return (
+              <div
+                key={prompt.id}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleItem(prompt.id);
+                }}
+                className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-colors ${
+                  isSelected 
+                    ? 'border-primary ring-2 ring-primary/50' 
+                    : 'border-transparent hover:border-muted-foreground/30'
+                }`}
+              >
+                {isVideoUrl(prompt.imageUrl) ? (
+                  <div className="relative aspect-square">
+                    <video
+                      src={prompt.imageUrl}
+                      className="w-full h-full object-cover"
+                      muted
+                      playsInline
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <Play className="h-6 w-6 text-white" fill="currentColor" />
+                    </div>
+                  </div>
+                ) : (
+                  <img
+                    src={getThumbnailUrl(prompt.imageUrl)}
+                    alt={prompt.title}
+                    className="w-full aspect-square object-cover"
+                    loading="lazy"
+                  />
+                )}
+                
+                {isSelected && (
+                  <div className="absolute inset-0 bg-primary/30 flex items-center justify-center">
+                    <Check className="h-8 w-8 text-white" />
+                  </div>
+                )}
+                
+                {/* Premium badge */}
+                <div className="absolute top-1 left-1">
+                  {prompt.isPremium ? (
+                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[8px] px-1 py-0">
+                      <Star className="h-2 w-2 mr-0.5" fill="currentColor" />
+                      Premium
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="border-green-500 text-green-600 text-[8px] px-1 py-0 bg-background/80">
+                      Grátis
+                    </Badge>
+                  )}
                 </div>
-              )}
-              <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-1">
-                <p className="text-white text-[10px] truncate">{prompt.title}</p>
+                
+                <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-1">
+                  <p className="text-white text-[10px] truncate">{prompt.title}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
@@ -430,12 +482,19 @@ const AdminCollections = () => {
         )}
 
         {/* Create Modal */}
-        <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <Dialog open={showCreateModal} onOpenChange={(open) => {
+          if (!open) {
+            setCollectionName("");
+            setSelectedItems([]);
+            setSearchQuery("");
+          }
+          setShowCreateModal(open);
+        }}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Nova Coleção</DialogTitle>
             </DialogHeader>
-            <PromptSelector />
+            {renderPromptGrid()}
             <div className="flex justify-end gap-2 mt-4">
               <Button variant="outline" onClick={() => setShowCreateModal(false)}>
                 Cancelar
@@ -448,12 +507,20 @@ const AdminCollections = () => {
         </Dialog>
 
         {/* Edit Modal */}
-        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <Dialog open={showEditModal} onOpenChange={(open) => {
+          if (!open) {
+            setEditingCollection(null);
+            setCollectionName("");
+            setSelectedItems([]);
+            setSearchQuery("");
+          }
+          setShowEditModal(open);
+        }}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Editar Coleção</DialogTitle>
             </DialogHeader>
-            <PromptSelector />
+            {renderPromptGrid()}
             <div className="flex justify-end gap-2 mt-4">
               <Button variant="outline" onClick={() => setShowEditModal(false)}>
                 Cancelar
