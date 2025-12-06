@@ -9,9 +9,31 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search, Video } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+// Format title: first letter uppercase, rest lowercase
+const formatTitle = (title: string): string => {
+  const trimmed = title.trim();
+  if (!trimmed) return trimmed;
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+};
+
+// File validation constants
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+
+const validateFile = (file: File): string | null => {
+  if (file.size > MAX_FILE_SIZE) {
+    return "Arquivo muito grande. Máximo 50MB.";
+  }
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type) && !ALLOWED_VIDEO_TYPES.includes(file.type)) {
+    return "Tipo de arquivo não permitido. Use JPEG, PNG, GIF, WebP, MP4, WebM ou MOV.";
+  }
+  return null;
+};
 
 interface Prompt {
   id: string;
@@ -37,6 +59,8 @@ const AdminManageImages = () => {
   const [editHasTutorial, setEditHasTutorial] = useState(false);
   const [editTutorialUrl, setEditTutorialUrl] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
+  const [newMediaPreview, setNewMediaPreview] = useState<string>("");
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
@@ -99,6 +123,31 @@ const AdminManageImages = () => {
     setEditIsPremium(prompt.is_premium || false);
     setEditHasTutorial(!!prompt.tutorial_url);
     setEditTutorialUrl(prompt.tutorial_url || "");
+    setNewMediaFile(null);
+    setNewMediaPreview("");
+  };
+
+  const handleCloseEdit = () => {
+    setEditingPrompt(null);
+    setNewMediaFile(null);
+    setNewMediaPreview("");
+  };
+
+  const handleNewMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const validationError = validateFile(file);
+      if (validationError) {
+        toast.error(validationError);
+        return;
+      }
+      setNewMediaFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewMediaPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -106,11 +155,41 @@ const AdminManageImages = () => {
 
     try {
       const table = editingPrompt.type === 'admin' ? 'admin_prompts' : 'community_prompts';
+      const bucket = editingPrompt.type === 'admin' ? 'admin-prompts' : 'community-prompts';
       
+      let newImageUrl = editingPrompt.image_url;
+
+      // If there's a new media file, upload it and delete the old one
+      if (newMediaFile) {
+        // Upload new file
+        const fileExt = newMediaFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(fileName, newMediaFile);
+
+        if (uploadError) throw uploadError;
+
+        // Get new public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(fileName);
+
+        newImageUrl = publicUrl;
+
+        // Delete old file
+        const oldFileName = editingPrompt.image_url.split('/').pop();
+        if (oldFileName) {
+          await supabase.storage.from(bucket).remove([oldFileName]);
+        }
+      }
+
       const updateData: any = {
-        title: editTitle,
+        title: formatTitle(editTitle),
         prompt: editPromptText,
-        category: editCategory
+        category: editCategory,
+        image_url: newImageUrl
       };
 
       // Only add is_premium and tutorial_url for admin prompts
@@ -127,7 +206,7 @@ const AdminManageImages = () => {
       if (error) throw error;
 
       toast.success("Arquivo atualizado com sucesso!");
-      setEditingPrompt(null);
+      handleCloseEdit();
       fetchPrompts();
     } catch (error) {
       console.error("Error updating prompt:", error);
@@ -288,12 +367,59 @@ const AdminManageImages = () => {
         )}
       </div>
 
-      <Dialog open={!!editingPrompt} onOpenChange={() => setEditingPrompt(null)}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={!!editingPrompt} onOpenChange={handleCloseEdit}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Arquivo</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Replace Media Section */}
+            <div>
+              <Label>Substituir Imagem/Vídeo</Label>
+              <div className="mt-2">
+                <label
+                  htmlFor="new-media"
+                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
+                >
+                  {newMediaPreview ? (
+                    newMediaFile?.type.startsWith('video/') ? (
+                      <video
+                        src={newMediaPreview}
+                        className="h-full object-contain"
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        src={newMediaPreview}
+                        alt="New Preview"
+                        className="h-full object-contain"
+                      />
+                    )
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Clique para selecionar nova mídia
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Atual: {editingPrompt?.image_url.split('/').pop()?.substring(0, 30)}...
+                      </p>
+                    </div>
+                  )}
+                </label>
+                <input
+                  id="new-media"
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleNewMediaChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="edit-title">Título</Label>
               <Input

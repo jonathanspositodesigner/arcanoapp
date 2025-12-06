@@ -80,6 +80,7 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           category: string
+          contributor_name: string | null
           created_at: string | null
           id: string
           image_url: string
@@ -92,6 +93,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           category: string
+          contributor_name?: string | null
           created_at?: string | null
           id?: string
           image_url: string
@@ -104,6 +106,7 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           category?: string
+          contributor_name?: string | null
           created_at?: string | null
           id?: string
           image_url?: string
