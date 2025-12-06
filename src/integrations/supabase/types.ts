@@ -116,6 +116,30 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_prompt_copies: {
+        Row: {
+          copied_at: string
+          copy_date: string
+          id: string
+          prompt_id: string
+          user_id: string
+        }
+        Insert: {
+          copied_at?: string
+          copy_date?: string
+          id?: string
+          prompt_id: string
+          user_id: string
+        }
+        Update: {
+          copied_at?: string
+          copy_date?: string
+          id?: string
+          prompt_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           device_type: string
@@ -259,6 +283,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_daily_copy_count: { Args: { _user_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
