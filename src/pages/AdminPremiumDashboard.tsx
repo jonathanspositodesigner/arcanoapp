@@ -412,7 +412,7 @@ const AdminPremiumDashboard = () => {
       return;
     }
     const formattedPhone = phone.startsWith('55') ? phone : `55${phone}`;
-    window.open(`https://wa.me/${formattedPhone}`, '_blank');
+    window.open(`https://api.whatsapp.com/send/?phone=${formattedPhone}&text&type=phone_number&app_absent=0`, '_blank');
   };
 
   const totalUsers = premiumUsers.length;
