@@ -118,13 +118,22 @@ Deno.serve(async (req) => {
         console.log(`New user created with ID: ${userId}`)
       }
 
-      // Calculate expiration date
+      // Calculate expiration date with validation
       let expiresAt: Date
-      if (payload.contract?.current_period_end) {
-        expiresAt = new Date(payload.contract.current_period_end)
+      const payloadDate = payload.contract?.current_period_end 
+        ? new Date(payload.contract.current_period_end) 
+        : null
+      const now = new Date()
+
+      // Use payload date only if it's valid and in the future
+      if (payloadDate && payloadDate > now) {
+        expiresAt = payloadDate
+        console.log(`Using payload date: ${expiresAt.toISOString()}`)
       } else {
+        // Calculate based on product period
         expiresAt = new Date()
         expiresAt.setDate(expiresAt.getDate() + productPeriod)
+        console.log(`Calculated date (payload invalid/past): ${expiresAt.toISOString()}`)
       }
 
       console.log(`Setting expires_at to: ${expiresAt.toISOString()}`)
