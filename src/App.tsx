@@ -11,6 +11,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCommunityReview from "./pages/AdminCommunityReview";
 import AdminManageImages from "./pages/AdminManageImages";
+import AdminCollections from "./pages/AdminCollections";
 import UserLogin from "./pages/UserLogin";
 import InstallApp from "./pages/InstallApp";
 import Planos from "./pages/Planos";
@@ -53,6 +54,7 @@ const AppContent = () => {
         <Route path="/admin-install-stats" element={<AdminInstallStats />} />
         <Route path="/admin-manage-premium" element={<AdminManagePremium />} />
         <Route path="/admin-premium-dashboard" element={<AdminPremiumDashboard />} />
+        <Route path="/admin-collections" element={<AdminCollections />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

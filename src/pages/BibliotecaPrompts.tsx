@@ -12,6 +12,7 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
 import { trackPromptClick } from "@/hooks/usePromptClickTracker";
 import logoHorizontal from "@/assets/logo_horizontal.png";
+import CollectionModal from "@/components/CollectionModal";
 interface PromptItem {
   id: string | number;
   title: string;
@@ -74,8 +75,14 @@ const BibliotecaPrompts = () => {
   const [tutorialUrl, setTutorialUrl] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collectionSlug, setCollectionSlug] = useState<string | null>(null);
   useEffect(() => {
     fetchCommunityPrompts();
+    // Check for collection slug in URL
+    const colecao = searchParams.get("colecao");
+    if (colecao) {
+      setCollectionSlug(colecao);
+    }
   }, []);
 
   // Open modal from URL parameter
@@ -688,6 +695,18 @@ const BibliotecaPrompts = () => {
           </Dialog>
         </main>
       </div>
+
+      {/* Collection Modal */}
+      {collectionSlug && (
+        <CollectionModal 
+          slug={collectionSlug} 
+          onClose={() => {
+            setCollectionSlug(null);
+            searchParams.delete("colecao");
+            setSearchParams(searchParams);
+          }} 
+        />
+      )}
     </div>;
 };
 export default BibliotecaPrompts;

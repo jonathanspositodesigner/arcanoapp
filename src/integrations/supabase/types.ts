@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_collection_items: {
+        Row: {
+          collection_id: string
+          created_at: string
+          id: string
+          item_order: number
+          prompt_id: string
+          prompt_type: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          id?: string
+          item_order?: number
+          prompt_id: string
+          prompt_type?: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          id?: string
+          item_order?: number
+          prompt_id?: string
+          prompt_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_collection_items_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "admin_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_collections: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_prompts: {
         Row: {
           category: string
