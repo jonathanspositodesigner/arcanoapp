@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Smartphone, Trophy } from "lucide-react";
+import { Eye, Smartphone, Trophy, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
@@ -26,6 +26,7 @@ const AdminAnalyticsDashboard = () => {
   const [topPrompts, setTopPrompts] = useState<PromptRanking[]>([]);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const getDateThreshold = () => {
     if (dateFilter === "all") return null;
@@ -131,7 +132,11 @@ const AdminAnalyticsDashboard = () => {
     };
 
     fetchAnalytics();
-  }, [dateFilter]);
+  }, [dateFilter, refreshKey]);
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const filterOptions: { value: DateFilter; label: string }[] = [
     { value: 1, label: "1 dia" },
@@ -144,7 +149,19 @@ const AdminAnalyticsDashboard = () => {
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold text-foreground mb-4">Dashboard de Métricas</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold text-foreground">Dashboard de Métricas</h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isLoading}
+          className="gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Atualizar
+        </Button>
+      </div>
       
       {/* Date Filters */}
       <div className="flex flex-wrap gap-2 mb-6">
