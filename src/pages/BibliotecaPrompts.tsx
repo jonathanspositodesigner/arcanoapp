@@ -315,7 +315,12 @@ const BibliotecaPrompts = () => {
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="mb-6">
-            <img src={logoHorizontal} alt="Biblioteca de Artes Arcanas" className="w-full mb-4" />
+            <img 
+              src={logoHorizontal} 
+              alt="Arcano Lab" 
+              className="w-full mb-4 cursor-pointer hover:opacity-80 transition-opacity" 
+              onClick={() => navigate('/')}
+            />
           </div>
 
           {/* Install App Button */}
