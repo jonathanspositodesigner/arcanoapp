@@ -11,6 +11,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
+// Format title: first letter uppercase, rest lowercase
+const formatTitle = (title: string): string => {
+  const trimmed = title.trim();
+  if (!trimmed) return trimmed;
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+};
+
 // Validation schema
 const promptSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
@@ -18,6 +25,7 @@ const promptSchema = z.object({
   category: z.enum(["Selos 3D", "Fotos", "Cenários", "Movies para Telão"], { 
     errorMap: () => ({ message: "Selecione uma categoria válida" })
   }),
+  contributorName: z.string().trim().max(20, "Nome deve ter no máximo 20 caracteres").optional(),
 });
 
 // File validation constants
@@ -40,6 +48,7 @@ const ContributePrompts = () => {
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [category, setCategory] = useState("");
+  const [contributorName, setContributorName] = useState("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string>("");
   const [isVideo, setIsVideo] = useState(false);
@@ -100,7 +109,7 @@ const ContributePrompts = () => {
     }
 
     // Validate inputs with zod
-    const validationResult = promptSchema.safeParse({ title, prompt, category });
+    const validationResult = promptSchema.safeParse({ title, prompt, category, contributorName });
     if (!validationResult.success) {
       const firstError = validationResult.error.errors[0];
       toast.error(firstError.message);
@@ -126,14 +135,15 @@ const ContributePrompts = () => {
         .from('community-prompts')
         .getPublicUrl(filePath);
 
-      // Insert into database
+      // Insert into database with formatted title
       const { error: insertError } = await supabase
         .from('community_prompts')
         .insert({
-          title,
+          title: formatTitle(title),
           prompt,
           category,
           image_url: publicUrl,
+          contributor_name: contributorName.trim() || null,
         });
 
       if (insertError) throw insertError;
@@ -171,6 +181,21 @@ const ContributePrompts = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <Label htmlFor="contributorName">Seu Nome (opcional)</Label>
+              <Input
+                id="contributorName"
+                value={contributorName}
+                onChange={(e) => setContributorName(e.target.value.slice(0, 20))}
+                placeholder="Ex: João Silva"
+                maxLength={20}
+                className="mt-2"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {contributorName.length}/20 caracteres
+              </p>
+            </div>
+
             <div>
               <Label htmlFor="title">Título do Arquivo</Label>
               <Input
