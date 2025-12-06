@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle, Settings, LogOut, Bell, Users } from "lucide-react";
+import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -101,7 +101,7 @@ const AdminDashboard = () => {
           </div>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <Card
             className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105"
             onClick={() => navigate('/admin-upload')}
@@ -166,6 +166,23 @@ const AdminDashboard = () => {
               </h2>
               <p className="text-muted-foreground">
                 Envie notificações para todos os usuários inscritos
+              </p>
+            </div>
+          </Card>
+
+          <Card
+            className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105"
+            onClick={() => navigate('/admin-install-stats')}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-purple-500 rounded-full">
+                <Smartphone className="h-12 w-12 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground">
+                Estatísticas de Instalação
+              </h2>
+              <p className="text-muted-foreground">
+                Veja quantos instalaram o app no celular e PC
               </p>
             </div>
           </Card>

@@ -53,6 +53,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_installations: {
+        Row: {
+          device_type: string
+          id: string
+          installed_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          device_type: string
+          id?: string
+          installed_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          device_type?: string
+          id?: string
+          installed_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       community_prompts: {
         Row: {
           approved: boolean | null

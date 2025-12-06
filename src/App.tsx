@@ -15,35 +15,47 @@ import UserLogin from "./pages/UserLogin";
 import InstallApp from "./pages/InstallApp";
 import Planos from "./pages/Planos";
 import AdminPushNotifications from "./pages/AdminPushNotifications";
+import AdminInstallStats from "./pages/AdminInstallStats";
 import NotFound from "./pages/NotFound";
 import { PushNotificationPrompt } from "./components/PushNotificationPrompt";
+import { useInstallTracker } from "./hooks/useInstallTracker";
 
 const queryClient = new QueryClient();
+
+const AppContent = () => {
+  // Track app installations
+  useInstallTracker();
+
+  return (
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <PushNotificationPrompt />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
+        <Route path="/contribuir" element={<ContributePrompts />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin-upload" element={<AdminUpload />} />
+        <Route path="/admin-community-review" element={<AdminCommunityReview />} />
+        <Route path="/admin-manage-images" element={<AdminManageImages />} />
+        <Route path="/login" element={<UserLogin />} />
+        <Route path="/install" element={<InstallApp />} />
+        <Route path="/planos" element={<Planos />} />
+        <Route path="/admin-push-notifications" element={<AdminPushNotifications />} />
+        <Route path="/admin-install-stats" element={<AdminInstallStats />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </TooltipProvider>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <PushNotificationPrompt />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
-          <Route path="/contribuir" element={<ContributePrompts />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/admin-upload" element={<AdminUpload />} />
-          <Route path="/admin-community-review" element={<AdminCommunityReview />} />
-          <Route path="/admin-manage-images" element={<AdminManageImages />} />
-          <Route path="/login" element={<UserLogin />} />
-          <Route path="/install" element={<InstallApp />} />
-          <Route path="/planos" element={<Planos />} />
-          <Route path="/admin-push-notifications" element={<AdminPushNotifications />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </TooltipProvider>
+      <AppContent />
     </BrowserRouter>
   </QueryClientProvider>
 );
