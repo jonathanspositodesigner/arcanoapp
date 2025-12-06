@@ -17,7 +17,7 @@ import Planos from "./pages/Planos";
 import AdminPushNotifications from "./pages/AdminPushNotifications";
 import AdminInstallStats from "./pages/AdminInstallStats";
 import NotFound from "./pages/NotFound";
-import { PushNotificationPrompt } from "./components/PushNotificationPrompt";
+
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { usePageViewTracker } from "./hooks/usePageViewTracker";
 
@@ -32,7 +32,7 @@ const AppContent = () => {
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <PushNotificationPrompt />
+      
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
