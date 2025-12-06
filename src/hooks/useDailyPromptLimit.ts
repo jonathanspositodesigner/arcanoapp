@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 
 const BASIC_PLAN_DAILY_LIMIT = 10;
+const PRO_PLAN_DAILY_LIMIT = 24;
 
 interface DailyPromptLimitResult {
   copiesUsed: number;
@@ -17,9 +18,11 @@ export const useDailyPromptLimit = (user: User | null, planType: string | null):
   const [copiesUsed, setCopiesUsed] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Only apply limit for basic plan
+  // Apply limit based on plan type
   const isBasicPlan = planType === "arcano_basico";
-  const dailyLimit = isBasicPlan ? BASIC_PLAN_DAILY_LIMIT : Infinity;
+  const isProPlan = planType === "arcano_pro";
+  const hasLimit = isBasicPlan || isProPlan;
+  const dailyLimit = isBasicPlan ? BASIC_PLAN_DAILY_LIMIT : isProPlan ? PRO_PLAN_DAILY_LIMIT : Infinity;
 
   const fetchDailyCount = useCallback(async () => {
     if (!user) {
@@ -54,8 +57,8 @@ export const useDailyPromptLimit = (user: User | null, planType: string | null):
   const recordCopy = async (promptId: string): Promise<boolean> => {
     if (!user) return false;
     
-    // Check if limit reached (only for basic plan)
-    if (isBasicPlan && copiesUsed >= dailyLimit) {
+    // Check if limit reached (for basic and pro plans)
+    if (hasLimit && copiesUsed >= dailyLimit) {
       return false;
     }
 
@@ -85,7 +88,7 @@ export const useDailyPromptLimit = (user: User | null, planType: string | null):
   return {
     copiesUsed,
     remainingCopies: Math.max(0, dailyLimit - copiesUsed),
-    hasReachedLimit: isBasicPlan && copiesUsed >= dailyLimit,
+    hasReachedLimit: hasLimit && copiesUsed >= dailyLimit,
     isLoading,
     recordCopy,
     refetch: fetchDailyCount
