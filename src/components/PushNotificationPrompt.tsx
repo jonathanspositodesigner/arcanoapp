@@ -11,8 +11,20 @@ export const PushNotificationPrompt = () => {
   useEffect(() => {
     // Check if user has already dismissed or subscribed
     const dismissed = localStorage.getItem("push-notification-dismissed");
+    const dismissedTime = localStorage.getItem("push-notification-dismissed-time");
     
-    if (!dismissed && isSupported && !isSubscribed && !isLoading) {
+    // Reset dismissed state after 7 days
+    if (dismissed && dismissedTime) {
+      const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+      if (parseInt(dismissedTime) < sevenDaysAgo) {
+        localStorage.removeItem("push-notification-dismissed");
+        localStorage.removeItem("push-notification-dismissed-time");
+      }
+    }
+    
+    const currentlyDismissed = localStorage.getItem("push-notification-dismissed");
+    
+    if (!currentlyDismissed && isSupported && !isSubscribed && !isLoading) {
       // Show prompt after a short delay
       const timer = setTimeout(() => {
         setIsVisible(true);
@@ -29,6 +41,7 @@ export const PushNotificationPrompt = () => {
 
   const handleDismiss = () => {
     localStorage.setItem("push-notification-dismissed", "true");
+    localStorage.setItem("push-notification-dismissed-time", Date.now().toString());
     setIsDismissed(true);
     setIsVisible(false);
   };
