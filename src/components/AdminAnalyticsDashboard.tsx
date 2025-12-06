@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Smartphone, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 type DateFilter = 1 | 7 | 15 | 30 | 90 | "all";
 
@@ -14,12 +14,14 @@ interface PromptRanking {
 
 interface ChartDataPoint {
   date: string;
-  views: number;
+  mobile: number;
+  desktop: number;
+  total: number;
 }
 
 const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
-  const [pageViews, setPageViews] = useState(0);
+  const [pageViews, setPageViews] = useState({ total: 0, mobile: 0, desktop: 0 });
   const [installations, setInstallations] = useState({ total: 0, mobile: 0, desktop: 0 });
   const [topPrompts, setTopPrompts] = useState<PromptRanking[]>([]);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
@@ -48,39 +50,44 @@ const AdminAnalyticsDashboard = () => {
       setIsLoading(true);
       const threshold = getDateThreshold();
 
-      // Fetch page views
-      let pageViewsQuery = supabase.from("page_views").select("*", { count: "exact", head: true });
+      // Fetch page views with device type
+      let pageViewsQuery = supabase.from("page_views").select("device_type, viewed_at");
       if (threshold) {
         pageViewsQuery = pageViewsQuery.gte("viewed_at", threshold);
       }
-      const { count: viewsCount } = await pageViewsQuery;
-      setPageViews(viewsCount || 0);
-
-      // Fetch page views for chart
-      let chartQuery = supabase.from("page_views").select("viewed_at");
-      if (threshold) {
-        chartQuery = chartQuery.gte("viewed_at", threshold);
-      }
-      const { data: viewsData } = await chartQuery;
+      const { data: viewsData } = await pageViewsQuery;
 
       if (viewsData) {
+        const mobile = viewsData.filter((v) => v.device_type === "mobile").length;
+        const desktop = viewsData.filter((v) => v.device_type === "desktop").length;
+        setPageViews({ total: viewsData.length, mobile, desktop });
+
+        // Process chart data
         const daysArray = getDaysArray(dateFilter);
-        const viewsByDate: Record<string, number> = {};
+        const mobileByDate: Record<string, number> = {};
+        const desktopByDate: Record<string, number> = {};
         
         daysArray.forEach(day => {
-          viewsByDate[day] = 0;
+          mobileByDate[day] = 0;
+          desktopByDate[day] = 0;
         });
 
         viewsData.forEach(view => {
           const date = view.viewed_at.split("T")[0];
-          if (viewsByDate[date] !== undefined) {
-            viewsByDate[date]++;
+          if (mobileByDate[date] !== undefined) {
+            if (view.device_type === "mobile") {
+              mobileByDate[date]++;
+            } else {
+              desktopByDate[date]++;
+            }
           }
         });
 
         const chartDataPoints = daysArray.map(date => ({
           date: new Date(date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
-          views: viewsByDate[date] || 0,
+          mobile: mobileByDate[date] || 0,
+          desktop: desktopByDate[date] || 0,
+          total: (mobileByDate[date] || 0) + (desktopByDate[date] || 0),
         }));
 
         setChartData(chartDataPoints);
@@ -166,7 +173,10 @@ const AdminAnalyticsDashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Acessos</p>
-                  <p className="text-3xl font-bold text-foreground">{pageViews.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-foreground">{pageViews.total.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    📱 {pageViews.mobile} mobile · 💻 {pageViews.desktop} desktop
+                  </p>
                 </div>
               </div>
             </Card>
@@ -237,13 +247,22 @@ const AdminAnalyticsDashboard = () => {
                     }}
                     labelStyle={{ color: "hsl(var(--foreground))" }}
                   />
+                  <Legend />
                   <Line 
                     type="monotone" 
-                    dataKey="views" 
-                    stroke="hsl(var(--primary))" 
+                    dataKey="mobile" 
+                    stroke="#f97316" 
                     strokeWidth={2}
-                    dot={{ fill: "hsl(var(--primary))", strokeWidth: 2 }}
-                    name="Acessos"
+                    dot={{ fill: "#f97316", strokeWidth: 2 }}
+                    name="📱 Mobile"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="desktop" 
+                    stroke="#8b5cf6" 
+                    strokeWidth={2}
+                    dot={{ fill: "#8b5cf6", strokeWidth: 2 }}
+                    name="💻 Desktop"
                   />
                 </LineChart>
               </ResponsiveContainer>

@@ -115,18 +115,21 @@ export type Database = {
       }
       page_views: {
         Row: {
+          device_type: string
           id: string
           page_path: string
           user_agent: string | null
           viewed_at: string
         }
         Insert: {
+          device_type?: string
           id?: string
           page_path: string
           user_agent?: string | null
           viewed_at?: string
         }
         Update: {
+          device_type?: string
           id?: string
           page_path?: string
           user_agent?: string | null
