@@ -13,6 +13,7 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [subscriberCount, setSubscriberCount] = useState(0);
   const [pendingCommunityCount, setPendingCommunityCount] = useState(0);
+  const [pendingPartnerCount, setPendingPartnerCount] = useState(0);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -53,6 +54,14 @@ const AdminDashboard = () => {
         .eq('approved', false);
       
       setPendingCommunityCount(pendingCount || 0);
+
+      // Fetch pending partner submissions
+      const { count: partnerPendingCount } = await supabase
+        .from('partner_prompts')
+        .select('*', { count: 'exact', head: true })
+        .eq('approved', false);
+      
+      setPendingPartnerCount(partnerPendingCount || 0);
     };
 
     checkAdminStatus();
@@ -130,9 +139,18 @@ const AdminDashboard = () => {
               <div className="p-3 bg-orange-500/20 rounded-full">
                 <Inbox className="h-8 w-8 text-orange-500" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Envios para aprovar</p>
-                <p className="text-3xl font-bold text-foreground">{pendingCommunityCount}</p>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-2">Envios para aprovar</p>
+                <div className="flex gap-6">
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{pendingCommunityCount}</p>
+                    <p className="text-xs text-muted-foreground">Comunidade</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{pendingPartnerCount}</p>
+                    <p className="text-xs text-muted-foreground">Parceiros</p>
+                  </div>
+                </div>
               </div>
             </div>
           </Card>
