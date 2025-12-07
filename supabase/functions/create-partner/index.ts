@@ -81,7 +81,10 @@ Deno.serve(async (req) => {
     // Use custom password or generate a random one
     const password = customPassword || generatePassword();
 
-    // Create user with admin client (doesn't affect calling user's session)
+    let userId: string;
+    let isExistingUser = false;
+
+    // Try to create user, or get existing user
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -89,24 +92,69 @@ Deno.serve(async (req) => {
     });
 
     if (authError) {
-      console.error('Auth error:', authError);
-      
-      // Translate common error messages to Portuguese
-      let errorMessage = authError.message;
+      // Check if user already exists
       if (authError.message.includes('already been registered')) {
-        errorMessage = 'Este email já está cadastrado no sistema';
-      } else if (authError.message.includes('invalid email')) {
-        errorMessage = 'Email inválido';
-      }
-      
-      return new Response(
-        JSON.stringify({ error: errorMessage }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+        console.log(`User already exists with email: ${email}, checking if can be made partner`);
+        
+        // Get existing user
+        const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        if (listError) {
+          console.error('Error listing users:', listError);
+          return new Response(
+            JSON.stringify({ error: 'Erro ao buscar usuário existente' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
 
-    const userId = authData.user.id;
-    console.log(`User created with ID: ${userId}`);
+        const existingUser = existingUsers.users.find(u => u.email === email);
+        if (!existingUser) {
+          return new Response(
+            JSON.stringify({ error: 'Usuário não encontrado' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Check if already a partner
+        const { data: existingPartner } = await supabaseAdmin
+          .from('partners')
+          .select('id')
+          .eq('user_id', existingUser.id)
+          .maybeSingle();
+
+        if (existingPartner) {
+          return new Response(
+            JSON.stringify({ error: 'Este usuário já é um parceiro cadastrado' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        userId = existingUser.id;
+        isExistingUser = true;
+        console.log(`Converting existing user ${userId} to partner`);
+
+        // Update password for existing user
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+          password
+        });
+        if (updateError) {
+          console.error('Error updating password:', updateError);
+        }
+      } else if (authError.message.includes('invalid email')) {
+        return new Response(
+          JSON.stringify({ error: 'Email inválido' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else {
+        console.error('Auth error:', authError);
+        return new Response(
+          JSON.stringify({ error: authError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      userId = authData.user.id;
+      console.log(`New user created with ID: ${userId}`);
+    }
 
     // Insert partner role
     const { error: roleError } = await supabaseAdmin
