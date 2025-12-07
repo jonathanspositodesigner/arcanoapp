@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.get-signed-url]
 verify_jwt = false
+
+[functions.create-partner]
+verify_jwt = false
