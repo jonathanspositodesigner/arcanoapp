@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users, HelpCircle } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -457,6 +457,19 @@ const BibliotecaPrompts = () => {
               )}
             </Button>
           )}
+
+          {/* Tutorial button */}
+          <Button
+            onClick={() => {
+              localStorage.removeItem("biblioteca-tutorial-completed");
+              setShowOnboarding(true);
+            }}
+            variant="ghost"
+            className="w-full mt-4 text-muted-foreground hover:text-foreground"
+          >
+            <HelpCircle className="h-4 w-4 mr-2" />
+            Ver tutorial novamente
+          </Button>
         </aside>
 
         {/* Main Content */}
