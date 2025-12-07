@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, ChevronRight, Copy, Smartphone, Zap, Download, Play } from "lucide-react";
+import { X, ChevronRight, Copy, Smartphone, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -18,26 +17,26 @@ const tutorialSteps: TutorialStep[] = [
   {
     id: "copy-prompt",
     title: "Copie o Prompt",
-    description: "Clique no botão para copiar o prompt e usar na sua ferramenta de IA!",
+    description: "Clique no botão para copiar o prompt!",
     targetSelector: "[data-tutorial-modal='copy-prompt']",
     position: "top",
-    icon: <Copy className="h-6 w-6" />,
+    icon: <Copy className="h-5 w-5" />,
   },
   {
     id: "generate-image",
     title: "Gere sua Imagem",
-    description: "Clique aqui para acessar as ferramentas de geração de imagem!",
+    description: "Clique aqui para acessar as ferramentas de IA!",
     targetSelector: "[data-tutorial='mobile-menu']",
     position: "top",
-    icon: <Smartphone className="h-6 w-6" />,
+    icon: <Smartphone className="h-5 w-5" />,
   },
   {
     id: "ai-tools",
     title: "Ferramentas de IA",
-    description: "Use ChatGPT, Nano Banana, Whisk, Flux 2 ou VEO 3 para gerar suas imagens!",
+    description: "Use ChatGPT, Nano Banana, Whisk ou Flux 2 para gerar!",
     targetSelector: "[data-tutorial='ai-tools']",
     position: "right",
-    icon: <Zap className="h-6 w-6" />,
+    icon: <Zap className="h-5 w-5" />,
   },
 ];
 
@@ -103,7 +102,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   const isModalStep = step.id === "copy-prompt";
 
   const updateTargetPosition = useCallback(() => {
-    if (isModalStep) return; // Don't need position for modal step
+    if (isModalStep) return;
     
     setTimeout(() => {
       const target = document.querySelector(step.targetSelector);
@@ -153,63 +152,34 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       navigator.clipboard.writeText(realItem.prompt);
       toast.success(`Prompt "${realItem.title}" copiado!`);
     }
-    // Advance to next step
     handleNext();
   };
 
   if (!isVisible || !isMobile) return null;
 
-  const getTooltipPosition = () => {
-    if (isModalStep) {
-      // Position at bottom of screen for modal step
-      return {
-        bottom: "16px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        top: "auto",
-      };
-    }
-
-    if (!targetRect) return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
-
-    const padding = 16;
-    const tooltipWidth = Math.min(280, window.innerWidth - 32);
-
-    switch (step.position) {
-      case "top":
-        return {
-          bottom: `${window.innerHeight - targetRect.top + padding}px`,
-          left: "50%",
-          transform: "translateX(-50%)",
-          top: "auto",
-        };
-      case "bottom":
-        return {
-          top: `${targetRect.bottom + padding}px`,
-          left: "50%",
-          transform: "translateX(-50%)",
-        };
-      default:
-        return { 
-          bottom: "16px",
-          left: "50%", 
-          transform: "translateX(-50%)",
-          top: "auto",
-        };
-    }
-  };
-
   return (
     <>
       {/* Dark overlay */}
-      <div className="fixed inset-0 bg-black/80 z-[9990]" />
+      <div className="fixed inset-0 bg-black/85 z-[9990]" />
 
-      {/* Example Modal with real item */}
+      {/* Skip button */}
+      <Button
+        onClick={handleSkip}
+        variant="ghost"
+        size="sm"
+        className="fixed top-2 right-2 text-white hover:bg-white/20 z-[10000] text-xs px-2 py-1"
+      >
+        <X className="h-3 w-3 mr-1" />
+        Pular
+      </Button>
+
+      {/* Modal step - full screen layout */}
       {showExampleModal && realItem && (
-        <div className="fixed inset-0 flex items-start justify-center z-[9995] p-4 pt-8 overflow-y-auto">
-          <div className="bg-card rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
-            {/* Media */}
-            <div className="relative aspect-square bg-secondary">
+        <div className="fixed inset-0 z-[9995] flex flex-col p-3 pt-10">
+          {/* Card container - fits in remaining space */}
+          <div className="bg-card rounded-xl shadow-2xl overflow-hidden flex flex-col flex-1 max-h-[calc(100vh-180px)]">
+            {/* Media - flexible height */}
+            <div className="relative flex-1 min-h-0 bg-secondary">
               {isVideoUrl(realItem.image_url) ? (
                 <video 
                   src={realItem.image_url} 
@@ -228,16 +198,16 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               )}
             </div>
             
-            {/* Content */}
-            <div className="p-4 space-y-3">
-              <h3 className="font-bold text-base text-foreground">{realItem.title}</h3>
-              <div className="bg-secondary p-2.5 rounded-lg max-h-20 overflow-y-auto">
-                <p className="text-xs text-muted-foreground">{realItem.prompt}</p>
+            {/* Content - fixed height */}
+            <div className="p-3 space-y-2 flex-shrink-0">
+              <h3 className="font-bold text-sm text-foreground">{realItem.title}</h3>
+              <div className="bg-secondary p-2 rounded-lg max-h-12 overflow-y-auto">
+                <p className="text-[11px] text-muted-foreground line-clamp-2">{realItem.prompt}</p>
               </div>
               
               {/* Button with highlight */}
               <Button 
-                className="w-full bg-gradient-primary hover:opacity-90 text-white ring-4 ring-white ring-offset-2 ring-offset-card animate-pulse"
+                className="w-full bg-gradient-primary hover:opacity-90 text-white ring-4 ring-white ring-offset-2 ring-offset-card animate-pulse text-sm py-2"
                 onClick={handleCopyPrompt}
                 data-tutorial-modal="copy-prompt"
               >
@@ -246,88 +216,106 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               </Button>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Spotlight for non-modal steps */}
-      {!isModalStep && targetRect && (
-        <div 
-          className="fixed rounded-lg z-[9991] ring-4 ring-white animate-pulse"
-          style={{
-            top: targetRect.top - 8,
-            left: targetRect.left - 8,
-            width: targetRect.width + 16,
-            height: targetRect.height + 16,
-            boxShadow: "0 0 0 9999px rgba(0,0,0,0.80)",
-            backgroundColor: "transparent",
-          }}
-        />
-      )}
-
-      {/* Skip button */}
-      <Button
-        onClick={handleSkip}
-        variant="ghost"
-        size="sm"
-        className="fixed top-3 right-3 text-white hover:bg-white/20 z-[10000]"
-      >
-        <X className="h-4 w-4 mr-1" />
-        Pular
-      </Button>
-
-      {/* Tutorial tooltip */}
-      <div
-        className="fixed bg-card rounded-xl shadow-2xl p-4 w-[calc(100%-32px)] max-w-[280px] transition-all duration-300 animate-scale-in z-[10000] border border-border"
-        style={getTooltipPosition()}
-      >
-        {/* Step indicator */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex gap-1">
-            {tutorialSteps.map((_, index) => (
-              <div
-                key={index}
-                className={`h-2 w-2 rounded-full transition-colors ${
-                  index === currentStep
-                    ? "bg-primary"
-                    : index < currentStep
-                    ? "bg-primary/50"
-                    : "bg-muted"
-                }`}
-              />
-            ))}
+          {/* Tooltip for modal step - always visible at bottom */}
+          <div className="bg-card rounded-xl shadow-2xl p-3 mt-3 border border-border flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-primary text-white flex-shrink-0">
+                {step.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <div className="flex gap-1">
+                    {tutorialSteps.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          index === currentStep
+                            ? "bg-primary"
+                            : index < currentStep
+                            ? "bg-primary/50"
+                            : "bg-muted"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">
+                    {currentStep + 1}/{tutorialSteps.length}
+                  </span>
+                </div>
+                <h3 className="text-sm font-bold text-foreground">{step.title}</h3>
+                <p className="text-xs text-muted-foreground">{step.description}</p>
+              </div>
+            </div>
           </div>
-          <span className="text-xs text-muted-foreground ml-auto">
-            {currentStep + 1}/{tutorialSteps.length}
-          </span>
         </div>
+      )}
 
-        {/* Icon */}
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-primary text-white mb-3">
-          {step.icon}
-        </div>
+      {/* Non-modal steps */}
+      {!isModalStep && targetRect && (
+        <>
+          {/* Spotlight */}
+          <div 
+            className="fixed rounded-lg z-[9991] ring-4 ring-white animate-pulse"
+            style={{
+              top: targetRect.top - 8,
+              left: targetRect.left - 8,
+              width: targetRect.width + 16,
+              height: targetRect.height + 16,
+              boxShadow: "0 0 0 9999px rgba(0,0,0,0.85)",
+              backgroundColor: "transparent",
+            }}
+          />
 
-        {/* Content */}
-        <h3 className="text-base font-bold text-foreground mb-1">{step.title}</h3>
-        <p className="text-sm text-muted-foreground mb-4">{step.description}</p>
-
-        {/* Navigation - only show for non-modal steps */}
-        {!isModalStep && (
-          <Button
-            onClick={handleNext}
-            className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold"
-            size="sm"
+          {/* Tooltip */}
+          <div
+            className="fixed left-3 right-3 bg-card rounded-xl shadow-2xl p-3 z-[10000] border border-border"
+            style={{
+              bottom: window.innerHeight - targetRect.top + 16,
+            }}
           >
-            {currentStep < tutorialSteps.length - 1 ? (
-              <>
-                Próximo
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </>
-            ) : (
-              "Concluir"
-            )}
-          </Button>
-        )}
-      </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-primary text-white flex-shrink-0">
+                {step.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <div className="flex gap-1">
+                    {tutorialSteps.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          index === currentStep
+                            ? "bg-primary"
+                            : index < currentStep
+                            ? "bg-primary/50"
+                            : "bg-muted"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">
+                    {currentStep + 1}/{tutorialSteps.length}
+                  </span>
+                </div>
+                <h3 className="text-sm font-bold text-foreground">{step.title}</h3>
+                <p className="text-xs text-muted-foreground">{step.description}</p>
+              </div>
+              <Button
+                onClick={handleNext}
+                size="sm"
+                className="bg-gradient-primary hover:opacity-90 text-white flex-shrink-0"
+              >
+                {currentStep < tutorialSteps.length - 1 ? (
+                  <ChevronRight className="h-4 w-4" />
+                ) : (
+                  "OK"
+                )}
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };
