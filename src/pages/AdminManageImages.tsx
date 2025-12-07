@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Download, ArrowUpDown, CalendarDays } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Copy, ArrowUpDown, CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
@@ -49,7 +49,7 @@ interface Prompt {
   created_at?: string;
   tutorial_url?: string;
   partner_id?: string;
-  download_count?: number;
+  click_count?: number;
 }
 
 type SortOption = 'date' | 'downloads';
@@ -70,7 +70,7 @@ const AdminManageImages = () => {
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<PromptType | 'all'>('all');
   const [sortBy, setSortBy] = useState<SortOption>('date');
-  const [downloadCounts, setDownloadCounts] = useState<Record<string, number>>({});
+  const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
@@ -116,17 +116,16 @@ const AdminManageImages = () => {
 
       setPrompts(allPrompts);
 
-      // Fetch download counts for all prompts
-      const { data: downloadData } = await supabase
-        .from('prompt_downloads')
-        .select('prompt_id, prompt_type');
+      // Fetch click counts for all prompts from prompt_clicks table
+      const { data: clickData } = await supabase
+        .from('prompt_clicks')
+        .select('prompt_id');
 
       const counts: Record<string, number> = {};
-      (downloadData || []).forEach(d => {
-        const key = `${d.prompt_type}-${d.prompt_id}`;
-        counts[key] = (counts[key] || 0) + 1;
+      (clickData || []).forEach(d => {
+        counts[d.prompt_id] = (counts[d.prompt_id] || 0) + 1;
       });
-      setDownloadCounts(counts);
+      setClickCounts(counts);
     } catch (error) {
       console.error("Error fetching prompts:", error);
       toast.error("Erro ao carregar imagens");
@@ -135,9 +134,8 @@ const AdminManageImages = () => {
     }
   };
 
-  const getDownloadCount = (prompt: Prompt) => {
-    const key = `${prompt.type}-${prompt.id}`;
-    return downloadCounts[key] || 0;
+  const getClickCount = (prompt: Prompt) => {
+    return clickCounts[prompt.id] || 0;
   };
 
   const filteredAndSortedPrompts = prompts
@@ -148,7 +146,7 @@ const AdminManageImages = () => {
     })
     .sort((a, b) => {
       if (sortBy === 'downloads') {
-        return getDownloadCount(b) - getDownloadCount(a);
+        return getClickCount(b) - getClickCount(a);
       }
       // Default: sort by date
       return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
@@ -377,8 +375,8 @@ const AdminManageImages = () => {
               onClick={() => setSortBy('downloads')}
               className={sortBy === 'downloads' ? 'bg-primary' : ''}
             >
-              <Download className="h-4 w-4 mr-1" />
-              Mais baixados
+              <Copy className="h-4 w-4 mr-1" />
+              Mais copiados
             </Button>
           </div>
           
@@ -445,8 +443,8 @@ const AdminManageImages = () => {
                       </Badge>
                     </div>
                     <Badge variant="secondary" className="bg-primary/10 text-primary flex items-center gap-1">
-                      <Download className="h-3 w-3" />
-                      {getDownloadCount(prompt)}
+                      <Copy className="h-3 w-3" />
+                      {getClickCount(prompt)}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground line-clamp-2">

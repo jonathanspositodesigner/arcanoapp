@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Upload, FileCheck, Clock, Trash2, Home, Download } from "lucide-react";
+import { LogOut, Upload, FileCheck, Clock, Trash2, Home, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
@@ -23,7 +23,7 @@ interface PartnerPrompt {
   approved: boolean;
   deletion_requested: boolean;
   created_at: string;
-  download_count?: number;
+  click_count?: number;
 }
 
 const PartnerDashboard = () => {
@@ -84,25 +84,24 @@ const PartnerDashboard = () => {
       console.error("Error fetching prompts:", promptsError);
       setPrompts([]);
     } else {
-      // Fetch download counts for each prompt
+      // Fetch click counts for each prompt from prompt_clicks table
       const promptIds = (promptsData || []).map(p => p.id);
       if (promptIds.length > 0) {
-        const { data: downloadData } = await supabase
-          .from('prompt_downloads')
+        const { data: clickData } = await supabase
+          .from('prompt_clicks')
           .select('prompt_id')
-          .eq('prompt_type', 'partner')
           .in('prompt_id', promptIds);
 
-        const downloadCounts: Record<string, number> = {};
-        (downloadData || []).forEach(d => {
-          downloadCounts[d.prompt_id] = (downloadCounts[d.prompt_id] || 0) + 1;
+        const clickCounts: Record<string, number> = {};
+        (clickData || []).forEach(d => {
+          clickCounts[d.prompt_id] = (clickCounts[d.prompt_id] || 0) + 1;
         });
 
-        const promptsWithDownloads = (promptsData || []).map(p => ({
+        const promptsWithClicks = (promptsData || []).map(p => ({
           ...p,
-          download_count: downloadCounts[p.id] || 0
+          click_count: clickCounts[p.id] || 0
         }));
-        setPrompts(promptsWithDownloads);
+        setPrompts(promptsWithClicks);
       } else {
         setPrompts([]);
       }
@@ -265,8 +264,8 @@ const PartnerDashboard = () => {
                     <Badge variant="outline" className="mt-1">{prompt.category}</Badge>
                   </div>
                   <Badge variant="secondary" className="bg-primary/10 text-primary flex items-center gap-1">
-                    <Download className="h-3 w-3" />
-                    {prompt.download_count || 0}
+                    <Copy className="h-3 w-3" />
+                    {prompt.click_count || 0}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2">{prompt.prompt}</p>
