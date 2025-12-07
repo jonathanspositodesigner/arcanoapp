@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Check, X, Users, Handshake, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 
 interface CommunityPrompt {
   id: string;
@@ -200,7 +201,23 @@ const AdminCommunityReview = () => {
               {communityPrompts.map((prompt) => (
                 <Card key={prompt.id} className="overflow-hidden">
                   <div className="relative">
-                    <img src={prompt.image_url} alt={prompt.title} className="w-full h-48 object-cover" />
+                    {prompt.image_url.includes('.mp4') || prompt.image_url.includes('.webm') || prompt.image_url.includes('.mov') ? (
+                      <SecureVideo
+                        src={prompt.image_url}
+                        className="w-full h-48 object-cover"
+                        isPremium={false}
+                        autoPlay
+                        muted
+                        loop
+                      />
+                    ) : (
+                      <SecureImage
+                        src={prompt.image_url}
+                        alt={prompt.title}
+                        className="w-full h-48 object-cover"
+                        isPremium={false}
+                      />
+                    )}
                     {prompt.approved && <Badge className="absolute top-2 right-2 bg-green-500">Aprovado</Badge>}
                   </div>
                   <div className="p-4 space-y-3">
@@ -236,7 +253,23 @@ const AdminCommunityReview = () => {
               {partnerPrompts.map((prompt) => (
                 <Card key={prompt.id} className="overflow-hidden">
                   <div className="relative">
-                    <img src={prompt.image_url} alt={prompt.title} className="w-full h-48 object-cover" />
+                    {prompt.image_url.includes('.mp4') || prompt.image_url.includes('.webm') || prompt.image_url.includes('.mov') ? (
+                      <SecureVideo
+                        src={prompt.image_url}
+                        className="w-full h-48 object-cover"
+                        isPremium={false}
+                        autoPlay
+                        muted
+                        loop
+                      />
+                    ) : (
+                      <SecureImage
+                        src={prompt.image_url}
+                        alt={prompt.title}
+                        className="w-full h-48 object-cover"
+                        isPremium={false}
+                      />
+                    )}
                     <div className="absolute top-2 right-2 flex gap-1">
                       {prompt.deletion_requested && <Badge variant="destructive"><Trash2 className="h-3 w-3 mr-1" />Exclusão Solicitada</Badge>}
                       {prompt.approved && !prompt.deletion_requested && <Badge className="bg-green-500">Aprovado</Badge>}
