@@ -13,6 +13,7 @@ import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
 import { trackPromptClick } from "@/hooks/usePromptClickTracker";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
+import OnboardingTutorial from "@/components/OnboardingTutorial";
 interface PromptItem {
   id: string | number;
   title: string;
@@ -77,6 +78,16 @@ const BibliotecaPrompts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collectionSlug, setCollectionSlug] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if first time user
+  useEffect(() => {
+    const tutorialCompleted = localStorage.getItem("biblioteca-tutorial-completed");
+    if (!tutorialCompleted) {
+      // Small delay to let the page render first
+      setTimeout(() => setShowOnboarding(true), 1000);
+    }
+  }, []);
   useEffect(() => {
     fetchCommunityPrompts();
     // Check for collection slug in URL
@@ -352,7 +363,7 @@ const BibliotecaPrompts = () => {
       </header>
 
       {/* Mobile Bottom Menu Button */}
-      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50" data-tutorial="mobile-menu">
         <Button onClick={() => setSidebarOpen(!sidebarOpen)} className="bg-primary hover:bg-primary/90 text-white shadow-xl px-6 py-6 rounded-full">
           <Menu className="h-6 w-6 mr-2" />
           <span className="font-semibold">Gere sua imagem    </span>
@@ -398,12 +409,14 @@ const BibliotecaPrompts = () => {
             </>}
 
           <h2 className="text-xl font-bold text-foreground mb-6">Ferramentas de IA</h2>
+          <div data-tutorial="ai-tools">
           {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
               <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
                 <span className="font-medium text-foreground">{link.name}</span>
                 <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
               </Button>
             </a>)}
+          </div>
           <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block">
             <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
               <span className="font-medium text-foreground">Gerar Video no VEO 3</span>
@@ -562,7 +575,7 @@ const BibliotecaPrompts = () => {
                           </Button>
                         ) : (
                           <>
-                            <Button onClick={() => copyToClipboard(item)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm">
+                            <Button onClick={() => copyToClipboard(item)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm" data-tutorial="copy-prompt">
                               <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Copiar Prompt {item.isPremium && hasLimitPlan && `(${remainingCopies} restantes)`}
                             </Button>
@@ -760,6 +773,11 @@ const BibliotecaPrompts = () => {
             setSearchParams(searchParams);
           }} 
         />
+      )}
+
+      {/* Onboarding Tutorial */}
+      {showOnboarding && (
+        <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />
       )}
     </div>;
 };
