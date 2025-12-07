@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard, FolderOpen, Inbox } from "lucide-react";
+import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard, FolderOpen, Inbox, Handshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminAnalyticsDashboard from "@/components/AdminAnalyticsDashboard";
@@ -238,6 +238,23 @@ const AdminDashboard = () => {
               </h2>
               <p className="text-muted-foreground">
                 Crie coleções com links compartilháveis
+              </p>
+            </div>
+          </Card>
+
+          <Card
+            className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105"
+            onClick={() => navigate('/admin-partners')}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                <Handshake className="h-12 w-12 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground">
+                Gerenciar Parceiros
+              </h2>
+              <p className="text-muted-foreground">
+                Cadastre e gerencie contribuidores exclusivos
               </p>
             </div>
           </Card>

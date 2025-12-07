@@ -20,6 +20,10 @@ import AdminPushNotifications from "./pages/AdminPushNotifications";
 import AdminInstallStats from "./pages/AdminInstallStats";
 import AdminManagePremium from "./pages/AdminManagePremium";
 import AdminPremiumDashboard from "./pages/AdminPremiumDashboard";
+import AdminPartners from "./pages/AdminPartners";
+import PartnerLogin from "./pages/PartnerLogin";
+import PartnerDashboard from "./pages/PartnerDashboard";
+import PartnerUpload from "./pages/PartnerUpload";
 import NotFound from "./pages/NotFound";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
@@ -55,6 +59,10 @@ const AppContent = () => {
         <Route path="/admin-manage-premium" element={<AdminManagePremium />} />
         <Route path="/admin-premium-dashboard" element={<AdminPremiumDashboard />} />
         <Route path="/admin-collections" element={<AdminCollections />} />
+        <Route path="/admin-partners" element={<AdminPartners />} />
+        <Route path="/parceiro-login" element={<PartnerLogin />} />
+        <Route path="/parceiro-dashboard" element={<PartnerDashboard />} />
+        <Route path="/parceiro-upload" element={<PartnerUpload />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
