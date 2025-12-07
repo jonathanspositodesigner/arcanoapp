@@ -81,7 +81,7 @@ serve(async (req) => {
         );
       }
 
-      // Check if user is premium or admin
+      // Check if user is premium, admin, or partner
       const { data: premiumData } = await supabaseAdmin
         .from('premium_users')
         .select('is_active, expires_at')
@@ -96,12 +96,19 @@ serve(async (req) => {
         .eq('role', 'admin')
         .single();
 
+      const { data: partnerRole } = await supabaseAdmin
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'partner')
+        .single();
+
       const isPremiumActive = premiumData && 
         premiumData.is_active && 
         (!premiumData.expires_at || new Date(premiumData.expires_at) > new Date());
 
-      if (!isPremiumActive && !adminRole) {
-        console.log(`User ${user.id} is not premium and not admin`);
+      if (!isPremiumActive && !adminRole && !partnerRole) {
+        console.log(`User ${user.id} is not premium, admin, or partner`);
         return new Response(
           JSON.stringify({ error: 'Premium subscription required' }),
           { 
@@ -111,7 +118,7 @@ serve(async (req) => {
         );
       }
 
-      console.log(`User ${user.id} verified as premium/admin`);
+      console.log(`User ${user.id} verified as premium/admin/partner`);
     }
 
     // Generate signed URL with 1 hour expiration

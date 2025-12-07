@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { LogOut, Upload, FileCheck, Clock, Trash2, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 
 interface Partner {
   id: string;
@@ -199,19 +200,20 @@ const PartnerDashboard = () => {
             <Card key={prompt.id} className="overflow-hidden">
               <div className="relative">
                 {prompt.image_url.includes('.mp4') || prompt.image_url.includes('.webm') || prompt.image_url.includes('.mov') ? (
-                  <video
+                  <SecureVideo
                     src={prompt.image_url}
                     className="w-full h-48 object-cover"
+                    isPremium={false}
+                    autoPlay
                     muted
                     loop
-                    autoPlay
-                    playsInline
                   />
                 ) : (
-                  <img
+                  <SecureImage
                     src={prompt.image_url}
                     alt={prompt.title}
                     className="w-full h-48 object-cover"
+                    isPremium={false}
                   />
                 )}
                 <div className="absolute top-2 right-2 flex gap-1">
