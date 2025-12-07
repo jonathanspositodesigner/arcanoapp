@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users, HelpCircle } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users, HelpCircle, Flame } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -217,6 +217,13 @@ const BibliotecaPrompts = () => {
     ? shuffledVerTudo.filter(p => p.isExclusive)
     : shuffledVerTudo.filter(p => p.isCommunity);
 
+  // Sort function - by total clicks (real + bonus)
+  const sortByClicks = (a: PromptItem, b: PromptItem) => {
+    const clicksA = (a.clickCount || 0) + (a.bonusClicks || 0);
+    const clicksB = (b.clickCount || 0) + (b.bonusClicks || 0);
+    return clicksB - clicksA;
+  };
+
   // For "Ver Tudo" we use shuffled array, for other categories we sort by created_at (most recent first)
   const getFilteredAndSortedPrompts = () => {
     if (selectedCategory === "Ver Tudo") {
@@ -229,6 +236,12 @@ const BibliotecaPrompts = () => {
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA;
     };
+
+    if (selectedCategory === "Populares") {
+      return contentTypePrompts
+        .filter(p => p.category !== "Controles de Câmera")
+        .sort(sortByClicks);
+    }
     
     if (selectedCategory === "Novos") {
       return contentTypePrompts
@@ -255,10 +268,18 @@ const BibliotecaPrompts = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   
-  // Categories - Controles de Câmera only for exclusive
+  // Categories - Controles de Câmera only for exclusive, Populares comes first before Ver Tudo
   const categories = contentType === "exclusive" 
-    ? ["Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"]
-    : ["Novos", "Selos 3D", "Fotos", "Cenários", "Ver Tudo"];
+    ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera"]
+    : ["Populares", "Ver Tudo", "Novos", "Selos 3D", "Fotos", "Cenários"];
+  
+  // Helper function to get category icon
+  const getCategoryIcon = (category: string) => {
+    if (category === "Populares") {
+      return <Flame className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />;
+    }
+    return null;
+  };
   
   // Helper to check if user has a plan with daily limit
   const hasLimitPlan = planType === "arcano_basico" || planType === "arcano_pro";
@@ -613,6 +634,7 @@ const BibliotecaPrompts = () => {
             {/* Category Filters */}
             <div className="flex gap-1.5 sm:gap-2 flex-wrap">
               {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => setSelectedCategory(cat)} size="sm" className={`text-[11px] sm:text-xs px-2 sm:px-3 ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}>
+                  {getCategoryIcon(cat)}
                   {cat}
                 </Button>)}
             </div>
