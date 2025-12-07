@@ -50,9 +50,13 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="mt-6 sm:mt-8">
+        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-2 justify-center items-center">
           <Button onClick={() => navigate("/admin-login")} variant="link" className="text-muted-foreground hover:text-foreground text-sm sm:text-base">
             Envio de administrador
+          </Button>
+          <span className="hidden sm:inline text-muted-foreground">•</span>
+          <Button onClick={() => navigate("/parceiro-login")} variant="link" className="text-muted-foreground hover:text-foreground text-sm sm:text-base">
+            Área do Parceiro
           </Button>
         </div>
       </div>

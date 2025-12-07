@@ -89,41 +89,30 @@ const AdminPartners = () => {
     setIsSubmitting(true);
 
     try {
-      // Create auth user with email as password
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: newPartner.email,
-        password: newPartner.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-        }
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Sessão expirada. Faça login novamente.");
+        navigate('/admin-login');
+        return;
+      }
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Erro ao criar usuário");
-
-      // Add partner role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
-          role: 'partner' as const,
-        });
-
-      if (roleError) throw roleError;
-
-      // Create partner record
-      const { error: partnerError } = await supabase
-        .from('partners')
-        .insert({
-          user_id: authData.user.id,
+      const response = await supabase.functions.invoke('create-partner', {
+        body: {
           name: newPartner.name,
           email: newPartner.email,
           phone: newPartner.phone || null,
           company: newPartner.company || null,
-        });
+        },
+      });
 
-      if (partnerError) throw partnerError;
+      if (response.error) {
+        throw new Error(response.error.message || 'Erro ao criar parceiro');
+      }
 
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
       toast.success("Parceiro cadastrado com sucesso!");
       setNewPartner({ name: "", email: "", phone: "", company: "" });
       setShowAddModal(false);
