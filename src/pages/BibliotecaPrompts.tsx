@@ -198,14 +198,39 @@ const BibliotecaPrompts = () => {
     ? shuffledVerTudo.filter(p => p.isExclusive)
     : shuffledVerTudo.filter(p => p.isCommunity);
 
-  // For "Ver Tudo" we use shuffled array, for other categories we keep the original order (by created_at)
-  const filteredPrompts = selectedCategory === "Ver Tudo" 
-    ? shuffledContentType 
-    : selectedCategory === "Novos" 
-      ? contentTypePrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16) 
-      : selectedCategory === "Grátis" 
-        ? contentTypePrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera")
-        : contentTypePrompts.filter(p => p.category === selectedCategory);
+  // For "Ver Tudo" we use shuffled array, for other categories we sort by created_at (most recent first)
+  const getFilteredAndSortedPrompts = () => {
+    if (selectedCategory === "Ver Tudo") {
+      return shuffledContentType;
+    }
+    
+    // Sort function - most recent first
+    const sortByDate = (a: PromptItem, b: PromptItem) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    };
+    
+    if (selectedCategory === "Novos") {
+      return contentTypePrompts
+        .filter(p => p.category !== "Controles de Câmera")
+        .sort(sortByDate)
+        .slice(0, 16);
+    }
+    
+    if (selectedCategory === "Grátis") {
+      return contentTypePrompts
+        .filter(p => !p.isPremium && p.category !== "Controles de Câmera")
+        .sort(sortByDate);
+    }
+    
+    // For specific categories - filter and sort by date
+    return contentTypePrompts
+      .filter(p => p.category === selectedCategory)
+      .sort(sortByDate);
+  };
+  
+  const filteredPrompts = getFilteredAndSortedPrompts();
   
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
