@@ -282,6 +282,7 @@ const PartnerUpload = () => {
             reference_images: referenceImageUrls.length > 0 ? referenceImageUrls : null,
             tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
             approved: false,
+            is_premium: true,
           });
 
         if (insertError) throw insertError;
