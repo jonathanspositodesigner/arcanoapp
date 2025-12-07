@@ -49,7 +49,7 @@ interface Prompt {
   created_at?: string;
   tutorial_url?: string;
   partner_id?: string;
-  click_count?: number;
+  bonus_clicks?: number;
 }
 
 type SortOption = 'date' | 'downloads';
@@ -65,6 +65,7 @@ const AdminManageImages = () => {
   const [editIsPremium, setEditIsPremium] = useState(false);
   const [editHasTutorial, setEditHasTutorial] = useState(false);
   const [editTutorialUrl, setEditTutorialUrl] = useState("");
+  const [editBonusClicks, setEditBonusClicks] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
@@ -135,7 +136,9 @@ const AdminManageImages = () => {
   };
 
   const getClickCount = (prompt: Prompt) => {
-    return clickCounts[prompt.id] || 0;
+    const realClicks = clickCounts[prompt.id] || 0;
+    const bonus = prompt.bonus_clicks || 0;
+    return realClicks + bonus;
   };
 
   const filteredAndSortedPrompts = prompts
@@ -160,6 +163,7 @@ const AdminManageImages = () => {
     setEditIsPremium(prompt.is_premium || false);
     setEditHasTutorial(!!prompt.tutorial_url);
     setEditTutorialUrl(prompt.tutorial_url || "");
+    setEditBonusClicks(prompt.bonus_clicks || 0);
     setNewMediaFile(null);
     setNewMediaPreview("");
   };
@@ -236,7 +240,8 @@ const AdminManageImages = () => {
         title: formatTitle(editTitle),
         prompt: editPromptText,
         category: editCategory,
-        image_url: newImageUrl
+        image_url: newImageUrl,
+        bonus_clicks: editBonusClicks
       };
 
       // Only add is_premium and tutorial_url for admin and partner prompts
@@ -605,6 +610,36 @@ const AdminManageImages = () => {
                 )}
               </>
             )}
+
+            {/* Bonus Clicks */}
+            <div className="p-4 rounded-lg border border-border bg-secondary/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Copy className="h-5 w-5 text-primary" />
+                  <Label htmlFor="edit-bonusClicks" className="font-medium">
+                    Cliques Bônus
+                  </Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    Total exibido: {(clickCounts[editingPrompt?.id || ''] || 0) + editBonusClicks}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-3">
+                <Input
+                  id="edit-bonusClicks"
+                  type="number"
+                  min="0"
+                  value={editBonusClicks}
+                  onChange={(e) => setEditBonusClicks(Math.max(0, parseInt(e.target.value) || 0))}
+                  className="w-32"
+                />
+                <span className="text-sm text-muted-foreground">
+                  cliques adicionais
+                </span>
+              </div>
+            </div>
 
             <div>
               <Label htmlFor="edit-prompt">Prompt</Label>

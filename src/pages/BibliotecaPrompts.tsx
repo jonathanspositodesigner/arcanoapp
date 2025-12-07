@@ -28,6 +28,8 @@ interface PromptItem {
   tutorialUrl?: string;
   createdAt?: string;
   promptType?: 'admin' | 'community' | 'partner';
+  clickCount?: number;
+  bonusClicks?: number;
 }
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -125,10 +127,11 @@ const BibliotecaPrompts = () => {
     setCurrentPage(1);
   }, [selectedCategory, contentType]);
   const fetchCommunityPrompts = async () => {
-    const [communityResult, adminResult, partnerResult] = await Promise.all([
+    const [communityResult, adminResult, partnerResult, clicksResult] = await Promise.all([
       supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', { ascending: false }),
       supabase.from('admin_prompts').select('*').order('created_at', { ascending: false }),
-      supabase.from('partner_prompts').select('*').eq('approved', true).order('created_at', { ascending: false })
+      supabase.from('partner_prompts').select('*').eq('approved', true).order('created_at', { ascending: false }),
+      supabase.from('prompt_clicks').select('prompt_id')
     ]);
 
     if (communityResult.error) {
@@ -141,6 +144,12 @@ const BibliotecaPrompts = () => {
       console.error("Error fetching partner prompts:", partnerResult.error);
     }
 
+    // Count clicks per prompt
+    const clickCounts: Record<string, number> = {};
+    (clicksResult.data || []).forEach(d => {
+      clickCounts[d.prompt_id] = (clickCounts[d.prompt_id] || 0) + 1;
+    });
+
     const communityPrompts: PromptItem[] = (communityResult.data || []).map(item => ({
       id: item.id,
       title: item.title,
@@ -150,7 +159,9 @@ const BibliotecaPrompts = () => {
       isCommunity: true,
       isPremium: false,
       createdAt: item.created_at || undefined,
-      promptType: 'community' as const
+      promptType: 'community' as const,
+      clickCount: clickCounts[item.id] || 0,
+      bonusClicks: (item as any).bonus_clicks || 0
     }));
 
     const adminPrompts: PromptItem[] = (adminResult.data || []).map(item => ({
@@ -164,7 +175,9 @@ const BibliotecaPrompts = () => {
       referenceImages: (item as any).reference_images || [],
       tutorialUrl: (item as any).tutorial_url || null,
       createdAt: item.created_at || undefined,
-      promptType: 'admin' as const
+      promptType: 'admin' as const,
+      clickCount: clickCounts[item.id] || 0,
+      bonusClicks: (item as any).bonus_clicks || 0
     }));
 
     // Partner prompts are shown as exclusive content (no partner badge)
@@ -179,7 +192,9 @@ const BibliotecaPrompts = () => {
       referenceImages: (item as any).reference_images || [],
       tutorialUrl: (item as any).tutorial_url || null,
       createdAt: item.created_at || undefined,
-      promptType: 'partner' as const
+      promptType: 'partner' as const,
+      clickCount: clickCounts[item.id] || 0,
+      bonusClicks: (item as any).bonus_clicks || 0
     }));
 
     // Combine all prompts and sort by created_at descending
@@ -626,9 +641,15 @@ const BibliotecaPrompts = () => {
 
                   {/* Card Content */}
                   <div className="p-3 sm:p-5 space-y-2 sm:space-y-4">
-                    <div>
-                      <h3 className="font-bold text-sm sm:text-lg text-foreground mb-1 sm:mb-2 line-clamp-2">{item.title}</h3>
-                      {getBadgeContent(item)}
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-sm sm:text-lg text-foreground mb-1 sm:mb-2 line-clamp-2">{item.title}</h3>
+                        {getBadgeContent(item)}
+                      </div>
+                      <Badge variant="secondary" className="bg-primary/10 text-primary flex items-center gap-1 shrink-0 text-[10px] sm:text-xs">
+                        <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                        {(item.clickCount || 0) + (item.bonusClicks || 0)}
+                      </Badge>
                     </div>
 
                     {/* Prompt Box - Hidden for premium items when user is not premium */}
