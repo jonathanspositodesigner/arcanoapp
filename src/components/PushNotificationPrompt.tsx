@@ -71,7 +71,7 @@ export const PushNotificationPrompt = () => {
                 Ative as notificações
               </h4>
               <p className="text-xs text-muted-foreground mt-1">
-                Receba novidades e atualizações do Arcano Lab diretamente no seu dispositivo.
+                Receba novidades e atualizações do Promptverso diretamente no seu dispositivo.
               </p>
             </div>
             
