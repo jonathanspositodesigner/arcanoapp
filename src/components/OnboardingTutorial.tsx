@@ -262,15 +262,14 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
         <>
           {/* Spotlight cutout - clickable area */}
           <div 
-            className="absolute rounded-lg ring-4 ring-white animate-pulse cursor-pointer"
+            className="absolute rounded-xl ring-4 ring-white animate-pulse cursor-pointer bg-white/10"
             onClick={handleNext}
             style={{
-              top: targetRect.top - 8,
-              left: targetRect.left - 8,
-              width: targetRect.width + 16,
-              height: targetRect.height + 16,
-              boxShadow: "0 0 0 9999px rgba(0,0,0,0.9)",
-              backgroundColor: "transparent",
+              top: targetRect.top - 12,
+              left: targetRect.left - 12,
+              width: targetRect.width + 24,
+              height: targetRect.height + 24,
+              boxShadow: "0 0 0 9999px rgba(0,0,0,0.7)",
               zIndex: 10,
             }}
           />
