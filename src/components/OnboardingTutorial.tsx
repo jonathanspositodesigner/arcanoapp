@@ -209,7 +209,12 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
 
       {/* Modal step content */}
       {showExampleModal && realItem && (
-        <div className="absolute inset-0 flex flex-col p-4 pt-14 pb-6 pointer-events-auto" style={{ backgroundColor: overlayColor }}>
+        <div className="absolute inset-0 flex flex-col p-4 pt-10 pb-6 pointer-events-auto overflow-y-auto" style={{ backgroundColor: overlayColor }}>
+          {/* Welcome header */}
+          <div className="text-center mb-4">
+            <h2 className="text-2xl font-bold text-white mb-1">Seja bem-vindo! 👋</h2>
+            <p className="text-white/70 text-sm">Este tutorial vai te ensinar como usar a plataforma</p>
+          </div>
           {/* Example card */}
           <div className="bg-card rounded-2xl overflow-hidden shadow-xl flex flex-col" style={{ height: '55vh', maxHeight: '400px' }}>
             {/* Image */}
