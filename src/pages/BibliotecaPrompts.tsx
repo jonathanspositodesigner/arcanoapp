@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,7 +64,6 @@ const BibliotecaPrompts = () => {
     recordCopy 
   } = useDailyPromptLimit(user, planType);
   const { isSupported: pushSupported, isSubscribed: pushSubscribed, isLoading: pushLoading, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushNotifications();
-  const [contentType, setContentType] = useState<"exclusive" | "community">("exclusive");
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
   const [shuffledVerTudo, setShuffledVerTudo] = useState<PromptItem[]>([]);
@@ -109,7 +108,7 @@ const BibliotecaPrompts = () => {
   }, [allPrompts]);
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, contentType]);
+  }, [selectedCategory]);
   const fetchCommunityPrompts = async () => {
     const {
       data: communityData,
@@ -151,33 +150,11 @@ const BibliotecaPrompts = () => {
     }));
     setAllPrompts([...adminPrompts, ...communityPrompts]);
   };
-  // Filter by content type first
-  const contentTypePrompts = contentType === "exclusive" 
-    ? allPrompts.filter(p => p.isExclusive) 
-    : allPrompts.filter(p => p.isCommunity);
-  
-  // Shuffled items for "Ver Tudo" based on content type
-  const shuffledContentType = contentType === "exclusive" 
-    ? shuffledVerTudo.filter(p => p.isExclusive)
-    : shuffledVerTudo.filter(p => p.isCommunity);
-
-  const filteredPrompts = selectedCategory === "Ver Tudo" 
-    ? shuffledContentType 
-    : selectedCategory === "Novos" 
-      ? contentTypePrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16) 
-      : selectedCategory === "Grátis" 
-        ? contentTypePrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera") 
-        : contentTypePrompts.filter(p => p.category === selectedCategory);
-  
+  const filteredPrompts = selectedCategory === "Ver Tudo" ? shuffledVerTudo : selectedCategory === "Novos" ? allPrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16) : selectedCategory === "Grátis" ? allPrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera") : allPrompts.filter(p => p.category === selectedCategory);
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  
-  // Categories - Controles de Câmera only for exclusive
-  const categories = contentType === "exclusive" 
-    ? ["Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"]
-    : ["Novos", "Selos 3D", "Fotos", "Cenários", "Ver Tudo"];
-  
+  const categories = ["Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera", "Ver Tudo"];
   // Helper to check if user has a plan with daily limit
   const hasLimitPlan = planType === "arcano_basico" || planType === "arcano_pro";
 
@@ -473,44 +450,13 @@ const BibliotecaPrompts = () => {
             </a>
           </Card>
 
-          {/* Page Title and Content Type Tabs */}
+          {/* Page Title and Category Filters */}
           <div className="mb-6 sm:mb-8">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground">Biblioteca de Prompts</h2>
             <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">
               Explore nossa coleção de prompts para criar selos 3D incríveis
             </p>
             
-            {/* Content Type Tabs */}
-            <div className="flex gap-2 mb-4">
-              <Button
-                variant={contentType === "exclusive" ? "default" : "outline"}
-                onClick={() => {
-                  setContentType("exclusive");
-                  setSelectedCategory("Ver Tudo");
-                }}
-                className={`text-sm font-semibold ${contentType === "exclusive" 
-                  ? "bg-gradient-primary hover:opacity-90 text-white" 
-                  : "hover:bg-secondary border-border"}`}
-              >
-                <Star className="h-4 w-4 mr-2" />
-                Arquivos Exclusivos
-              </Button>
-              <Button
-                variant={contentType === "community" ? "default" : "outline"}
-                onClick={() => {
-                  setContentType("community");
-                  setSelectedCategory("Ver Tudo");
-                }}
-                className={`text-sm font-semibold ${contentType === "community" 
-                  ? "bg-gradient-primary hover:opacity-90 text-white" 
-                  : "hover:bg-secondary border-border"}`}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Enviados pela Comunidade
-              </Button>
-            </div>
-
-            {/* Category Filters */}
             <div className="flex gap-2 sm:gap-3 flex-wrap">
               {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => setSelectedCategory(cat)} size="sm" className={`text-xs sm:text-sm ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}>
                   {cat}
