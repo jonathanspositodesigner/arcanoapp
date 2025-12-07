@@ -35,16 +35,19 @@ const validateFile = (file: File): string | null => {
   return null;
 };
 
+type PromptType = 'admin' | 'community' | 'partner';
+
 interface Prompt {
   id: string;
   title: string;
   prompt: string;
   category: string;
   image_url: string;
-  type: 'admin' | 'community';
+  type: PromptType;
   is_premium?: boolean;
   created_at?: string;
   tutorial_url?: string;
+  partner_id?: string;
 }
 
 const AdminManageImages = () => {
@@ -61,6 +64,7 @@ const AdminManageImages = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
+  const [typeFilter, setTypeFilter] = useState<PromptType | 'all'>('all');
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
@@ -92,14 +96,16 @@ const AdminManageImages = () => {
 
   const fetchPrompts = async () => {
     try {
-      const [adminData, communityData] = await Promise.all([
+      const [adminData, communityData, partnerData] = await Promise.all([
         supabase.from('admin_prompts').select('*').order('created_at', { ascending: false }),
-        supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', { ascending: false })
+        supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', { ascending: false }),
+        supabase.from('partner_prompts').select('*').eq('approved', true).order('created_at', { ascending: false })
       ]);
 
       const allPrompts: Prompt[] = [
         ...(adminData.data || []).map(p => ({ ...p, type: 'admin' as const })),
-        ...(communityData.data || []).map(p => ({ ...p, type: 'community' as const, is_premium: false }))
+        ...(communityData.data || []).map(p => ({ ...p, type: 'community' as const, is_premium: false })),
+        ...(partnerData.data || []).map(p => ({ ...p, type: 'partner' as const }))
       ].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
 
       setPrompts(allPrompts);
@@ -111,9 +117,11 @@ const AdminManageImages = () => {
     }
   };
 
-  const filteredPrompts = prompts.filter(p => 
-    p.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPrompts = prompts.filter(p => {
+    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = typeFilter === 'all' || p.type === typeFilter;
+    return matchesSearch && matchesType;
+  });
 
   const handleEdit = (prompt: Prompt) => {
     setEditingPrompt(prompt);
@@ -150,12 +158,22 @@ const AdminManageImages = () => {
     }
   };
 
+  const getTableAndBucket = (type: PromptType) => {
+    switch (type) {
+      case 'admin':
+        return { table: 'admin_prompts', bucket: 'admin-prompts' };
+      case 'community':
+        return { table: 'community_prompts', bucket: 'community-prompts' };
+      case 'partner':
+        return { table: 'partner_prompts', bucket: 'partner-prompts' };
+    }
+  };
+
   const handleSaveEdit = async () => {
     if (!editingPrompt) return;
 
     try {
-      const table = editingPrompt.type === 'admin' ? 'admin_prompts' : 'community_prompts';
-      const bucket = editingPrompt.type === 'admin' ? 'admin-prompts' : 'community-prompts';
+      const { table, bucket } = getTableAndBucket(editingPrompt.type);
       
       let newImageUrl = editingPrompt.image_url;
 
@@ -192,14 +210,14 @@ const AdminManageImages = () => {
         image_url: newImageUrl
       };
 
-      // Only add is_premium and tutorial_url for admin prompts
-      if (editingPrompt.type === 'admin') {
+      // Only add is_premium and tutorial_url for admin and partner prompts
+      if (editingPrompt.type === 'admin' || editingPrompt.type === 'partner') {
         updateData.is_premium = editIsPremium;
         updateData.tutorial_url = editHasTutorial && editTutorialUrl ? editTutorialUrl : null;
       }
 
       const { error } = await supabase
-        .from(table)
+        .from(table as 'admin_prompts')
         .update(updateData)
         .eq('id', editingPrompt.id);
 
@@ -218,8 +236,7 @@ const AdminManageImages = () => {
     if (!confirm("Tem certeza que deseja deletar este arquivo?")) return;
 
     try {
-      const bucket = prompt.type === 'admin' ? 'admin-prompts' : 'community-prompts';
-      const table = prompt.type === 'admin' ? 'admin_prompts' : 'community_prompts';
+      const { table, bucket } = getTableAndBucket(prompt.type);
       
       // Delete from storage
       const fileName = prompt.image_url.split('/').pop();
@@ -229,7 +246,7 @@ const AdminManageImages = () => {
 
       // Delete from database
       const { error } = await supabase
-        .from(table)
+        .from(table as 'admin_prompts')
         .delete()
         .eq('id', prompt.id);
 
@@ -273,8 +290,44 @@ const AdminManageImages = () => {
             Gerenciar Arquivos Enviados
           </h1>
           <p className="text-muted-foreground text-lg mb-4">
-            {filteredPrompts.length} arquivos {searchTerm ? 'encontrados' : 'publicados'}
+            {filteredPrompts.length} arquivos {searchTerm || typeFilter !== 'all' ? 'encontrados' : 'publicados'}
           </p>
+          
+          {/* Type Filter */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Button
+              variant={typeFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('all')}
+            >
+              Todos
+            </Button>
+            <Button
+              variant={typeFilter === 'admin' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('admin')}
+              className={typeFilter === 'admin' ? 'bg-gradient-primary' : ''}
+            >
+              Envios de Administradores
+            </Button>
+            <Button
+              variant={typeFilter === 'community' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('community')}
+              className={typeFilter === 'community' ? 'bg-blue-500 hover:bg-blue-600' : ''}
+            >
+              Envios da Comunidade
+            </Button>
+            <Button
+              variant={typeFilter === 'partner' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTypeFilter('partner')}
+              className={typeFilter === 'partner' ? 'bg-green-500 hover:bg-green-600' : ''}
+            >
+              Envios de Parceiros
+            </Button>
+          </div>
+          
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -316,9 +369,13 @@ const AdminManageImages = () => {
                       </Badge>
                     )}
                     <Badge className={
-                      prompt.type === 'admin' ? 'bg-gradient-primary' : 'bg-blue-500'
+                      prompt.type === 'admin' 
+                        ? 'bg-gradient-primary' 
+                        : prompt.type === 'partner' 
+                          ? 'bg-green-500' 
+                          : 'bg-blue-500'
                     }>
-                      {prompt.type === 'admin' ? 'Exclusivo' : 'Comunidade'}
+                      {prompt.type === 'admin' ? 'Exclusivo' : prompt.type === 'partner' ? 'Parceiro' : 'Comunidade'}
                     </Badge>
                   </div>
                 </div>
@@ -445,7 +502,7 @@ const AdminManageImages = () => {
               </Select>
             </div>
             
-            {editingPrompt?.type === 'admin' && (
+            {(editingPrompt?.type === 'admin' || editingPrompt?.type === 'partner') && (
               <>
                 <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
                   <div className="flex items-center gap-2">
