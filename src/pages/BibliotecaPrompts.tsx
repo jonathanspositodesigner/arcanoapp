@@ -292,26 +292,10 @@ const BibliotecaPrompts = () => {
       toast.error("Erro ao baixar arquivo");
     }
   };
-  const trackDownload = async (promptId: string | number, promptType: 'admin' | 'community' | 'partner') => {
-    try {
-      await supabase.from('prompt_downloads').insert({
-        prompt_id: String(promptId),
-        prompt_type: promptType
-      });
-    } catch (error) {
-      console.error("Error tracking download:", error);
-    }
-  };
-
-  const downloadMedia = async (mediaUrl: string, title: string, referenceImages?: string[], isPremiumContent: boolean = false, promptId?: string | number, promptType?: 'admin' | 'community' | 'partner') => {
+  const downloadMedia = async (mediaUrl: string, title: string, referenceImages?: string[], isPremiumContent: boolean = false) => {
     const isVideo = isVideoUrl(mediaUrl);
     const extension = isVideo ? 'mp4' : 'jpg';
     const baseTitle = title.toLowerCase().replace(/\s+/g, "-");
-
-    // Track the download
-    if (promptId && promptType) {
-      await trackDownload(promptId, promptType);
-    }
 
     // Download main media
     await downloadFile(mediaUrl, `${baseTitle}.${extension}`, isPremiumContent);
@@ -667,7 +651,7 @@ const BibliotecaPrompts = () => {
                               <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Copiar Prompt {item.isPremium && hasLimitPlan && `(${remainingCopies} restantes)`}
                             </Button>
-                            <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages, item.isPremium, item.id, item.promptType)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
+                            <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages, item.isPremium)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
                               <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Baixar Referência
                             </Button>
@@ -730,7 +714,7 @@ const BibliotecaPrompts = () => {
                             <Copy className="h-4 w-4 mr-2" />
                             Copiar Prompt
                           </Button>
-                          <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.id, selectedPrompt.promptType)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
+                          <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
                             <Download className="h-4 w-4 mr-2" />
                             Baixar {isVideoUrl(selectedPrompt.imageUrl) ? 'Vídeo' : 'Imagem'}
                           </Button>
