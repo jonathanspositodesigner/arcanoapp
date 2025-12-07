@@ -496,11 +496,11 @@ const BibliotecaPrompts = () => {
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
-          <div className="mb-6">
+          <div className="mb-6 flex justify-center">
             <img 
               src={logoHorizontal} 
               alt="Arcano Lab" 
-              className="w-full mb-4 cursor-pointer hover:opacity-80 transition-opacity" 
+              className="w-[70%] mb-4 cursor-pointer hover:opacity-80 transition-opacity" 
               onClick={() => navigate('/')}
             />
           </div>
