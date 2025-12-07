@@ -15,6 +15,7 @@ import logoHorizontal from "@/assets/logo_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
+import ArcaneAIStudioModal from "@/components/ArcaneAIStudioModal";
 interface PromptItem {
   id: string | number;
   title: string;
@@ -92,6 +93,7 @@ const BibliotecaPrompts = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
+  const [showArcaneStudioModal, setShowArcaneStudioModal] = useState(false);
 
   // Check if first time user - show tutorial only on first visit
   useEffect(() => {
@@ -551,23 +553,26 @@ const BibliotecaPrompts = () => {
             Instalar App
           </Button>
 
-          {/* Featured Card */}
+          {/* Arcane AI Studio Card */}
           <Card className="mb-6 sm:mb-8 p-4 sm:p-6 lg:p-8 bg-gradient-primary text-primary-foreground shadow-hover bg-primary">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
               <Zap className="h-8 w-8 sm:h-12 sm:w-12 flex-shrink-0" />
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Conheça a Forja de Selos 3D</h1>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Arcane AI Studio</h1>
                 <p className="text-sm sm:text-base lg:text-lg opacity-90">
-                  Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.
+                  Acesse nossas ferramentas de IA exclusivas para potenciar seus resultados e facilitar seu dia a dia.
                 </p>
               </div>
             </div>
-            <a href="https://youtu.be/XmPDm7ikUbU" target="_blank" rel="noopener noreferrer">
-              <Button variant="secondary" size="default" className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
-                 Forja de Selos 3D
-                <ExternalLink className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-              </Button>
-            </a>
+            <Button 
+              onClick={() => setShowArcaneStudioModal(true)}
+              variant="secondary" 
+              size="default" 
+              className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base"
+            >
+              <Zap className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Acessar Ferramentas
+            </Button>
           </Card>
 
           {/* Page Title and Content Type Tabs */}
@@ -829,6 +834,15 @@ const BibliotecaPrompts = () => {
 
       {/* Onboarding Tutorial */}
       {showOnboarding && <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />}
+
+      {/* Arcane AI Studio Modal */}
+      <ArcaneAIStudioModal 
+        open={showArcaneStudioModal} 
+        onOpenChange={setShowArcaneStudioModal}
+        isPremium={isPremium}
+        planType={planType}
+        isLoggedIn={!!user}
+      />
     </div>;
 };
 export default BibliotecaPrompts;
