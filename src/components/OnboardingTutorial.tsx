@@ -139,6 +139,43 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
     setShowExampleModal(isModalStep);
   }, [isModalStep]);
 
+  // Add click listener to real target elements
+  useEffect(() => {
+    if (isModalStep || !isVisible) return;
+
+    const handleTargetClick = () => {
+      // Small delay to let the actual click action happen first
+      setTimeout(() => {
+        handleNext();
+      }, 100);
+    };
+
+    // For step 2 (generate-image), listen to the mobile menu button
+    if (step.id === "generate-image") {
+      const menuButton = document.querySelector("[data-tutorial='mobile-menu']");
+      if (menuButton) {
+        menuButton.addEventListener("click", handleTargetClick);
+        return () => menuButton.removeEventListener("click", handleTargetClick);
+      }
+    }
+
+    // For step 3 (ai-tools), listen to any AI tool link click
+    if (step.id === "ai-tools") {
+      const aiToolsContainer = document.querySelector("[data-tutorial='ai-tools']");
+      if (aiToolsContainer) {
+        const links = aiToolsContainer.querySelectorAll("a");
+        links.forEach(link => {
+          link.addEventListener("click", handleTargetClick);
+        });
+        return () => {
+          links.forEach(link => {
+            link.removeEventListener("click", handleTargetClick);
+          });
+        };
+      }
+    }
+  }, [step, isModalStep, isVisible, currentStep]);
+
   const handleNext = () => {
     if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -168,15 +205,16 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
 
   if (!isVisible || isMobile === null || isMobile === false) return null;
 
-  return (
-    <div className="fixed inset-0 z-[9999]">
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/90" />
+  // Calculate overlay panel dimensions
+  const padding = 16;
+  const overlayColor = "rgba(0,0,0,0.85)";
 
-      {/* Skip button */}
+  return (
+    <div className="fixed inset-0 z-[9999] pointer-events-none">
+      {/* Skip button - always on top and clickable */}
       <button
         onClick={handleSkip}
-        className="absolute top-3 right-3 z-10 flex items-center gap-1 text-white/80 hover:text-white text-sm"
+        className="absolute top-3 right-3 z-[100] flex items-center gap-1 text-white/80 hover:text-white text-sm pointer-events-auto"
       >
         <X className="h-4 w-4" />
         Pular
@@ -184,7 +222,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
 
       {/* Modal step content */}
       {showExampleModal && realItem && (
-        <div className="absolute inset-0 flex flex-col p-4 pt-14 pb-6">
+        <div className="absolute inset-0 flex flex-col p-4 pt-14 pb-6 pointer-events-auto" style={{ backgroundColor: overlayColor }}>
           {/* Example card */}
           <div className="bg-card rounded-2xl overflow-hidden shadow-xl flex flex-col" style={{ height: '55vh', maxHeight: '400px' }}>
             {/* Image */}
@@ -257,28 +295,65 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
         </div>
       )}
 
-      {/* Non-modal steps */}
+      {/* Non-modal steps - 4 panel overlay system */}
       {!isModalStep && targetRect && (
         <>
-          {/* Spotlight cutout - clickable area */}
+          {/* TOP panel */}
           <div 
-            className="absolute rounded-xl ring-4 ring-white animate-pulse cursor-pointer bg-white/10"
-            onClick={handleNext}
+            className="absolute left-0 right-0 top-0 pointer-events-auto"
             style={{
-              top: targetRect.top - 12,
-              left: targetRect.left - 12,
-              width: targetRect.width + 24,
-              height: targetRect.height + 24,
-              boxShadow: "0 0 0 9999px rgba(0,0,0,0.2)",
-              zIndex: 10,
+              height: Math.max(0, targetRect.top - padding),
+              backgroundColor: overlayColor,
+            }}
+          />
+
+          {/* BOTTOM panel */}
+          <div 
+            className="absolute left-0 right-0 bottom-0 pointer-events-auto"
+            style={{
+              top: targetRect.bottom + padding,
+              backgroundColor: overlayColor,
+            }}
+          />
+
+          {/* LEFT panel */}
+          <div 
+            className="absolute left-0 pointer-events-auto"
+            style={{
+              top: targetRect.top - padding,
+              height: targetRect.height + padding * 2,
+              width: Math.max(0, targetRect.left - padding),
+              backgroundColor: overlayColor,
+            }}
+          />
+
+          {/* RIGHT panel */}
+          <div 
+            className="absolute right-0 pointer-events-auto"
+            style={{
+              top: targetRect.top - padding,
+              height: targetRect.height + padding * 2,
+              left: targetRect.right + padding,
+              backgroundColor: overlayColor,
+            }}
+          />
+
+          {/* Visual ring highlight - pointer-events none so it doesn't block */}
+          <div 
+            className="absolute rounded-xl ring-4 ring-white animate-pulse pointer-events-none"
+            style={{
+              top: targetRect.top - padding,
+              left: targetRect.left - padding,
+              width: targetRect.width + padding * 2,
+              height: targetRect.height + padding * 2,
             }}
           />
 
           {/* Tooltip */}
           <div
-            className="absolute left-4 right-4 bg-card rounded-xl shadow-xl p-4 border border-border"
+            className="absolute left-4 right-4 bg-card rounded-xl shadow-xl p-4 border border-border pointer-events-auto"
             style={{
-              bottom: window.innerHeight - targetRect.top + 20,
+              bottom: window.innerHeight - targetRect.top + padding + 8,
               zIndex: 11,
             }}
           >
