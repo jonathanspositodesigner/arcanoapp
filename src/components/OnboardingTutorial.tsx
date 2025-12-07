@@ -175,11 +175,11 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
 
       {/* Modal step - full screen layout */}
       {showExampleModal && realItem && (
-        <div className="fixed inset-0 z-[9995] flex flex-col p-3 pt-10">
-          {/* Card container - fits in remaining space */}
-          <div className="bg-card rounded-xl shadow-2xl overflow-hidden flex flex-col flex-1 max-h-[calc(100vh-180px)]">
-            {/* Media - flexible height */}
-            <div className="relative flex-1 min-h-0 bg-secondary">
+        <div className="fixed inset-0 z-[9995] flex flex-col p-4 pt-12 pb-4 safe-area-inset-bottom">
+          {/* Card container - with fixed max height */}
+          <div className="bg-card rounded-xl shadow-2xl overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+            {/* Media - fixed height */}
+            <div className="relative h-48 flex-shrink-0 bg-secondary">
               {isVideoUrl(realItem.image_url) ? (
                 <video 
                   src={realItem.image_url} 
@@ -198,16 +198,16 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               )}
             </div>
             
-            {/* Content - fixed height */}
-            <div className="p-3 space-y-2 flex-shrink-0">
-              <h3 className="font-bold text-sm text-foreground">{realItem.title}</h3>
-              <div className="bg-secondary p-2 rounded-lg max-h-12 overflow-y-auto">
-                <p className="text-[11px] text-muted-foreground line-clamp-2">{realItem.prompt}</p>
+            {/* Content - fixed height, always visible */}
+            <div className="p-4 space-y-3 flex-shrink-0">
+              <h3 className="font-bold text-base text-foreground">{realItem.title}</h3>
+              <div className="bg-secondary p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground line-clamp-2">{realItem.prompt}</p>
               </div>
               
               {/* Button with highlight */}
               <Button 
-                className="w-full bg-gradient-primary hover:opacity-90 text-white ring-4 ring-white ring-offset-2 ring-offset-card animate-pulse text-sm py-2"
+                className="w-full bg-gradient-primary hover:opacity-90 text-white ring-4 ring-white ring-offset-2 ring-offset-card animate-pulse"
                 onClick={handleCopyPrompt}
                 data-tutorial-modal="copy-prompt"
               >
@@ -217,19 +217,19 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
             </div>
           </div>
 
-          {/* Tooltip for modal step - always visible at bottom */}
-          <div className="bg-card rounded-xl shadow-2xl p-3 mt-3 border border-border flex-shrink-0">
+          {/* Tooltip - fixed at bottom */}
+          <div className="bg-card rounded-xl shadow-2xl p-4 mt-auto border border-border">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-primary text-white flex-shrink-0">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-primary text-white flex-shrink-0">
                 {step.icon}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
+                <div className="flex items-center gap-2 mb-1">
                   <div className="flex gap-1">
                     {tutorialSteps.map((_, index) => (
                       <div
                         key={index}
-                        className={`h-1.5 w-1.5 rounded-full ${
+                        className={`h-2 w-2 rounded-full ${
                           index === currentStep
                             ? "bg-primary"
                             : index < currentStep
@@ -239,12 +239,12 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
                       />
                     ))}
                   </div>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {currentStep + 1}/{tutorialSteps.length}
                   </span>
                 </div>
-                <h3 className="text-sm font-bold text-foreground">{step.title}</h3>
-                <p className="text-xs text-muted-foreground">{step.description}</p>
+                <h3 className="text-base font-bold text-foreground">{step.title}</h3>
+                <p className="text-sm text-muted-foreground">{step.description}</p>
               </div>
             </div>
           </div>
