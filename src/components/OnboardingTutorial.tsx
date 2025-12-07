@@ -62,7 +62,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   const [isVisible, setIsVisible] = useState(true);
   const [showExampleModal, setShowExampleModal] = useState(true);
   const [realItem, setRealItem] = useState<RealPromptItem | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   // Check if mobile
   useEffect(() => {
@@ -76,7 +76,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
 
   // If not mobile, complete tutorial immediately
   useEffect(() => {
-    if (!isMobile && isVisible) {
+    if (isMobile === false && isVisible) {
       handleComplete();
     }
   }, [isMobile]);
@@ -166,7 +166,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
     handleNext();
   };
 
-  if (!isVisible || !isMobile) return null;
+  if (!isVisible || isMobile === null || isMobile === false) return null;
 
   return (
     <div className="fixed inset-0 z-[9999]">
