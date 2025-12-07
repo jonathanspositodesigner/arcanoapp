@@ -7,6 +7,7 @@ import { Star, Play, ArrowRight, Copy, Download, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 
 interface CollectionItem {
   id: string;
@@ -127,9 +128,10 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
     }
   }, []);
 
-  const handleDownload = useCallback(async (url: string, title: string) => {
+  const handleDownload = useCallback(async (url: string, title: string, isPremiumContent: boolean = false) => {
     try {
-      const response = await fetch(url);
+      const signedUrl = await getSecureDownloadUrl(url, isPremiumContent);
+      const response = await fetch(signedUrl);
       const blob = await response.blob();
       const extension = isVideoUrl(url) ? 'mp4' : 'png';
       const link = document.createElement('a');
@@ -205,17 +207,19 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
             {/* Media */}
             <div className="rounded-lg overflow-hidden">
               {isVideoUrl(selectedItem.imageUrl) ? (
-                <video
+                <SecureVideo
                   src={selectedItem.imageUrl}
+                  isPremium={selectedItem.isPremium}
                   className="w-full max-h-[400px] object-contain bg-black"
                   controls
                   autoPlay
                   muted
                 />
               ) : (
-                <img
+                <SecureImage
                   src={selectedItem.imageUrl}
                   alt={selectedItem.title}
+                  isPremium={selectedItem.isPremium}
                   className="w-full max-h-[400px] object-contain"
                 />
               )}
@@ -258,7 +262,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                 </Button>
                 <Button 
                   variant="outline"
-                  onClick={() => handleDownload(selectedItem.imageUrl, selectedItem.title)}
+                  onClick={() => handleDownload(selectedItem.imageUrl, selectedItem.title, selectedItem.isPremium)}
                   className="flex-1"
                 >
                   <Download className="h-4 w-4 mr-2" />
@@ -305,8 +309,9 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
             >
               {isVideoUrl(item.imageUrl) ? (
                 <div className="relative aspect-square">
-                  <video
+                  <SecureVideo
                     src={item.imageUrl}
+                    isPremium={item.isPremium}
                     className="w-full h-full object-cover"
                     muted
                     loop
@@ -318,9 +323,10 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                   </div>
                 </div>
               ) : (
-                <img
+                <SecureImage
                   src={getThumbnailUrl(item.imageUrl)}
                   alt={item.title}
+                  isPremium={item.isPremium}
                   className="w-full aspect-square object-cover"
                   loading="lazy"
                 />

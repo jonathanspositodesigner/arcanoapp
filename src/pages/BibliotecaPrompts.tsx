@@ -14,6 +14,7 @@ import { trackPromptClick } from "@/hooks/usePromptClickTracker";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
+import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 interface PromptItem {
   id: string | number;
   title: string;
@@ -217,9 +218,11 @@ const BibliotecaPrompts = () => {
       toast.error("Erro ao copiar prompt");
     }
   };
-  const downloadFile = async (url: string, filename: string) => {
+  const downloadFile = async (url: string, filename: string, isPremiumContent: boolean = false) => {
     try {
-      const response = await fetch(url);
+      // Get signed URL for secure download
+      const signedUrl = await getSecureDownloadUrl(url, isPremiumContent);
+      const response = await fetch(signedUrl);
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -231,23 +234,22 @@ const BibliotecaPrompts = () => {
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
       console.error("Download failed:", error);
-      // Fallback: open in new tab
-      window.open(url, "_blank");
+      toast.error("Erro ao baixar arquivo");
     }
   };
-  const downloadMedia = async (mediaUrl: string, title: string, referenceImages?: string[]) => {
+  const downloadMedia = async (mediaUrl: string, title: string, referenceImages?: string[], isPremiumContent: boolean = false) => {
     const isVideo = isVideoUrl(mediaUrl);
     const extension = isVideo ? 'mp4' : 'jpg';
     const baseTitle = title.toLowerCase().replace(/\s+/g, "-");
 
     // Download main media
-    await downloadFile(mediaUrl, `${baseTitle}.${extension}`);
+    await downloadFile(mediaUrl, `${baseTitle}.${extension}`, isPremiumContent);
 
     // Download reference images if it's a video with references
     if (isVideo && referenceImages && referenceImages.length > 0) {
       for (let i = 0; i < referenceImages.length; i++) {
         await new Promise(resolve => setTimeout(resolve, 500));
-        await downloadFile(referenceImages[i], `${baseTitle}-ref-${i + 1}.jpg`);
+        await downloadFile(referenceImages[i], `${baseTitle}-ref-${i + 1}.jpg`, isPremiumContent);
       }
       toast.success(`Vídeo e ${referenceImages.length} imagem(ns) de referência baixados!`);
     } else {
@@ -555,13 +557,13 @@ const BibliotecaPrompts = () => {
                   {/* Media Preview */}
                   <div className="aspect-square overflow-hidden bg-secondary relative">
                     {isVideo ? <>
-                        <video src={item.imageUrl} className="w-full h-full object-cover cursor-pointer" muted loop autoPlay playsInline onClick={() => handleItemClick(item)} />
+                        <SecureVideo src={item.imageUrl} isPremium={item.isPremium} className="w-full h-full object-cover cursor-pointer" muted loop autoPlay playsInline onClick={() => handleItemClick(item)} />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="bg-black/50 rounded-full p-3">
                             <Play className="h-8 w-8 text-white" fill="white" />
                           </div>
                         </div>
-                      </> : <img src={getThumbnailUrl(item.imageUrl)} alt={item.title} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onClick={() => handleItemClick(item)} />}
+                      </> : <SecureImage src={getThumbnailUrl(item.imageUrl)} alt={item.title} isPremium={item.isPremium} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onClick={() => handleItemClick(item)} />}
                     {item.isPremium && !isPremium && <div className="absolute top-2 right-2 bg-black/60 rounded-full p-2">
                         <Lock className="h-5 w-5 text-white" />
                       </div>}
@@ -594,7 +596,7 @@ const BibliotecaPrompts = () => {
                               <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Copiar Prompt {item.isPremium && hasLimitPlan && `(${remainingCopies} restantes)`}
                             </Button>
-                            <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
+                            <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages, item.isPremium)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
                               <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Baixar Referência
                             </Button>
@@ -635,7 +637,7 @@ const BibliotecaPrompts = () => {
               </button>
               {selectedPrompt && <div className="flex flex-col max-h-[90vh]">
                   <div className="flex-shrink-0">
-                    {isVideoUrl(selectedPrompt.imageUrl) ? <video src={selectedPrompt.imageUrl} className="w-full h-auto max-h-[50vh] object-contain bg-black" controls autoPlay playsInline /> : <img src={selectedPrompt.imageUrl} alt={selectedPrompt.title} className="w-full h-auto max-h-[50vh] object-contain bg-black" />}
+                    {isVideoUrl(selectedPrompt.imageUrl) ? <SecureVideo src={selectedPrompt.imageUrl} isPremium={selectedPrompt.isPremium} className="w-full h-auto max-h-[50vh] object-contain bg-black" controls autoPlay playsInline /> : <SecureImage src={selectedPrompt.imageUrl} alt={selectedPrompt.title} isPremium={selectedPrompt.isPremium} className="w-full h-auto max-h-[50vh] object-contain bg-black" />}
                   </div>
                   <div className="p-4 space-y-3 flex-shrink-0">
                     <h3 className="font-bold text-lg text-foreground">{selectedPrompt.title}</h3>
@@ -657,7 +659,7 @@ const BibliotecaPrompts = () => {
                             <Copy className="h-4 w-4 mr-2" />
                             Copiar Prompt
                           </Button>
-                          <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
+                          <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
                             <Download className="h-4 w-4 mr-2" />
                             Baixar {isVideoUrl(selectedPrompt.imageUrl) ? 'Vídeo' : 'Imagem'}
                           </Button>
@@ -684,7 +686,7 @@ const BibliotecaPrompts = () => {
               <div className="flex flex-col max-h-[90vh]">
                 {/* Media Preview */}
                 {premiumModalItem && <div className="flex-shrink-0">
-                    {isVideoUrl(premiumModalItem.imageUrl) ? <video src={premiumModalItem.imageUrl} className="w-full h-auto max-h-[40vh] object-contain bg-black" controls playsInline /> : <img src={premiumModalItem.imageUrl} alt={premiumModalItem.title} className="w-full h-auto max-h-[40vh] object-contain bg-black" />}
+                    {isVideoUrl(premiumModalItem.imageUrl) ? <SecureVideo src={premiumModalItem.imageUrl} isPremium={premiumModalItem.isPremium} className="w-full h-auto max-h-[40vh] object-contain bg-black" controls playsInline /> : <SecureImage src={premiumModalItem.imageUrl} alt={premiumModalItem.title} isPremium={premiumModalItem.isPremium} className="w-full h-auto max-h-[40vh] object-contain bg-black" />}
                   </div>}
                 
                 <div className="text-center space-y-4 p-6">
