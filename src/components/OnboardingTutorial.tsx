@@ -269,7 +269,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               left: targetRect.left - 12,
               width: targetRect.width + 24,
               height: targetRect.height + 24,
-              boxShadow: "0 0 0 9999px rgba(0,0,0,0.7)",
+              boxShadow: "0 0 0 9999px rgba(0,0,0,0.2)",
               zIndex: 10,
             }}
           />
