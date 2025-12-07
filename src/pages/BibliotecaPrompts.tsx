@@ -11,7 +11,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
 import { trackPromptClick } from "@/hooks/usePromptClickTracker";
-import logoHorizontal from "@/assets/logo_horizontal.png";
+import logoHorizontal from "@/assets/promptverso_horizontal_roxo.png";
 import CollectionModal from "@/components/CollectionModal";
 interface PromptItem {
   id: string | number;
@@ -334,7 +334,7 @@ const BibliotecaPrompts = () => {
   return <div className="min-h-screen bg-background">
       {/* Mobile Top Header */}
       <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
-        <img alt="Arcano Lab" className="h-8" src="/lovable-uploads/ea4c204d-433a-43a8-97ab-728ae5b79720.png" />
+        <img alt="Promptverso" className="h-8" src={logoHorizontal} />
         {!isPremium && <div className="flex items-center gap-2">
             <Button onClick={() => navigate("/login")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
@@ -373,7 +373,7 @@ const BibliotecaPrompts = () => {
           <div className="mb-6">
             <img 
               src={logoHorizontal} 
-              alt="Arcano Lab" 
+              alt="Promptverso" 
               className="w-full mb-4 cursor-pointer hover:opacity-80 transition-opacity" 
               onClick={() => navigate('/')}
             />
