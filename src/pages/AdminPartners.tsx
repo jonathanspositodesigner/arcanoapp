@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Users, Phone, Mail, Building, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { ArrowLeft, Plus, Users, Phone, Mail, Building, Trash2, ToggleLeft, ToggleRight, Copy, RefreshCw, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -21,23 +21,44 @@ interface Partner {
   created_at: string;
 }
 
+// Generate random password
+const generateRandomPassword = (length = 12): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
 const AdminPartners = () => {
   const navigate = useNavigate();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [createdPartnerData, setCreatedPartnerData] = useState<{ email: string; password: string } | null>(null);
   
   const [newPartner, setNewPartner] = useState({
     name: "",
     email: "",
     phone: "",
     company: "",
+    password: "",
   });
 
   useEffect(() => {
     checkAdminAndFetchPartners();
   }, []);
+
+  // Initialize password when modal opens
+  useEffect(() => {
+    if (showAddModal && !newPartner.password) {
+      setNewPartner(prev => ({ ...prev, password: generateRandomPassword() }));
+    }
+  }, [showAddModal]);
 
   const checkAdminAndFetchPartners = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -80,9 +101,38 @@ const AdminPartners = () => {
     }
   };
 
+  const handleGenerateNewPassword = () => {
+    setNewPartner(prev => ({ ...prev, password: generateRandomPassword() }));
+  };
+
+  const handleCopyPassword = async (password: string) => {
+    try {
+      await navigator.clipboard.writeText(password);
+      toast.success("Senha copiada!");
+    } catch {
+      toast.error("Erro ao copiar senha");
+    }
+  };
+
+  const handleCopyCredentials = async () => {
+    if (!createdPartnerData) return;
+    try {
+      const text = `Email: ${createdPartnerData.email}\nSenha: ${createdPartnerData.password}`;
+      await navigator.clipboard.writeText(text);
+      toast.success("Credenciais copiadas!");
+    } catch {
+      toast.error("Erro ao copiar credenciais");
+    }
+  };
+
   const handleAddPartner = async () => {
     if (!newPartner.name || !newPartner.email) {
       toast.error("Nome e email são obrigatórios");
+      return;
+    }
+
+    if (!newPartner.password) {
+      toast.error("Senha é obrigatória");
       return;
     }
 
@@ -103,6 +153,7 @@ const AdminPartners = () => {
           email: newPartner.email,
           phone: newPartner.phone || null,
           company: newPartner.company || null,
+          password: newPartner.password,
         },
       });
 
@@ -113,9 +164,16 @@ const AdminPartners = () => {
       if (response.data?.error) {
         throw new Error(response.data.error);
       }
-      toast.success("Parceiro cadastrado com sucesso!");
-      setNewPartner({ name: "", email: "", phone: "", company: "" });
+
+      // Store credentials for success modal
+      setCreatedPartnerData({
+        email: newPartner.email,
+        password: response.data.password || newPartner.password,
+      });
+
       setShowAddModal(false);
+      setShowSuccessModal(true);
+      setNewPartner({ name: "", email: "", phone: "", company: "", password: "" });
       fetchPartners();
     } catch (error: any) {
       console.error("Error adding partner:", error);
@@ -148,7 +206,6 @@ const AdminPartners = () => {
     }
 
     try {
-      // Delete partner (cascade will handle user_roles)
       const { error } = await supabase
         .from('partners')
         .delete()
@@ -194,7 +251,13 @@ const AdminPartners = () => {
             </p>
           </div>
           
-          <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+          <Dialog open={showAddModal} onOpenChange={(open) => {
+            setShowAddModal(open);
+            if (!open) {
+              setNewPartner({ name: "", email: "", phone: "", company: "", password: "" });
+              setShowPassword(false);
+            }
+          }}>
             <DialogTrigger asChild>
               <Button className="gap-2 bg-gradient-primary hover:opacity-90">
                 <Plus className="h-4 w-4" />
@@ -226,8 +289,50 @@ const AdminPartners = () => {
                     placeholder="email@exemplo.com"
                     className="mt-1"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="password">Senha *</Label>
+                  <div className="flex gap-2 mt-1">
+                    <div className="relative flex-1">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={newPartner.password}
+                        onChange={(e) => setNewPartner(prev => ({ ...prev, password: e.target.value }))}
+                        placeholder="Senha do parceiro"
+                        className="pr-10"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={handleGenerateNewPassword}
+                      title="Gerar nova senha"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleCopyPassword(newPartner.password)}
+                      title="Copiar senha"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    A senha inicial será o próprio email
+                    Copie a senha antes de cadastrar para enviar ao parceiro
                   </p>
                 </div>
                 <div>
@@ -262,6 +367,53 @@ const AdminPartners = () => {
           </Dialog>
         </div>
 
+        {/* Success Modal with Credentials */}
+        <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-center text-green-600">
+                ✓ Parceiro cadastrado com sucesso!
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <p className="text-center text-muted-foreground">
+                Copie as credenciais abaixo para enviar ao parceiro:
+              </p>
+              {createdPartnerData && (
+                <div className="bg-muted p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Email:</span>
+                    <span className="font-mono font-medium">{createdPartnerData.email}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Senha:</span>
+                    <span className="font-mono font-medium">{createdPartnerData.password}</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleCopyCredentials}
+                  className="flex-1 gap-2"
+                  variant="outline"
+                >
+                  <Copy className="h-4 w-4" />
+                  Copiar Credenciais
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    setCreatedPartnerData(null);
+                  }}
+                  className="flex-1 bg-gradient-primary hover:opacity-90"
+                >
+                  Fechar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {partners.map((partner) => (
             <Card key={partner.id} className="p-6">
@@ -278,11 +430,11 @@ const AdminPartners = () => {
                   </div>
                 </div>
               </div>
-
+              
               <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Mail className="h-4 w-4" />
-                  <span>{partner.email}</span>
+                  <span className="truncate">{partner.email}</span>
                 </div>
                 {partner.phone && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -330,16 +482,19 @@ const AdminPartners = () => {
         </div>
 
         {partners.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-16">
             <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground text-lg">
-              Nenhum parceiro cadastrado ainda
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              Nenhum parceiro cadastrado
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              Clique no botão acima para adicionar seu primeiro parceiro
             </p>
             <Button 
-              onClick={() => setShowAddModal(true)} 
-              className="mt-4 gap-2"
+              onClick={() => setShowAddModal(true)}
+              className="bg-gradient-primary hover:opacity-90"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 mr-2" />
               Adicionar Primeiro Parceiro
             </Button>
           </div>
