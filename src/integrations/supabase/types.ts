@@ -245,6 +245,9 @@ export type Database = {
           partner_id: string
           prompt: string
           reference_images: string[] | null
+          rejected: boolean | null
+          rejected_at: string | null
+          rejected_by: string | null
           title: string
           tutorial_url: string | null
           updated_at: string | null
@@ -264,6 +267,9 @@ export type Database = {
           partner_id: string
           prompt: string
           reference_images?: string[] | null
+          rejected?: boolean | null
+          rejected_at?: string | null
+          rejected_by?: string | null
           title: string
           tutorial_url?: string | null
           updated_at?: string | null
@@ -283,6 +289,9 @@ export type Database = {
           partner_id?: string
           prompt?: string
           reference_images?: string[] | null
+          rejected?: boolean | null
+          rejected_at?: string | null
+          rejected_by?: string | null
           title?: string
           tutorial_url?: string | null
           updated_at?: string | null
