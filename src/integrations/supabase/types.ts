@@ -75,6 +75,7 @@ export type Database = {
       }
       admin_prompts: {
         Row: {
+          bonus_clicks: number
           category: string
           created_at: string | null
           id: string
@@ -87,6 +88,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          bonus_clicks?: number
           category: string
           created_at?: string | null
           id?: string
@@ -99,6 +101,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          bonus_clicks?: number
           category?: string
           created_at?: string | null
           id?: string
@@ -138,6 +141,7 @@ export type Database = {
           approved: boolean | null
           approved_at: string | null
           approved_by: string | null
+          bonus_clicks: number
           category: string
           contributor_name: string | null
           created_at: string | null
@@ -151,6 +155,7 @@ export type Database = {
           approved?: boolean | null
           approved_at?: string | null
           approved_by?: string | null
+          bonus_clicks?: number
           category: string
           contributor_name?: string | null
           created_at?: string | null
@@ -164,6 +169,7 @@ export type Database = {
           approved?: boolean | null
           approved_at?: string | null
           approved_by?: string | null
+          bonus_clicks?: number
           category?: string
           contributor_name?: string | null
           created_at?: string | null
@@ -228,6 +234,7 @@ export type Database = {
           approved: boolean | null
           approved_at: string | null
           approved_by: string | null
+          bonus_clicks: number
           category: string
           created_at: string | null
           deletion_requested: boolean | null
@@ -246,6 +253,7 @@ export type Database = {
           approved?: boolean | null
           approved_at?: string | null
           approved_by?: string | null
+          bonus_clicks?: number
           category: string
           created_at?: string | null
           deletion_requested?: boolean | null
@@ -264,6 +272,7 @@ export type Database = {
           approved?: boolean | null
           approved_at?: string | null
           approved_by?: string | null
+          bonus_clicks?: number
           category?: string
           created_at?: string | null
           deletion_requested?: boolean | null

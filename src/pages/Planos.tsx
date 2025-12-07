@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, X, Sparkles, Clock } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -263,10 +263,14 @@ const Planos = () => {
   const currentPlans = plans[billingPeriod];
   return <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 flex justify-between items-center">
         <Button variant="ghost" onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
+        </Button>
+        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2">
+          <LogIn className="w-4 h-4" />
+          Já sou premium
         </Button>
       </div>
 
