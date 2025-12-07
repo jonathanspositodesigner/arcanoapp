@@ -246,9 +246,8 @@ const PartnerUpload = () => {
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('partner-prompts')
-          .getPublicUrl(fileName);
+        // Store the storage path, not the public URL (bucket is private)
+        const imageStoragePath = `https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/partner-prompts/${fileName}`;
 
         // Upload reference images if it's a video
         let referenceImageUrls: string[] = [];
@@ -263,11 +262,9 @@ const PartnerUpload = () => {
 
             if (refUploadError) throw refUploadError;
 
-            const { data: { publicUrl: refPublicUrl } } = supabase.storage
-              .from('partner-prompts')
-              .getPublicUrl(refFileName);
-
-            referenceImageUrls.push(refPublicUrl);
+            // Store storage path for reference images too
+            const refStoragePath = `https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/partner-prompts/${refFileName}`;
+            referenceImageUrls.push(refStoragePath);
           }
         }
 
@@ -278,7 +275,7 @@ const PartnerUpload = () => {
             title: formatTitle(media.title),
             prompt: media.prompt,
             category: media.category,
-            image_url: publicUrl,
+            image_url: imageStoragePath,
             reference_images: referenceImageUrls.length > 0 ? referenceImageUrls : null,
             tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
             approved: false,
