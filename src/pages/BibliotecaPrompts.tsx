@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
 import { trackPromptClick } from "@/hooks/usePromptClickTracker";
-import logoHorizontal from "@/assets/promptverso_horizontal_roxo.png";
+import logoHorizontal from "@/assets/logo_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 interface PromptItem {
   id: string | number;
@@ -334,7 +334,7 @@ const BibliotecaPrompts = () => {
   return <div className="min-h-screen bg-background">
       {/* Mobile Top Header */}
       <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
-        <img alt="Promptverso" className="h-8" src={logoHorizontal} />
+        <img alt="Arcano Lab" className="h-8" src="/lovable-uploads/ea4c204d-433a-43a8-97ab-728ae5b79720.png" />
         {!isPremium && <div className="flex items-center gap-2">
             <Button onClick={() => navigate("/login")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
@@ -373,7 +373,7 @@ const BibliotecaPrompts = () => {
           <div className="mb-6">
             <img 
               src={logoHorizontal} 
-              alt="Promptverso" 
+              alt="Arcano Lab" 
               className="w-full mb-4 cursor-pointer hover:opacity-80 transition-opacity" 
               onClick={() => navigate('/')}
             />
@@ -492,6 +492,7 @@ const BibliotecaPrompts = () => {
                   ? "bg-gradient-primary hover:opacity-90 text-white" 
                   : "hover:bg-secondary border-border"}`}
               >
+                <Star className="h-4 w-4 mr-2" />
                 Arquivos Exclusivos
               </Button>
               <Button
@@ -504,6 +505,7 @@ const BibliotecaPrompts = () => {
                   ? "bg-gradient-primary hover:opacity-90 text-white" 
                   : "hover:bg-secondary border-border"}`}
               >
+                <Users className="h-4 w-4 mr-2" />
                 Enviados pela Comunidade
               </Button>
             </div>
