@@ -40,6 +40,8 @@ export const SecureImage = memo(({
 
   useEffect(() => {
     let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 2;
     
     const loadImage = async () => {
       // Check if URL needs signing (is a Supabase storage URL)
@@ -62,20 +64,29 @@ export const SecureImage = memo(({
         return;
       }
 
-      try {
-        const url = await getSignedMediaUrl(src, isPremium);
-        if (isMounted) {
-          signedUrlCache.set(cacheKey, url);
-          setSignedUrl(url);
-          setIsLoading(false);
+      const attemptLoad = async (): Promise<void> => {
+        try {
+          const url = await getSignedMediaUrl(src, isPremium);
+          if (isMounted) {
+            signedUrlCache.set(cacheKey, url);
+            setSignedUrl(url);
+            setIsLoading(false);
+          }
+        } catch (err) {
+          console.error('Failed to get signed URL:', err);
+          if (retryCount < maxRetries && isMounted) {
+            retryCount++;
+            await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
+            return attemptLoad();
+          }
+          if (isMounted) {
+            setError(true);
+            setIsLoading(false);
+          }
         }
-      } catch (err) {
-        console.error('Failed to get signed URL:', err);
-        if (isMounted) {
-          setError(true);
-          setIsLoading(false);
-        }
-      }
+      };
+
+      await attemptLoad();
     };
 
     loadImage();
@@ -128,6 +139,8 @@ export const SecureVideo = memo(({
 
   useEffect(() => {
     let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 2;
     
     const loadVideo = async () => {
       // Check if URL needs signing
@@ -149,20 +162,29 @@ export const SecureVideo = memo(({
         return;
       }
 
-      try {
-        const url = await getSignedMediaUrl(src, isPremium);
-        if (isMounted) {
-          signedUrlCache.set(cacheKey, url);
-          setSignedUrl(url);
-          setIsLoading(false);
+      const attemptLoad = async (): Promise<void> => {
+        try {
+          const url = await getSignedMediaUrl(src, isPremium);
+          if (isMounted) {
+            signedUrlCache.set(cacheKey, url);
+            setSignedUrl(url);
+            setIsLoading(false);
+          }
+        } catch (err) {
+          console.error('Failed to get signed URL:', err);
+          if (retryCount < maxRetries && isMounted) {
+            retryCount++;
+            await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
+            return attemptLoad();
+          }
+          if (isMounted) {
+            setError(true);
+            setIsLoading(false);
+          }
         }
-      } catch (err) {
-        console.error('Failed to get signed URL:', err);
-        if (isMounted) {
-          setError(true);
-          setIsLoading(false);
-        }
-      }
+      };
+
+      await attemptLoad();
     };
 
     loadVideo();

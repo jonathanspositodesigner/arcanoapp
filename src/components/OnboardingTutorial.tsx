@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { X, ChevronRight, Copy, Smartphone, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 
 interface TutorialStep {
   id: string;
@@ -214,19 +215,20 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
             {/* Image */}
             <div className="h-40 w-full bg-muted flex-shrink-0 overflow-hidden">
               {isVideoUrl(realItem.image_url) ? (
-                <video 
+                <SecureVideo 
                   src={realItem.image_url} 
                   className="w-full h-full object-cover"
+                  isPremium={false}
+                  autoPlay
                   muted
                   loop
-                  autoPlay
-                  playsInline
                 />
               ) : (
-                <img 
+                <SecureImage 
                   src={realItem.image_url} 
                   alt={realItem.title}
                   className="w-full h-full object-cover"
+                  isPremium={false}
                 />
               )}
             </div>

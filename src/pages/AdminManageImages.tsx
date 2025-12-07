@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 
 // Format title: first letter uppercase, rest lowercase
 const formatTitle = (title: string): string => {
@@ -346,19 +347,20 @@ const AdminManageImages = () => {
               <Card key={`${prompt.type}-${prompt.id}`} className="overflow-hidden">
                 <div className="relative">
                   {isVideo ? (
-                    <video
+                    <SecureVideo
                       src={prompt.image_url}
                       className="w-full h-48 object-cover"
+                      isPremium={prompt.is_premium || false}
+                      autoPlay
                       muted
                       loop
-                      autoPlay
-                      playsInline
                     />
                   ) : (
-                    <img
+                    <SecureImage
                       src={prompt.image_url}
                       alt={prompt.title}
                       className="w-full h-48 object-cover"
+                      isPremium={prompt.is_premium || false}
                     />
                   )}
                   <div className="absolute top-2 right-2 flex gap-1">

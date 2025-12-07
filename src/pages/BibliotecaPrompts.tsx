@@ -186,12 +186,13 @@ const BibliotecaPrompts = () => {
     ? shuffledVerTudo.filter(p => p.isExclusive)
     : shuffledVerTudo.filter(p => p.isCommunity);
 
+  // For "Ver Tudo" we use shuffled array, for other categories we keep the original order (by created_at)
   const filteredPrompts = selectedCategory === "Ver Tudo" 
     ? shuffledContentType 
     : selectedCategory === "Novos" 
       ? contentTypePrompts.filter(p => p.category !== "Controles de Câmera").slice(0, 16) 
       : selectedCategory === "Grátis" 
-        ? contentTypePrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera") 
+        ? contentTypePrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera")
         : contentTypePrompts.filter(p => p.category === selectedCategory);
   
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);

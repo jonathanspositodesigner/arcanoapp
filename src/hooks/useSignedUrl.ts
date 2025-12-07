@@ -136,31 +136,43 @@ export const getSignedMediaUrl = async (
     return cached.url;
   }
 
-  try {
-    const response = await supabase.functions.invoke('get-signed-url', {
-      body: {
-        filePath: parsed.filePath,
-        bucket: parsed.bucket,
-        isPremium
-      }
-    });
+  const attemptFetch = async (retryCount = 0): Promise<string> => {
+    try {
+      const response = await supabase.functions.invoke('get-signed-url', {
+        body: {
+          filePath: parsed.filePath,
+          bucket: parsed.bucket,
+          isPremium
+        }
+      });
 
-    if (response.error || !response.data?.signedUrl) {
-      console.error('Error getting signed URL:', response.error);
+      if (response.error || !response.data?.signedUrl) {
+        console.error('Error getting signed URL:', response.error);
+        if (retryCount < 2) {
+          await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)));
+          return attemptFetch(retryCount + 1);
+        }
+        return originalUrl;
+      }
+
+      const signedUrl = response.data.signedUrl;
+      
+      // Cache the URL
+      urlCache[cacheKey] = {
+        url: signedUrl,
+        expiresAt: Date.now() + 55 * 60 * 1000
+      };
+
+      return signedUrl;
+    } catch (error) {
+      console.error('Failed to get signed URL:', error);
+      if (retryCount < 2) {
+        await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)));
+        return attemptFetch(retryCount + 1);
+      }
       return originalUrl;
     }
+  };
 
-    const signedUrl = response.data.signedUrl;
-    
-    // Cache the URL
-    urlCache[cacheKey] = {
-      url: signedUrl,
-      expiresAt: Date.now() + 55 * 60 * 1000
-    };
-
-    return signedUrl;
-  } catch (error) {
-    console.error('Failed to get signed URL:', error);
-    return originalUrl;
-  }
+  return attemptFetch();
 };
