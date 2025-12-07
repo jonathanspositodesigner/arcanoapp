@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -492,6 +492,7 @@ const BibliotecaPrompts = () => {
                   ? "bg-gradient-primary hover:opacity-90 text-white" 
                   : "hover:bg-secondary border-border"}`}
               >
+                <Star className="h-4 w-4 mr-2" />
                 Arquivos Exclusivos
               </Button>
               <Button
@@ -504,6 +505,7 @@ const BibliotecaPrompts = () => {
                   ? "bg-gradient-primary hover:opacity-90 text-white" 
                   : "hover:bg-secondary border-border"}`}
               >
+                <Users className="h-4 w-4 mr-2" />
                 Enviados pela Comunidade
               </Button>
             </div>
