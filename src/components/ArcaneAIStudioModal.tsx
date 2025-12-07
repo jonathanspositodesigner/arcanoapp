@@ -173,7 +173,7 @@ const ArcaneAIStudioModal = ({ open, onOpenChange, isPremium, planType, isLogged
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate("/upgrade-plano");
+                        navigate("/upgrade");
                         onOpenChange(false);
                       }}
                       size="sm"
