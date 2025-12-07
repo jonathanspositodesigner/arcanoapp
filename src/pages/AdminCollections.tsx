@@ -9,6 +9,7 @@ import { ArrowLeft, Plus, Copy, Pencil, Trash2, Check, Search, FolderOpen, Star,
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 
 interface Collection {
   id: string;
@@ -374,22 +375,22 @@ const AdminCollections = () => {
               >
                 {isVideoUrl(prompt.imageUrl) ? (
                   <div className="relative aspect-square">
-                    <video
+                    <SecureVideo
                       src={prompt.imageUrl}
                       className="w-full h-full object-cover"
+                      isPremium={prompt.isPremium}
                       muted
-                      playsInline
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                       <Play className="h-6 w-6 text-white" fill="currentColor" />
                     </div>
                   </div>
                 ) : (
-                  <img
-                    src={getThumbnailUrl(prompt.imageUrl)}
+                  <SecureImage
+                    src={prompt.imageUrl}
                     alt={prompt.title}
                     className="w-full aspect-square object-cover"
-                    loading="lazy"
+                    isPremium={prompt.isPremium}
                   />
                 )}
                 
