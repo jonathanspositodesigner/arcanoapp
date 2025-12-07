@@ -80,13 +80,13 @@ const BibliotecaPrompts = () => {
   const [collectionSlug, setCollectionSlug] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Check if first time user
+  // Check if first time user - TEMPORARILY ALWAYS SHOW FOR TESTING
   useEffect(() => {
-    const tutorialCompleted = localStorage.getItem("biblioteca-tutorial-completed");
-    if (!tutorialCompleted) {
+    // const tutorialCompleted = localStorage.getItem("biblioteca-tutorial-completed");
+    // if (!tutorialCompleted) {
       // Small delay to let the page render first
       setTimeout(() => setShowOnboarding(true), 1000);
-    }
+    // }
   }, []);
   useEffect(() => {
     fetchCommunityPrompts();
