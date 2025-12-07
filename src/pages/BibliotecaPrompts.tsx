@@ -26,6 +26,7 @@ interface PromptItem {
   isPremium?: boolean;
   referenceImages?: string[];
   tutorialUrl?: string;
+  createdAt?: string;
 }
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -146,7 +147,8 @@ const BibliotecaPrompts = () => {
       imageUrl: item.image_url,
       category: item.category,
       isCommunity: true,
-      isPremium: false
+      isPremium: false,
+      createdAt: item.created_at || undefined
     }));
 
     const adminPrompts: PromptItem[] = (adminResult.data || []).map(item => ({
@@ -158,7 +160,8 @@ const BibliotecaPrompts = () => {
       isExclusive: true,
       isPremium: (item as any).is_premium || false,
       referenceImages: (item as any).reference_images || [],
-      tutorialUrl: (item as any).tutorial_url || null
+      tutorialUrl: (item as any).tutorial_url || null,
+      createdAt: item.created_at || undefined
     }));
 
     // Partner prompts are shown as exclusive content (no partner badge)
@@ -171,10 +174,19 @@ const BibliotecaPrompts = () => {
       isExclusive: true,
       isPremium: (item as any).is_premium || false,
       referenceImages: (item as any).reference_images || [],
-      tutorialUrl: (item as any).tutorial_url || null
+      tutorialUrl: (item as any).tutorial_url || null,
+      createdAt: item.created_at || undefined
     }));
 
-    setAllPrompts([...adminPrompts, ...partnerPrompts, ...communityPrompts]);
+    // Combine all prompts and sort by created_at descending
+    const allCombined = [...adminPrompts, ...partnerPrompts, ...communityPrompts]
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA; // Most recent first
+      });
+
+    setAllPrompts(allCombined);
   };
   // Filter by content type first
   const contentTypePrompts = contentType === "exclusive" 
@@ -568,16 +580,16 @@ const BibliotecaPrompts = () => {
             const isVideo = isVideoUrl(item.imageUrl);
             const canAccess = !item.isPremium || isPremium;
             return <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
-                  {/* Media Preview */}
+                  {/* Media Preview - always load without premium check for preview, access control is on copy/download */}
                   <div className="aspect-square overflow-hidden bg-secondary relative">
                     {isVideo ? <>
-                        <SecureVideo src={item.imageUrl} isPremium={item.isPremium} className="w-full h-full object-cover cursor-pointer" muted loop autoPlay playsInline onClick={() => handleItemClick(item)} />
+                        <SecureVideo src={item.imageUrl} isPremium={false} className="w-full h-full object-cover cursor-pointer" muted loop autoPlay playsInline onClick={() => handleItemClick(item)} />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="bg-black/50 rounded-full p-3">
                             <Play className="h-8 w-8 text-white" fill="white" />
                           </div>
                         </div>
-                      </> : <SecureImage src={getThumbnailUrl(item.imageUrl)} alt={item.title} isPremium={item.isPremium} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onClick={() => handleItemClick(item)} />}
+                      </> : <SecureImage src={item.imageUrl} alt={item.title} isPremium={false} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onClick={() => handleItemClick(item)} />}
                     {item.isPremium && !isPremium && <div className="absolute top-2 right-2 bg-black/60 rounded-full p-2">
                         <Lock className="h-5 w-5 text-white" />
                       </div>}
@@ -651,7 +663,7 @@ const BibliotecaPrompts = () => {
               </button>
               {selectedPrompt && <div className="flex flex-col max-h-[90vh]">
                   <div className="flex-shrink-0">
-                    {isVideoUrl(selectedPrompt.imageUrl) ? <SecureVideo src={selectedPrompt.imageUrl} isPremium={selectedPrompt.isPremium} className="w-full h-auto max-h-[50vh] object-contain bg-black" controls autoPlay playsInline /> : <SecureImage src={selectedPrompt.imageUrl} alt={selectedPrompt.title} isPremium={selectedPrompt.isPremium} className="w-full h-auto max-h-[50vh] object-contain bg-black" />}
+                    {isVideoUrl(selectedPrompt.imageUrl) ? <SecureVideo src={selectedPrompt.imageUrl} isPremium={false} className="w-full h-auto max-h-[50vh] object-contain bg-black" controls autoPlay playsInline /> : <SecureImage src={selectedPrompt.imageUrl} alt={selectedPrompt.title} isPremium={false} className="w-full h-auto max-h-[50vh] object-contain bg-black" />}
                   </div>
                   <div className="p-4 space-y-3 flex-shrink-0">
                     <h3 className="font-bold text-lg text-foreground">{selectedPrompt.title}</h3>
@@ -700,7 +712,7 @@ const BibliotecaPrompts = () => {
               <div className="flex flex-col max-h-[90vh]">
                 {/* Media Preview */}
                 {premiumModalItem && <div className="flex-shrink-0">
-                    {isVideoUrl(premiumModalItem.imageUrl) ? <SecureVideo src={premiumModalItem.imageUrl} isPremium={premiumModalItem.isPremium} className="w-full h-auto max-h-[40vh] object-contain bg-black" controls playsInline /> : <SecureImage src={premiumModalItem.imageUrl} alt={premiumModalItem.title} isPremium={premiumModalItem.isPremium} className="w-full h-auto max-h-[40vh] object-contain bg-black" />}
+                    {isVideoUrl(premiumModalItem.imageUrl) ? <SecureVideo src={premiumModalItem.imageUrl} isPremium={false} className="w-full h-auto max-h-[40vh] object-contain bg-black" controls playsInline /> : <SecureImage src={premiumModalItem.imageUrl} alt={premiumModalItem.title} isPremium={false} className="w-full h-auto max-h-[40vh] object-contain bg-black" />}
                   </div>}
                 
                 <div className="text-center space-y-4 p-6">
