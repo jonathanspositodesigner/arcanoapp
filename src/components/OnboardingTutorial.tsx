@@ -176,6 +176,8 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
     setShowExampleModal(false);
     localStorage.setItem("biblioteca-tutorial-completed", "true");
     onComplete();
+    // Reload page to reset to original view
+    window.location.reload();
   };
 
   const handleSkip = () => {
