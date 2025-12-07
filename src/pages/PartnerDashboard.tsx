@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Upload, FileCheck, Clock, Trash2, Home } from "lucide-react";
+import { LogOut, Upload, FileCheck, Clock, Trash2, Home, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
@@ -23,6 +23,7 @@ interface PartnerPrompt {
   approved: boolean;
   deletion_requested: boolean;
   created_at: string;
+  download_count?: number;
 }
 
 const PartnerDashboard = () => {
@@ -81,8 +82,30 @@ const PartnerDashboard = () => {
 
     if (promptsError) {
       console.error("Error fetching prompts:", promptsError);
+      setPrompts([]);
     } else {
-      setPrompts(promptsData || []);
+      // Fetch download counts for each prompt
+      const promptIds = (promptsData || []).map(p => p.id);
+      if (promptIds.length > 0) {
+        const { data: downloadData } = await supabase
+          .from('prompt_downloads')
+          .select('prompt_id')
+          .eq('prompt_type', 'partner')
+          .in('prompt_id', promptIds);
+
+        const downloadCounts: Record<string, number> = {};
+        (downloadData || []).forEach(d => {
+          downloadCounts[d.prompt_id] = (downloadCounts[d.prompt_id] || 0) + 1;
+        });
+
+        const promptsWithDownloads = (promptsData || []).map(p => ({
+          ...p,
+          download_count: downloadCounts[p.id] || 0
+        }));
+        setPrompts(promptsWithDownloads);
+      } else {
+        setPrompts([]);
+      }
     }
 
     setIsLoading(false);
@@ -236,9 +259,15 @@ const PartnerDashboard = () => {
                 </div>
               </div>
               <div className="p-4 space-y-3">
-                <div>
-                  <h3 className="font-bold text-lg text-foreground">{prompt.title}</h3>
-                  <Badge variant="outline" className="mt-1">{prompt.category}</Badge>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-lg text-foreground">{prompt.title}</h3>
+                    <Badge variant="outline" className="mt-1">{prompt.category}</Badge>
+                  </div>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary flex items-center gap-1">
+                    <Download className="h-3 w-3" />
+                    {prompt.download_count || 0}
+                  </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2">{prompt.prompt}</p>
                 

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Download, ArrowUpDown, CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
@@ -49,7 +49,10 @@ interface Prompt {
   created_at?: string;
   tutorial_url?: string;
   partner_id?: string;
+  download_count?: number;
 }
+
+type SortOption = 'date' | 'downloads';
 
 const AdminManageImages = () => {
   const navigate = useNavigate();
@@ -66,6 +69,8 @@ const AdminManageImages = () => {
   const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<PromptType | 'all'>('all');
+  const [sortBy, setSortBy] = useState<SortOption>('date');
+  const [downloadCounts, setDownloadCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
@@ -107,9 +112,21 @@ const AdminManageImages = () => {
         ...(adminData.data || []).map(p => ({ ...p, type: 'admin' as const })),
         ...(communityData.data || []).map(p => ({ ...p, type: 'community' as const, is_premium: false })),
         ...(partnerData.data || []).map(p => ({ ...p, type: 'partner' as const }))
-      ].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+      ];
 
       setPrompts(allPrompts);
+
+      // Fetch download counts for all prompts
+      const { data: downloadData } = await supabase
+        .from('prompt_downloads')
+        .select('prompt_id, prompt_type');
+
+      const counts: Record<string, number> = {};
+      (downloadData || []).forEach(d => {
+        const key = `${d.prompt_type}-${d.prompt_id}`;
+        counts[key] = (counts[key] || 0) + 1;
+      });
+      setDownloadCounts(counts);
     } catch (error) {
       console.error("Error fetching prompts:", error);
       toast.error("Erro ao carregar imagens");
@@ -118,11 +135,24 @@ const AdminManageImages = () => {
     }
   };
 
-  const filteredPrompts = prompts.filter(p => {
-    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === 'all' || p.type === typeFilter;
-    return matchesSearch && matchesType;
-  });
+  const getDownloadCount = (prompt: Prompt) => {
+    const key = `${prompt.type}-${prompt.id}`;
+    return downloadCounts[key] || 0;
+  };
+
+  const filteredAndSortedPrompts = prompts
+    .filter(p => {
+      const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = typeFilter === 'all' || p.type === typeFilter;
+      return matchesSearch && matchesType;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'downloads') {
+        return getDownloadCount(b) - getDownloadCount(a);
+      }
+      // Default: sort by date
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    });
 
   const handleEdit = (prompt: Prompt) => {
     setEditingPrompt(prompt);
@@ -291,7 +321,7 @@ const AdminManageImages = () => {
             Gerenciar Arquivos Enviados
           </h1>
           <p className="text-muted-foreground text-lg mb-4">
-            {filteredPrompts.length} arquivos {searchTerm || typeFilter !== 'all' ? 'encontrados' : 'publicados'}
+            {filteredAndSortedPrompts.length} arquivos {searchTerm || typeFilter !== 'all' ? 'encontrados' : 'publicados'}
           </p>
           
           {/* Type Filter */}
@@ -328,6 +358,29 @@ const AdminManageImages = () => {
               Envios de Parceiros
             </Button>
           </div>
+
+          {/* Sort Options */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="text-sm text-muted-foreground self-center mr-2">Ordenar por:</span>
+            <Button
+              variant={sortBy === 'date' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSortBy('date')}
+              className={sortBy === 'date' ? 'bg-primary' : ''}
+            >
+              <CalendarDays className="h-4 w-4 mr-1" />
+              Mais recente
+            </Button>
+            <Button
+              variant={sortBy === 'downloads' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSortBy('downloads')}
+              className={sortBy === 'downloads' ? 'bg-primary' : ''}
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Mais baixados
+            </Button>
+          </div>
           
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -341,7 +394,7 @@ const AdminManageImages = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPrompts.map((prompt) => {
+          {filteredAndSortedPrompts.map((prompt) => {
             const isVideo = isVideoUrl(prompt.image_url);
             return (
               <Card key={`${prompt.type}-${prompt.id}`} className="overflow-hidden">
@@ -382,12 +435,18 @@ const AdminManageImages = () => {
                   </div>
                 </div>
                 <div className="p-4 space-y-3">
-                  <div>
-                    <h3 className="font-bold text-lg text-foreground">
-                      {prompt.title}
-                    </h3>
-                    <Badge variant="secondary" className="mt-1">
-                      {prompt.category}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-bold text-lg text-foreground">
+                        {prompt.title}
+                      </h3>
+                      <Badge variant="secondary" className="mt-1">
+                        {prompt.category}
+                      </Badge>
+                    </div>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary flex items-center gap-1">
+                      <Download className="h-3 w-3" />
+                      {getDownloadCount(prompt)}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground line-clamp-2">
@@ -417,7 +476,7 @@ const AdminManageImages = () => {
           })}
         </div>
 
-        {filteredPrompts.length === 0 && (
+        {filteredAndSortedPrompts.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-lg">
               {searchTerm ? 'Nenhum arquivo encontrado com esse nome' : 'Nenhum arquivo encontrado'}

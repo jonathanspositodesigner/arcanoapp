@@ -414,6 +414,27 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_downloads: {
+        Row: {
+          downloaded_at: string
+          id: string
+          prompt_id: string
+          prompt_type: string
+        }
+        Insert: {
+          downloaded_at?: string
+          id?: string
+          prompt_id: string
+          prompt_type?: string
+        }
+        Update: {
+          downloaded_at?: string
+          id?: string
+          prompt_id?: string
+          prompt_type?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
