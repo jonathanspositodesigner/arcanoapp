@@ -169,7 +169,7 @@ const ArcaneAIStudioModal = ({ open, onOpenChange, isPremium, planType, isLogged
                     </div>
                   )}
                   
-                  {isLoggedIn && !hasAccess && (
+                  {isLoggedIn && !hasAccess && isPremium && (
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -181,6 +181,21 @@ const ArcaneAIStudioModal = ({ open, onOpenChange, isPremium, planType, isLogged
                     >
                       <Lock className="h-3 w-3 mr-1" />
                       Fazer Upgrade
+                    </Button>
+                  )}
+                  
+                  {isLoggedIn && !isPremium && (
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate("/planos");
+                        onOpenChange(false);
+                      }}
+                      size="sm"
+                      className="w-full mt-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"
+                    >
+                      <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                      Torne-se Premium
                     </Button>
                   )}
                   
