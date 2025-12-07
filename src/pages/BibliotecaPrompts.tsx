@@ -123,25 +123,23 @@ const BibliotecaPrompts = () => {
     setCurrentPage(1);
   }, [selectedCategory, contentType]);
   const fetchCommunityPrompts = async () => {
-    const {
-      data: communityData,
-      error: communityError
-    } = await supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', {
-      ascending: false
-    });
-    if (communityError) {
-      console.error("Error fetching community prompts:", communityError);
+    const [communityResult, adminResult, partnerResult] = await Promise.all([
+      supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', { ascending: false }),
+      supabase.from('admin_prompts').select('*').order('created_at', { ascending: false }),
+      supabase.from('partner_prompts').select('*').eq('approved', true).order('created_at', { ascending: false })
+    ]);
+
+    if (communityResult.error) {
+      console.error("Error fetching community prompts:", communityResult.error);
     }
-    const {
-      data: adminData,
-      error: adminError
-    } = await supabase.from('admin_prompts').select('*').order('created_at', {
-      ascending: false
-    });
-    if (adminError) {
-      console.error("Error fetching admin prompts:", adminError);
+    if (adminResult.error) {
+      console.error("Error fetching admin prompts:", adminResult.error);
     }
-    const communityPrompts: PromptItem[] = (communityData || []).map(item => ({
+    if (partnerResult.error) {
+      console.error("Error fetching partner prompts:", partnerResult.error);
+    }
+
+    const communityPrompts: PromptItem[] = (communityResult.data || []).map(item => ({
       id: item.id,
       title: item.title,
       prompt: item.prompt,
@@ -150,7 +148,8 @@ const BibliotecaPrompts = () => {
       isCommunity: true,
       isPremium: false
     }));
-    const adminPrompts: PromptItem[] = (adminData || []).map(item => ({
+
+    const adminPrompts: PromptItem[] = (adminResult.data || []).map(item => ({
       id: item.id,
       title: item.title,
       prompt: item.prompt,
@@ -161,7 +160,21 @@ const BibliotecaPrompts = () => {
       referenceImages: (item as any).reference_images || [],
       tutorialUrl: (item as any).tutorial_url || null
     }));
-    setAllPrompts([...adminPrompts, ...communityPrompts]);
+
+    // Partner prompts are shown as exclusive content (no partner badge)
+    const partnerPrompts: PromptItem[] = (partnerResult.data || []).map(item => ({
+      id: item.id,
+      title: item.title,
+      prompt: item.prompt,
+      imageUrl: item.image_url,
+      category: item.category,
+      isExclusive: true,
+      isPremium: (item as any).is_premium || false,
+      referenceImages: (item as any).reference_images || [],
+      tutorialUrl: (item as any).tutorial_url || null
+    }));
+
+    setAllPrompts([...adminPrompts, ...partnerPrompts, ...communityPrompts]);
   };
   // Filter by content type first
   const contentTypePrompts = contentType === "exclusive" 
