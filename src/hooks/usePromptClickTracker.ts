@@ -21,7 +21,7 @@ const addSessionClick = (promptId: string): void => {
   sessionStorage.setItem(SESSION_CLICKS_KEY, JSON.stringify([...clicks]));
 };
 
-const hasClickedInSession = (promptId: string): boolean => {
+export const hasClickedInSession = (promptId: string): boolean => {
   return getSessionClicks().has(promptId);
 };
 
@@ -29,10 +29,10 @@ export const trackPromptClick = async (
   promptId: string,
   promptTitle: string,
   isAdminPrompt: boolean
-) => {
+): Promise<boolean> => {
   // Only track if not already clicked in this session
   if (hasClickedInSession(promptId)) {
-    return;
+    return false; // Did not register a new click
   }
 
   try {
@@ -43,7 +43,9 @@ export const trackPromptClick = async (
     });
     // Mark as clicked in this session
     addSessionClick(promptId);
+    return true; // Successfully registered a new click
   } catch (error) {
     console.error("Error tracking prompt click:", error);
+    return false;
   }
 };
