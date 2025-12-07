@@ -460,7 +460,7 @@ const BibliotecaPrompts = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pb-24 lg:pb-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pb-24 lg:pb-8 overflow-x-hidden max-w-full">
           {/* Mobile Install App Button */}
           <Button onClick={() => navigate("/install")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden">
             <Smartphone className="h-4 w-4 mr-2" />
@@ -494,18 +494,19 @@ const BibliotecaPrompts = () => {
             </p>
             
             {/* Content Type Tabs */}
-            <div className="flex gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4">
               <Button
                 variant={contentType === "exclusive" ? "default" : "outline"}
                 onClick={() => {
                   setContentType("exclusive");
                   setSelectedCategory("Ver Tudo");
                 }}
-                className={`text-sm font-semibold ${contentType === "exclusive" 
+                size="sm"
+                className={`text-xs sm:text-sm font-semibold ${contentType === "exclusive" 
                   ? "bg-gradient-primary hover:opacity-90 text-white" 
                   : "hover:bg-secondary border-border"}`}
               >
-                <Star className="h-4 w-4 mr-2" />
+                <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Arquivos Exclusivos
               </Button>
               <Button
@@ -514,18 +515,19 @@ const BibliotecaPrompts = () => {
                   setContentType("community");
                   setSelectedCategory("Ver Tudo");
                 }}
-                className={`text-sm font-semibold ${contentType === "community" 
+                size="sm"
+                className={`text-xs sm:text-sm font-semibold ${contentType === "community" 
                   ? "bg-gradient-primary hover:opacity-90 text-white" 
                   : "hover:bg-secondary border-border"}`}
               >
-                <Users className="h-4 w-4 mr-2" />
-                Enviados pela Comunidade
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                Comunidade
               </Button>
             </div>
 
             {/* Category Filters */}
-            <div className="flex gap-2 sm:gap-3 flex-wrap">
-              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => setSelectedCategory(cat)} size="sm" className={`text-xs sm:text-sm ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}>
+            <div className="flex gap-1.5 sm:gap-2 flex-wrap">
+              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => setSelectedCategory(cat)} size="sm" className={`text-[11px] sm:text-xs px-2 sm:px-3 ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}>
                   {cat}
                 </Button>)}
             </div>
