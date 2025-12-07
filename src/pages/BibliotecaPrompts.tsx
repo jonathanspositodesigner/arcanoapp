@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
-import { trackPromptClick } from "@/hooks/usePromptClickTracker";
+import { trackPromptClick, hasClickedInSession } from "@/hooks/usePromptClickTracker";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
@@ -84,6 +84,8 @@ const BibliotecaPrompts = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collectionSlug, setCollectionSlug] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
+  const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
 
   // Check if first time user - show tutorial only on first visit
   useEffect(() => {
@@ -302,8 +304,28 @@ const BibliotecaPrompts = () => {
     try {
       await navigator.clipboard.writeText(promptItem.prompt);
       toast.success(`Prompt "${promptItem.title}" copiado!`);
-      // Track the click
-      trackPromptClick(String(promptItem.id), promptItem.title, !!promptItem.isExclusive);
+      
+      // Track the click and increment counter locally if it's a new click
+      const promptId = String(promptItem.id);
+      const wasTracked = await trackPromptClick(promptId, promptItem.title, !!promptItem.isExclusive);
+      
+      if (wasTracked) {
+        // Increment local counter with animation
+        setClickIncrements(prev => ({
+          ...prev,
+          [promptId]: (prev[promptId] || 0) + 1
+        }));
+        
+        // Trigger animation
+        setAnimatingClicks(prev => new Set(prev).add(promptId));
+        setTimeout(() => {
+          setAnimatingClicks(prev => {
+            const next = new Set(prev);
+            next.delete(promptId);
+            return next;
+          });
+        }, 300);
+      }
     } catch (error) {
       console.error("Failed to copy:", error);
       toast.error("Erro ao copiar prompt");
@@ -668,9 +690,12 @@ const BibliotecaPrompts = () => {
                         <h3 className="font-bold text-sm sm:text-lg text-foreground mb-1 sm:mb-2 line-clamp-2">{item.title}</h3>
                         {getBadgeContent(item)}
                       </div>
-                      <Badge variant="secondary" className="bg-primary/10 text-primary flex items-center gap-1 shrink-0 text-[10px] sm:text-xs">
+                      <Badge 
+                        variant="secondary" 
+                        className={`bg-primary/10 text-primary flex items-center gap-1 shrink-0 text-[10px] sm:text-xs transition-transform duration-300 ${animatingClicks.has(String(item.id)) ? 'scale-125' : ''}`}
+                      >
                         <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                        {(item.clickCount || 0) + (item.bonusClicks || 0)}
+                        {(item.clickCount || 0) + (item.bonusClicks || 0) + (clickIncrements[String(item.id)] || 0)}
                       </Badge>
                     </div>
 
