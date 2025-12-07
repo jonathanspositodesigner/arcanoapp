@@ -409,7 +409,7 @@ const BibliotecaPrompts = () => {
             </>}
 
           <h2 className="text-xl font-bold text-foreground mb-6">Ferramentas de IA</h2>
-          <div data-tutorial="ai-tools">
+          <div data-tutorial="ai-tools" className="space-y-3">
           {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
               <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
                 <span className="font-medium text-foreground">{link.name}</span>
@@ -417,7 +417,7 @@ const BibliotecaPrompts = () => {
               </Button>
             </a>)}
           </div>
-          <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block">
+          <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block mt-3">
             <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
               <span className="font-medium text-foreground">Gerar Video no VEO 3</span>
               <Video className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />

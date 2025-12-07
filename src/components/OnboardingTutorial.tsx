@@ -159,21 +159,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       }
     }
 
-    // For step 3 (ai-tools), listen to any AI tool link click
-    if (step.id === "ai-tools") {
-      const aiToolsContainer = document.querySelector("[data-tutorial='ai-tools']");
-      if (aiToolsContainer) {
-        const links = aiToolsContainer.querySelectorAll("a");
-        links.forEach(link => {
-          link.addEventListener("click", handleTargetClick);
-        });
-        return () => {
-          links.forEach(link => {
-            link.removeEventListener("click", handleTargetClick);
-          });
-        };
-      }
-    }
+    // Step 3 (ai-tools) - buttons are NOT clickable, user clicks "Entendi" button
   }, [step, isModalStep, isVisible, currentStep]);
 
   const handleNext = () => {
@@ -349,6 +335,19 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
             }}
           />
 
+          {/* Block clicks on AI tools in step 3 */}
+          {step.id === "ai-tools" && (
+            <div 
+              className="absolute pointer-events-auto"
+              style={{
+                top: targetRect.top - padding,
+                left: targetRect.left - padding,
+                width: targetRect.width + padding * 2,
+                height: targetRect.height + padding * 2,
+              }}
+            />
+          )}
+
           {/* Tooltip */}
           <div
             className="absolute left-4 right-4 bg-card rounded-xl shadow-xl p-4 border border-border pointer-events-auto"
@@ -386,7 +385,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
                 {currentStep < tutorialSteps.length - 1 ? (
                   <ChevronRight className="h-4 w-4" />
                 ) : (
-                  "Concluir"
+                  "Entendi"
                 )}
               </Button>
             </div>
