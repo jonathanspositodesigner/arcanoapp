@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Library, Users, Download, ExternalLink } from "lucide-react";
 import { useState } from "react";
-import logoHorizontal from "@/assets/logo_horizontal.png";
+import logoHorizontal from "@/assets/promptverso_horizontal_roxo.png";
 import baaIcon from "@/assets/BAA.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 const Index = () => {
@@ -12,7 +12,7 @@ const Index = () => {
       <div className="text-center space-y-6 sm:space-y-8 w-full max-w-2xl">
         <div className="space-y-3 sm:space-y-4">
           <div className="flex justify-center">
-            <img src={logoHorizontal} alt="Arcano Lab" className="h-8 sm:h-10 w-auto" />
+            <img src={logoHorizontal} alt="Promptverso" className="h-8 sm:h-10 w-auto" />
           </div>
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent px-2">
             A plataforma dos criadores do futuro
