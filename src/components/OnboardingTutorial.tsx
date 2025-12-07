@@ -260,9 +260,10 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       {/* Non-modal steps */}
       {!isModalStep && targetRect && (
         <>
-          {/* Spotlight */}
+          {/* Spotlight cutout - clickable area */}
           <div 
-            className="absolute rounded-lg ring-4 ring-white animate-pulse"
+            className="absolute rounded-lg ring-4 ring-white animate-pulse cursor-pointer"
+            onClick={handleNext}
             style={{
               top: targetRect.top - 8,
               left: targetRect.left - 8,
@@ -270,6 +271,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               height: targetRect.height + 16,
               boxShadow: "0 0 0 9999px rgba(0,0,0,0.9)",
               backgroundColor: "transparent",
+              zIndex: 10,
             }}
           />
 
@@ -278,6 +280,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
             className="absolute left-4 right-4 bg-card rounded-xl shadow-xl p-4 border border-border"
             style={{
               bottom: window.innerHeight - targetRect.top + 20,
+              zIndex: 11,
             }}
           >
             <div className="flex items-center gap-3">
@@ -309,7 +312,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
                 {currentStep < tutorialSteps.length - 1 ? (
                   <ChevronRight className="h-4 w-4" />
                 ) : (
-                  "OK"
+                  "Concluir"
                 )}
               </Button>
             </div>
