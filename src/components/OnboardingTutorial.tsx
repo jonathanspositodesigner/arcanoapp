@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X, ChevronRight, Copy, Smartphone, Zap, Download } from "lucide-react";
 
 interface TutorialStep {
@@ -18,7 +17,7 @@ const tutorialSteps: TutorialStep[] = [
     title: "Copie o Prompt",
     description: "Clique aqui para copiar o prompt e colar na sua ferramenta de IA favorita!",
     targetSelector: "[data-tutorial-modal='copy-prompt']",
-    position: "top",
+    position: "bottom",
     icon: <Copy className="h-6 w-6" />,
   },
   {
@@ -26,7 +25,7 @@ const tutorialSteps: TutorialStep[] = [
     title: "Baixe a Referência",
     description: "Baixe a imagem de referência para usar junto com o prompt!",
     targetSelector: "[data-tutorial-modal='download-ref']",
-    position: "top",
+    position: "bottom",
     icon: <Download className="h-6 w-6" />,
   },
   {
@@ -68,19 +67,17 @@ const OnboardingTutorial = ({ onComplete, exampleItem }: OnboardingTutorialProps
   const isModalStep = step.id === "copy-prompt" || step.id === "download-ref";
 
   const updateTargetPosition = useCallback(() => {
-    // Small delay to let the modal render
     setTimeout(() => {
       const target = document.querySelector(step.targetSelector);
       if (target) {
         const rect = target.getBoundingClientRect();
         setTargetRect(rect);
       } else {
-        // If target not found (e.g., on desktop for mobile menu), skip to next step
         if (step.id === "generate-image" && window.innerWidth >= 1024) {
           handleNext();
         }
       }
-    }, 100);
+    }, 150);
   }, [step]);
 
   useEffect(() => {
@@ -94,7 +91,6 @@ const OnboardingTutorial = ({ onComplete, exampleItem }: OnboardingTutorialProps
     };
   }, [currentStep, updateTargetPosition]);
 
-  // Close modal when moving past modal steps
   useEffect(() => {
     if (!isModalStep) {
       setShowExampleModal(false);
@@ -127,9 +123,9 @@ const OnboardingTutorial = ({ onComplete, exampleItem }: OnboardingTutorialProps
   const getTooltipPosition = () => {
     if (!targetRect) return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
 
-    const padding = 16;
+    const padding = 20;
     const tooltipWidth = 300;
-    const tooltipHeight = 200;
+    const tooltipHeight = 220;
 
     switch (step.position) {
       case "top":
@@ -165,27 +161,35 @@ const OnboardingTutorial = ({ onComplete, exampleItem }: OnboardingTutorialProps
 
   return (
     <>
-      {/* Example Modal for first steps */}
+      {/* Dark overlay - lowest z-index */}
+      <div className="fixed inset-0 bg-black/85 z-[9990]" />
+
+      {/* Example Modal - above dark overlay */}
       {showExampleModal && (
-        <Dialog open={true} onOpenChange={() => {}}>
-          <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden bg-card z-[9998]">
-            <div className="flex flex-col max-h-[90vh]">
-              <div className="flex-shrink-0 bg-gradient-to-br from-primary/20 to-secondary aspect-video flex items-center justify-center">
+        <div className="fixed inset-0 flex items-center justify-center z-[9995] p-4">
+          <div className="bg-card rounded-xl shadow-2xl max-w-lg w-full overflow-hidden">
+            <div className="flex flex-col">
+              {/* Image placeholder area */}
+              <div className="bg-gradient-to-br from-primary/30 to-secondary aspect-video flex items-center justify-center">
                 <div className="text-center p-8">
-                  <div className="w-24 h-24 mx-auto mb-4 rounded-xl bg-gradient-primary flex items-center justify-center">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg">
                     <span className="text-4xl">🎬</span>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground">{defaultExample.title}</h3>
+                  <h3 className="text-lg font-bold text-foreground">{defaultExample.title}</h3>
                 </div>
               </div>
-              <div className="p-4 space-y-3 flex-shrink-0">
+              
+              {/* Content area */}
+              <div className="p-5 space-y-4">
                 <h3 className="font-bold text-lg text-foreground">{defaultExample.title}</h3>
-                <div className="bg-secondary p-3 rounded-lg max-h-24 overflow-y-auto">
-                  <p className="text-xs text-muted-foreground">{defaultExample.prompt}</p>
+                <div className="bg-secondary p-3 rounded-lg">
+                  <p className="text-xs text-muted-foreground line-clamp-3">{defaultExample.prompt}</p>
                 </div>
+                
+                {/* Buttons with spotlight effect */}
                 <div className="flex gap-3 flex-wrap">
                   <Button 
-                    className="flex-1 bg-gradient-primary hover:opacity-90 text-white" 
+                    className={`flex-1 bg-gradient-primary hover:opacity-90 text-white relative ${step.id === 'copy-prompt' ? 'ring-4 ring-white ring-offset-2 ring-offset-card animate-pulse' : ''}`}
                     size="sm"
                     data-tutorial-modal="copy-prompt"
                   >
@@ -194,7 +198,7 @@ const OnboardingTutorial = ({ onComplete, exampleItem }: OnboardingTutorialProps
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="flex-1 border-border hover:bg-secondary" 
+                    className={`flex-1 border-border hover:bg-secondary relative ${step.id === 'download-ref' ? 'ring-4 ring-white ring-offset-2 ring-offset-card animate-pulse' : ''}`}
                     size="sm"
                     data-tutorial-modal="download-ref"
                   >
@@ -204,50 +208,47 @@ const OnboardingTutorial = ({ onComplete, exampleItem }: OnboardingTutorialProps
                 </div>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </div>
       )}
 
-      {/* Dark overlay with spotlight cutout */}
-      <div className="fixed inset-0 z-[9999] pointer-events-none">
-        <div className="absolute inset-0 bg-black/80">
-          {targetRect && (
-            <div
-              className="absolute bg-transparent rounded-lg transition-all duration-300"
-              style={{
-                top: targetRect.top - 8,
-                left: targetRect.left - 8,
-                width: targetRect.width + 16,
-                height: targetRect.height + 16,
-                boxShadow: "0 0 0 9999px rgba(0,0,0,0.85)",
-              }}
-            />
-          )}
-        </div>
-      </div>
+      {/* Spotlight cutout for non-modal steps */}
+      {!isModalStep && targetRect && (
+        <div 
+          className="fixed rounded-lg z-[9991] ring-4 ring-white animate-pulse"
+          style={{
+            top: targetRect.top - 8,
+            left: targetRect.left - 8,
+            width: targetRect.width + 16,
+            height: targetRect.height + 16,
+            boxShadow: "0 0 0 9999px rgba(0,0,0,0.85)",
+            backgroundColor: "transparent",
+          }}
+        />
+      )}
 
-      {/* Skip button */}
+      {/* Skip button - highest z-index */}
       <Button
         onClick={handleSkip}
         variant="ghost"
-        className="fixed top-4 right-4 text-white hover:bg-white/20 z-[10000] pointer-events-auto"
+        className="fixed top-4 right-4 text-white hover:bg-white/20 z-[10000]"
       >
         <X className="h-4 w-4 mr-2" />
         Pular Tutorial
       </Button>
 
-      {/* Tutorial tooltip */}
+      {/* Tutorial tooltip - highest z-index */}
       <div
-        className="fixed bg-card rounded-xl shadow-2xl p-6 w-[300px] transition-all duration-300 animate-scale-in z-[10000] pointer-events-auto"
+        className="fixed bg-card rounded-xl shadow-2xl p-5 w-[300px] transition-all duration-300 animate-scale-in z-[10000] border border-border"
         style={getTooltipPosition()}
       >
         {/* Step indicator */}
         <div className="flex items-center gap-2 mb-4">
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {tutorialSteps.map((_, index) => (
               <div
                 key={index}
-                className={`h-2 w-2 rounded-full transition-colors ${
+                className={`h-2.5 w-2.5 rounded-full transition-colors ${
                   index === currentStep
                     ? "bg-primary"
                     : index < currentStep
@@ -257,36 +258,34 @@ const OnboardingTutorial = ({ onComplete, exampleItem }: OnboardingTutorialProps
               />
             ))}
           </div>
-          <span className="text-xs text-muted-foreground ml-auto">
+          <span className="text-xs text-muted-foreground ml-auto font-medium">
             {currentStep + 1} de {tutorialSteps.length}
           </span>
         </div>
 
         {/* Icon */}
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-primary text-white mb-4">
+        <div className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-primary text-white mb-4 shadow-lg">
           {step.icon}
         </div>
 
         {/* Content */}
         <h3 className="text-lg font-bold text-foreground mb-2">{step.title}</h3>
-        <p className="text-sm text-muted-foreground mb-6">{step.description}</p>
+        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{step.description}</p>
 
         {/* Navigation */}
-        <div className="flex gap-2">
-          <Button
-            onClick={handleNext}
-            className="flex-1 bg-gradient-primary hover:opacity-90 text-white"
-          >
-            {currentStep < tutorialSteps.length - 1 ? (
-              <>
-                Próximo
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </>
-            ) : (
-              "Concluir"
-            )}
-          </Button>
-        </div>
+        <Button
+          onClick={handleNext}
+          className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold"
+        >
+          {currentStep < tutorialSteps.length - 1 ? (
+            <>
+              Próximo
+              <ChevronRight className="h-4 w-4 ml-2" />
+            </>
+          ) : (
+            "Concluir"
+          )}
+        </Button>
       </div>
     </>
   );
