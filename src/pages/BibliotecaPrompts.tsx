@@ -63,13 +63,19 @@ const BibliotecaPrompts = () => {
     planType,
     logout
   } = usePremiumStatus();
-  const { 
-    copiesUsed, 
-    remainingCopies, 
-    hasReachedLimit, 
-    recordCopy 
+  const {
+    copiesUsed,
+    remainingCopies,
+    hasReachedLimit,
+    recordCopy
   } = useDailyPromptLimit(user, planType);
-  const { isSupported: pushSupported, isSubscribed: pushSubscribed, isLoading: pushLoading, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushNotifications();
+  const {
+    isSupported: pushSupported,
+    isSubscribed: pushSubscribed,
+    isLoading: pushLoading,
+    subscribe: pushSubscribe,
+    unsubscribe: pushUnsubscribe
+  } = usePushNotifications();
   const [contentType, setContentType] = useState<"exclusive" | "community">("exclusive");
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
@@ -129,13 +135,13 @@ const BibliotecaPrompts = () => {
     setCurrentPage(1);
   }, [selectedCategory, contentType]);
   const fetchCommunityPrompts = async () => {
-    const [communityResult, adminResult, partnerResult, clicksResult] = await Promise.all([
-      supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', { ascending: false }),
-      supabase.from('admin_prompts').select('*').order('created_at', { ascending: false }),
-      supabase.from('partner_prompts').select('*').eq('approved', true).order('created_at', { ascending: false }),
-      supabase.from('prompt_clicks').select('prompt_id')
-    ]);
-
+    const [communityResult, adminResult, partnerResult, clicksResult] = await Promise.all([supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', {
+      ascending: false
+    }), supabase.from('admin_prompts').select('*').order('created_at', {
+      ascending: false
+    }), supabase.from('partner_prompts').select('*').eq('approved', true).order('created_at', {
+      ascending: false
+    }), supabase.from('prompt_clicks').select('prompt_id')]);
     if (communityResult.error) {
       console.error("Error fetching community prompts:", communityResult.error);
     }
@@ -151,7 +157,6 @@ const BibliotecaPrompts = () => {
     (clicksResult.data || []).forEach(d => {
       clickCounts[d.prompt_id] = (clickCounts[d.prompt_id] || 0) + 1;
     });
-
     const communityPrompts: PromptItem[] = (communityResult.data || []).map(item => ({
       id: item.id,
       title: item.title,
@@ -165,7 +170,6 @@ const BibliotecaPrompts = () => {
       clickCount: clickCounts[item.id] || 0,
       bonusClicks: (item as any).bonus_clicks || 0
     }));
-
     const adminPrompts: PromptItem[] = (adminResult.data || []).map(item => ({
       id: item.id,
       title: item.title,
@@ -200,24 +204,18 @@ const BibliotecaPrompts = () => {
     }));
 
     // Combine all prompts and sort by created_at descending
-    const allCombined = [...adminPrompts, ...partnerPrompts, ...communityPrompts]
-      .sort((a, b) => {
-        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return dateB - dateA; // Most recent first
-      });
-
+    const allCombined = [...adminPrompts, ...partnerPrompts, ...communityPrompts].sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA; // Most recent first
+    });
     setAllPrompts(allCombined);
   };
   // Filter by content type first
-  const contentTypePrompts = contentType === "exclusive" 
-    ? allPrompts.filter(p => p.isExclusive) 
-    : allPrompts.filter(p => p.isCommunity);
-  
+  const contentTypePrompts = contentType === "exclusive" ? allPrompts.filter(p => p.isExclusive) : allPrompts.filter(p => p.isCommunity);
+
   // Shuffled items for "Ver Tudo" based on content type
-  const shuffledContentType = contentType === "exclusive" 
-    ? shuffledVerTudo.filter(p => p.isExclusive)
-    : shuffledVerTudo.filter(p => p.isCommunity);
+  const shuffledContentType = contentType === "exclusive" ? shuffledVerTudo.filter(p => p.isExclusive) : shuffledVerTudo.filter(p => p.isCommunity);
 
   // Sort function - by total clicks (real + bonus)
   const sortByClicks = (a: PromptItem, b: PromptItem) => {
@@ -231,50 +229,34 @@ const BibliotecaPrompts = () => {
     if (selectedCategory === "Ver Tudo") {
       return shuffledContentType;
     }
-    
+
     // Sort function - most recent first
     const sortByDate = (a: PromptItem, b: PromptItem) => {
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA;
     };
-
     if (selectedCategory === "Populares") {
-      return contentTypePrompts
-        .filter(p => p.category !== "Controles de Câmera")
-        .sort(sortByClicks);
+      return contentTypePrompts.filter(p => p.category !== "Controles de Câmera").sort(sortByClicks);
     }
-    
     if (selectedCategory === "Novos") {
-      return contentTypePrompts
-        .filter(p => p.category !== "Controles de Câmera")
-        .sort(sortByDate)
-        .slice(0, 16);
+      return contentTypePrompts.filter(p => p.category !== "Controles de Câmera").sort(sortByDate).slice(0, 16);
     }
-    
     if (selectedCategory === "Grátis") {
-      return contentTypePrompts
-        .filter(p => !p.isPremium && p.category !== "Controles de Câmera")
-        .sort(sortByDate);
+      return contentTypePrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera").sort(sortByDate);
     }
-    
+
     // For specific categories - filter and sort by date
-    return contentTypePrompts
-      .filter(p => p.category === selectedCategory)
-      .sort(sortByDate);
+    return contentTypePrompts.filter(p => p.category === selectedCategory).sort(sortByDate);
   };
-  
   const filteredPrompts = getFilteredAndSortedPrompts();
-  
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  
+
   // Categories - Controles de Câmera only for exclusive, Populares comes first before Ver Tudo
-  const categories = contentType === "exclusive" 
-    ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera"]
-    : ["Populares", "Ver Tudo", "Novos", "Selos 3D", "Fotos", "Cenários"];
-  
+  const categories = contentType === "exclusive" ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera"] : ["Populares", "Ver Tudo", "Novos", "Selos 3D", "Fotos", "Cenários"];
+
   // Helper function to get category icon
   const getCategoryIcon = (category: string) => {
     if (category === "Populares") {
@@ -282,10 +264,9 @@ const BibliotecaPrompts = () => {
     }
     return null;
   };
-  
+
   // Helper to check if user has a plan with daily limit
   const hasLimitPlan = planType === "arcano_basico" || planType === "arcano_pro";
-
   const copyToClipboard = async (promptItem: PromptItem) => {
     // Check daily limit for premium items on basic and pro plans
     if (promptItem.isPremium && hasLimitPlan) {
@@ -300,22 +281,20 @@ const BibliotecaPrompts = () => {
         return;
       }
     }
-
     try {
       await navigator.clipboard.writeText(promptItem.prompt);
       toast.success(`Prompt "${promptItem.title}" copiado!`);
-      
+
       // Track the click and increment counter locally if it's a new click
       const promptId = String(promptItem.id);
       const wasTracked = await trackPromptClick(promptId, promptItem.title, !!promptItem.isExclusive);
-      
       if (wasTracked) {
         // Increment local counter with animation
         setClickIncrements(prev => ({
           ...prev,
           [promptId]: (prev[promptId] || 0) + 1
         }));
-        
+
         // Trigger animation
         setAnimatingClicks(prev => new Set(prev).add(promptId));
         setTimeout(() => {
@@ -371,8 +350,9 @@ const BibliotecaPrompts = () => {
   };
   const handleItemClick = (item: PromptItem) => {
     // Update URL with item ID for sharing
-    setSearchParams({ item: String(item.id) });
-    
+    setSearchParams({
+      item: String(item.id)
+    });
     if (item.isPremium && !isPremium) {
       setPremiumModalItem(item);
       setShowPremiumModal(true);
@@ -380,14 +360,12 @@ const BibliotecaPrompts = () => {
       setSelectedPrompt(item);
     }
   };
-
   const handleCloseModal = () => {
     setSelectedPrompt(null);
     // Remove item from URL when closing
     searchParams.delete("item");
     setSearchParams(searchParams);
   };
-
   const handleClosePremiumModal = (open: boolean) => {
     setShowPremiumModal(open);
     if (!open) {
@@ -397,7 +375,6 @@ const BibliotecaPrompts = () => {
       setSearchParams(searchParams);
     }
   };
-
   const getEmbedUrl = (url: string): string => {
     // YouTube
     const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -412,7 +389,6 @@ const BibliotecaPrompts = () => {
     // Return original if no match (might be a direct embed URL)
     return url;
   };
-
   const openTutorial = (url: string) => {
     setTutorialUrl(getEmbedUrl(url));
     setShowTutorialModal(true);
@@ -497,12 +473,7 @@ const BibliotecaPrompts = () => {
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="mb-6 flex justify-center">
-            <img 
-              src={logoHorizontal} 
-              alt="Arcano Lab" 
-              className="w-[70%] mb-4 cursor-pointer hover:opacity-80 transition-opacity" 
-              onClick={() => navigate('/')}
-            />
+            <img src={logoHorizontal} alt="Arcano Lab" className="w-[70%] mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} />
           </div>
 
           {/* Install App Button */}
@@ -543,45 +514,30 @@ const BibliotecaPrompts = () => {
           </Button>
 
           {/* Push Notifications Button */}
-          {pushSupported && (
-            <Button
-              onClick={async () => {
-                if (pushSubscribed) {
-                  await pushUnsubscribe();
-                } else {
-                  // Clear dismissed state to allow re-subscription
-                  localStorage.removeItem("push-notification-dismissed");
-                  localStorage.removeItem("push-notification-dismissed-time");
-                  await pushSubscribe();
-                }
-              }}
-              disabled={pushLoading}
-              variant={pushSubscribed ? "outline" : "default"}
-              className={`w-full mt-2 font-semibold ${pushSubscribed ? "border-border hover:bg-secondary" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"}`}
-            >
-              {pushSubscribed ? (
-                <>
+          {pushSupported && <Button onClick={async () => {
+          if (pushSubscribed) {
+            await pushUnsubscribe();
+          } else {
+            // Clear dismissed state to allow re-subscription
+            localStorage.removeItem("push-notification-dismissed");
+            localStorage.removeItem("push-notification-dismissed-time");
+            await pushSubscribe();
+          }
+        }} disabled={pushLoading} variant={pushSubscribed ? "outline" : "default"} className={`w-full mt-2 font-semibold ${pushSubscribed ? "border-border hover:bg-secondary" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"}`}>
+              {pushSubscribed ? <>
                   <BellOff className="h-4 w-4 mr-2" />
                   Desativar Notificações
-                </>
-              ) : (
-                <>
+                </> : <>
                   <Bell className="h-4 w-4 mr-2" />
                   Ativar Notificações
-                </>
-              )}
-            </Button>
-          )}
+                </>}
+            </Button>}
 
           {/* Tutorial button */}
-          <Button
-            onClick={() => {
-              localStorage.removeItem("biblioteca-tutorial-completed");
-              setShowOnboarding(true);
-            }}
-            variant="ghost"
-            className="w-full mt-4 text-muted-foreground hover:text-foreground"
-          >
+          <Button onClick={() => {
+          localStorage.removeItem("biblioteca-tutorial-completed");
+          setShowOnboarding(true);
+        }} variant="ghost" className="w-full mt-4 text-muted-foreground hover:text-foreground">
             <HelpCircle className="h-4 w-4 mr-2" />
             Ver tutorial novamente
           </Button>
@@ -617,37 +573,21 @@ const BibliotecaPrompts = () => {
           {/* Page Title and Content Type Tabs */}
           <div className="mb-6 sm:mb-8">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground">Biblioteca de Prompts</h2>
-            <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">
-              Explore nossa coleção de prompts para criar selos 3D incríveis
-            </p>
+            <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">Explore nossa coleção de prompts para criar projetos incríveis com IA</p>
             
             {/* Content Type Tabs */}
             <div className="flex flex-wrap gap-2 mb-4">
-              <Button
-                variant={contentType === "exclusive" ? "default" : "outline"}
-                onClick={() => {
-                  setContentType("exclusive");
-                  setSelectedCategory("Ver Tudo");
-                }}
-                size="sm"
-                className={`text-xs sm:text-sm font-semibold ${contentType === "exclusive" 
-                  ? "bg-gradient-primary hover:opacity-90 text-white" 
-                  : "hover:bg-secondary border-border"}`}
-              >
+              <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => {
+              setContentType("exclusive");
+              setSelectedCategory("Ver Tudo");
+            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "exclusive" ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary border-border"}`}>
                 <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Arquivos Exclusivos
               </Button>
-              <Button
-                variant={contentType === "community" ? "default" : "outline"}
-                onClick={() => {
-                  setContentType("community");
-                  setSelectedCategory("Ver Tudo");
-                }}
-                size="sm"
-                className={`text-xs sm:text-sm font-semibold ${contentType === "community" 
-                  ? "bg-gradient-primary hover:opacity-90 text-white" 
-                  : "hover:bg-secondary border-border"}`}
-              >
+              <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => {
+              setContentType("community");
+              setSelectedCategory("Ver Tudo");
+            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "community" ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary border-border"}`}>
                 <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Comunidade
               </Button>
@@ -690,10 +630,7 @@ const BibliotecaPrompts = () => {
                         <h3 className="font-bold text-sm sm:text-lg text-foreground mb-1 sm:mb-2 line-clamp-2">{item.title}</h3>
                         {getBadgeContent(item)}
                       </div>
-                      <Badge 
-                        variant="secondary" 
-                        className={`bg-primary/10 text-primary flex items-center gap-1 shrink-0 text-[10px] sm:text-xs transition-transform duration-300 ${animatingClicks.has(String(item.id)) ? 'scale-125' : ''}`}
-                      >
+                      <Badge variant="secondary" className={`bg-primary/10 text-primary flex items-center gap-1 shrink-0 text-[10px] sm:text-xs transition-transform duration-300 ${animatingClicks.has(String(item.id)) ? 'scale-125' : ''}`}>
                         <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                         {(item.clickCount || 0) + (item.bonusClicks || 0) + (clickIncrements[String(item.id)] || 0)}
                       </Badge>
@@ -706,15 +643,12 @@ const BibliotecaPrompts = () => {
 
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2">
-                      {canAccess ? (
-                        // Check if user has reached daily limit for premium items
-                        item.isPremium && hasReachedLimit && hasLimitPlan ? (
-                          <Button onClick={() => setShowLimitModal(true)} size="sm" className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white text-xs sm:text-sm">
+                      {canAccess ?
+                  // Check if user has reached daily limit for premium items
+                  item.isPremium && hasReachedLimit && hasLimitPlan ? <Button onClick={() => setShowLimitModal(true)} size="sm" className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white text-xs sm:text-sm">
                             <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                             Limite diário atingido
-                          </Button>
-                        ) : (
-                          <>
+                          </Button> : <>
                             <Button onClick={() => copyToClipboard(item)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm" data-tutorial="copy-prompt">
                               <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Copiar Prompt {item.isPremium && hasLimitPlan && `(${remainingCopies} restantes)`}
@@ -723,14 +657,10 @@ const BibliotecaPrompts = () => {
                               <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Baixar Referência
                             </Button>
-                          </>
-                        )
-                      ) : (
-                        <Button onClick={() => navigate("/planos")} size="sm" className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm">
+                          </> : <Button onClick={() => navigate("/planos")} size="sm" className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm">
                           <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" fill="currentColor" />
                           Torne-se Premium
-                        </Button>
-                      )}
+                        </Button>}
                     </div>
                   </div>
                 </Card>;
@@ -768,16 +698,13 @@ const BibliotecaPrompts = () => {
                       <p className="text-xs text-muted-foreground">{selectedPrompt.prompt}</p>
                     </div>
                     <div className="flex gap-3 flex-wrap">
-                      {selectedPrompt.isPremium && hasReachedLimit && hasLimitPlan ? (
-                        <Button onClick={() => {
-                          handleCloseModal();
-                          setShowLimitModal(true);
-                        }} className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white" size="sm">
+                      {selectedPrompt.isPremium && hasReachedLimit && hasLimitPlan ? <Button onClick={() => {
+                    handleCloseModal();
+                    setShowLimitModal(true);
+                  }} className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white" size="sm">
                           <AlertTriangle className="h-4 w-4 mr-2" />
                           Limite atingido
-                        </Button>
-                      ) : (
-                        <>
+                        </Button> : <>
                           <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-gradient-primary hover:opacity-90 text-white" size="sm">
                             <Copy className="h-4 w-4 mr-2" />
                             Copiar Prompt
@@ -786,14 +713,11 @@ const BibliotecaPrompts = () => {
                             <Download className="h-4 w-4 mr-2" />
                             Baixar {isVideoUrl(selectedPrompt.imageUrl) ? 'Vídeo' : 'Imagem'}
                           </Button>
-                        </>
-                      )}
-                      {selectedPrompt.tutorialUrl && (
-                        <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} variant="outline" className="w-full border-red-500 text-red-500 hover:bg-red-500/10" size="sm">
+                        </>}
+                      {selectedPrompt.tutorialUrl && <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} variant="outline" className="w-full border-red-500 text-red-500 hover:bg-red-500/10" size="sm">
                           <Youtube className="h-4 w-4 mr-2" />
                           Tutorial
-                        </Button>
-                      )}
+                        </Button>}
                     </div>
                   </div>
                 </div>}
@@ -851,16 +775,9 @@ const BibliotecaPrompts = () => {
               <button onClick={() => setShowTutorialModal(false)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
                 <X className="h-4 w-4" />
               </button>
-              {tutorialUrl && (
-                <div className="aspect-video">
-                  <iframe
-                    src={tutorialUrl}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              )}
+              {tutorialUrl && <div className="aspect-video">
+                  <iframe src={tutorialUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                </div>}
             </DialogContent>
           </Dialog>
 
@@ -887,9 +804,9 @@ const BibliotecaPrompts = () => {
                 </div>
                 <div className="flex flex-col gap-3">
                   <Button onClick={() => {
-                    setShowLimitModal(false);
-                    navigate("/upgrade");
-                  }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                  setShowLimitModal(false);
+                  navigate("/upgrade");
+                }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                     <Star className="h-4 w-4 mr-2" fill="currentColor" />
                     Fazer Upgrade
                   </Button>
@@ -904,21 +821,14 @@ const BibliotecaPrompts = () => {
       </div>
 
       {/* Collection Modal */}
-      {collectionSlug && (
-        <CollectionModal 
-          slug={collectionSlug} 
-          onClose={() => {
-            setCollectionSlug(null);
-            searchParams.delete("colecao");
-            setSearchParams(searchParams);
-          }} 
-        />
-      )}
+      {collectionSlug && <CollectionModal slug={collectionSlug} onClose={() => {
+      setCollectionSlug(null);
+      searchParams.delete("colecao");
+      setSearchParams(searchParams);
+    }} />}
 
       {/* Onboarding Tutorial */}
-      {showOnboarding && (
-        <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />
-      )}
+      {showOnboarding && <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />}
     </div>;
 };
 export default BibliotecaPrompts;
