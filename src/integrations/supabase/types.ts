@@ -223,6 +223,107 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_prompts: {
+        Row: {
+          approved: boolean | null
+          approved_at: string | null
+          approved_by: string | null
+          category: string
+          created_at: string | null
+          deletion_requested: boolean | null
+          deletion_requested_at: string | null
+          id: string
+          image_url: string
+          is_premium: boolean | null
+          partner_id: string
+          prompt: string
+          reference_images: string[] | null
+          title: string
+          tutorial_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          approved_at?: string | null
+          approved_by?: string | null
+          category: string
+          created_at?: string | null
+          deletion_requested?: boolean | null
+          deletion_requested_at?: string | null
+          id?: string
+          image_url: string
+          is_premium?: boolean | null
+          partner_id: string
+          prompt: string
+          reference_images?: string[] | null
+          title: string
+          tutorial_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          created_at?: string | null
+          deletion_requested?: boolean | null
+          deletion_requested_at?: string | null
+          id?: string
+          image_url?: string
+          is_premium?: boolean | null
+          partner_id?: string
+          prompt?: string
+          reference_images?: string[] | null
+          title?: string
+          tutorial_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_prompts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          company: string | null
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       premium_users: {
         Row: {
           billing_period: string | null
@@ -380,7 +481,7 @@ export type Database = {
       is_premium: { Args: never; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "partner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -508,7 +609,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "partner"],
     },
   },
 } as const
