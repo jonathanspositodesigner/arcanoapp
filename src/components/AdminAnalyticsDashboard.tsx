@@ -92,8 +92,42 @@ const AdminAnalyticsDashboard = () => {
       // Data de hoje no formato YYYY-MM-DD
       const now = new Date();
       const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      
+      // Meia-noite de hoje para buscar acessos de hoje
+      const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
-      // Fetch ALL page views sem limite (usando paginação)
+      // ========== BUSCA SEPARADA: Acessos de HOJE (sempre independente do filtro) ==========
+      let todayViewsData: Array<{ device_type: string; viewed_at: string }> = [];
+      let todayPage = 0;
+      let todayHasMore = true;
+
+      while (todayHasMore) {
+        const { data, error } = await supabase
+          .from("page_views")
+          .select("device_type, viewed_at")
+          .gte("viewed_at", todayMidnight)
+          .order("viewed_at", { ascending: false })
+          .range(todayPage * 1000, (todayPage + 1) * 1000 - 1);
+        
+        if (error) {
+          console.error("Error fetching today views:", error);
+          break;
+        }
+        
+        if (data && data.length > 0) {
+          todayViewsData = [...todayViewsData, ...data];
+          todayPage++;
+          todayHasMore = data.length === 1000;
+        } else {
+          todayHasMore = false;
+        }
+      }
+
+      const todayMobile = todayViewsData.filter((v) => v.device_type === "mobile").length;
+      const todayDesktop = todayViewsData.filter((v) => v.device_type === "desktop").length;
+      const todayTotal = todayViewsData.length;
+
+      // ========== BUSCA DO PERÍODO SELECIONADO ==========
       let allViewsData: Array<{ device_type: string; viewed_at: string }> = [];
       let page = 0;
       const pageSize = 1000;
@@ -126,20 +160,15 @@ const AdminAnalyticsDashboard = () => {
         }
       }
 
-      // Processa os dados
+      // Processa os dados do período
       const mobile = allViewsData.filter((v) => v.device_type === "mobile").length;
       const desktop = allViewsData.filter((v) => v.device_type === "desktop").length;
-      
-      // Filtra acessos de hoje
-      const todayViews = allViewsData.filter((v) => extractDateFromTimestamp(v.viewed_at) === todayStr);
-      const todayMobile = todayViews.filter((v) => v.device_type === "mobile").length;
-      const todayDesktop = todayViews.filter((v) => v.device_type === "desktop").length;
       
       setPageViews({ 
         total: allViewsData.length, 
         mobile, 
         desktop,
-        todayTotal: todayViews.length,
+        todayTotal,
         todayMobile,
         todayDesktop
       });
