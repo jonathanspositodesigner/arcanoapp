@@ -3,22 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Check, X, Users, Handshake, Trash2, XCircle } from "lucide-react";
+import { ArrowLeft, Check, Trash2, XCircle, Handshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
-
-interface CommunityArte {
-  id: string;
-  title: string;
-  description?: string;
-  category: string;
-  image_url: string;
-  created_at: string;
-  approved: boolean;
-  contributor_name?: string;
-}
 
 interface PartnerArte {
   id: string;
@@ -35,7 +23,6 @@ interface PartnerArte {
 
 const AdminArtesReview = () => {
   const navigate = useNavigate();
-  const [communityArtes, setCommunityArtes] = useState<CommunityArte[]>([]);
   const [partnerArtes, setPartnerArtes] = useState<PartnerArte[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,21 +51,8 @@ const AdminArtesReview = () => {
       return;
     }
 
-    await Promise.all([fetchCommunityArtes(), fetchPartnerArtes()]);
+    await fetchPartnerArtes();
     setIsLoading(false);
-  };
-
-  const fetchCommunityArtes = async () => {
-    const { data, error } = await supabase
-      .from('community_artes')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error("Error fetching community artes:", error);
-    } else {
-      setCommunityArtes(data || []);
-    }
   };
 
   const fetchPartnerArtes = async () => {
@@ -96,38 +70,6 @@ const AdminArtesReview = () => {
         partner_name: a.partners?.name || 'Parceiro desconhecido',
       }));
       setPartnerArtes(mapped);
-    }
-  };
-
-  const handleApproveCommunity = async (arteId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    const { error } = await supabase
-      .from('community_artes')
-      .update({ approved: true, approved_at: new Date().toISOString(), approved_by: user?.id })
-      .eq('id', arteId);
-
-    if (error) {
-      toast.error("Erro ao aprovar");
-    } else {
-      toast.success("Aprovado com sucesso!");
-      fetchCommunityArtes();
-    }
-  };
-
-  const handleDeleteCommunity = async (arteId: string, imageUrl: string) => {
-    const fileName = imageUrl.split('/').pop();
-    if (fileName) {
-      await supabase.storage.from('community-artes').remove([fileName]);
-    }
-
-    const { error } = await supabase.from('community_artes').delete().eq('id', arteId);
-
-    if (error) {
-      toast.error("Erro ao deletar");
-    } else {
-      toast.success("Deletado com sucesso!");
-      fetchCommunityArtes();
     }
   };
 
@@ -206,7 +148,6 @@ const AdminArtesReview = () => {
     return videoExtensions.some(ext => url.toLowerCase().includes(ext));
   };
 
-  const pendingCommunity = communityArtes.filter(a => !a.approved);
   const pendingPartner = partnerArtes.filter(a => !a.approved || a.deletion_requested);
 
   if (isLoading) {
@@ -227,122 +168,70 @@ const AdminArtesReview = () => {
 
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">Analisar Envios de Artes</h1>
+          <p className="text-muted-foreground">
+            Revise e aprove envios de colaboradores ({pendingPartner.length} pendentes)
+          </p>
         </div>
 
-        <Tabs defaultValue="community">
-          <TabsList className="mb-6">
-            <TabsTrigger value="community" className="gap-2">
-              <Users className="h-4 w-4" />
-              Comunidade ({pendingCommunity.length})
-            </TabsTrigger>
-            <TabsTrigger value="partners" className="gap-2">
-              <Handshake className="h-4 w-4" />
-              Parceiros ({pendingPartner.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="community">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {communityArtes.map((arte) => (
-                <Card key={arte.id} className="overflow-hidden">
-                  <div className="relative">
-                    {isVideoUrl(arte.image_url) ? (
-                      <SecureVideo src={arte.image_url} className="w-full h-48 object-cover" isPremium={false} autoPlay muted loop />
-                    ) : (
-                      <SecureImage src={arte.image_url} alt={arte.title} className="w-full h-48 object-cover" isPremium={false} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {partnerArtes.map((arte) => {
+            const status = getPartnerArteStatus(arte);
+            return (
+              <Card key={arte.id} className="overflow-hidden">
+                <div className="relative">
+                  {isVideoUrl(arte.image_url) ? (
+                    <SecureVideo src={arte.image_url} className="w-full h-48 object-cover" isPremium={false} autoPlay muted loop />
+                  ) : (
+                    <SecureImage src={arte.image_url} alt={arte.title} className="w-full h-48 object-cover" isPremium={false} />
+                  )}
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    {status === "deletion" && (
+                      <Badge variant="destructive"><Trash2 className="h-3 w-3 mr-1" />Exclusão Solicitada</Badge>
                     )}
-                    {arte.approved && <Badge className="absolute top-2 right-2 bg-green-500">Aprovado</Badge>}
+                    {status === "approved" && <Badge className="bg-green-500">Aprovado</Badge>}
+                    {status === "pending" && <Badge variant="secondary" className="bg-yellow-500 text-white">Pendente</Badge>}
+                    {status === "rejected" && <Badge variant="destructive" className="bg-red-600"><XCircle className="h-3 w-3 mr-1" />Recusado</Badge>}
                   </div>
-                  <div className="p-4 space-y-3">
-                    <div>
-                      <h3 className="font-bold text-lg text-foreground">{arte.title}</h3>
-                      {arte.contributor_name && (
-                        <p className="text-sm text-muted-foreground">Por: {arte.contributor_name}</p>
-                      )}
-                      <Badge variant="secondary" className="mt-1">{arte.category}</Badge>
-                    </div>
-                    {arte.description && <p className="text-sm text-muted-foreground line-clamp-3">{arte.description}</p>}
-                    <div className="flex gap-2 pt-2">
-                      {!arte.approved && (
-                        <Button onClick={() => handleApproveCommunity(arte.id)} className="flex-1 bg-green-500 hover:bg-green-600">
-                          <Check className="h-4 w-4 mr-2" />Aprovar
-                        </Button>
-                      )}
-                      <Button onClick={() => handleDeleteCommunity(arte.id, arte.image_url)} variant="destructive" className="flex-1">
-                        <X className="h-4 w-4 mr-2" />Deletar
+                </div>
+                <div className="p-4 space-y-3">
+                  <div>
+                    <h3 className="font-bold text-lg text-foreground">{arte.title}</h3>
+                    <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+                      <Handshake className="h-3 w-3 mr-1" />{arte.partner_name}
+                    </Badge>
+                    <Badge variant="secondary" className="mt-1 ml-1">{arte.category}</Badge>
+                  </div>
+                  {arte.description && <p className="text-sm text-muted-foreground line-clamp-3">{arte.description}</p>}
+                  <div className="flex gap-2 pt-2">
+                    {(status === "pending" || status === "rejected") && (
+                      <Button onClick={() => handleApprovePartner(arte.id)} className="flex-1 bg-green-500 hover:bg-green-600">
+                        <Check className="h-4 w-4 mr-2" />Aprovar
                       </Button>
-                    </div>
+                    )}
+                    {(status === "pending" || status === "approved") && (
+                      <Button onClick={() => handleRejectPartner(arte.id)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-white">
+                        <XCircle className="h-4 w-4 mr-2" />Recusar
+                      </Button>
+                    )}
+                    {status === "deletion" && (
+                      <>
+                        <Button onClick={() => handleApprovePartner(arte.id)} className="flex-1 bg-green-500 hover:bg-green-600">
+                          <Check className="h-4 w-4 mr-2" />Manter
+                        </Button>
+                        <Button onClick={() => handleDeletePartner(arte.id, arte.image_url)} variant="destructive" className="flex-1">
+                          <Trash2 className="h-4 w-4 mr-2" />Confirmar Exclusão
+                        </Button>
+                      </>
+                    )}
                   </div>
-                </Card>
-              ))}
-            </div>
-            {communityArtes.length === 0 && (
-              <div className="text-center py-12"><p className="text-muted-foreground">Nenhum envio da comunidade</p></div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="partners">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {partnerArtes.map((arte) => {
-                const status = getPartnerArteStatus(arte);
-                return (
-                  <Card key={arte.id} className="overflow-hidden">
-                    <div className="relative">
-                      {isVideoUrl(arte.image_url) ? (
-                        <SecureVideo src={arte.image_url} className="w-full h-48 object-cover" isPremium={false} autoPlay muted loop />
-                      ) : (
-                        <SecureImage src={arte.image_url} alt={arte.title} className="w-full h-48 object-cover" isPremium={false} />
-                      )}
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        {status === "deletion" && (
-                          <Badge variant="destructive"><Trash2 className="h-3 w-3 mr-1" />Exclusão Solicitada</Badge>
-                        )}
-                        {status === "approved" && <Badge className="bg-green-500">Aprovado</Badge>}
-                        {status === "pending" && <Badge variant="secondary" className="bg-yellow-500 text-white">Pendente</Badge>}
-                        {status === "rejected" && <Badge variant="destructive" className="bg-red-600"><XCircle className="h-3 w-3 mr-1" />Recusado</Badge>}
-                      </div>
-                    </div>
-                    <div className="p-4 space-y-3">
-                      <div>
-                        <h3 className="font-bold text-lg text-foreground">{arte.title}</h3>
-                        <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-                          <Handshake className="h-3 w-3 mr-1" />{arte.partner_name}
-                        </Badge>
-                        <Badge variant="secondary" className="mt-1 ml-1">{arte.category}</Badge>
-                      </div>
-                      {arte.description && <p className="text-sm text-muted-foreground line-clamp-3">{arte.description}</p>}
-                      <div className="flex gap-2 pt-2">
-                        {(status === "pending" || status === "rejected") && (
-                          <Button onClick={() => handleApprovePartner(arte.id)} className="flex-1 bg-green-500 hover:bg-green-600">
-                            <Check className="h-4 w-4 mr-2" />Aprovar
-                          </Button>
-                        )}
-                        {(status === "pending" || status === "approved") && (
-                          <Button onClick={() => handleRejectPartner(arte.id)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-white">
-                            <XCircle className="h-4 w-4 mr-2" />Recusar
-                          </Button>
-                        )}
-                        {status === "deletion" && (
-                          <>
-                            <Button onClick={() => handleApprovePartner(arte.id)} className="flex-1 bg-green-500 hover:bg-green-600">
-                              <Check className="h-4 w-4 mr-2" />Manter
-                            </Button>
-                            <Button onClick={() => handleDeletePartner(arte.id, arte.image_url)} variant="destructive" className="flex-1">
-                              <Trash2 className="h-4 w-4 mr-2" />Confirmar Exclusão
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-            {partnerArtes.length === 0 && (
-              <div className="text-center py-12"><p className="text-muted-foreground">Nenhum envio de parceiros</p></div>
-            )}
-          </TabsContent>
-        </Tabs>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+        {partnerArtes.length === 0 && (
+          <div className="text-center py-12"><p className="text-muted-foreground">Nenhum envio de colaboradores</p></div>
+        )}
       </div>
     </div>
   );

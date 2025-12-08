@@ -23,7 +23,7 @@ const formatTitle = (title: string): string => {
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/webm", "video/quicktime"];
 
-type ArteType = 'admin' | 'community' | 'partner';
+type ArteType = 'admin' | 'partner';
 
 interface Arte {
   id: string;
@@ -90,15 +90,13 @@ const AdminManageArtes = () => {
 
   const fetchArtes = async () => {
     try {
-      const [adminData, communityData, partnerData] = await Promise.all([
+      const [adminData, partnerData] = await Promise.all([
         supabase.from('admin_artes').select('*').order('created_at', { ascending: false }),
-        supabase.from('community_artes').select('*').eq('approved', true).order('created_at', { ascending: false }),
         supabase.from('partner_artes').select('*').eq('approved', true).order('created_at', { ascending: false })
       ]);
 
       const allArtes: Arte[] = [
         ...(adminData.data || []).map(a => ({ ...a, type: 'admin' as const })),
-        ...(communityData.data || []).map(a => ({ ...a, type: 'community' as const, is_premium: false })),
         ...(partnerData.data || []).map(a => ({ ...a, type: 'partner' as const }))
       ];
 
@@ -175,7 +173,6 @@ const AdminManageArtes = () => {
   const getTableAndBucket = (type: ArteType) => {
     switch (type) {
       case 'admin': return { table: 'admin_artes', bucket: 'admin-artes' };
-      case 'community': return { table: 'community_artes', bucket: 'community-artes' };
       case 'partner': return { table: 'partner_artes', bucket: 'partner-artes' };
     }
   };
@@ -302,13 +299,9 @@ const AdminManageArtes = () => {
               className={typeFilter === 'admin' ? 'bg-gradient-primary' : ''}>
               Envios de Administradores
             </Button>
-            <Button variant={typeFilter === 'community' ? 'default' : 'outline'} size="sm" onClick={() => setTypeFilter('community')}
-              className={typeFilter === 'community' ? 'bg-blue-500 hover:bg-blue-600' : ''}>
-              Envios da Comunidade
-            </Button>
             <Button variant={typeFilter === 'partner' ? 'default' : 'outline'} size="sm" onClick={() => setTypeFilter('partner')}
               className={typeFilter === 'partner' ? 'bg-green-500 hover:bg-green-600' : ''}>
-              Envios de Parceiros
+              Envios de Colaboradores
             </Button>
           </div>
 

@@ -39,6 +39,18 @@ import MudarRoupa from "./pages/MudarRoupa";
 import MudarPose from "./pages/MudarPose";
 import NotFound from "./pages/NotFound";
 
+// Artes system pages
+import UserLoginArtes from "./pages/UserLoginArtes";
+import PlanosArtes from "./pages/PlanosArtes";
+import ChangePasswordArtes from "./pages/ChangePasswordArtes";
+import ForgotPasswordArtes from "./pages/ForgotPasswordArtes";
+import ResetPasswordArtes from "./pages/ResetPasswordArtes";
+import ProfileSettingsArtes from "./pages/ProfileSettingsArtes";
+import PartnerLoginArtes from "./pages/PartnerLoginArtes";
+import PartnerDashboardArtes from "./pages/PartnerDashboardArtes";
+import PartnerUploadArtes from "./pages/PartnerUploadArtes";
+import AdminPartnersArtes from "./pages/AdminPartnersArtes";
+
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { usePageViewTracker } from "./hooks/usePageViewTracker";
 
@@ -89,6 +101,19 @@ const AppContent = () => {
         <Route path="/forja-selos-3d" element={<ForjaSelos3D />} />
         <Route path="/mudar-roupa" element={<MudarRoupa />} />
         <Route path="/mudar-pose" element={<MudarPose />} />
+        
+        {/* Artes system routes */}
+        <Route path="/login-artes" element={<UserLoginArtes />} />
+        <Route path="/planos-artes" element={<PlanosArtes />} />
+        <Route path="/change-password-artes" element={<ChangePasswordArtes />} />
+        <Route path="/forgot-password-artes" element={<ForgotPasswordArtes />} />
+        <Route path="/reset-password-artes" element={<ResetPasswordArtes />} />
+        <Route path="/perfil-artes" element={<ProfileSettingsArtes />} />
+        <Route path="/parceiro-login-artes" element={<PartnerLoginArtes />} />
+        <Route path="/parceiro-dashboard-artes" element={<PartnerDashboardArtes />} />
+        <Route path="/parceiro-upload-artes" element={<PartnerUploadArtes />} />
+        <Route path="/admin-parceiros-artes" element={<AdminPartnersArtes />} />
+        
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
