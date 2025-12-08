@@ -28,7 +28,7 @@ interface PlanUsageStats {
 
 const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
-  const [pageViews, setPageViews] = useState({ total: 0, mobile: 0, desktop: 0 });
+  const [pageViews, setPageViews] = useState({ total: 0, mobile: 0, desktop: 0, todayTotal: 0, todayMobile: 0, todayDesktop: 0 });
   const [installations, setInstallations] = useState({ total: 0, mobile: 0, desktop: 0 });
   const [topPrompts, setTopPrompts] = useState<PromptRanking[]>([]);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
@@ -61,17 +61,49 @@ const AdminAnalyticsDashboard = () => {
       setIsLoading(true);
       const threshold = getDateThreshold();
 
-      // Fetch page views with device type
-      let pageViewsQuery = supabase.from("page_views").select("device_type, viewed_at");
-      if (threshold) {
-        pageViewsQuery = pageViewsQuery.gte("viewed_at", threshold);
-      }
-      const { data: viewsData } = await pageViewsQuery;
+      // Fetch page views with device type - usando range para pegar todos os registros
+      let allViewsData: Array<{ device_type: string; viewed_at: string }> = [];
+      let rangeStart = 0;
+      const rangeSize = 1000;
+      let hasMore = true;
 
-      if (viewsData) {
-        const mobile = viewsData.filter((v) => v.device_type === "mobile").length;
-        const desktop = viewsData.filter((v) => v.device_type === "desktop").length;
-        setPageViews({ total: viewsData.length, mobile, desktop });
+      while (hasMore) {
+        let pageViewsQuery = supabase
+          .from("page_views")
+          .select("device_type, viewed_at")
+          .range(rangeStart, rangeStart + rangeSize - 1);
+        
+        if (threshold) {
+          pageViewsQuery = pageViewsQuery.gte("viewed_at", threshold);
+        }
+        
+        const { data: viewsData } = await pageViewsQuery;
+        
+        if (viewsData && viewsData.length > 0) {
+          allViewsData = [...allViewsData, ...viewsData];
+          rangeStart += rangeSize;
+          hasMore = viewsData.length === rangeSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      if (allViewsData.length > 0) {
+        const today = new Date().toISOString().split('T')[0];
+        const mobile = allViewsData.filter((v) => v.device_type === "mobile").length;
+        const desktop = allViewsData.filter((v) => v.device_type === "desktop").length;
+        const todayViews = allViewsData.filter((v) => v.viewed_at.split('T')[0] === today);
+        const todayMobile = todayViews.filter((v) => v.device_type === "mobile").length;
+        const todayDesktop = todayViews.filter((v) => v.device_type === "desktop").length;
+        
+        setPageViews({ 
+          total: allViewsData.length, 
+          mobile, 
+          desktop,
+          todayTotal: todayViews.length,
+          todayMobile,
+          todayDesktop
+        });
 
         // Process chart data
         const daysArray = getDaysArray(dateFilter);
@@ -83,7 +115,7 @@ const AdminAnalyticsDashboard = () => {
           desktopByDate[day] = 0;
         });
 
-        viewsData.forEach(view => {
+        allViewsData.forEach(view => {
           const date = view.viewed_at.split("T")[0];
           if (mobileByDate[date] !== undefined) {
             if (view.device_type === "mobile") {
@@ -325,18 +357,34 @@ const AdminAnalyticsDashboard = () => {
         <p className="text-muted-foreground">Carregando...</p>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Page Views Card */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            {/* Today's Page Views Card - HIGHLIGHTED */}
+            <Card className="p-6 border-2 border-green-500 bg-green-500/10">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-green-500/20 rounded-full">
+                  <Eye className="h-8 w-8 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-green-600 font-medium">Hoje</p>
+                  <p className="text-3xl font-bold text-green-600">{pageViews.todayTotal.toLocaleString()}</p>
+                  <p className="text-xs text-green-600/80 mt-1">
+                    📱 {pageViews.todayMobile} · 💻 {pageViews.todayDesktop}
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Total Page Views Card */}
             <Card className="p-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-500/20 rounded-full">
                   <Eye className="h-8 w-8 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Acessos</p>
+                  <p className="text-sm text-muted-foreground">Acessos Totais</p>
                   <p className="text-3xl font-bold text-foreground">{pageViews.total.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    📱 {pageViews.mobile} mobile · 💻 {pageViews.desktop} desktop
+                    📱 {pageViews.mobile} · 💻 {pageViews.desktop}
                   </p>
                 </div>
               </div>
