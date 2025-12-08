@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, X, Play, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -19,12 +19,11 @@ interface ArteItem {
   imageUrl: string;
   downloadUrl?: string;
   category?: string;
-  isCommunity?: boolean;
   isExclusive?: boolean;
   isPremium?: boolean;
   tutorialUrl?: string;
   createdAt?: string;
-  arteType?: 'admin' | 'community' | 'partner';
+  arteType?: 'admin' | 'partner';
   clickCount?: number;
   bonusClicks?: number;
 }
@@ -53,7 +52,6 @@ const BibliotecaArtes = () => {
 
   const { user, isPremium, logout } = usePremiumStatus();
 
-  const [contentType, setContentType] = useState<"exclusive" | "community">("exclusive");
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [allArtes, setAllArtes] = useState<ArteItem[]>([]);
   const [shuffledVerTudo, setShuffledVerTudo] = useState<ArteItem[]>([]);
@@ -85,17 +83,15 @@ const BibliotecaArtes = () => {
   }, [searchParams, allArtes, isPremium]);
 
   useEffect(() => {
-    const verTudoItems = allArtes;
-    setShuffledVerTudo(shuffleArray(verTudoItems));
+    setShuffledVerTudo(shuffleArray(allArtes));
   }, [allArtes]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, contentType]);
+  }, [selectedCategory]);
 
   const fetchArtes = async () => {
-    const [communityResult, adminResult, partnerResult, clicksResult] = await Promise.all([
-      supabase.from('community_artes').select('*').eq('approved', true).order('created_at', { ascending: false }),
+    const [adminResult, partnerResult, clicksResult] = await Promise.all([
       supabase.from('admin_artes').select('*').order('created_at', { ascending: false }),
       supabase.from('partner_artes').select('*').eq('approved', true).order('created_at', { ascending: false }),
       supabase.from('arte_clicks').select('arte_id')
@@ -105,21 +101,6 @@ const BibliotecaArtes = () => {
     (clicksResult.data || []).forEach(d => {
       clickCounts[d.arte_id] = (clickCounts[d.arte_id] || 0) + 1;
     });
-
-    const communityArtes: ArteItem[] = (communityResult.data || []).map(item => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      imageUrl: item.image_url,
-      downloadUrl: item.download_url,
-      category: item.category,
-      isCommunity: true,
-      isPremium: false,
-      createdAt: item.created_at || undefined,
-      arteType: 'community' as const,
-      clickCount: clickCounts[item.id] || 0,
-      bonusClicks: item.bonus_clicks || 0
-    }));
 
     const adminArtes: ArteItem[] = (adminResult.data || []).map(item => ({
       id: item.id,
@@ -153,7 +134,7 @@ const BibliotecaArtes = () => {
       bonusClicks: item.bonus_clicks || 0
     }));
 
-    const allCombined = [...adminArtes, ...partnerArtes, ...communityArtes].sort((a, b) => {
+    const allCombined = [...adminArtes, ...partnerArtes].sort((a, b) => {
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA;
@@ -161,14 +142,6 @@ const BibliotecaArtes = () => {
 
     setAllArtes(allCombined);
   };
-
-  const contentTypeArtes = contentType === "exclusive" 
-    ? allArtes.filter(a => a.isExclusive) 
-    : allArtes.filter(a => a.isCommunity);
-
-  const shuffledContentType = contentType === "exclusive" 
-    ? shuffledVerTudo.filter(a => a.isExclusive) 
-    : shuffledVerTudo.filter(a => a.isCommunity);
 
   const sortByClicks = (a: ArteItem, b: ArteItem) => {
     const clicksA = (a.clickCount || 0) + (a.bonusClicks || 0);
@@ -178,7 +151,7 @@ const BibliotecaArtes = () => {
 
   const getFilteredAndSortedArtes = () => {
     if (selectedCategory === "Ver Tudo") {
-      return shuffledContentType;
+      return shuffledVerTudo;
     }
 
     const sortByDate = (a: ArteItem, b: ArteItem) => {
@@ -188,16 +161,16 @@ const BibliotecaArtes = () => {
     };
 
     if (selectedCategory === "Populares") {
-      return contentTypeArtes.sort(sortByClicks);
+      return [...allArtes].sort(sortByClicks);
     }
     if (selectedCategory === "Novos") {
-      return contentTypeArtes.sort(sortByDate).slice(0, 16);
+      return [...allArtes].sort(sortByDate).slice(0, 16);
     }
     if (selectedCategory === "Grátis") {
-      return contentTypeArtes.filter(a => !a.isPremium).sort(sortByDate);
+      return allArtes.filter(a => !a.isPremium).sort(sortByDate);
     }
 
-    return contentTypeArtes.filter(a => a.category === selectedCategory).sort(sortByDate);
+    return allArtes.filter(a => a.category === selectedCategory).sort(sortByDate);
   };
 
   const filteredArtes = getFilteredAndSortedArtes();
@@ -206,9 +179,7 @@ const BibliotecaArtes = () => {
   const paginatedArtes = filteredArtes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   // Categories by event type
-  const categories = contentType === "exclusive" 
-    ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Aniversário", "Casamento", "Formatura", "15 Anos", "Batizado", "Chá de Bebê", "Corporativo", "Outros"]
-    : ["Populares", "Ver Tudo", "Novos", "Aniversário", "Casamento", "Formatura", "15 Anos", "Batizado", "Chá de Bebê", "Corporativo", "Outros"];
+  const categories = ["Populares", "Ver Tudo", "Novos", "Grátis", "Aniversário", "Casamento", "Formatura", "15 Anos", "Batizado", "Chá de Bebê", "Corporativo", "Outros"];
 
   const getCategoryIcon = (category: string) => {
     if (category === "Populares") {
@@ -319,16 +290,9 @@ const BibliotecaArtes = () => {
             Grátis
           </Badge>
         )}
-        {item.isExclusive && (
-          <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs">
-            Arte Exclusiva
-          </Badge>
-        )}
-        {item.isCommunity && (
-          <Badge variant="outline" className="border-blue-500 text-blue-600 text-[10px] sm:text-xs">
-            Comunidade
-          </Badge>
-        )}
+        <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs">
+          Arte Exclusiva
+        </Badge>
       </div>
     );
   };
@@ -405,36 +369,6 @@ const BibliotecaArtes = () => {
                 </Button>
               ))}
             </div>
-
-            <div className="mt-8">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-2">Tipo de Conteúdo</h3>
-              <div className="space-y-1">
-                <Button
-                  variant={contentType === "exclusive" ? "default" : "ghost"}
-                  className="w-full justify-start"
-                  onClick={() => setContentType("exclusive")}
-                >
-                  Artes Exclusivas
-                </Button>
-                <Button
-                  variant={contentType === "community" ? "default" : "ghost"}
-                  className="w-full justify-start"
-                  onClick={() => setContentType("community")}
-                >
-                  Enviados pela Comunidade
-                </Button>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <Button
-                variant="outline"
-                className="w-full border-primary text-primary"
-                onClick={() => navigate('/contribuir-artes')}
-              >
-                Envie sua Arte
-              </Button>
-            </div>
           </div>
         </aside>
 
@@ -452,8 +386,8 @@ const BibliotecaArtes = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               Biblioteca de Artes Arcanas
             </h1>
-            <p className="text-muted-foreground">
-              {filteredArtes.length} artes disponíveis
+            <p className="text-muted-foreground mt-1">
+              Artes editáveis PSD e Canva para eventos
             </p>
           </div>
 
@@ -461,8 +395,9 @@ const BibliotecaArtes = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {paginatedArtes.map(arte => {
               const isVideo = isVideoUrl(arte.imageUrl);
-              const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[String(arte.id)] || 0);
-              const isAnimating = animatingClicks.has(String(arte.id));
+              const arteId = String(arte.id);
+              const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
+              const isAnimating = animatingClicks.has(arteId);
 
               return (
                 <Card 
