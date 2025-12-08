@@ -38,29 +38,36 @@ const AdminAnalyticsDashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
-  const getDateThreshold = () => {
+  // Retorna a data de início do período em formato ISO
+  const getDateThreshold = (): string | null => {
     if (dateFilter === "all") return null;
-    const date = new Date();
-    // Para "Hoje" (1 dia), pegar desde meia-noite de hoje
-    if (dateFilter === 1) {
-      date.setHours(0, 0, 0, 0);
-      return date.toISOString();
+    
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const day = now.getDate();
+    
+    // Cria data à meia-noite no horário local
+    const startDate = new Date(year, month, day, 0, 0, 0, 0);
+    
+    // Para "Hoje", usa meia-noite de hoje
+    // Para outros filtros, subtrai (dias - 1) para incluir hoje
+    if (dateFilter > 1) {
+      startDate.setDate(startDate.getDate() - (dateFilter - 1));
     }
-    // Para outros períodos, pegar desde meia-noite de X dias atrás
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() - dateFilter + 1); // +1 para incluir hoje
-    return date.toISOString();
+    
+    return startDate.toISOString();
   };
 
-  const getDaysArray = (days: number | "all") => {
+  // Gera array de datas no formato YYYY-MM-DD
+  const getDaysArray = (days: number | "all"): string[] => {
     const result: string[] = [];
     const numDays = days === "all" ? 30 : days;
     
+    const now = new Date();
+    
     for (let i = numDays - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setHours(12, 0, 0, 0); // Usa meio-dia para evitar problemas de timezone
-      date.setDate(date.getDate() - i);
-      // Formata manualmente para evitar problemas de timezone
+      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
@@ -69,89 +76,108 @@ const AdminAnalyticsDashboard = () => {
     return result;
   };
 
+  // Extrai data YYYY-MM-DD de um timestamp ISO
+  const extractDateFromTimestamp = (timestamp: string): string => {
+    return timestamp.split('T')[0];
+  };
+
   useEffect(() => {
     const fetchAnalytics = async () => {
       setIsLoading(true);
       const threshold = getDateThreshold();
+      
+      // Gera o array de dias para o gráfico
+      const daysArray = getDaysArray(dateFilter);
+      
+      // Data de hoje no formato YYYY-MM-DD
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-      // Fetch page views with device type - usando range para pegar todos os registros
+      // Fetch ALL page views sem limite (usando paginação)
       let allViewsData: Array<{ device_type: string; viewed_at: string }> = [];
-      let rangeStart = 0;
-      const rangeSize = 1000;
+      let page = 0;
+      const pageSize = 1000;
       let hasMore = true;
 
       while (hasMore) {
-        let pageViewsQuery = supabase
+        let query = supabase
           .from("page_views")
           .select("device_type, viewed_at")
-          .range(rangeStart, rangeStart + rangeSize - 1);
+          .order("viewed_at", { ascending: false })
+          .range(page * pageSize, (page + 1) * pageSize - 1);
         
         if (threshold) {
-          pageViewsQuery = pageViewsQuery.gte("viewed_at", threshold);
+          query = query.gte("viewed_at", threshold);
         }
         
-        const { data: viewsData } = await pageViewsQuery;
+        const { data, error } = await query;
         
-        if (viewsData && viewsData.length > 0) {
-          allViewsData = [...allViewsData, ...viewsData];
-          rangeStart += rangeSize;
-          hasMore = viewsData.length === rangeSize;
+        if (error) {
+          console.error("Error fetching page views:", error);
+          break;
+        }
+        
+        if (data && data.length > 0) {
+          allViewsData = [...allViewsData, ...data];
+          page++;
+          hasMore = data.length === pageSize;
         } else {
           hasMore = false;
         }
       }
 
-      if (allViewsData.length > 0) {
-        const today = new Date().toISOString().split('T')[0];
-        const mobile = allViewsData.filter((v) => v.device_type === "mobile").length;
-        const desktop = allViewsData.filter((v) => v.device_type === "desktop").length;
-        const todayViews = allViewsData.filter((v) => v.viewed_at.split('T')[0] === today);
-        const todayMobile = todayViews.filter((v) => v.device_type === "mobile").length;
-        const todayDesktop = todayViews.filter((v) => v.device_type === "desktop").length;
-        
-        setPageViews({ 
-          total: allViewsData.length, 
-          mobile, 
-          desktop,
-          todayTotal: todayViews.length,
-          todayMobile,
-          todayDesktop
-        });
+      // Processa os dados
+      const mobile = allViewsData.filter((v) => v.device_type === "mobile").length;
+      const desktop = allViewsData.filter((v) => v.device_type === "desktop").length;
+      
+      // Filtra acessos de hoje
+      const todayViews = allViewsData.filter((v) => extractDateFromTimestamp(v.viewed_at) === todayStr);
+      const todayMobile = todayViews.filter((v) => v.device_type === "mobile").length;
+      const todayDesktop = todayViews.filter((v) => v.device_type === "desktop").length;
+      
+      setPageViews({ 
+        total: allViewsData.length, 
+        mobile, 
+        desktop,
+        todayTotal: todayViews.length,
+        todayMobile,
+        todayDesktop
+      });
 
-        // Process chart data
-        const daysArray = getDaysArray(dateFilter);
-        const mobileByDate: Record<string, number> = {};
-        const desktopByDate: Record<string, number> = {};
-        
-        daysArray.forEach(day => {
-          mobileByDate[day] = 0;
-          desktopByDate[day] = 0;
-        });
+      // Process chart data
+      const mobileByDate: Record<string, number> = {};
+      const desktopByDate: Record<string, number> = {};
+      
+      // Inicializa todos os dias com 0
+      daysArray.forEach(day => {
+        mobileByDate[day] = 0;
+        desktopByDate[day] = 0;
+      });
 
-        allViewsData.forEach(view => {
-          const date = view.viewed_at.split("T")[0];
-          if (mobileByDate[date] !== undefined) {
-            if (view.device_type === "mobile") {
-              mobileByDate[date]++;
-            } else {
-              desktopByDate[date]++;
-            }
+      // Conta acessos por dia
+      allViewsData.forEach(view => {
+        const date = extractDateFromTimestamp(view.viewed_at);
+        if (mobileByDate[date] !== undefined) {
+          if (view.device_type === "mobile") {
+            mobileByDate[date]++;
+          } else {
+            desktopByDate[date]++;
           }
-        });
+        }
+      });
 
-        const chartDataPoints = daysArray.map(dateStr => {
-          // Formata a data para exibição sem usar new Date() que pode ter problemas de timezone
-          const [year, month, day] = dateStr.split('-');
-          return {
-            date: `${day}/${month}`,
-            mobile: mobileByDate[dateStr] || 0,
-            desktop: desktopByDate[dateStr] || 0,
-            total: (mobileByDate[dateStr] || 0) + (desktopByDate[dateStr] || 0),
-          };
-        });
+      // Gera os dados do gráfico
+      const chartDataPoints = daysArray.map(dateStr => {
+        const [, month, day] = dateStr.split('-');
+        return {
+          date: `${day}/${month}`,
+          mobile: mobileByDate[dateStr] || 0,
+          desktop: desktopByDate[dateStr] || 0,
+          total: (mobileByDate[dateStr] || 0) + (desktopByDate[dateStr] || 0),
+        };
+      });
 
-        setChartData(chartDataPoints);
-      }
+      setChartData(chartDataPoints);
 
       // Fetch installations
       let installsQuery = supabase.from("app_installations").select("device_type");
