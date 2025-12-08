@@ -4,6 +4,7 @@ import { X, ChevronRight, Copy, Smartphone, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
+import { useTutorialTracker } from "@/hooks/useTutorialTracker";
 
 interface TutorialStep {
   id: string;
@@ -64,6 +65,8 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   const [showExampleModal, setShowExampleModal] = useState(true);
   const [realItem, setRealItem] = useState<RealPromptItem | null>(null);
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const { trackEvent } = useTutorialTracker();
+  const [hasTrackedStart, setHasTrackedStart] = useState(false);
 
   // Check if mobile
   useEffect(() => {
@@ -81,6 +84,14 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       handleComplete();
     }
   }, [isMobile]);
+
+  // Track tutorial start when component mounts and is visible on mobile
+  useEffect(() => {
+    if (isMobile === true && isVisible && !hasTrackedStart) {
+      trackEvent("started", 0);
+      setHasTrackedStart(true);
+    }
+  }, [isMobile, isVisible, hasTrackedStart, trackEvent]);
 
   // Fetch real item from database
   useEffect(() => {
@@ -164,6 +175,16 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   }, [step, isModalStep, isVisible, currentStep]);
 
   const handleNext = () => {
+    // Track step completion
+    const stepNumber = currentStep + 1;
+    if (stepNumber === 1) {
+      trackEvent("step_1_completed", 1);
+    } else if (stepNumber === 2) {
+      trackEvent("step_2_completed", 2);
+    } else if (stepNumber === 3) {
+      trackEvent("step_3_completed", 3);
+    }
+
     if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -172,6 +193,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   };
 
   const handleComplete = () => {
+    trackEvent("completed", tutorialSteps.length);
     setIsVisible(false);
     setShowExampleModal(false);
     localStorage.setItem("biblioteca-tutorial-completed", "true");
@@ -181,6 +203,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   };
 
   const handleSkip = () => {
+    trackEvent("skipped", currentStep);
     handleComplete();
   };
 

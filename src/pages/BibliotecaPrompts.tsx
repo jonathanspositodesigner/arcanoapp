@@ -16,6 +16,7 @@ import CollectionModal from "@/components/CollectionModal";
 import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import ArcaneAIStudioModal from "@/components/ArcaneAIStudioModal";
+import { useSessionTracker } from "@/hooks/useSessionTracker";
 interface PromptItem {
   id: string | number;
   title: string;
@@ -58,6 +59,10 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Track session for this page
+  useSessionTracker("/biblioteca-prompts");
+  
   const {
     user,
     isPremium,
