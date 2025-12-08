@@ -437,6 +437,40 @@ const BibliotecaPrompts = () => {
   };
   return <div className="min-h-screen bg-background">
       {/* Mobile Top Header */}
+      {/* Top Bar - Desktop */}
+      <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between">
+        <div className="flex items-center gap-4">
+          <img src={logoHorizontal} alt="Arcano Lab" className="h-10 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} />
+        </div>
+        <div className="flex items-center gap-3">
+          {!isPremium && <>
+            <Button onClick={() => navigate("/login")} variant="ghost" size="sm">
+              <LogIn className="h-4 w-4 mr-2" />
+              Login
+            </Button>
+            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+              <Star className="h-3 w-3 mr-2" fill="currentColor" />
+              Torne-se Premium
+            </Button>
+          </>}
+          {isPremium && <>
+            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+              Premium Ativo
+            </Badge>
+            <Button onClick={() => navigate("/profile-settings")} variant="ghost" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              Meu Perfil
+            </Button>
+            <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </Button>
+          </>}
+        </div>
+      </header>
+
+      {/* Top Bar - Mobile */}
       <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
         <img alt="Arcano Lab" className="h-8" src="/lovable-uploads/ea4c204d-433a-43a8-97ab-728ae5b79720.png" />
         {!isPremium && <div className="flex items-center gap-2">
@@ -450,7 +484,7 @@ const BibliotecaPrompts = () => {
             </Button>
           </div>}
         {isPremium && <div className="flex items-center gap-2">
-            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Badge>
@@ -480,9 +514,11 @@ const BibliotecaPrompts = () => {
           fixed lg:static inset-y-0 left-0 z-40
           w-72 min-h-screen bg-card border-r border-border p-6 space-y-4
           transform transition-transform duration-300 ease-in-out
+          lg:pt-4
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
-          <div className="mb-6 flex justify-center">
+          {/* Logo only on mobile sidebar */}
+          <div className="mb-6 flex justify-center lg:hidden">
             <img src={logoHorizontal} alt="Arcano Lab" className="w-[70%] mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} />
           </div>
 
@@ -492,7 +528,13 @@ const BibliotecaPrompts = () => {
             Instalar App
           </Button>
 
-          {/* Premium & Login Buttons */}
+          {/* Premium Badge - only show badge, buttons moved to top bar */}
+          {isPremium && <div className="flex items-center justify-center gap-2 mb-4 p-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30">
+              <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
+              <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">Premium Ativo</span>
+            </div>}
+
+          {/* Login/Premium buttons for non-premium users only */}
           {!isPremium && <>
               <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2">
                 <Star className="h-4 w-4 mr-2" fill="currentColor" />
@@ -501,21 +543,6 @@ const BibliotecaPrompts = () => {
               <Button onClick={() => navigate("/login")} variant="outline" className="w-full border-border hover:bg-secondary font-semibold mb-4">
                 <LogIn className="h-4 w-4 mr-2" />
                 Fazer Login
-              </Button>
-            </>}
-          
-          {isPremium && <>
-              <div className="flex items-center justify-center gap-2 mb-2 p-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30">
-                <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
-                <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">Premium Ativo</span>
-              </div>
-              <Button onClick={() => navigate("/profile-settings")} variant="outline" className="w-full border-border hover:bg-secondary font-semibold mb-2">
-                <Settings className="h-4 w-4 mr-2" />
-                Meu Perfil
-              </Button>
-              <Button onClick={logout} variant="ghost" className="w-full text-muted-foreground hover:text-foreground hover:bg-secondary font-semibold mb-4">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
               </Button>
             </>}
 
