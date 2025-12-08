@@ -16,6 +16,8 @@ interface MediaData {
   title: string;
   category: string;
   description: string;
+  canvaLink: string;
+  driveLink: string;
 }
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
@@ -103,6 +105,8 @@ const PartnerUploadArtes = () => {
         title: "",
         category: "",
         description: "",
+        canvaLink: "",
+        driveLink: "",
       });
     });
 
@@ -200,6 +204,8 @@ const PartnerUploadArtes = () => {
             image_url: filePath,
             is_premium: true,
             approved: false,
+            canva_link: media.canvaLink || null,
+            drive_link: media.driveLink || null,
           });
 
         if (insertError) {
@@ -366,6 +372,26 @@ const PartnerUploadArtes = () => {
                   onChange={(e) => updateMediaData(currentIndex, "description", e.target.value)}
                   placeholder="Descrição opcional da arte"
                   className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white min-h-[80px]"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-white/60">Link Canva (opcional)</label>
+                <Input
+                  value={currentMedia.canvaLink}
+                  onChange={(e) => updateMediaData(currentIndex, "canvaLink", e.target.value)}
+                  placeholder="https://www.canva.com/..."
+                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-white/60">Link Drive (opcional)</label>
+                <Input
+                  value={currentMedia.driveLink}
+                  onChange={(e) => updateMediaData(currentIndex, "driveLink", e.target.value)}
+                  placeholder="https://drive.google.com/..."
+                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
                 />
               </div>
 
