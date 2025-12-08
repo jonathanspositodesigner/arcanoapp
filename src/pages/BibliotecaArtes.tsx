@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -51,6 +51,19 @@ const BibliotecaArtes = () => {
   useSessionTracker("/biblioteca-artes");
 
   const { user, isPremium, logout } = usePremiumArtesStatus();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (user) {
+        const { data } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+        setIsAdmin(data === true);
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    checkAdmin();
+  }, [user]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [allArtes, setAllArtes] = useState<ArteItem[]>([]);
@@ -314,6 +327,12 @@ const BibliotecaArtes = () => {
             <Users className="h-4 w-4 mr-2" />
             Área do Colaborador
           </Button>
+          {isAdmin && (
+            <Button onClick={() => navigate("/admin-artes-review")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <Shield className="h-4 w-4 mr-2" />
+              Admin Artes
+            </Button>
+          )}
           {!isPremium && <>
             <Button onClick={() => navigate("/login-artes")} variant="ghost" size="sm">
               <LogIn className="h-4 w-4 mr-2" />
