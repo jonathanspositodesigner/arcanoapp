@@ -1,64 +1,72 @@
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { Library, Users, Download, ExternalLink } from "lucide-react";
 import { useState } from "react";
-import logoHorizontal from "@/assets/logo_horizontal.png";
-import baaIcon from "@/assets/BAA.png";
+import { useNavigate } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import baaIcon from "@/assets/BAA.png";
+import logoHorizontal from "@/assets/logo_horizontal.png";
+
 const Index = () => {
   const navigate = useNavigate();
   const [showBAAModal, setShowBAAModal] = useState(false);
-  return <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-secondary px-4 py-6">
-      <div className="text-center space-y-6 sm:space-y-8 w-full max-w-2xl">
-        <div className="space-y-3 sm:space-y-4">
-          <div className="flex justify-center">
-            <img src={logoHorizontal} alt="Arcano Lab" className="h-8 sm:h-10 w-auto" />
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-8 sm:mb-12 text-center">
+        Escolha sua biblioteca
+      </h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl">
+        {/* Card - Biblioteca de Artes Arcanas */}
+        <div
+          onClick={() => setShowBAAModal(true)}
+          className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50"
+        >
+          <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
+            <img
+              src={baaIcon}
+              alt="Biblioteca de Artes Arcanas"
+              className="w-full h-full object-contain"
+            />
           </div>
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent px-2">
-            A plataforma dos criadores do futuro
-          </h1>
-          <p className="text-base sm:text-xl text-foreground mx-auto text-center px-2">
-            Descubra uma coleção incrível de prompts para criar selos e elementos 3D profissionais
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
+            Biblioteca de Artes Arcanas
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Artes editáveis PSD e Canva para eventos
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-2">
-          <Button onClick={() => navigate("/biblioteca-prompts")} size="lg" className="bg-gradient-primary hover:opacity-90 transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-hover hover:scale-105 w-full sm:w-auto">
-            <Library className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-            Acessar Prompts      
-          </Button>
-
-          <Button onClick={() => navigate("/contribuir")} size="lg" variant="secondary" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-solid border-primary border-2 w-full sm:w-auto">
-            <Users className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-            Contribua com a Comunidade
-          </Button>
-
-          <Button onClick={() => navigate("/install")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-primary/50 hover:border-primary text-primary hover:bg-primary/5 w-full sm:w-auto">
-            <Download className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-            Instalar App
-          </Button>
-        </div>
-
-        {/* Seção separada - Biblioteca de Artes Arcanas */}
-        <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-border/30">
-          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-primary-foreground border-primary text-primary border-2 hover:text-white hover:bg-primary">
-            <img alt="" className="mr-2 h-6 sm:h-7 w-auto object-contain" src="/lovable-uploads/53db2877-63c8-4fb8-bbf3-4aa471ca6154.png" />
-            Acessar Biblioteca de Artes Arcanas
-          </Button>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-2">
-            Artes editáveis psd e canva para eventos
+        {/* Card - Biblioteca de Prompts IA */}
+        <div
+          onClick={() => navigate("/promptverso")}
+          className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50"
+        >
+          <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
+            <img
+              src={logoHorizontal}
+              alt="Biblioteca de Prompts IA"
+              className="w-full h-full object-contain"
+            />
+          </div>
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
+            Biblioteca de Prompts IA
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Prompts para criar selos e elementos 3D profissionais
           </p>
         </div>
+      </div>
 
-        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-2 justify-center items-center">
-          <Button onClick={() => navigate("/admin-login")} variant="link" className="text-muted-foreground hover:text-foreground text-sm sm:text-base">
-            Envio de administrador
-          </Button>
-          <span className="hidden sm:inline text-muted-foreground">•</span>
-          <Button onClick={() => navigate("/parceiro-login")} variant="link" className="text-muted-foreground hover:text-foreground text-sm sm:text-base">
-            Área do Parceiro
-          </Button>
-        </div>
+      {/* Links Admin/Parceiro */}
+      <div className="mt-10 sm:mt-14 flex flex-col sm:flex-row gap-2 justify-center items-center">
+        <Button onClick={() => navigate("/admin-login")} variant="link" className="text-muted-foreground hover:text-foreground text-sm">
+          Envio de administrador
+        </Button>
+        <span className="hidden sm:inline text-muted-foreground">•</span>
+        <Button onClick={() => navigate("/parceiro-login")} variant="link" className="text-muted-foreground hover:text-foreground text-sm">
+          Área do Parceiro
+        </Button>
       </div>
 
       {/* Modal Biblioteca de Artes Arcanas */}
@@ -82,6 +90,8 @@ const Index = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

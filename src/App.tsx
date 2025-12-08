@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Promptverso from "./pages/Promptverso";
 import BibliotecaPrompts from "./pages/BibliotecaPrompts";
 import ContributePrompts from "./pages/ContributePrompts";
 import AdminUpload from "./pages/AdminUpload";
@@ -51,6 +52,7 @@ const AppContent = () => {
       
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/promptverso" element={<Promptverso />} />
         <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
         <Route path="/contribuir" element={<ContributePrompts />} />
         <Route path="/admin-login" element={<AdminLogin />} />
