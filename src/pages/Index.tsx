@@ -37,6 +37,21 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Links de acesso */}
+      <div className="mt-8 flex flex-col items-center gap-2">
+        <button
+          onClick={() => navigate("/admin-login")}
+          className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
+        >
+          Acesso Administrador
+        </button>
+        <button
+          onClick={() => navigate("/parceiro-login-artes")}
+          className="text-sm text-muted-foreground hover:text-primary transition-colors underline lg:hidden"
+        >
+          Área do Colaborador
+        </button>
+      </div>
     </div>;
 };
 export default Index;
