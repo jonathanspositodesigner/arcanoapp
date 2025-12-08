@@ -6,12 +6,17 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Promptverso from "./pages/Promptverso";
 import BibliotecaPrompts from "./pages/BibliotecaPrompts";
+import BibliotecaArtes from "./pages/BibliotecaArtes";
 import ContributePrompts from "./pages/ContributePrompts";
+import ContributeArtes from "./pages/ContributeArtes";
 import AdminUpload from "./pages/AdminUpload";
+import AdminUploadArtes from "./pages/AdminUploadArtes";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCommunityReview from "./pages/AdminCommunityReview";
+import AdminArtesReview from "./pages/AdminArtesReview";
 import AdminManageImages from "./pages/AdminManageImages";
+import AdminManageArtes from "./pages/AdminManageArtes";
 import AdminCollections from "./pages/AdminCollections";
 import UserLogin from "./pages/UserLogin";
 import ChangePassword from "./pages/ChangePassword";
@@ -54,12 +59,17 @@ const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/promptverso" element={<Promptverso />} />
         <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
+        <Route path="/biblioteca-artes" element={<BibliotecaArtes />} />
         <Route path="/contribuir" element={<ContributePrompts />} />
+        <Route path="/contribuir-artes" element={<ContributeArtes />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin-upload" element={<AdminUpload />} />
+        <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
         <Route path="/admin-community-review" element={<AdminCommunityReview />} />
+        <Route path="/admin-artes-review" element={<AdminArtesReview />} />
         <Route path="/admin-manage-images" element={<AdminManageImages />} />
+        <Route path="/admin-manage-artes" element={<AdminManageArtes />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
