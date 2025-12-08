@@ -471,6 +471,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tutorial_events: {
+        Row: {
+          created_at: string
+          device_type: string
+          event_type: string
+          id: string
+          session_id: string
+          step_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          device_type?: string
+          event_type: string
+          id?: string
+          session_id: string
+          step_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          device_type?: string
+          event_type?: string
+          id?: string
+          session_id?: string
+          step_id?: number | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -489,6 +516,42 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          created_at: string
+          device_type: string
+          duration_seconds: number | null
+          entered_at: string
+          exited_at: string | null
+          id: string
+          page_path: string
+          session_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_type?: string
+          duration_seconds?: number | null
+          entered_at?: string
+          exited_at?: string | null
+          id?: string
+          page_path: string
+          session_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_type?: string
+          duration_seconds?: number | null
+          entered_at?: string
+          exited_at?: string | null
+          id?: string
+          page_path?: string
+          session_id?: string
+          user_agent?: string | null
         }
         Relationships: []
       }

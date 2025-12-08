@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Smartphone, Trophy, RefreshCw, Copy } from "lucide-react";
+import { Eye, Smartphone, Trophy, RefreshCw, Copy, GraduationCap, Timer, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, Funnel, FunnelChart, LabelList, Cell } from "recharts";
 
 type DateFilter = 1 | 7 | 15 | 30 | 90 | "all";
 
@@ -26,6 +26,25 @@ interface PlanUsageStats {
   avgPerUser: number;
 }
 
+interface TutorialStats {
+  started: number;
+  step1Completed: number;
+  step2Completed: number;
+  step3Completed: number;
+  completed: number;
+  skipped: number;
+  completionRate: number;
+  abandonmentRate: number;
+  dropOffStep: number | null;
+}
+
+interface SessionStats {
+  totalSessions: number;
+  bounceCount: number;
+  bounceRate: number;
+  avgDuration: number;
+}
+
 const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
   const [pageViews, setPageViews] = useState({ total: 0, mobile: 0, desktop: 0, todayTotal: 0, todayMobile: 0, todayDesktop: 0 });
@@ -34,6 +53,13 @@ const AdminAnalyticsDashboard = () => {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [planUsageStats, setPlanUsageStats] = useState<PlanUsageStats[]>([]);
   const [todayUsage, setTodayUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
+  const [tutorialStats, setTutorialStats] = useState<TutorialStats>({
+    started: 0, step1Completed: 0, step2Completed: 0, step3Completed: 0,
+    completed: 0, skipped: 0, completionRate: 0, abandonmentRate: 0, dropOffStep: null
+  });
+  const [sessionStats, setSessionStats] = useState<SessionStats>({
+    totalSessions: 0, bounceCount: 0, bounceRate: 0, avgDuration: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -333,6 +359,76 @@ const AdminAnalyticsDashboard = () => {
         }
       }
 
+      // ========== FETCH TUTORIAL EVENTS ==========
+      let tutorialQuery = supabase.from("tutorial_events").select("event_type, step_id, created_at");
+      if (threshold) {
+        tutorialQuery = tutorialQuery.gte("created_at", threshold);
+      }
+      const { data: tutorialData } = await tutorialQuery;
+
+      if (tutorialData) {
+        const started = tutorialData.filter(e => e.event_type === "started").length;
+        const step1Completed = tutorialData.filter(e => e.event_type === "step_1_completed").length;
+        const step2Completed = tutorialData.filter(e => e.event_type === "step_2_completed").length;
+        const step3Completed = tutorialData.filter(e => e.event_type === "step_3_completed").length;
+        const completed = tutorialData.filter(e => e.event_type === "completed").length;
+        const skipped = tutorialData.filter(e => e.event_type === "skipped").length;
+        
+        const completionRate = started > 0 ? Math.round((completed / started) * 100) : 0;
+        const abandonmentRate = started > 0 ? Math.round(((started - completed - skipped) / started) * 100) : 0;
+        
+        // Find step with highest drop-off
+        const dropOffs = [
+          { step: 1, dropOff: started - step1Completed },
+          { step: 2, dropOff: step1Completed - step2Completed },
+          { step: 3, dropOff: step2Completed - step3Completed },
+        ];
+        const maxDropOff = dropOffs.reduce((max, curr) => curr.dropOff > max.dropOff ? curr : max, dropOffs[0]);
+        
+        setTutorialStats({
+          started,
+          step1Completed,
+          step2Completed,
+          step3Completed,
+          completed,
+          skipped,
+          completionRate,
+          abandonmentRate,
+          dropOffStep: maxDropOff.dropOff > 0 ? maxDropOff.step : null
+        });
+      }
+
+      // ========== FETCH SESSION STATS ==========
+      let sessionsQuery = supabase
+        .from("user_sessions")
+        .select("session_id, page_path, duration_seconds, entered_at")
+        .eq("page_path", "/biblioteca-prompts");
+      
+      if (threshold) {
+        sessionsQuery = sessionsQuery.gte("entered_at", threshold);
+      }
+      const { data: sessionsData } = await sessionsQuery;
+
+      if (sessionsData) {
+        const totalSessions = sessionsData.length;
+        // Bounce = session < 3 seconds
+        const bounceCount = sessionsData.filter(s => (s.duration_seconds || 0) < 3).length;
+        const bounceRate = totalSessions > 0 ? Math.round((bounceCount / totalSessions) * 100) : 0;
+        
+        // Average duration (exclude bounces for more accurate reading)
+        const nonBounceSessions = sessionsData.filter(s => (s.duration_seconds || 0) >= 3);
+        const avgDuration = nonBounceSessions.length > 0 
+          ? Math.round(nonBounceSessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0) / nonBounceSessions.length)
+          : 0;
+
+        setSessionStats({
+          totalSessions,
+          bounceCount,
+          bounceRate,
+          avgDuration
+        });
+      }
+
       setIsLoading(false);
       setLastUpdate(new Date());
     };
@@ -370,6 +466,20 @@ const AdminAnalyticsDashboard = () => {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'daily_prompt_copies' },
+        () => {
+          setRefreshKey(prev => prev + 1);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'tutorial_events' },
+        () => {
+          setRefreshKey(prev => prev + 1);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_sessions' },
         () => {
           setRefreshKey(prev => prev + 1);
         }
@@ -507,6 +617,129 @@ const AdminAnalyticsDashboard = () => {
               )}
             </Card>
           </div>
+
+          {/* Tutorial & Session Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {/* Tutorial Stats Card */}
+            <Card className="p-6 border-2 border-indigo-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-indigo-500/20 rounded-full">
+                  <GraduationCap className="h-6 w-6 text-indigo-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Tutorial (Mobile)</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Conclusão</span>
+                  <span className="text-2xl font-bold text-indigo-500">{tutorialStats.completionRate}%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Abandono</span>
+                  <span className="text-lg font-semibold text-red-500">{tutorialStats.abandonmentRate}%</span>
+                </div>
+                {tutorialStats.dropOffStep && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Maior drop-off</span>
+                    <span className="text-sm font-medium text-orange-500">Passo #{tutorialStats.dropOffStep}</span>
+                  </div>
+                )}
+                <div className="pt-2 border-t border-border">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-muted-foreground">Iniciaram: </span>
+                      <span className="font-medium">{tutorialStats.started}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Concluíram: </span>
+                      <span className="font-medium text-green-500">{tutorialStats.completed}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Pularam: </span>
+                      <span className="font-medium text-yellow-500">{tutorialStats.skipped}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Bounce Rate Card */}
+            <Card className="p-6 border-2 border-red-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-red-500/20 rounded-full">
+                  <Zap className="h-6 w-6 text-red-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Bounce Rate (&lt;3s)</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="text-center">
+                  <p className="text-4xl font-bold text-red-500">{sessionStats.bounceRate}%</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {sessionStats.bounceCount} de {sessionStats.totalSessions} sessões
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-border text-center">
+                  <p className="text-xs text-muted-foreground">
+                    Usuários que saíram em menos de 3 segundos
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Average Time Card */}
+            <Card className="p-6 border-2 border-teal-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-teal-500/20 rounded-full">
+                  <Timer className="h-6 w-6 text-teal-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Tempo Médio</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="text-center">
+                  <p className="text-4xl font-bold text-teal-500">
+                    {Math.floor(sessionStats.avgDuration / 60)}:{String(sessionStats.avgDuration % 60).padStart(2, '0')}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">minutos na biblioteca</p>
+                </div>
+                <div className="pt-2 border-t border-border text-center">
+                  <p className="text-xs text-muted-foreground">
+                    Tempo médio de permanência (excluindo bounces)
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Tutorial Funnel */}
+          {tutorialStats.started > 0 && (
+            <Card className="p-6 mb-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">📊 Funil do Tutorial</h3>
+              <div className="space-y-3">
+                {[
+                  { label: "Iniciaram", value: tutorialStats.started, percentage: 100, color: "bg-indigo-500" },
+                  { label: "Passo 1 (Copiar)", value: tutorialStats.step1Completed, percentage: tutorialStats.started > 0 ? Math.round((tutorialStats.step1Completed / tutorialStats.started) * 100) : 0, color: "bg-blue-500" },
+                  { label: "Passo 2 (Gerar)", value: tutorialStats.step2Completed, percentage: tutorialStats.started > 0 ? Math.round((tutorialStats.step2Completed / tutorialStats.started) * 100) : 0, color: "bg-cyan-500" },
+                  { label: "Passo 3 (Ferramentas)", value: tutorialStats.step3Completed, percentage: tutorialStats.started > 0 ? Math.round((tutorialStats.step3Completed / tutorialStats.started) * 100) : 0, color: "bg-teal-500" },
+                  { label: "Concluíram", value: tutorialStats.completed, percentage: tutorialStats.started > 0 ? Math.round((tutorialStats.completed / tutorialStats.started) * 100) : 0, color: "bg-green-500" },
+                ].map((step, index) => (
+                  <div key={step.label} className="flex items-center gap-4">
+                    <span className="text-sm text-muted-foreground w-32 flex-shrink-0">{step.label}</span>
+                    <div className="flex-1 bg-muted rounded-full h-6 overflow-hidden">
+                      <div 
+                        className={`h-full ${step.color} transition-all duration-500`}
+                        style={{ width: `${step.percentage}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium w-20 text-right">
+                      {step.percentage}% ({step.value})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
           {/* Plan Usage Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
