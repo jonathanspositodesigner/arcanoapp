@@ -480,7 +480,7 @@ const BibliotecaPrompts = () => {
 
       {/* Top Bar - Mobile */}
       <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
-        <img alt="Arcano Lab" className="h-8" src="/lovable-uploads/ea4c204d-433a-43a8-97ab-728ae5b79720.png" />
+        <img alt="Arcano Lab" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" />
         {!isPremium && <div className="flex items-center gap-2">
             <Button onClick={() => navigate("/login")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
