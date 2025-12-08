@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard, FolderOpen, Inbox, Handshake } from "lucide-react";
+import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard, FolderOpen, Inbox, Handshake, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminAnalyticsDashboard from "@/components/AdminAnalyticsDashboard";
@@ -273,6 +273,79 @@ const AdminDashboard = () => {
               </h2>
               <p className="text-muted-foreground">
                 Cadastre e gerencie contribuidores exclusivos
+              </p>
+            </div>
+          </Card>
+
+          {/* Artes Arcanas Section */}
+          <Card
+            className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 col-span-1 md:col-span-2 lg:col-span-4 bg-gradient-to-r from-amber-500/10 to-orange-500/5 border-amber-500/20"
+            onClick={() => navigate('/biblioteca-artes')}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                <Palette className="h-12 w-12 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground">
+                Biblioteca de Artes Arcanas
+              </h2>
+              <p className="text-muted-foreground">
+                Acesse a biblioteca de artes editáveis para eventos
+              </p>
+            </div>
+          </Card>
+        </div>
+
+        {/* Artes Admin Cards */}
+        <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">Gerenciar Artes Arcanas</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Card
+            className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105"
+            onClick={() => navigate('/admin-upload-artes')}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                <Upload className="h-12 w-12 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">
+                Enviar Arte
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Upload de novas artes para a biblioteca
+              </p>
+            </div>
+          </Card>
+
+          <Card
+            className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105"
+            onClick={() => navigate('/admin-artes-review')}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-green-500 rounded-full">
+                <CheckCircle className="h-12 w-12 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">
+                Analisar Artes
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Aprove ou rejeite contribuições de artes
+              </p>
+            </div>
+          </Card>
+
+          <Card
+            className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105"
+            onClick={() => navigate('/admin-manage-artes')}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-blue-500 rounded-full">
+                <Settings className="h-12 w-12 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">
+                Gerenciar Artes
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Edite ou exclua artes já publicadas
               </p>
             </div>
           </Card>
