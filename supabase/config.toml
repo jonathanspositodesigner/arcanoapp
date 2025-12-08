@@ -3,6 +3,9 @@ project_id = "jooojbaljrshgpaxdlou"
 [functions.setup-admin-users]
 verify_jwt = false
 
+[functions.setup-artes-users]
+verify_jwt = false
+
 [functions.webhook-greenn]
 verify_jwt = false
 
@@ -10,4 +13,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.create-partner]
+verify_jwt = false
+
+[functions.create-partner-artes]
+verify_jwt = false
+
+[functions.create-premium-user-artes]
 verify_jwt = false
