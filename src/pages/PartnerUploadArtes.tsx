@@ -171,7 +171,7 @@ const PartnerUploadArtes = () => {
   };
 
   const allFieldsFilled = mediaFiles.every(
-    (media) => media.title.trim() && media.category
+    (media) => media.title.trim() && media.category && media.canvaLink.trim()
   );
 
   const formatTitle = (title: string) => {
@@ -382,12 +382,13 @@ const PartnerUploadArtes = () => {
               </div>
 
               <div>
-                <label className="text-sm text-white/60">Link Canva (opcional)</label>
+                <label className="text-sm text-white/60">Link Canva <span className="text-red-500">*</span></label>
                 <Input
                   value={currentMedia.canvaLink}
                   onChange={(e) => updateMediaData(currentIndex, "canvaLink", e.target.value)}
                   placeholder="https://www.canva.com/..."
                   className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  required
                 />
               </div>
 
