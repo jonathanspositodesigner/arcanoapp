@@ -36,8 +36,11 @@ const UpscalerArcano = () => {
 
   const hasAccess = isPremium && planType === "arcano_unlimited";
 
+  console.log("UpscalerArcano - Debug:", { user: user?.id, isPremium, planType, isLoading, hasAccess });
+
   useEffect(() => {
     if (!isLoading && (!user || !hasAccess)) {
+      console.log("UpscalerArcano - Redirecting because:", { user: !!user, hasAccess });
       navigate("/biblioteca-prompts");
     }
   }, [isLoading, user, hasAccess, navigate]);
