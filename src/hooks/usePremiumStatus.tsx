@@ -12,10 +12,11 @@ export const usePremiumStatus = () => {
     const checkPremiumStatus = async (userId: string) => {
       // Check if premium
       const { data: isPremiumData, error: isPremiumError } = await supabase.rpc('is_premium');
-      setIsPremium(!isPremiumError && isPremiumData === true);
+      const premiumStatus = !isPremiumError && isPremiumData === true;
+      setIsPremium(premiumStatus);
 
       // Get plan type
-      if (!isPremiumError && isPremiumData === true) {
+      if (premiumStatus) {
         const { data: premiumData, error: premiumError } = await supabase
           .from('premium_users')
           .select('plan_type')
@@ -25,6 +26,8 @@ export const usePremiumStatus = () => {
 
         if (!premiumError && premiumData) {
           setPlanType(premiumData.plan_type);
+        } else {
+          setPlanType(null);
         }
       } else {
         setPlanType(null);
@@ -33,12 +36,10 @@ export const usePremiumStatus = () => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => {
-            checkPremiumStatus(session.user.id);
-          }, 0);
+          await checkPremiumStatus(session.user.id);
         } else {
           setIsPremium(false);
           setPlanType(null);
@@ -48,13 +49,16 @@ export const usePremiumStatus = () => {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkPremiumStatus(session.user.id);
+        await checkPremiumStatus(session.user.id);
       }
       setIsLoading(false);
-    });
+    };
+
+    initializeAuth();
 
     return () => subscription.unsubscribe();
   }, []);
