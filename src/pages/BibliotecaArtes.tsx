@@ -7,7 +7,7 @@ import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Fla
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import { useSessionTracker } from "@/hooks/useSessionTracker";
@@ -50,7 +50,7 @@ const BibliotecaArtes = () => {
 
   useSessionTracker("/biblioteca-artes");
 
-  const { user, isPremium, logout } = usePremiumStatus();
+  const { user, isPremium, logout } = usePremiumArtesStatus();
 
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [allArtes, setAllArtes] = useState<ArteItem[]>([]);
@@ -310,16 +310,16 @@ const BibliotecaArtes = () => {
           />
         </div>
         <div className="flex items-center gap-3">
-          <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+          <Button onClick={() => navigate("/parceiro-login-artes")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
             <Users className="h-4 w-4 mr-2" />
             Área do Colaborador
           </Button>
           {!isPremium && <>
-            <Button onClick={() => navigate("/login")} variant="ghost" size="sm">
+            <Button onClick={() => navigate("/login-artes")} variant="ghost" size="sm">
               <LogIn className="h-4 w-4 mr-2" />
               Login
             </Button>
-            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+            <Button onClick={() => navigate("/planos-artes")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
               <Star className="h-3 w-3 mr-2" fill="currentColor" />
               Torne-se Premium
             </Button>
@@ -329,7 +329,7 @@ const BibliotecaArtes = () => {
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium Ativo
             </Badge>
-            <Button onClick={() => navigate("/profile-settings")} variant="ghost" size="sm">
+            <Button onClick={() => navigate("/perfil-artes")} variant="ghost" size="sm">
               <Settings className="h-4 w-4 mr-2" />
               Meu Perfil
             </Button>
@@ -345,11 +345,11 @@ const BibliotecaArtes = () => {
       <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
         <img alt="Arcano Lab" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" onClick={() => navigate('/')} />
         {!isPremium && <div className="flex items-center gap-2">
-            <Button onClick={() => navigate("/login")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
+            <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
               Login
             </Button>
-            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
+            <Button onClick={() => navigate("/planos-artes")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Button>
@@ -359,7 +359,7 @@ const BibliotecaArtes = () => {
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Badge>
-            <Button onClick={() => navigate("/profile-settings")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+            <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
               <Settings className="h-4 w-4" />
             </Button>
             <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">

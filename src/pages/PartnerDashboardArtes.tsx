@@ -301,8 +301,7 @@ const PartnerDashboardArtes = () => {
                 <Card key={arte.id} className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 overflow-hidden">
                   <div className="aspect-square relative">
                     <SecureImage
-                      path={arte.image_url}
-                      bucket="partner-artes"
+                      src={`partner-artes/${arte.image_url}`}
                       alt={arte.title}
                       className="w-full h-full object-cover"
                       isPremium={true}

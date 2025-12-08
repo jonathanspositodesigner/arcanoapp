@@ -349,6 +349,23 @@ const AdminDashboard = () => {
               </p>
             </div>
           </Card>
+
+          <Card
+            className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105"
+            onClick={() => navigate('/admin-parceiros-artes')}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                <Handshake className="h-12 w-12 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">
+                Parceiros Artes
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Gerencie colaboradores de artes
+              </p>
+            </div>
+          </Card>
         </div>
 
         {/* Analytics Dashboard */}
