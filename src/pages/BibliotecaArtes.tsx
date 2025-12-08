@@ -534,57 +534,63 @@ const BibliotecaArtes = () => {
 
       {/* Arte Detail Modal */}
       <Dialog open={!!selectedArte} onOpenChange={() => handleCloseModal()}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md">
           {selectedArte && (
-            <div className="space-y-4">
-              <div className="relative">
-                {isVideoUrl(selectedArte.imageUrl) ? (
-                  <SecureVideo
-                    src={selectedArte.imageUrl}
-                    className="w-full rounded-lg"
-                    isPremium={selectedArte.isPremium || false}
-                    controls
-                  />
-                ) : (
-                  <SecureImage
-                    src={selectedArte.imageUrl}
-                    alt={selectedArte.title}
-                    className="w-full rounded-lg"
-                    isPremium={selectedArte.isPremium || false}
-                  />
-                )}
-              </div>
-              
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">{selectedArte.title}</h2>
-                <div className="mt-2">{getBadgeContent(selectedArte)}</div>
+            <div className="space-y-3">
+              <div className="flex gap-4 items-start">
+                <div className="w-24 h-24 flex-shrink-0">
+                  {isVideoUrl(selectedArte.imageUrl) ? (
+                    <SecureVideo
+                      src={selectedArte.imageUrl}
+                      className="w-full h-full object-cover rounded-lg"
+                      isPremium={selectedArte.isPremium || false}
+                      controls
+                    />
+                  ) : (
+                    <SecureImage
+                      src={selectedArte.imageUrl}
+                      alt={selectedArte.title}
+                      className="w-full h-full object-cover rounded-lg"
+                      isPremium={selectedArte.isPremium || false}
+                    />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg font-bold text-foreground truncate">{selectedArte.title}</h2>
+                  <div className="mt-1">{getBadgeContent(selectedArte)}</div>
+                  {selectedArte.description && (
+                    <p className="text-muted-foreground text-sm mt-1 line-clamp-2">{selectedArte.description}</p>
+                  )}
+                </div>
               </div>
 
-              {selectedArte.description && (
-                <p className="text-muted-foreground">{selectedArte.description}</p>
-              )}
-
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col gap-2">
                 {selectedArte.canvaLink && (
-                  <Button onClick={() => window.open(selectedArte.canvaLink, '_blank')} variant="outline" className="flex-1 sm:flex-none">
+                  <Button 
+                    onClick={() => window.open(selectedArte.canvaLink, '_blank')} 
+                    className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Abrir no Canva
                   </Button>
                 )}
                 {selectedArte.driveLink && (
-                  <Button onClick={() => window.open(selectedArte.driveLink, '_blank')} variant="outline" className="flex-1 sm:flex-none">
+                  <Button 
+                    onClick={() => window.open(selectedArte.driveLink, '_blank')} 
+                    className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white"
+                  >
                     <Download className="h-4 w-4 mr-2" />
-                    Abrir no Drive
+                    Baixar PSD
                   </Button>
                 )}
                 {selectedArte.downloadUrl && (
-                  <Button onClick={() => handleDownload(selectedArte)} className="flex-1 sm:flex-none">
+                  <Button onClick={() => handleDownload(selectedArte)} className="w-full" variant="outline">
                     <Download className="h-4 w-4 mr-2" />
                     Baixar Arquivo
                   </Button>
                 )}
                 {!selectedArte.canvaLink && !selectedArte.driveLink && !selectedArte.downloadUrl && (
-                  <Button onClick={() => handleDownload(selectedArte)} className="flex-1 sm:flex-none">
+                  <Button onClick={() => handleDownload(selectedArte)} className="w-full">
                     <Download className="h-4 w-4 mr-2" />
                     Baixar Imagem
                   </Button>
