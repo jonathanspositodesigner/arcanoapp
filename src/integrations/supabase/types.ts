@@ -354,6 +354,30 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_arte_copies: {
+        Row: {
+          arte_id: string
+          copied_at: string
+          copy_date: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          arte_id: string
+          copied_at?: string
+          copy_date?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          arte_id?: string
+          copied_at?: string
+          copy_date?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_prompt_copies: {
         Row: {
           copied_at: string
@@ -592,6 +616,81 @@ export type Database = {
         }
         Relationships: []
       }
+      partners_artes: {
+        Row: {
+          company: string | null
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      premium_artes_users: {
+        Row: {
+          billing_period: string | null
+          created_at: string | null
+          expires_at: string | null
+          greenn_contract_id: string | null
+          greenn_product_id: number | null
+          id: string
+          is_active: boolean
+          plan_type: string | null
+          subscribed_at: string | null
+          user_id: string
+        }
+        Insert: {
+          billing_period?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          greenn_contract_id?: string | null
+          greenn_product_id?: number | null
+          id?: string
+          is_active?: boolean
+          plan_type?: string | null
+          subscribed_at?: string | null
+          user_id: string
+        }
+        Update: {
+          billing_period?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          greenn_contract_id?: string | null
+          greenn_product_id?: number | null
+          id?: string
+          is_active?: boolean
+          plan_type?: string | null
+          subscribed_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       premium_users: {
         Row: {
           billing_period: string | null
@@ -810,6 +909,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_daily_arte_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_copy_count: { Args: { _user_id: string }; Returns: number }
       has_role: {
         Args: {
@@ -819,6 +919,7 @@ export type Database = {
         Returns: boolean
       }
       is_premium: { Args: never; Returns: boolean }
+      is_premium_artes: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "partner"
