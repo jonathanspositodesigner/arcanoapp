@@ -534,34 +534,33 @@ const BibliotecaArtes = () => {
 
       {/* Arte Detail Modal */}
       <Dialog open={!!selectedArte} onOpenChange={() => handleCloseModal()}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-[340px] sm:max-w-[540px]">
           {selectedArte && (
-            <div className="space-y-3">
-              <div className="flex gap-4 items-start">
-                <div className="w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0">
-                  {isVideoUrl(selectedArte.imageUrl) ? (
-                    <SecureVideo
-                      src={selectedArte.imageUrl}
-                      className="w-full h-full object-cover rounded-lg"
-                      isPremium={selectedArte.isPremium || false}
-                      controls
-                    />
-                  ) : (
-                    <SecureImage
-                      src={selectedArte.imageUrl}
-                      alt={selectedArte.title}
-                      className="w-full h-full object-cover rounded-lg"
-                      isPremium={selectedArte.isPremium || false}
-                    />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-foreground">{selectedArte.title}</h2>
-                  <div className="mt-1">{getBadgeContent(selectedArte)}</div>
-                  {selectedArte.description && (
-                    <p className="text-muted-foreground text-sm mt-1 line-clamp-3">{selectedArte.description}</p>
-                  )}
-                </div>
+            <div className="space-y-4">
+              <div className="w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] mx-auto">
+                {isVideoUrl(selectedArte.imageUrl) ? (
+                  <SecureVideo
+                    src={selectedArte.imageUrl}
+                    className="w-full h-full object-cover rounded-lg"
+                    isPremium={selectedArte.isPremium || false}
+                    controls
+                  />
+                ) : (
+                  <SecureImage
+                    src={selectedArte.imageUrl}
+                    alt={selectedArte.title}
+                    className="w-full h-full object-cover rounded-lg"
+                    isPremium={selectedArte.isPremium || false}
+                  />
+                )}
+              </div>
+              
+              <div className="text-center">
+                <h2 className="text-lg font-bold text-foreground">{selectedArte.title}</h2>
+                <div className="mt-1 flex justify-center">{getBadgeContent(selectedArte)}</div>
+                {selectedArte.description && (
+                  <p className="text-muted-foreground text-sm mt-1">{selectedArte.description}</p>
+                )}
               </div>
 
               <div className="flex flex-col gap-2">
