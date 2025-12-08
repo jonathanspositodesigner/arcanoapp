@@ -30,8 +30,7 @@ const tools: ToolCard[] = [
     description: "Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.",
     icon: Zap,
     requiredPlan: "unlimited",
-    link: "/forja-selos-3d",
-    isInternal: true
+    link: ""
   },
   {
     id: "upscaler",
@@ -39,7 +38,8 @@ const tools: ToolCard[] = [
     description: "Melhore suas imagens deixando em 4K e remova o fundo.",
     icon: ImagePlus,
     requiredPlan: "unlimited",
-    link: ""
+    link: "/upscaler-arcano",
+    isInternal: true
   },
   {
     id: "pose",
