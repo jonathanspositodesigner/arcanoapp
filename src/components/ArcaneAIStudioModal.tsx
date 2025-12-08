@@ -56,7 +56,8 @@ const tools: ToolCard[] = [
     description: "Mude a roupa de qualquer foto mantendo a fidelidade do rosto original.",
     icon: Shirt,
     requiredPlan: "pro",
-    link: ""
+    link: "/mudar-roupa",
+    isInternal: true
   }
 ];
 
