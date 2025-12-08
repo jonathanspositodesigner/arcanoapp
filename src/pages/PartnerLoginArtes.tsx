@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, Shield } from "lucide-react";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -147,6 +147,18 @@ const PartnerLoginArtes = () => {
             >
               {isLoading ? "Entrando..." : "Entrar"}
             </Button>
+
+            <div className="text-center pt-4 border-t border-[#2d4a5e]/30">
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-white/60 hover:text-white text-sm"
+                onClick={() => navigate("/admin-login")}
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                Login de Administrador
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
