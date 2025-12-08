@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -299,49 +299,85 @@ const BibliotecaArtes = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Navigation Bar */}
-      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                <Menu className="h-5 w-5" />
-              </Button>
-              <img 
-                src={logoHorizontal} 
-                alt="Arcano Lab" 
-                className="h-6 sm:h-8 cursor-pointer" 
-                onClick={() => navigate('/')}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              {user && isPremium ? (
-                <>
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/profile-settings')} className="gap-1">
-                    <User className="h-4 w-4" />
-                    <span className="hidden sm:inline">Meu Perfil</span>
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={logout} className="gap-1">
-                    <LogOut className="h-4 w-4" />
-                    <span className="hidden sm:inline">Sair</span>
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
-                    <LogIn className="h-4 w-4 mr-1" />
-                    Login
-                  </Button>
-                  <Button size="sm" onClick={() => navigate('/planos')} className="bg-gradient-primary">
-                    <Star className="h-4 w-4 mr-1" fill="currentColor" />
-                    Torne-se Premium
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
+      {/* Top Bar - Desktop */}
+      <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between">
+        <div className="flex items-center gap-4">
+          <img 
+            alt="Arcano Lab" 
+            onClick={() => navigate('/')} 
+            src={logoHorizontal}
+            className="h-8 cursor-pointer hover:opacity-80 transition-opacity" 
+          />
         </div>
+        <div className="flex items-center gap-3">
+          <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+            <Users className="h-4 w-4 mr-2" />
+            Área do Colaborador
+          </Button>
+          {!isPremium && <>
+            <Button onClick={() => navigate("/login")} variant="ghost" size="sm">
+              <LogIn className="h-4 w-4 mr-2" />
+              Login
+            </Button>
+            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+              <Star className="h-3 w-3 mr-2" fill="currentColor" />
+              Torne-se Premium
+            </Button>
+          </>}
+          {isPremium && <>
+            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+              Premium Ativo
+            </Badge>
+            <Button onClick={() => navigate("/profile-settings")} variant="ghost" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              Meu Perfil
+            </Button>
+            <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </Button>
+          </>}
+        </div>
+      </header>
+
+      {/* Top Bar - Mobile */}
+      <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
+        <img alt="Arcano Lab" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" onClick={() => navigate('/')} />
+        {!isPremium && <div className="flex items-center gap-2">
+            <Button onClick={() => navigate("/login")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
+              <LogIn className="h-4 w-4 mr-1" />
+              Login
+            </Button>
+            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
+              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+              Premium
+            </Button>
+          </div>}
+        {isPremium && <div className="flex items-center gap-2">
+            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
+              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+              Premium
+            </Badge>
+            <Button onClick={() => navigate("/profile-settings")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+              <Settings className="h-4 w-4" />
+            </Button>
+            <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>}
+      </header>
+
+      {/* Mobile Bottom Menu Button */}
+      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <Button onClick={() => setSidebarOpen(!sidebarOpen)} className="bg-primary hover:bg-primary/90 text-white shadow-xl px-6 py-6 rounded-full">
+          <Menu className="h-6 w-6 mr-2" />
+          <span className="font-semibold">Categorias</span>
+        </Button>
       </div>
+
+      {/* Overlay */}
+      {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />}
 
       <div className="flex">
         {/* Sidebar */}
@@ -371,14 +407,6 @@ const BibliotecaArtes = () => {
             </div>
           </div>
         </aside>
-
-        {/* Overlay for mobile sidebar */}
-        {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
 
         {/* Main Content */}
         <main className="flex-1 p-4 lg:p-6">
