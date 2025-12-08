@@ -30,7 +30,7 @@ const lessons: VideoLesson[] = [
   }
 ];
 
-const ForjaSelos3D = () => {
+const UpscalerArcano = () => {
   const navigate = useNavigate();
   const { user, isPremium, planType, isLoading } = usePremiumStatus();
 
@@ -69,10 +69,10 @@ const ForjaSelos3D = () => {
           </Button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Forja de Selos 3D
+              Upscaler Arcano
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.
+              Melhore suas imagens deixando em 4K e remova o fundo.
             </p>
           </div>
         </div>
@@ -120,4 +120,4 @@ const ForjaSelos3D = () => {
   );
 };
 
-export default ForjaSelos3D;
+export default UpscalerArcano;
