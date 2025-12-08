@@ -538,7 +538,7 @@ const BibliotecaArtes = () => {
           {selectedArte && (
             <div className="space-y-3">
               <div className="flex gap-4 items-start">
-                <div className="w-24 h-24 flex-shrink-0">
+                <div className="w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0">
                   {isVideoUrl(selectedArte.imageUrl) ? (
                     <SecureVideo
                       src={selectedArte.imageUrl}
@@ -556,10 +556,10 @@ const BibliotecaArtes = () => {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-foreground truncate">{selectedArte.title}</h2>
+                  <h2 className="text-lg font-bold text-foreground">{selectedArte.title}</h2>
                   <div className="mt-1">{getBadgeContent(selectedArte)}</div>
                   {selectedArte.description && (
-                    <p className="text-muted-foreground text-sm mt-1 line-clamp-2">{selectedArte.description}</p>
+                    <p className="text-muted-foreground text-sm mt-1 line-clamp-3">{selectedArte.description}</p>
                   )}
                 </div>
               </div>
