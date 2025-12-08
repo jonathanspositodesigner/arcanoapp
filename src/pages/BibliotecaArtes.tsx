@@ -145,7 +145,7 @@ const BibliotecaArtes = () => {
       downloadUrl: item.download_url,
       category: item.category,
       isExclusive: true,
-      isPremium: item.is_premium || false,
+      isPremium: (item as any).is_premium ?? true,
       tutorialUrl: item.tutorial_url || null,
       createdAt: item.created_at || undefined,
       arteType: 'partner' as const,
