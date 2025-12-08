@@ -45,6 +45,8 @@ interface MediaData {
   tutorialUrl: string;
   downloadFile: File | null;
   downloadPreview: string;
+  canvaLink: string;
+  driveLink: string;
 }
 const AdminUploadArtes = () => {
   const navigate = useNavigate();
@@ -98,7 +100,9 @@ const AdminUploadArtes = () => {
           hasTutorial: false,
           tutorialUrl: "",
           downloadFile: null,
-          downloadPreview: ""
+          downloadPreview: "",
+          canvaLink: "",
+          driveLink: ""
         });
         if (newMedia.length === validFiles.length) {
           setMediaFiles(prev => [...prev, ...newMedia]);
@@ -198,7 +202,9 @@ const AdminUploadArtes = () => {
           image_url: publicUrl,
           download_url: downloadUrl,
           is_premium: media.isPremium,
-          tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null
+          tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
+          canva_link: media.canvaLink || null,
+          drive_link: media.driveLink || null
         });
         if (insertError) throw insertError;
       }
@@ -239,6 +245,9 @@ const AdminUploadArtes = () => {
               </p>
               <p className="text-sm text-muted-foreground">
                 Você pode enviar vários arquivos de uma vez
+              </p>
+              <p className="text-xs text-amber-600 mt-2 font-medium">
+                Tamanho recomendado: 1080x1350 pixels
               </p>
             </label>
           </div>
@@ -333,9 +342,31 @@ const AdminUploadArtes = () => {
                 </div>}
 
               <div>
-                <Label>Arquivo para Download (PSD, Canva, etc.)</Label>
+                <Label htmlFor="canvaLink">Link Canva (opcional)</Label>
+                <Input 
+                  id="canvaLink" 
+                  value={currentMedia.canvaLink} 
+                  onChange={e => updateMediaData('canvaLink', e.target.value)} 
+                  placeholder="https://www.canva.com/..." 
+                  className="mt-2" 
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="driveLink">Link Drive (opcional)</Label>
+                <Input 
+                  id="driveLink" 
+                  value={currentMedia.driveLink} 
+                  onChange={e => updateMediaData('driveLink', e.target.value)} 
+                  placeholder="https://drive.google.com/..." 
+                  className="mt-2" 
+                />
+              </div>
+
+              <div>
+                <Label>Arquivo para Download (opcional)</Label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Arquivo que será baixado pelo usuário
+                  PSD, arquivo editável, etc.
                 </p>
                 <input type="file" onChange={handleDownloadFileSelect} className="block w-full text-sm text-muted-foreground
                     file:mr-4 file:py-2 file:px-4
