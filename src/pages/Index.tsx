@@ -5,29 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import baaIcon from "@/assets/BAA.png";
 import logoHorizontal from "@/assets/logo_horizontal.png";
-
 const Index = () => {
   const navigate = useNavigate();
   const [showBAAModal, setShowBAAModal] = useState(false);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-8 sm:mb-12 text-center">
-        Escolha sua biblioteca
-      </h1>
+  return <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-8 sm:mb-12 text-center">Seja bem vindo ao Universo Arcano!</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl">
         {/* Card - Biblioteca de Artes Arcanas */}
-        <div
-          onClick={() => setShowBAAModal(true)}
-          className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50"
-        >
+        <div onClick={() => setShowBAAModal(true)} className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50">
           <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
-            <img
-              src={baaIcon}
-              alt="Biblioteca de Artes Arcanas"
-              className="w-full h-full object-contain"
-            />
+            <img src={baaIcon} alt="Biblioteca de Artes Arcanas" className="w-full h-full object-contain" />
           </div>
           <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             Biblioteca de Artes Arcanas
@@ -38,16 +26,9 @@ const Index = () => {
         </div>
 
         {/* Card - Biblioteca de Prompts IA */}
-        <div
-          onClick={() => navigate("/promptverso")}
-          className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50"
-        >
+        <div onClick={() => navigate("/promptverso")} className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50">
           <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
-            <img
-              src={logoHorizontal}
-              alt="Biblioteca de Prompts IA"
-              className="w-full h-full object-contain"
-            />
+            <img src={logoHorizontal} alt="Biblioteca de Prompts IA" className="w-full h-full object-contain" />
           </div>
           <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             Biblioteca de Prompts IA
@@ -90,8 +71,6 @@ const Index = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
