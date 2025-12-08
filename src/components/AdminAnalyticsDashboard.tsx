@@ -36,6 +36,7 @@ const AdminAnalyticsDashboard = () => {
   const [todayUsage, setTodayUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
   const [isLoading, setIsLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   const getDateThreshold = () => {
     if (dateFilter === "all") return null;
@@ -225,10 +226,52 @@ const AdminAnalyticsDashboard = () => {
       }
 
       setIsLoading(false);
+      setLastUpdate(new Date());
     };
 
     fetchAnalytics();
   }, [dateFilter, refreshKey]);
+
+  // Auto-refresh a cada 30 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefreshKey(prev => prev + 1);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Supabase Realtime para atualizações instantâneas
+  useEffect(() => {
+    const channel = supabase
+      .channel('analytics_realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'page_views' },
+        () => {
+          setRefreshKey(prev => prev + 1);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'prompt_clicks' },
+        () => {
+          setRefreshKey(prev => prev + 1);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'daily_prompt_copies' },
+        () => {
+          setRefreshKey(prev => prev + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
@@ -246,7 +289,12 @@ const AdminAnalyticsDashboard = () => {
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-foreground">Dashboard de Métricas</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Dashboard de Métricas</h2>
+          <p className="text-xs text-muted-foreground">
+            Última atualização: {lastUpdate.toLocaleTimeString('pt-BR')} • Atualiza automaticamente
+          </p>
+        </div>
         <Button
           variant="outline"
           size="sm"
