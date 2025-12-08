@@ -48,7 +48,8 @@ const tools: ToolCard[] = [
     description: "Mude a pose de qualquer foto mantendo a fidelidade do rosto original.",
     icon: UserRoundCog,
     requiredPlan: "pro",
-    link: ""
+    link: "/mudar-pose",
+    isInternal: true
   },
   {
     id: "roupa",

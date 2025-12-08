@@ -27,6 +27,7 @@ import PartnerUpload from "./pages/PartnerUpload";
 import UpscalerArcano from "./pages/UpscalerArcano";
 import ForjaSelos3D from "./pages/ForjaSelos3D";
 import MudarRoupa from "./pages/MudarRoupa";
+import MudarPose from "./pages/MudarPose";
 import NotFound from "./pages/NotFound";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
@@ -69,6 +70,7 @@ const AppContent = () => {
         <Route path="/upscaler-arcano" element={<UpscalerArcano />} />
         <Route path="/forja-selos-3d" element={<ForjaSelos3D />} />
         <Route path="/mudar-roupa" element={<MudarRoupa />} />
+        <Route path="/mudar-pose" element={<MudarPose />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
