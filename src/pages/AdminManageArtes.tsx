@@ -37,6 +37,8 @@ interface Arte {
   created_at?: string;
   tutorial_url?: string;
   bonus_clicks?: number;
+  canva_link?: string;
+  drive_link?: string;
 }
 
 type SortOption = 'date' | 'downloads';
@@ -53,6 +55,8 @@ const AdminManageArtes = () => {
   const [editHasTutorial, setEditHasTutorial] = useState(false);
   const [editTutorialUrl, setEditTutorialUrl] = useState("");
   const [editBonusClicks, setEditBonusClicks] = useState(0);
+  const [editCanvaLink, setEditCanvaLink] = useState("");
+  const [editDriveLink, setEditDriveLink] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
@@ -142,6 +146,8 @@ const AdminManageArtes = () => {
     setEditHasTutorial(!!arte.tutorial_url);
     setEditTutorialUrl(arte.tutorial_url || "");
     setEditBonusClicks(arte.bonus_clicks || 0);
+    setEditCanvaLink(arte.canva_link || "");
+    setEditDriveLink(arte.drive_link || "");
     setNewMediaFile(null);
     setNewMediaPreview("");
   };
@@ -212,7 +218,9 @@ const AdminManageArtes = () => {
         description: editDescription || null,
         category: editCategory,
         image_url: newImageUrl,
-        bonus_clicks: editBonusClicks
+        bonus_clicks: editBonusClicks,
+        canva_link: editCanvaLink || null,
+        drive_link: editDriveLink || null
       };
 
       if (editingArte.type === 'admin' || editingArte.type === 'partner') {
@@ -457,6 +465,16 @@ const AdminManageArtes = () => {
                   )}
                 </>
               )}
+
+              <div>
+                <Label>Link Canva (opcional)</Label>
+                <Input value={editCanvaLink} onChange={(e) => setEditCanvaLink(e.target.value)} className="mt-1" placeholder="https://www.canva.com/..." />
+              </div>
+
+              <div>
+                <Label>Link Drive (opcional)</Label>
+                <Input value={editDriveLink} onChange={(e) => setEditDriveLink(e.target.value)} className="mt-1" placeholder="https://drive.google.com/..." />
+              </div>
 
               <div>
                 <Label>Cliques Bônus</Label>
