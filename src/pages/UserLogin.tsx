@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Star } from "lucide-react";
+import { ArrowLeft, Star, Info } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const UserLogin = () => {
   const navigate = useNavigate();
@@ -20,7 +21,18 @@ const UserLogin = () => {
       if (user) {
         const { data: isPremium } = await supabase.rpc('is_premium');
         if (isPremium) {
-          navigate('/biblioteca-prompts');
+          // Check if password has been changed
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('password_changed')
+            .eq('id', user.id)
+            .single();
+
+          if (profile && !profile.password_changed) {
+            navigate('/change-password');
+          } else {
+            navigate('/biblioteca-prompts');
+          }
         }
       }
     };
@@ -45,6 +57,19 @@ const UserLogin = () => {
       if (premiumError || !isPremium) {
         await supabase.auth.signOut();
         toast.error("Acesso negado. Sua assinatura premium não está ativa.");
+        return;
+      }
+
+      // Check if this is first login (password equals email)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('password_changed')
+        .eq('id', data.user.id)
+        .single();
+
+      if (!profile?.password_changed) {
+        toast.success("Primeiro acesso! Por favor, crie uma nova senha.");
+        navigate('/change-password');
         return;
       }
 
@@ -81,6 +106,14 @@ const UserLogin = () => {
           </p>
         </div>
 
+        {/* First access notice */}
+        <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
+          <Info className="h-4 w-4 text-yellow-500" />
+          <AlertDescription className="text-sm text-yellow-600 dark:text-yellow-400">
+            <strong>Primeiro acesso?</strong> Sua senha inicial é o seu email.
+          </AlertDescription>
+        </Alert>
+
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <Label htmlFor="email">Email</Label>
@@ -115,6 +148,15 @@ const UserLogin = () => {
           >
             {isLoading ? "Entrando..." : "Entrar"}
           </Button>
+
+          <div className="text-center">
+            <Link 
+              to="/forgot-password" 
+              className="text-sm text-primary hover:underline"
+            >
+              Esqueci minha senha
+            </Link>
+          </div>
         </form>
 
         <div className="mt-6 pt-6 border-t border-border text-center">

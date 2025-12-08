@@ -13,6 +13,10 @@ import AdminCommunityReview from "./pages/AdminCommunityReview";
 import AdminManageImages from "./pages/AdminManageImages";
 import AdminCollections from "./pages/AdminCollections";
 import UserLogin from "./pages/UserLogin";
+import ChangePassword from "./pages/ChangePassword";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import ProfileSettings from "./pages/ProfileSettings";
 import InstallApp from "./pages/InstallApp";
 import Planos from "./pages/Planos";
 import UpgradePlano from "./pages/UpgradePlano";
@@ -55,6 +59,10 @@ const AppContent = () => {
         <Route path="/admin-community-review" element={<AdminCommunityReview />} />
         <Route path="/admin-manage-images" element={<AdminManageImages />} />
         <Route path="/login" element={<UserLogin />} />
+        <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/profile-settings" element={<ProfileSettings />} />
         <Route path="/install" element={<InstallApp />} />
         <Route path="/planos" element={<Planos />} />
         <Route path="/upgrade" element={<UpgradePlano />} />
