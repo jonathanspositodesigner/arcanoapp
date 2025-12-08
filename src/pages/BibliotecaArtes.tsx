@@ -77,10 +77,20 @@ const BibliotecaArtes = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
+  const [dbCategories, setDbCategories] = useState<string[]>([]);
 
   useEffect(() => {
     fetchArtes();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('artes_categories')
+      .select('name')
+      .order('display_order', { ascending: true });
+    setDbCategories((data || []).map(c => c.name));
+  };
 
   useEffect(() => {
     const itemId = searchParams.get("item");
@@ -197,8 +207,8 @@ const BibliotecaArtes = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedArtes = filteredArtes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  // Categories by event type
-  const categories = ["Populares", "Ver Tudo", "Novos", "Grátis", "Aniversário", "Casamento", "Formatura", "15 Anos", "Batizado", "Chá de Bebê", "Corporativo", "Outros"];
+  // Categories: fixed ones + dynamic from database
+  const categories = ["Populares", "Ver Tudo", "Novos", "Grátis", ...dbCategories];
 
   const getCategoryIcon = (category: string) => {
     if (category === "Populares") {
