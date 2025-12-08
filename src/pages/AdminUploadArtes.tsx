@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,18 +12,11 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
-const arteSchema = z.object({
-  title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
-  description: z.string().max(1000, "Descrição deve ter no máximo 1.000 caracteres").optional(),
-  category: z.enum(["Aniversário", "Casamento", "Formatura", "15 Anos", "Batizado", "Chá de Bebê", "Corporativo", "Outros"], {
-    errorMap: () => ({
-      message: "Selecione uma categoria válida"
-    })
-  })
-});
+
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+
 const validateFile = (file: File): string | null => {
   if (file.size > MAX_FILE_SIZE) {
     return `Arquivo "${file.name}" muito grande. Máximo 100MB.`;
@@ -33,6 +26,7 @@ const validateFile = (file: File): string | null => {
   }
   return null;
 };
+
 interface MediaData {
   file: File;
   preview: string;
@@ -48,6 +42,12 @@ interface MediaData {
   canvaLink: string;
   driveLink: string;
 }
+
+interface Category {
+  id: string;
+  name: string;
+}
+
 const AdminUploadArtes = () => {
   const navigate = useNavigate();
   const [mediaFiles, setMediaFiles] = useState<MediaData[]>([]);
@@ -55,6 +55,19 @@ const AdminUploadArtes = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('artes_categories')
+      .select('id, name')
+      .order('display_order', { ascending: true });
+    setCategories(data || []);
+  };
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     processFiles(files);
@@ -148,14 +161,12 @@ const AdminUploadArtes = () => {
   const allFieldsFilled = mediaFiles.every(media => media.title && media.category);
   const handleSubmitAll = async () => {
     for (const media of mediaFiles) {
-      const validationResult = arteSchema.safeParse({
-        title: media.title,
-        description: media.description,
-        category: media.category
-      });
-      if (!validationResult.success) {
-        const firstError = validationResult.error.errors[0];
-        toast.error(`Erro em "${media.title || 'item sem título'}": ${firstError.message}`);
+      if (!media.title.trim()) {
+        toast.error(`Título é obrigatório para "${media.title || 'item sem título'}"`);
+        return;
+      }
+      if (!media.category) {
+        toast.error(`Categoria é obrigatória para "${media.title}"`);
         return;
       }
     }
@@ -275,62 +286,57 @@ const AdminUploadArtes = () => {
       </div>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               Informações {currentIndex + 1} de {mediaFiles.length}
             </DialogTitle>
           </DialogHeader>
 
-          {currentMedia && <div className="space-y-6">
+          {currentMedia && <div className="space-y-4">
               <div className="flex justify-center">
-                {currentMedia.isVideo ? <video src={currentMedia.preview} className="max-h-64 object-contain rounded-lg" controls muted autoPlay loop /> : <img src={currentMedia.preview} alt="Preview" className="max-h-64 object-contain rounded-lg" />}
+                {currentMedia.isVideo ? <video src={currentMedia.preview} className="max-h-40 object-contain rounded-lg" controls muted autoPlay loop /> : <img src={currentMedia.preview} alt="Preview" className="max-h-40 object-contain rounded-lg" />}
               </div>
 
               <div>
                 <Label htmlFor="title">Título</Label>
-                <Input id="title" value={currentMedia.title} onChange={e => updateMediaData('title', e.target.value)} placeholder="Ex: Convite de Aniversário Elegante" className="mt-2" />
+                <Input id="title" value={currentMedia.title} onChange={e => updateMediaData('title', e.target.value)} placeholder="Ex: Convite de Aniversário Elegante" className="mt-1" />
               </div>
 
               <div>
                 <Label htmlFor="description">Descrição (opcional)</Label>
-                <Textarea id="description" value={currentMedia.description} onChange={e => updateMediaData('description', e.target.value)} placeholder="Descrição da arte..." className="mt-2" />
+                <Textarea id="description" value={currentMedia.description} onChange={e => updateMediaData('description', e.target.value)} placeholder="Descrição da arte..." className="mt-1 min-h-[60px]" />
               </div>
 
               <div>
-                <Label htmlFor="category">Categoria (Tipo de Evento)</Label>
+                <Label htmlFor="category">Categoria</Label>
                 <Select value={currentMedia.category} onValueChange={value => updateMediaData('category', value)}>
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Aniversário">Aniversário</SelectItem>
-                    <SelectItem value="Casamento">Casamento</SelectItem>
-                    <SelectItem value="Formatura">Formatura</SelectItem>
-                    <SelectItem value="15 Anos">15 Anos</SelectItem>
-                    <SelectItem value="Batizado">Batizado</SelectItem>
-                    <SelectItem value="Chá de Bebê">Chá de Bebê</SelectItem>
-                    <SelectItem value="Corporativo">Corporativo</SelectItem>
-                    <SelectItem value="Outros">Outros</SelectItem>
+                  <SelectContent className="bg-background border border-border z-50">
+                    {categories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-secondary/50">
                 <div className="flex items-center gap-2">
-                  <Star className={`h-5 w-5 ${currentMedia.isPremium ? 'text-yellow-500' : 'text-muted-foreground'}`} fill={currentMedia.isPremium ? 'currentColor' : 'none'} />
-                  <Label htmlFor="isPremium" className="font-medium">
-                    {currentMedia.isPremium ? 'Conteúdo Premium' : 'Conteúdo Gratuito'}
+                  <Star className={`h-4 w-4 ${currentMedia.isPremium ? 'text-yellow-500' : 'text-muted-foreground'}`} fill={currentMedia.isPremium ? 'currentColor' : 'none'} />
+                  <Label htmlFor="isPremium" className="font-medium text-sm">
+                    {currentMedia.isPremium ? 'Premium' : 'Gratuito'}
                   </Label>
                 </div>
                 <Switch id="isPremium" checked={currentMedia.isPremium} onCheckedChange={checked => updateMediaData('isPremium', checked)} />
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-secondary/50">
                 <div className="flex items-center gap-2">
-                  <Video className={`h-5 w-5 ${currentMedia.hasTutorial ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <Label htmlFor="hasTutorial" className="font-medium">
-                    {currentMedia.hasTutorial ? 'Tem Tutorial' : 'Sem Tutorial'}
+                  <Video className={`h-4 w-4 ${currentMedia.hasTutorial ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <Label htmlFor="hasTutorial" className="font-medium text-sm">
+                    {currentMedia.hasTutorial ? 'Com Tutorial' : 'Sem Tutorial'}
                   </Label>
                 </div>
                 <Switch id="hasTutorial" checked={currentMedia.hasTutorial} onCheckedChange={checked => updateMediaData('hasTutorial', checked)} />

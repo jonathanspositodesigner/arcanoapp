@@ -267,6 +267,33 @@ export type Database = {
         }
         Relationships: []
       }
+      artes_categories: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       community_artes: {
         Row: {
           approved: boolean | null
@@ -799,6 +826,36 @@ export type Database = {
           is_admin_prompt?: boolean
           prompt_id?: string
           prompt_title?: string
+        }
+        Relationships: []
+      }
+      prompts_categories: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_admin_only: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_admin_only?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_admin_only?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
         }
         Relationships: []
       }
