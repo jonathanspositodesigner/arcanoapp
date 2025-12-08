@@ -41,20 +41,30 @@ const AdminAnalyticsDashboard = () => {
   const getDateThreshold = () => {
     if (dateFilter === "all") return null;
     const date = new Date();
-    date.setHours(0, 0, 0, 0); // Começa à meia-noite
-    date.setDate(date.getDate() - dateFilter);
+    // Para "Hoje" (1 dia), pegar desde meia-noite de hoje
+    if (dateFilter === 1) {
+      date.setHours(0, 0, 0, 0);
+      return date.toISOString();
+    }
+    // Para outros períodos, pegar desde meia-noite de X dias atrás
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - dateFilter + 1); // +1 para incluir hoje
     return date.toISOString();
   };
 
   const getDaysArray = (days: number | "all") => {
     const result: string[] = [];
     const numDays = days === "all" ? 30 : days;
-    // Gera array de datas incluindo o dia de hoje
+    
     for (let i = numDays - 1; i >= 0; i--) {
       const date = new Date();
-      date.setHours(0, 0, 0, 0); // Normaliza para meia-noite
+      date.setHours(12, 0, 0, 0); // Usa meio-dia para evitar problemas de timezone
       date.setDate(date.getDate() - i);
-      result.push(date.toISOString().split("T")[0]);
+      // Formata manualmente para evitar problemas de timezone
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      result.push(`${year}-${month}-${day}`);
     }
     return result;
   };
@@ -129,12 +139,16 @@ const AdminAnalyticsDashboard = () => {
           }
         });
 
-        const chartDataPoints = daysArray.map(date => ({
-          date: new Date(date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
-          mobile: mobileByDate[date] || 0,
-          desktop: desktopByDate[date] || 0,
-          total: (mobileByDate[date] || 0) + (desktopByDate[date] || 0),
-        }));
+        const chartDataPoints = daysArray.map(dateStr => {
+          // Formata a data para exibição sem usar new Date() que pode ter problemas de timezone
+          const [year, month, day] = dateStr.split('-');
+          return {
+            date: `${day}/${month}`,
+            mobile: mobileByDate[dateStr] || 0,
+            desktop: desktopByDate[dateStr] || 0,
+            total: (mobileByDate[dateStr] || 0) + (desktopByDate[dateStr] || 0),
+          };
+        });
 
         setChartData(chartDataPoints);
       }
@@ -313,7 +327,7 @@ const AdminAnalyticsDashboard = () => {
   };
 
   const filterOptions: { value: DateFilter; label: string }[] = [
-    { value: 1, label: "1 dia" },
+    { value: 1, label: "Hoje" },
     { value: 7, label: "7 dias" },
     { value: 15, label: "15 dias" },
     { value: 30, label: "30 dias" },
