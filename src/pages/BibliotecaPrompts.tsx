@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users, HelpCircle, Flame } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users, HelpCircle, Flame, User, LogOut, Settings } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -449,10 +449,18 @@ const BibliotecaPrompts = () => {
               Premium
             </Button>
           </div>}
-        {isPremium && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
-            <Star className="h-3 w-3 mr-1" fill="currentColor" />
-            Premium Ativo
-          </Badge>}
+        {isPremium && <div className="flex items-center gap-2">
+            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+              Premium
+            </Badge>
+            <Button onClick={() => navigate("/profile-settings")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+              <Settings className="h-4 w-4" />
+            </Button>
+            <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>}
       </header>
 
       {/* Mobile Bottom Menu Button */}
@@ -493,6 +501,21 @@ const BibliotecaPrompts = () => {
               <Button onClick={() => navigate("/login")} variant="outline" className="w-full border-border hover:bg-secondary font-semibold mb-4">
                 <LogIn className="h-4 w-4 mr-2" />
                 Fazer Login
+              </Button>
+            </>}
+          
+          {isPremium && <>
+              <div className="flex items-center justify-center gap-2 mb-2 p-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30">
+                <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
+                <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">Premium Ativo</span>
+              </div>
+              <Button onClick={() => navigate("/profile-settings")} variant="outline" className="w-full border-border hover:bg-secondary font-semibold mb-2">
+                <Settings className="h-4 w-4 mr-2" />
+                Meu Perfil
+              </Button>
+              <Button onClick={logout} variant="ghost" className="w-full text-muted-foreground hover:text-foreground hover:bg-secondary font-semibold mb-4">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
               </Button>
             </>}
 
