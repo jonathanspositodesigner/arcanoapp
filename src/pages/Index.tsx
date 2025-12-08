@@ -22,7 +22,7 @@ criadores do futuro!<br />criadores do futuro
         {/* Card - Biblioteca de Artes Arcanas */}
         <div onClick={() => setShowBAAModal(true)} className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50">
           <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
-            <img src={baaIcon} alt="Biblioteca de Artes Arcanas" className="w-full h-full object-contain" />
+            <img alt="Biblioteca de Artes Arcanas" className="w-full h-full object-contain" src="/lovable-uploads/57313c89-fb46-4106-b628-54ac68565f4f.png" />
           </div>
           <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             Biblioteca de Artes Arcanas
@@ -35,7 +35,7 @@ criadores do futuro!<br />criadores do futuro
         {/* Card - Biblioteca de Prompts IA */}
         <div onClick={() => navigate("/promptverso")} className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50">
           <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
-            <img src={logoHorizontal} alt="Biblioteca de Prompts IA" className="w-full h-full object-contain" />
+            <img alt="Biblioteca de Prompts IA" className="w-full h-full object-contain" src="/lovable-uploads/c7d0b526-a28d-43a4-8f43-9654f93029e5.png" />
           </div>
           <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             Biblioteca de Prompts IA
