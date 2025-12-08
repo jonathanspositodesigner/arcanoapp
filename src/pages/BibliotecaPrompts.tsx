@@ -59,10 +59,9 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Track session for this page
   useSessionTracker("/biblioteca-prompts");
-  
   const {
     user,
     isPremium,
@@ -445,7 +444,7 @@ const BibliotecaPrompts = () => {
       {/* Top Bar - Desktop */}
       <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between">
         <div className="flex items-center gap-4">
-          <img src={logoHorizontal} alt="Arcano Lab" className="h-10 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} />
+          <img alt="Arcano Lab" onClick={() => navigate('/')} src="/lovable-uploads/1598a9b7-8be1-453e-9117-dd811da037e9.png" className="h-8 cursor-pointer hover:opacity-80 transition-opacity" />
         </div>
         <div className="flex items-center gap-3">
           <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
@@ -623,12 +622,7 @@ const BibliotecaPrompts = () => {
                 </p>
               </div>
             </div>
-            <Button 
-              onClick={() => setShowArcaneStudioModal(true)}
-              variant="secondary" 
-              size="default" 
-              className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base"
-            >
+            <Button onClick={() => setShowArcaneStudioModal(true)} variant="secondary" size="default" className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
               <Zap className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Acessar Ferramentas
             </Button>
@@ -895,13 +889,7 @@ const BibliotecaPrompts = () => {
       {showOnboarding && <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />}
 
       {/* Arcane AI Studio Modal */}
-      <ArcaneAIStudioModal 
-        open={showArcaneStudioModal} 
-        onOpenChange={setShowArcaneStudioModal}
-        isPremium={isPremium}
-        planType={planType}
-        isLoggedIn={!!user}
-      />
+      <ArcaneAIStudioModal open={showArcaneStudioModal} onOpenChange={setShowArcaneStudioModal} isPremium={isPremium} planType={planType} isLoggedIn={!!user} />
     </div>;
 };
 export default BibliotecaPrompts;
