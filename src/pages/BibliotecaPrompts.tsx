@@ -527,7 +527,7 @@ const BibliotecaPrompts = () => {
         `}>
           {/* Logo only on mobile sidebar */}
           <div className="mb-6 flex justify-center lg:hidden">
-            <img src={logoHorizontal} alt="Arcano Lab" className="w-[70%] mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} />
+            <img alt="Arcano Lab" className="w-[70%] mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} src="/lovable-uploads/7fbeb2fd-d77d-4357-acff-1947c5565fad.png" />
           </div>
 
           {/* Install App Button */}
