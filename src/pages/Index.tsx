@@ -6,17 +6,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import baaIcon from "@/assets/BAA.png";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import arcanoLabLogo from "@/assets/arcanolab_logo.png";
-
 const Index = () => {
   const navigate = useNavigate();
   const [showBAAModal, setShowBAAModal] = useState(false);
   return <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
       {/* Logo */}
-      <img src={arcanoLabLogo} alt="Arcano Lab" className="h-10 sm:h-12 mb-4" />
+      <img alt="Arcano Lab" className="h-10 sm:h-12 mb-4" src="/lovable-uploads/c730fa96-d2c9-48f7-8bbb-f5fd02378698.png" />
       
       {/* Título */}
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-8 sm:mb-12 text-center">
-        A plataforma dos<br />criadores do futuro
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-8 sm:mb-12 text-center">A plataforma dos
+criadores do futuro!<br />criadores do futuro
       </h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl">
