@@ -76,10 +76,12 @@ export type Database = {
       admin_artes: {
         Row: {
           bonus_clicks: number
+          canva_link: string | null
           category: string
           created_at: string | null
           description: string | null
           download_url: string | null
+          drive_link: string | null
           id: string
           image_url: string
           is_premium: boolean
@@ -89,10 +91,12 @@ export type Database = {
         }
         Insert: {
           bonus_clicks?: number
+          canva_link?: string | null
           category: string
           created_at?: string | null
           description?: string | null
           download_url?: string | null
+          drive_link?: string | null
           id?: string
           image_url: string
           is_premium?: boolean
@@ -102,10 +106,12 @@ export type Database = {
         }
         Update: {
           bonus_clicks?: number
+          canva_link?: string | null
           category?: string
           created_at?: string | null
           description?: string | null
           download_url?: string | null
+          drive_link?: string | null
           id?: string
           image_url?: string
           is_premium?: boolean
@@ -432,12 +438,14 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           bonus_clicks: number
+          canva_link: string | null
           category: string
           created_at: string | null
           deletion_requested: boolean | null
           deletion_requested_at: string | null
           description: string | null
           download_url: string | null
+          drive_link: string | null
           id: string
           image_url: string
           is_premium: boolean | null
@@ -454,12 +462,14 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           bonus_clicks?: number
+          canva_link?: string | null
           category: string
           created_at?: string | null
           deletion_requested?: boolean | null
           deletion_requested_at?: string | null
           description?: string | null
           download_url?: string | null
+          drive_link?: string | null
           id?: string
           image_url: string
           is_premium?: boolean | null
@@ -476,12 +486,14 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           bonus_clicks?: number
+          canva_link?: string | null
           category?: string
           created_at?: string | null
           deletion_requested?: boolean | null
           deletion_requested_at?: string | null
           description?: string | null
           download_url?: string | null
+          drive_link?: string | null
           id?: string
           image_url?: string
           is_premium?: boolean | null
