@@ -150,6 +150,16 @@ const PartnerLogin = () => {
               {isLoading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
+
+          <div className="mt-6 text-center">
+            <Button
+              variant="link"
+              onClick={() => navigate("/admin-login")}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Acesso Administradores
+            </Button>
+          </div>
         </Card>
       </div>
     </div>

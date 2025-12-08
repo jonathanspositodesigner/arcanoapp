@@ -448,6 +448,10 @@ const BibliotecaPrompts = () => {
           <img src={logoHorizontal} alt="Arcano Lab" className="h-10 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} />
         </div>
         <div className="flex items-center gap-3">
+          <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+            <Users className="h-4 w-4 mr-2" />
+            Área do Parceiro
+          </Button>
           {!isPremium && <>
             <Button onClick={() => navigate("/login")} variant="ghost" size="sm">
               <LogIn className="h-4 w-4 mr-2" />
