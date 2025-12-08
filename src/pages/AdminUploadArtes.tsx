@@ -158,7 +158,7 @@ const AdminUploadArtes = () => {
       setCurrentIndex(currentIndex - 1);
     }
   };
-  const allFieldsFilled = mediaFiles.every(media => media.title && media.category);
+  const allFieldsFilled = mediaFiles.every(media => media.title && media.category && media.canvaLink && media.driveLink);
   const handleSubmitAll = async () => {
     for (const media of mediaFiles) {
       if (!media.title.trim()) {
@@ -167,6 +167,14 @@ const AdminUploadArtes = () => {
       }
       if (!media.category) {
         toast.error(`Categoria é obrigatória para "${media.title}"`);
+        return;
+      }
+      if (!media.canvaLink.trim()) {
+        toast.error(`Link Canva é obrigatório para "${media.title}"`);
+        return;
+      }
+      if (!media.driveLink.trim()) {
+        toast.error(`Link Drive é obrigatório para "${media.title}"`);
         return;
       }
     }
@@ -310,7 +318,22 @@ const AdminUploadArtes = () => {
 
               <div>
                 <Label htmlFor="category">Categoria</Label>
-                <Select value={currentMedia.category} onValueChange={value => updateMediaData('category', value)}>
+                <Select value={currentMedia.category} onValueChange={value => {
+                  if (value === '__new__') {
+                    const newCat = prompt('Nome da nova categoria:');
+                    if (newCat && newCat.trim()) {
+                      const formattedCat = newCat.trim();
+                      supabase.from('artes_categories').insert({ name: formattedCat, slug: formattedCat.toLowerCase().replace(/\s+/g, '-') })
+                        .then(() => {
+                          fetchCategories();
+                          updateMediaData('category', formattedCat);
+                          toast.success('Categoria criada!');
+                        });
+                    }
+                  } else {
+                    updateMediaData('category', value);
+                  }
+                }}>
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
@@ -318,6 +341,7 @@ const AdminUploadArtes = () => {
                     {categories.map(cat => (
                       <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                     ))}
+                    <SelectItem value="__new__" className="text-primary font-medium">+ Adicionar nova categoria</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -348,24 +372,26 @@ const AdminUploadArtes = () => {
                 </div>}
 
               <div>
-                <Label htmlFor="canvaLink">Link Canva (opcional)</Label>
+                <Label htmlFor="canvaLink">Link Canva <span className="text-destructive">*</span></Label>
                 <Input 
                   id="canvaLink" 
                   value={currentMedia.canvaLink} 
                   onChange={e => updateMediaData('canvaLink', e.target.value)} 
                   placeholder="https://www.canva.com/..." 
                   className="mt-2" 
+                  required
                 />
               </div>
 
               <div>
-                <Label htmlFor="driveLink">Link Drive (opcional)</Label>
+                <Label htmlFor="driveLink">Link Drive <span className="text-destructive">*</span></Label>
                 <Input 
                   id="driveLink" 
                   value={currentMedia.driveLink} 
                   onChange={e => updateMediaData('driveLink', e.target.value)} 
                   placeholder="https://drive.google.com/..." 
                   className="mt-2" 
+                  required
                 />
               </div>
 

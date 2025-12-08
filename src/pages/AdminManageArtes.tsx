@@ -9,10 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search, Upload, Copy, CalendarDays } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Upload, Copy, CalendarDays, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 const formatTitle = (title: string): string => {
   const trimmed = title.trim();
@@ -63,6 +68,19 @@ const AdminManageArtes = () => {
   const [typeFilter, setTypeFilter] = useState<ArteType | 'all'>('all');
   const [sortBy, setSortBy] = useState<SortOption>('date');
   const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('artes_categories')
+      .select('id, name')
+      .order('display_order', { ascending: true });
+    setCategories(data || []);
+  };
 
   useEffect(() => {
     checkAdminAndFetchArtes();
@@ -393,7 +411,7 @@ const AdminManageArtes = () => {
       </div>
 
       <Dialog open={!!editingArte} onOpenChange={() => handleCloseEdit()}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Arte</DialogTitle>
           </DialogHeader>
@@ -427,17 +445,28 @@ const AdminManageArtes = () => {
 
               <div>
                 <Label>Categoria</Label>
-                <Select value={editCategory} onValueChange={setEditCategory}>
+                <Select value={editCategory} onValueChange={(value) => {
+                  if (value === '__new__') {
+                    const newCat = prompt('Nome da nova categoria:');
+                    if (newCat && newCat.trim()) {
+                      const formattedCat = newCat.trim();
+                      supabase.from('artes_categories').insert({ name: formattedCat, slug: formattedCat.toLowerCase().replace(/\s+/g, '-') })
+                        .then(() => {
+                          fetchCategories();
+                          setEditCategory(formattedCat);
+                          toast.success('Categoria criada!');
+                        });
+                    }
+                  } else {
+                    setEditCategory(value);
+                  }
+                }}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Aniversário">Aniversário</SelectItem>
-                    <SelectItem value="Casamento">Casamento</SelectItem>
-                    <SelectItem value="Formatura">Formatura</SelectItem>
-                    <SelectItem value="15 Anos">15 Anos</SelectItem>
-                    <SelectItem value="Batizado">Batizado</SelectItem>
-                    <SelectItem value="Chá de Bebê">Chá de Bebê</SelectItem>
-                    <SelectItem value="Corporativo">Corporativo</SelectItem>
-                    <SelectItem value="Outros">Outros</SelectItem>
+                  <SelectContent className="bg-background border border-border z-50">
+                    {categories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                    ))}
+                    <SelectItem value="__new__" className="text-primary font-medium">+ Adicionar nova categoria</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -467,13 +496,13 @@ const AdminManageArtes = () => {
               )}
 
               <div>
-                <Label>Link Canva (opcional)</Label>
-                <Input value={editCanvaLink} onChange={(e) => setEditCanvaLink(e.target.value)} className="mt-1" placeholder="https://www.canva.com/..." />
+                <Label>Link Canva <span className="text-destructive">*</span></Label>
+                <Input value={editCanvaLink} onChange={(e) => setEditCanvaLink(e.target.value)} className="mt-1" placeholder="https://www.canva.com/..." required />
               </div>
 
               <div>
-                <Label>Link Drive (opcional)</Label>
-                <Input value={editDriveLink} onChange={(e) => setEditDriveLink(e.target.value)} className="mt-1" placeholder="https://drive.google.com/..." />
+                <Label>Link Drive <span className="text-destructive">*</span></Label>
+                <Input value={editDriveLink} onChange={(e) => setEditDriveLink(e.target.value)} className="mt-1" placeholder="https://drive.google.com/..." required />
               </div>
 
               <div>
