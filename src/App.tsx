@@ -50,6 +50,8 @@ import PartnerLoginArtes from "./pages/PartnerLoginArtes";
 import PartnerDashboardArtes from "./pages/PartnerDashboardArtes";
 import PartnerUploadArtes from "./pages/PartnerUploadArtes";
 import AdminPartnersArtes from "./pages/AdminPartnersArtes";
+import AdminCategoriesArtes from "./pages/AdminCategoriesArtes";
+import AdminCategoriesPrompts from "./pages/AdminCategoriesPrompts";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { usePageViewTracker } from "./hooks/usePageViewTracker";
@@ -113,6 +115,8 @@ const AppContent = () => {
         <Route path="/parceiro-dashboard-artes" element={<PartnerDashboardArtes />} />
         <Route path="/parceiro-upload-artes" element={<PartnerUploadArtes />} />
         <Route path="/admin-parceiros-artes" element={<AdminPartnersArtes />} />
+        <Route path="/admin-categories-artes" element={<AdminCategoriesArtes />} />
+        <Route path="/admin-categories-prompts" element={<AdminCategoriesPrompts />} />
         
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

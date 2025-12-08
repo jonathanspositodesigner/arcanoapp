@@ -23,14 +23,10 @@ interface MediaData {
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
-const CATEGORIES = [
-  { value: "casamento", label: "Casamento" },
-  { value: "aniversario", label: "Aniversário" },
-  { value: "formatura", label: "Formatura" },
-  { value: "batizado", label: "Batizado" },
-  { value: "corporativo", label: "Corporativo" },
-  { value: "outros", label: "Outros" },
-];
+interface Category {
+  id: string;
+  name: string;
+}
 
 const PartnerUploadArtes = () => {
   const navigate = useNavigate();
@@ -42,10 +38,20 @@ const PartnerUploadArtes = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     checkPartnerAccess();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('artes_categories')
+      .select('id, name')
+      .order('display_order', { ascending: true });
+    setCategories(data || []);
+  };
 
   const checkPartnerAccess = async () => {
     try {
@@ -355,10 +361,10 @@ const PartnerUploadArtes = () => {
                   <SelectTrigger className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a2e] border-[#2d4a5e]/50">
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value} className="text-white">
-                        {cat.label}
+                  <SelectContent className="bg-[#1a1a2e] border-[#2d4a5e]/50 z-50">
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.name} className="text-white">
+                        {cat.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

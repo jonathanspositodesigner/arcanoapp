@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard, FolderOpen, Inbox, Handshake, Palette, FileText } from "lucide-react";
+import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard, FolderOpen, Inbox, Handshake, Palette, FileText, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminAnalyticsDashboard from "@/components/AdminAnalyticsDashboard";
@@ -262,6 +262,20 @@ const AdminDashboard = () => {
                 </div>
               </Card>
 
+              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-categories-prompts')}>
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-4 bg-indigo-500 rounded-full">
+                    <Tag className="h-12 w-12 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Categorias
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Gerencie as categorias de prompts
+                  </p>
+                </div>
+              </Card>
+
               <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/biblioteca-prompts')}>
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="p-4 bg-primary rounded-full">
@@ -384,6 +398,20 @@ const AdminDashboard = () => {
                   </h2>
                   <p className="text-muted-foreground">
                     Gerenciar usuários premium de Artes
+                  </p>
+                </div>
+              </Card>
+
+              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-categories-artes')}>
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-4 bg-indigo-500 rounded-full">
+                    <Tag className="h-12 w-12 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Categorias
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Gerencie as categorias de artes
                   </p>
                 </div>
               </Card>
