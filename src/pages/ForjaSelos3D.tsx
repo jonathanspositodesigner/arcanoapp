@@ -13,24 +13,36 @@ interface VideoLesson {
 
 const lessons: VideoLesson[] = [
   {
-    title: "Aula 1 - Acessando nossa IA exclusiva",
-    videoUrl: "https://www.youtube.com/embed/l7SaOQISidk",
+    title: "1 - Acesse a Forja de Selos 3D aqui!",
+    videoUrl: "https://www.youtube.com/embed/LZN3RbMRZV0",
     buttons: [
-      { label: "Crie uma conta na Running Hub", url: "https://www.runninghub.ai/?inviteCode=p93i9z36" },
-      { label: "Acesse a Ferramenta", url: "https://www.runninghub.ai/post/1976744965550358529" }
+      { label: "Crie sua conta na Running Hub", url: "https://www.runninghub.ai/?inviteCode=p93i9z36" },
+      { label: "Acesse a Ferramenta", url: "https://www.runninghub.ai/post/1988729401963581442" }
     ]
   },
   {
-    title: "Aula 2 - Como Usar o Upscaller Arcano",
-    videoUrl: "https://www.youtube.com/embed/mf39fwnowW4"
+    title: "2 - Gerador de Prompt",
+    videoUrl: "https://www.youtube.com/embed/WCfGZUHpZn8"
   },
   {
-    title: "Aula 3 - Como usar de Graça e Ilimitado",
-    videoUrl: "https://www.youtube.com/embed/v3xHVxRxt2E"
+    title: "3 - Gerador de Selos 3D",
+    videoUrl: "https://www.youtube.com/embed/Y6hka2qUI3I"
+  },
+  {
+    title: "4 - Aumentar a Qualidade e Remover Fundo",
+    videoUrl: "https://www.youtube.com/embed/C1-BNlYQTnY"
+  },
+  {
+    title: "5 - Troca de Título Selos 3D",
+    videoUrl: "https://www.youtube.com/embed/A_U_VBGA-24"
+  },
+  {
+    title: "6 - Animando o Selos 3D",
+    videoUrl: "https://www.youtube.com/embed/n5Xe4WrGzak"
   }
 ];
 
-const UpscalerArcano = () => {
+const ForjaSelos3D = () => {
   const navigate = useNavigate();
   const { user, isPremium, planType, isLoading } = usePremiumStatus();
 
@@ -69,10 +81,10 @@ const UpscalerArcano = () => {
           </Button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Upscaler Arcano
+              Forja de Selos 3D
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              Melhore suas imagens deixando em 4K e remova o fundo.
+              Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.
             </p>
           </div>
         </div>
@@ -120,4 +132,4 @@ const UpscalerArcano = () => {
   );
 };
 
-export default UpscalerArcano;
+export default ForjaSelos3D;
