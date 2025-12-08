@@ -276,19 +276,6 @@ const AdminDashboard = () => {
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/biblioteca-prompts')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-primary rounded-full">
-                    <FileText className="h-12 w-12 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-foreground">
-                    Ver Biblioteca
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Acesse a Biblioteca de Prompts
-                  </p>
-                </div>
-              </Card>
             </div>
 
             {/* Analytics Dashboard */}
