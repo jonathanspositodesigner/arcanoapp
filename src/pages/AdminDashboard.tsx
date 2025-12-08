@@ -100,11 +100,11 @@ const AdminDashboard = () => {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/biblioteca-prompts')}
               className="gap-2"
             >
               <Home className="h-4 w-4" />
-              Home
+              Biblioteca
             </Button>
             <Button
               variant="outline"
