@@ -41,6 +41,7 @@ const AdminAnalyticsDashboard = () => {
   const getDateThreshold = () => {
     if (dateFilter === "all") return null;
     const date = new Date();
+    date.setHours(0, 0, 0, 0); // Começa à meia-noite
     date.setDate(date.getDate() - dateFilter);
     return date.toISOString();
   };
@@ -48,8 +49,10 @@ const AdminAnalyticsDashboard = () => {
   const getDaysArray = (days: number | "all") => {
     const result: string[] = [];
     const numDays = days === "all" ? 30 : days;
+    // Gera array de datas incluindo o dia de hoje
     for (let i = numDays - 1; i >= 0; i--) {
       const date = new Date();
+      date.setHours(0, 0, 0, 0); // Normaliza para meia-noite
       date.setDate(date.getDate() - i);
       result.push(date.toISOString().split("T")[0]);
     }
