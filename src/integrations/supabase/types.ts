@@ -14,6 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_arte_collection_items: {
+        Row: {
+          arte_id: string
+          arte_type: string
+          collection_id: string
+          created_at: string
+          id: string
+          item_order: number
+        }
+        Insert: {
+          arte_id: string
+          arte_type?: string
+          collection_id: string
+          created_at?: string
+          id?: string
+          item_order?: number
+        }
+        Update: {
+          arte_id?: string
+          arte_type?: string
+          collection_id?: string
+          created_at?: string
+          id?: string
+          item_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_arte_collection_items_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "admin_arte_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_arte_collections: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      admin_artes: {
+        Row: {
+          bonus_clicks: number
+          category: string
+          created_at: string | null
+          description: string | null
+          download_url: string | null
+          id: string
+          image_url: string
+          is_premium: boolean
+          title: string
+          tutorial_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bonus_clicks?: number
+          category: string
+          created_at?: string | null
+          description?: string | null
+          download_url?: string | null
+          id?: string
+          image_url: string
+          is_premium?: boolean
+          title: string
+          tutorial_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bonus_clicks?: number
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          download_url?: string | null
+          id?: string
+          image_url?: string
+          is_premium?: boolean
+          title?: string
+          tutorial_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       admin_collection_items: {
         Row: {
           collection_id: string
@@ -136,6 +237,78 @@ export type Database = {
         }
         Relationships: []
       }
+      arte_clicks: {
+        Row: {
+          arte_id: string
+          arte_title: string
+          clicked_at: string
+          id: string
+          is_admin_arte: boolean
+        }
+        Insert: {
+          arte_id: string
+          arte_title: string
+          clicked_at?: string
+          id?: string
+          is_admin_arte?: boolean
+        }
+        Update: {
+          arte_id?: string
+          arte_title?: string
+          clicked_at?: string
+          id?: string
+          is_admin_arte?: boolean
+        }
+        Relationships: []
+      }
+      community_artes: {
+        Row: {
+          approved: boolean | null
+          approved_at: string | null
+          approved_by: string | null
+          bonus_clicks: number
+          category: string
+          contributor_name: string | null
+          created_at: string | null
+          description: string | null
+          download_url: string | null
+          id: string
+          image_url: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          approved_at?: string | null
+          approved_by?: string | null
+          bonus_clicks?: number
+          category: string
+          contributor_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          download_url?: string | null
+          id?: string
+          image_url: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          approved_at?: string | null
+          approved_by?: string | null
+          bonus_clicks?: number
+          category?: string
+          contributor_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          download_url?: string | null
+          id?: string
+          image_url?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       community_prompts: {
         Row: {
           approved: boolean | null
@@ -228,6 +401,83 @@ export type Database = {
           viewed_at?: string
         }
         Relationships: []
+      }
+      partner_artes: {
+        Row: {
+          approved: boolean | null
+          approved_at: string | null
+          approved_by: string | null
+          bonus_clicks: number
+          category: string
+          created_at: string | null
+          deletion_requested: boolean | null
+          deletion_requested_at: string | null
+          description: string | null
+          download_url: string | null
+          id: string
+          image_url: string
+          is_premium: boolean | null
+          partner_id: string
+          rejected: boolean | null
+          rejected_at: string | null
+          rejected_by: string | null
+          title: string
+          tutorial_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          approved_at?: string | null
+          approved_by?: string | null
+          bonus_clicks?: number
+          category: string
+          created_at?: string | null
+          deletion_requested?: boolean | null
+          deletion_requested_at?: string | null
+          description?: string | null
+          download_url?: string | null
+          id?: string
+          image_url: string
+          is_premium?: boolean | null
+          partner_id: string
+          rejected?: boolean | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          title: string
+          tutorial_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          approved_at?: string | null
+          approved_by?: string | null
+          bonus_clicks?: number
+          category?: string
+          created_at?: string | null
+          deletion_requested?: boolean | null
+          deletion_requested_at?: string | null
+          description?: string | null
+          download_url?: string | null
+          id?: string
+          image_url?: string
+          is_premium?: boolean | null
+          partner_id?: string
+          rejected?: boolean | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          title?: string
+          tutorial_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_artes_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partner_prompts: {
         Row: {
