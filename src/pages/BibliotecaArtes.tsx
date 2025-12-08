@@ -26,6 +26,8 @@ interface ArteItem {
   arteType?: 'admin' | 'partner';
   clickCount?: number;
   bonusClicks?: number;
+  canvaLink?: string;
+  driveLink?: string;
 }
 
 const isVideoUrl = (url: string) => {
@@ -128,7 +130,9 @@ const BibliotecaArtes = () => {
       createdAt: item.created_at || undefined,
       arteType: 'admin' as const,
       clickCount: clickCounts[item.id] || 0,
-      bonusClicks: item.bonus_clicks || 0
+      bonusClicks: item.bonus_clicks || 0,
+      canvaLink: (item as any).canva_link || null,
+      driveLink: (item as any).drive_link || null
     }));
 
     const partnerArtes: ArteItem[] = (partnerResult.data || []).map(item => ({
@@ -144,7 +148,9 @@ const BibliotecaArtes = () => {
       createdAt: item.created_at || undefined,
       arteType: 'partner' as const,
       clickCount: clickCounts[item.id] || 0,
-      bonusClicks: item.bonus_clicks || 0
+      bonusClicks: item.bonus_clicks || 0,
+      canvaLink: (item as any).canva_link || null,
+      driveLink: (item as any).drive_link || null
     }));
 
     const allCombined = [...adminArtes, ...partnerArtes].sort((a, b) => {
@@ -559,10 +565,30 @@ const BibliotecaArtes = () => {
               )}
 
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => handleDownload(selectedArte)} className="flex-1 sm:flex-none">
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar Arte
-                </Button>
+                {selectedArte.canvaLink && (
+                  <Button onClick={() => window.open(selectedArte.canvaLink, '_blank')} variant="outline" className="flex-1 sm:flex-none">
+                    <Download className="h-4 w-4 mr-2" />
+                    Abrir no Canva
+                  </Button>
+                )}
+                {selectedArte.driveLink && (
+                  <Button onClick={() => window.open(selectedArte.driveLink, '_blank')} variant="outline" className="flex-1 sm:flex-none">
+                    <Download className="h-4 w-4 mr-2" />
+                    Abrir no Drive
+                  </Button>
+                )}
+                {selectedArte.downloadUrl && (
+                  <Button onClick={() => handleDownload(selectedArte)} className="flex-1 sm:flex-none">
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar Arquivo
+                  </Button>
+                )}
+                {!selectedArte.canvaLink && !selectedArte.driveLink && !selectedArte.downloadUrl && (
+                  <Button onClick={() => handleDownload(selectedArte)} className="flex-1 sm:flex-none">
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar Imagem
+                  </Button>
+                )}
               </div>
             </div>
           )}
