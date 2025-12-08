@@ -22,14 +22,12 @@ criadores do futuro!<br />criadores do futuro
         {/* Card - Biblioteca de Artes Arcanas */}
         <div onClick={() => setShowBAAModal(true)} className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50">
           <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
-            <img alt="Biblioteca de Artes Arcanas" className="w-full h-full object-contain" src="/lovable-uploads/57313c89-fb46-4106-b628-54ac68565f4f.png" />
+            <img alt="Biblioteca de Artes Arcanas" className="w-full h-full object-contain" src="/lovable-uploads/0b5816a1-fee5-45f1-906e-9f7952d9b4e3.png" />
           </div>
           <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             Biblioteca de Artes Arcanas
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Artes editáveis PSD e Canva para eventos
-          </p>
+          <p className="text-sm sm:text-base text-muted-foreground">Artes editáveis PSD e Canva para eventos e Artistas</p>
         </div>
 
         {/* Card - Biblioteca de Prompts IA */}
