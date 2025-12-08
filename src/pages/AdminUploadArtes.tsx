@@ -12,19 +12,18 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
-
 const arteSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
   description: z.string().max(1000, "Descrição deve ter no máximo 1.000 caracteres").optional(),
-  category: z.enum(["Aniversário", "Casamento", "Formatura", "15 Anos", "Batizado", "Chá de Bebê", "Corporativo", "Outros"], { 
-    errorMap: () => ({ message: "Selecione uma categoria válida" })
-  }),
+  category: z.enum(["Aniversário", "Casamento", "Formatura", "15 Anos", "Batizado", "Chá de Bebê", "Corporativo", "Outros"], {
+    errorMap: () => ({
+      message: "Selecione uma categoria válida"
+    })
+  })
 });
-
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
-
 const validateFile = (file: File): string | null => {
   if (file.size > MAX_FILE_SIZE) {
     return `Arquivo "${file.name}" muito grande. Máximo 100MB.`;
@@ -34,7 +33,6 @@ const validateFile = (file: File): string | null => {
   }
   return null;
 };
-
 interface MediaData {
   file: File;
   preview: string;
@@ -48,7 +46,6 @@ interface MediaData {
   downloadFile: File | null;
   downloadPreview: string;
 }
-
 const AdminUploadArtes = () => {
   const navigate = useNavigate();
   const [mediaFiles, setMediaFiles] = useState<MediaData[]>([]);
@@ -56,36 +53,26 @@ const AdminUploadArtes = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     processFiles(files);
   };
-
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
   };
-
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const files = Array.from(e.dataTransfer.files).filter(file => 
-      file.type.startsWith('image/') || file.type.startsWith('video/')
-    );
-    
+    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'));
     if (files.length === 0) {
       toast.error("Por favor, envie apenas imagens ou vídeos");
       return;
     }
-    
     processFiles(files);
   };
-
   const processFiles = (files: File[]) => {
     const validFiles: File[] = [];
-    
     for (const file of files) {
       const validationError = validateFile(file);
       if (validationError) {
@@ -94,11 +81,8 @@ const AdminUploadArtes = () => {
       }
       validFiles.push(file);
     }
-    
     if (validFiles.length === 0) return;
-    
     const newMedia: MediaData[] = [];
-    
     validFiles.forEach(file => {
       const isVideo = file.type.startsWith('video/');
       const reader = new FileReader();
@@ -116,7 +100,6 @@ const AdminUploadArtes = () => {
           downloadFile: null,
           downloadPreview: ""
         });
-        
         if (newMedia.length === validFiles.length) {
           setMediaFiles(prev => [...prev, ...newMedia]);
           setShowModal(true);
@@ -126,54 +109,45 @@ const AdminUploadArtes = () => {
       reader.readAsDataURL(file);
     });
   };
-
   const handleDownloadFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onloadend = () => {
-      setMediaFiles(prev => prev.map((media, idx) => 
-        idx === currentIndex 
-          ? { ...media, downloadFile: file, downloadPreview: reader.result as string }
-          : media
-      ));
+      setMediaFiles(prev => prev.map((media, idx) => idx === currentIndex ? {
+        ...media,
+        downloadFile: file,
+        downloadPreview: reader.result as string
+      } : media));
     };
     reader.readAsDataURL(file);
   };
-
   const removeMedia = (index: number) => {
     setMediaFiles(prev => prev.filter((_, i) => i !== index));
   };
-
   const updateMediaData = (field: keyof MediaData, value: string | boolean | File | null) => {
-    setMediaFiles(prev => prev.map((media, idx) => 
-      idx === currentIndex ? { ...media, [field]: value } : media
-    ));
+    setMediaFiles(prev => prev.map((media, idx) => idx === currentIndex ? {
+      ...media,
+      [field]: value
+    } : media));
   };
-
   const goToNext = () => {
     if (currentIndex < mediaFiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
   };
-
   const goToPrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
   };
-
-  const allFieldsFilled = mediaFiles.every(media => 
-    media.title && media.category
-  );
-
+  const allFieldsFilled = mediaFiles.every(media => media.title && media.category);
   const handleSubmitAll = async () => {
     for (const media of mediaFiles) {
       const validationResult = arteSchema.safeParse({
         title: media.title,
         description: media.description,
-        category: media.category,
+        category: media.category
       });
       if (!validationResult.success) {
         const firstError = validationResult.error.errors[0];
@@ -181,60 +155,53 @@ const AdminUploadArtes = () => {
         return;
       }
     }
-
     setIsSubmitting(true);
-
     try {
       for (const media of mediaFiles) {
         // Upload preview image/video
         const fileExt = media.file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('admin-artes')
-          .upload(fileName, media.file);
-
+        const {
+          error: uploadError
+        } = await supabase.storage.from('admin-artes').upload(fileName, media.file);
         if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('admin-artes')
-          .getPublicUrl(fileName);
+        const {
+          data: {
+            publicUrl
+          }
+        } = supabase.storage.from('admin-artes').getPublicUrl(fileName);
 
         // Upload download file if exists
         let downloadUrl = null;
         if (media.downloadFile) {
           const dlExt = media.downloadFile.name.split('.').pop();
           const dlFileName = `download_${Math.random().toString(36).substring(2)}.${dlExt}`;
-
-          const { error: dlUploadError } = await supabase.storage
-            .from('admin-artes')
-            .upload(dlFileName, media.downloadFile);
-
+          const {
+            error: dlUploadError
+          } = await supabase.storage.from('admin-artes').upload(dlFileName, media.downloadFile);
           if (dlUploadError) throw dlUploadError;
-
-          const { data: { publicUrl: dlPublicUrl } } = supabase.storage
-            .from('admin-artes')
-            .getPublicUrl(dlFileName);
-
+          const {
+            data: {
+              publicUrl: dlPublicUrl
+            }
+          } = supabase.storage.from('admin-artes').getPublicUrl(dlFileName);
           downloadUrl = dlPublicUrl;
         }
 
         // Insert into database
-        const { error: insertError } = await supabase
-          .from('admin_artes')
-          .insert({
-            title: media.title.charAt(0).toUpperCase() + media.title.slice(1).toLowerCase(),
-            description: media.description || null,
-            category: media.category,
-            image_url: publicUrl,
-            download_url: downloadUrl,
-            is_premium: media.isPremium,
-            tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
-          });
-
+        const {
+          error: insertError
+        } = await supabase.from('admin_artes').insert({
+          title: media.title.charAt(0).toUpperCase() + media.title.slice(1).toLowerCase(),
+          description: media.description || null,
+          category: media.category,
+          image_url: publicUrl,
+          download_url: downloadUrl,
+          is_premium: media.isPremium,
+          tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null
+        });
         if (insertError) throw insertError;
       }
-
       setMediaFiles([]);
       setShowModal(false);
       setShowSuccessModal(true);
@@ -245,11 +212,8 @@ const AdminUploadArtes = () => {
       setIsSubmitting(false);
     }
   };
-
   const currentMedia = mediaFiles[currentIndex];
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <div className="container max-w-4xl mx-auto py-8 px-4">
         <Button variant="ghost" onClick={() => navigate("/admin-dashboard")} className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -266,19 +230,8 @@ const AdminUploadArtes = () => {
             </p>
           </div>
 
-          <div
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            className="border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer"
-          >
-            <input
-              id="media"
-              type="file"
-              accept="image/*,video/*"
-              multiple
-              onChange={handleFileSelect}
-              className="hidden"
-            />
+          <div onDragOver={handleDragOver} onDrop={handleDrop} className="border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer">
+            <input id="media" type="file" accept="image/*,video/*" multiple onChange={handleFileSelect} className="hidden" />
             <label htmlFor="media" className="cursor-pointer">
               <Upload className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg text-foreground mb-2">
@@ -290,54 +243,25 @@ const AdminUploadArtes = () => {
             </label>
           </div>
 
-          {mediaFiles.length > 0 && (
-            <div className="mt-8">
+          {mediaFiles.length > 0 && <div className="mt-8">
               <h3 className="text-lg font-semibold mb-4">
                 Arquivos selecionados: {mediaFiles.length}
               </h3>
               <div className="grid grid-cols-4 gap-4">
-                {mediaFiles.map((media, idx) => (
-                  <div key={idx} className="relative group">
-                    {media.isVideo ? (
-                      <video
-                        src={media.preview}
-                        className="w-full h-32 object-cover rounded-lg"
-                        muted
-                        loop
-                        autoPlay
-                        playsInline
-                      />
-                    ) : (
-                      <img
-                        src={media.preview}
-                        alt={`Preview ${idx + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                    )}
-                    <button
-                      onClick={() => removeMedia(idx)}
-                      className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
+                {mediaFiles.map((media, idx) => <div key={idx} className="relative group">
+                    {media.isVideo ? <video src={media.preview} className="w-full h-32 object-cover rounded-lg" muted loop autoPlay playsInline /> : <img src={media.preview} alt={`Preview ${idx + 1}`} className="w-full h-32 object-cover rounded-lg" />}
+                    <button onClick={() => removeMedia(idx)} className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <X className="h-4 w-4" />
                     </button>
-                    <div className={`absolute bottom-2 left-2 right-2 text-xs ${
-                      media.title && media.category 
-                        ? 'bg-green-500' 
-                        : 'bg-yellow-500'
-                    } text-white px-2 py-1 rounded`}>
+                    <div className={`absolute bottom-2 left-2 right-2 text-xs ${media.title && media.category ? 'bg-green-500' : 'bg-yellow-500'} text-white px-2 py-1 rounded`}>
                       {media.title && media.category ? 'Completo' : 'Pendente'}
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
-              <Button
-                onClick={() => setShowModal(true)}
-                className="w-full mt-6 bg-gradient-primary hover:opacity-90"
-              >
+              <Button onClick={() => setShowModal(true)} className="w-full mt-6 bg-gradient-primary hover:opacity-90">
                 Preencher Informações
               </Button>
-            </div>
-          )}
+            </div>}
         </Card>
       </div>
 
@@ -349,55 +273,24 @@ const AdminUploadArtes = () => {
             </DialogTitle>
           </DialogHeader>
 
-          {currentMedia && (
-            <div className="space-y-6">
+          {currentMedia && <div className="space-y-6">
               <div className="flex justify-center">
-                {currentMedia.isVideo ? (
-                  <video
-                    src={currentMedia.preview}
-                    className="max-h-64 object-contain rounded-lg"
-                    controls
-                    muted
-                    autoPlay
-                    loop
-                  />
-                ) : (
-                  <img
-                    src={currentMedia.preview}
-                    alt="Preview"
-                    className="max-h-64 object-contain rounded-lg"
-                  />
-                )}
+                {currentMedia.isVideo ? <video src={currentMedia.preview} className="max-h-64 object-contain rounded-lg" controls muted autoPlay loop /> : <img src={currentMedia.preview} alt="Preview" className="max-h-64 object-contain rounded-lg" />}
               </div>
 
               <div>
                 <Label htmlFor="title">Título</Label>
-                <Input
-                  id="title"
-                  value={currentMedia.title}
-                  onChange={(e) => updateMediaData('title', e.target.value)}
-                  placeholder="Ex: Convite de Aniversário Elegante"
-                  className="mt-2"
-                />
+                <Input id="title" value={currentMedia.title} onChange={e => updateMediaData('title', e.target.value)} placeholder="Ex: Convite de Aniversário Elegante" className="mt-2" />
               </div>
 
               <div>
                 <Label htmlFor="description">Descrição (opcional)</Label>
-                <Textarea
-                  id="description"
-                  value={currentMedia.description}
-                  onChange={(e) => updateMediaData('description', e.target.value)}
-                  placeholder="Descrição da arte..."
-                  className="mt-2"
-                />
+                <Textarea id="description" value={currentMedia.description} onChange={e => updateMediaData('description', e.target.value)} placeholder="Descrição da arte..." className="mt-2" />
               </div>
 
               <div>
                 <Label htmlFor="category">Categoria (Tipo de Evento)</Label>
-                <Select 
-                  value={currentMedia.category} 
-                  onValueChange={(value) => updateMediaData('category', value)}
-                >
+                <Select value={currentMedia.category} onValueChange={value => updateMediaData('category', value)}>
                   <SelectTrigger className="mt-2">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
@@ -421,11 +314,7 @@ const AdminUploadArtes = () => {
                     {currentMedia.isPremium ? 'Conteúdo Premium' : 'Conteúdo Gratuito'}
                   </Label>
                 </div>
-                <Switch
-                  id="isPremium"
-                  checked={currentMedia.isPremium}
-                  onCheckedChange={(checked) => updateMediaData('isPremium', checked)}
-                />
+                <Switch id="isPremium" checked={currentMedia.isPremium} onCheckedChange={checked => updateMediaData('isPremium', checked)} />
               </div>
 
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
@@ -435,75 +324,44 @@ const AdminUploadArtes = () => {
                     {currentMedia.hasTutorial ? 'Tem Tutorial' : 'Sem Tutorial'}
                   </Label>
                 </div>
-                <Switch
-                  id="hasTutorial"
-                  checked={currentMedia.hasTutorial}
-                  onCheckedChange={(checked) => updateMediaData('hasTutorial', checked)}
-                />
+                <Switch id="hasTutorial" checked={currentMedia.hasTutorial} onCheckedChange={checked => updateMediaData('hasTutorial', checked)} />
               </div>
 
-              {currentMedia.hasTutorial && (
-                <div>
+              {currentMedia.hasTutorial && <div>
                   <Label htmlFor="tutorialUrl">Link do Tutorial</Label>
-                  <Input
-                    id="tutorialUrl"
-                    value={currentMedia.tutorialUrl}
-                    onChange={(e) => updateMediaData('tutorialUrl', e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    className="mt-2"
-                  />
-                </div>
-              )}
+                  <Input id="tutorialUrl" value={currentMedia.tutorialUrl} onChange={e => updateMediaData('tutorialUrl', e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="mt-2" />
+                </div>}
 
               <div>
                 <Label>Arquivo para Download (PSD, Canva, etc.)</Label>
                 <p className="text-xs text-muted-foreground mb-2">
                   Arquivo que será baixado pelo usuário
                 </p>
-                <input
-                  type="file"
-                  onChange={handleDownloadFileSelect}
-                  className="block w-full text-sm text-muted-foreground
+                <input type="file" onChange={handleDownloadFileSelect} className="block w-full text-sm text-muted-foreground
                     file:mr-4 file:py-2 file:px-4
                     file:rounded-full file:border-0
                     file:text-sm file:font-semibold
                     file:bg-primary file:text-primary-foreground
-                    hover:file:bg-primary/80"
-                />
-                {currentMedia.downloadFile && (
-                  <p className="text-sm text-green-600 mt-2">
+                    hover:file:bg-primary/80" />
+                {currentMedia.downloadFile && <p className="text-sm text-green-600 mt-2">
                     ✓ {currentMedia.downloadFile.name}
-                  </p>
-                )}
+                  </p>}
               </div>
 
               <div className="flex justify-between pt-4 border-t">
-                <Button
-                  variant="outline"
-                  onClick={goToPrevious}
-                  disabled={currentIndex === 0}
-                >
+                <Button variant="outline" onClick={goToPrevious} disabled={currentIndex === 0}>
                   Anterior
                 </Button>
                 
                 <div className="flex gap-2">
-                  {currentIndex === mediaFiles.length - 1 ? (
-                    <Button
-                      onClick={handleSubmitAll}
-                      disabled={!allFieldsFilled || isSubmitting}
-                      className="bg-gradient-primary"
-                    >
+                  {currentIndex === mediaFiles.length - 1 ? <Button onClick={handleSubmitAll} disabled={!allFieldsFilled || isSubmitting} className="bg-gradient-primary">
                       {isSubmitting ? "Enviando..." : "Enviar Tudo"}
-                    </Button>
-                  ) : (
-                    <Button onClick={goToNext}>
+                    </Button> : <Button onClick={goToNext}>
                       Próximo
-                    </Button>
-                  )}
+                    </Button>}
                 </div>
               </div>
-            </div>
-          )}
+            </div>}
         </DialogContent>
       </Dialog>
 
@@ -516,7 +374,10 @@ const AdminUploadArtes = () => {
             Suas artes foram enviadas com sucesso.
           </p>
           <div className="flex flex-col gap-2 mt-4">
-            <Button onClick={() => { setShowSuccessModal(false); setMediaFiles([]); }}>
+            <Button onClick={() => {
+            setShowSuccessModal(false);
+            setMediaFiles([]);
+          }}>
               Sim, enviar mais
             </Button>
             <Button variant="outline" onClick={() => navigate('/biblioteca-artes')}>
@@ -525,8 +386,6 @@ const AdminUploadArtes = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default AdminUploadArtes;
