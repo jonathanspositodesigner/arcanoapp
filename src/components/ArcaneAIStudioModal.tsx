@@ -20,6 +20,7 @@ interface ToolCard {
   icon: React.ComponentType<{ className?: string }>;
   requiredPlan: "basico" | "pro" | "unlimited";
   link?: string;
+  isInternal?: boolean;
 }
 
 const tools: ToolCard[] = [
@@ -29,7 +30,8 @@ const tools: ToolCard[] = [
     description: "Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.",
     icon: Zap,
     requiredPlan: "unlimited",
-    link: "https://youtu.be/XmPDm7ikUbU"
+    link: "/forja-selos-3d",
+    isInternal: true
   },
   {
     id: "upscaler",
@@ -80,7 +82,12 @@ const ArcaneAIStudioModal = ({ open, onOpenChange, isPremium, planType, isLogged
 
   const handleToolClick = (tool: ToolCard) => {
     if (canAccessTool(tool) && tool.link) {
-      window.open(tool.link, "_blank");
+      if (tool.isInternal) {
+        navigate(tool.link);
+        onOpenChange(false);
+      } else {
+        window.open(tool.link, "_blank");
+      }
     }
   };
 
@@ -196,6 +203,19 @@ const ArcaneAIStudioModal = ({ open, onOpenChange, isPremium, planType, isLogged
                     >
                       <Star className="h-3 w-3 mr-1" fill="currentColor" />
                       Torne-se Premium
+                    </Button>
+                  )}
+                  
+                  {hasAccess && tool.link && (
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToolClick(tool);
+                      }}
+                      size="sm"
+                      className="w-full mt-4 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 text-primary-foreground text-xs"
+                    >
+                      Acesse aqui
                     </Button>
                   )}
                   
