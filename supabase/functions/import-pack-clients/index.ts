@@ -11,7 +11,7 @@ interface ClientData {
   phone: string;
   packs: {
     pack_slug: string;
-    access_type: "6_meses" | "1_ano" | "vitalicio";
+    access_type: "3_meses" | "6_meses" | "1_ano" | "vitalicio";
     has_bonus_access: boolean;
     purchase_date: string;
   }[];
@@ -161,7 +161,9 @@ Deno.serve(async (req) => {
           let expiresAt: string | null = null;
           const purchaseDateTime = new Date(purchase_date);
 
-          if (access_type === "6_meses") {
+          if (access_type === "3_meses") {
+            expiresAt = new Date(purchaseDateTime.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString();
+          } else if (access_type === "6_meses") {
             expiresAt = new Date(purchaseDateTime.getTime() + 180 * 24 * 60 * 60 * 1000).toISOString();
           } else if (access_type === "1_ano") {
             expiresAt = new Date(purchaseDateTime.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
