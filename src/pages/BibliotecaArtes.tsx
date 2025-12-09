@@ -609,9 +609,16 @@ const BibliotecaArtes = () => {
               
               <div className="text-center">
                 <h2 className="text-lg font-bold text-foreground">{selectedArte.title}</h2>
-                <div className="mt-1 flex justify-center">{getBadgeContent(selectedArte)}</div>
+                <div className="mt-2 flex flex-wrap justify-center gap-1">
+                  {getBadgeContent(selectedArte)}
+                  {selectedArte.category && (
+                    <Badge variant="secondary" className="text-xs">
+                      {selectedArte.category}
+                    </Badge>
+                  )}
+                </div>
                 {selectedArte.description && (
-                  <p className="text-muted-foreground text-sm mt-1">{selectedArte.description}</p>
+                  <p className="text-muted-foreground text-sm mt-2">{selectedArte.description}</p>
                 )}
               </div>
 
