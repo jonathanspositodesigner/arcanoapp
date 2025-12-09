@@ -279,80 +279,84 @@ const AdminImportAccess = () => {
       setImportProgress({ current: i + 1, total: parsedClients.length });
 
       try {
-        // Check if user exists
-        let userId: string | null = null;
-        
-        // First check profiles table
+        // Check if user exists in profiles
         const { data: existingProfile } = await supabase
           .from("profiles")
           .select("id")
-          .eq("email", client.email)
+          .eq("email", client.email.toLowerCase().trim())
           .maybeSingle();
 
         if (existingProfile) {
-          userId = existingProfile.id;
-          results.updated++;
-        } else {
-          // Create new user in Auth
-          const { data: { session } } = await supabase.auth.getSession();
+          // User exists - just add pack purchases directly
+          const userId = existingProfile.id;
           
-          const response = await supabase.functions.invoke("create-pack-client", {
+          // Update profile with name and phone if needed
+          if (client.name || client.phone) {
+            await supabase
+              .from("profiles")
+              .update({
+                name: client.name || undefined,
+                phone: client.phone || undefined,
+              })
+              .eq("id", userId);
+          }
+
+          // Insert pack purchases (all as VITALÍCIO)
+          for (const access of client.accesses) {
+            // Check if purchase already exists
+            const { data: existingPurchase } = await supabase
+              .from("user_pack_purchases")
+              .select("id")
+              .eq("user_id", userId)
+              .eq("pack_slug", access.slug)
+              .maybeSingle();
+
+            if (!existingPurchase) {
+              await supabase
+                .from("user_pack_purchases")
+                .insert({
+                  user_id: userId,
+                  pack_slug: access.slug,
+                  access_type: "vitalicio",
+                  has_bonus_access: true,
+                  purchased_at: new Date().toISOString(),
+                  expires_at: null,
+                  is_active: true,
+                });
+            }
+          }
+
+          results.updated++;
+          results.success++;
+        } else {
+          // Create new user via Edge Function
+          const packsToCreate = client.accesses.map(access => ({
+            pack_slug: access.slug,
+            access_type: "vitalicio",
+            has_bonus: true,
+            expires_at: null,
+          }));
+
+          const { data, error } = await supabase.functions.invoke("create-pack-client", {
             body: {
               email: client.email,
               name: client.name,
               phone: client.phone,
+              packs: packsToCreate,
             },
           });
 
-          if (response.error) {
-            throw new Error(response.error.message || "Failed to create user");
+          if (error) {
+            throw new Error(error.message || "Failed to create user");
           }
 
-          userId = response.data?.user_id;
-          if (!userId) {
-            throw new Error("No user ID returned");
+          if (!data?.success) {
+            throw new Error(data?.error || "Failed to create user");
           }
+
           results.created++;
+          results.success++;
         }
-
-        // Update profile with name and phone if needed
-        if (client.name || client.phone) {
-          await supabase
-            .from("profiles")
-            .upsert({
-              id: userId,
-              email: client.email,
-              name: client.name || null,
-              phone: client.phone || null,
-            }, { onConflict: "id" });
-        }
-
-        // Insert pack purchases (all as VITALÍCIO)
-        for (const access of client.accesses) {
-          // Check if purchase already exists
-          const { data: existingPurchase } = await supabase
-            .from("user_pack_purchases")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("pack_slug", access.slug)
-            .maybeSingle();
-
-          if (!existingPurchase) {
-            await supabase
-              .from("user_pack_purchases")
-              .insert({
-                user_id: userId,
-                pack_slug: access.slug,
-                access_type: "vitalicio",
-                has_bonus_access: true, // All users with any access get bonus
-                purchased_at: new Date().toISOString(),
-                expires_at: null, // Vitalício = no expiration
-                is_active: true,
-              });
-          }
-        }
-
-        results.success++;
       } catch (error: any) {
         console.error(`Error importing ${client.email}:`, error);
         results.errors.push({ email: client.email, error: error.message || "Unknown error" });
