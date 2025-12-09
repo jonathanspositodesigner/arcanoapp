@@ -27,6 +27,8 @@ const AdminManagePacks = () => {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     checkAdmin();
@@ -61,6 +63,55 @@ const AdminManagePacks = () => {
     }
     setPacks(data || []);
     setLoading(false);
+  };
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
+
+  const handleDragEnd = async () => {
+    if (draggedIndex === null || dragOverIndex === null || draggedIndex === dragOverIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newPacks = [...packs];
+    const [draggedPack] = newPacks.splice(draggedIndex, 1);
+    newPacks.splice(dragOverIndex, 0, draggedPack);
+
+    // Update local state immediately for smooth UX
+    setPacks(newPacks);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+
+    // Update display_order in database
+    try {
+      const updates = newPacks.map((pack, index) => ({
+        id: pack.id,
+        name: pack.name,
+        slug: pack.slug,
+        cover_url: pack.cover_url,
+        display_order: index
+      }));
+
+      for (const update of updates) {
+        await supabase
+          .from("artes_packs")
+          .update({ display_order: update.display_order })
+          .eq("id", update.id);
+      }
+
+      toast.success("Ordem atualizada!");
+    } catch (error) {
+      toast.error("Erro ao salvar ordem");
+      fetchPacks(); // Revert on error
+    }
   };
 
   const generateSlug = (name: string) => {
@@ -329,11 +380,28 @@ const AdminManagePacks = () => {
           </Dialog>
         </div>
 
-        <div className="grid gap-4">
-          {packs.map((pack) => (
-            <Card key={pack.id} className="overflow-hidden">
+        <p className="text-sm text-muted-foreground mb-4">
+          Arraste os packs para reorganizar a ordem de exibição
+        </p>
+
+        <div className="grid gap-2">
+          {packs.map((pack, index) => (
+            <Card 
+              key={pack.id} 
+              className={`overflow-hidden cursor-grab active:cursor-grabbing transition-all ${
+                draggedIndex === index ? 'opacity-50 scale-95' : ''
+              } ${dragOverIndex === index ? 'border-primary border-2' : ''}`}
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              onDragLeave={() => setDragOverIndex(null)}
+            >
               <div className="flex items-center">
-                <div className="w-32 h-24 flex-shrink-0">
+                <div className="p-3 cursor-grab text-muted-foreground hover:text-foreground">
+                  <GripVertical className="w-5 h-5" />
+                </div>
+                <div className="w-28 h-20 flex-shrink-0">
                   {pack.cover_url ? (
                     <img
                       src={pack.cover_url}
