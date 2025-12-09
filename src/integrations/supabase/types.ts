@@ -1223,6 +1223,15 @@ export type Database = {
     Functions: {
       get_daily_arte_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_copy_count: { Args: { _user_id: string }; Returns: number }
+      get_user_expired_packs: {
+        Args: { _user_id: string }
+        Returns: {
+          access_type: Database["public"]["Enums"]["artes_access_type"]
+          expires_at: string
+          has_bonus: boolean
+          pack_slug: string
+        }[]
+      }
       get_user_packs: {
         Args: { _user_id: string }
         Returns: {
