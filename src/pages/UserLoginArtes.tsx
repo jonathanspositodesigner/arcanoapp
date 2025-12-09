@@ -15,18 +15,13 @@ const UserLoginArtes = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Check if user is already logged in and premium - go directly to biblioteca
+  // Check if user is already logged in - go directly to biblioteca
   useEffect(() => {
     const checkExistingSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        // Check if premium artes
-        const { data: isPremium } = await supabase.rpc('is_premium_artes');
-        if (isPremium) {
-          // Se já está logado e é premium, vai direto para biblioteca
-          // A verificação de password_changed só ocorre no handleLogin
-          navigate("/biblioteca-artes");
-        }
+        // Usuário já logado, vai direto para biblioteca
+        navigate("/biblioteca-artes");
       }
     };
     checkExistingSession();
@@ -49,16 +44,6 @@ const UserLoginArtes = () => {
       }
 
       if (data.user) {
-        // Check premium artes status
-        const { data: isPremium, error: premiumError } = await supabase.rpc('is_premium_artes');
-        
-        if (premiumError || !isPremium) {
-          await supabase.auth.signOut();
-          toast.error("Você não possui acesso premium à Biblioteca de Artes");
-          setIsLoading(false);
-          return;
-        }
-
         // Check if first login (password not changed)
         const { data: profile } = await supabase
           .from('profiles')
