@@ -270,6 +270,45 @@ export type Database = {
         }
         Relationships: []
       }
+      artes_banners: {
+        Row: {
+          button_link: string
+          button_text: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          image_url: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          button_link: string
+          button_text?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          button_link?: string
+          button_text?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       artes_categories: {
         Row: {
           created_at: string
