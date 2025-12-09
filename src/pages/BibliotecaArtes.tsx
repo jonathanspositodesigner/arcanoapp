@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -465,14 +465,22 @@ const BibliotecaArtes = () => {
           </div>
         ) : (
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground text-center">Entre para o nosso grupo gratuito</p>
+            <p className="text-xs text-muted-foreground text-center">Entre para os nossos grupos gratuitos</p>
             <Button 
               onClick={() => window.open("https://chat.whatsapp.com/DJz6BbLDbbK9MBX8YiTsbw", "_blank")} 
               size="sm" 
               className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white"
             >
               <MessageCircle className="h-4 w-4 mr-2" />
-              Grupo Free no WhatsApp
+              Grupo Free WhatsApp
+            </Button>
+            <Button 
+              onClick={() => window.open("https://t.me/+8NKj2KNvLPswZTIx", "_blank")} 
+              size="sm" 
+              className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white"
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Grupo de Avisos Telegram
             </Button>
           </div>
         )}
