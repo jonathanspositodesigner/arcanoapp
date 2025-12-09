@@ -175,7 +175,88 @@ const AdminUploadArtes = () => {
       setCurrentIndex(currentIndex - 1);
     }
   };
-  const allFieldsFilled = mediaFiles.every(media => media.title && media.category && media.pack && media.canvaLink && media.driveLink);
+  const isCurrentItemComplete = (media: MediaData) => media.title && media.category && media.pack && media.canvaLink && media.driveLink;
+  const allFieldsFilled = mediaFiles.every(media => isCurrentItemComplete(media));
+
+  const handleClickItem = (index: number) => {
+    setCurrentIndex(index);
+    setShowModal(true);
+  };
+
+  const handleSaveSingleItem = async () => {
+    const media = mediaFiles[currentIndex];
+    if (!media.title.trim()) {
+      toast.error("Título é obrigatório");
+      return;
+    }
+    if (!media.category) {
+      toast.error("Categoria é obrigatória");
+      return;
+    }
+    if (!media.pack) {
+      toast.error("Pack é obrigatório");
+      return;
+    }
+    if (!media.canvaLink.trim()) {
+      toast.error("Link Canva é obrigatório");
+      return;
+    }
+    if (!media.driveLink.trim()) {
+      toast.error("Link Drive é obrigatório");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Upload preview image/video
+      const fileExt = media.file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('admin-artes').upload(fileName, media.file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('admin-artes').getPublicUrl(fileName);
+
+      // Upload download file if exists
+      let downloadUrl = null;
+      if (media.downloadFile) {
+        const dlExt = media.downloadFile.name.split('.').pop();
+        const dlFileName = `download_${Math.random().toString(36).substring(2)}.${dlExt}`;
+        const { error: dlUploadError } = await supabase.storage.from('admin-artes').upload(dlFileName, media.downloadFile);
+        if (dlUploadError) throw dlUploadError;
+        const { data: { publicUrl: dlPublicUrl } } = supabase.storage.from('admin-artes').getPublicUrl(dlFileName);
+        downloadUrl = dlPublicUrl;
+      }
+
+      // Insert into database
+      const { error: insertError } = await supabase.from('admin_artes').insert({
+        title: media.title.charAt(0).toUpperCase() + media.title.slice(1).toLowerCase(),
+        description: media.description || null,
+        category: media.category,
+        pack: media.pack,
+        image_url: publicUrl,
+        download_url: downloadUrl,
+        is_premium: media.isPremium,
+        tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
+        canva_link: media.canvaLink || null,
+        drive_link: media.driveLink || null
+      });
+      if (insertError) throw insertError;
+
+      // Remove saved item from list
+      setMediaFiles(prev => prev.filter((_, idx) => idx !== currentIndex));
+      setShowModal(false);
+      toast.success(`"${media.title}" enviado com sucesso!`);
+      
+      // If was last item, show success modal
+      if (mediaFiles.length === 1) {
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      console.error("Error submitting arte:", error);
+      toast.error("Erro ao enviar. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const handleSubmitAll = async () => {
     for (const media of mediaFiles) {
       if (!media.title.trim()) {
@@ -298,19 +379,37 @@ const AdminUploadArtes = () => {
                 Arquivos selecionados: {mediaFiles.length}
               </h3>
               <div className="grid grid-cols-4 gap-4">
-                {mediaFiles.map((media, idx) => <div key={idx} className="relative group">
-                    {media.isVideo ? <video src={media.preview} className="w-full h-32 object-cover rounded-lg" muted loop autoPlay playsInline /> : <img src={media.preview} alt={`Preview ${idx + 1}`} className="w-full h-32 object-cover rounded-lg" />}
-                    <button onClick={() => removeMedia(idx)} className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {mediaFiles.map((media, idx) => (
+                  <div 
+                    key={idx} 
+                    className="relative group cursor-pointer"
+                    onClick={() => handleClickItem(idx)}
+                  >
+                    {media.isVideo ? (
+                      <video src={media.preview} className="w-full h-32 object-cover rounded-lg hover:ring-2 hover:ring-primary transition-all" muted loop autoPlay playsInline />
+                    ) : (
+                      <img src={media.preview} alt={`Preview ${idx + 1}`} className="w-full h-32 object-cover rounded-lg hover:ring-2 hover:ring-primary transition-all" />
+                    )}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeMedia(idx);
+                      }} 
+                      className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
                       <X className="h-4 w-4" />
                     </button>
-                    <div className={`absolute bottom-2 left-2 right-2 text-xs ${media.title && media.category ? 'bg-green-500' : 'bg-yellow-500'} text-white px-2 py-1 rounded`}>
-                      {media.title && media.category ? 'Completo' : 'Pendente'}
+                    <div className={`absolute bottom-2 left-2 right-2 text-xs ${isCurrentItemComplete(media) ? 'bg-green-500' : 'bg-yellow-500'} text-white px-2 py-1 rounded text-center`}>
+                      {isCurrentItemComplete(media) ? 'Completo' : 'Pendente'}
                     </div>
-                  </div>)}
+                  </div>
+                ))}
               </div>
-              <Button onClick={() => setShowModal(true)} className="w-full mt-6 bg-gradient-primary hover:opacity-90">
-                Preencher Informações
-              </Button>
+              {allFieldsFilled && (
+                <Button onClick={handleSubmitAll} className="w-full mt-6 bg-gradient-primary hover:opacity-90" disabled={isSubmitting}>
+                  {isSubmitting ? "Enviando..." : "Enviar Todos"}
+                </Button>
+              )}
             </div>}
         </Card>
       </div>
@@ -448,16 +547,18 @@ const AdminUploadArtes = () => {
               </div>
 
               <div className="flex justify-between pt-4 border-t">
-                <Button variant="outline" onClick={goToPrevious} disabled={currentIndex === 0}>
-                  Anterior
+                <Button variant="outline" onClick={() => setShowModal(false)}>
+                  Fechar
                 </Button>
                 
                 <div className="flex gap-2">
-                  {currentIndex === mediaFiles.length - 1 ? <Button onClick={handleSubmitAll} disabled={!allFieldsFilled || isSubmitting} className="bg-gradient-primary">
-                      {isSubmitting ? "Enviando..." : "Enviar Tudo"}
-                    </Button> : <Button onClick={goToNext}>
-                      Próximo
-                    </Button>}
+                  <Button 
+                    onClick={handleSaveSingleItem} 
+                    disabled={!isCurrentItemComplete(currentMedia) || isSubmitting} 
+                    className="bg-gradient-primary"
+                  >
+                    {isSubmitting ? "Enviando..." : "Salvar Este"}
+                  </Button>
                 </div>
               </div>
             </div>}
