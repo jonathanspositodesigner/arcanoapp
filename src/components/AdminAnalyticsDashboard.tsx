@@ -41,7 +41,12 @@ interface CollectionStats {
 
 const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
-  const [pageViews, setPageViews] = useState({ total: 0, mobile: 0, desktop: 0, todayTotal: 0, todayMobile: 0, todayDesktop: 0 });
+const [pageViews, setPageViews] = useState({ 
+    total: 0, mobile: 0, desktop: 0, 
+    todayTotal: 0, todayMobile: 0, todayDesktop: 0,
+    todayUnique: 0, todayTotalSessions: 0, todayReturning: 0,
+    periodUnique: 0, periodTotalSessions: 0, periodReturning: 0
+  });
   const [installations, setInstallations] = useState({ total: 0, mobile: 0, desktop: 0 });
   const [topPrompts, setTopPrompts] = useState<PromptRanking[]>([]);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
@@ -126,14 +131,18 @@ const AdminAnalyticsDashboard = () => {
         .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"])
         .gte("entered_at", todayMidnight);
 
-      // Conta sessões únicas de hoje
+      // Conta sessões únicas de hoje e sessões totais
       const todayUniqueSessions = new Set<string>();
       const todayMobileSet = new Set<string>();
       const todayDesktopSet = new Set<string>();
+      const todaySessionCounts: Record<string, number> = {};
+      let todayTotalSessionCount = 0;
       
       if (todaySessionsData) {
+        todayTotalSessionCount = todaySessionsData.length;
         todaySessionsData.forEach(s => {
           todayUniqueSessions.add(s.session_id);
+          todaySessionCounts[s.session_id] = (todaySessionCounts[s.session_id] || 0) + 1;
           if (s.device_type === "mobile") {
             todayMobileSet.add(s.session_id);
           } else {
@@ -145,6 +154,8 @@ const AdminAnalyticsDashboard = () => {
       const todayTotal = todayUniqueSessions.size;
       const todayMobile = todayMobileSet.size;
       const todayDesktop = todayDesktopSet.size;
+      // Usuários que retornaram = sessões únicas que aparecem mais de uma vez
+      const todayReturning = Object.values(todaySessionCounts).filter(count => count > 1).length;
 
       // ========== BUSCA DO PERÍODO SELECIONADO ==========
       let sessionsQuery = supabase
@@ -159,11 +170,13 @@ const AdminAnalyticsDashboard = () => {
       
       const { data: allSessionsData } = await sessionsQuery;
 
-      // Conta sessões únicas do período
+      // Conta sessões únicas do período e sessões totais
       const uniqueSessions = new Set<string>();
       const mobileSessionsSet = new Set<string>();
       const desktopSessionsSet = new Set<string>();
       const sessionsByDate: Record<string, { mobile: Set<string>; desktop: Set<string> }> = {};
+      const periodSessionCounts: Record<string, number> = {};
+      let periodTotalSessionCount = 0;
       
       // Inicializa todos os dias
       daysArray.forEach(day => {
@@ -171,8 +184,10 @@ const AdminAnalyticsDashboard = () => {
       });
 
       if (allSessionsData) {
+        periodTotalSessionCount = allSessionsData.length;
         allSessionsData.forEach(s => {
           uniqueSessions.add(s.session_id);
+          periodSessionCounts[s.session_id] = (periodSessionCounts[s.session_id] || 0) + 1;
           const date = extractDateFromTimestamp(s.entered_at);
           
           if (s.device_type === "mobile") {
@@ -191,6 +206,8 @@ const AdminAnalyticsDashboard = () => {
 
       const mobile = mobileSessionsSet.size;
       const desktop = desktopSessionsSet.size;
+      // Usuários que retornaram no período = sessões únicas que aparecem mais de uma vez
+      const periodReturning = Object.values(periodSessionCounts).filter(count => count > 1).length;
       
       setPageViews({ 
         total: uniqueSessions.size, 
@@ -198,7 +215,13 @@ const AdminAnalyticsDashboard = () => {
         desktop,
         todayTotal,
         todayMobile,
-        todayDesktop
+        todayDesktop,
+        todayUnique: todayUniqueSessions.size,
+        todayTotalSessions: todayTotalSessionCount,
+        todayReturning,
+        periodUnique: uniqueSessions.size,
+        periodTotalSessions: periodTotalSessionCount,
+        periodReturning
       });
 
       // Process chart data - usa sessões únicas por dia
@@ -536,32 +559,58 @@ const AdminAnalyticsDashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             {/* Today's Page Views Card - HIGHLIGHTED */}
             <Card className="p-6 border-2 border-green-500 bg-green-500/10">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 mb-3">
                 <div className="p-3 bg-green-500/20 rounded-full">
                   <Eye className="h-8 w-8 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-green-600 font-medium">Hoje</p>
-                  <p className="text-3xl font-bold text-green-600">{pageViews.todayTotal.toLocaleString()}</p>
-                  <p className="text-xs text-green-600/80 mt-1">
+                  <p className="text-sm text-green-600 font-medium">Acessos Hoje</p>
+                  <p className="text-xs text-green-600/80">
                     📱 {pageViews.todayMobile} · 💻 {pageViews.todayDesktop}
                   </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-green-500/30">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">{pageViews.todayUnique}</p>
+                  <p className="text-[10px] text-green-600/70">Únicos</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">{pageViews.todayTotalSessions}</p>
+                  <p className="text-[10px] text-green-600/70">Totais</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">{pageViews.todayReturning}</p>
+                  <p className="text-[10px] text-green-600/70">Retornaram</p>
                 </div>
               </div>
             </Card>
 
             {/* Total Page Views Card */}
             <Card className="p-6">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 mb-3">
                 <div className="p-3 bg-blue-500/20 rounded-full">
                   <Eye className="h-8 w-8 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Acessos Totais</p>
-                  <p className="text-3xl font-bold text-foreground">{pageViews.total.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground">Acessos no Período</p>
+                  <p className="text-xs text-muted-foreground/80">
                     📱 {pageViews.mobile} · 💻 {pageViews.desktop}
                   </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-border">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-foreground">{pageViews.periodUnique.toLocaleString()}</p>
+                  <p className="text-[10px] text-muted-foreground">Únicos</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-foreground">{pageViews.periodTotalSessions.toLocaleString()}</p>
+                  <p className="text-[10px] text-muted-foreground">Totais</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-foreground">{pageViews.periodReturning.toLocaleString()}</p>
+                  <p className="text-[10px] text-muted-foreground">Retornaram</p>
                 </div>
               </div>
             </Card>
