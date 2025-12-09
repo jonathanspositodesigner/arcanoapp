@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -59,7 +59,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 
-type SidebarSection = 'packs' | 'bonus' | 'cursos' | 'updates' | 'free-sample';
+type SidebarSection = 'packs' | 'bonus' | 'cursos' | 'updates' | 'free-sample' | 'all-artes';
 
 const BibliotecaArtes = () => {
   const navigate = useNavigate();
@@ -206,17 +206,25 @@ const BibliotecaArtes = () => {
   };
 
   const getFilteredAndSortedArtes = () => {
-    // Must have a pack selected to show artes
-    if (!selectedPack) return [];
-    
-    // Filter by selected pack
-    const packFiltered = allArtes.filter(a => a.pack === selectedPack);
-
     const sortByDate = (a: ArteItem, b: ArteItem) => {
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA;
     };
+
+    // "Ver todas as artes" section - show all artes with category filter
+    if (activeSection === 'all-artes') {
+      if (selectedCategory === "Todos") {
+        return [...allArtes].sort(sortByDate);
+      }
+      return allArtes.filter(a => a.category === selectedCategory).sort(sortByDate);
+    }
+
+    // Must have a pack selected to show artes for other sections
+    if (!selectedPack) return [];
+    
+    // Filter by selected pack
+    const packFiltered = allArtes.filter(a => a.pack === selectedPack);
 
     // Apply category filter
     if (selectedCategory === "Todos") {
@@ -449,6 +457,21 @@ const BibliotecaArtes = () => {
             {getPacksByType('free-sample').length}
           </Badge>
         </button>
+
+        <button
+          onClick={() => { setActiveSection('all-artes'); setSelectedPack(null); setSelectedCategory("Todos"); setSidebarOpen(false); }}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
+            activeSection === 'all-artes' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+          }`}
+        >
+          <LayoutGrid className="h-5 w-5" />
+          <span className="font-medium">Ver Todas as Artes</span>
+          <Badge variant="secondary" className="ml-auto text-xs">
+            {allArtes.length}
+          </Badge>
+        </button>
       </nav>
 
       <div className="px-4 pt-4 border-t border-border mt-auto space-y-2">
@@ -483,6 +506,7 @@ const BibliotecaArtes = () => {
       case 'cursos': return 'Cursos';
       case 'updates': return 'Atualizações de Artes';
       case 'free-sample': return 'Amostras Grátis';
+      case 'all-artes': return 'Todas as Artes';
     }
   };
 
@@ -493,6 +517,7 @@ const BibliotecaArtes = () => {
       case 'cursos': return getPacksByType('curso');
       case 'updates': return getPacksByType('updates');
       case 'free-sample': return getPacksByType('free-sample');
+      case 'all-artes': return []; // Will show artes directly, not packs
     }
   };
 
@@ -725,6 +750,140 @@ const BibliotecaArtes = () => {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* All Artes View */}
+            {activeSection === 'all-artes' && (
+              <>
+                {/* Category Filter */}
+                <div className="mb-6">
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map(category => (
+                      <Button
+                        key={category}
+                        variant={selectedCategory === category ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setSelectedCategory(category);
+                          setCurrentPage(1);
+                        }}
+                        className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}
+                      >
+                        {category}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Artes Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                  {paginatedArtes.map(arte => {
+                    const isVideo = isVideoUrl(arte.imageUrl);
+                    const arteId = String(arte.id);
+                    const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
+                    const isAnimating = animatingClicks.has(arteId);
+
+                    const packSlug = toPackSlug(arte.pack);
+                    const hasAccess = !arte.isPremium || hasAccessToPack(packSlug);
+
+                    return (
+                      <Card 
+                        key={arte.id} 
+                        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
+                        onClick={() => handleItemClick(arte)}
+                      >
+                        <div className="relative aspect-square">
+                          {isVideo ? (
+                            <SecureVideo
+                              src={arte.imageUrl}
+                              className="w-full h-full object-cover"
+                              isPremium={arte.isPremium || false}
+                              autoPlay
+                              muted
+                              loop
+                              playsInline
+                            />
+                          ) : (
+                            <SecureImage
+                              src={arte.imageUrl}
+                              alt={arte.title}
+                              className="w-full h-full object-cover"
+                              isPremium={arte.isPremium || false}
+                            />
+                          )}
+                          
+                          {!hasAccess && (
+                            <div className="absolute top-2 right-2">
+                              <Lock className="h-5 w-5 text-white drop-shadow-lg" />
+                            </div>
+                          )}
+                          
+                          <div className="absolute bottom-2 left-2 right-2">
+                            <Badge 
+                              variant="secondary" 
+                              className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}
+                            >
+                              <Copy className="h-2.5 w-2.5" />
+                              {totalClicks}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="p-2 sm:p-3">
+                          <h3 className="font-semibold text-sm text-foreground line-clamp-1">
+                            {arte.title}
+                          </h3>
+                          <div className="mt-1">
+                            {getBadgeContent(arte)}
+                          </div>
+                          {!hasAccess && (
+                            <Button
+                              size="sm"
+                              className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/planos-artes?pack=${packSlug}`);
+                              }}
+                            >
+                              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                              Comprar Pack
+                            </Button>
+                          )}
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                {/* Empty state */}
+                {paginatedArtes.length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">Nenhuma arte encontrada</p>
+                  </div>
+                )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-4 mt-8">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-muted-foreground">
+                      Página {currentPage} de {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Artes View (when a pack is selected) */}
