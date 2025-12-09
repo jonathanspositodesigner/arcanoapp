@@ -347,6 +347,18 @@ const BibliotecaArtes = () => {
       
       <nav className="flex-1 px-2 space-y-1">
         <button onClick={() => {
+        setActiveSection('tutorial');
+        setSelectedPack(null);
+        setSidebarOpen(false);
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'tutorial' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
+          <BookOpen className="h-5 w-5" />
+          <span className="font-medium">Tutoriais</span>
+          <Badge variant="secondary" className="ml-auto text-xs">
+            {getPacksByType('tutorial').length}
+          </Badge>
+        </button>
+
+        <button onClick={() => {
         setActiveSection('packs');
         setSelectedPack(null);
         setSidebarOpen(false);
@@ -403,18 +415,6 @@ const BibliotecaArtes = () => {
           <span className="font-medium">Amostras Grátis</span>
           <Badge variant="secondary" className="ml-auto text-xs">
             {getPacksByType('free-sample').length}
-          </Badge>
-        </button>
-
-        <button onClick={() => {
-        setActiveSection('tutorial');
-        setSelectedPack(null);
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'tutorial' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <BookOpen className="h-5 w-5" />
-          <span className="font-medium">Tutoriais</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('tutorial').length}
           </Badge>
         </button>
 
