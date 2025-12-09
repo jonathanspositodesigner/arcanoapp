@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.create-pack-client]
 verify_jwt = false
+
+[functions.import-pack-clients]
+verify_jwt = false
