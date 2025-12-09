@@ -13,6 +13,7 @@ import logoHorizontal from "@/assets/logo_horizontal.png";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import { useSessionTracker } from "@/hooks/useSessionTracker";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import BannerCarousel from "@/components/BannerCarousel";
 
 interface ArteItem {
   id: string | number;
@@ -568,6 +569,9 @@ const BibliotecaArtes = () => {
                       : 'Artes editáveis PSD e Canva para eventos'}
               </p>
             </div>
+
+            {/* Banner Carousel - Only show when no pack is selected */}
+            {!selectedPack && <BannerCarousel />}
 
             {/* Pack/Bonus Selection View */}
             {!selectedPack && activeSection !== 'cursos' && (
