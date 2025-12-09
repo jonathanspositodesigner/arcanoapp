@@ -549,6 +549,48 @@ export type Database = {
         }
         Relationships: []
       }
+      import_jobs: {
+        Row: {
+          completed_at: string | null
+          created_records: number | null
+          error_count: number | null
+          id: string
+          processed_records: number | null
+          skipped_records: number | null
+          started_at: string | null
+          status: string
+          total_records: number
+          updated_at: string | null
+          updated_records: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_records?: number | null
+          error_count?: number | null
+          id?: string
+          processed_records?: number | null
+          skipped_records?: number | null
+          started_at?: string | null
+          status?: string
+          total_records?: number
+          updated_at?: string | null
+          updated_records?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_records?: number | null
+          error_count?: number | null
+          id?: string
+          processed_records?: number | null
+          skipped_records?: number | null
+          started_at?: string | null
+          status?: string
+          total_records?: number
+          updated_at?: string | null
+          updated_records?: number | null
+        }
+        Relationships: []
+      }
       import_log: {
         Row: {
           created_at: string | null
