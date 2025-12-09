@@ -682,53 +682,15 @@ const [pageViews, setPageViews] = useState({
     fetchAnalytics();
   }, [dateFilter, refreshKey]);
 
-  // Auto-refresh a cada 60 segundos
+  // Auto-refresh a cada 5 minutos
   useEffect(() => {
     const interval = setInterval(() => {
       setRefreshKey(prev => prev + 1);
-    }, 60000);
+    }, 300000); // 5 minutos
 
     return () => clearInterval(interval);
   }, []);
 
-  // Supabase Realtime para atualizações instantâneas
-  useEffect(() => {
-    const channel = supabase
-      .channel('analytics_realtime')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'page_views' },
-        () => {
-          setRefreshKey(prev => prev + 1);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'prompt_clicks' },
-        () => {
-          setRefreshKey(prev => prev + 1);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'daily_prompt_copies' },
-        () => {
-          setRefreshKey(prev => prev + 1);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'user_sessions' },
-        () => {
-          setRefreshKey(prev => prev + 1);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
