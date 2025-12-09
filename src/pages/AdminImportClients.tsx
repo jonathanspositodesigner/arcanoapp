@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Upload, FileText, Users, Package, AlertCircle, CheckCircle, AlertTriangle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
+import { useImportProgress } from "@/hooks/useImportProgress";
 
 interface ParsedClient {
   email: string;
@@ -179,6 +180,7 @@ const AdminImportClients = () => {
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
   const [importResult, setImportResult] = useState<{ success: number; errors: { email: string; error: string }[]; created: number; updated: number } | null>(null);
+  const { startImport, setProgress: setGlobalProgress, finishImport } = useImportProgress();
   const [unmappedProducts, setUnmappedProducts] = useState<Map<string, number>>(new Map());
   const [stats, setStats] = useState({
     totalSales: 0,
@@ -426,15 +428,16 @@ const AdminImportClients = () => {
 
     setImporting(true);
     setImportProgress(0);
+    
+    // Start global progress tracking
+    const batchSize = 50;
+    const totalBatches = Math.ceil(parsedClients.length / batchSize);
+    startImport(totalBatches);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
-      // Process in batches of 50
-      const batchSize = 50;
-      const totalBatches = Math.ceil(parsedClients.length / batchSize);
-      
       let totalSuccess = 0;
       let totalCreated = 0;
       let totalUpdated = 0;
@@ -458,7 +461,9 @@ const AdminImportClients = () => {
           if (result.errors) allErrors.push(...result.errors);
         }
 
-        setImportProgress(Math.round(((i + 1) / totalBatches) * 100));
+        const progress = Math.round(((i + 1) / totalBatches) * 100);
+        setImportProgress(progress);
+        setGlobalProgress(i + 1, totalBatches);
       }
 
       setImportResult({
@@ -478,6 +483,7 @@ const AdminImportClients = () => {
       toast.error("Erro na importação");
     } finally {
       setImporting(false);
+      finishImport();
     }
   };
 

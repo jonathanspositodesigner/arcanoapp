@@ -58,6 +58,7 @@ import AdminPackPurchases from "./pages/AdminPackPurchases";
 import AdminImportClients from "./pages/AdminImportClients";
 import AdminManageAdmins from "./pages/AdminManageAdmins";
 import ForjaSelos3DArtes from "./pages/ForjaSelos3DArtes";
+import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { usePageViewTracker } from "./hooks/usePageViewTracker";
@@ -71,6 +72,7 @@ const AppContent = () => {
 
   return (
     <TooltipProvider>
+      <GlobalImportProgress />
       <Toaster />
       <Sonner />
       
