@@ -15,7 +15,6 @@ import { useSessionTracker } from "@/hooks/useSessionTracker";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import BannerCarousel from "@/components/BannerCarousel";
 import { toPackSlug } from "@/lib/utils";
-
 interface ArteItem {
   id: string | number;
   title: string;
@@ -34,7 +33,6 @@ interface ArteItem {
   canvaLink?: string;
   driveLink?: string;
 }
-
 interface PackItem {
   id: string;
   name: string;
@@ -42,14 +40,11 @@ interface PackItem {
   display_order: number;
   type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample';
 }
-
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
   return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
-
 const ITEMS_PER_PAGE = 16;
-
 const shuffleArray = <T,>(array: T[]): T[] => {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -58,22 +53,29 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   }
   return shuffled;
 };
-
 type SidebarSection = 'packs' | 'bonus' | 'cursos' | 'updates' | 'free-sample' | 'all-artes';
-
 const BibliotecaArtes = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-
   useSessionTracker("/biblioteca-artes");
-
-  const { user, isPremium, userPacks, hasBonusAccess, hasAccessToPack, logout } = usePremiumArtesStatus();
+  const {
+    user,
+    isPremium,
+    userPacks,
+    hasBonusAccess,
+    hasAccessToPack,
+    logout
+  } = usePremiumArtesStatus();
   const [isAdmin, setIsAdmin] = useState(false);
-
   useEffect(() => {
     const checkAdmin = async () => {
       if (user) {
-        const { data } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+        const {
+          data
+        } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'admin'
+        });
         setIsAdmin(data === true);
       } else {
         setIsAdmin(false);
@@ -81,7 +83,6 @@ const BibliotecaArtes = () => {
     };
     checkAdmin();
   }, [user]);
-
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
   const [allArtes, setAllArtes] = useState<ArteItem[]>([]);
   const [shuffledVerTudo, setShuffledVerTudo] = useState<ArteItem[]>([]);
@@ -98,29 +99,27 @@ const BibliotecaArtes = () => {
   const [activeSection, setActiveSection] = useState<SidebarSection>('packs');
   const [showCursoModal, setShowCursoModal] = useState(false);
   const [selectedCurso, setSelectedCurso] = useState<PackItem | null>(null);
-
   useEffect(() => {
     fetchArtes();
     fetchCategories();
     fetchPacks();
   }, []);
-
   const fetchPacks = async () => {
-    const { data } = await supabase
-      .from("artes_packs")
-      .select("*")
-      .order("display_order", { ascending: true });
+    const {
+      data
+    } = await supabase.from("artes_packs").select("*").order("display_order", {
+      ascending: true
+    });
     setDbPacks((data || []) as PackItem[]);
   };
-
   const fetchCategories = async () => {
-    const { data } = await supabase
-      .from('artes_categories')
-      .select('name')
-      .order('display_order', { ascending: true });
+    const {
+      data
+    } = await supabase.from('artes_categories').select('name').order('display_order', {
+      ascending: true
+    });
     setDbCategories((data || []).map(c => c.name));
   };
-
   useEffect(() => {
     const itemId = searchParams.get("item");
     if (itemId && allArtes.length > 0) {
@@ -131,27 +130,22 @@ const BibliotecaArtes = () => {
       }
     }
   }, [searchParams, allArtes]);
-
   useEffect(() => {
     setShuffledVerTudo(shuffleArray(allArtes));
   }, [allArtes]);
-
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory, selectedPack]);
-
   const fetchArtes = async () => {
-    const [adminResult, partnerResult, clicksResult] = await Promise.all([
-      supabase.from('admin_artes').select('*').order('created_at', { ascending: false }),
-      supabase.from('partner_artes').select('*').eq('approved', true).order('created_at', { ascending: false }),
-      supabase.from('arte_clicks').select('arte_id')
-    ]);
-
+    const [adminResult, partnerResult, clicksResult] = await Promise.all([supabase.from('admin_artes').select('*').order('created_at', {
+      ascending: false
+    }), supabase.from('partner_artes').select('*').eq('approved', true).order('created_at', {
+      ascending: false
+    }), supabase.from('arte_clicks').select('arte_id')]);
     const clickCounts: Record<string, number> = {};
     (clicksResult.data || []).forEach(d => {
       clickCounts[d.arte_id] = (clickCounts[d.arte_id] || 0) + 1;
     });
-
     const adminArtes: ArteItem[] = (adminResult.data || []).map(item => ({
       id: item.id,
       title: item.title,
@@ -170,7 +164,6 @@ const BibliotecaArtes = () => {
       canvaLink: (item as any).canva_link || null,
       driveLink: (item as any).drive_link || null
     }));
-
     const partnerArtes: ArteItem[] = (partnerResult.data || []).map(item => ({
       id: item.id,
       title: item.title,
@@ -189,22 +182,18 @@ const BibliotecaArtes = () => {
       canvaLink: (item as any).canva_link || null,
       driveLink: (item as any).drive_link || null
     }));
-
     const allCombined = [...adminArtes, ...partnerArtes].sort((a, b) => {
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA;
     });
-
     setAllArtes(allCombined);
   };
-
   const sortByClicks = (a: ArteItem, b: ArteItem) => {
     const clicksA = (a.clickCount || 0) + (a.bonusClicks || 0);
     const clicksB = (b.clickCount || 0) + (b.bonusClicks || 0);
     return clicksB - clicksA;
   };
-
   const getFilteredAndSortedArtes = () => {
     const sortByDate = (a: ArteItem, b: ArteItem) => {
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -222,7 +211,7 @@ const BibliotecaArtes = () => {
 
     // Must have a pack selected to show artes for other sections
     if (!selectedPack) return [];
-    
+
     // Filter by selected pack
     const packFiltered = allArtes.filter(a => a.pack === selectedPack);
 
@@ -230,7 +219,6 @@ const BibliotecaArtes = () => {
     if (selectedCategory === "Todos") {
       return packFiltered.sort(sortByDate);
     }
-
     return packFiltered.filter(a => a.category === selectedCategory).sort(sortByDate);
   };
 
@@ -243,7 +231,6 @@ const BibliotecaArtes = () => {
   const getPacksByType = (type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample') => {
     return dbPacks.filter(p => p.type === type);
   };
-
   const filteredArtes = getFilteredAndSortedArtes();
   const totalPages = Math.ceil(filteredArtes.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -251,20 +238,17 @@ const BibliotecaArtes = () => {
 
   // Categories for filtering within a pack (style categories from database)
   const categories = ["Todos", ...dbCategories];
-
   const getCategoryIcon = (category: string) => {
     if (category === "Populares") {
       return <Flame className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />;
     }
     return null;
   };
-
   const trackArteClick = async (arteId: string, arteTitle: string, isAdmin: boolean) => {
     const sessionKey = `arte_clicked_${arteId}`;
     if (sessionStorage.getItem(sessionKey)) {
       return false;
     }
-
     try {
       await supabase.from('arte_clicks').insert({
         arte_id: arteId,
@@ -278,7 +262,6 @@ const BibliotecaArtes = () => {
       return false;
     }
   };
-
   const downloadFile = async (url: string, filename: string, isPremiumContent: boolean = false) => {
     try {
       const signedUrl = await getSecureDownloadUrl(url, isPremiumContent);
@@ -292,20 +275,20 @@ const BibliotecaArtes = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
-
       toast.success(`"${filename}" baixado com sucesso!`);
     } catch (error) {
       console.error("Download failed:", error);
       toast.error("Erro ao baixar arquivo");
     }
   };
-
   const handleDownload = async (arteItem: ArteItem) => {
     const arteId = String(arteItem.id);
     const wasTracked = await trackArteClick(arteId, arteItem.title, !!arteItem.isExclusive);
-    
     if (wasTracked) {
-      setClickIncrements(prev => ({ ...prev, [arteId]: (prev[arteId] || 0) + 1 }));
+      setClickIncrements(prev => ({
+        ...prev,
+        [arteId]: (prev[arteId] || 0) + 1
+      }));
       setAnimatingClicks(prev => new Set(prev).add(arteId));
       setTimeout(() => {
         setAnimatingClicks(prev => {
@@ -315,26 +298,23 @@ const BibliotecaArtes = () => {
         });
       }, 300);
     }
-
     const downloadUrl = arteItem.downloadUrl || arteItem.imageUrl;
     const extension = downloadUrl.split('.').pop() || 'file';
     const filename = `${arteItem.title.toLowerCase().replace(/\s+/g, "-")}.${extension}`;
-    
     await downloadFile(downloadUrl, filename, arteItem.isPremium);
   };
-
   const handleItemClick = (item: ArteItem) => {
-    setSearchParams({ item: String(item.id) });
+    setSearchParams({
+      item: String(item.id)
+    });
     // Always open the detail modal - access control will be handled inside
     setSelectedArte(item);
   };
-
   const handleCloseModal = () => {
     setSelectedArte(null);
     searchParams.delete("item");
     setSearchParams(searchParams);
   };
-
   const handleClosePremiumModal = (open: boolean) => {
     setShowPremiumModal(open);
     if (!open) {
@@ -343,54 +323,34 @@ const BibliotecaArtes = () => {
       setSearchParams(searchParams);
     }
   };
-
   const handleCursoClick = (curso: PackItem) => {
     setSelectedCurso(curso);
     setShowCursoModal(true);
   };
-
   const getBadgeContent = (item: ArteItem) => {
-    return (
-      <div className="flex flex-wrap gap-1">
-        {item.isPremium ? (
-          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px] sm:text-xs">
+    return <div className="flex flex-wrap gap-1">
+        {item.isPremium ? <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px] sm:text-xs">
             <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
             Premium
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] sm:text-xs">
+          </Badge> : <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] sm:text-xs">
             Grátis
-          </Badge>
-        )}
-        {item.pack && (
-          <Badge className="bg-primary/80 text-white border-0 text-[10px] sm:text-xs">
+          </Badge>}
+        {item.pack && <Badge className="bg-primary/80 text-white border-0 text-[10px] sm:text-xs">
             {item.pack}
-          </Badge>
-        )}
-      </div>
-    );
+          </Badge>}
+      </div>;
   };
-
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full py-4">
+  const SidebarContent = () => <div className="flex flex-col h-full py-4">
       <div className="px-4 mb-6">
-        <img 
-          alt="Arcano Lab" 
-          onClick={() => navigate('/')} 
-          src={logoHorizontal}
-          className="h-8 cursor-pointer hover:opacity-80 transition-opacity" 
-        />
+        <img alt="Arcano Lab" onClick={() => navigate('/')} src={logoHorizontal} className="h-8 cursor-pointer hover:opacity-80 transition-opacity" />
       </div>
       
       <nav className="flex-1 px-2 space-y-1">
-        <button
-          onClick={() => { setActiveSection('packs'); setSelectedPack(null); setSidebarOpen(false); }}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
-            activeSection === 'packs' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-          }`}
-        >
+        <button onClick={() => {
+        setActiveSection('packs');
+        setSelectedPack(null);
+        setSidebarOpen(false);
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'packs' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <Package className="h-5 w-5" />
           <span className="font-medium">Packs</span>
           <Badge variant="secondary" className="ml-auto text-xs">
@@ -398,14 +358,11 @@ const BibliotecaArtes = () => {
           </Badge>
         </button>
 
-        <button
-          onClick={() => { setActiveSection('bonus'); setSelectedPack(null); setSidebarOpen(false); }}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
-            activeSection === 'bonus' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-          }`}
-        >
+        <button onClick={() => {
+        setActiveSection('bonus');
+        setSelectedPack(null);
+        setSidebarOpen(false);
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'bonus' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <Gift className="h-5 w-5" />
           <span className="font-medium">Bônus</span>
           <Badge variant="secondary" className="ml-auto text-xs">
@@ -413,14 +370,11 @@ const BibliotecaArtes = () => {
           </Badge>
         </button>
 
-        <button
-          onClick={() => { setActiveSection('cursos'); setSelectedPack(null); setSidebarOpen(false); }}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
-            activeSection === 'cursos' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-          }`}
-        >
+        <button onClick={() => {
+        setActiveSection('cursos');
+        setSelectedPack(null);
+        setSidebarOpen(false);
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'cursos' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <GraduationCap className="h-5 w-5" />
           <span className="font-medium">Cursos</span>
           <Badge variant="secondary" className="ml-auto text-xs">
@@ -428,14 +382,11 @@ const BibliotecaArtes = () => {
           </Badge>
         </button>
 
-        <button
-          onClick={() => { setActiveSection('updates'); setSelectedPack(null); setSidebarOpen(false); }}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
-            activeSection === 'updates' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-          }`}
-        >
+        <button onClick={() => {
+        setActiveSection('updates');
+        setSelectedPack(null);
+        setSidebarOpen(false);
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'updates' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <RefreshCw className="h-5 w-5" />
           <span className="font-medium">Atualizações</span>
           <Badge variant="secondary" className="ml-auto text-xs">
@@ -443,14 +394,11 @@ const BibliotecaArtes = () => {
           </Badge>
         </button>
 
-        <button
-          onClick={() => { setActiveSection('free-sample'); setSelectedPack(null); setSidebarOpen(false); }}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
-            activeSection === 'free-sample' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-          }`}
-        >
+        <button onClick={() => {
+        setActiveSection('free-sample');
+        setSelectedPack(null);
+        setSidebarOpen(false);
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'free-sample' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <Sparkles className="h-5 w-5" />
           <span className="font-medium">Amostras Grátis</span>
           <Badge variant="secondary" className="ml-auto text-xs">
@@ -458,14 +406,12 @@ const BibliotecaArtes = () => {
           </Badge>
         </button>
 
-        <button
-          onClick={() => { setActiveSection('all-artes'); setSelectedPack(null); setSelectedCategory("Todos"); setSidebarOpen(false); }}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
-            activeSection === 'all-artes' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-          }`}
-        >
+        <button onClick={() => {
+        setActiveSection('all-artes');
+        setSelectedPack(null);
+        setSelectedCategory("Todos");
+        setSidebarOpen(false);
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'all-artes' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <LayoutGrid className="h-5 w-5" />
           <span className="font-medium">Ver Todas as Artes</span>
           <Badge variant="secondary" className="ml-auto text-xs">
@@ -475,54 +421,50 @@ const BibliotecaArtes = () => {
       </nav>
 
       <div className="px-4 pt-4 border-t border-border mt-auto space-y-2">
-        <Button 
-          onClick={() => navigate("/parceiro-login-artes")} 
-          variant="ghost" 
-          size="sm" 
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
-        >
+        <Button onClick={() => navigate("/parceiro-login-artes")} variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-foreground">
           <Users className="h-4 w-4 mr-2" />
           Área do Colaborador
         </Button>
-        {isAdmin && (
-          <Button 
-            onClick={() => navigate("/admin-artes-review")} 
-            variant="ghost" 
-            size="sm" 
-            className="w-full justify-start text-muted-foreground hover:text-foreground"
-          >
+        {isAdmin && <Button onClick={() => navigate("/admin-artes-review")} variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-foreground">
             <Shield className="h-4 w-4 mr-2" />
             Admin Artes
-          </Button>
-        )}
+          </Button>}
       </div>
-    </div>
-  );
-
+    </div>;
   const getSectionTitle = () => {
     switch (activeSection) {
-      case 'packs': return 'Packs';
-      case 'bonus': return 'Bônus';
-      case 'cursos': return 'Cursos';
-      case 'updates': return 'Atualizações de Artes';
-      case 'free-sample': return 'Amostras Grátis';
-      case 'all-artes': return 'Todas as Artes';
+      case 'packs':
+        return 'Packs';
+      case 'bonus':
+        return 'Bônus';
+      case 'cursos':
+        return 'Cursos';
+      case 'updates':
+        return 'Atualizações de Artes';
+      case 'free-sample':
+        return 'Amostras Grátis';
+      case 'all-artes':
+        return 'Todas as Artes';
     }
   };
-
   const getCurrentItems = () => {
     switch (activeSection) {
-      case 'packs': return getPacksByType('pack');
-      case 'bonus': return getPacksByType('bonus');
-      case 'cursos': return getPacksByType('curso');
-      case 'updates': return getPacksByType('updates');
-      case 'free-sample': return getPacksByType('free-sample');
-      case 'all-artes': return []; // Will show artes directly, not packs
+      case 'packs':
+        return getPacksByType('pack');
+      case 'bonus':
+        return getPacksByType('bonus');
+      case 'cursos':
+        return getPacksByType('curso');
+      case 'updates':
+        return getPacksByType('updates');
+      case 'free-sample':
+        return getPacksByType('free-sample');
+      case 'all-artes':
+        return [];
+      // Will show artes directly, not packs
     }
   };
-
-  return (
-    <div className="min-h-screen bg-background flex">
+  return <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-card border-r border-border">
         <SidebarContent />
@@ -555,12 +497,10 @@ const BibliotecaArtes = () => {
                 <Star className="h-3 w-3 mr-1" fill="currentColor" />
                 {userPacks.length} {userPacks.length === 1 ? 'Pack' : 'Packs'}
               </Badge>
-              {hasBonusAccess && (
-                <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
+              {hasBonusAccess && <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
                   <Gift className="h-3 w-3 mr-1" />
                   Bônus
-                </Badge>
-              )}
+                </Badge>}
               <Button onClick={() => navigate("/perfil-artes")} variant="ghost" size="sm">
                 <Settings className="h-4 w-4 mr-2" />
                 Meu Perfil
@@ -576,12 +516,7 @@ const BibliotecaArtes = () => {
         {/* Top Bar - Mobile */}
         <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-white hover:bg-white/20 p-1.5"
-              onClick={() => setSidebarOpen(true)}
-            >
+            <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
             <img alt="Arcano Lab" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" onClick={() => navigate('/')} />
@@ -618,13 +553,7 @@ const BibliotecaArtes = () => {
                 {selectedPack ? selectedPack : `Biblioteca de Artes - ${getSectionTitle()}`}
               </h1>
               <p className="text-muted-foreground mt-1">
-                {selectedPack 
-                  ? `Conteúdo do ${activeSection === 'bonus' ? 'bônus' : 'pack'} ${selectedPack}`
-                  : activeSection === 'cursos' 
-                    ? 'Cursos exclusivos para membros'
-                    : activeSection === 'bonus'
-                      ? 'Conteúdo extra exclusivo para membros'
-                      : 'Artes editáveis PSD e Canva para eventos'}
+                {selectedPack ? `Conteúdo do ${activeSection === 'bonus' ? 'bônus' : 'pack'} ${selectedPack}` : activeSection === 'cursos' ? 'Cursos exclusivos para membros' : activeSection === 'bonus' ? 'Conteúdo extra exclusivo para membros' : 'Artes editáveis PSD e Canva para eventos'}
               </p>
             </div>
 
@@ -632,50 +561,29 @@ const BibliotecaArtes = () => {
             {!selectedPack && <BannerCarousel />}
 
             {/* Pack/Bonus Selection View */}
-            {!selectedPack && activeSection !== 'cursos' && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {!selectedPack && activeSection !== 'cursos' && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getCurrentItems().map(pack => {
-                  const arteCount = getPackArteCount(pack.name);
-                  const packSlug = toPackSlug(pack.name);
-                  // For bonus/updates: any active pack = access. For regular packs: need specific pack
-                  const isBonusOrUpdatesType = pack.type === 'bonus' || pack.type === 'updates';
-                  const hasPackAccess = isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug);
-                  
-                  return (
-                    <Card 
-                      key={pack.id}
-                      className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
-                      onClick={() => {
-                        setSelectedPack(pack.name);
-                        setSelectedCategory("Todos");
-                        setCurrentPage(1);
-                      }}
-                    >
+              const arteCount = getPackArteCount(pack.name);
+              const packSlug = toPackSlug(pack.name);
+              // For bonus/updates: any active pack = access. For regular packs: need specific pack
+              const isBonusOrUpdatesType = pack.type === 'bonus' || pack.type === 'updates';
+              const hasPackAccess = isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug);
+              return <Card key={pack.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => {
+                setSelectedPack(pack.name);
+                setSelectedCategory("Todos");
+                setCurrentPage(1);
+              }}>
                       <div className="aspect-[3/4] relative overflow-hidden">
-                        {pack.cover_url ? (
-                          <img 
-                            src={pack.cover_url} 
-                            alt={pack.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
-                            {activeSection === 'bonus' ? (
-                              <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
-                            ) : (
-                              <Package className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
-                            )}
-                          </div>
-                        )}
+                        {pack.cover_url ? <img src={pack.cover_url} alt={pack.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
+                            {activeSection === 'bonus' ? <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" /> : <Package className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />}
+                          </div>}
                         
                         {/* Access Tag */}
-                        {hasPackAccess && (
-                          <div className="absolute top-2 right-2 z-10">
+                        {hasPackAccess && <div className="absolute top-2 right-2 z-10">
                             <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
                               DISPONÍVEL
                             </Badge>
-                          </div>
-                        )}
+                          </div>}
                         
                         {/* Overlay with pack info */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
@@ -687,52 +595,31 @@ const BibliotecaArtes = () => {
                           </Badge>
                         </div>
                       </div>
-                    </Card>
-                  );
-                })}
-                {getCurrentItems().length === 0 && (
-                  <div className="col-span-full text-center py-12">
+                    </Card>;
+            })}
+                {getCurrentItems().length === 0 && <div className="col-span-full text-center py-12">
                     <p className="text-muted-foreground">Nenhum {activeSection === 'bonus' ? 'bônus' : 'pack'} disponível</p>
-                  </div>
-                )}
-              </div>
-            )}
+                  </div>}
+              </div>}
 
             {/* Cursos View */}
-            {activeSection === 'cursos' && !selectedPack && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {activeSection === 'cursos' && !selectedPack && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getPacksByType('curso').map(curso => {
-                  const cursoSlug = toPackSlug(curso.name);
-                  // For cursos: user must purchase the specific course (not just any pack)
-                  const hasCursoAccess = hasAccessToPack(cursoSlug);
-                  
-                  return (
-                    <Card 
-                      key={curso.id}
-                      className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
-                      onClick={() => handleCursoClick(curso)}
-                    >
+              const cursoSlug = toPackSlug(curso.name);
+              // For cursos: user must purchase the specific course (not just any pack)
+              const hasCursoAccess = hasAccessToPack(cursoSlug);
+              return <Card key={curso.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleCursoClick(curso)}>
                       <div className="aspect-[3/4] relative overflow-hidden">
-                        {curso.cover_url ? (
-                          <img 
-                            src={curso.cover_url} 
-                            alt={curso.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
+                        {curso.cover_url ? <img src={curso.cover_url} alt={curso.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
                             <GraduationCap className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
-                          </div>
-                        )}
+                          </div>}
                         
                         {/* Access Tag */}
-                        {hasCursoAccess && (
-                          <div className="absolute top-2 right-2 z-10">
+                        {hasCursoAccess && <div className="absolute top-2 right-2 z-10">
                             <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
                               DISPONÍVEL
                             </Badge>
-                          </div>
-                        )}
+                          </div>}
                         
                         {/* Overlay with curso info */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
@@ -741,88 +628,46 @@ const BibliotecaArtes = () => {
                           </h3>
                         </div>
                       </div>
-                    </Card>
-                  );
-                })}
-                {getPacksByType('curso').length === 0 && (
-                  <div className="col-span-full text-center py-12">
+                    </Card>;
+            })}
+                {getPacksByType('curso').length === 0 && <div className="col-span-full text-center py-12">
                     <p className="text-muted-foreground">Nenhum curso disponível</p>
-                  </div>
-                )}
-              </div>
-            )}
+                  </div>}
+              </div>}
 
             {/* All Artes View */}
-            {activeSection === 'all-artes' && (
-              <>
+            {activeSection === 'all-artes' && <>
                 {/* Category Filter */}
                 <div className="mb-6">
                   <div className="flex flex-wrap gap-2">
-                    {categories.map(category => (
-                      <Button
-                        key={category}
-                        variant={selectedCategory === category ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => {
-                          setSelectedCategory(category);
-                          setCurrentPage(1);
-                        }}
-                        className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}
-                      >
+                    {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
+                  setSelectedCategory(category);
+                  setCurrentPage(1);
+                }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
                         {category}
-                      </Button>
-                    ))}
+                      </Button>)}
                   </div>
                 </div>
 
                 {/* Artes Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {paginatedArtes.map(arte => {
-                    const isVideo = isVideoUrl(arte.imageUrl);
-                    const arteId = String(arte.id);
-                    const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
-                    const isAnimating = animatingClicks.has(arteId);
-
-                    const packSlug = toPackSlug(arte.pack);
-                    const hasAccess = !arte.isPremium || hasAccessToPack(packSlug);
-
-                    return (
-                      <Card 
-                        key={arte.id} 
-                        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
-                        onClick={() => handleItemClick(arte)}
-                      >
+                const isVideo = isVideoUrl(arte.imageUrl);
+                const arteId = String(arte.id);
+                const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
+                const isAnimating = animatingClicks.has(arteId);
+                const packSlug = toPackSlug(arte.pack);
+                const hasAccess = !arte.isPremium || hasAccessToPack(packSlug);
+                return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-                          {isVideo ? (
-                            <SecureVideo
-                              src={arte.imageUrl}
-                              className="w-full h-full object-cover"
-                              isPremium={arte.isPremium || false}
-                              autoPlay
-                              muted
-                              loop
-                              playsInline
-                            />
-                          ) : (
-                            <SecureImage
-                              src={arte.imageUrl}
-                              alt={arte.title}
-                              className="w-full h-full object-cover"
-                              isPremium={arte.isPremium || false}
-                            />
-                          )}
+                          {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} autoPlay muted loop playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
                           
-                          {!hasAccess && (
-                            <div className="absolute top-2 right-2">
+                          {!hasAccess && <div className="absolute top-2 right-2">
                               <Lock className="h-5 w-5 text-white drop-shadow-lg" />
-                            </div>
-                          )}
+                            </div>}
                           
                           <div className="absolute bottom-2 left-2 right-2">
-                            <Badge 
-                              variant="secondary" 
-                              className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}
-                            >
+                            <Badge variant="secondary" className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
                               <Copy className="h-2.5 w-2.5" />
                               {totalClicks}
                             </Badge>
@@ -835,160 +680,89 @@ const BibliotecaArtes = () => {
                           <div className="mt-1">
                             {getBadgeContent(arte)}
                           </div>
-                          {hasAccess ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-full mt-2 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleItemClick(arte);
-                              }}
-                            >
+                          {hasAccess ? <Button size="sm" variant="outline" className="w-full mt-2 text-xs" onClick={e => {
+                      e.stopPropagation();
+                      handleItemClick(arte);
+                    }}>
                               Ver detalhes
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/planos-artes?pack=${packSlug}`);
-                              }}
-                            >
+                            </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                      e.stopPropagation();
+                      navigate(`/planos-artes?pack=${packSlug}`);
+                    }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               Comprar Pack
-                            </Button>
-                          )}
+                            </Button>}
                         </div>
-                      </Card>
-                    );
-                  })}
+                      </Card>;
+              })}
                 </div>
 
                 {/* Empty state */}
-                {paginatedArtes.length === 0 && (
-                  <div className="text-center py-12">
+                {paginatedArtes.length === 0 && <div className="text-center py-12">
                     <p className="text-muted-foreground">Nenhuma arte encontrada</p>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-4 mt-8">
-                    <Button
-                      variant="outline"
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                    >
+                {totalPages > 1 && <div className="flex justify-center items-center gap-4 mt-8">
+                    <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <span className="text-muted-foreground">
                       Página {currentPage} de {totalPages}
                     </span>
-                    <Button
-                      variant="outline"
-                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                    >
+                    <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
-                  </div>
-                )}
-              </>
-            )}
+                  </div>}
+              </>}
 
             {/* Artes View (when a pack is selected) */}
-            {selectedPack && (
-              <>
+            {selectedPack && <>
                 {/* Back button and Pack title */}
                 <div className="mb-4 flex items-center gap-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      setSelectedPack(null);
-                      setCurrentPage(1);
-                    }}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => {
+                setSelectedPack(null);
+                setCurrentPage(1);
+              }}>
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Voltar
                   </Button>
                 </div>
 
                 {/* Category Filter - Only for packs, not for bonus */}
-                {activeSection === 'packs' && (
-                  <div className="mb-6">
+                {activeSection === 'packs' && <div className="mb-6">
                     <div className="flex flex-wrap gap-2">
-                      {categories.map(category => (
-                        <Button
-                          key={category}
-                          variant={selectedCategory === category ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => {
-                            setSelectedCategory(category);
-                            setCurrentPage(1);
-                          }}
-                          className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}
-                        >
+                      {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
+                  setSelectedCategory(category);
+                  setCurrentPage(1);
+                }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
                           {category}
-                        </Button>
-                      ))}
+                        </Button>)}
                     </div>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Artes Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {paginatedArtes.map(arte => {
-                    const isVideo = isVideoUrl(arte.imageUrl);
-                    const arteId = String(arte.id);
-                    const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
-                    const isAnimating = animatingClicks.has(arteId);
-
-                    const packSlug = toPackSlug(arte.pack);
-                    // For bonus/updates: any active pack grants access
-                    // For regular packs: need specific pack access
-                    const isBonusOrUpdatesSection = activeSection === 'bonus' || activeSection === 'updates';
-                    const hasAccess = !arte.isPremium || (isBonusOrUpdatesSection ? isPremium : hasAccessToPack(packSlug));
-
-                    return (
-                      <Card 
-                        key={arte.id} 
-                        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
-                        onClick={() => handleItemClick(arte)}
-                      >
+                const isVideo = isVideoUrl(arte.imageUrl);
+                const arteId = String(arte.id);
+                const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
+                const isAnimating = animatingClicks.has(arteId);
+                const packSlug = toPackSlug(arte.pack);
+                // For bonus/updates: any active pack grants access
+                // For regular packs: need specific pack access
+                const isBonusOrUpdatesSection = activeSection === 'bonus' || activeSection === 'updates';
+                const hasAccess = !arte.isPremium || (isBonusOrUpdatesSection ? isPremium : hasAccessToPack(packSlug));
+                return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-                          {isVideo ? (
-                            <SecureVideo
-                              src={arte.imageUrl}
-                              className="w-full h-full object-cover"
-                              isPremium={arte.isPremium || false}
-                              autoPlay
-                              muted
-                              loop
-                              playsInline
-                            />
-                          ) : (
-                            <SecureImage
-                              src={arte.imageUrl}
-                              alt={arte.title}
-                              className="w-full h-full object-cover"
-                              isPremium={arte.isPremium || false}
-                            />
-                          )}
+                          {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} autoPlay muted loop playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
                           
-                          {!hasAccess && (
-                            <div className="absolute top-2 right-2">
+                          {!hasAccess && <div className="absolute top-2 right-2">
                               <Lock className="h-5 w-5 text-white drop-shadow-lg" />
-                            </div>
-                          )}
+                            </div>}
                           
                           <div className="absolute bottom-2 left-2 right-2">
-                            <Badge 
-                              variant="secondary" 
-                              className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}
-                            >
+                            <Badge variant="secondary" className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
                               <Copy className="h-2.5 w-2.5" />
                               {totalClicks}
                             </Badge>
@@ -1001,68 +775,41 @@ const BibliotecaArtes = () => {
                           <div className="mt-1">
                             {getBadgeContent(arte)}
                           </div>
-                          {hasAccess ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-full mt-2 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleItemClick(arte);
-                              }}
-                            >
-                              Ver detalhes
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/planos-artes?pack=${packSlug}`);
-                              }}
-                            >
+                          {hasAccess ? <Button size="sm" variant="outline" className="w-full mt-2 text-xs" onClick={e => {
+                      e.stopPropagation();
+                      handleItemClick(arte);
+                    }}>
+                              Editar Agora 
+                            </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                      e.stopPropagation();
+                      navigate(`/planos-artes?pack=${packSlug}`);
+                    }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               Comprar Pack
-                            </Button>
-                          )}
+                            </Button>}
                         </div>
-                      </Card>
-                    );
-                  })}
+                      </Card>;
+              })}
                 </div>
 
                 {/* Empty state */}
-                {paginatedArtes.length === 0 && (
-                  <div className="text-center py-12">
+                {paginatedArtes.length === 0 && <div className="text-center py-12">
                     <p className="text-muted-foreground">Nenhuma arte encontrada neste pack</p>
-                  </div>
-                )}
-              </>
-            )}
+                  </div>}
+              </>}
 
             {/* Pagination - only when pack is selected and has multiple pages */}
-            {selectedPack && totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                >
+            {selectedPack && totalPages > 1 && <div className="flex justify-center items-center gap-4 mt-8">
+                <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-muted-foreground">
                   Página {currentPage} de {totalPages}
                 </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                >
+                <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-              </div>
-            )}
+              </div>}
           </div>
         </div>
       </div>
@@ -1071,146 +818,81 @@ const BibliotecaArtes = () => {
       <Dialog open={!!selectedArte} onOpenChange={() => handleCloseModal()}>
         <DialogContent className="max-w-[95vw] sm:max-w-fit max-h-[95vh] overflow-y-auto">
           {selectedArte && (() => {
-            const packSlug = toPackSlug(selectedArte.pack);
-            // Check if arte belongs to bonus or updates pack type
-            const selectedPackInfo = dbPacks.find(p => p.name === selectedArte.pack);
-            const isBonusOrUpdatesType = selectedPackInfo?.type === 'bonus' || selectedPackInfo?.type === 'updates';
-            // For bonus/updates: any active pack grants access
-            // For regular packs: need specific pack access
-            const hasAccess = !selectedArte.isPremium || (isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug));
-            
-            return (
-              <div className="space-y-4">
+          const packSlug = toPackSlug(selectedArte.pack);
+          // Check if arte belongs to bonus or updates pack type
+          const selectedPackInfo = dbPacks.find(p => p.name === selectedArte.pack);
+          const isBonusOrUpdatesType = selectedPackInfo?.type === 'bonus' || selectedPackInfo?.type === 'updates';
+          // For bonus/updates: any active pack grants access
+          // For regular packs: need specific pack access
+          const hasAccess = !selectedArte.isPremium || (isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug));
+          return <div className="space-y-4">
                 <div className="flex justify-center">
-                  {isVideoUrl(selectedArte.imageUrl) ? (
-                    <SecureVideo
-                      src={selectedArte.imageUrl}
-                      className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg"
-                      isPremium={selectedArte.isPremium || false}
-                      controls
-                    />
-                  ) : (
-                    <SecureImage
-                      src={selectedArte.imageUrl}
-                      alt={selectedArte.title}
-                      className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg"
-                      isPremium={selectedArte.isPremium || false}
-                    />
-                  )}
+                  {isVideoUrl(selectedArte.imageUrl) ? <SecureVideo src={selectedArte.imageUrl} className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} controls /> : <SecureImage src={selectedArte.imageUrl} alt={selectedArte.title} className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} />}
                 </div>
                 
                 <div className="text-center">
                   <h2 className="text-lg font-bold text-foreground">{selectedArte.title}</h2>
                   <div className="mt-2 flex flex-wrap justify-center gap-1">
                     {getBadgeContent(selectedArte)}
-                    {selectedArte.category && (
-                      <Badge variant="secondary" className="text-xs">
+                    {selectedArte.category && <Badge variant="secondary" className="text-xs">
                         {selectedArte.category}
-                      </Badge>
-                    )}
+                      </Badge>}
                   </div>
-                  {selectedArte.description && (
-                    <p className="text-muted-foreground text-sm mt-2">{selectedArte.description}</p>
-                  )}
+                  {selectedArte.description && <p className="text-muted-foreground text-sm mt-2">{selectedArte.description}</p>}
                 </div>
 
-                {hasAccess ? (
-                  <div className="flex flex-col gap-2">
-                    {selectedArte.canvaLink && (
-                      <Button 
-                        onClick={() => window.open(selectedArte.canvaLink, '_blank')} 
-                        className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white"
-                      >
+                {hasAccess ? <div className="flex flex-col gap-2">
+                    {selectedArte.canvaLink && <Button onClick={() => window.open(selectedArte.canvaLink, '_blank')} className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white">
                         <Download className="h-4 w-4 mr-2" />
                         Abrir no Canva
-                      </Button>
-                    )}
-                    {selectedArte.driveLink && (
-                      <Button 
-                        onClick={() => window.open(selectedArte.driveLink, '_blank')} 
-                        className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white"
-                      >
+                      </Button>}
+                    {selectedArte.driveLink && <Button onClick={() => window.open(selectedArte.driveLink, '_blank')} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
                         <Download className="h-4 w-4 mr-2" />
                         Baixar PSD
-                      </Button>
-                    )}
-                    {selectedArte.downloadUrl && (
-                      <Button onClick={() => handleDownload(selectedArte)} className="w-full" variant="outline">
+                      </Button>}
+                    {selectedArte.downloadUrl && <Button onClick={() => handleDownload(selectedArte)} className="w-full" variant="outline">
                         <Download className="h-4 w-4 mr-2" />
                         Baixar Arquivo
-                      </Button>
-                    )}
-                    {!selectedArte.canvaLink && !selectedArte.driveLink && !selectedArte.downloadUrl && (
-                      <Button onClick={() => handleDownload(selectedArte)} className="w-full">
+                      </Button>}
+                    {!selectedArte.canvaLink && !selectedArte.driveLink && !selectedArte.downloadUrl && <Button onClick={() => handleDownload(selectedArte)} className="w-full">
                         <Download className="h-4 w-4 mr-2" />
                         Baixar Imagem
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
+                      </Button>}
+                  </div> : <div className="flex flex-col gap-2">
                     <p className="text-center text-muted-foreground text-sm">
                       Adquira o pack "{selectedArte.pack}" para ter acesso completo a esta arte.
                     </p>
-                    {!user && (
-                      <Button onClick={() => navigate('/login-artes')} variant="outline" className="w-full">
+                    {!user && <Button onClick={() => navigate('/login-artes')} variant="outline" className="w-full">
                         <LogIn className="h-4 w-4 mr-2" />
                         Fazer Login
-                      </Button>
-                    )}
-                    <Button 
-                      onClick={() => navigate(`/planos-artes?pack=${packSlug}`)}
-                      className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white"
-                    >
+                      </Button>}
+                    <Button onClick={() => navigate(`/planos-artes?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white">
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
                       Comprar Pack
                     </Button>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
+                  </div>}
+              </div>;
+        })()}
         </DialogContent>
       </Dialog>
 
       {/* Premium Modal */}
       <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
         <DialogContent className="max-w-md">
-          {premiumModalItem && (
-            <div className="space-y-4 text-center">
+          {premiumModalItem && <div className="space-y-4 text-center">
               <div className="relative">
-                {isVideoUrl(premiumModalItem.imageUrl) ? (
-                  <SecureVideo
-                    src={premiumModalItem.imageUrl}
-                    className="w-full rounded-lg"
-                    isPremium={true}
-                    controls
-                  />
-                ) : (
-                  <SecureImage
-                    src={premiumModalItem.imageUrl}
-                    alt={premiumModalItem.title}
-                    className="w-full rounded-lg"
-                    isPremium={true}
-                  />
-                )}
+                {isVideoUrl(premiumModalItem.imageUrl) ? <SecureVideo src={premiumModalItem.imageUrl} className="w-full rounded-lg" isPremium={true} controls /> : <SecureImage src={premiumModalItem.imageUrl} alt={premiumModalItem.title} className="w-full rounded-lg" isPremium={true} />}
               </div>
               
               <div>
                 <h2 className="text-xl font-bold text-foreground">{premiumModalItem.title}</h2>
                 {(() => {
-                  const packInfo = dbPacks.find(p => p.name === premiumModalItem.pack);
-                  const isBonusOrUpdates = packInfo?.type === 'bonus' || packInfo?.type === 'updates';
-                  return (
-                    <p className="text-muted-foreground mt-2">
-                      {isBonusOrUpdates 
-                        ? "Este conteúdo é exclusivo para membros. Adquira qualquer pack para ter acesso a todos os bônus e atualizações."
-                        : premiumModalItem.pack 
-                          ? `Esta arte faz parte do pack "${premiumModalItem.pack}". Adquira o pack para ter acesso completo.`
-                          : "Esta arte é exclusiva. Adquira um pack para ter acesso."}
-                    </p>
-                  );
-                })()}
+              const packInfo = dbPacks.find(p => p.name === premiumModalItem.pack);
+              const isBonusOrUpdates = packInfo?.type === 'bonus' || packInfo?.type === 'updates';
+              return <p className="text-muted-foreground mt-2">
+                      {isBonusOrUpdates ? "Este conteúdo é exclusivo para membros. Adquira qualquer pack para ter acesso a todos os bônus e atualizações." : premiumModalItem.pack ? `Esta arte faz parte do pack "${premiumModalItem.pack}". Adquira o pack para ter acesso completo.` : "Esta arte é exclusiva. Adquira um pack para ter acesso."}
+                    </p>;
+            })()}
               </div>
 
               <div className="flex flex-col gap-2">
@@ -1218,19 +900,15 @@ const BibliotecaArtes = () => {
                   <LogIn className="h-4 w-4 mr-2" />
                   Fazer Login
                 </Button>
-                <Button 
-                  onClick={() => {
-                    const packSlug = toPackSlug(premiumModalItem.pack);
-                    navigate(`/planos-artes${packSlug ? `?pack=${packSlug}` : ''}`);
-                  }} 
-                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
-                >
+                <Button onClick={() => {
+              const packSlug = toPackSlug(premiumModalItem.pack);
+              navigate(`/planos-artes${packSlug ? `?pack=${packSlug}` : ''}`);
+            }} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                   <Star className="h-4 w-4 mr-2" fill="currentColor" />
                   Comprar Pack
                 </Button>
               </div>
-            </div>
-          )}
+            </div>}
         </DialogContent>
       </Dialog>
 
@@ -1238,79 +916,51 @@ const BibliotecaArtes = () => {
       <Dialog open={showCursoModal} onOpenChange={setShowCursoModal}>
         <DialogContent className="max-w-md">
           {selectedCurso && (() => {
-            const cursoSlug = toPackSlug(selectedCurso.name);
-            const hasCursoAccess = hasAccessToPack(cursoSlug);
-            
-            return (
-              <div className="space-y-4 text-center">
+          const cursoSlug = toPackSlug(selectedCurso.name);
+          const hasCursoAccess = hasAccessToPack(cursoSlug);
+          return <div className="space-y-4 text-center">
                 <div className="relative">
-                  {selectedCurso.cover_url ? (
-                    <img 
-                      src={selectedCurso.cover_url} 
-                      alt={selectedCurso.name}
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center rounded-lg">
+                  {selectedCurso.cover_url ? <img src={selectedCurso.cover_url} alt={selectedCurso.name} className="w-full h-48 object-cover rounded-lg" /> : <div className="w-full h-48 bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center rounded-lg">
                       <GraduationCap className="h-16 w-16 text-white/80" />
-                    </div>
-                  )}
+                    </div>}
                   
                   {/* Access Badge */}
-                  {hasCursoAccess && (
-                    <div className="absolute top-2 right-2">
+                  {hasCursoAccess && <div className="absolute top-2 right-2">
                       <Badge className="bg-green-500 text-white border-0 text-xs font-semibold shadow-lg">
                         DISPONÍVEL
                       </Badge>
-                    </div>
-                  )}
+                    </div>}
                 </div>
                 
                 <div>
                   <h2 className="text-xl font-bold text-foreground">{selectedCurso.name}</h2>
                   <p className="text-muted-foreground mt-2">
-                    {hasCursoAccess 
-                      ? "Acesse o conteúdo exclusivo deste curso"
-                      : "Adquira este curso para ter acesso ao conteúdo exclusivo"
-                    }
+                    {hasCursoAccess ? "Acesse o conteúdo exclusivo deste curso" : "Adquira este curso para ter acesso ao conteúdo exclusivo"}
                   </p>
                 </div>
 
-                {hasCursoAccess ? (
-                  <div className="flex flex-col gap-2">
-                    <Button 
-                      onClick={() => { /* Link será adicionado depois */ toast.info("Link será configurado em breve"); }}
-                      className="w-full"
-                    >
+                {hasCursoAccess ? <div className="flex flex-col gap-2">
+                    <Button onClick={() => {
+                /* Link será adicionado depois */toast.info("Link será configurado em breve");
+              }} className="w-full">
                       <User className="h-4 w-4 mr-2" />
                       Acessar Curso
                     </Button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <Button 
-                      onClick={() => navigate(`/planos-artes?packSlug=${cursoSlug}`)}
-                      className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
-                    >
+                  </div> : <div className="flex flex-col gap-2">
+                    <Button onClick={() => navigate(`/planos-artes?packSlug=${cursoSlug}`)} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
                       Comprar Curso
                     </Button>
-                    <Button 
-                      onClick={() => { /* Link será adicionado depois */ toast.info("Link será configurado em breve"); }}
-                      variant="outline"
-                      className="w-full"
-                    >
+                    <Button onClick={() => {
+                /* Link será adicionado depois */toast.info("Link será configurado em breve");
+              }} variant="outline" className="w-full">
                       Quero conhecer mais
                     </Button>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
+                  </div>}
+              </div>;
+        })()}
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default BibliotecaArtes;
