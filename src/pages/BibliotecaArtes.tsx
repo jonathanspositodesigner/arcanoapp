@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -444,6 +444,35 @@ const BibliotecaArtes = () => {
           </Badge>
         </button>
       </nav>
+
+      {/* WhatsApp Group Buttons */}
+      <div className="px-4 pt-4 border-t border-border space-y-3">
+        {userPacks.length > 0 ? (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground text-center">Faça parte do nosso grupo exclusivo para membros</p>
+            <Button 
+              onClick={() => window.open("https://chat.whatsapp.com/LINK_GRUPO_MEMBROS", "_blank")} 
+              size="sm" 
+              className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white"
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Entrar no grupo
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground text-center">Entre para o nosso grupo gratuito</p>
+            <Button 
+              onClick={() => window.open("https://chat.whatsapp.com/LINK_GRUPO_FREE", "_blank")} 
+              size="sm" 
+              className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white"
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Grupo Free no WhatsApp
+            </Button>
+          </div>
+        )}
+      </div>
 
       <div className="px-4 pt-4 border-t border-border mt-auto space-y-2">
         <Button onClick={() => navigate("/parceiro-login-artes")} variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-foreground">
