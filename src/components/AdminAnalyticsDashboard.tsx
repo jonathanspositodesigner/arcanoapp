@@ -734,14 +734,6 @@ const [pageViews, setPageViews] = useState({
     fetchAnalytics();
   }, [dateFilter, refreshKey]);
 
-  // Auto-refresh a cada 5 minutos
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRefreshKey(prev => prev + 1);
-    }, 300000); // 5 minutos
-
-    return () => clearInterval(interval);
-  }, []);
 
 
   const handleRefresh = () => {
