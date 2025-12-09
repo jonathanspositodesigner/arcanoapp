@@ -14,6 +14,7 @@ import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/Sec
 import { useSessionTracker } from "@/hooks/useSessionTracker";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import BannerCarousel from "@/components/BannerCarousel";
+import { toPackSlug } from "@/lib/utils";
 
 interface ArteItem {
   id: string | number;
@@ -743,7 +744,7 @@ const BibliotecaArtes = () => {
                     const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
                     const isAnimating = animatingClicks.has(arteId);
 
-                    const packSlug = arte.pack?.toLowerCase().replace(/\s+/g, '-').replace(/\./g, '-') || '';
+                    const packSlug = toPackSlug(arte.pack);
                     const hasAccess = hasAccessToPack(packSlug) || !arte.isPremium;
 
                     return (
@@ -853,7 +854,7 @@ const BibliotecaArtes = () => {
       <Dialog open={!!selectedArte} onOpenChange={() => handleCloseModal()}>
         <DialogContent className="max-w-[340px] sm:max-w-[540px]">
           {selectedArte && (() => {
-            const packSlug = selectedArte.pack?.toLowerCase().replace(/\s+/g, '-').replace(/\./g, '-') || '';
+            const packSlug = toPackSlug(selectedArte.pack);
             const hasAccess = hasAccessToPack(packSlug) || !selectedArte.isPremium;
             
             return (
@@ -989,7 +990,7 @@ const BibliotecaArtes = () => {
                 </Button>
                 <Button 
                   onClick={() => {
-                    const packSlug = premiumModalItem.pack?.toLowerCase().replace(/\s+/g, '-').replace(/\./g, '-') || '';
+                    const packSlug = toPackSlug(premiumModalItem.pack);
                     navigate(`/planos-artes${packSlug ? `?pack=${packSlug}` : ''}`);
                   }} 
                   className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
