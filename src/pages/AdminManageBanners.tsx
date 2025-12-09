@@ -310,49 +310,54 @@ const AdminManageBanners = () => {
     );
   }
 
-  const FormContent = ({ isEdit = false }: { isEdit?: boolean }) => (
+  const renderFormContent = (isEdit: boolean) => (
     <div className="space-y-4 mt-4">
       <div>
-        <Label>Título do Banner</Label>
+        <Label htmlFor={isEdit ? "edit-title" : "add-title"}>Título do Banner</Label>
         <Input
+          id={isEdit ? "edit-title" : "add-title"}
           value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
           placeholder="Ex: Novo Pack Disponível!"
         />
       </div>
       <div>
-        <Label>Descrição (opcional)</Label>
+        <Label htmlFor={isEdit ? "edit-desc" : "add-desc"}>Descrição (opcional)</Label>
         <Textarea
+          id={isEdit ? "edit-desc" : "add-desc"}
           value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
           placeholder="Descrição do banner..."
           rows={2}
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>Texto do Botão</Label>
+          <Label htmlFor={isEdit ? "edit-btn-text" : "add-btn-text"}>Texto do Botão</Label>
           <Input
+            id={isEdit ? "edit-btn-text" : "add-btn-text"}
             value={formData.button_text}
-            onChange={(e) => setFormData({ ...formData, button_text: e.target.value })}
+            onChange={(e) => setFormData(prev => ({ ...prev, button_text: e.target.value }))}
             placeholder="Saiba mais"
           />
         </div>
         <div>
-          <Label>Link do Botão</Label>
+          <Label htmlFor={isEdit ? "edit-btn-link" : "add-btn-link"}>Link do Botão</Label>
           <Input
+            id={isEdit ? "edit-btn-link" : "add-btn-link"}
             value={formData.button_link}
-            onChange={(e) => setFormData({ ...formData, button_link: e.target.value })}
+            onChange={(e) => setFormData(prev => ({ ...prev, button_link: e.target.value }))}
             placeholder="https://..."
           />
         </div>
       </div>
       <div className="flex items-center gap-2">
         <Switch
+          id={isEdit ? "edit-active" : "add-active"}
           checked={formData.is_active}
-          onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
         />
-        <Label>Banner ativo</Label>
+        <Label htmlFor={isEdit ? "edit-active" : "add-active"}>Banner ativo</Label>
       </div>
       <div>
         <Label>Imagem do Banner</Label>
@@ -368,6 +373,7 @@ const AdminManageBanners = () => {
                 className="w-full h-40 object-cover rounded-lg"
               />
               <Button
+                type="button"
                 variant="destructive"
                 size="sm"
                 className="absolute top-2 right-2"
@@ -392,6 +398,7 @@ const AdminManageBanners = () => {
         </div>
       </div>
       <Button 
+        type="button"
         onClick={isEdit ? handleEdit : handleAdd} 
         disabled={saving} 
         className="w-full"
@@ -424,7 +431,7 @@ const AdminManageBanners = () => {
               <DialogHeader>
                 <DialogTitle>Criar Novo Banner</DialogTitle>
               </DialogHeader>
-              <FormContent />
+              {renderFormContent(false)}
             </DialogContent>
           </Dialog>
         </div>
@@ -515,7 +522,7 @@ const AdminManageBanners = () => {
             <DialogHeader>
               <DialogTitle>Editar Banner</DialogTitle>
             </DialogHeader>
-            <FormContent isEdit />
+            {renderFormContent(true)}
           </DialogContent>
         </Dialog>
       </div>
