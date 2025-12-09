@@ -455,7 +455,7 @@ const BibliotecaArtes = () => {
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground text-center">Faça parte do nosso grupo exclusivo para membros</p>
             <Button 
-              onClick={() => window.open("https://chat.whatsapp.com/LINK_GRUPO_MEMBROS", "_blank")} 
+              onClick={() => window.open("https://chat.whatsapp.com/JOUGeS21VHq92hJWyxpOJC", "_blank")} 
               size="sm" 
               className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white"
             >
@@ -467,7 +467,7 @@ const BibliotecaArtes = () => {
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground text-center">Entre para o nosso grupo gratuito</p>
             <Button 
-              onClick={() => window.open("https://chat.whatsapp.com/LINK_GRUPO_FREE", "_blank")} 
+              onClick={() => window.open("https://chat.whatsapp.com/DJz6BbLDbbK9MBX8YiTsbw", "_blank")} 
               size="sm" 
               className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white"
             >
