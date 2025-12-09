@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, Copy, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addMonths, addYears } from "date-fns";
@@ -54,8 +54,31 @@ const AdminPackPurchases = () => {
     phone: "",
     pack_slug: "",
     access_type: "vitalicio" as '6_meses' | '1_ano' | 'vitalicio',
-    is_active: true
+    is_active: true,
+    password: "",
+    useRandomPassword: true
   });
+
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  const handleGeneratePassword = () => {
+    const newPassword = generateRandomPassword();
+    setFormData({ ...formData, password: newPassword });
+  };
+
+  const copyPassword = () => {
+    if (formData.password) {
+      navigator.clipboard.writeText(formData.password);
+      toast.success("Senha copiada!");
+    }
+  };
 
   useEffect(() => {
     checkAdminStatus();
@@ -161,9 +184,18 @@ const AdminPackPurchases = () => {
         userId = existingProfile.id;
       } else {
         // Create new user
+        const passwordToUse = formData.useRandomPassword 
+          ? (formData.password || generateRandomPassword()) 
+          : formData.password;
+        
+        if (!passwordToUse) {
+          toast.error("Senha é obrigatória");
+          return;
+        }
+
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.email,
-          password: formData.email, // Password = email initially
+          password: passwordToUse,
           options: {
             emailRedirectTo: `${window.location.origin}/`
           }
@@ -302,7 +334,9 @@ const AdminPackPurchases = () => {
       phone: "",
       pack_slug: "",
       access_type: "vitalicio",
-      is_active: true
+      is_active: true,
+      password: "",
+      useRandomPassword: true
     });
   };
 
@@ -314,7 +348,9 @@ const AdminPackPurchases = () => {
       phone: purchase.user_phone || "",
       pack_slug: purchase.pack_slug,
       access_type: purchase.access_type,
-      is_active: purchase.is_active
+      is_active: purchase.is_active,
+      password: "",
+      useRandomPassword: true
     });
     setShowAddDialog(true);
   };
@@ -504,6 +540,51 @@ const AdminPackPurchases = () => {
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="5511999999999"
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Senha</Label>
+                      <div className="flex gap-2 mb-2">
+                        <Button 
+                          type="button"
+                          variant={formData.useRandomPassword ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            setFormData({ ...formData, useRandomPassword: true });
+                            handleGeneratePassword();
+                          }}
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Aleatória
+                        </Button>
+                        <Button 
+                          type="button"
+                          variant={!formData.useRandomPassword ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setFormData({ ...formData, useRandomPassword: false, password: "" })}
+                        >
+                          Manual
+                        </Button>
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          placeholder={formData.useRandomPassword ? "Clique em 'Aleatória' para gerar" : "Digite a senha"}
+                          readOnly={formData.useRandomPassword}
+                          className={formData.useRandomPassword ? "bg-muted" : ""}
+                        />
+                        {formData.password && (
+                          <Button type="button" variant="outline" size="icon" onClick={copyPassword}>
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      {formData.password && (
+                        <p className="text-xs text-muted-foreground">
+                          Senha: <span className="font-mono font-bold">{formData.password}</span>
+                        </p>
+                      )}
                     </div>
                   </>
                 )}
