@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -17,10 +17,10 @@ interface Pack {
   slug: string;
   cover_url: string | null;
   display_order: number;
-  type: 'pack' | 'bonus' | 'curso';
+  type: 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia';
 }
 
-type ItemType = 'pack' | 'bonus' | 'curso';
+type ItemType = 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia';
 
 const AdminManagePacks = () => {
   const navigate = useNavigate();
@@ -317,6 +317,8 @@ const AdminManagePacks = () => {
       case 'pack': return <Package className="w-5 h-5" />;
       case 'bonus': return <Gift className="w-5 h-5" />;
       case 'curso': return <GraduationCap className="w-5 h-5" />;
+      case 'tutorial': return <BookOpen className="w-5 h-5" />;
+      case 'ferramentas_ia': return <Cpu className="w-5 h-5" />;
     }
   };
 
@@ -325,6 +327,8 @@ const AdminManagePacks = () => {
       case 'pack': return 'Pack';
       case 'bonus': return 'Bônus';
       case 'curso': return 'Curso';
+      case 'tutorial': return 'Tutorial';
+      case 'ferramentas_ia': return 'Ferramentas de IA';
     }
   };
 
@@ -446,6 +450,24 @@ const AdminManagePacks = () => {
                   <span className="font-medium">Curso</span>
                   <span className="text-xs text-muted-foreground">Curso ou treinamento</span>
                 </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-auto py-4 flex flex-col items-center gap-2"
+                  onClick={() => handleTypeSelect('tutorial')}
+                >
+                  <BookOpen className="w-8 h-8 text-green-500" />
+                  <span className="font-medium">Tutorial</span>
+                  <span className="text-xs text-muted-foreground">Tutorial e guias</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-auto py-4 flex flex-col items-center gap-2"
+                  onClick={() => handleTypeSelect('ferramentas_ia')}
+                >
+                  <Cpu className="w-8 h-8 text-purple-500" />
+                  <span className="font-medium">Ferramentas de IA</span>
+                  <span className="text-xs text-muted-foreground">Ferramentas de inteligência artificial</span>
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -518,21 +540,31 @@ const AdminManagePacks = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ItemType)} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="pack" className="flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              Packs
-              <Badge variant="secondary" className="ml-1">{getPacksByType('pack').length}</Badge>
+          <TabsList className="grid w-full grid-cols-5 mb-6">
+            <TabsTrigger value="pack" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Package className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Packs</span>
+              <Badge variant="secondary" className="ml-1 text-xs">{getPacksByType('pack').length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="bonus" className="flex items-center gap-2">
-              <Gift className="w-4 h-4" />
-              Bônus
-              <Badge variant="secondary" className="ml-1">{getPacksByType('bonus').length}</Badge>
+            <TabsTrigger value="bonus" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Gift className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Bônus</span>
+              <Badge variant="secondary" className="ml-1 text-xs">{getPacksByType('bonus').length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="curso" className="flex items-center gap-2">
-              <GraduationCap className="w-4 h-4" />
-              Cursos
-              <Badge variant="secondary" className="ml-1">{getPacksByType('curso').length}</Badge>
+            <TabsTrigger value="curso" className="flex items-center gap-1 text-xs sm:text-sm">
+              <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Cursos</span>
+              <Badge variant="secondary" className="ml-1 text-xs">{getPacksByType('curso').length}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="tutorial" className="flex items-center gap-1 text-xs sm:text-sm">
+              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Tutoriais</span>
+              <Badge variant="secondary" className="ml-1 text-xs">{getPacksByType('tutorial').length}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="ferramentas_ia" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Cpu className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">IA</span>
+              <Badge variant="secondary" className="ml-1 text-xs">{getPacksByType('ferramentas_ia').length}</Badge>
             </TabsTrigger>
           </TabsList>
 
@@ -548,6 +580,12 @@ const AdminManagePacks = () => {
           </TabsContent>
           <TabsContent value="curso">
             {renderPackList('curso')}
+          </TabsContent>
+          <TabsContent value="tutorial">
+            {renderPackList('tutorial')}
+          </TabsContent>
+          <TabsContent value="ferramentas_ia">
+            {renderPackList('ferramentas_ia')}
           </TabsContent>
         </Tabs>
 
