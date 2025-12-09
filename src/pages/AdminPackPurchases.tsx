@@ -18,7 +18,7 @@ interface PackPurchase {
   id: string;
   user_id: string;
   pack_slug: string;
-  access_type: '6_meses' | '1_ano' | 'vitalicio';
+  access_type: '3_meses' | '6_meses' | '1_ano' | 'vitalicio';
   has_bonus_access: boolean;
   is_active: boolean;
   purchased_at: string;
@@ -37,7 +37,7 @@ interface Pack {
 
 interface PackAccess {
   pack_slug: string;
-  access_type: '6_meses' | '1_ano' | 'vitalicio';
+  access_type: '3_meses' | '6_meses' | '1_ano' | 'vitalicio';
   is_active: boolean;
   id?: string; // for existing purchases
 }
@@ -148,9 +148,11 @@ const AdminPackPurchases = () => {
     setPurchases(purchasesWithUsers);
   };
 
-  const calculateExpiresAt = (accessType: '6_meses' | '1_ano' | 'vitalicio'): string | null => {
+  const calculateExpiresAt = (accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio'): string | null => {
     const now = new Date();
     switch (accessType) {
+      case '3_meses':
+        return addMonths(now, 3).toISOString();
       case '6_meses':
         return addMonths(now, 6).toISOString();
       case '1_ano':
@@ -725,12 +727,13 @@ const AdminPackPurchases = () => {
                             <Label className="text-xs">Tipo de Acesso</Label>
                             <Select 
                               value={access.access_type} 
-                              onValueChange={(v: '6_meses' | '1_ano' | 'vitalicio') => updatePackAccess(index, 'access_type', v)}
+                              onValueChange={(v: '3_meses' | '6_meses' | '1_ano' | 'vitalicio') => updatePackAccess(index, 'access_type', v)}
                             >
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
+                                <SelectItem value="3_meses">3 Meses</SelectItem>
                                 <SelectItem value="6_meses">6 Meses</SelectItem>
                                 <SelectItem value="1_ano">1 Ano (+ Bônus)</SelectItem>
                                 <SelectItem value="vitalicio">Vitalício (+ Bônus)</SelectItem>
