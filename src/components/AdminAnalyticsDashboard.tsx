@@ -51,7 +51,11 @@ const [pageViews, setPageViews] = useState({
   const [topPrompts, setTopPrompts] = useState<PromptRanking[]>([]);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [planUsageStats, setPlanUsageStats] = useState<PlanUsageStats[]>([]);
+  const [artesUsageStats, setArtesUsageStats] = useState<PlanUsageStats[]>([]);
   const [todayUsage, setTodayUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
+  const [todayArtesUsage, setTodayArtesUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
+  const [usageViewMode, setUsageViewMode] = useState<'prompts' | 'artes'>('prompts');
+  const [todayUsageViewMode, setTodayUsageViewMode] = useState<'prompts' | 'artes'>('prompts');
   const [sessionStats, setSessionStats] = useState<SessionStats>({
     totalSessions: 0, bounceCount: 0, bounceRate: 0, avgDuration: 0
   });
@@ -359,6 +363,92 @@ const [pageViews, setPageViews] = useState({
         }
       }
 
+      // ========== FETCH ARTES USAGE STATS (copies from daily_arte_copies) ==========
+      const { data: premiumArtesUsers } = await supabase
+        .from("premium_artes_users")
+        .select("user_id, plan_type")
+        .eq("is_active", true);
+
+      const { data: packUsers } = await supabase
+        .from("user_pack_purchases")
+        .select("user_id, access_type")
+        .eq("is_active", true);
+
+      if (premiumArtesUsers || packUsers) {
+        let arteCopiesQuery = supabase.from("daily_arte_copies").select("user_id, copy_date");
+        if (threshold) {
+          arteCopiesQuery = arteCopiesQuery.gte("copied_at", threshold);
+        }
+        const { data: arteCopiesData } = await arteCopiesQuery;
+
+        if (arteCopiesData) {
+          const artesUserPlanMap: Record<string, string> = {};
+          premiumArtesUsers?.forEach(u => {
+            if (u.plan_type) artesUserPlanMap[u.user_id] = u.plan_type;
+          });
+          packUsers?.forEach(u => {
+            if (!artesUserPlanMap[u.user_id]) {
+              artesUserPlanMap[u.user_id] = 'pack_user';
+            }
+          });
+
+          const artesTypeCopies: Record<string, { copies: number; users: Set<string> }> = {
+            premium: { copies: 0, users: new Set() },
+            pack_user: { copies: 0, users: new Set() },
+          };
+
+          arteCopiesData.forEach(copy => {
+            const userType = artesUserPlanMap[copy.user_id];
+            if (userType === 'pack_user') {
+              artesTypeCopies.pack_user.copies++;
+              artesTypeCopies.pack_user.users.add(copy.user_id);
+            } else if (userType) {
+              artesTypeCopies.premium.copies++;
+              artesTypeCopies.premium.users.add(copy.user_id);
+            }
+          });
+
+          const artesStats: PlanUsageStats[] = [
+            {
+              plan: "Premium Artes",
+              copies: artesTypeCopies.premium.copies,
+              users: artesTypeCopies.premium.users.size,
+              avgPerUser: artesTypeCopies.premium.users.size > 0 
+                ? Math.round(artesTypeCopies.premium.copies / artesTypeCopies.premium.users.size * 10) / 10
+                : 0
+            },
+            {
+              plan: "Compradores de Pack",
+              copies: artesTypeCopies.pack_user.copies,
+              users: artesTypeCopies.pack_user.users.size,
+              avgPerUser: artesTypeCopies.pack_user.users.size > 0 
+                ? Math.round(artesTypeCopies.pack_user.copies / artesTypeCopies.pack_user.users.size * 10) / 10
+                : 0
+            },
+          ];
+
+          setArtesUsageStats(artesStats);
+
+          const today = new Date().toISOString().split('T')[0];
+          const todayArtesCopies = arteCopiesData.filter(c => c.copy_date === today);
+          
+          let premiumToday = 0;
+          let packToday = 0;
+          
+          todayArtesCopies.forEach(copy => {
+            const userType = artesUserPlanMap[copy.user_id];
+            if (userType === 'pack_user') packToday++;
+            else if (userType) premiumToday++;
+          });
+
+          setTodayArtesUsage({
+            basicUsed: premiumToday,
+            basicLimit: artesTypeCopies.premium.users.size * 10,
+            proUsed: packToday,
+            proLimit: artesTypeCopies.pack_user.users.size * 10
+          });
+        }
+      }
 
       // ========== FETCH SESSION STATS (bounce rate e tempo médio) ==========
       let statsSessionsQuery = supabase
@@ -737,18 +827,40 @@ const [pageViews, setPageViews] = useState({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Usage by Plan Card */}
             <Card className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-green-500/20 rounded-full">
-                  <Copy className="h-6 w-6 text-green-500" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500/20 rounded-full">
+                    <Copy className="h-6 w-6 text-green-500" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">
+                    {usageViewMode === 'prompts' ? 'Uso de Prompts por Plano' : 'Uso de Artes por Tipo'}
+                  </p>
                 </div>
-                <p className="text-sm font-medium text-foreground">Uso de Prompts por Plano</p>
+                <div className="flex gap-1">
+                  <Button
+                    variant={usageViewMode === 'prompts' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setUsageViewMode('prompts')}
+                    className="h-7 px-2 text-xs"
+                  >
+                    Prompts
+                  </Button>
+                  <Button
+                    variant={usageViewMode === 'artes' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setUsageViewMode('artes')}
+                    className="h-7 px-2 text-xs"
+                  >
+                    Artes
+                  </Button>
+                </div>
               </div>
               
-              {planUsageStats.length === 0 ? (
+              {(usageViewMode === 'prompts' ? planUsageStats : artesUsageStats).length === 0 ? (
                 <p className="text-sm text-muted-foreground">Nenhum dado de uso registrado</p>
               ) : (
                 <div className="space-y-4">
-                  {planUsageStats.map((stat) => (
+                  {(usageViewMode === 'prompts' ? planUsageStats : artesUsageStats).map((stat) => (
                     <div key={stat.plan} className="border-b border-border pb-3 last:border-0 last:pb-0">
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-medium text-foreground">{stat.plan}</span>
@@ -766,10 +878,36 @@ const [pageViews, setPageViews] = useState({
 
             {/* Today's Usage Chart */}
             <Card className="p-6">
-              <h3 className="text-sm font-medium text-foreground mb-4">Uso de Hoje por Plano</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-medium text-foreground">
+                  {todayUsageViewMode === 'prompts' ? 'Uso de Hoje - Prompts' : 'Uso de Hoje - Artes'}
+                </h3>
+                <div className="flex gap-1">
+                  <Button
+                    variant={todayUsageViewMode === 'prompts' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTodayUsageViewMode('prompts')}
+                    className="h-7 px-2 text-xs"
+                  >
+                    Prompts
+                  </Button>
+                  <Button
+                    variant={todayUsageViewMode === 'artes' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTodayUsageViewMode('artes')}
+                    className="h-7 px-2 text-xs"
+                  >
+                    Artes
+                  </Button>
+                </div>
+              </div>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={planUsageStats.filter(s => s.plan !== "Arcano Unlimited")}>
+                  <BarChart data={
+                    todayUsageViewMode === 'prompts' 
+                      ? planUsageStats.filter(s => s.plan !== "Arcano Unlimited")
+                      : artesUsageStats
+                  }>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis 
                       dataKey="plan" 
@@ -804,16 +942,33 @@ const [pageViews, setPageViews] = useState({
                 </ResponsiveContainer>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-4 text-center">
-                <div className="bg-secondary rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Básico (10/dia)</p>
-                  <p className="text-lg font-bold text-orange-500">{todayUsage.basicUsed}</p>
-                  <p className="text-xs text-muted-foreground">cópias hoje</p>
-                </div>
-                <div className="bg-secondary rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Pro (24/dia)</p>
-                  <p className="text-lg font-bold text-purple-500">{todayUsage.proUsed}</p>
-                  <p className="text-xs text-muted-foreground">cópias hoje</p>
-                </div>
+                {todayUsageViewMode === 'prompts' ? (
+                  <>
+                    <div className="bg-secondary rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground">Básico (10/dia)</p>
+                      <p className="text-lg font-bold text-orange-500">{todayUsage.basicUsed}</p>
+                      <p className="text-xs text-muted-foreground">cópias hoje</p>
+                    </div>
+                    <div className="bg-secondary rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground">Pro (24/dia)</p>
+                      <p className="text-lg font-bold text-purple-500">{todayUsage.proUsed}</p>
+                      <p className="text-xs text-muted-foreground">cópias hoje</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="bg-secondary rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground">Premium Artes</p>
+                      <p className="text-lg font-bold text-orange-500">{todayArtesUsage.basicUsed}</p>
+                      <p className="text-xs text-muted-foreground">cópias hoje</p>
+                    </div>
+                    <div className="bg-secondary rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground">Pack Users</p>
+                      <p className="text-lg font-bold text-purple-500">{todayArtesUsage.proUsed}</p>
+                      <p className="text-xs text-muted-foreground">cópias hoje</p>
+                    </div>
+                  </>
+                )}
               </div>
             </Card>
           </div>
