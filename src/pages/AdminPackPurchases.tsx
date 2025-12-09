@@ -500,7 +500,7 @@ const AdminPackPurchases = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total de Clientes</p>
-                <p className="text-2xl font-bold">{groupedClients.length}</p>
+                <p className="text-2xl font-bold">{[...new Set(purchases.map(p => p.user_id))].length}</p>
               </div>
             </div>
           </Card>
@@ -510,8 +510,26 @@ const AdminPackPurchases = () => {
                 <Package className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Acessos Ativos</p>
-                <p className="text-2xl font-bold">{purchases.filter(p => p.is_active).length}</p>
+                <p className="text-sm text-muted-foreground">Total de Compras</p>
+                <p className="text-2xl font-bold">{purchases.length}</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-500/10 rounded-lg">
+                <User className="h-5 w-5 text-red-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Clientes Inativos</p>
+                <p className="text-2xl font-bold">
+                  {(() => {
+                    const userIds = [...new Set(purchases.map(p => p.user_id))];
+                    return userIds.filter(userId => 
+                      !purchases.some(p => p.user_id === userId && p.is_active)
+                    ).length;
+                  })()}
+                </p>
               </div>
             </div>
           </Card>
@@ -521,19 +539,22 @@ const AdminPackPurchases = () => {
                 <Calendar className="h-5 w-5 text-amber-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Vitalícios</p>
-                <p className="text-2xl font-bold">{purchases.filter(p => p.access_type === 'vitalicio').length}</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-500/10 rounded-lg">
-                <Calendar className="h-5 w-5 text-red-500" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Inativos</p>
-                <p className="text-2xl font-bold">{purchases.filter(p => !p.is_active).length}</p>
+                <p className="text-sm text-muted-foreground">Expirando em 30 dias</p>
+                <p className="text-2xl font-bold">
+                  {(() => {
+                    const now = new Date();
+                    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                    const userIds = [...new Set(purchases.map(p => p.user_id))];
+                    return userIds.filter(userId => 
+                      purchases.some(p => 
+                        p.user_id === userId && 
+                        p.is_active && 
+                        p.expires_at && 
+                        new Date(p.expires_at) <= thirtyDaysFromNow
+                      )
+                    ).length;
+                  })()}
+                </p>
               </div>
             </div>
           </Card>
