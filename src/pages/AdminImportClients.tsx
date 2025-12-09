@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, FileText, Users, Package, AlertCircle, CheckCircle, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Upload, FileText, Users, Package, AlertCircle, CheckCircle, AlertTriangle, SkipForward } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { useImportProgress } from "@/hooks/useImportProgress";
@@ -19,6 +19,7 @@ interface ParsedClient {
     has_bonus_access: boolean;
     purchase_date: string;
     product_name: string;
+    import_hash: string;
   }[];
 }
 
@@ -170,6 +171,19 @@ const IGNORED_PRODUCTS = [
   "Assinatura Mensal Arcano Premium",
 ];
 
+// Generate unique hash for import tracking
+const generateImportHash = (email: string, productName: string, purchaseDate: string): string => {
+  const normalized = `${email.toLowerCase().trim()}|${productName.trim()}|${purchaseDate.split('T')[0]}`;
+  // Simple hash function
+  let hash = 0;
+  for (let i = 0; i < normalized.length; i++) {
+    const char = normalized.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+};
+
 const AdminImportClients = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -179,9 +193,11 @@ const AdminImportClients = () => {
   const [rawData, setRawData] = useState<any[]>([]);
   const [importing, setImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
-  const [importResult, setImportResult] = useState<{ success: number; errors: { email: string; error: string }[]; created: number; updated: number } | null>(null);
+  const [importResult, setImportResult] = useState<{ success: number; errors: { email: string; error: string }[]; created: number; updated: number; skipped: number } | null>(null);
   const { startImport, setProgress: setGlobalProgress, finishImport } = useImportProgress();
   const [unmappedProducts, setUnmappedProducts] = useState<Map<string, number>>(new Map());
+  const [existingHashes, setExistingHashes] = useState<Set<string>>(new Set());
+  const [checkingExisting, setCheckingExisting] = useState(false);
   const [stats, setStats] = useState({
     totalSales: 0,
     paidSales: 0,
@@ -190,6 +206,8 @@ const AdminImportClients = () => {
     unmappedSales: 0,
     uniqueClients: 0,
     totalPacks: 0,
+    alreadyImported: 0,
+    newToImport: 0,
   });
 
   useEffect(() => {
@@ -266,6 +284,27 @@ const AdminImportClients = () => {
     return data;
   };
 
+  // Fetch existing import hashes from database
+  const fetchExistingHashes = async (hashes: string[]): Promise<Set<string>> => {
+    const existingSet = new Set<string>();
+    
+    // Fetch in batches of 500
+    const batchSize = 500;
+    for (let i = 0; i < hashes.length; i += batchSize) {
+      const batch = hashes.slice(i, i + batchSize);
+      const { data } = await supabase
+        .from("import_log")
+        .select("import_hash")
+        .in("import_hash", batch);
+      
+      if (data) {
+        data.forEach((row: { import_hash: string }) => existingSet.add(row.import_hash));
+      }
+    }
+    
+    return existingSet;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0];
     if (!uploadedFile) return;
@@ -273,6 +312,7 @@ const AdminImportClients = () => {
     setFile(uploadedFile);
     setImportResult(null);
     setUnmappedProducts(new Map());
+    setCheckingExisting(true);
 
     const text = await uploadedFile.text();
     const data = parseCSV(text);
@@ -287,20 +327,18 @@ const AdminImportClients = () => {
     let unmappedCount = 0;
     const unmappedMap = new Map<string, number>();
     const clientsMap = new Map<string, ParsedClient>();
+    const allHashes: string[] = [];
+    const hashToRowMap = new Map<string, { email: string; productName: string; purchaseDate: string; mapping: any; name: string; phone: string }>();
 
+    // First pass: collect all hashes
     for (const row of paidSales) {
       const productName = row["Nome do produto"] || row.product_name || row.product || "";
       const email = (row["Email do cliente"] || row.customer_email || row.email || "").toLowerCase().trim();
-      const name = row["Nome do cliente"] || row.customer_name || row.name || "";
-      const phone = row["Telefone"] || row.customer_phone || row.phone || "";
       
-      // Use "Data de pagamento" (YYYY-MM-DD format) instead of "Data" (DD/MM/YYYY format)
       let purchaseDate = row["Data de pagamento"] || row.created_at || row.date || "";
       
-      // Fallback to "Data" column with Brazilian date format conversion
       if (!purchaseDate && row["Data"]) {
         const brazilDate = row["Data"];
-        // Convert DD/MM/YYYY HH:MM:SS to ISO format
         const match = brazilDate.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
         if (match) {
           const [, day, month, year, hour, minute, second] = match;
@@ -308,26 +346,17 @@ const AdminImportClients = () => {
         }
       }
       
-      // Final fallback to current date
       if (!purchaseDate) {
         purchaseDate = new Date().toISOString();
       }
 
-      // Skip empty emails
-      if (!email) {
-        continue;
-      }
-
-      // Check if product should be ignored
+      if (!email) continue;
       if (IGNORED_PRODUCTS.some((p) => productName.includes(p))) {
         ignoredCount++;
         continue;
       }
 
-      // Find matching product mapping - try exact match first
       let mapping = PRODUCT_MAPPING[productName];
-      
-      // Try partial match if exact match not found
       if (!mapping) {
         for (const [key, value] of Object.entries(PRODUCT_MAPPING)) {
           if (productName.includes(key) || key.includes(productName)) {
@@ -338,17 +367,39 @@ const AdminImportClients = () => {
       }
 
       if (!mapping) {
-        // Track unmapped products
         unmappedCount++;
         const currentCount = unmappedMap.get(productName) || 0;
         unmappedMap.set(productName, currentCount + 1);
-        console.warn(`Unmapped product (${unmappedCount}): "${productName}"`);
         continue;
       }
 
       mappedCount++;
 
-      // Get or create client entry
+      const name = row["Nome do cliente"] || row.customer_name || row.name || "";
+      const phone = row["Telefone"] || row.customer_phone || row.phone || "";
+      const hash = generateImportHash(email, productName, purchaseDate);
+      
+      allHashes.push(hash);
+      hashToRowMap.set(hash, { email, productName, purchaseDate, mapping, name, phone });
+    }
+
+    // Fetch existing hashes from database
+    const existingHashSet = await fetchExistingHashes(allHashes);
+    setExistingHashes(existingHashSet);
+
+    // Second pass: build clients, skipping already imported
+    let alreadyImported = 0;
+    let newToImport = 0;
+
+    for (const [hash, rowData] of hashToRowMap) {
+      if (existingHashSet.has(hash)) {
+        alreadyImported++;
+        continue;
+      }
+
+      newToImport++;
+      const { email, productName, purchaseDate, mapping, name, phone } = rowData;
+
       if (!clientsMap.has(email)) {
         clientsMap.set(email, {
           email,
@@ -360,17 +411,13 @@ const AdminImportClients = () => {
 
       const client = clientsMap.get(email)!;
       
-      // Update name/phone if empty
       if (!client.name && name) client.name = name;
       if (!client.phone && phone) client.phone = phone;
 
-      // Add packs from this purchase
       for (const packSlug of mapping.packs) {
-        // Check if pack already exists for this client
         const existingPack = client.packs.find((p) => p.pack_slug === packSlug);
         
         if (existingPack) {
-          // Keep the better access type (vitalicio > 1_ano > 6_meses > 3_meses)
           const accessPriority = { "vitalicio": 4, "1_ano": 3, "6_meses": 2, "3_meses": 1 };
           const newPriority = accessPriority[mapping.access_type];
           const existingPriority = accessPriority[existingPack.access_type];
@@ -378,13 +425,13 @@ const AdminImportClients = () => {
           if (newPriority > existingPriority) {
             existingPack.access_type = mapping.access_type;
             existingPack.has_bonus_access = existingPack.has_bonus_access || mapping.has_bonus;
+            existingPack.import_hash = hash;
           } else if (newPriority === existingPriority) {
-            // Same access type - keep the most recent purchase date
             if (new Date(purchaseDate) > new Date(existingPack.purchase_date)) {
               existingPack.purchase_date = purchaseDate;
+              existingPack.import_hash = hash;
             }
           }
-          // Always merge bonus access
           existingPack.has_bonus_access = existingPack.has_bonus_access || mapping.has_bonus;
         } else {
           client.packs.push({
@@ -393,6 +440,7 @@ const AdminImportClients = () => {
             has_bonus_access: mapping.has_bonus,
             purchase_date: purchaseDate,
             product_name: productName,
+            import_hash: hash,
           });
         }
       }
@@ -403,6 +451,7 @@ const AdminImportClients = () => {
 
     setParsedClients(clients);
     setUnmappedProducts(unmappedMap);
+    setCheckingExisting(false);
     setStats({
       totalSales,
       paidSales: paidSales.length,
@@ -411,25 +460,32 @@ const AdminImportClients = () => {
       unmappedSales: unmappedCount,
       uniqueClients: clients.length,
       totalPacks,
+      alreadyImported,
+      newToImport,
     });
 
+    if (alreadyImported > 0) {
+      toast.info(`${alreadyImported} registros já importados anteriormente serão ignorados`);
+    }
+
     if (unmappedCount > 0) {
-      toast.warning(`CSV processado: ${clients.length} clientes, mas ${unmappedCount} vendas não mapeadas!`);
-    } else {
-      toast.success(`CSV processado: ${clients.length} clientes únicos encontrados`);
+      toast.warning(`CSV processado: ${clients.length} clientes novos, mas ${unmappedCount} vendas não mapeadas!`);
+    } else if (clients.length > 0) {
+      toast.success(`CSV processado: ${clients.length} clientes com ${totalPacks} packs novos para importar`);
+    } else if (alreadyImported > 0) {
+      toast.info(`Todos os ${alreadyImported} registros já foram importados anteriormente!`);
     }
   };
 
   const handleImport = async () => {
     if (parsedClients.length === 0) {
-      toast.error("Nenhum cliente para importar");
+      toast.error("Nenhum cliente novo para importar");
       return;
     }
 
     setImporting(true);
     setImportProgress(0);
     
-    // Start global progress tracking
     const batchSize = 50;
     const totalBatches = Math.ceil(parsedClients.length / batchSize);
     startImport(totalBatches);
@@ -441,6 +497,7 @@ const AdminImportClients = () => {
       let totalSuccess = 0;
       let totalCreated = 0;
       let totalUpdated = 0;
+      let totalSkipped = 0;
       const allErrors: { email: string; error: string }[] = [];
 
       for (let i = 0; i < totalBatches; i++) {
@@ -458,6 +515,7 @@ const AdminImportClients = () => {
           totalSuccess += result.success || 0;
           totalCreated += result.created || 0;
           totalUpdated += result.updated || 0;
+          totalSkipped += result.skipped || 0;
           if (result.errors) allErrors.push(...result.errors);
         }
 
@@ -470,6 +528,7 @@ const AdminImportClients = () => {
         success: totalSuccess,
         created: totalCreated,
         updated: totalUpdated,
+        skipped: totalSkipped + stats.alreadyImported,
         errors: allErrors,
       });
 
@@ -525,18 +584,25 @@ const AdminImportClients = () => {
                 type="file"
                 accept=".csv"
                 onChange={handleFileUpload}
+                disabled={checkingExisting}
                 className="block w-full text-sm text-muted-foreground
                   file:mr-4 file:py-2 file:px-4
                   file:rounded-md file:border-0
                   file:text-sm file:font-semibold
                   file:bg-primary file:text-primary-foreground
                   hover:file:bg-primary/90
-                  cursor-pointer"
+                  cursor-pointer disabled:opacity-50"
               />
               {file && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <FileText className="h-4 w-4" />
                   {file.name}
+                </div>
+              )}
+              {checkingExisting && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  Verificando registros existentes...
                 </div>
               )}
             </div>
@@ -545,79 +611,82 @@ const AdminImportClients = () => {
 
         {/* Stats Section */}
         {parsedClients.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-2xl font-bold">{stats.totalSales}</p>
-                <p className="text-xs text-muted-foreground">Total Vendas</p>
+                <div className="text-2xl font-bold text-foreground">{stats.totalSales}</div>
+                <div className="text-xs text-muted-foreground">Total Vendas</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-2xl font-bold text-green-500">{stats.paidSales}</p>
-                <p className="text-xs text-muted-foreground">Pagas</p>
+                <div className="text-2xl font-bold text-green-500">{stats.paidSales}</div>
+                <div className="text-xs text-muted-foreground">Vendas Pagas</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-2xl font-bold text-yellow-500">{stats.ignoredSales}</p>
-                <p className="text-xs text-muted-foreground">Ignoradas</p>
+                <div className="text-2xl font-bold text-blue-500">{stats.newToImport}</div>
+                <div className="text-xs text-muted-foreground">Novos</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-muted/50">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-muted-foreground flex items-center justify-center gap-1">
+                  <SkipForward className="h-5 w-5" />
+                  {stats.alreadyImported}
+                </div>
+                <div className="text-xs text-muted-foreground">Já Importados</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-2xl font-bold text-blue-500">{stats.mappedSales}</p>
-                <p className="text-xs text-muted-foreground">Mapeadas</p>
-              </CardContent>
-            </Card>
-            <Card className={stats.unmappedSales > 0 ? "border-red-500" : ""}>
-              <CardContent className="p-4 text-center">
-                <p className={`text-2xl font-bold ${stats.unmappedSales > 0 ? "text-red-500" : "text-muted-foreground"}`}>
-                  {stats.unmappedSales}
-                </p>
-                <p className="text-xs text-muted-foreground">Não Mapeadas</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <p className="text-2xl font-bold text-purple-500">{stats.uniqueClients}</p>
-                <p className="text-xs text-muted-foreground">Clientes</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <p className="text-2xl font-bold text-cyan-500">{stats.totalPacks}</p>
-                <p className="text-xs text-muted-foreground">Packs</p>
+                <div className="text-2xl font-bold text-foreground">{stats.uniqueClients}</div>
+                <div className="text-xs text-muted-foreground">Clientes Novos</div>
               </CardContent>
             </Card>
           </div>
         )}
 
+        {/* Already imported message */}
+        {stats.alreadyImported > 0 && parsedClients.length === 0 && (
+          <Card className="border-blue-500/50 bg-blue-500/10">
+            <CardContent className="p-6 text-center">
+              <SkipForward className="h-12 w-12 mx-auto text-blue-500 mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Todos os registros já foram importados!
+              </h3>
+              <p className="text-muted-foreground">
+                {stats.alreadyImported} registros deste CSV já existem no sistema.
+                Não há nada novo para importar.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Unmapped Products Warning */}
         {unmappedProducts.size > 0 && (
-          <Card className="border-red-500 bg-red-500/10">
+          <Card className="border-yellow-500/50 bg-yellow-500/10">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-500">
+              <CardTitle className="flex items-center gap-2 text-yellow-500">
                 <AlertTriangle className="h-5 w-5" />
-                Produtos Não Mapeados ({stats.unmappedSales} vendas)
+                Produtos Não Mapeados ({stats.unmappedSales})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Os seguintes produtos não foram reconhecidos e suas vendas serão ignoradas:
-              </p>
               <ScrollArea className="h-40">
                 <div className="space-y-1">
-                  {Array.from(unmappedProducts.entries())
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([product, count]) => (
-                      <div key={product} className="flex justify-between text-sm">
-                        <span className="font-mono text-xs truncate max-w-[80%]">{product}</span>
-                        <span className="text-red-500 font-bold">{count}x</span>
-                      </div>
-                    ))}
+                  {Array.from(unmappedProducts.entries()).map(([product, count]) => (
+                    <div key={product} className="flex justify-between text-sm">
+                      <span className="text-muted-foreground truncate mr-4">{product}</span>
+                      <span className="text-yellow-500 font-medium">{count}x</span>
+                    </div>
+                  ))}
                 </div>
               </ScrollArea>
+              <p className="text-xs text-muted-foreground mt-4">
+                Adicione estes produtos ao PRODUCT_MAPPING para importá-los.
+              </p>
             </CardContent>
           </Card>
         )}
@@ -628,19 +697,18 @@ const AdminImportClients = () => {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Preview dos Clientes ({parsedClients.length})
+                Clientes para Importar ({parsedClients.length})
               </CardTitle>
-              <Button 
-                onClick={handleImport} 
-                disabled={importing}
-                className="gap-2"
-              >
+              <Button onClick={handleImport} disabled={importing}>
                 {importing ? (
-                  <>Importando... {importProgress}%</>
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Importando...
+                  </>
                 ) : (
                   <>
-                    <Package className="h-4 w-4" />
-                    Importar Todos
+                    <Upload className="h-4 w-4 mr-2" />
+                    Importar Clientes
                   </>
                 )}
               </Button>
@@ -649,48 +717,27 @@ const AdminImportClients = () => {
               {importing && (
                 <div className="mb-4">
                   <Progress value={importProgress} className="h-2" />
+                  <p className="text-sm text-muted-foreground mt-1 text-center">{importProgress}%</p>
                 </div>
               )}
-              <ScrollArea className="h-96">
+              <ScrollArea className="h-64">
                 <div className="space-y-2">
-                  {parsedClients.slice(0, 100).map((client, idx) => (
-                    <div key={idx} className="p-3 border rounded-lg">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="font-medium">{client.name || "Sem nome"}</p>
-                          <p className="text-sm text-muted-foreground">{client.email}</p>
-                          {client.phone && (
-                            <p className="text-xs text-muted-foreground">{client.phone}</p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">{client.packs.length} pack(s)</p>
-                          <div className="flex flex-wrap gap-1 justify-end mt-1">
-                            {client.packs.map((pack, packIdx) => (
-                              <span 
-                                key={packIdx} 
-                                className={`text-xs px-2 py-0.5 rounded ${
-                                  pack.access_type === "vitalicio" 
-                                    ? "bg-purple-500/20 text-purple-400"
-                                    : pack.access_type === "1_ano"
-                                    ? "bg-blue-500/20 text-blue-400"
-                                    : pack.access_type === "6_meses"
-                                    ? "bg-green-500/20 text-green-400"
-                                    : "bg-yellow-500/20 text-yellow-400"
-                                }`}
-                              >
-                                {pack.pack_slug} ({pack.access_type})
-                              </span>
-                            ))}
-                          </div>
-                        </div>
+                  {parsedClients.slice(0, 50).map((client, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                      <div>
+                        <div className="font-medium text-foreground">{client.email}</div>
+                        <div className="text-xs text-muted-foreground">{client.name || "Sem nome"}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-foreground">{client.packs.length} packs</span>
                       </div>
                     </div>
                   ))}
-                  {parsedClients.length > 100 && (
-                    <p className="text-center text-muted-foreground text-sm py-4">
-                      ... e mais {parsedClients.length - 100} clientes
-                    </p>
+                  {parsedClients.length > 50 && (
+                    <div className="text-center text-sm text-muted-foreground py-2">
+                      ... e mais {parsedClients.length - 50} clientes
+                    </div>
                   )}
                 </div>
               </ScrollArea>
@@ -700,48 +747,51 @@ const AdminImportClients = () => {
 
         {/* Import Result */}
         {importResult && (
-          <Card className={importResult.errors.length > 0 ? "border-yellow-500" : "border-green-500"}>
+          <Card className={importResult.errors.length === 0 ? "border-green-500/50 bg-green-500/10" : "border-yellow-500/50 bg-yellow-500/10"}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                {importResult.errors.length > 0 ? (
-                  <AlertCircle className="h-5 w-5 text-yellow-500" />
-                ) : (
+                {importResult.errors.length === 0 ? (
                   <CheckCircle className="h-5 w-5 text-green-500" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-yellow-500" />
                 )}
                 Resultado da Importação
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold text-green-500">{importResult.success}</p>
-                  <p className="text-sm text-muted-foreground">Sucesso</p>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-500">{importResult.success}</div>
+                  <div className="text-xs text-muted-foreground">Sucesso</div>
                 </div>
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold text-blue-500">{importResult.created}</p>
-                  <p className="text-sm text-muted-foreground">Criados</p>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-500">{importResult.created}</div>
+                  <div className="text-xs text-muted-foreground">Criados</div>
                 </div>
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold text-purple-500">{importResult.updated}</p>
-                  <p className="text-sm text-muted-foreground">Atualizados</p>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-500">{importResult.updated}</div>
+                  <div className="text-xs text-muted-foreground">Atualizados</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-muted-foreground">{importResult.skipped}</div>
+                  <div className="text-xs text-muted-foreground">Ignorados</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-500">{importResult.errors.length}</div>
+                  <div className="text-xs text-muted-foreground">Erros</div>
                 </div>
               </div>
-              
+
               {importResult.errors.length > 0 && (
-                <div className="mt-4">
-                  <p className="font-medium text-red-500 mb-2">
-                    Erros ({importResult.errors.length}):
-                  </p>
-                  <ScrollArea className="h-40">
-                    <div className="space-y-1">
-                      {importResult.errors.map((err, idx) => (
-                        <div key={idx} className="text-sm text-red-400">
-                          {err.email}: {err.error}
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
+                <ScrollArea className="h-32">
+                  <div className="space-y-1">
+                    {importResult.errors.map((err, idx) => (
+                      <div key={idx} className="text-sm text-red-500">
+                        {err.email}: {err.error}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
               )}
             </CardContent>
           </Card>
