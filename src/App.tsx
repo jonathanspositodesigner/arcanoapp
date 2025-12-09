@@ -42,6 +42,7 @@ import NotFound from "./pages/NotFound";
 // Artes system pages
 import UserLoginArtes from "./pages/UserLoginArtes";
 import PlanosArtes from "./pages/PlanosArtes";
+import PlanosArtesMembro from "./pages/PlanosArtesMembro";
 import ChangePasswordArtes from "./pages/ChangePasswordArtes";
 import ForgotPasswordArtes from "./pages/ForgotPasswordArtes";
 import ResetPasswordArtes from "./pages/ResetPasswordArtes";
@@ -116,6 +117,7 @@ const AppContent = () => {
         {/* Artes system routes */}
         <Route path="/login-artes" element={<UserLoginArtes />} />
         <Route path="/planos-artes" element={<PlanosArtes />} />
+        <Route path="/planos-artes-membro" element={<PlanosArtesMembro />} />
         <Route path="/change-password-artes" element={<ChangePasswordArtes />} />
         <Route path="/forgot-password-artes" element={<ForgotPasswordArtes />} />
         <Route path="/reset-password-artes" element={<ResetPasswordArtes />} />

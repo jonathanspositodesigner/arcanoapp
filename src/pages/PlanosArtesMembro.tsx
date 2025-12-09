@@ -3,8 +3,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, ArrowLeft, Gift, Clock, Percent } from "lucide-react";
+import { Check, Star, ArrowLeft, Gift, Clock, Percent, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 
 interface Pack {
   id: string;
@@ -13,17 +14,17 @@ interface Pack {
   cover_url: string | null;
 }
 
-const PlanosArtes = () => {
+const PlanosArtesMembro = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const packSlug = searchParams.get("pack");
-  const isRenewal = searchParams.get("renovacao") === "true";
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [packs, setPacks] = useState<Pack[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user, isPremium, userPacks, isLoading: authLoading } = usePremiumArtesStatus();
 
-  // Discount configuration for renewals
-  const RENEWAL_DISCOUNT = 0.30; // 30% discount
+  // Member discount configuration
+  const MEMBER_DISCOUNT = 0.20; // 20% discount
 
   useEffect(() => {
     fetchPacks();
@@ -38,6 +39,13 @@ const PlanosArtes = () => {
     }
   }, [packSlug, packs]);
 
+  // Redirect non-members to normal pricing page
+  useEffect(() => {
+    if (!authLoading && !isPremium) {
+      navigate(packSlug ? `/planos-artes?pack=${packSlug}` : "/planos-artes");
+    }
+  }, [authLoading, isPremium, packSlug, navigate]);
+
   const fetchPacks = async () => {
     const { data, error } = await supabase
       .from("artes_packs")
@@ -51,6 +59,11 @@ const PlanosArtes = () => {
     setLoading(false);
   };
 
+  // Filter out packs user already owns
+  const availablePacks = packs.filter(pack => 
+    !userPacks.some(up => up.pack_slug === pack.slug)
+  );
+
   // Original prices in centavos
   const originalPrices = {
     "6_meses": 2700,
@@ -60,11 +73,8 @@ const PlanosArtes = () => {
 
   const calculatePrice = (type: string) => {
     const original = originalPrices[type as keyof typeof originalPrices];
-    if (isRenewal) {
-      const discounted = original * (1 - RENEWAL_DISCOUNT);
-      return discounted / 100;
-    }
-    return original / 100;
+    const discounted = original * (1 - MEMBER_DISCOUNT);
+    return discounted / 100;
   };
 
   const formatPrice = (value: number) => {
@@ -123,13 +133,12 @@ const PlanosArtes = () => {
   ];
 
   const handleSelectOption = (accessType: string) => {
-    // TODO: Integrate with Greenn payment for specific pack and access type
-    // The product name in Greenn should follow pattern: "Pack {PackName} - {AccessType}"
-    // E.g.: "Pack Arcano Vol.1 - 6 meses", "Pack Halloween - 1 ano", "Pack Carnaval - vitalício"
+    // TODO: Integrate with Greenn payment for member discount checkout
+    // Use specific checkout links for 20% OFF member pricing
     window.open("https://voxvisual.com.br/linksbio/", "_blank");
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2d4a5e]"></div>
@@ -150,78 +159,83 @@ const PlanosArtes = () => {
         </Button>
 
         <div className="text-center mb-8">
-          {isRenewal && (
-            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg px-4 py-2 mb-4">
-              <Percent className="h-5 w-5 mr-2" />
-              30% OFF - Renovação Especial
-            </Badge>
-          )}
+          <Badge className="bg-gradient-to-r from-purple-500 to-violet-500 text-white text-lg px-4 py-2 mb-4">
+            <Crown className="h-5 w-5 mr-2" />
+            20% OFF - Desconto Exclusivo para Membros
+          </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {isRenewal 
-              ? `Renove seu acesso ao ${selectedPack?.name || "Pack"}`
-              : selectedPack 
-                ? `Adquira o ${selectedPack.name}` 
-                : "Escolha seu Pack"
+            {selectedPack 
+              ? `Adquira o ${selectedPack.name}` 
+              : "Escolha um novo Pack"
             }
           </h1>
           <p className="text-white/60 max-w-2xl mx-auto">
-            {isRenewal
-              ? "Aproveite 30% de desconto na renovação do seu acesso!"
-              : selectedPack 
-                ? "Escolha o tipo de acesso ideal para você"
-                : "Selecione um pack para ver as opções de compra"
+            {selectedPack 
+              ? "Como membro, você tem 20% de desconto em todos os novos packs!"
+              : "Selecione um pack para ver as opções de compra com desconto de membro"
             }
           </p>
         </div>
 
-        {!selectedPack && !isRenewal ? (
-          // Show pack selection only for normal pricing (not renewal)
+        {!selectedPack ? (
+          // Show pack selection (only packs user doesn't own)
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {packs.map((pack) => (
-              <Card
-                key={pack.id}
-                className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all"
-                onClick={() => setSelectedPack(pack)}
-              >
-                <CardContent className="p-4">
-                  {pack.cover_url ? (
-                    <img
-                      src={pack.cover_url}
-                      alt={pack.name}
-                      className="w-full aspect-square object-cover rounded-lg mb-3"
-                    />
-                  ) : (
-                    <div className="w-full aspect-square bg-[#2d4a5e]/30 rounded-lg mb-3 flex items-center justify-center">
-                      <Star className="h-8 w-8 text-[#2d4a5e]" />
-                    </div>
-                  )}
-                  <h3 className="text-white font-medium text-center">{pack.name}</h3>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          // Show access options for selected pack (or renewal pack)
-          <>
-            {/* Hide "Escolher outro pack" button for renewals */}
-            {!isRenewal && (
-              <div className="flex justify-center mb-6">
-                <Button
-                  variant="outline"
-                  className="bg-[#2d4a5e]/30 border-[#2d4a5e] text-white hover:bg-[#2d4a5e]/50"
-                  onClick={() => setSelectedPack(null)}
-                >
-                  Escolher outro pack
+            {availablePacks.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <Crown className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">Você já possui todos os packs!</h3>
+                <p className="text-white/60 mb-4">Parabéns, você tem acesso completo à biblioteca.</p>
+                <Button onClick={() => navigate("/biblioteca-artes")}>
+                  Voltar para Biblioteca
                 </Button>
               </div>
+            ) : (
+              availablePacks.map((pack) => (
+                <Card
+                  key={pack.id}
+                  className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-purple-500 transition-all relative"
+                  onClick={() => setSelectedPack(pack)}
+                >
+                  <Badge className="absolute top-2 right-2 bg-purple-500/20 text-purple-400 text-xs">
+                    -20%
+                  </Badge>
+                  <CardContent className="p-4">
+                    {pack.cover_url ? (
+                      <img
+                        src={pack.cover_url}
+                        alt={pack.name}
+                        className="w-full aspect-square object-cover rounded-lg mb-3"
+                      />
+                    ) : (
+                      <div className="w-full aspect-square bg-[#2d4a5e]/30 rounded-lg mb-3 flex items-center justify-center">
+                        <Star className="h-8 w-8 text-[#2d4a5e]" />
+                      </div>
+                    )}
+                    <h3 className="text-white font-medium text-center">{pack.name}</h3>
+                  </CardContent>
+                </Card>
+              ))
             )}
+          </div>
+        ) : (
+          // Show access options for selected pack
+          <>
+            <div className="flex justify-center mb-6">
+              <Button
+                variant="outline"
+                className="bg-[#2d4a5e]/30 border-[#2d4a5e] text-white hover:bg-[#2d4a5e]/50"
+                onClick={() => setSelectedPack(null)}
+              >
+                Escolher outro pack
+              </Button>
+            </div>
 
             {selectedPack.cover_url && (
               <div className="flex justify-center mb-8">
                 <img
                   src={selectedPack.cover_url}
                   alt={selectedPack.name}
-                  className="w-32 h-32 object-cover rounded-lg border-2 border-[#2d4a5e]/50"
+                  className="w-32 h-32 object-cover rounded-lg border-2 border-purple-500/50"
                 />
               </div>
             )}
@@ -233,11 +247,11 @@ const PlanosArtes = () => {
                   <Card
                     key={option.type}
                     className={`relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30 ${
-                      option.highlighted ? "ring-2 ring-[#2d4a5e] scale-105" : ""
+                      option.highlighted ? "ring-2 ring-purple-500 scale-105" : ""
                     }`}
                   >
                     {option.highlighted && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
                         Melhor Custo-Benefício
                       </div>
                     )}
@@ -248,18 +262,16 @@ const PlanosArtes = () => {
                       </div>
                     )}
                     <CardHeader className="text-center pt-8">
-                      <div className="mx-auto w-12 h-12 bg-[#2d4a5e]/30 rounded-full flex items-center justify-center mb-3">
-                        <IconComponent className="h-6 w-6 text-[#2d4a5e]" />
+                      <div className="mx-auto w-12 h-12 bg-purple-500/30 rounded-full flex items-center justify-center mb-3">
+                        <IconComponent className="h-6 w-6 text-purple-400" />
                       </div>
                       <CardTitle className="text-lg text-white">{option.label}</CardTitle>
                       <div className="mt-4">
-                        {isRenewal && (
-                          <div className="flex items-center justify-center gap-2 mb-1">
-                            <span className="text-white/40 line-through text-lg">{option.originalPrice}</span>
-                            <Badge className="bg-green-500/20 text-green-400 text-xs">-30%</Badge>
-                          </div>
-                        )}
-                        <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : 'text-white'}`}>
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <span className="text-white/40 line-through text-lg">{option.originalPrice}</span>
+                          <Badge className="bg-purple-500/20 text-purple-400 text-xs">-20%</Badge>
+                        </div>
+                        <span className="text-3xl font-bold text-purple-400">
                           {option.price}
                         </span>
                         <span className="text-white/60 text-sm block mt-1">pagamento único</span>
@@ -269,7 +281,7 @@ const PlanosArtes = () => {
                       <ul className="space-y-3 mb-6">
                         {option.features.map((feature) => (
                           <li key={feature} className="flex items-start gap-2 text-white/80">
-                            <Check className="h-4 w-4 text-[#2d4a5e] mt-0.5 shrink-0" />
+                            <Check className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
                             <span className="text-sm">{feature}</span>
                           </li>
                         ))}
@@ -277,15 +289,13 @@ const PlanosArtes = () => {
                       <Button
                         className={`w-full ${
                           option.highlighted
-                            ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30 animate-pulse"
-                            : isRenewal
-                              ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-                              : "bg-[#2d4a5e]/50 hover:bg-[#2d4a5e] text-white"
+                            ? "bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white font-bold shadow-lg shadow-purple-500/30 animate-pulse"
+                            : "bg-gradient-to-r from-purple-500/80 to-violet-500/80 hover:from-purple-500 hover:to-violet-500 text-white"
                         }`}
                         onClick={() => handleSelectOption(option.type)}
                       >
-                        <Star className="h-4 w-4 mr-2" />
-                        {isRenewal ? "Renovar Agora" : option.buttonText}
+                        <Crown className="h-4 w-4 mr-2" />
+                        Comprar com Desconto
                       </Button>
                     </CardContent>
                   </Card>
@@ -294,19 +304,9 @@ const PlanosArtes = () => {
             </div>
           </>
         )}
-
-        <div className="text-center mt-8">
-          <Button
-            variant="link"
-            className="text-[#2d4a5e] hover:text-[#3d5a6e]"
-            onClick={() => navigate("/login-artes")}
-          >
-            Já comprei um pack
-          </Button>
-        </div>
       </div>
     </div>
   );
 };
 
-export default PlanosArtes;
+export default PlanosArtesMembro;

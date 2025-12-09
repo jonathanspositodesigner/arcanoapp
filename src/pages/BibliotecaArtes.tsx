@@ -832,6 +832,12 @@ const BibliotecaArtes = () => {
                     }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
                               Renovar com Desconto
+                            </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-purple-500 to-violet-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                      e.stopPropagation();
+                      navigate(`/planos-artes-membro?pack=${packSlug}`);
+                    }}>
+                              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                              20% OFF Membro
                             </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
                       e.stopPropagation();
                       navigate(`/planos-artes?pack=${packSlug}`);
@@ -937,6 +943,12 @@ const BibliotecaArtes = () => {
                     }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
                               Renovar com Desconto
+                            </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-purple-500 to-violet-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                      e.stopPropagation();
+                      navigate(`/planos-artes-membro?pack=${packSlug}`);
+                    }}>
+                              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                              20% OFF Membro
                             </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
                       e.stopPropagation();
                       navigate(`/planos-artes?pack=${packSlug}`);
