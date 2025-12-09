@@ -254,8 +254,41 @@ const AdminPackPurchases = () => {
 
         if (existingProfile) {
           userId = existingProfile.id;
+          
+          // Profile exists, update password via edge function to ensure it's the email
+          const passwordToUse = formData.email.toLowerCase().trim();
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session) {
+            const response = await fetch(
+              `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/update-user-password-artes`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({ 
+                  user_id: userId, 
+                  new_password: passwordToUse 
+                })
+              }
+            );
+
+            if (!response.ok) {
+              const result = await response.json();
+              console.error('Error updating password:', result);
+            }
+          }
+
+          // Update profile info
+          await supabase.from('profiles').update({
+            name: formData.name,
+            phone: formData.phone,
+            password_changed: false
+          }).eq('id', userId);
         } else {
-          // Senha sempre é o email do cliente
+          // No profile exists, try to create new user
           const passwordToUse = formData.email.toLowerCase().trim();
 
           const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -266,8 +299,19 @@ const AdminPackPurchases = () => {
             }
           });
 
-          if (authError || !authData.user) {
-            toast.error("Erro ao criar usuário: " + (authError?.message || "Usuário não criado"));
+          if (authError) {
+            // Check if user already exists in Auth but not in profiles
+            if (authError.message.includes('already registered') || authError.message.includes('already been registered')) {
+              // User exists in Auth but no profile - we need to find the user and update password
+              toast.error("Este email já está registrado no sistema. Use a função de editar para atualizar.");
+              return;
+            }
+            toast.error("Erro ao criar usuário: " + authError.message);
+            return;
+          }
+
+          if (!authData.user) {
+            toast.error("Erro ao criar usuário: Usuário não retornado");
             return;
           }
 
@@ -341,7 +385,30 @@ const AdminPackPurchases = () => {
       // Delete premium_artes_users if exists
       await supabase.from('premium_artes_users').delete().eq('user_id', client.user_id);
 
-      toast.success("Cliente excluído com sucesso!");
+      // Delete user from Auth via edge function
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const response = await fetch(
+          `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/delete-auth-user-artes`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ user_id: client.user_id })
+          }
+        );
+
+        const result = await response.json();
+        if (!response.ok) {
+          console.error('Error deleting auth user:', result);
+          toast.error("Erro ao excluir usuário do Auth: " + result.error);
+          return;
+        }
+      }
+
+      toast.success("Cliente excluído completamente!");
       fetchPurchases();
     } catch (error) {
       console.error('Error deleting client:', error);
