@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addMonths, addYears } from "date-fns";
@@ -612,6 +612,14 @@ const AdminPackPurchases = () => {
               <SelectItem value="inactive">Inativos</SelectItem>
             </SelectContent>
           </Select>
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/admin-import-clients')}
+            className="border-primary text-primary hover:bg-primary/10"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Importar CSV
+          </Button>
           <Dialog open={showAddDialog} onOpenChange={(open) => {
             setShowAddDialog(open);
             if (!open) {

@@ -55,6 +55,7 @@ import AdminCategoriesPrompts from "./pages/AdminCategoriesPrompts";
 import AdminManagePacks from "./pages/AdminManagePacks";
 import AdminManageBanners from "./pages/AdminManageBanners";
 import AdminPackPurchases from "./pages/AdminPackPurchases";
+import AdminImportClients from "./pages/AdminImportClients";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { usePageViewTracker } from "./hooks/usePageViewTracker";
@@ -123,6 +124,7 @@ const AppContent = () => {
         <Route path="/admin-manage-packs" element={<AdminManagePacks />} />
         <Route path="/admin-manage-banners" element={<AdminManageBanners />} />
         <Route path="/admin-pack-purchases" element={<AdminPackPurchases />} />
+        <Route path="/admin-import-clients" element={<AdminImportClients />} />
         
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
