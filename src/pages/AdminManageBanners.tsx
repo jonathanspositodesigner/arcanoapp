@@ -311,7 +311,37 @@ const AdminManageBanners = () => {
   }
 
   const renderFormContent = (isEdit: boolean) => (
-    <div className="space-y-4 mt-4">
+    <div className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto pr-2">
+      {/* Live Preview */}
+      {imagePreview && (
+        <div>
+          <Label className="mb-2 block">Pré-visualização</Label>
+          <div className="relative h-32 sm:h-40 rounded-lg overflow-hidden">
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+            <div className="absolute inset-0 flex items-center">
+              <div className="px-4 max-w-[75%]">
+                <h3 className="text-sm sm:text-lg font-bold text-white mb-1 line-clamp-2 leading-tight">
+                  {formData.title || "Título do Banner"}
+                </h3>
+                {formData.description && (
+                  <p className="text-[10px] sm:text-xs text-white/80 mb-2 line-clamp-2">
+                    {formData.description}
+                  </p>
+                )}
+                <span className="inline-block bg-primary text-primary-foreground text-[10px] sm:text-xs px-2 py-1 rounded">
+                  {formData.button_text || "Saiba mais"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div>
         <Label htmlFor={isEdit ? "edit-title" : "add-title"}>Título do Banner</Label>
         <Input
@@ -366,20 +396,19 @@ const AdminManageBanners = () => {
         </p>
         <div className="mt-2">
           {imagePreview ? (
-            <div className="relative">
+            <div className="flex items-center gap-2">
               <img
                 src={imagePreview}
-                alt="Preview"
-                className="w-full h-40 object-cover rounded-lg"
+                alt="Imagem"
+                className="w-20 h-12 object-cover rounded"
               />
               <Button
                 type="button"
-                variant="destructive"
+                variant="outline"
                 size="sm"
-                className="absolute top-2 right-2"
                 onClick={() => { setImageFile(null); setImagePreview(null); }}
               >
-                Remover
+                Trocar imagem
               </Button>
             </div>
           ) : (
