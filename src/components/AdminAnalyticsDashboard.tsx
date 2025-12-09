@@ -58,6 +58,8 @@ const [pageViews, setPageViews] = useState({
   const [todayArtesUsage, setTodayArtesUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
   const [usageViewMode, setUsageViewMode] = useState<'prompts' | 'artes'>('prompts');
   const [todayUsageViewMode, setTodayUsageViewMode] = useState<'prompts' | 'artes'>('prompts');
+  const [topCategories, setTopCategories] = useState<{ name: string; count: number }[]>([]);
+  const [topPacks, setTopPacks] = useState<{ name: string; count: number }[]>([]);
   const [sessionStats, setSessionStats] = useState<SessionStats>({
     totalSessions: 0, bounceCount: 0, bounceRate: 0, avgDuration: 0
   });
@@ -297,6 +299,117 @@ const [pageViews, setPageViews] = useState({
           .slice(0, 10);
 
         setTopArtes(ranked);
+      }
+
+      // Fetch top categories for prompts
+      let promptsWithCategoryQuery = supabase.from("prompt_clicks").select("prompt_id, is_admin_prompt");
+      if (threshold) {
+        promptsWithCategoryQuery = promptsWithCategoryQuery.gte("clicked_at", threshold);
+      }
+      const { data: promptClicksWithId } = await promptsWithCategoryQuery;
+
+      if (promptClicksWithId && promptClicksWithId.length > 0) {
+        // Get categories from admin_prompts
+        const adminPromptIds = promptClicksWithId.filter(p => p.is_admin_prompt).map(p => p.prompt_id);
+        const partnerPromptIds = promptClicksWithId.filter(p => !p.is_admin_prompt).map(p => p.prompt_id);
+        
+        const categoryCounts: Record<string, number> = {};
+        
+        if (adminPromptIds.length > 0) {
+          const { data: adminPrompts } = await supabase
+            .from("admin_prompts")
+            .select("id, category")
+            .in("id", adminPromptIds);
+          
+          if (adminPrompts) {
+            const categoryMap: Record<string, string> = {};
+            adminPrompts.forEach(p => { categoryMap[p.id] = p.category; });
+            
+            promptClicksWithId.filter(p => p.is_admin_prompt).forEach(click => {
+              const cat = categoryMap[click.prompt_id];
+              if (cat) categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+            });
+          }
+        }
+        
+        if (partnerPromptIds.length > 0) {
+          const { data: partnerPrompts } = await supabase
+            .from("partner_prompts")
+            .select("id, category")
+            .in("id", partnerPromptIds);
+          
+          if (partnerPrompts) {
+            const categoryMap: Record<string, string> = {};
+            partnerPrompts.forEach(p => { categoryMap[p.id] = p.category; });
+            
+            promptClicksWithId.filter(p => !p.is_admin_prompt).forEach(click => {
+              const cat = categoryMap[click.prompt_id];
+              if (cat) categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+            });
+          }
+        }
+        
+        const topCats = Object.entries(categoryCounts)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+        
+        setTopCategories(topCats);
+      }
+
+      // Fetch top packs for artes
+      let artesWithPackQuery = supabase.from("arte_clicks").select("arte_id, is_admin_arte");
+      if (threshold) {
+        artesWithPackQuery = artesWithPackQuery.gte("clicked_at", threshold);
+      }
+      const { data: arteClicksWithId } = await artesWithPackQuery;
+
+      if (arteClicksWithId && arteClicksWithId.length > 0) {
+        const adminArteIds = arteClicksWithId.filter(a => a.is_admin_arte).map(a => a.arte_id);
+        const partnerArteIds = arteClicksWithId.filter(a => !a.is_admin_arte).map(a => a.arte_id);
+        
+        const packCounts: Record<string, number> = {};
+        
+        if (adminArteIds.length > 0) {
+          const { data: adminArtes } = await supabase
+            .from("admin_artes")
+            .select("id, pack")
+            .in("id", adminArteIds);
+          
+          if (adminArtes) {
+            const packMap: Record<string, string> = {};
+            adminArtes.forEach(a => { packMap[a.id] = a.pack || 'Sem Pack'; });
+            
+            arteClicksWithId.filter(a => a.is_admin_arte).forEach(click => {
+              const pack = packMap[click.arte_id] || 'Sem Pack';
+              packCounts[pack] = (packCounts[pack] || 0) + 1;
+            });
+          }
+        }
+        
+        if (partnerArteIds.length > 0) {
+          const { data: partnerArtes } = await supabase
+            .from("partner_artes")
+            .select("id, pack")
+            .in("id", partnerArteIds);
+          
+          if (partnerArtes) {
+            const packMap: Record<string, string> = {};
+            partnerArtes.forEach(a => { packMap[a.id] = a.pack || 'Sem Pack'; });
+            
+            arteClicksWithId.filter(a => !a.is_admin_arte).forEach(click => {
+              const pack = packMap[click.arte_id] || 'Sem Pack';
+              packCounts[pack] = (packCounts[pack] || 0) + 1;
+            });
+          }
+        }
+        
+        const topPacksList = Object.entries(packCounts)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+        
+        setTopPacks(topPacksList);
       }
 
       // Fetch plan usage stats (copies by plan type)
@@ -921,11 +1034,11 @@ const [pageViews, setPageViews] = useState({
               )}
             </Card>
 
-            {/* Today's Usage Chart */}
+            {/* Top Categories/Packs Chart */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-medium text-foreground">
-                  {todayUsageViewMode === 'prompts' ? 'Uso de Hoje - Prompts' : 'Uso de Hoje - Artes'}
+                  {todayUsageViewMode === 'prompts' ? 'Top 5 Categorias - Prompts' : 'Top 5 Packs - Artes'}
                 </h3>
                 <div className="flex gap-1">
                   <Button
@@ -948,20 +1061,18 @@ const [pageViews, setPageViews] = useState({
               </div>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={
-                    todayUsageViewMode === 'prompts' 
-                      ? planUsageStats.filter(s => s.plan !== "Arcano Unlimited")
-                      : artesUsageStats
-                  }>
+                  <BarChart 
+                    data={todayUsageViewMode === 'prompts' ? topCategories : topPacks}
+                    layout="vertical"
+                  >
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis 
-                      dataKey="plan" 
-                      tick={{ fontSize: 11 }}
-                      className="text-muted-foreground"
-                    />
+                    <XAxis type="number" tick={{ fontSize: 11 }} className="text-muted-foreground" />
                     <YAxis 
-                      tick={{ fontSize: 12 }}
+                      type="category"
+                      dataKey="name" 
+                      tick={{ fontSize: 10 }}
                       className="text-muted-foreground"
+                      width={100}
                     />
                     <Tooltip 
                       contentStyle={{ 
@@ -972,47 +1083,27 @@ const [pageViews, setPageViews] = useState({
                       labelStyle={{ color: "hsl(var(--foreground))" }}
                     />
                     <Bar 
-                      dataKey="copies" 
-                      fill="#8b5cf6" 
-                      radius={[4, 4, 0, 0]}
-                      name="Cópias"
-                    />
-                    <Bar 
-                      dataKey="users" 
-                      fill="#f97316" 
-                      radius={[4, 4, 0, 0]}
-                      name="Usuários"
+                      dataKey="count" 
+                      fill={todayUsageViewMode === 'prompts' ? "#8b5cf6" : "#f59e0b"}
+                      radius={[0, 4, 4, 0]}
+                      name="Cliques"
                     />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-4 text-center">
-                {todayUsageViewMode === 'prompts' ? (
-                  <>
-                    <div className="bg-secondary rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground">Básico (10/dia)</p>
-                      <p className="text-lg font-bold text-orange-500">{todayUsage.basicUsed}</p>
-                      <p className="text-xs text-muted-foreground">cópias hoje</p>
-                    </div>
-                    <div className="bg-secondary rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground">Pro (24/dia)</p>
-                      <p className="text-lg font-bold text-purple-500">{todayUsage.proUsed}</p>
-                      <p className="text-xs text-muted-foreground">cópias hoje</p>
-                    </div>
-                  </>
+              <div className="mt-4 space-y-2">
+                {(todayUsageViewMode === 'prompts' ? topCategories : topPacks).length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center">Nenhum dado registrado</p>
                 ) : (
-                  <>
-                    <div className="bg-secondary rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground">Premium Artes</p>
-                      <p className="text-lg font-bold text-orange-500">{todayArtesUsage.basicUsed}</p>
-                      <p className="text-xs text-muted-foreground">cópias hoje</p>
+                  (todayUsageViewMode === 'prompts' ? topCategories : topPacks).map((item, index) => (
+                    <div key={item.name} className="flex items-center justify-between text-sm bg-secondary/50 rounded-lg px-3 py-2">
+                      <span className="flex items-center gap-2">
+                        <span className="font-bold text-primary">{index + 1}.</span>
+                        <span className="text-foreground truncate">{item.name}</span>
+                      </span>
+                      <span className="font-bold text-primary">{item.count}</span>
                     </div>
-                    <div className="bg-secondary rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground">Pack Users</p>
-                      <p className="text-lg font-bold text-purple-500">{todayArtesUsage.proUsed}</p>
-                      <p className="text-xs text-muted-foreground">cópias hoje</p>
-                    </div>
-                  </>
+                  ))
                 )}
               </div>
             </Card>
