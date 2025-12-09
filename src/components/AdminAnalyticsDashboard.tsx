@@ -49,6 +49,8 @@ const [pageViews, setPageViews] = useState({
   });
   const [installations, setInstallations] = useState({ total: 0, mobile: 0, desktop: 0 });
   const [topPrompts, setTopPrompts] = useState<PromptRanking[]>([]);
+  const [topArtes, setTopArtes] = useState<PromptRanking[]>([]);
+  const [topRankingViewMode, setTopRankingViewMode] = useState<'prompts' | 'artes'>('prompts');
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [planUsageStats, setPlanUsageStats] = useState<PlanUsageStats[]>([]);
   const [artesUsageStats, setArtesUsageStats] = useState<PlanUsageStats[]>([]);
@@ -274,6 +276,27 @@ const [pageViews, setPageViews] = useState({
           .slice(0, 10);
 
         setTopPrompts(ranked);
+      }
+
+      // Fetch top artes
+      let artesClicksQuery = supabase.from("arte_clicks").select("arte_title");
+      if (threshold) {
+        artesClicksQuery = artesClicksQuery.gte("clicked_at", threshold);
+      }
+      const { data: artesClicksData } = await artesClicksQuery;
+
+      if (artesClicksData) {
+        const clickCounts: Record<string, number> = {};
+        artesClicksData.forEach((click) => {
+          clickCounts[click.arte_title] = (clickCounts[click.arte_title] || 0) + 1;
+        });
+
+        const ranked = Object.entries(clickCounts)
+          .map(([prompt_title, click_count]) => ({ prompt_title, click_count }))
+          .sort((a, b) => b.click_count - a.click_count)
+          .slice(0, 10);
+
+        setTopArtes(ranked);
       }
 
       // Fetch plan usage stats (copies by plan type)
@@ -721,25 +744,47 @@ const [pageViews, setPageViews] = useState({
               </div>
             </Card>
 
-            {/* Top Prompts Card */}
+            {/* Top Prompts/Artes Card */}
             <Card className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-yellow-500/20 rounded-full">
-                  <Trophy className="h-6 w-6 text-yellow-500" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-yellow-500/20 rounded-full">
+                    <Trophy className="h-6 w-6 text-yellow-500" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">
+                    {topRankingViewMode === 'prompts' ? 'Top 10 Prompts Copiados' : 'Top 10 Artes Copiadas'}
+                  </p>
                 </div>
-                <p className="text-sm font-medium text-foreground">Top 10 Prompts Copiados</p>
+                <div className="flex gap-1">
+                  <Button
+                    variant={topRankingViewMode === 'prompts' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTopRankingViewMode('prompts')}
+                    className="h-7 px-2 text-xs"
+                  >
+                    Prompts
+                  </Button>
+                  <Button
+                    variant={topRankingViewMode === 'artes' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTopRankingViewMode('artes')}
+                    className="h-7 px-2 text-xs"
+                  >
+                    Artes
+                  </Button>
+                </div>
               </div>
-              {topPrompts.length === 0 ? (
+              {(topRankingViewMode === 'prompts' ? topPrompts : topArtes).length === 0 ? (
                 <p className="text-sm text-muted-foreground">Nenhum clique registrado</p>
               ) : (
                 <ul className="space-y-2 max-h-[200px] overflow-y-auto">
-                  {topPrompts.map((prompt, index) => (
-                    <li key={prompt.prompt_title} className="flex items-center justify-between text-sm">
+                  {(topRankingViewMode === 'prompts' ? topPrompts : topArtes).map((item, index) => (
+                    <li key={item.prompt_title} className="flex items-center justify-between text-sm">
                       <span className="flex items-center gap-2 truncate">
                         <span className="font-bold text-primary">{index + 1}.</span>
-                        <span className="truncate text-foreground">{prompt.prompt_title}</span>
+                        <span className="truncate text-foreground">{item.prompt_title}</span>
                       </span>
-                      <span className="text-muted-foreground font-medium ml-2">{prompt.click_count}</span>
+                      <span className="text-muted-foreground font-medium ml-2">{item.click_count}</span>
                     </li>
                   ))}
                 </ul>
