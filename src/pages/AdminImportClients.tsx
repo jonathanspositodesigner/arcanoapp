@@ -192,9 +192,17 @@ const AdminImportClients = () => {
   const [parsedClients, setParsedClients] = useState<ParsedClient[]>([]);
   const [rawData, setRawData] = useState<any[]>([]);
   const [importing, setImporting] = useState(false);
-  const [importProgress, setImportProgress] = useState(0);
+  const [localProgress, setLocalProgress] = useState(0);
   const [importResult, setImportResult] = useState<{ success: number; errors: { email: string; error: string }[]; created: number; updated: number; skipped: number } | null>(null);
-  const { startImport, setProgress: setGlobalProgress, finishImport } = useImportProgress();
+  const { 
+    startImport, 
+    updateProgress, 
+    finishImport, 
+    checkJobStatus,
+    isPaused,
+    jobId: activeJobId 
+  } = useImportProgress();
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [unmappedProducts, setUnmappedProducts] = useState<Map<string, number>>(new Map());
   const [existingHashes, setExistingHashes] = useState<Set<string>>(new Set());
   const [checkingExisting, setCheckingExisting] = useState(false);
@@ -479,29 +487,56 @@ const AdminImportClients = () => {
 
   const handleImport = async () => {
     if (parsedClients.length === 0) {
-      toast.error("Nenhum cliente novo para importar");
+      toast.error("Nenhum cliente para importar");
+      return;
+    }
+
+    // Filter out clients with no new packs to import
+    const clientsWithNewPacks = parsedClients.filter(c => c.packs.length > 0);
+    
+    if (clientsWithNewPacks.length === 0) {
+      toast.info("Todos os registros já foram importados anteriormente");
       return;
     }
 
     setImporting(true);
-    setImportProgress(0);
-    
-    const batchSize = 50;
-    const totalBatches = Math.ceil(parsedClients.length / batchSize);
-    startImport(totalBatches);
+    setLocalProgress(0);
+    setImportResult(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
+      // Create import job in database
+      const jobId = await startImport(clientsWithNewPacks.length);
+      if (!jobId) {
+        toast.error("Erro ao iniciar importação");
+        setImporting(false);
+        return;
+      }
+      setCurrentJobId(jobId);
 
+      const batchSize = 10;
+      const totalBatches = Math.ceil(clientsWithNewPacks.length / batchSize);
       let totalSuccess = 0;
       let totalCreated = 0;
       let totalUpdated = 0;
       let totalSkipped = 0;
       const allErrors: { email: string; error: string }[] = [];
+      let processedCount = 0;
 
       for (let i = 0; i < totalBatches; i++) {
-        const batch = parsedClients.slice(i * batchSize, (i + 1) * batchSize);
+        // Check if job was paused or cancelled
+        const status = await checkJobStatus(jobId);
+        if (status === 'cancelled') {
+          toast.info("Importação cancelada");
+          break;
+        }
+        if (status === 'paused') {
+          // Wait and check again
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          i--; // Retry this batch
+          continue;
+        }
+
+        const batch = clientsWithNewPacks.slice(i * batchSize, (i + 1) * batchSize);
         
         const response = await supabase.functions.invoke("import-pack-clients", {
           body: { clients: batch },
@@ -519,9 +554,16 @@ const AdminImportClients = () => {
           if (result.errors) allErrors.push(...result.errors);
         }
 
+        processedCount = (i + 1) * batchSize;
+        if (processedCount > clientsWithNewPacks.length) {
+          processedCount = clientsWithNewPacks.length;
+        }
+
         const progress = Math.round(((i + 1) / totalBatches) * 100);
-        setImportProgress(progress);
-        setGlobalProgress(i + 1, totalBatches);
+        setLocalProgress(progress);
+        
+        // Update progress in database for realtime sync
+        await updateProgress(jobId, processedCount, totalCreated, totalUpdated, totalSkipped, allErrors.length);
       }
 
       setImportResult({
@@ -532,6 +574,9 @@ const AdminImportClients = () => {
         errors: allErrors,
       });
 
+      // Mark job as completed
+      await finishImport(jobId);
+
       if (allErrors.length === 0) {
         toast.success(`Importação concluída: ${totalSuccess} clientes processados`);
       } else {
@@ -540,9 +585,12 @@ const AdminImportClients = () => {
     } catch (error) {
       console.error("Import error:", error);
       toast.error("Erro na importação");
+      if (currentJobId) {
+        await finishImport(currentJobId);
+      }
     } finally {
       setImporting(false);
-      finishImport();
+      setCurrentJobId(null);
     }
   };
 
@@ -716,8 +764,8 @@ const AdminImportClients = () => {
             <CardContent>
               {importing && (
                 <div className="mb-4">
-                  <Progress value={importProgress} className="h-2" />
-                  <p className="text-sm text-muted-foreground mt-1 text-center">{importProgress}%</p>
+                  <Progress value={localProgress} className="h-2" />
+                  <p className="text-sm text-muted-foreground mt-1 text-center">{localProgress}%</p>
                 </div>
               )}
               <ScrollArea className="h-64">
