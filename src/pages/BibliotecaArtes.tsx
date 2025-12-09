@@ -673,25 +673,27 @@ const BibliotecaArtes = () => {
                   </Button>
                 </div>
 
-                {/* Category Filter */}
-                <div className="mb-6">
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map(category => (
-                      <Button
-                        key={category}
-                        variant={selectedCategory === category ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => {
-                          setSelectedCategory(category);
-                          setCurrentPage(1);
-                        }}
-                        className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}
-                      >
-                        {category}
-                      </Button>
-                    ))}
+                {/* Category Filter - Only for packs, not for bonus */}
+                {activeSection === 'packs' && (
+                  <div className="mb-6">
+                    <div className="flex flex-wrap gap-2">
+                      {categories.map(category => (
+                        <Button
+                          key={category}
+                          variant={selectedCategory === category ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            setSelectedCategory(category);
+                            setCurrentPage(1);
+                          }}
+                          className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}
+                        >
+                          {category}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Artes Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
