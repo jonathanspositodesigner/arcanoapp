@@ -69,7 +69,7 @@ const BibliotecaArtes = () => {
     checkAdmin();
   }, [user]);
 
-  const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
+  const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
   const [allArtes, setAllArtes] = useState<ArteItem[]>([]);
   const [shuffledVerTudo, setShuffledVerTudo] = useState<ArteItem[]>([]);
   const [selectedArte, setSelectedArte] = useState<ArteItem | null>(null);
@@ -80,18 +80,17 @@ const BibliotecaArtes = () => {
   const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
   const [dbCategories, setDbCategories] = useState<string[]>([]);
-  const [selectedPack, setSelectedPack] = useState<string>("Todos os Packs");
+  const [selectedPack, setSelectedPack] = useState<string | null>(null);
 
-  const PACK_OPTIONS = [
-    "Todos os Packs",
-    "Pack Arcano Vol.1",
-    "Pack Arcano Vol.2",
-    "Pack Arcano Vol.3",
-    "Pack de Agendas",
-    "Pack de Halloween",
-    "Pack de Fim de Ano",
-    "Pack de Carnaval",
-    "Atualização Grátis"
+  const PACKS = [
+    { name: "Pack Arcano Vol.1", color: "from-purple-600 to-purple-800" },
+    { name: "Pack Arcano Vol.2", color: "from-blue-600 to-blue-800" },
+    { name: "Pack Arcano Vol.3", color: "from-indigo-600 to-indigo-800" },
+    { name: "Pack de Agendas", color: "from-green-600 to-green-800" },
+    { name: "Pack de Halloween", color: "from-orange-600 to-orange-800" },
+    { name: "Pack de Fim de Ano", color: "from-red-600 to-red-800" },
+    { name: "Pack de Carnaval", color: "from-yellow-500 to-pink-600" },
+    { name: "Atualização Grátis", color: "from-emerald-500 to-teal-600" }
   ];
 
   useEffect(() => {
@@ -196,15 +195,11 @@ const BibliotecaArtes = () => {
   };
 
   const getFilteredAndSortedArtes = () => {
-    // First, apply pack filter
-    const applyPackFilter = (items: ArteItem[]) => {
-      if (selectedPack === "Todos os Packs") return items;
-      return items.filter(a => a.pack === selectedPack);
-    };
-
-    if (selectedCategory === "Ver Tudo") {
-      return applyPackFilter(shuffledVerTudo);
-    }
+    // Must have a pack selected to show artes
+    if (!selectedPack) return [];
+    
+    // Filter by selected pack
+    const packFiltered = allArtes.filter(a => a.pack === selectedPack);
 
     const sortByDate = (a: ArteItem, b: ArteItem) => {
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -212,17 +207,17 @@ const BibliotecaArtes = () => {
       return dateB - dateA;
     };
 
-    if (selectedCategory === "Populares") {
-      return applyPackFilter([...allArtes].sort(sortByClicks));
-    }
-    if (selectedCategory === "Novos") {
-      return applyPackFilter([...allArtes].sort(sortByDate).slice(0, 16));
-    }
-    if (selectedCategory === "Grátis") {
-      return applyPackFilter(allArtes.filter(a => !a.isPremium).sort(sortByDate));
+    // Apply category filter
+    if (selectedCategory === "Todos") {
+      return packFiltered.sort(sortByDate);
     }
 
-    return applyPackFilter(allArtes.filter(a => a.category === selectedCategory).sort(sortByDate));
+    return packFiltered.filter(a => a.category === selectedCategory).sort(sortByDate);
+  };
+
+  // Count artes per pack
+  const getPackArteCount = (packName: string) => {
+    return allArtes.filter(a => a.pack === packName).length;
   };
 
   const filteredArtes = getFilteredAndSortedArtes();
@@ -230,8 +225,8 @@ const BibliotecaArtes = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedArtes = filteredArtes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  // Categories: fixed ones + dynamic from database
-  const categories = ["Populares", "Ver Tudo", "Novos", "Grátis", ...dbCategories];
+  // Categories for filtering within a pack (style categories from database)
+  const categories = ["Todos", ...dbCategories];
 
   const getCategoryIcon = (category: string) => {
     if (category === "Populares") {
@@ -428,50 +423,9 @@ const BibliotecaArtes = () => {
           </div>}
       </header>
 
-      {/* Mobile Bottom Menu Button */}
-      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-        <Button onClick={() => setSidebarOpen(!sidebarOpen)} className="bg-primary hover:bg-primary/90 text-white shadow-xl px-6 py-6 rounded-full">
-          <Menu className="h-6 w-6 mr-2" />
-          <span className="font-semibold">Categorias</span>
-        </Button>
-      </div>
-
-      {/* Overlay */}
-      {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />}
-
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className={`
-          fixed lg:static inset-y-0 left-0 z-40 w-64 bg-card border-r border-border
-          transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          lg:block pt-4 overflow-y-auto
-        `}>
-          <div className="p-4">
-            <h2 className="text-lg font-bold text-foreground mb-4">Categorias</h2>
-            <Select value={selectedCategory} onValueChange={(value) => {
-              setSelectedCategory(value);
-              setSidebarOpen(false);
-            }}>
-              <SelectTrigger className="w-full bg-background border-border">
-                <SelectValue placeholder="Selecione uma categoria" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border border-border z-50">
-                {categories.map(category => (
-                  <SelectItem key={category} value={category}>
-                    <span className="flex items-center">
-                      {getCategoryIcon(category)}
-                      {category}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-6">
+      {/* Main Content */}
+      <div className="p-4 lg:p-6">
+        <div className="max-w-7xl mx-auto">
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               Biblioteca de Artes Arcanas
@@ -481,89 +435,149 @@ const BibliotecaArtes = () => {
             </p>
           </div>
 
-          {/* Pack Filter */}
-          <div className="mb-6">
-            <div className="flex flex-wrap gap-2">
-              {PACK_OPTIONS.map(pack => (
-                <Button
-                  key={pack}
-                  variant={selectedPack === pack ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedPack(pack)}
-                  className={`text-xs sm:text-sm ${selectedPack === pack ? 'bg-primary' : ''}`}
-                >
-                  {pack === "Todos os Packs" && <Package className="h-3 w-3 mr-1" />}
-                  {pack}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {paginatedArtes.map(arte => {
-              const isVideo = isVideoUrl(arte.imageUrl);
-              const arteId = String(arte.id);
-              const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
-              const isAnimating = animatingClicks.has(arteId);
-
-              return (
-                <Card 
-                  key={arte.id} 
-                  className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
-                  onClick={() => handleItemClick(arte)}
-                >
-                  <div className="relative aspect-square">
-                    {isVideo ? (
-                      <SecureVideo
-                        src={arte.imageUrl}
-                        className="w-full h-full object-cover"
-                        isPremium={arte.isPremium || false}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                      />
-                    ) : (
-                      <SecureImage
-                        src={arte.imageUrl}
-                        alt={arte.title}
-                        className="w-full h-full object-cover"
-                        isPremium={arte.isPremium || false}
-                      />
-                    )}
-                    
-                    {arte.isPremium && !isPremium && (
-                      <div className="absolute top-2 right-2">
-                        <Lock className="h-5 w-5 text-white drop-shadow-lg" />
-                      </div>
-                    )}
-                    
-                    <div className="absolute bottom-2 left-2 right-2">
-                      <Badge 
-                        variant="secondary" 
-                        className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}
-                      >
-                        <Copy className="h-2.5 w-2.5" />
-                        {totalClicks}
+          {/* Pack Selection View */}
+          {!selectedPack && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              {PACKS.map(pack => {
+                const arteCount = getPackArteCount(pack.name);
+                return (
+                  <Card 
+                    key={pack.name}
+                    className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
+                    onClick={() => {
+                      setSelectedPack(pack.name);
+                      setSelectedCategory("Todos");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <div className={`aspect-square bg-gradient-to-br ${pack.color} flex flex-col items-center justify-center p-4 text-white`}>
+                      <Package className="h-12 w-12 sm:h-16 sm:w-16 mb-3 opacity-80" />
+                      <h3 className="font-bold text-sm sm:text-lg text-center leading-tight">
+                        {pack.name}
+                      </h3>
+                      <Badge className="mt-2 bg-white/20 text-white border-0 text-xs">
+                        {arteCount} {arteCount === 1 ? 'arte' : 'artes'}
                       </Badge>
                     </div>
-                  </div>
-                  <div className="p-2 sm:p-3">
-                    <h3 className="font-semibold text-sm text-foreground line-clamp-1">
-                      {arte.title}
-                    </h3>
-                    <div className="mt-1">
-                      {getBadgeContent(arte)}
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
+          {/* Artes View (when a pack is selected) */}
+          {selectedPack && (
+            <>
+              {/* Back button and Pack title */}
+              <div className="mb-4 flex items-center gap-3">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setSelectedPack(null);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Voltar
+                </Button>
+                <h2 className="text-lg sm:text-xl font-bold text-foreground">{selectedPack}</h2>
+              </div>
+
+              {/* Category Filter */}
+              <div className="mb-6">
+                <div className="flex flex-wrap gap-2">
+                  {categories.map(category => (
+                    <Button
+                      key={category}
+                      variant={selectedCategory === category ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setSelectedCategory(category);
+                        setCurrentPage(1);
+                      }}
+                      className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Artes Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                {paginatedArtes.map(arte => {
+                  const isVideo = isVideoUrl(arte.imageUrl);
+                  const arteId = String(arte.id);
+                  const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
+                  const isAnimating = animatingClicks.has(arteId);
+
+                  return (
+                    <Card 
+                      key={arte.id} 
+                      className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
+                      onClick={() => handleItemClick(arte)}
+                    >
+                      <div className="relative aspect-square">
+                        {isVideo ? (
+                          <SecureVideo
+                            src={arte.imageUrl}
+                            className="w-full h-full object-cover"
+                            isPremium={arte.isPremium || false}
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                          />
+                        ) : (
+                          <SecureImage
+                            src={arte.imageUrl}
+                            alt={arte.title}
+                            className="w-full h-full object-cover"
+                            isPremium={arte.isPremium || false}
+                          />
+                        )}
+                        
+                        {arte.isPremium && !isPremium && (
+                          <div className="absolute top-2 right-2">
+                            <Lock className="h-5 w-5 text-white drop-shadow-lg" />
+                          </div>
+                        )}
+                        
+                        <div className="absolute bottom-2 left-2 right-2">
+                          <Badge 
+                            variant="secondary" 
+                            className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}
+                          >
+                            <Copy className="h-2.5 w-2.5" />
+                            {totalClicks}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="p-2 sm:p-3">
+                        <h3 className="font-semibold text-sm text-foreground line-clamp-1">
+                          {arte.title}
+                        </h3>
+                        <div className="mt-1">
+                          {getBadgeContent(arte)}
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* Empty state */}
+              {paginatedArtes.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">Nenhuma arte encontrada neste pack</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Pagination - only when pack is selected and has multiple pages */}
+          {selectedPack && totalPages > 1 && (
             <div className="flex justify-center items-center gap-4 mt-8">
               <Button
                 variant="outline"
@@ -584,7 +598,7 @@ const BibliotecaArtes = () => {
               </Button>
             </div>
           )}
-        </main>
+        </div>
       </div>
 
       {/* Arte Detail Modal */}
