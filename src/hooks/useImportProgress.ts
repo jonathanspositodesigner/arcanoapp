@@ -51,7 +51,7 @@ export const useImportProgress = () => {
         .in('status', ['running', 'paused'])
         .order('started_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (data) {
         updateFromJob(data as ImportJob);
@@ -120,13 +120,21 @@ export const useImportProgress = () => {
     }
   };
 
-  const startImport = useCallback(async (total: number): Promise<string | null> => {
+  // Start import and trigger edge function
+  const startImport = useCallback(async (total: number, csvData: any[]): Promise<string | null> => {
+    // Create job with CSV data
     const { data, error } = await supabase
       .from('import_jobs')
       .insert({
         status: 'running',
         total_records: total,
-        processed_records: 0
+        processed_records: 0,
+        created_records: 0,
+        updated_records: 0,
+        skipped_records: 0,
+        error_count: 0,
+        current_batch: 0,
+        csv_data: csvData
       })
       .select()
       .single();
@@ -136,28 +144,16 @@ export const useImportProgress = () => {
       return null;
     }
 
-    return data.id;
-  }, []);
+    // Trigger edge function to process in background
+    try {
+      await supabase.functions.invoke('process-import-job', {
+        body: { job_id: data.id }
+      });
+    } catch (err) {
+      console.error('Failed to trigger import processing:', err);
+    }
 
-  const updateProgress = useCallback(async (
-    jobId: string, 
-    processed: number, 
-    created: number, 
-    updated: number, 
-    skipped: number,
-    errors: number
-  ) => {
-    await supabase
-      .from('import_jobs')
-      .update({
-        processed_records: processed,
-        created_records: created,
-        updated_records: updated,
-        skipped_records: skipped,
-        error_count: errors,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
+    return data.id;
   }, []);
 
   const pauseImport = useCallback(async (jobId: string) => {
@@ -168,10 +164,20 @@ export const useImportProgress = () => {
   }, []);
 
   const resumeImport = useCallback(async (jobId: string) => {
+    // Set status to running
     await supabase
       .from('import_jobs')
       .update({ status: 'running', updated_at: new Date().toISOString() })
       .eq('id', jobId);
+    
+    // Re-trigger edge function to continue processing
+    try {
+      await supabase.functions.invoke('process-import-job', {
+        body: { job_id: jobId }
+      });
+    } catch (err) {
+      console.error('Failed to resume import processing:', err);
+    }
   }, []);
 
   const cancelImport = useCallback(async (jobId: string) => {
@@ -185,35 +191,11 @@ export const useImportProgress = () => {
       .eq('id', jobId);
   }, []);
 
-  const finishImport = useCallback(async (jobId: string) => {
-    await supabase
-      .from('import_jobs')
-      .update({ 
-        status: 'completed', 
-        updated_at: new Date().toISOString(),
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
-  }, []);
-
-  const checkJobStatus = useCallback(async (jobId: string): Promise<string | null> => {
-    const { data } = await supabase
-      .from('import_jobs')
-      .select('status')
-      .eq('id', jobId)
-      .single();
-
-    return data?.status || null;
-  }, []);
-
   return {
     ...importProgress,
     startImport,
-    updateProgress,
     pauseImport,
     resumeImport,
-    cancelImport,
-    finishImport,
-    checkJobStatus
+    cancelImport
   };
 };
