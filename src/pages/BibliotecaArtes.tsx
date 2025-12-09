@@ -826,6 +826,12 @@ const BibliotecaArtes = () => {
                       handleItemClick(arte);
                     }}>
                               Ver detalhes
+                            </Button> : hasExpiredPack(packSlug) ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                      e.stopPropagation();
+                      navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
+                    }}>
+                              <RotateCcw className="h-3 w-3 mr-1" />
+                              Renovar com Desconto
                             </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
                       e.stopPropagation();
                       navigate(`/planos-artes?pack=${packSlug}`);
@@ -925,6 +931,12 @@ const BibliotecaArtes = () => {
                       handleItemClick(arte);
                     }}>
                               Editar Agora 
+                            </Button> : hasExpiredPack(packSlug) ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                      e.stopPropagation();
+                      navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
+                    }}>
+                              <RotateCcw className="h-3 w-3 mr-1" />
+                              Renovar com Desconto
                             </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
                       e.stopPropagation();
                       navigate(`/planos-artes?pack=${packSlug}`);
