@@ -689,8 +689,8 @@ const BibliotecaArtes = () => {
                         
                         {/* Free for everyone Tag */}
                         <div className="absolute top-2 right-2 z-10">
-                          <Badge className="bg-emerald-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
-                            GRÁTIS PARA TODOS
+                          <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                            DISPONÍVEL
                           </Badge>
                         </div>
                         
