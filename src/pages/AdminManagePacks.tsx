@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -29,7 +30,7 @@ const AdminManagePacks = () => {
   const [isTypeSelectOpen, setIsTypeSelectOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingPack, setEditingPack] = useState<Pack | null>(null);
-  const [formData, setFormData] = useState({ name: "", slug: "" });
+  const [formData, setFormData] = useState({ name: "", slug: "", type: "pack" as ItemType });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -133,10 +134,11 @@ const AdminManagePacks = () => {
   };
 
   const handleNameChange = (name: string) => {
-    setFormData({
+    setFormData(prev => ({
+      ...prev,
       name,
       slug: generateSlug(name)
-    });
+    }));
   };
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,7 +244,8 @@ const AdminManagePacks = () => {
         .update({
           name: formData.name,
           slug: formData.slug || generateSlug(formData.name),
-          cover_url: coverUrl
+          cover_url: coverUrl,
+          type: formData.type
         })
         .eq("id", editingPack.id);
 
@@ -300,14 +303,14 @@ const AdminManagePacks = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: "", slug: "" });
+    setFormData({ name: "", slug: "", type: "pack" });
     setCoverFile(null);
     setCoverPreview(null);
   };
 
   const openEdit = (pack: Pack) => {
     setEditingPack(pack);
-    setFormData({ name: pack.name, slug: pack.slug });
+    setFormData({ name: pack.name, slug: pack.slug, type: pack.type });
     setCoverPreview(pack.cover_url);
     setCoverFile(null);
   };
@@ -606,6 +609,46 @@ const AdminManagePacks = () => {
                   onChange={(e) => handleNameChange(e.target.value)}
                   placeholder="Nome do item"
                 />
+              </div>
+              <div>
+                <Label>Categoria</Label>
+                <Select value={formData.type} onValueChange={(value: ItemType) => setFormData({ ...formData, type: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pack">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4" />
+                        Pack
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="bonus">
+                      <div className="flex items-center gap-2">
+                        <Gift className="w-4 h-4" />
+                        Bônus
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="curso">
+                      <div className="flex items-center gap-2">
+                        <GraduationCap className="w-4 h-4" />
+                        Curso
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="tutorial">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4" />
+                        Tutorial
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ferramentas_ia">
+                      <div className="flex items-center gap-2">
+                        <Cpu className="w-4 h-4" />
+                        Ferramentas de IA
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Slug (URL)</Label>
