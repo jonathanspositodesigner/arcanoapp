@@ -39,6 +39,7 @@ interface PackItem {
   cover_url: string | null;
   display_order: number;
   type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample' | 'tutorial' | 'ferramentas_ia';
+  is_visible: boolean;
 }
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -107,7 +108,7 @@ const BibliotecaArtes = () => {
   const fetchPacks = async () => {
     const {
       data
-    } = await supabase.from("artes_packs").select("*").order("display_order", {
+    } = await supabase.from("artes_packs").select("*").eq("is_visible", true).order("display_order", {
       ascending: true
     });
     setDbPacks((data || []) as PackItem[]);
