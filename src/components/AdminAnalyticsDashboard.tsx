@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap } from "lucide-react";
+import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, Funnel, FunnelChart, LabelList, Cell } from "recharts";
 
@@ -33,6 +33,12 @@ interface SessionStats {
   avgDuration: number;
 }
 
+interface CollectionStats {
+  totalCollectionSessions: number;
+  convertedToLibrary: number;
+  conversionRate: number;
+}
+
 const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
   const [pageViews, setPageViews] = useState({ total: 0, mobile: 0, desktop: 0, todayTotal: 0, todayMobile: 0, todayDesktop: 0 });
@@ -43,6 +49,9 @@ const AdminAnalyticsDashboard = () => {
   const [todayUsage, setTodayUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
   const [sessionStats, setSessionStats] = useState<SessionStats>({
     totalSessions: 0, bounceCount: 0, bounceRate: 0, avgDuration: 0
+  });
+  const [collectionStats, setCollectionStats] = useState<CollectionStats>({
+    totalCollectionSessions: 0, convertedToLibrary: 0, conversionRate: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -369,6 +378,54 @@ const AdminAnalyticsDashboard = () => {
         });
       }
 
+      // ========== FETCH COLLECTION STATS ==========
+      let collectionSessionsQuery = supabase
+        .from("user_sessions")
+        .select("session_id, page_path")
+        .like("page_path", "/colecao/%");
+      
+      if (threshold) {
+        collectionSessionsQuery = collectionSessionsQuery.gte("entered_at", threshold);
+      }
+      const { data: collectionSessionsData } = await collectionSessionsQuery;
+
+      if (collectionSessionsData) {
+        // Get unique session IDs that came from collection links
+        const collectionSessionIds = new Set(collectionSessionsData.map(s => s.session_id));
+        const totalCollectionSessions = collectionSessionIds.size;
+
+        // Check how many of these sessions also visited the library
+        let librarySessionsQuery = supabase
+          .from("user_sessions")
+          .select("session_id")
+          .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"]);
+        
+        if (threshold) {
+          librarySessionsQuery = librarySessionsQuery.gte("entered_at", threshold);
+        }
+        const { data: librarySessionsData } = await librarySessionsQuery;
+
+        const librarySessionIds = new Set(librarySessionsData?.map(s => s.session_id) || []);
+        
+        // Count how many collection sessions converted to library visits
+        let convertedToLibrary = 0;
+        collectionSessionIds.forEach(sessionId => {
+          if (librarySessionIds.has(sessionId)) {
+            convertedToLibrary++;
+          }
+        });
+
+        const conversionRate = totalCollectionSessions > 0 
+          ? Math.round((convertedToLibrary / totalCollectionSessions) * 100) 
+          : 0;
+
+        setCollectionStats({
+          totalCollectionSessions,
+          convertedToLibrary,
+          conversionRate
+        });
+      }
+
       setIsLoading(false);
       setLastUpdate(new Date());
     };
@@ -552,7 +609,7 @@ const AdminAnalyticsDashboard = () => {
           </div>
 
           {/* Session Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Bounce Rate Card */}
             <Card className="p-6 border-2 border-red-500/30">
               <div className="flex items-center gap-3 mb-4">
@@ -597,6 +654,31 @@ const AdminAnalyticsDashboard = () => {
                   <p className="text-xs text-muted-foreground">
                     Tempo médio de permanência (excluindo bounces)
                   </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Collection Links Card */}
+            <Card className="p-6 border-2 border-indigo-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-indigo-500/20 rounded-full">
+                  <Link2 className="h-6 w-6 text-indigo-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Links de Coleções</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="text-center">
+                  <p className="text-4xl font-bold text-indigo-500">{collectionStats.totalCollectionSessions}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    sessões via link de coleção
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-border">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Foram para biblioteca:</span>
+                    <span className="font-medium text-green-500">{collectionStats.convertedToLibrary} ({collectionStats.conversionRate}%)</span>
+                  </div>
                 </div>
               </div>
             </Card>
