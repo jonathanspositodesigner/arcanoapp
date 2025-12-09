@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Pack {
   id: string;
@@ -15,12 +17,16 @@ interface Pack {
   slug: string;
   cover_url: string | null;
   display_order: number;
+  type: 'pack' | 'bonus' | 'curso';
 }
+
+type ItemType = 'pack' | 'bonus' | 'curso';
 
 const AdminManagePacks = () => {
   const navigate = useNavigate();
   const [packs, setPacks] = useState<Pack[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isTypeSelectOpen, setIsTypeSelectOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingPack, setEditingPack] = useState<Pack | null>(null);
   const [formData, setFormData] = useState({ name: "", slug: "" });
@@ -29,6 +35,8 @@ const AdminManagePacks = () => {
   const [saving, setSaving] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [selectedType, setSelectedType] = useState<ItemType>('pack');
+  const [activeTab, setActiveTab] = useState<ItemType>('pack');
 
   useEffect(() => {
     checkAdmin();
@@ -58,14 +66,18 @@ const AdminManagePacks = () => {
       .order("display_order", { ascending: true });
 
     if (error) {
-      toast.error("Erro ao carregar packs");
+      toast.error("Erro ao carregar itens");
       return;
     }
-    setPacks(data || []);
+    setPacks((data || []) as Pack[]);
     setLoading(false);
   };
 
-  const handleDragStart = (index: number) => {
+  const getPacksByType = (type: ItemType) => {
+    return packs.filter(p => p.type === type);
+  };
+
+  const handleDragStart = (index: number, type: ItemType) => {
     setDraggedIndex(index);
   };
 
@@ -74,39 +86,36 @@ const AdminManagePacks = () => {
     setDragOverIndex(index);
   };
 
-  const handleDragEnd = async () => {
+  const handleDragEnd = async (type: ItemType) => {
     if (draggedIndex === null || dragOverIndex === null || draggedIndex === dragOverIndex) {
       setDraggedIndex(null);
       setDragOverIndex(null);
       return;
     }
 
-    const newPacks = [...packs];
+    const typeFiltered = getPacksByType(type);
+    const newPacks = [...typeFiltered];
     const [draggedPack] = newPacks.splice(draggedIndex, 1);
     newPacks.splice(dragOverIndex, 0, draggedPack);
 
     // Update local state immediately for smooth UX
-    setPacks(newPacks);
+    const updatedAll = packs.map(p => {
+      if (p.type !== type) return p;
+      const idx = newPacks.findIndex(np => np.id === p.id);
+      return idx >= 0 ? { ...p, display_order: idx } : p;
+    });
+    setPacks(updatedAll);
     setDraggedIndex(null);
     setDragOverIndex(null);
 
     // Update display_order in database
     try {
-      const updates = newPacks.map((pack, index) => ({
-        id: pack.id,
-        name: pack.name,
-        slug: pack.slug,
-        cover_url: pack.cover_url,
-        display_order: index
-      }));
-
-      for (const update of updates) {
+      for (let i = 0; i < newPacks.length; i++) {
         await supabase
           .from("artes_packs")
-          .update({ display_order: update.display_order })
-          .eq("id", update.id);
+          .update({ display_order: i })
+          .eq("id", newPacks[i].id);
       }
-
       toast.success("Ordem atualizada!");
     } catch (error) {
       toast.error("Erro ao salvar ordem");
@@ -161,6 +170,12 @@ const AdminManagePacks = () => {
     return data.publicUrl;
   };
 
+  const handleTypeSelect = (type: ItemType) => {
+    setSelectedType(type);
+    setIsTypeSelectOpen(false);
+    setIsAddOpen(true);
+  };
+
   const handleAdd = async () => {
     if (!formData.name.trim()) {
       toast.error("Nome é obrigatório");
@@ -169,14 +184,16 @@ const AdminManagePacks = () => {
 
     setSaving(true);
     try {
-      const maxOrder = Math.max(...packs.map(p => p.display_order), 0);
+      const typeItems = getPacksByType(selectedType);
+      const maxOrder = typeItems.length > 0 ? Math.max(...typeItems.map(p => p.display_order), 0) : 0;
       
       const { data, error } = await supabase
         .from("artes_packs")
         .insert({
           name: formData.name,
           slug: formData.slug || generateSlug(formData.name),
-          display_order: maxOrder + 1
+          display_order: maxOrder + 1,
+          type: selectedType
         })
         .select()
         .single();
@@ -193,12 +210,13 @@ const AdminManagePacks = () => {
         }
       }
 
-      toast.success("Pack criado com sucesso!");
+      const typeLabel = selectedType === 'pack' ? 'Pack' : selectedType === 'bonus' ? 'Bônus' : 'Curso';
+      toast.success(`${typeLabel} criado com sucesso!`);
       setIsAddOpen(false);
       resetForm();
       fetchPacks();
     } catch (error: any) {
-      toast.error(error.message || "Erro ao criar pack");
+      toast.error(error.message || "Erro ao criar item");
     } finally {
       setSaving(false);
     }
@@ -230,30 +248,33 @@ const AdminManagePacks = () => {
 
       if (error) throw error;
 
-      toast.success("Pack atualizado com sucesso!");
+      toast.success("Item atualizado com sucesso!");
       setEditingPack(null);
       resetForm();
       fetchPacks();
     } catch (error: any) {
-      toast.error(error.message || "Erro ao atualizar pack");
+      toast.error(error.message || "Erro ao atualizar item");
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (pack: Pack) => {
-    if (!confirm(`Tem certeza que deseja excluir o pack "${pack.name}"?`)) return;
+    const typeLabel = pack.type === 'pack' ? 'pack' : pack.type === 'bonus' ? 'bônus' : 'curso';
+    if (!confirm(`Tem certeza que deseja excluir o ${typeLabel} "${pack.name}"?`)) return;
 
     try {
-      // Check if pack has artes
-      const { count } = await supabase
-        .from("admin_artes")
-        .select("*", { count: "exact", head: true })
-        .eq("pack", pack.name);
+      // Check if pack has artes (only for packs and bonus)
+      if (pack.type !== 'curso') {
+        const { count } = await supabase
+          .from("admin_artes")
+          .select("*", { count: "exact", head: true })
+          .eq("pack", pack.name);
 
-      if (count && count > 0) {
-        toast.error(`Este pack possui ${count} artes. Remova ou mova as artes antes de excluir.`);
-        return;
+        if (count && count > 0) {
+          toast.error(`Este ${typeLabel} possui ${count} artes. Remova ou mova as artes antes de excluir.`);
+          return;
+        }
       }
 
       const { error } = await supabase
@@ -271,10 +292,10 @@ const AdminManagePacks = () => {
         }
       }
 
-      toast.success("Pack excluído com sucesso!");
+      toast.success("Item excluído com sucesso!");
       fetchPacks();
     } catch (error: any) {
-      toast.error(error.message || "Erro ao excluir pack");
+      toast.error(error.message || "Erro ao excluir item");
     }
   };
 
@@ -289,6 +310,80 @@ const AdminManagePacks = () => {
     setFormData({ name: pack.name, slug: pack.slug });
     setCoverPreview(pack.cover_url);
     setCoverFile(null);
+  };
+
+  const getTypeIcon = (type: ItemType) => {
+    switch (type) {
+      case 'pack': return <Package className="w-5 h-5" />;
+      case 'bonus': return <Gift className="w-5 h-5" />;
+      case 'curso': return <GraduationCap className="w-5 h-5" />;
+    }
+  };
+
+  const getTypeLabel = (type: ItemType) => {
+    switch (type) {
+      case 'pack': return 'Pack';
+      case 'bonus': return 'Bônus';
+      case 'curso': return 'Curso';
+    }
+  };
+
+  const renderPackList = (type: ItemType) => {
+    const items = getPacksByType(type);
+    
+    return (
+      <div className="grid gap-2">
+        {items.map((pack, index) => (
+          <Card 
+            key={pack.id} 
+            className={`overflow-hidden cursor-grab active:cursor-grabbing transition-all ${
+              draggedIndex === index ? 'opacity-50 scale-95' : ''
+            } ${dragOverIndex === index ? 'border-primary border-2' : ''}`}
+            draggable
+            onDragStart={() => handleDragStart(index, type)}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDragEnd={() => handleDragEnd(type)}
+            onDragLeave={() => setDragOverIndex(null)}
+          >
+            <div className="flex items-center">
+              <div className="p-3 cursor-grab text-muted-foreground hover:text-foreground">
+                <GripVertical className="w-5 h-5" />
+              </div>
+              <div className="w-28 h-20 flex-shrink-0">
+                {pack.cover_url ? (
+                  <img
+                    src={pack.cover_url}
+                    alt={pack.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center">
+                    {getTypeIcon(pack.type)}
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 p-4">
+                <h3 className="font-semibold text-foreground">{pack.name}</h3>
+                <p className="text-sm text-muted-foreground">/{pack.slug}</p>
+              </div>
+              <div className="flex gap-2 p-4">
+                <Button variant="outline" size="sm" onClick={() => openEdit(pack)}>
+                  <Pencil className="w-4 h-4" />
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(pack)}>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+        {items.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            Nenhum {getTypeLabel(type).toLowerCase()} cadastrado
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
@@ -308,27 +403,69 @@ const AdminManagePacks = () => {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>
-            <h1 className="text-2xl font-bold text-foreground">Gerenciar Packs</h1>
+            <h1 className="text-2xl font-bold text-foreground">Gerenciar Conteúdo</h1>
           </div>
           
-          <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) resetForm(); }}>
+          {/* Type Selection Modal */}
+          <Dialog open={isTypeSelectOpen} onOpenChange={setIsTypeSelectOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                Novo Pack
+                Novo
               </Button>
             </DialogTrigger>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>O que você deseja criar?</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-3 mt-4">
+                <Button 
+                  variant="outline" 
+                  className="h-auto py-4 flex flex-col items-center gap-2"
+                  onClick={() => handleTypeSelect('pack')}
+                >
+                  <Package className="w-8 h-8 text-primary" />
+                  <span className="font-medium">Pack</span>
+                  <span className="text-xs text-muted-foreground">Coleção de artes editáveis</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-auto py-4 flex flex-col items-center gap-2"
+                  onClick={() => handleTypeSelect('bonus')}
+                >
+                  <Gift className="w-8 h-8 text-orange-500" />
+                  <span className="font-medium">Bônus</span>
+                  <span className="text-xs text-muted-foreground">Conteúdo extra para membros</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-auto py-4 flex flex-col items-center gap-2"
+                  onClick={() => handleTypeSelect('curso')}
+                >
+                  <GraduationCap className="w-8 h-8 text-blue-500" />
+                  <span className="font-medium">Curso</span>
+                  <span className="text-xs text-muted-foreground">Curso ou treinamento</span>
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Add Item Dialog */}
+          <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) resetForm(); }}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Criar Novo Pack</DialogTitle>
+                <DialogTitle className="flex items-center gap-2">
+                  {getTypeIcon(selectedType)}
+                  Criar Novo {getTypeLabel(selectedType)}
+                </DialogTitle>
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div>
-                  <Label>Nome do Pack</Label>
+                  <Label>Nome</Label>
                   <Input
                     value={formData.name}
                     onChange={(e) => handleNameChange(e.target.value)}
-                    placeholder="Ex: Pack Arcano Vol.7"
+                    placeholder={`Ex: ${selectedType === 'pack' ? 'Pack Arcano Vol.7' : selectedType === 'bonus' ? 'Bônus Especial' : 'Curso de Design'}`}
                   />
                 </div>
                 <div>
@@ -336,7 +473,7 @@ const AdminManagePacks = () => {
                   <Input
                     value={formData.slug}
                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    placeholder="pack-arcano-vol-7"
+                    placeholder="slug-do-item"
                   />
                 </div>
                 <div>
@@ -373,77 +510,63 @@ const AdminManagePacks = () => {
                   </div>
                 </div>
                 <Button onClick={handleAdd} disabled={saving} className="w-full">
-                  {saving ? "Salvando..." : "Criar Pack"}
+                  {saving ? "Salvando..." : `Criar ${getTypeLabel(selectedType)}`}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
 
-        <p className="text-sm text-muted-foreground mb-4">
-          Arraste os packs para reorganizar a ordem de exibição
-        </p>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ItemType)} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="pack" className="flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Packs
+              <Badge variant="secondary" className="ml-1">{getPacksByType('pack').length}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="bonus" className="flex items-center gap-2">
+              <Gift className="w-4 h-4" />
+              Bônus
+              <Badge variant="secondary" className="ml-1">{getPacksByType('bonus').length}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="curso" className="flex items-center gap-2">
+              <GraduationCap className="w-4 h-4" />
+              Cursos
+              <Badge variant="secondary" className="ml-1">{getPacksByType('curso').length}</Badge>
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="grid gap-2">
-          {packs.map((pack, index) => (
-            <Card 
-              key={pack.id} 
-              className={`overflow-hidden cursor-grab active:cursor-grabbing transition-all ${
-                draggedIndex === index ? 'opacity-50 scale-95' : ''
-              } ${dragOverIndex === index ? 'border-primary border-2' : ''}`}
-              draggable
-              onDragStart={() => handleDragStart(index)}
-              onDragOver={(e) => handleDragOver(e, index)}
-              onDragEnd={handleDragEnd}
-              onDragLeave={() => setDragOverIndex(null)}
-            >
-              <div className="flex items-center">
-                <div className="p-3 cursor-grab text-muted-foreground hover:text-foreground">
-                  <GripVertical className="w-5 h-5" />
-                </div>
-                <div className="w-28 h-20 flex-shrink-0">
-                  {pack.cover_url ? (
-                    <img
-                      src={pack.cover_url}
-                      alt={pack.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground">Sem capa</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 p-4">
-                  <h3 className="font-semibold text-foreground">{pack.name}</h3>
-                  <p className="text-sm text-muted-foreground">/{pack.slug}</p>
-                </div>
-                <div className="flex gap-2 p-4">
-                  <Button variant="outline" size="sm" onClick={() => openEdit(pack)}>
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(pack)}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Arraste os itens para reorganizar a ordem de exibição
+          </p>
+
+          <TabsContent value="pack">
+            {renderPackList('pack')}
+          </TabsContent>
+          <TabsContent value="bonus">
+            {renderPackList('bonus')}
+          </TabsContent>
+          <TabsContent value="curso">
+            {renderPackList('curso')}
+          </TabsContent>
+        </Tabs>
 
         {/* Edit Dialog */}
         <Dialog open={!!editingPack} onOpenChange={(open) => { if (!open) { setEditingPack(null); resetForm(); } }}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Editar Pack</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                {editingPack && getTypeIcon(editingPack.type)}
+                Editar {editingPack && getTypeLabel(editingPack.type)}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-4">
               <div>
-                <Label>Nome do Pack</Label>
+                <Label>Nome</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="Ex: Pack Arcano Vol.7"
+                  placeholder="Nome do item"
                 />
               </div>
               <div>
@@ -451,7 +574,7 @@ const AdminManagePacks = () => {
                 <Input
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  placeholder="pack-arcano-vol-7"
+                  placeholder="slug-do-item"
                 />
               </div>
               <div>
