@@ -134,6 +134,7 @@ Deno.serve(async (req: Request) => {
         name: name || '',
         phone: cleanPhone,
         email: normalizedEmail,
+        password_changed: false,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' });
 
