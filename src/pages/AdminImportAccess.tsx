@@ -47,6 +47,16 @@ const XLSX_ACCESS_MAPPING: Record<string, { slug: string; type: 'pack' | 'bonus'
   "+ 2200 Fontes para eventos": { slug: "2200-fontes-para-eventos", type: "bonus" },
   "Pack + 19 Videos Animados para Evento After Effects": { slug: "bonus-19-videos-animados", type: "bonus" },
   "Pack + 190 Videos Animados para Evento Canva": { slug: "bonus-190-videos-animados", type: "bonus" },
+  "Estilos de Titulos 3d": { slug: "bonus-estilos-titulos-3d", type: "bonus" },
+  "Documentos Para Designers": { slug: "bonus-documentos-designers", type: "bonus" },
+  "16GB de Elementos Png": { slug: "bonus-16gb-elementos-png", type: "bonus" },
+  "+ 500 Texturas para eventos": { slug: "bonus-500-texturas", type: "bonus" },
+  "Pack Extra - Flyers Animados After Effects": { slug: "bonus-flyers-animados-ae", type: "bonus" },
+  "33 Estilos de Letras 3D": { slug: "bonus-33-estilos-letras-3d", type: "bonus" },
+  "Elementos para Festa Junina em PNG": { slug: "bonus-festa-junina-png", type: "bonus" },
+  
+  // CURSOS (adicionais)
+  "Grids Secretos para flyers profissionais": { slug: "curso-grids-secretos", type: "curso" },
   
   // FERRAMENTAS DE IA
   "I.A que muda a roupa": { slug: "ia-muda-roupa", type: "ferramenta" },
