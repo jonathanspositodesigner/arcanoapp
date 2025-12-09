@@ -19,6 +19,7 @@ interface Banner {
   button_text: string;
   button_link: string;
   image_url: string;
+  mobile_image_url: string | null;
   display_order: number;
   is_active: boolean;
 }
@@ -38,6 +39,8 @@ const AdminManageBanners = () => {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [mobileImageFile, setMobileImageFile] = useState<File | null>(null);
+  const [mobileImagePreview, setMobileImagePreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -115,27 +118,32 @@ const AdminManageBanners = () => {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, isMobile: boolean = false) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Imagem deve ter no máximo 5MB");
         return;
       }
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      if (isMobile) {
+        setMobileImageFile(file);
+        setMobileImagePreview(URL.createObjectURL(file));
+      } else {
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
+      }
     }
   };
 
-  const uploadImage = async (bannerId: string): Promise<string | null> => {
-    if (!imageFile) return null;
+  const uploadImage = async (bannerId: string, file: File, suffix: string = ""): Promise<string | null> => {
+    if (!file) return null;
     
-    const fileExt = imageFile.name.split(".").pop();
-    const fileName = `banner-${bannerId}-${Date.now()}.${fileExt}`;
+    const fileExt = file.name.split(".").pop();
+    const fileName = `banner-${bannerId}${suffix}-${Date.now()}.${fileExt}`;
     
     const { error } = await supabase.storage
       .from("pack-covers")
-      .upload(fileName, imageFile, { upsert: true });
+      .upload(fileName, file, { upsert: true });
 
     if (error) {
       console.error("Upload error:", error);
@@ -152,7 +160,7 @@ const AdminManageBanners = () => {
       return;
     }
     if (!imageFile) {
-      toast.error("Imagem é obrigatória");
+      toast.error("Imagem desktop é obrigatória");
       return;
     }
 
@@ -176,13 +184,19 @@ const AdminManageBanners = () => {
 
       if (error) throw error;
 
-      const imageUrl = await uploadImage(data.id);
-      if (imageUrl) {
-        await supabase
-          .from("artes_banners")
-          .update({ image_url: imageUrl })
-          .eq("id", data.id);
+      const imageUrl = await uploadImage(data.id, imageFile, "-desktop");
+      let mobileImageUrl = null;
+      if (mobileImageFile) {
+        mobileImageUrl = await uploadImage(data.id, mobileImageFile, "-mobile");
       }
+      
+      await supabase
+        .from("artes_banners")
+        .update({ 
+          image_url: imageUrl,
+          mobile_image_url: mobileImageUrl
+        })
+        .eq("id", data.id);
 
       toast.success("Banner criado com sucesso!");
       setIsAddOpen(false);
@@ -204,10 +218,16 @@ const AdminManageBanners = () => {
     setSaving(true);
     try {
       let imageUrl = editingBanner.image_url;
+      let mobileImageUrl = editingBanner.mobile_image_url;
       
       if (imageFile) {
-        const newImageUrl = await uploadImage(editingBanner.id);
+        const newImageUrl = await uploadImage(editingBanner.id, imageFile, "-desktop");
         if (newImageUrl) imageUrl = newImageUrl;
+      }
+      
+      if (mobileImageFile) {
+        const newMobileUrl = await uploadImage(editingBanner.id, mobileImageFile, "-mobile");
+        if (newMobileUrl) mobileImageUrl = newMobileUrl;
       }
 
       const { error } = await supabase
@@ -218,6 +238,7 @@ const AdminManageBanners = () => {
           button_text: formData.button_text,
           button_link: formData.button_link,
           image_url: imageUrl,
+          mobile_image_url: mobileImageUrl,
           is_active: formData.is_active
         })
         .eq("id", editingBanner.id);
@@ -287,6 +308,8 @@ const AdminManageBanners = () => {
     });
     setImageFile(null);
     setImagePreview(null);
+    setMobileImageFile(null);
+    setMobileImagePreview(null);
   };
 
   const openEdit = (banner: Banner) => {
@@ -300,6 +323,8 @@ const AdminManageBanners = () => {
     });
     setImagePreview(banner.image_url);
     setImageFile(null);
+    setMobileImagePreview(banner.mobile_image_url);
+    setMobileImageFile(null);
   };
 
   if (loading) {
@@ -389,44 +414,71 @@ const AdminManageBanners = () => {
         />
         <Label htmlFor={isEdit ? "edit-active" : "add-active"}>Banner ativo</Label>
       </div>
+      {/* Desktop Image */}
       <div>
-        <Label>Imagem do Banner</Label>
-        <p className="text-xs text-muted-foreground mb-2">
-          Tamanho recomendado: 1200x400px (Desktop) / 600x300px (Mobile)
-        </p>
+        <Label>Imagem Desktop</Label>
+        <p className="text-xs text-muted-foreground mb-2">Tamanho recomendado: 1200x400px</p>
         <div className="mt-2">
           {imagePreview ? (
             <div className="flex items-center gap-2">
-              <img
-                src={imagePreview}
-                alt="Imagem"
-                className="w-20 h-12 object-cover rounded"
-              />
+              <img src={imagePreview} alt="Desktop" className="w-24 h-10 object-cover rounded" />
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => { setImageFile(null); setImagePreview(null); }}
               >
-                Trocar imagem
+                Trocar
               </Button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-              <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-              <span className="text-sm text-muted-foreground">Clique para enviar</span>
-              <span className="text-xs text-muted-foreground mt-1">1200x400px recomendado</span>
+            <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+              <Upload className="w-6 h-6 text-muted-foreground mb-1" />
+              <span className="text-xs text-muted-foreground">1200x400px</span>
               <input
                 type="file"
                 className="hidden"
                 accept="image/*"
-                onChange={handleImageChange}
+                onChange={(e) => handleImageChange(e, false)}
               />
             </label>
           )}
         </div>
       </div>
-      <Button 
+
+      {/* Mobile Image */}
+      <div>
+        <Label>Imagem Mobile (opcional)</Label>
+        <p className="text-xs text-muted-foreground mb-2">Tamanho recomendado: 600x300px</p>
+        <div className="mt-2">
+          {mobileImagePreview ? (
+            <div className="flex items-center gap-2">
+              <img src={mobileImagePreview} alt="Mobile" className="w-16 h-10 object-cover rounded" />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => { setMobileImageFile(null); setMobileImagePreview(null); }}
+              >
+                Trocar
+              </Button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+              <Upload className="w-6 h-6 text-muted-foreground mb-1" />
+              <span className="text-xs text-muted-foreground">600x300px</span>
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => handleImageChange(e, true)}
+              />
+            </label>
+          )}
+        </div>
+      </div>
+
+      <Button
         type="button"
         onClick={isEdit ? handleEdit : handleAdd} 
         disabled={saving} 

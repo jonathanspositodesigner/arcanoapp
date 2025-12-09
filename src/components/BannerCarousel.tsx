@@ -10,6 +10,7 @@ interface Banner {
   button_text: string;
   button_link: string;
   image_url: string;
+  mobile_image_url: string | null;
 }
 
 const BannerCarousel = () => {
@@ -18,10 +19,19 @@ const BannerCarousel = () => {
   const [loading, setLoading] = useState(true);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
+
+  useEffect(() => {
+    // Check screen size
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     fetchBanners();
@@ -36,6 +46,13 @@ const BannerCarousel = () => {
     
     setBanners((data || []) as Banner[]);
     setLoading(false);
+  };
+
+  const getImageUrl = (banner: Banner) => {
+    if (isMobile && banner.mobile_image_url) {
+      return banner.mobile_image_url;
+    }
+    return banner.image_url;
   };
 
   const nextSlide = useCallback(() => {
@@ -112,9 +129,9 @@ const BannerCarousel = () => {
                   : 'opacity-0 translate-x-full'
             }`}
           >
-            {/* Background Image */}
+            {/* Background Image - uses mobile image on small screens if available */}
             <img
-              src={banner.image_url}
+              src={getImageUrl(banner)}
               alt={banner.title}
               className="absolute inset-0 w-full h-full object-cover"
             />
