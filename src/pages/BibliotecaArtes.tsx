@@ -941,8 +941,13 @@ const BibliotecaArtes = () => {
 
                 {hasCursoAccess ? <div className="flex flex-col gap-2">
                     <Button onClick={() => {
-                /* Link será adicionado depois */toast.info("Link será configurado em breve");
-              }} className="w-full">
+                      // Navegar para página do curso baseado no slug
+                      if (cursoSlug === 'forja-selos-3d-ilimitada') {
+                        navigate('/forja-selos-3d-artes');
+                      } else {
+                        toast.info("Link será configurado em breve");
+                      }
+                    }} className="w-full">
                       <User className="h-4 w-4 mr-2" />
                       Acessar Curso
                     </Button>
