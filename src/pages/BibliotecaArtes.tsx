@@ -678,8 +678,8 @@ const BibliotecaArtes = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getPacksByType('curso').map(curso => {
                   const cursoSlug = toPackSlug(curso.name);
-                  // For cursos: any active pack grants access (same as bonus)
-                  const hasCursoAccess = isPremium;
+                  // For cursos: user must purchase the specific course (not just any pack)
+                  const hasCursoAccess = hasAccessToPack(cursoSlug);
                   
                   return (
                     <Card 
@@ -1054,47 +1054,76 @@ const BibliotecaArtes = () => {
       {/* Curso Modal */}
       <Dialog open={showCursoModal} onOpenChange={setShowCursoModal}>
         <DialogContent className="max-w-md">
-          {selectedCurso && (
-            <div className="space-y-4 text-center">
-              <div className="relative">
-                {selectedCurso.cover_url ? (
-                  <img 
-                    src={selectedCurso.cover_url} 
-                    alt={selectedCurso.name}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
+          {selectedCurso && (() => {
+            const cursoSlug = toPackSlug(selectedCurso.name);
+            const hasCursoAccess = hasAccessToPack(cursoSlug);
+            
+            return (
+              <div className="space-y-4 text-center">
+                <div className="relative">
+                  {selectedCurso.cover_url ? (
+                    <img 
+                      src={selectedCurso.cover_url} 
+                      alt={selectedCurso.name}
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center rounded-lg">
+                      <GraduationCap className="h-16 w-16 text-white/80" />
+                    </div>
+                  )}
+                  
+                  {/* Access Badge */}
+                  {hasCursoAccess && (
+                    <div className="absolute top-2 right-2">
+                      <Badge className="bg-green-500 text-white border-0 text-xs font-semibold shadow-lg">
+                        DISPONÍVEL
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">{selectedCurso.name}</h2>
+                  <p className="text-muted-foreground mt-2">
+                    {hasCursoAccess 
+                      ? "Acesse o conteúdo exclusivo deste curso"
+                      : "Adquira este curso para ter acesso ao conteúdo exclusivo"
+                    }
+                  </p>
+                </div>
+
+                {hasCursoAccess ? (
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      onClick={() => { /* Link será adicionado depois */ toast.info("Link será configurado em breve"); }}
+                      className="w-full"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Acessar Curso
+                    </Button>
+                  </div>
                 ) : (
-                  <div className="w-full h-48 bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center rounded-lg">
-                    <GraduationCap className="h-16 w-16 text-white/80" />
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      onClick={() => navigate(`/planos-artes?packSlug=${cursoSlug}`)}
+                      className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+                    >
+                      <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                      Comprar Curso
+                    </Button>
+                    <Button 
+                      onClick={() => { /* Link será adicionado depois */ toast.info("Link será configurado em breve"); }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Quero conhecer mais
+                    </Button>
                   </div>
                 )}
               </div>
-              
-              <div>
-                <h2 className="text-xl font-bold text-foreground">{selectedCurso.name}</h2>
-                <p className="text-muted-foreground mt-2">
-                  Acesse o conteúdo exclusivo deste curso
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Button 
-                  onClick={() => { /* Link será adicionado depois */ toast.info("Link será configurado em breve"); }}
-                  className="w-full"
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  Já sou membro
-                </Button>
-                <Button 
-                  onClick={() => { /* Link será adicionado depois */ toast.info("Link será configurado em breve"); }}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Quero conhecer mais
-                </Button>
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
