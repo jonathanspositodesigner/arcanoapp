@@ -23,20 +23,44 @@ interface ParsedClient {
 
 // Product mapping based on the confirmed plan - using correct database slugs
 const PRODUCT_MAPPING: Record<string, { packs: string[]; access_type: "6_meses" | "1_ano" | "vitalicio"; has_bonus: boolean }> = {
+  // === PACK ARCANO VOL.1 ===
   "Pack Arcano I - Baú Arcano": { packs: ["pack-arcano-vol-1"], access_type: "1_ano", has_bonus: true },
   "Pack Arcano I - Bag Iniciante": { packs: ["pack-arcano-vol-1"], access_type: "6_meses", has_bonus: false },
+  "[OB] Pack Arcano I + 55 Artes para Eventos": { packs: ["pack-arcano-vol-1"], access_type: "1_ano", has_bonus: true },
   "Garanta Acesso Vitalício as artes!": { packs: ["pack-arcano-vol-1"], access_type: "vitalicio", has_bonus: true },
+  
+  // === PACK ARCANO VOL.2 ===
   "Pack Arcano II - Pacote Completo": { packs: ["pack-arcano-vol-2"], access_type: "1_ano", has_bonus: true },
+  "Pack Arcano II - Pacote Básico": { packs: ["pack-arcano-vol-2"], access_type: "6_meses", has_bonus: false },
   "Pack Arcano II - Garanta Acesso Vitalício as artes!": { packs: ["pack-arcano-vol-2"], access_type: "vitalicio", has_bonus: true },
+  
+  // === PACK ARCANO VOL.3 ===
+  "Pack Arcano III - Plano Completo": { packs: ["pack-arcano-vol-3"], access_type: "1_ano", has_bonus: true },
+  "Pack Arcano III - Básico": { packs: ["pack-arcano-vol-3"], access_type: "6_meses", has_bonus: false },
+  "Garanta Acesso Vitalício ao Pack Arcano Vol. 3": { packs: ["pack-arcano-vol-3"], access_type: "vitalicio", has_bonus: true },
+  
+  // === PACK AGENDAS ===
   "Pack Agendas Arcanas - Completo": { packs: ["pack-agendas"], access_type: "1_ano", has_bonus: true },
   "Pack Agendas Arcanas - Básico": { packs: ["pack-agendas"], access_type: "6_meses", has_bonus: false },
   "Pack Agendas - Garanta Acesso Vitalício as artes!": { packs: ["pack-agendas"], access_type: "vitalicio", has_bonus: true },
+  
+  // === PACK CARNAVAL ===
   "Carnaval Arcano 1 - Pack Especial de Carnaval - Básico": { packs: ["pack-de-carnaval"], access_type: "6_meses", has_bonus: false },
   "Carnaval Arcano 1 - Pack Especial de Carnaval": { packs: ["pack-de-carnaval"], access_type: "1_ano", has_bonus: true },
+  
+  // === PACK HALLOWEEN (VITALÍCIO) ===
+  "Pack Especial de Halloween 2025": { packs: ["pack-de-halloween"], access_type: "vitalicio", has_bonus: true },
+  
+  // === COMBOS ===
   "Combo: 3 Packs pelo preço de 1": { packs: ["pack-arcano-vol-1", "pack-arcano-vol-2", "pack-agendas"], access_type: "1_ano", has_bonus: true },
+  "Combo Arcano: +155 Artes Editáveis PSD e Canva": { packs: ["pack-arcano-vol-1", "pack-arcano-vol-2", "pack-arcano-vol-3"], access_type: "vitalicio", has_bonus: true },
+  "Black Arcana - 6 Packs + Todos os Bônus": { packs: ["pack-arcano-vol-1", "pack-arcano-vol-2", "pack-arcano-vol-3", "pack-agendas", "pack-de-carnaval", "pack-de-halloween"], access_type: "vitalicio", has_bonus: true },
+  
+  // === CURSOS E BÔNUS ===
   "Pack + 19 Videos Animados para Evento After Effects": { packs: ["bonus-19-videos-animados"], access_type: "1_ano", has_bonus: true },
   "Curso de Como Fazer Artes Animadas no Photoshop": { packs: ["curso-artes-animadas-photoshop"], access_type: "1_ano", has_bonus: false },
   "MODULOS BOAS VINDAS": { packs: ["curso-boas-vindas"], access_type: "vitalicio", has_bonus: false },
+  "Imersão: Evento.ia - Aprenda a Gerar Selos 3D com Inteligência Artifical": { packs: ["eventoia-como-criar-selos-3d-animados"], access_type: "vitalicio", has_bonus: false },
 };
 
 // Products to ignore
