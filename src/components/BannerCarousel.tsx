@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,12 @@ const BannerCarousel = () => {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
 
   useEffect(() => {
     fetchBanners();
@@ -40,6 +46,31 @@ const BannerCarousel = () => {
     setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
   }, [banners.length]);
 
+  // Touch handlers for swipe
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe && banners.length > 1) {
+      nextSlide();
+    }
+    if (isRightSwipe && banners.length > 1) {
+      prevSlide();
+    }
+  };
+
   // Auto-advance slides
   useEffect(() => {
     if (banners.length <= 1) return;
@@ -61,7 +92,13 @@ const BannerCarousel = () => {
   const currentBanner = banners[currentIndex];
 
   return (
-    <div className="relative w-full mb-4 sm:mb-6 overflow-hidden rounded-lg sm:rounded-xl">
+    <div 
+      ref={containerRef}
+      className="relative w-full mb-4 sm:mb-6 overflow-hidden rounded-lg sm:rounded-xl touch-pan-y"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       {/* Banner Container */}
       <div className="relative h-40 sm:h-48 lg:h-56">
         {banners.map((banner, index) => (
