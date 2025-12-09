@@ -19,6 +19,10 @@ interface ParsedClient {
   packs: ClientPack[];
 }
 
+// Process max 5 batches per invocation to avoid timeout
+const MAX_BATCHES_PER_INVOCATION = 5;
+const BATCH_SIZE = 10;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -59,11 +63,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Start background processing
-    (globalThis as any).EdgeRuntime?.waitUntil?.(processJob(supabase, job_id)) || processJob(supabase, job_id);
+    // Process synchronously (not in background) to ensure completion before timeout
+    const result = await processJob(supabase, job_id);
 
     return new Response(
-      JSON.stringify({ message: 'Import started', job_id }),
+      JSON.stringify({ message: 'Batch processed', job_id, ...result }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
@@ -76,8 +80,8 @@ Deno.serve(async (req) => {
   }
 });
 
-async function processJob(supabase: any, jobId: string) {
-  console.log(`Starting background processing for job ${jobId}`);
+async function processJob(supabase: any, jobId: string): Promise<{ completed: boolean; batchesProcessed: number }> {
+  console.log(`Starting processing for job ${jobId}`);
   
   try {
     // Fetch job with CSV data
@@ -89,20 +93,34 @@ async function processJob(supabase: any, jobId: string) {
 
     if (jobError || !job) {
       console.error('Failed to fetch job:', jobError);
-      return;
+      return { completed: false, batchesProcessed: 0 };
     }
 
     const clients: ParsedClient[] = job.csv_data || [];
-    const batchSize = 10;
-    const totalBatches = Math.ceil(clients.length / batchSize);
+    const totalBatches = Math.ceil(clients.length / BATCH_SIZE);
     let currentBatch = job.current_batch || 0;
     
     let totalCreated = job.created_records || 0;
     let totalUpdated = job.updated_records || 0;
     let totalSkipped = job.skipped_records || 0;
     let errorCount = job.error_count || 0;
+    let batchesProcessed = 0;
 
-    console.log(`Processing ${clients.length} clients, starting from batch ${currentBatch}`);
+    console.log(`Processing ${clients.length} clients, starting from batch ${currentBatch}/${totalBatches}`);
+
+    // Check if already completed
+    if (currentBatch >= totalBatches) {
+      console.log('Job already fully processed');
+      await supabase
+        .from('import_jobs')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+      return { completed: true, batchesProcessed: 0 };
+    }
 
     for (let i = currentBatch; i < totalBatches; i++) {
       // Check job status before each batch
@@ -114,21 +132,20 @@ async function processJob(supabase: any, jobId: string) {
 
       if (currentJob?.status === 'cancelled') {
         console.log('Job cancelled, stopping...');
-        break;
+        return { completed: false, batchesProcessed };
       }
 
       if (currentJob?.status === 'paused') {
-        console.log('Job paused, stopping background process...');
-        // Save current batch for resume
+        console.log('Job paused, stopping...');
         await supabase
           .from('import_jobs')
-          .update({ current_batch: i })
+          .update({ current_batch: i, updated_at: new Date().toISOString() })
           .eq('id', jobId);
-        return; // Exit - will be resumed later
+        return { completed: false, batchesProcessed };
       }
 
-      const start = i * batchSize;
-      const end = Math.min(start + batchSize, clients.length);
+      const start = i * BATCH_SIZE;
+      const end = Math.min(start + BATCH_SIZE, clients.length);
       const batch = clients.slice(start, end);
 
       console.log(`Processing batch ${i + 1}/${totalBatches} (${batch.length} clients)`);
@@ -146,8 +163,9 @@ async function processJob(supabase: any, jobId: string) {
       }
 
       const processedCount = Math.min(end, clients.length);
+      batchesProcessed++;
 
-      // Update progress in database
+      // Update progress in database after each batch
       await supabase
         .from('import_jobs')
         .update({
@@ -160,6 +178,12 @@ async function processJob(supabase: any, jobId: string) {
           updated_at: new Date().toISOString()
         })
         .eq('id', jobId);
+
+      // Check if we've processed enough batches for this invocation
+      if (batchesProcessed >= MAX_BATCHES_PER_INVOCATION && i < totalBatches - 1) {
+        console.log(`Batch limit reached (${batchesProcessed}/${MAX_BATCHES_PER_INVOCATION}), yielding for next invocation...`);
+        return { completed: false, batchesProcessed };
+      }
     }
 
     // Mark as completed
@@ -173,17 +197,17 @@ async function processJob(supabase: any, jobId: string) {
       .eq('id', jobId);
 
     console.log(`Job ${jobId} completed: ${totalCreated} created, ${totalUpdated} updated, ${totalSkipped} skipped, ${errorCount} errors`);
+    return { completed: true, batchesProcessed };
 
   } catch (error) {
-    console.error('Background processing error:', error);
+    console.error('Processing error:', error);
     await supabase
       .from('import_jobs')
       .update({
-        status: 'cancelled',
-        completed_at: new Date().toISOString(),
-        error_count: (await supabase.from('import_jobs').select('error_count').eq('id', jobId).single()).data?.error_count + 1 || 1
+        updated_at: new Date().toISOString()
       })
       .eq('id', jobId);
+    return { completed: false, batchesProcessed: 0 };
   }
 }
 
@@ -212,11 +236,22 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
 
     if (authError) {
       if (authError.message?.includes('already been registered')) {
-        // Get user ID from auth
-        const { data: users } = await supabase.auth.admin.listUsers();
+        // Get user ID by creating a profile lookup via email
+        // First try to get from auth by creating and catching error
+        const { data: users } = await supabase.auth.admin.listUsers({ perPage: 1000 });
         const existingUser = users?.users?.find((u: any) => u.email?.toLowerCase() === email);
         if (existingUser) {
           userId = existingUser.id;
+          // Create profile if it doesn't exist
+          await supabase
+            .from('profiles')
+            .upsert({
+              id: userId,
+              email,
+              name: client.name || null,
+              phone: client.phone || null,
+              password_changed: false,
+            }, { onConflict: 'id' });
         } else {
           throw new Error(`User exists but couldn't find ID: ${email}`);
         }
@@ -226,18 +261,18 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
     } else {
       userId = authData.user.id;
       console.log(`Created new user: ${email}`);
+      
+      // Create profile
+      await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          email,
+          name: client.name || null,
+          phone: client.phone || null,
+          password_changed: false,
+        }, { onConflict: 'id' });
     }
-
-    // Create/update profile
-    await supabase
-      .from('profiles')
-      .upsert({
-        id: userId,
-        email,
-        name: client.name || null,
-        phone: client.phone || null,
-        password_changed: false,
-      }, { onConflict: 'id' });
   }
 
   // Process packs
