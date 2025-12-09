@@ -72,7 +72,7 @@ const PlanosArtes = () => {
         "Novidades e atualizações premium"
       ],
       hasBonus: true,
-      highlighted: true
+      highlighted: false
     },
     {
       type: "vitalicio",
@@ -86,7 +86,7 @@ const PlanosArtes = () => {
         "Conteúdo bônus exclusivo para sempre"
       ],
       hasBonus: true,
-      highlighted: false
+      highlighted: true
     }
   ];
 
