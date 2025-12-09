@@ -104,37 +104,71 @@ Deno.serve(async (req) => {
 
         const normalizedEmail = email.toLowerCase().trim();
 
-        // Check if user exists
-        const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+        // Check if user exists - FIXED: Use pagination to search properly instead of listUsers()
         let userId: string;
         let isNewUser = false;
 
-        const existingUser = existingUsers?.users?.find(
-          (u) => u.email?.toLowerCase() === normalizedEmail
-        );
+        // First, try to find user by querying profiles table (faster than auth pagination)
+        const { data: existingProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .eq("email", normalizedEmail)
+          .maybeSingle();
 
-        if (existingUser) {
-          userId = existingUser.id;
+        if (existingProfile) {
+          userId = existingProfile.id;
           results.updated++;
-          console.log(`User exists: ${normalizedEmail}`);
+          console.log(`User exists (from profile): ${normalizedEmail}`);
         } else {
-          // Create new user with email as password
-          const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-            email: normalizedEmail,
-            password: normalizedEmail,
-            email_confirm: true,
-          });
-
-          if (createError || !newUser.user) {
-            console.error(`Error creating user ${normalizedEmail}:`, createError);
-            results.errors.push({ email: normalizedEmail, error: createError?.message || "Failed to create user" });
-            continue;
+          // If not found in profiles, search in auth with pagination
+          let foundUser = null;
+          let page = 1;
+          const perPage = 1000;
+          
+          while (!foundUser) {
+            const { data: usersPage } = await supabaseAdmin.auth.admin.listUsers({
+              page,
+              perPage
+            });
+            
+            if (!usersPage?.users || usersPage.users.length === 0) {
+              break;
+            }
+            
+            foundUser = usersPage.users.find(
+              (u) => u.email?.toLowerCase() === normalizedEmail
+            );
+            
+            if (usersPage.users.length < perPage) {
+              break; // No more pages
+            }
+            
+            page++;
           }
 
-          userId = newUser.user.id;
-          isNewUser = true;
-          results.created++;
-          console.log(`User created: ${normalizedEmail}`);
+          if (foundUser) {
+            userId = foundUser.id;
+            results.updated++;
+            console.log(`User exists (from auth): ${normalizedEmail}`);
+          } else {
+            // Create new user with email as password
+            const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+              email: normalizedEmail,
+              password: normalizedEmail,
+              email_confirm: true,
+            });
+
+            if (createError || !newUser.user) {
+              console.error(`Error creating user ${normalizedEmail}:`, createError);
+              results.errors.push({ email: normalizedEmail, error: createError?.message || "Failed to create user" });
+              continue;
+            }
+
+            userId = newUser.user.id;
+            isNewUser = true;
+            results.created++;
+            console.log(`User created: ${normalizedEmail}`);
+          }
         }
 
         // Upsert profile
