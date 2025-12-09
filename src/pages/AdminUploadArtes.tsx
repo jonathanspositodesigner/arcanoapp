@@ -27,16 +27,10 @@ const validateFile = (file: File): string | null => {
   return null;
 };
 
-const PACK_OPTIONS = [
-  "Pack Arcano Vol.1",
-  "Pack Arcano Vol.2",
-  "Pack Arcano Vol.3",
-  "Pack de Agendas",
-  "Pack de Halloween",
-  "Pack de Fim de Ano",
-  "Pack de Carnaval",
-  "Atualização Grátis"
-];
+interface Pack {
+  id: string;
+  name: string;
+}
 
 interface MediaData {
   file: File;
@@ -68,9 +62,11 @@ const AdminUploadArtes = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [packs, setPacks] = useState<Pack[]>([]);
 
   useEffect(() => {
     fetchCategories();
+    fetchPacks();
   }, []);
 
   const fetchCategories = async () => {
@@ -79,6 +75,14 @@ const AdminUploadArtes = () => {
       .select('id, name')
       .order('display_order', { ascending: true });
     setCategories(data || []);
+  };
+
+  const fetchPacks = async () => {
+    const { data } = await supabase
+      .from('artes_packs')
+      .select('id, name')
+      .order('display_order', { ascending: true });
+    setPacks(data || []);
   };
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -371,8 +375,8 @@ const AdminUploadArtes = () => {
                     <SelectValue placeholder="Selecione o pack" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border border-border z-50">
-                    {PACK_OPTIONS.map(pack => (
-                      <SelectItem key={pack} value={pack}>{pack}</SelectItem>
+                    {packs.map(pack => (
+                      <SelectItem key={pack.id} value={pack.name}>{pack.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

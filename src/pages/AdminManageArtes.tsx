@@ -28,16 +28,10 @@ const formatTitle = (title: string): string => {
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/webm", "video/quicktime"];
 
-const PACK_OPTIONS = [
-  "Pack Arcano Vol.1",
-  "Pack Arcano Vol.2",
-  "Pack Arcano Vol.3",
-  "Pack de Agendas",
-  "Pack de Halloween",
-  "Pack de Fim de Ano",
-  "Pack de Carnaval",
-  "Atualização Grátis"
-];
+interface Pack {
+  id: string;
+  name: string;
+}
 
 type ArteType = 'admin' | 'partner';
 
@@ -82,9 +76,11 @@ const AdminManageArtes = () => {
   const [sortBy, setSortBy] = useState<SortOption>('date');
   const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
   const [categories, setCategories] = useState<Category[]>([]);
+  const [packs, setPacks] = useState<Pack[]>([]);
 
   useEffect(() => {
     fetchCategories();
+    fetchPacks();
   }, []);
 
   const fetchCategories = async () => {
@@ -93,6 +89,14 @@ const AdminManageArtes = () => {
       .select('id, name')
       .order('display_order', { ascending: true });
     setCategories(data || []);
+  };
+
+  const fetchPacks = async () => {
+    const { data } = await supabase
+      .from('artes_packs')
+      .select('id, name')
+      .order('display_order', { ascending: true });
+    setPacks(data || []);
   };
 
   useEffect(() => {
@@ -491,8 +495,8 @@ const AdminManageArtes = () => {
                 <Select value={editPack} onValueChange={setEditPack}>
                   <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione o pack" /></SelectTrigger>
                   <SelectContent className="bg-background border border-border z-50">
-                    {PACK_OPTIONS.map(pack => (
-                      <SelectItem key={pack} value={pack}>{pack}</SelectItem>
+                    {packs.map(pack => (
+                      <SelectItem key={pack.id} value={pack.name}>{pack.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
