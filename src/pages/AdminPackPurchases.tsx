@@ -121,26 +121,58 @@ const AdminPackPurchases = () => {
   };
 
   const fetchPurchases = async () => {
-    const { data: purchasesData, error } = await supabase
-      .from('user_pack_purchases')
-      .select('*')
-      .order('purchased_at', { ascending: false });
+    // Fetch ALL purchases using pagination to avoid 1000 record limit
+    let allPurchases: any[] = [];
+    let from = 0;
+    const pageSize = 1000;
+    
+    while (true) {
+      const { data: purchasesData, error } = await supabase
+        .from('user_pack_purchases')
+        .select('*')
+        .order('purchased_at', { ascending: false })
+        .range(from, from + pageSize - 1);
 
-    if (error) {
-      console.error('Error fetching purchases:', error);
-      return;
+      if (error) {
+        console.error('Error fetching purchases:', error);
+        break;
+      }
+
+      if (!purchasesData || purchasesData.length === 0) break;
+      
+      allPurchases = [...allPurchases, ...purchasesData];
+      
+      // If we got less than pageSize, we've reached the end
+      if (purchasesData.length < pageSize) break;
+      
+      from += pageSize;
     }
 
-    const userIds = [...new Set((purchasesData || []).map(p => p.user_id))];
+    console.log(`Fetched ${allPurchases.length} total purchases`);
+
+    // Get unique user IDs
+    const userIds = [...new Set(allPurchases.map(p => p.user_id))];
+    console.log(`Found ${userIds.length} unique clients`);
     
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select('id, email, name, phone')
-      .in('id', userIds);
+    // Fetch profiles in batches to handle large numbers
+    let allProfiles: any[] = [];
+    const batchSize = 100;
+    
+    for (let i = 0; i < userIds.length; i += batchSize) {
+      const batchIds = userIds.slice(i, i + batchSize);
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, email, name, phone')
+        .in('id', batchIds);
+      
+      if (profilesData) {
+        allProfiles = [...allProfiles, ...profilesData];
+      }
+    }
 
-    const profilesMap = new Map((profilesData || []).map(p => [p.id, p]));
+    const profilesMap = new Map(allProfiles.map(p => [p.id, p]));
 
-    const purchasesWithUsers = (purchasesData || []).map(purchase => ({
+    const purchasesWithUsers = allPurchases.map(purchase => ({
       ...purchase,
       user_email: profilesMap.get(purchase.user_id)?.email || '',
       user_name: profilesMap.get(purchase.user_id)?.name || '',

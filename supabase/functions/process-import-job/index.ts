@@ -310,14 +310,47 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
     }
   }
 
-  // Process packs
+  // Process packs - with strict duplicate prevention
   let created = false;
   let updated = false;
 
   for (const pack of client.packs) {
     const expiresAt = calculateExpiresAt(pack.purchase_date, pack.access_type);
 
-    // Check existing pack access
+    // Check existing pack access - get ALL records for this user+pack to handle duplicates
+    const { data: existingPacks } = await supabase
+      .from('user_pack_purchases')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('pack_slug', pack.pack_slug);
+
+    // If multiple records exist (duplicates), keep only the best one
+    if (existingPacks && existingPacks.length > 1) {
+      console.log(`Found ${existingPacks.length} duplicates for ${email} + ${pack.pack_slug}, cleaning up...`);
+      
+      const accessPriority: Record<string, number> = { 'vitalicio': 4, '1_ano': 3, '6_meses': 2, '3_meses': 1 };
+      
+      // Sort by priority (highest first), then by purchased_at (oldest first for ties)
+      existingPacks.sort((a: any, b: any) => {
+        const priorityDiff = (accessPriority[b.access_type] || 0) - (accessPriority[a.access_type] || 0);
+        if (priorityDiff !== 0) return priorityDiff;
+        return new Date(a.purchased_at).getTime() - new Date(b.purchased_at).getTime();
+      });
+      
+      // Keep the first one (best access), delete the rest
+      const toKeep = existingPacks[0];
+      const toDelete = existingPacks.slice(1).map((p: any) => p.id);
+      
+      if (toDelete.length > 0) {
+        await supabase
+          .from('user_pack_purchases')
+          .delete()
+          .in('id', toDelete);
+        console.log(`Deleted ${toDelete.length} duplicate records`);
+      }
+    }
+
+    // Re-fetch to get single record after cleanup
     const { data: existingPack } = await supabase
       .from('user_pack_purchases')
       .select('*')
@@ -343,6 +376,7 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
           })
           .eq('id', existingPack.id);
         updated = true;
+        console.log(`Updated ${email} pack ${pack.pack_slug} to ${pack.access_type}`);
       } else if (pack.has_bonus && !existingPack.has_bonus_access) {
         await supabase
           .from('user_pack_purchases')
@@ -353,9 +387,10 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
           .eq('id', existingPack.id);
         updated = true;
       }
+      // Skip if existing access is equal or better
     } else {
-      // Create new pack purchase
-      await supabase
+      // Create new pack purchase - only if doesn't exist
+      const { error: insertError } = await supabase
         .from('user_pack_purchases')
         .insert({
           user_id: userId,
@@ -366,7 +401,13 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
           is_active: true,
           purchased_at: pack.purchase_date
         });
-      created = true;
+      
+      if (insertError) {
+        console.error(`Insert error for ${email} + ${pack.pack_slug}:`, insertError.message);
+      } else {
+        created = true;
+        console.log(`Created pack access for ${email}: ${pack.pack_slug} (${pack.access_type})`);
+      }
     }
 
     // Log the import
