@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -36,6 +36,7 @@ interface ArteItem {
 interface PackItem {
   id: string;
   name: string;
+  slug: string;
   cover_url: string | null;
   display_order: number;
   type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
@@ -634,8 +635,8 @@ const BibliotecaArtes = () => {
             {/* Banner Carousel - Only show when no pack is selected */}
             {!selectedPack && <BannerCarousel />}
 
-            {/* Pack/Bonus Selection View */}
-            {!selectedPack && activeSection !== 'cursos' && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {/* Pack/Bonus Selection View - excludes tutorial section */}
+            {!selectedPack && activeSection !== 'cursos' && activeSection !== 'tutorial' && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getCurrentItems().map(pack => {
               const arteCount = getPackArteCount(pack.name);
               const packSlug = toPackSlug(pack.name);
@@ -673,6 +674,41 @@ const BibliotecaArtes = () => {
             })}
                 {getCurrentItems().length === 0 && <div className="col-span-full text-center py-12">
                     <p className="text-muted-foreground">Nenhum {activeSection === 'bonus' ? 'bônus' : 'pack'} disponível</p>
+                  </div>}
+              </div>}
+
+            {/* Tutoriais View - Free for everyone, navigates to lesson page */}
+            {activeSection === 'tutorial' && !selectedPack && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                {getPacksByType('tutorial').map(tutorial => {
+              // Use the actual slug from database
+              return <Card key={tutorial.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => navigate(`/tutorial-artes/${tutorial.slug}`)}>
+                      <div className="aspect-[3/4] relative overflow-hidden">
+                        {tutorial.cover_url ? <img src={tutorial.cover_url} alt={tutorial.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-emerald-500/60 to-emerald-600 flex items-center justify-center">
+                            <BookOpen className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+                          </div>}
+                        
+                        {/* Free for everyone Tag */}
+                        <div className="absolute top-2 right-2 z-10">
+                          <Badge className="bg-emerald-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                            GRÁTIS PARA TODOS
+                          </Badge>
+                        </div>
+                        
+                        {/* Overlay with tutorial info */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
+                          <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+                            {tutorial.name}
+                          </h3>
+                          <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
+                            <Play className="h-3 w-3 mr-1" />
+                            Vídeo Aulas
+                          </Badge>
+                        </div>
+                      </div>
+                    </Card>;
+            })}
+                {getPacksByType('tutorial').length === 0 && <div className="col-span-full text-center py-12">
+                    <p className="text-muted-foreground">Nenhum tutorial disponível</p>
                   </div>}
               </div>}
 

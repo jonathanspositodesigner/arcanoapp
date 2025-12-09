@@ -58,6 +58,7 @@ import AdminPackPurchases from "./pages/AdminPackPurchases";
 import AdminImportClients from "./pages/AdminImportClients";
 import AdminManageAdmins from "./pages/AdminManageAdmins";
 import ForjaSelos3DArtes from "./pages/ForjaSelos3DArtes";
+import TutorialArtes from "./pages/TutorialArtes";
 import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
@@ -131,6 +132,7 @@ const AppContent = () => {
         <Route path="/admin-import-clients" element={<AdminImportClients />} />
         <Route path="/admin-manage-admins" element={<AdminManageAdmins />} />
         <Route path="/forja-selos-3d-artes" element={<ForjaSelos3DArtes />} />
+        <Route path="/tutorial-artes/:slug" element={<TutorialArtes />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
