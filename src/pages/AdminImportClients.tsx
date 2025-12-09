@@ -192,17 +192,18 @@ const AdminImportClients = () => {
   const [parsedClients, setParsedClients] = useState<ParsedClient[]>([]);
   const [rawData, setRawData] = useState<any[]>([]);
   const [importing, setImporting] = useState(false);
-  const [localProgress, setLocalProgress] = useState(0);
   const [importResult, setImportResult] = useState<{ success: number; errors: { email: string; error: string }[]; created: number; updated: number; skipped: number } | null>(null);
   const { 
-    startImport, 
-    updateProgress, 
-    finishImport, 
-    checkJobStatus,
-    isPaused,
-    jobId: activeJobId 
+    isImporting: globalImporting,
+    startImport,
+    progress: globalProgress,
+    current: globalCurrent,
+    total: globalTotal,
+    created: globalCreated,
+    updated: globalUpdated,
+    skipped: globalSkipped,
+    errors: globalErrors
   } = useImportProgress();
-  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [unmappedProducts, setUnmappedProducts] = useState<Map<string, number>>(new Map());
   const [existingHashes, setExistingHashes] = useState<Set<string>>(new Set());
   const [checkingExisting, setCheckingExisting] = useState(false);
@@ -500,97 +501,39 @@ const AdminImportClients = () => {
     }
 
     setImporting(true);
-    setLocalProgress(0);
     setImportResult(null);
 
     try {
-      // Create import job in database
-      const jobId = await startImport(clientsWithNewPacks.length);
+      // Transform data for the edge function
+      const csvData = clientsWithNewPacks.map(client => ({
+        email: client.email,
+        name: client.name,
+        phone: client.phone,
+        packs: client.packs.map(pack => ({
+          pack_slug: pack.pack_slug,
+          access_type: pack.access_type,
+          has_bonus: pack.has_bonus_access,
+          purchase_date: pack.purchase_date
+        }))
+      }));
+
+      // Create import job and trigger edge function (it will process in background)
+      const jobId = await startImport(clientsWithNewPacks.length, csvData);
       if (!jobId) {
         toast.error("Erro ao iniciar importação");
         setImporting(false);
         return;
       }
-      setCurrentJobId(jobId);
 
-      const batchSize = 10;
-      const totalBatches = Math.ceil(clientsWithNewPacks.length / batchSize);
-      let totalSuccess = 0;
-      let totalCreated = 0;
-      let totalUpdated = 0;
-      let totalSkipped = 0;
-      const allErrors: { email: string; error: string }[] = [];
-      let processedCount = 0;
-
-      for (let i = 0; i < totalBatches; i++) {
-        // Check if job was paused or cancelled
-        const status = await checkJobStatus(jobId);
-        if (status === 'cancelled') {
-          toast.info("Importação cancelada");
-          break;
-        }
-        if (status === 'paused') {
-          // Wait and check again
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          i--; // Retry this batch
-          continue;
-        }
-
-        const batch = clientsWithNewPacks.slice(i * batchSize, (i + 1) * batchSize);
-        
-        const response = await supabase.functions.invoke("import-pack-clients", {
-          body: { clients: batch },
-        });
-
-        if (response.error) {
-          console.error("Batch error:", response.error);
-          batch.forEach((c) => allErrors.push({ email: c.email, error: response.error.message }));
-        } else {
-          const result = response.data;
-          totalSuccess += result.success || 0;
-          totalCreated += result.created || 0;
-          totalUpdated += result.updated || 0;
-          totalSkipped += result.skipped || 0;
-          if (result.errors) allErrors.push(...result.errors);
-        }
-
-        processedCount = (i + 1) * batchSize;
-        if (processedCount > clientsWithNewPacks.length) {
-          processedCount = clientsWithNewPacks.length;
-        }
-
-        const progress = Math.round(((i + 1) / totalBatches) * 100);
-        setLocalProgress(progress);
-        
-        // Update progress in database for realtime sync
-        await updateProgress(jobId, processedCount, totalCreated, totalUpdated, totalSkipped, allErrors.length);
-      }
-
-      setImportResult({
-        success: totalSuccess,
-        created: totalCreated,
-        updated: totalUpdated,
-        skipped: totalSkipped + stats.alreadyImported,
-        errors: allErrors,
-      });
-
-      // Mark job as completed
-      await finishImport(jobId);
-
-      if (allErrors.length === 0) {
-        toast.success(`Importação concluída: ${totalSuccess} clientes processados`);
-      } else {
-        toast.warning(`Importação concluída com ${allErrors.length} erros`);
-      }
+      toast.success("Importação iniciada! Você pode navegar para outras páginas - o progresso será exibido na barra superior.");
+      
+      // Clear local state since edge function handles everything
+      setImporting(false);
+      
     } catch (error) {
       console.error("Import error:", error);
-      toast.error("Erro na importação");
-      if (currentJobId) {
-        await finishImport(currentJobId);
-      }
-    } finally {
+      toast.error("Erro ao iniciar importação");
       setImporting(false);
-      setCurrentJobId(null);
     }
   };
 
@@ -762,10 +705,14 @@ const AdminImportClients = () => {
               </Button>
             </CardHeader>
             <CardContent>
-              {importing && (
+              {(importing || globalImporting) && (
                 <div className="mb-4">
-                  <Progress value={localProgress} className="h-2" />
-                  <p className="text-sm text-muted-foreground mt-1 text-center">{localProgress}%</p>
+                  <Progress value={globalProgress} className="h-2" />
+                  <p className="text-sm text-muted-foreground mt-1 text-center">
+                    {globalProgress}% ({globalCurrent}/{globalTotal}) | 
+                    +{globalCreated} criados | ↑{globalUpdated} atualizados | ⊘{globalSkipped} ignorados
+                    {globalErrors > 0 && <span className="text-destructive"> | ✕{globalErrors} erros</span>}
+                  </p>
                 </div>
               )}
               <ScrollArea className="h-64">

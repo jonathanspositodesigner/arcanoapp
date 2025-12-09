@@ -553,6 +553,8 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_records: number | null
+          csv_data: Json | null
+          current_batch: number | null
           error_count: number | null
           id: string
           processed_records: number | null
@@ -566,6 +568,8 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_records?: number | null
+          csv_data?: Json | null
+          current_batch?: number | null
           error_count?: number | null
           id?: string
           processed_records?: number | null
@@ -579,6 +583,8 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_records?: number | null
+          csv_data?: Json | null
+          current_batch?: number | null
           error_count?: number | null
           id?: string
           processed_records?: number | null

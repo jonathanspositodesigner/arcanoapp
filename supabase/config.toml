@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.import-pack-clients]
 verify_jwt = false
+
+[functions.process-import-job]
+verify_jwt = false
+
+[functions.manage-admin]
+verify_jwt = false
