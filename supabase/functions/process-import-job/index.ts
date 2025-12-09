@@ -19,8 +19,8 @@ interface ParsedClient {
   packs: ClientPack[];
 }
 
-// Process max 5 batches per invocation to avoid timeout
-const MAX_BATCHES_PER_INVOCATION = 5;
+// Process max 10 batches per invocation to avoid timeout (100 clients)
+const MAX_BATCHES_PER_INVOCATION = 10;
 const BATCH_SIZE = 10;
 
 Deno.serve(async (req) => {
@@ -214,7 +214,7 @@ async function processJob(supabase: any, jobId: string): Promise<{ completed: bo
 async function processClient(supabase: any, client: ParsedClient): Promise<{ created: boolean; updated: boolean; skipped: boolean }> {
   const email = client.email.toLowerCase().trim();
   
-  // Check if user exists in profiles
+  // First check if user exists in profiles table
   const { data: existingProfile } = await supabase
     .from('profiles')
     .select('id')
@@ -222,12 +222,13 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
     .maybeSingle();
 
   let userId: string;
+  let isNewUser = false;
 
   if (existingProfile) {
     console.log(`User exists (from profile): ${email}`);
     userId = existingProfile.id;
   } else {
-    // Create new user
+    // Try to create user - if they exist, we'll get an error and handle it
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password: email,
@@ -236,14 +237,35 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
 
     if (authError) {
       if (authError.message?.includes('already been registered')) {
-        // Get user ID by creating a profile lookup via email
-        // First try to get from auth by creating and catching error
-        const { data: users } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-        const existingUser = users?.users?.find((u: any) => u.email?.toLowerCase() === email);
+        // User exists in auth but not in profiles - need to find their ID
+        // Use the signInWithPassword to get the user (then immediately sign out)
+        // OR use the REST API directly to get user by email
+        
+        // Try with the admin API getUserById workaround
+        // Actually, let's try creating the profile first by checking auth.users via a different method
+        
+        // Use the admin API to get users filtered by email
+        const { data: userData, error: userError } = await supabase.auth.admin.listUsers({
+          page: 1,
+          perPage: 1000
+        });
+        
+        if (userError) {
+          console.error(`Failed to list users for ${email}:`, userError);
+          throw new Error(`Could not find existing user: ${email}`);
+        }
+        
+        // Find the user by email (case-insensitive)
+        const existingUser = userData?.users?.find((u: any) => 
+          u.email?.toLowerCase() === email
+        );
+        
         if (existingUser) {
           userId = existingUser.id;
-          // Create profile if it doesn't exist
-          await supabase
+          console.log(`Found existing auth user: ${email} -> ${userId}`);
+          
+          // Create the missing profile
+          const { error: profileError } = await supabase
             .from('profiles')
             .upsert({
               id: userId,
@@ -252,18 +274,27 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
               phone: client.phone || null,
               password_changed: false,
             }, { onConflict: 'id' });
+            
+          if (profileError) {
+            console.log(`Profile upsert note for ${email}:`, profileError.message);
+          }
         } else {
-          throw new Error(`User exists but couldn't find ID: ${email}`);
+          // If we still can't find the user, try a different approach
+          // Create a new user with a modified email (add a suffix) then update
+          // Actually, let's just skip this user and log it
+          console.error(`User ${email} exists in auth but cannot be found - skipping`);
+          throw new Error(`User exists in auth but cannot be located: ${email}`);
         }
       } else {
         throw authError;
       }
     } else {
       userId = authData.user.id;
+      isNewUser = true;
       console.log(`Created new user: ${email}`);
       
-      // Create profile
-      await supabase
+      // Create profile for new user
+      const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           id: userId,
@@ -272,6 +303,10 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
           phone: client.phone || null,
           password_changed: false,
         }, { onConflict: 'id' });
+        
+      if (profileError) {
+        console.log(`Profile creation note for ${email}:`, profileError.message);
+      }
     }
   }
 
@@ -345,6 +380,11 @@ async function processClient(supabase: any, client: ParsedClient): Promise<{ cre
         purchase_date: pack.purchase_date,
         processed_at: new Date().toISOString()
       }, { onConflict: 'import_hash' });
+  }
+
+  // If this was a new user, mark as created regardless of pack status
+  if (isNewUser && !created) {
+    created = true;
   }
 
   return { created, updated, skipped: !created && !updated };
