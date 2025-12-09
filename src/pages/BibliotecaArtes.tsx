@@ -81,22 +81,21 @@ const BibliotecaArtes = () => {
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
   const [dbCategories, setDbCategories] = useState<string[]>([]);
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
-
-  const PACKS = [
-    { name: "Pack Arcano Vol.1", color: "from-purple-600 to-purple-800" },
-    { name: "Pack Arcano Vol.2", color: "from-blue-600 to-blue-800" },
-    { name: "Pack Arcano Vol.3", color: "from-indigo-600 to-indigo-800" },
-    { name: "Pack de Agendas", color: "from-green-600 to-green-800" },
-    { name: "Pack de Halloween", color: "from-orange-600 to-orange-800" },
-    { name: "Pack de Fim de Ano", color: "from-red-600 to-red-800" },
-    { name: "Pack de Carnaval", color: "from-yellow-500 to-pink-600" },
-    { name: "Atualização Grátis", color: "from-emerald-500 to-teal-600" }
-  ];
+  const [dbPacks, setDbPacks] = useState<{id: string; name: string; cover_url: string | null; display_order: number}[]>([]);
 
   useEffect(() => {
     fetchArtes();
     fetchCategories();
+    fetchPacks();
   }, []);
+
+  const fetchPacks = async () => {
+    const { data } = await supabase
+      .from("artes_packs")
+      .select("*")
+      .order("display_order", { ascending: true });
+    setDbPacks(data || []);
+  };
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -438,11 +437,11 @@ const BibliotecaArtes = () => {
           {/* Pack Selection View */}
           {!selectedPack && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {PACKS.map(pack => {
+              {dbPacks.map(pack => {
                 const arteCount = getPackArteCount(pack.name);
                 return (
                   <Card 
-                    key={pack.name}
+                    key={pack.id}
                     className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
                     onClick={() => {
                       setSelectedPack(pack.name);
@@ -450,14 +449,27 @@ const BibliotecaArtes = () => {
                       setCurrentPage(1);
                     }}
                   >
-                    <div className={`aspect-square bg-gradient-to-br ${pack.color} flex flex-col items-center justify-center p-4 text-white`}>
-                      <Package className="h-12 w-12 sm:h-16 sm:w-16 mb-3 opacity-80" />
-                      <h3 className="font-bold text-sm sm:text-lg text-center leading-tight">
-                        {pack.name}
-                      </h3>
-                      <Badge className="mt-2 bg-white/20 text-white border-0 text-xs">
-                        {arteCount} {arteCount === 1 ? 'arte' : 'artes'}
-                      </Badge>
+                    <div className="aspect-[3/4] relative overflow-hidden">
+                      {pack.cover_url ? (
+                        <img 
+                          src={pack.cover_url} 
+                          alt={pack.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
+                          <Package className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+                        </div>
+                      )}
+                      {/* Overlay with pack info */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
+                        <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+                          {pack.name}
+                        </h3>
+                        <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
+                          {arteCount} {arteCount === 1 ? 'arte' : 'artes'}
+                        </Badge>
+                      </div>
                     </div>
                   </Card>
                 );
