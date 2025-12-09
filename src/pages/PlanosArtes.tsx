@@ -161,7 +161,7 @@ const PlanosArtes = () => {
             <div className="flex justify-center mb-6">
               <Button
                 variant="outline"
-                className="border-[#2d4a5e]/50 text-white/70 hover:text-white"
+                className="bg-[#2d4a5e]/30 border-[#2d4a5e] text-white hover:bg-[#2d4a5e]/50"
                 onClick={() => setSelectedPack(null)}
               >
                 Escolher outro pack
