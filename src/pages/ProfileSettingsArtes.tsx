@@ -208,7 +208,7 @@ const ProfileSettingsArtes = () => {
             <div className="border-t border-[#2d4a5e]/30 pt-4 mt-4">
               <Button
                 variant="outline"
-                className="w-full border-[#2d4a5e]/50 text-white/70"
+                className="w-full border-amber-500/50 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300 hover:border-amber-400"
                 onClick={() => setShowPasswordSection(!showPasswordSection)}
               >
                 Alterar Senha
