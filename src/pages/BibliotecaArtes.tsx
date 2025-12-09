@@ -559,9 +559,13 @@ const BibliotecaArtes = () => {
                 {selectedPack ? selectedPack : `Biblioteca de Artes - ${getSectionTitle()}`}
               </h1>
               <p className="text-muted-foreground mt-1">
-                {activeSection === 'cursos' 
-                  ? 'Cursos exclusivos para membros'
-                  : 'Artes editáveis PSD e Canva para eventos'}
+                {selectedPack 
+                  ? `Conteúdo do ${activeSection === 'bonus' ? 'bônus' : 'pack'} ${selectedPack}`
+                  : activeSection === 'cursos' 
+                    ? 'Cursos exclusivos para membros'
+                    : activeSection === 'bonus'
+                      ? 'Conteúdo extra exclusivo para membros'
+                      : 'Artes editáveis PSD e Canva para eventos'}
               </p>
             </div>
 
