@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard, FolderOpen, Inbox, Handshake, Palette, FileText, Tag } from "lucide-react";
+import { Upload, CheckCircle, Settings, LogOut, Bell, Users, Home, Crown, LayoutDashboard, FolderOpen, Inbox, Handshake, Palette, FileText, Tag, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminAnalyticsDashboard from "@/components/AdminAnalyticsDashboard";
@@ -370,6 +370,20 @@ const AdminDashboard = () => {
                   </h2>
                   <p className="text-muted-foreground">
                     Gerencie colaboradores de artes
+                  </p>
+                </div>
+              </Card>
+
+              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-packs')}>
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-4 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full">
+                    <Package className="h-12 w-12 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Gerenciar Packs
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Cadastre e edite os packs de artes
                   </p>
                 </div>
               </Card>
