@@ -10,17 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, X, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 
-const PACK_OPTIONS = [
-  "Pack Arcano Vol.1",
-  "Pack Arcano Vol.2",
-  "Pack Arcano Vol.3",
-  "Pack de Agendas",
-  "Pack de Halloween",
-  "Pack de Fim de Ano",
-  "Pack de Carnaval",
-  "Atualização Grátis"
-];
-
 interface MediaData {
   file: File;
   preview: string;
@@ -30,10 +19,17 @@ interface MediaData {
   description: string;
   canvaLink: string;
   driveLink: string;
+  isVideo: boolean;
+}
+
+interface Pack {
+  id: string;
+  name: string;
 }
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
 interface Category {
   id: string;
@@ -51,10 +47,12 @@ const PartnerUploadArtes = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [packs, setPacks] = useState<Pack[]>([]);
 
   useEffect(() => {
     checkPartnerAccess();
     fetchCategories();
+    fetchPacks();
   }, []);
 
   const fetchCategories = async () => {
@@ -63,6 +61,14 @@ const PartnerUploadArtes = () => {
       .select('id, name')
       .order('display_order', { ascending: true });
     setCategories(data || []);
+  };
+
+  const fetchPacks = async () => {
+    const { data } = await supabase
+      .from('artes_packs')
+      .select('id, name')
+      .order('display_order', { ascending: true });
+    setPacks(data || []);
   };
 
   const checkPartnerAccess = async () => {
@@ -99,7 +105,7 @@ const PartnerUploadArtes = () => {
     if (file.size > MAX_FILE_SIZE) {
       return `Arquivo ${file.name} excede o limite de 100MB`;
     }
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type) && !ALLOWED_VIDEO_TYPES.includes(file.type)) {
       return `Tipo de arquivo não suportado: ${file.type}`;
     }
     return null;
@@ -117,6 +123,7 @@ const PartnerUploadArtes = () => {
         return;
       }
 
+      const isVideo = file.type.startsWith('video/');
       newMediaFiles.push({
         file,
         preview: URL.createObjectURL(file),
@@ -126,6 +133,7 @@ const PartnerUploadArtes = () => {
         description: "",
         canvaLink: "",
         driveLink: "",
+        isVideo,
       });
     });
 
@@ -282,15 +290,15 @@ const PartnerUploadArtes = () => {
             >
               <Upload className="h-12 w-12 mx-auto text-[#2d4a5e] mb-4" />
               <p className="text-white font-medium mb-2">
-                Arraste imagens aqui ou clique para selecionar
+                Arraste imagens ou vídeos aqui ou clique para selecionar
               </p>
               <p className="text-white/50 text-sm">
-                PNG, JPG, GIF ou WebP (máximo 100MB)
+                PNG, JPG, GIF, WebP, MP4, WebM (máximo 100MB)
               </p>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 multiple
                 className="hidden"
                 onChange={handleFileSelect}
@@ -315,11 +323,22 @@ const PartnerUploadArtes = () => {
                 <div className="grid grid-cols-4 gap-2">
                   {mediaFiles.map((media, index) => (
                     <div key={index} className="relative aspect-square">
-                      <img
-                        src={media.preview}
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
+                      {media.isVideo ? (
+                        <video
+                          src={media.preview}
+                          className="w-full h-full object-cover rounded-lg"
+                          muted
+                          loop
+                          autoPlay
+                          playsInline
+                        />
+                      ) : (
+                        <img
+                          src={media.preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      )}
                       <button
                         className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
                         onClick={() => removeMedia(index)}
@@ -348,11 +367,23 @@ const PartnerUploadArtes = () => {
             <div className="space-y-4">
               {/* Preview */}
               <div className="aspect-video relative rounded-lg overflow-hidden bg-black">
-                <img
-                  src={currentMedia.preview}
-                  alt="Preview"
-                  className="w-full h-full object-contain"
-                />
+                {currentMedia.isVideo ? (
+                  <video
+                    src={currentMedia.preview}
+                    className="w-full h-full object-contain"
+                    muted
+                    loop
+                    autoPlay
+                    playsInline
+                    controls
+                  />
+                ) : (
+                  <img
+                    src={currentMedia.preview}
+                    alt="Preview"
+                    className="w-full h-full object-contain"
+                  />
+                )}
               </div>
 
               {/* Form Fields */}
@@ -395,9 +426,9 @@ const PartnerUploadArtes = () => {
                     <SelectValue placeholder="Selecione o pack" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1a1a2e] border-[#2d4a5e]/50 z-50">
-                    {PACK_OPTIONS.map((pack) => (
-                      <SelectItem key={pack} value={pack} className="text-white">
-                        {pack}
+                    {packs.map((pack) => (
+                      <SelectItem key={pack.id} value={pack.name} className="text-white">
+                        {pack.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
