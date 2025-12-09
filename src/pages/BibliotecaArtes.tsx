@@ -886,7 +886,7 @@ const BibliotecaArtes = () => {
 
       {/* Arte Detail Modal */}
       <Dialog open={!!selectedArte} onOpenChange={() => handleCloseModal()}>
-        <DialogContent className="max-w-[340px] sm:max-w-[540px]">
+        <DialogContent className="max-w-[95vw] sm:max-w-fit max-h-[95vh] overflow-y-auto">
           {selectedArte && (() => {
             const packSlug = toPackSlug(selectedArte.pack);
             // Check if arte belongs to bonus or updates pack type
@@ -898,11 +898,11 @@ const BibliotecaArtes = () => {
             
             return (
               <div className="space-y-4">
-                <div className="w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] mx-auto">
+                <div className="flex justify-center">
                   {isVideoUrl(selectedArte.imageUrl) ? (
                     <SecureVideo
                       src={selectedArte.imageUrl}
-                      className="w-full h-full object-cover rounded-lg"
+                      className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg"
                       isPremium={selectedArte.isPremium || false}
                       controls
                     />
@@ -910,7 +910,7 @@ const BibliotecaArtes = () => {
                     <SecureImage
                       src={selectedArte.imageUrl}
                       alt={selectedArte.title}
-                      className="w-full h-full object-cover rounded-lg"
+                      className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg"
                       isPremium={selectedArte.isPremium || false}
                     />
                   )}
