@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, Copy, RefreshCw } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, Copy, RefreshCw, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addMonths, addYears } from "date-fns";
@@ -35,6 +35,30 @@ interface Pack {
   slug: string;
 }
 
+interface PackAccess {
+  pack_slug: string;
+  access_type: '6_meses' | '1_ano' | 'vitalicio';
+  is_active: boolean;
+  id?: string; // for existing purchases
+}
+
+interface ClientFormData {
+  email: string;
+  name: string;
+  phone: string;
+  password: string;
+  useRandomPassword: boolean;
+  packAccesses: PackAccess[];
+}
+
+interface GroupedClient {
+  user_id: string;
+  user_email: string;
+  user_name: string;
+  user_phone: string;
+  purchases: PackPurchase[];
+}
+
 const AdminPackPurchases = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -47,16 +71,14 @@ const AdminPackPurchases = () => {
   
   // Add/Edit dialog state
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [editingPurchase, setEditingPurchase] = useState<PackPurchase | null>(null);
-  const [formData, setFormData] = useState({
+  const [editingClient, setEditingClient] = useState<GroupedClient | null>(null);
+  const [formData, setFormData] = useState<ClientFormData>({
     email: "",
     name: "",
     phone: "",
-    pack_slug: "",
-    access_type: "vitalicio" as '6_meses' | '1_ano' | 'vitalicio',
-    is_active: true,
     password: "",
-    useRandomPassword: true
+    useRandomPassword: true,
+    packAccesses: []
   });
 
   const generateRandomPassword = () => {
@@ -121,7 +143,6 @@ const AdminPackPurchases = () => {
   };
 
   const fetchPurchases = async () => {
-    // First get all purchases
     const { data: purchasesData, error } = await supabase
       .from('user_pack_purchases')
       .select('*')
@@ -132,7 +153,6 @@ const AdminPackPurchases = () => {
       return;
     }
 
-    // Get user details from profiles
     const userIds = [...new Set((purchasesData || []).map(p => p.user_id))];
     
     const { data: profilesData } = await supabase
@@ -164,139 +184,163 @@ const AdminPackPurchases = () => {
     }
   };
 
-  const handleAddPurchase = async () => {
-    if (!formData.email || !formData.pack_slug) {
-      toast.error("Email e pack são obrigatórios");
+  const addPackAccess = () => {
+    const availablePacks = packs.filter(p => !formData.packAccesses.some(pa => pa.pack_slug === p.slug));
+    if (availablePacks.length === 0) {
+      toast.error("Todos os packs já foram adicionados");
+      return;
+    }
+    setFormData({
+      ...formData,
+      packAccesses: [...formData.packAccesses, {
+        pack_slug: availablePacks[0].slug,
+        access_type: 'vitalicio',
+        is_active: true
+      }]
+    });
+  };
+
+  const removePackAccess = (index: number) => {
+    const newAccesses = [...formData.packAccesses];
+    newAccesses.splice(index, 1);
+    setFormData({ ...formData, packAccesses: newAccesses });
+  };
+
+  const updatePackAccess = (index: number, field: keyof PackAccess, value: any) => {
+    const newAccesses = [...formData.packAccesses];
+    newAccesses[index] = { ...newAccesses[index], [field]: value };
+    setFormData({ ...formData, packAccesses: newAccesses });
+  };
+
+  const handleSaveClient = async () => {
+    if (!formData.email) {
+      toast.error("Email é obrigatório");
+      return;
+    }
+
+    if (formData.packAccesses.length === 0) {
+      toast.error("Adicione pelo menos um pack");
       return;
     }
 
     try {
-      // Check if user exists
       let userId: string;
-      
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', formData.email)
-        .maybeSingle();
 
-      if (existingProfile) {
-        userId = existingProfile.id;
-      } else {
-        // Create new user
-        const passwordToUse = formData.useRandomPassword 
-          ? (formData.password || generateRandomPassword()) 
-          : formData.password;
-        
-        if (!passwordToUse) {
-          toast.error("Senha é obrigatória");
-          return;
+      if (editingClient) {
+        // Editing existing client
+        userId = editingClient.user_id;
+
+        // Get existing purchase IDs for this user
+        const existingIds = editingClient.purchases.map(p => p.id);
+        const formAccessIds = formData.packAccesses.filter(pa => pa.id).map(pa => pa.id);
+
+        // Delete removed purchases
+        const toDelete = existingIds.filter(id => !formAccessIds.includes(id));
+        if (toDelete.length > 0) {
+          await supabase.from('user_pack_purchases').delete().in('id', toDelete);
         }
 
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: passwordToUse,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`
+        // Update or insert purchases
+        for (const access of formData.packAccesses) {
+          const hasBonus = access.access_type === '1_ano' || access.access_type === 'vitalicio';
+          const expiresAt = calculateExpiresAt(access.access_type);
+
+          if (access.id) {
+            // Update existing
+            await supabase.from('user_pack_purchases').update({
+              pack_slug: access.pack_slug,
+              access_type: access.access_type,
+              has_bonus_access: hasBonus,
+              is_active: access.is_active,
+              expires_at: expiresAt
+            }).eq('id', access.id);
+          } else {
+            // Insert new
+            await supabase.from('user_pack_purchases').insert({
+              user_id: userId,
+              pack_slug: access.pack_slug,
+              access_type: access.access_type,
+              has_bonus_access: hasBonus,
+              is_active: access.is_active,
+              expires_at: expiresAt
+            });
           }
-        });
-
-        if (authError || !authData.user) {
-          toast.error("Erro ao criar usuário: " + (authError?.message || "Usuário não criado"));
-          return;
         }
 
-        userId = authData.user.id;
+        toast.success("Cliente atualizado com sucesso!");
+      } else {
+        // Creating new client
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', formData.email)
+          .maybeSingle();
 
-        // Create profile
-        await supabase.from('profiles').upsert({
-          id: userId,
-          email: formData.email,
-          name: formData.name,
-          phone: formData.phone,
-          password_changed: false
-        });
+        if (existingProfile) {
+          userId = existingProfile.id;
+        } else {
+          const passwordToUse = formData.useRandomPassword 
+            ? (formData.password || generateRandomPassword()) 
+            : formData.password;
+          
+          if (!passwordToUse) {
+            toast.error("Senha é obrigatória");
+            return;
+          }
+
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: formData.email,
+            password: passwordToUse,
+            options: {
+              emailRedirectTo: `${window.location.origin}/`
+            }
+          });
+
+          if (authError || !authData.user) {
+            toast.error("Erro ao criar usuário: " + (authError?.message || "Usuário não criado"));
+            return;
+          }
+
+          userId = authData.user.id;
+
+          await supabase.from('profiles').upsert({
+            id: userId,
+            email: formData.email,
+            name: formData.name,
+            phone: formData.phone,
+            password_changed: false
+          });
+        }
+
+        // Insert all pack accesses
+        for (const access of formData.packAccesses) {
+          const hasBonus = access.access_type === '1_ano' || access.access_type === 'vitalicio';
+          const expiresAt = calculateExpiresAt(access.access_type);
+
+          await supabase.from('user_pack_purchases').insert({
+            user_id: userId,
+            pack_slug: access.pack_slug,
+            access_type: access.access_type,
+            has_bonus_access: hasBonus,
+            is_active: access.is_active,
+            expires_at: expiresAt
+          });
+        }
+
+        toast.success("Cliente cadastrado com sucesso!");
       }
 
-      // Check if already has this pack
-      const { data: existingPurchase } = await supabase
-        .from('user_pack_purchases')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('pack_slug', formData.pack_slug)
-        .maybeSingle();
-
-      if (existingPurchase) {
-        toast.error("Este usuário já possui este pack");
-        return;
-      }
-
-      // Create purchase
-      const hasBonus = formData.access_type === '1_ano' || formData.access_type === 'vitalicio';
-      const expiresAt = calculateExpiresAt(formData.access_type);
-
-      const { error: purchaseError } = await supabase
-        .from('user_pack_purchases')
-        .insert({
-          user_id: userId,
-          pack_slug: formData.pack_slug,
-          access_type: formData.access_type,
-          has_bonus_access: hasBonus,
-          is_active: formData.is_active,
-          expires_at: expiresAt
-        });
-
-      if (purchaseError) {
-        toast.error("Erro ao criar compra: " + purchaseError.message);
-        return;
-      }
-
-      toast.success("Compra adicionada com sucesso!");
       setShowAddDialog(false);
       resetForm();
       fetchPurchases();
     } catch (error) {
-      console.error('Error adding purchase:', error);
-      toast.error("Erro ao adicionar compra");
-    }
-  };
-
-  const handleUpdatePurchase = async () => {
-    if (!editingPurchase) return;
-
-    try {
-      const hasBonus = formData.access_type === '1_ano' || formData.access_type === 'vitalicio';
-      const expiresAt = calculateExpiresAt(formData.access_type);
-
-      const { error } = await supabase
-        .from('user_pack_purchases')
-        .update({
-          pack_slug: formData.pack_slug,
-          access_type: formData.access_type,
-          has_bonus_access: hasBonus,
-          is_active: formData.is_active,
-          expires_at: expiresAt
-        })
-        .eq('id', editingPurchase.id);
-
-      if (error) {
-        toast.error("Erro ao atualizar: " + error.message);
-        return;
-      }
-
-      toast.success("Compra atualizada!");
-      setEditingPurchase(null);
-      setShowAddDialog(false);
-      resetForm();
-      fetchPurchases();
-    } catch (error) {
-      console.error('Error updating purchase:', error);
-      toast.error("Erro ao atualizar compra");
+      console.error('Error saving client:', error);
+      toast.error("Erro ao salvar cliente");
     }
   };
 
   const handleDeletePurchase = async (id: string) => {
-    if (!confirm("Tem certeza que deseja remover esta compra?")) return;
+    if (!confirm("Tem certeza que deseja remover este acesso?")) return;
 
     const { error } = await supabase
       .from('user_pack_purchases')
@@ -308,7 +352,7 @@ const AdminPackPurchases = () => {
       return;
     }
 
-    toast.success("Compra removida!");
+    toast.success("Acesso removido!");
     fetchPurchases();
   };
 
@@ -332,25 +376,38 @@ const AdminPackPurchases = () => {
       email: "",
       name: "",
       phone: "",
-      pack_slug: "",
-      access_type: "vitalicio",
-      is_active: true,
       password: "",
-      useRandomPassword: true
+      useRandomPassword: true,
+      packAccesses: []
     });
+    setEditingClient(null);
   };
 
   const openEditDialog = (purchase: PackPurchase) => {
-    setEditingPurchase(purchase);
+    // Group all purchases for this user
+    const userPurchases = purchases.filter(p => p.user_id === purchase.user_id);
+    
+    const client: GroupedClient = {
+      user_id: purchase.user_id,
+      user_email: purchase.user_email || '',
+      user_name: purchase.user_name || '',
+      user_phone: purchase.user_phone || '',
+      purchases: userPurchases
+    };
+
+    setEditingClient(client);
     setFormData({
-      email: purchase.user_email || "",
-      name: purchase.user_name || "",
-      phone: purchase.user_phone || "",
-      pack_slug: purchase.pack_slug,
-      access_type: purchase.access_type,
-      is_active: purchase.is_active,
+      email: client.user_email,
+      name: client.user_name,
+      phone: client.user_phone,
       password: "",
-      useRandomPassword: true
+      useRandomPassword: true,
+      packAccesses: userPurchases.map(p => ({
+        pack_slug: p.pack_slug,
+        access_type: p.access_type,
+        is_active: p.is_active,
+        id: p.id
+      }))
     });
     setShowAddDialog(true);
   };
@@ -391,6 +448,25 @@ const AdminPackPurchases = () => {
     return matchesSearch && matchesPack && matchesStatus;
   });
 
+  // Group purchases by user for display
+  const groupedClients: GroupedClient[] = [];
+  const userMap = new Map<string, GroupedClient>();
+  
+  filteredPurchases.forEach(purchase => {
+    if (!userMap.has(purchase.user_id)) {
+      const client: GroupedClient = {
+        user_id: purchase.user_id,
+        user_email: purchase.user_email || '',
+        user_name: purchase.user_name || '',
+        user_phone: purchase.user_phone || '',
+        purchases: []
+      };
+      userMap.set(purchase.user_id, client);
+      groupedClients.push(client);
+    }
+    userMap.get(purchase.user_id)!.purchases.push(purchase);
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -410,8 +486,8 @@ const AdminPackPurchases = () => {
             Voltar
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Gerenciar Compras de Packs</h1>
-            <p className="text-muted-foreground">Adicione, edite ou remova acessos de usuários aos packs</p>
+            <h1 className="text-3xl font-bold text-foreground">Gerenciar Clientes de Packs</h1>
+            <p className="text-muted-foreground">Cadastre clientes e gerencie seus acessos aos packs</p>
           </div>
         </div>
 
@@ -420,21 +496,21 @@ const AdminPackPurchases = () => {
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Package className="h-5 w-5 text-primary" />
+                <User className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total de Compras</p>
-                <p className="text-2xl font-bold">{purchases.length}</p>
+                <p className="text-sm text-muted-foreground">Total de Clientes</p>
+                <p className="text-2xl font-bold">{groupedClients.length}</p>
               </div>
             </div>
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-500/10 rounded-lg">
-                <User className="h-5 w-5 text-green-500" />
+                <Package className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Ativos</p>
+                <p className="text-sm text-muted-foreground">Acessos Ativos</p>
                 <p className="text-2xl font-bold">{purchases.filter(p => p.is_active).length}</p>
               </div>
             </div>
@@ -498,48 +574,53 @@ const AdminPackPurchases = () => {
           <Dialog open={showAddDialog} onOpenChange={(open) => {
             setShowAddDialog(open);
             if (!open) {
-              setEditingPurchase(null);
               resetForm();
             }
           }}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
                 <Plus className="h-4 w-4 mr-2" />
-                Adicionar Compra
+                Cadastrar Cliente
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>{editingPurchase ? 'Editar Compra' : 'Adicionar Nova Compra'}</DialogTitle>
+                <DialogTitle>{editingClient ? 'Editar Cliente' : 'Cadastrar Novo Cliente'}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label>Email do usuário *</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="usuario@email.com"
-                    disabled={!!editingPurchase}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Email do cliente *</Label>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="cliente@email.com"
+                      disabled={!!editingClient}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nome</Label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Nome do cliente"
+                      disabled={!!editingClient}
+                    />
+                  </div>
                 </div>
-                {!editingPurchase && (
+
+                {!editingClient && (
                   <>
-                    <div className="space-y-2">
-                      <Label>Nome</Label>
-                      <Input
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Nome do usuário"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Telefone (WhatsApp)</Label>
-                      <Input
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="5511999999999"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Telefone (WhatsApp)</Label>
+                        <Input
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="5511999999999"
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label>Senha</Label>
@@ -588,112 +669,153 @@ const AdminPackPurchases = () => {
                     </div>
                   </>
                 )}
-                <div className="space-y-2">
-                  <Label>Pack *</Label>
-                  <Select value={formData.pack_slug} onValueChange={(v) => setFormData({ ...formData, pack_slug: v })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o pack" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {packs.map(pack => (
-                        <SelectItem key={pack.id} value={pack.slug}>{pack.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+
+                {/* Pack Accesses */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-semibold">Acessos aos Packs</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={addPackAccess}>
+                      <Plus className="h-3 w-3 mr-1" />
+                      Adicionar Pack
+                    </Button>
+                  </div>
+                  
+                  {formData.packAccesses.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4 border border-dashed rounded-lg">
+                      Nenhum pack adicionado. Clique em "Adicionar Pack" para começar.
+                    </p>
+                  )}
+
+                  {formData.packAccesses.map((access, index) => (
+                    <Card key={index} className="p-4">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Pack</Label>
+                            <Select 
+                              value={access.pack_slug} 
+                              onValueChange={(v) => updatePackAccess(index, 'pack_slug', v)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {packs.map(pack => (
+                                  <SelectItem 
+                                    key={pack.id} 
+                                    value={pack.slug}
+                                    disabled={formData.packAccesses.some((pa, i) => i !== index && pa.pack_slug === pack.slug)}
+                                  >
+                                    {pack.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Tipo de Acesso</Label>
+                            <Select 
+                              value={access.access_type} 
+                              onValueChange={(v: '6_meses' | '1_ano' | 'vitalicio') => updatePackAccess(index, 'access_type', v)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="6_meses">6 Meses</SelectItem>
+                                <SelectItem value="1_ano">1 Ano (+ Bônus)</SelectItem>
+                                <SelectItem value="vitalicio">Vitalício (+ Bônus)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Status</Label>
+                            <Select 
+                              value={access.is_active ? "active" : "inactive"} 
+                              onValueChange={(v) => updatePackAccess(index, 'is_active', v === "active")}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">Ativo</SelectItem>
+                                <SelectItem value="inactive">Inativo</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => removePackAccess(index)}
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <Label>Tipo de Acesso</Label>
-                  <Select value={formData.access_type} onValueChange={(v: '6_meses' | '1_ano' | 'vitalicio') => setFormData({ ...formData, access_type: v })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="6_meses">6 Meses - R$ 27,00</SelectItem>
-                      <SelectItem value="1_ano">1 Ano - R$ 37,00 (+ Bônus)</SelectItem>
-                      <SelectItem value="vitalicio">Vitalício - R$ 47,00 (+ Bônus)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="is_active"
-                    checked={formData.is_active}
-                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="rounded"
-                  />
-                  <Label htmlFor="is_active">Acesso ativo</Label>
-                </div>
-                <Button 
-                  onClick={editingPurchase ? handleUpdatePurchase : handleAddPurchase}
-                  className="w-full"
-                >
-                  {editingPurchase ? 'Salvar Alterações' : 'Adicionar Compra'}
+
+                <Button onClick={handleSaveClient} className="w-full">
+                  {editingClient ? 'Salvar Alterações' : 'Cadastrar Cliente'}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
 
-        {/* Purchases Table */}
+        {/* Clients Table */}
         <Card>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Usuário</TableHead>
-                <TableHead>Pack</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Bônus</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Packs</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Expira em</TableHead>
-                <TableHead>Compra</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPurchases.map((purchase) => (
-                <TableRow key={purchase.id}>
+              {groupedClients.map((client) => (
+                <TableRow key={client.user_id}>
                   <TableCell>
                     <div>
-                      <p className="font-medium">{purchase.user_name || 'Sem nome'}</p>
-                      <p className="text-sm text-muted-foreground">{purchase.user_email}</p>
+                      <p className="font-medium">{client.user_name || 'Sem nome'}</p>
+                      <p className="text-sm text-muted-foreground">{client.user_email}</p>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{getPackName(purchase.pack_slug)}</Badge>
-                  </TableCell>
-                  <TableCell>{getAccessTypeLabel(purchase.access_type)}</TableCell>
-                  <TableCell>
-                    {purchase.has_bonus_access ? (
-                      <Badge className="bg-amber-500/20 text-amber-600">Sim</Badge>
-                    ) : (
-                      <Badge variant="outline">Não</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      className={purchase.is_active ? 'bg-green-500/20 text-green-600' : 'bg-red-500/20 text-red-600'}
-                      onClick={() => handleToggleActive(purchase)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {purchase.is_active ? 'Ativo' : 'Inativo'}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1">
+                      {client.purchases.map((purchase) => (
+                        <Badge 
+                          key={purchase.id} 
+                          variant="outline"
+                          className={`text-xs ${!purchase.is_active ? 'opacity-50 line-through' : ''}`}
+                        >
+                          {getPackName(purchase.pack_slug)} ({getAccessTypeLabel(purchase.access_type)})
+                        </Badge>
+                      ))}
+                    </div>
                   </TableCell>
                   <TableCell>
-                    {purchase.expires_at 
-                      ? format(new Date(purchase.expires_at), "dd/MM/yyyy", { locale: ptBR })
-                      : <span className="text-amber-500">Vitalício</span>
-                    }
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(purchase.purchased_at), "dd/MM/yyyy", { locale: ptBR })}
+                    <div className="flex flex-wrap gap-1">
+                      {client.purchases.every(p => p.is_active) ? (
+                        <Badge className="bg-green-500/20 text-green-600">Todos ativos</Badge>
+                      ) : client.purchases.some(p => p.is_active) ? (
+                        <Badge className="bg-amber-500/20 text-amber-600">Parcial</Badge>
+                      ) : (
+                        <Badge className="bg-red-500/20 text-red-600">Inativo</Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => openWhatsApp(purchase.user_phone || '')}
+                        onClick={() => openWhatsApp(client.user_phone)}
                         title="WhatsApp"
                       >
                         <MessageCircle className="h-4 w-4 text-green-500" />
@@ -701,27 +823,19 @@ const AdminPackPurchases = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => openEditDialog(purchase)}
+                        onClick={() => openEditDialog(client.purchases[0])}
                         title="Editar"
                       >
                         <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeletePurchase(purchase.id)}
-                        title="Remover"
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
-              {filteredPurchases.length === 0 && (
+              {groupedClients.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    Nenhuma compra encontrada
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    Nenhum cliente encontrado
                   </TableCell>
                 </TableRow>
               )}
