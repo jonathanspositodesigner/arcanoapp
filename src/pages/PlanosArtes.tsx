@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Star, ArrowLeft, Gift, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Check, Star, ArrowLeft, Gift, Clock, Percent } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Pack {
@@ -16,9 +17,13 @@ const PlanosArtes = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const packSlug = searchParams.get("pack");
+  const isRenewal = searchParams.get("renovacao") === "true";
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [packs, setPacks] = useState<Pack[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Discount configuration for renewals
+  const RENEWAL_DISCOUNT = 0.30; // 30% discount
 
   useEffect(() => {
     fetchPacks();
@@ -46,11 +51,32 @@ const PlanosArtes = () => {
     setLoading(false);
   };
 
+  // Original prices in centavos
+  const originalPrices = {
+    "6_meses": 2700,
+    "1_ano": 3700,
+    "vitalicio": 4700
+  };
+
+  const calculatePrice = (type: string) => {
+    const original = originalPrices[type as keyof typeof originalPrices];
+    if (isRenewal) {
+      const discounted = original * (1 - RENEWAL_DISCOUNT);
+      return discounted / 100;
+    }
+    return original / 100;
+  };
+
+  const formatPrice = (value: number) => {
+    return `R$ ${value.toFixed(2).replace('.', ',')}`;
+  };
+
   const accessOptions = [
     {
       type: "6_meses",
       label: "Acesso 6 Meses",
-      price: "R$ 27,00",
+      originalPrice: "R$ 27,00",
+      price: formatPrice(calculatePrice("6_meses")),
       icon: Clock,
       buttonText: "Desbloquear 6 Meses",
       features: [
@@ -65,7 +91,8 @@ const PlanosArtes = () => {
     {
       type: "1_ano",
       label: "Acesso 1 Ano",
-      price: "R$ 37,00",
+      originalPrice: "R$ 37,00",
+      price: formatPrice(calculatePrice("1_ano")),
       icon: Star,
       buttonText: "Desbloquear 1 Ano",
       features: [
@@ -80,7 +107,8 @@ const PlanosArtes = () => {
     {
       type: "vitalicio",
       label: "Acesso Vitalício",
-      price: "R$ 47,00",
+      originalPrice: "R$ 47,00",
+      price: formatPrice(calculatePrice("vitalicio")),
       icon: Gift,
       buttonText: "Desbloquear Acesso Vitalício",
       features: [
@@ -122,13 +150,26 @@ const PlanosArtes = () => {
         </Button>
 
         <div className="text-center mb-8">
+          {isRenewal && (
+            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg px-4 py-2 mb-4">
+              <Percent className="h-5 w-5 mr-2" />
+              30% OFF - Renovação Especial
+            </Badge>
+          )}
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {selectedPack ? `Adquira o ${selectedPack.name}` : "Escolha seu Pack"}
+            {isRenewal 
+              ? `Renove seu acesso ao ${selectedPack?.name || "Pack"}`
+              : selectedPack 
+                ? `Adquira o ${selectedPack.name}` 
+                : "Escolha seu Pack"
+            }
           </h1>
           <p className="text-white/60 max-w-2xl mx-auto">
-            {selectedPack 
-              ? "Escolha o tipo de acesso ideal para você"
-              : "Selecione um pack para ver as opções de compra"
+            {isRenewal
+              ? "Aproveite 30% de desconto na renovação do seu acesso!"
+              : selectedPack 
+                ? "Escolha o tipo de acesso ideal para você"
+                : "Selecione um pack para ver as opções de compra"
             }
           </p>
         </div>
@@ -209,7 +250,15 @@ const PlanosArtes = () => {
                       </div>
                       <CardTitle className="text-lg text-white">{option.label}</CardTitle>
                       <div className="mt-4">
-                        <span className="text-3xl font-bold text-white">{option.price}</span>
+                        {isRenewal && (
+                          <div className="flex items-center justify-center gap-2 mb-1">
+                            <span className="text-white/40 line-through text-lg">{option.originalPrice}</span>
+                            <Badge className="bg-green-500/20 text-green-400 text-xs">-30%</Badge>
+                          </div>
+                        )}
+                        <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : 'text-white'}`}>
+                          {option.price}
+                        </span>
                         <span className="text-white/60 text-sm block mt-1">pagamento único</span>
                       </div>
                     </CardHeader>
@@ -226,12 +275,14 @@ const PlanosArtes = () => {
                         className={`w-full ${
                           option.highlighted
                             ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30 animate-pulse"
-                            : "bg-[#2d4a5e]/50 hover:bg-[#2d4a5e] text-white"
+                            : isRenewal
+                              ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                              : "bg-[#2d4a5e]/50 hover:bg-[#2d4a5e] text-white"
                         }`}
                         onClick={() => handleSelectOption(option.type)}
                       >
                         <Star className="h-4 w-4 mr-2" />
-                        {option.buttonText}
+                        {isRenewal ? "Renovar Agora" : option.buttonText}
                       </Button>
                     </CardContent>
                   </Card>
