@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, Upload } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, Upload, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addMonths, addYears } from "date-fns";
@@ -439,6 +439,63 @@ const AdminPackPurchases = () => {
     fetchPurchases();
   };
 
+  const handleResetFirstPassword = async () => {
+    if (!editingClient) return;
+    
+    const confirmed = window.confirm(
+      `Tem certeza que deseja redefinir a senha de ${editingClient.user_email} para a senha inicial (email)?`
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Sessão expirada. Faça login novamente.");
+        return;
+      }
+      
+      // Call edge function to update password to email
+      const response = await fetch(
+        `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/update-user-password-artes`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ 
+            user_id: editingClient.user_id, 
+            new_password: editingClient.user_email 
+          })
+        }
+      );
+
+      const result = await response.json();
+      if (!response.ok) {
+        toast.error("Erro ao redefinir senha: " + result.error);
+        return;
+      }
+      
+      // Update password_changed to false in profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ password_changed: false })
+        .eq('id', editingClient.user_id);
+      
+      if (profileError) {
+        console.error('Error updating profile:', profileError);
+        toast.error("Senha redefinida, mas erro ao marcar para exigir mudança");
+        return;
+      }
+      
+      toast.success("Senha redefinida! Cliente precisará alterar no próximo login.");
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      toast.error("Erro ao redefinir senha");
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       email: "",
@@ -751,6 +808,29 @@ const AdminPackPurchases = () => {
                       </p>
                     </div>
                   </>
+                )}
+
+                {editingClient && (
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-amber-700">Redefinir senha do cliente</p>
+                        <p className="text-xs text-muted-foreground">
+                          A senha será redefinida para o email e exigirá mudança no próximo login.
+                        </p>
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={handleResetFirstPassword}
+                        className="text-amber-700 border-amber-500/50 hover:bg-amber-500/20"
+                      >
+                        <KeyRound className="h-3 w-3 mr-1" />
+                        Redefinir Primeira Senha
+                      </Button>
+                    </div>
+                  </div>
                 )}
 
                 {/* Pack Accesses */}
