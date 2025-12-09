@@ -337,76 +337,6 @@ const AdminManageBanners = () => {
 
   const renderFormContent = (isEdit: boolean) => (
     <div className="space-y-4 mt-4 max-h-[70vh] overflow-y-auto pr-2">
-      {/* Live Preview - Desktop & Mobile */}
-      {(imagePreview || mobileImagePreview) && (
-        <div>
-          <Label className="mb-2 block">Pré-visualização</Label>
-          <div className="grid grid-cols-2 gap-3">
-            {/* Desktop Preview */}
-            <div>
-              <p className="text-xs text-muted-foreground mb-1 text-center">Desktop</p>
-              <div className="relative h-24 sm:h-32 rounded-lg overflow-hidden bg-muted">
-                {imagePreview ? (
-                  <>
-                    <img
-                      src={imagePreview}
-                      alt="Desktop Preview"
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="px-2 max-w-[80%]">
-                        <h3 className="text-[10px] sm:text-xs font-bold text-white mb-0.5 line-clamp-1 leading-tight">
-                          {formData.title || "Título"}
-                        </h3>
-                        <span className="inline-block bg-primary text-primary-foreground text-[8px] px-1.5 py-0.5 rounded">
-                          {formData.button_text || "Saiba mais"}
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
-                    Sem imagem
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Mobile Preview */}
-            <div>
-              <p className="text-xs text-muted-foreground mb-1 text-center">Mobile</p>
-              <div className="relative h-24 sm:h-32 rounded-lg overflow-hidden bg-muted">
-                {mobileImagePreview ? (
-                  <>
-                    <img
-                      src={mobileImagePreview}
-                      alt="Mobile Preview"
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="px-2 max-w-[80%]">
-                        <h3 className="text-[10px] sm:text-xs font-bold text-white mb-0.5 line-clamp-1 leading-tight">
-                          {formData.title || "Título"}
-                        </h3>
-                        <span className="inline-block bg-primary text-primary-foreground text-[8px] px-1.5 py-0.5 rounded">
-                          {formData.button_text || "Saiba mais"}
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
-                    {imagePreview ? "Usará desktop" : "Sem imagem"}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div>
         <Label htmlFor={isEdit ? "edit-title" : "add-title"}>Título do Banner</Label>
         <Input
@@ -517,6 +447,78 @@ const AdminManageBanners = () => {
           )}
         </div>
       </div>
+
+      {/* Live Preview - Desktop & Mobile at the end */}
+      {(imagePreview || mobileImagePreview) && (
+        <div className="space-y-3 pt-2 border-t border-border">
+          <Label className="block">Pré-visualização</Label>
+          
+          {/* Desktop Preview */}
+          {imagePreview && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Desktop</p>
+              <div className="relative h-28 sm:h-36 rounded-lg overflow-hidden bg-muted">
+                <img
+                  src={imagePreview}
+                  alt="Desktop Preview"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                <div className="absolute inset-0 flex items-center">
+                  <div className="px-3 max-w-[75%]">
+                    <h3 className="text-xs sm:text-sm font-bold text-white mb-1 line-clamp-2 leading-tight">
+                      {formData.title || "Título do Banner"}
+                    </h3>
+                    {formData.description && (
+                      <p className="text-[10px] text-white/80 mb-1 line-clamp-1">
+                        {formData.description}
+                      </p>
+                    )}
+                    <span className="inline-block bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded">
+                      {formData.button_text || "Saiba mais"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Mobile Preview */}
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Mobile</p>
+            <div className="relative h-28 sm:h-36 rounded-lg overflow-hidden bg-muted">
+              {mobileImagePreview ? (
+                <>
+                  <img
+                    src={mobileImagePreview}
+                    alt="Mobile Preview"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="px-3 max-w-[75%]">
+                      <h3 className="text-xs sm:text-sm font-bold text-white mb-1 line-clamp-2 leading-tight">
+                        {formData.title || "Título do Banner"}
+                      </h3>
+                      <span className="inline-block bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded">
+                        {formData.button_text || "Saiba mais"}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              ) : imagePreview ? (
+                <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
+                  Usará imagem desktop
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
+                  Sem imagem
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Button
         type="button"
