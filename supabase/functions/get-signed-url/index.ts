@@ -81,14 +81,7 @@ serve(async (req) => {
         );
       }
 
-      // Check if user is premium, admin, or partner
-      const { data: premiumData } = await supabaseAdmin
-        .from('premium_users')
-        .select('is_active, expires_at')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .single();
-
+      // Check if user is admin or partner first
       const { data: adminRole } = await supabaseAdmin
         .from('user_roles')
         .select('role')
@@ -103,22 +96,59 @@ serve(async (req) => {
         .eq('role', 'partner')
         .single();
 
-      const isPremiumActive = premiumData && 
-        premiumData.is_active && 
-        (!premiumData.expires_at || new Date(premiumData.expires_at) > new Date());
+      // If admin or partner, allow access immediately
+      if (adminRole || partnerRole) {
+        console.log(`User ${user.id} verified as admin/partner`);
+      } else {
+        // Check for premium_users (Biblioteca de Prompts)
+        const { data: premiumData } = await supabaseAdmin
+          .from('premium_users')
+          .select('is_active, expires_at')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .single();
 
-      if (!isPremiumActive && !adminRole && !partnerRole) {
-        console.log(`User ${user.id} is not premium, admin, or partner`);
-        return new Response(
-          JSON.stringify({ error: 'Premium subscription required' }),
-          { 
-            status: 403, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
+        const isPremiumActive = premiumData && 
+          premiumData.is_active && 
+          (!premiumData.expires_at || new Date(premiumData.expires_at) > new Date());
+
+        // Check for user_pack_purchases (Biblioteca de Artes)
+        const { data: packAccess } = await supabaseAdmin
+          .from('user_pack_purchases')
+          .select('id, is_active, expires_at')
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+
+        const hasActivePackAccess = packAccess && packAccess.some(pack => 
+          pack.is_active && 
+          (!pack.expires_at || new Date(pack.expires_at) > new Date())
         );
-      }
 
-      console.log(`User ${user.id} verified as premium/admin/partner`);
+        // Check for premium_artes_users (legacy Artes premium)
+        const { data: premiumArtesData } = await supabaseAdmin
+          .from('premium_artes_users')
+          .select('is_active, expires_at')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .single();
+
+        const isPremiumArtesActive = premiumArtesData && 
+          premiumArtesData.is_active && 
+          (!premiumArtesData.expires_at || new Date(premiumArtesData.expires_at) > new Date());
+
+        if (!isPremiumActive && !hasActivePackAccess && !isPremiumArtesActive) {
+          console.log(`User ${user.id} has no premium, pack, or artes access`);
+          return new Response(
+            JSON.stringify({ error: 'Premium subscription required' }),
+            { 
+              status: 403, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+
+        console.log(`User ${user.id} verified with access (premium: ${isPremiumActive}, packs: ${hasActivePackAccess}, artes: ${isPremiumArtesActive})`);
+      }
     }
 
     // Generate signed URL with 1 hour expiration
