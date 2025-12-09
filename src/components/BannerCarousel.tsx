@@ -61,9 +61,9 @@ const BannerCarousel = () => {
   const currentBanner = banners[currentIndex];
 
   return (
-    <div className="relative w-full mb-6 overflow-hidden rounded-xl">
+    <div className="relative w-full mb-4 sm:mb-6 overflow-hidden rounded-lg sm:rounded-xl">
       {/* Banner Container */}
-      <div className="relative h-32 sm:h-48 lg:h-56">
+      <div className="relative h-40 sm:h-48 lg:h-56">
         {banners.map((banner, index) => (
           <div
             key={banner.id}
@@ -82,24 +82,24 @@ const BannerCarousel = () => {
               className="absolute inset-0 w-full h-full object-cover"
             />
             
-            {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+            {/* Overlay Gradient - stronger on mobile for better text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent sm:from-black/70 sm:via-black/40" />
             
             {/* Content */}
             <div className="absolute inset-0 flex items-center">
-              <div className="px-4 sm:px-8 lg:px-12 max-w-xl">
-                <h3 className="text-lg sm:text-2xl lg:text-3xl font-bold text-white mb-1 sm:mb-2 line-clamp-2">
+              <div className="px-3 sm:px-8 lg:px-12 max-w-[75%] sm:max-w-xl">
+                <h3 className="text-sm sm:text-2xl lg:text-3xl font-bold text-white mb-1 sm:mb-2 line-clamp-2 leading-tight">
                   {banner.title}
                 </h3>
                 {banner.description && (
-                  <p className="text-xs sm:text-sm lg:text-base text-white/80 mb-2 sm:mb-4 line-clamp-2">
+                  <p className="text-[10px] sm:text-sm lg:text-base text-white/80 mb-2 sm:mb-4 line-clamp-2 leading-snug">
                     {banner.description}
                   </p>
                 )}
                 <Button
                   onClick={() => window.open(banner.button_link, '_blank')}
                   size="sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] sm:text-sm h-7 sm:h-9 px-2 sm:px-4"
                 >
                   {banner.button_text}
                 </Button>
@@ -109,13 +109,13 @@ const BannerCarousel = () => {
         ))}
       </div>
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows - larger touch targets on mobile */}
       {banners.length > 1 && (
         <>
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white h-8 w-8 sm:h-10 sm:w-10"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white h-7 w-7 sm:h-10 sm:w-10 rounded-full"
             onClick={prevSlide}
           >
             <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -123,7 +123,7 @@ const BannerCarousel = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white h-8 w-8 sm:h-10 sm:w-10"
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white h-7 w-7 sm:h-10 sm:w-10 rounded-full"
             onClick={nextSlide}
           >
             <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -133,14 +133,14 @@ const BannerCarousel = () => {
 
       {/* Dots Indicator */}
       {banners.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+        <div className="absolute bottom-1.5 sm:bottom-2 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-1.5">
           {banners.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
               className={`h-1.5 sm:h-2 rounded-full transition-all ${
                 index === currentIndex 
-                  ? 'w-4 sm:w-6 bg-white' 
+                  ? 'w-3 sm:w-6 bg-white' 
                   : 'w-1.5 sm:w-2 bg-white/50 hover:bg-white/70'
               }`}
             />
