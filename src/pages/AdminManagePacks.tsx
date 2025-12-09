@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -19,6 +19,7 @@ interface Pack {
   cover_url: string | null;
   display_order: number;
   type: 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia';
+  is_visible: boolean;
 }
 
 type ItemType = 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia';
@@ -302,6 +303,22 @@ const AdminManagePacks = () => {
     }
   };
 
+  const handleToggleVisibility = async (pack: Pack) => {
+    try {
+      const { error } = await supabase
+        .from("artes_packs")
+        .update({ is_visible: !pack.is_visible })
+        .eq("id", pack.id);
+
+      if (error) throw error;
+
+      toast.success(pack.is_visible ? "Item ocultado" : "Item visível");
+      fetchPacks();
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao alterar visibilidade");
+    }
+  };
+
   const resetForm = () => {
     setFormData({ name: "", slug: "", type: "pack" });
     setCoverFile(null);
@@ -370,10 +387,26 @@ const AdminManagePacks = () => {
                 )}
               </div>
               <div className="flex-1 p-4">
-                <h3 className="font-semibold text-foreground">{pack.name}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-foreground">{pack.name}</h3>
+                  {!pack.is_visible && (
+                    <Badge variant="secondary" className="text-xs">
+                      <EyeOff className="w-3 h-3 mr-1" />
+                      Oculto
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">/{pack.slug}</p>
               </div>
               <div className="flex gap-2 p-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleToggleVisibility(pack)}
+                  title={pack.is_visible ? "Ocultar" : "Mostrar"}
+                >
+                  {pack.is_visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => openEdit(pack)}>
                   <Pencil className="w-4 h-4" />
                 </Button>
