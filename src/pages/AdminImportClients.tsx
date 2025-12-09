@@ -186,7 +186,24 @@ const AdminImportClients = () => {
       const email = (row["Email do cliente"] || row.customer_email || row.email || "").toLowerCase().trim();
       const name = row["Nome do cliente"] || row.customer_name || row.name || "";
       const phone = row["Telefone"] || row.customer_phone || row.phone || "";
-      const purchaseDate = row["Data"] || row.created_at || row.date || new Date().toISOString();
+      // Use "Data de pagamento" (YYYY-MM-DD format) instead of "Data" (DD/MM/YYYY format)
+      let purchaseDate = row["Data de pagamento"] || row.created_at || row.date || "";
+      
+      // Fallback to "Data" column with Brazilian date format conversion
+      if (!purchaseDate && row["Data"]) {
+        const brazilDate = row["Data"];
+        // Convert DD/MM/YYYY HH:MM:SS to ISO format
+        const match = brazilDate.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
+        if (match) {
+          const [, day, month, year, hour, minute, second] = match;
+          purchaseDate = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+        }
+      }
+      
+      // Final fallback to current date
+      if (!purchaseDate) {
+        purchaseDate = new Date().toISOString();
+      }
 
       // Check if product should be ignored
       if (IGNORED_PRODUCTS.some((p) => productName.includes(p))) {
