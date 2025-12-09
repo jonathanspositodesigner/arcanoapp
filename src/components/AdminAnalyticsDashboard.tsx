@@ -56,6 +56,8 @@ const [pageViews, setPageViews] = useState({
   const [artesUsageStats, setArtesUsageStats] = useState<PlanUsageStats[]>([]);
   const [todayUsage, setTodayUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
   const [todayArtesUsage, setTodayArtesUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
+  const [topPurchasedPlans, setTopPurchasedPlans] = useState<{ name: string; count: number }[]>([]);
+  const [topPurchasedPacks, setTopPurchasedPacks] = useState<{ name: string; count: number }[]>([]);
   const [usageViewMode, setUsageViewMode] = useState<'prompts' | 'artes'>('prompts');
   const [todayUsageViewMode, setTodayUsageViewMode] = useState<'prompts' | 'artes'>('prompts');
   const [topCategories, setTopCategories] = useState<{ name: string; count: number }[]>([]);
@@ -586,6 +588,56 @@ const [pageViews, setPageViews] = useState({
         }
       }
 
+      // ========== FETCH TOP PURCHASED PLANS (Prompts) ==========
+      let purchasedPlansQuery = supabase.from("premium_users").select("plan_type, subscribed_at");
+      if (threshold) {
+        purchasedPlansQuery = purchasedPlansQuery.gte("subscribed_at", threshold);
+      }
+      const { data: purchasedPlansData } = await purchasedPlansQuery;
+
+      if (purchasedPlansData) {
+        const planCounts: Record<string, number> = {};
+        purchasedPlansData.forEach(p => {
+          const planName = p.plan_type || 'Sem Plano';
+          planCounts[planName] = (planCounts[planName] || 0) + 1;
+        });
+        
+        const planNameMap: Record<string, string> = {
+          'arcano_basico': 'Arcano Básico',
+          'arcano_pro': 'Arcano Pro',
+          'arcano_unlimited': 'Arcano Unlimited'
+        };
+        
+        const topPlans = Object.entries(planCounts)
+          .map(([name, count]) => ({ name: planNameMap[name] || name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+        
+        setTopPurchasedPlans(topPlans);
+      }
+
+      // ========== FETCH TOP PURCHASED PACKS (Artes) ==========
+      let purchasedPacksQuery = supabase.from("user_pack_purchases").select("pack_slug, purchased_at");
+      if (threshold) {
+        purchasedPacksQuery = purchasedPacksQuery.gte("purchased_at", threshold);
+      }
+      const { data: purchasedPacksData } = await purchasedPacksQuery;
+
+      if (purchasedPacksData) {
+        const packCounts: Record<string, number> = {};
+        purchasedPacksData.forEach(p => {
+          const packName = p.pack_slug || 'Sem Pack';
+          packCounts[packName] = (packCounts[packName] || 0) + 1;
+        });
+        
+        const topPacksList = Object.entries(packCounts)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+        
+        setTopPurchasedPacks(topPacksList);
+      }
+
       // ========== FETCH SESSION STATS (bounce rate e tempo médio) ==========
       let statsSessionsQuery = supabase
         .from("user_sessions")
@@ -945,15 +997,15 @@ const [pageViews, setPageViews] = useState({
 
           {/* Plan Usage Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* Usage by Plan Card */}
+            {/* Top Purchased Plans/Packs Card */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-green-500/20 rounded-full">
-                    <Copy className="h-6 w-6 text-green-500" />
+                    <Trophy className="h-6 w-6 text-green-500" />
                   </div>
                   <p className="text-sm font-medium text-foreground">
-                    {usageViewMode === 'prompts' ? 'Uso de Prompts por Plano' : 'Uso de Artes por Tipo'}
+                    {usageViewMode === 'prompts' ? 'Planos Mais Comprados' : 'Packs Mais Comprados'}
                   </p>
                 </div>
                 <div className="flex gap-1">
@@ -976,20 +1028,17 @@ const [pageViews, setPageViews] = useState({
                 </div>
               </div>
               
-              {(usageViewMode === 'prompts' ? planUsageStats : artesUsageStats).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum dado de uso registrado</p>
+              {(usageViewMode === 'prompts' ? topPurchasedPlans : topPurchasedPacks).length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhuma compra registrada no período</p>
               ) : (
-                <div className="space-y-4">
-                  {(usageViewMode === 'prompts' ? planUsageStats : artesUsageStats).map((stat) => (
-                    <div key={stat.plan} className="border-b border-border pb-3 last:border-0 last:pb-0">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-medium text-foreground">{stat.plan}</span>
-                        <span className="text-lg font-bold text-primary">{stat.copies}</span>
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{stat.users} usuário(s) ativo(s)</span>
-                        <span>Média: {stat.avgPerUser} por usuário</span>
-                      </div>
+                <div className="space-y-3">
+                  {(usageViewMode === 'prompts' ? topPurchasedPlans : topPurchasedPacks).map((item, index) => (
+                    <div key={item.name} className="flex items-center justify-between bg-secondary/50 rounded-lg px-3 py-2">
+                      <span className="flex items-center gap-2">
+                        <span className="font-bold text-primary">{index + 1}.</span>
+                        <span className="text-foreground truncate">{item.name}</span>
+                      </span>
+                      <span className="font-bold text-primary">{item.count} {item.count === 1 ? 'compra' : 'compras'}</span>
                     </div>
                   ))}
                 </div>
