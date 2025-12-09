@@ -1,13 +1,14 @@
 import { useImportProgress } from "@/hooks/useImportProgress";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Upload, Pause, Play, X } from "lucide-react";
+import { Upload, Pause, Play, X, RefreshCw } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const GlobalImportProgress = () => {
   const { 
     isImporting, 
     isPaused,
+    isReconnecting,
     progress, 
     current, 
     total,
@@ -47,11 +48,21 @@ const GlobalImportProgress = () => {
     }
   };
 
+  const getStatusText = () => {
+    if (isReconnecting) return 'Reconectando... ';
+    if (isPaused) return 'Pausado: ';
+    return 'Importando: ';
+  };
+
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-primary/10 backdrop-blur-sm border-b border-primary/20">
       <div className="container max-w-7xl mx-auto px-4 py-2">
         <div className="flex items-center gap-3">
-          <Upload className={`h-4 w-4 text-primary ${isPaused ? '' : 'animate-pulse'}`} />
+          {isReconnecting ? (
+            <RefreshCw className="h-4 w-4 text-primary animate-spin" />
+          ) : (
+            <Upload className={`h-4 w-4 text-primary ${isPaused ? '' : 'animate-pulse'}`} />
+          )}
           
           <div 
             className="flex-1 cursor-pointer" 
@@ -63,7 +74,7 @@ const GlobalImportProgress = () => {
           
           <div className="flex items-center gap-2">
             <span className="text-xs text-primary font-medium whitespace-nowrap">
-              {isPaused ? 'Pausado: ' : 'Importando: '}
+              {getStatusText()}
               {progress}% ({current}/{total})
             </span>
             
@@ -80,6 +91,7 @@ const GlobalImportProgress = () => {
               className="h-6 w-6"
               onClick={handlePauseResume}
               title={isPaused ? 'Continuar' : 'Pausar'}
+              disabled={isReconnecting}
             >
               {isPaused ? (
                 <Play className="h-3 w-3" />
@@ -94,6 +106,7 @@ const GlobalImportProgress = () => {
               className="h-6 w-6 text-destructive hover:text-destructive"
               onClick={handleCancel}
               title="Cancelar importação"
+              disabled={isReconnecting}
             >
               <X className="h-3 w-3" />
             </Button>
