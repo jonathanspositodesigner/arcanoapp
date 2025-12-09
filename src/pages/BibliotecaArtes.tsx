@@ -14,7 +14,7 @@ import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/Sec
 import { useSessionTracker } from "@/hooks/useSessionTracker";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import BannerCarousel from "@/components/BannerCarousel";
-
+import { toPackSlug } from "@/lib/utils";
 interface ArteItem {
   id: string | number;
   title: string;
@@ -36,7 +36,6 @@ interface ArteItem {
 interface PackItem {
   id: string;
   name: string;
-  slug: string;
   cover_url: string | null;
   display_order: number;
   type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample';
@@ -231,13 +230,6 @@ const BibliotecaArtes = () => {
   // Get packs filtered by type
   const getPacksByType = (type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample') => {
     return dbPacks.filter(p => p.type === type);
-  };
-
-  // Get pack slug from pack name (uses db slug, not generated)
-  const getPackSlugByName = (packName: string | undefined | null): string => {
-    if (!packName) return '';
-    const pack = dbPacks.find(p => p.name === packName);
-    return pack?.slug || '';
   };
   const filteredArtes = getFilteredAndSortedArtes();
   const totalPages = Math.ceil(filteredArtes.length / ITEMS_PER_PAGE);
@@ -572,8 +564,7 @@ const BibliotecaArtes = () => {
             {!selectedPack && activeSection !== 'cursos' && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getCurrentItems().map(pack => {
               const arteCount = getPackArteCount(pack.name);
-              // Use pack.slug directly from database instead of generating from name
-              const packSlug = pack.slug;
+              const packSlug = toPackSlug(pack.name);
               // For bonus/updates: any active pack = access. For regular packs: need specific pack
               const isBonusOrUpdatesType = pack.type === 'bonus' || pack.type === 'updates';
               const hasPackAccess = isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug);
@@ -614,8 +605,7 @@ const BibliotecaArtes = () => {
             {/* Cursos View */}
             {activeSection === 'cursos' && !selectedPack && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getPacksByType('curso').map(curso => {
-              // Use curso.slug directly from database
-              const cursoSlug = curso.slug;
+              const cursoSlug = toPackSlug(curso.name);
               // For cursos: user must purchase the specific course (not just any pack)
               const hasCursoAccess = hasAccessToPack(cursoSlug);
               return <Card key={curso.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleCursoClick(curso)}>
@@ -666,8 +656,7 @@ const BibliotecaArtes = () => {
                 const arteId = String(arte.id);
                 const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
                 const isAnimating = animatingClicks.has(arteId);
-                // Use getPackSlugByName to get real slug from database
-                const packSlug = getPackSlugByName(arte.pack);
+                const packSlug = toPackSlug(arte.pack);
                 const hasAccess = !arte.isPremium || hasAccessToPack(packSlug);
                 return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
@@ -759,8 +748,7 @@ const BibliotecaArtes = () => {
                 const arteId = String(arte.id);
                 const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
                 const isAnimating = animatingClicks.has(arteId);
-                // Use getPackSlugByName to get real slug from database
-                const packSlug = getPackSlugByName(arte.pack);
+                const packSlug = toPackSlug(arte.pack);
                 // For bonus/updates: any active pack grants access
                 // For regular packs: need specific pack access
                 const isBonusOrUpdatesSection = activeSection === 'bonus' || activeSection === 'updates';
@@ -830,8 +818,7 @@ const BibliotecaArtes = () => {
       <Dialog open={!!selectedArte} onOpenChange={() => handleCloseModal()}>
         <DialogContent className="max-w-[95vw] sm:max-w-fit max-h-[95vh] overflow-y-auto">
           {selectedArte && (() => {
-          // Use getPackSlugByName to get real slug from database
-          const packSlug = getPackSlugByName(selectedArte.pack);
+          const packSlug = toPackSlug(selectedArte.pack);
           // Check if arte belongs to bonus or updates pack type
           const selectedPackInfo = dbPacks.find(p => p.name === selectedArte.pack);
           const isBonusOrUpdatesType = selectedPackInfo?.type === 'bonus' || selectedPackInfo?.type === 'updates';
@@ -914,8 +901,7 @@ const BibliotecaArtes = () => {
                   Fazer Login
                 </Button>
                 <Button onClick={() => {
-              // Use getPackSlugByName to get real slug from database
-              const packSlug = getPackSlugByName(premiumModalItem.pack);
+              const packSlug = toPackSlug(premiumModalItem.pack);
               navigate(`/planos-artes${packSlug ? `?pack=${packSlug}` : ''}`);
             }} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                   <Star className="h-4 w-4 mr-2" fill="currentColor" />
@@ -930,8 +916,7 @@ const BibliotecaArtes = () => {
       <Dialog open={showCursoModal} onOpenChange={setShowCursoModal}>
         <DialogContent className="max-w-md">
           {selectedCurso && (() => {
-          // Use selectedCurso.slug directly from database
-          const cursoSlug = selectedCurso.slug;
+          const cursoSlug = toPackSlug(selectedCurso.name);
           const hasCursoAccess = hasAccessToPack(cursoSlug);
           return <div className="space-y-4 text-center">
                 <div className="relative">

@@ -56,7 +56,6 @@ import AdminManagePacks from "./pages/AdminManagePacks";
 import AdminManageBanners from "./pages/AdminManageBanners";
 import AdminPackPurchases from "./pages/AdminPackPurchases";
 import AdminImportClients from "./pages/AdminImportClients";
-import AdminImportAccess from "./pages/AdminImportAccess";
 import AdminManageAdmins from "./pages/AdminManageAdmins";
 import ForjaSelos3DArtes from "./pages/ForjaSelos3DArtes";
 import GlobalImportProgress from "./components/GlobalImportProgress";
@@ -130,7 +129,6 @@ const AppContent = () => {
         <Route path="/admin-manage-banners" element={<AdminManageBanners />} />
         <Route path="/admin-pack-purchases" element={<AdminPackPurchases />} />
         <Route path="/admin-import-clients" element={<AdminImportClients />} />
-        <Route path="/admin-import-access" element={<AdminImportAccess />} />
         <Route path="/admin-manage-admins" element={<AdminManageAdmins />} />
         <Route path="/forja-selos-3d-artes" element={<ForjaSelos3DArtes />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

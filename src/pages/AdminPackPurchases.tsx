@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addMonths, addYears } from "date-fns";
@@ -129,8 +129,7 @@ const AdminPackPurchases = () => {
   };
 
   const fetchPurchases = async () => {
-    // Fetch purchases EXCLUDING old sales data (csv_vendas)
-    // Only show: xlsx_acessos (access imports), manual, or NULL
+    // Fetch ALL purchases using pagination to avoid 1000 record limit
     let allPurchases: any[] = [];
     let from = 0;
     const pageSize = 1000;
@@ -139,7 +138,6 @@ const AdminPackPurchases = () => {
       const { data: purchasesData, error } = await supabase
         .from('user_pack_purchases')
         .select('*')
-        .or('import_source.neq.csv_vendas,import_source.is.null')
         .order('purchased_at', { ascending: false })
         .range(from, from + pageSize - 1);
 
@@ -516,7 +514,7 @@ const AdminPackPurchases = () => {
     return matchesSearch && matchesPack && matchesStatus;
   });
 
-  // Group purchases by user for display - deduplicate by user_id + pack_slug
+  // Group purchases by user for display
   const groupedClients: GroupedClient[] = [];
   const userMap = new Map<string, GroupedClient>();
   
@@ -532,13 +530,7 @@ const AdminPackPurchases = () => {
       userMap.set(purchase.user_id, client);
       groupedClients.push(client);
     }
-    
-    // Only add if this pack_slug doesn't already exist for this user (deduplicate)
-    const existingClient = userMap.get(purchase.user_id)!;
-    const alreadyHasPack = existingClient.purchases.some(p => p.pack_slug === purchase.pack_slug);
-    if (!alreadyHasPack) {
-      existingClient.purchases.push(purchase);
-    }
+    userMap.get(purchase.user_id)!.purchases.push(purchase);
   });
 
   if (isLoading) {
@@ -584,7 +576,7 @@ const AdminPackPurchases = () => {
                 <Package className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total de Acessos</p>
+                <p className="text-sm text-muted-foreground">Total de Compras</p>
                 <p className="text-2xl font-bold">{purchases.length}</p>
               </div>
             </div>
@@ -696,11 +688,11 @@ const AdminPackPurchases = () => {
           </Select>
           <Button 
             variant="outline" 
-            onClick={() => navigate('/admin-import-access')}
+            onClick={() => navigate('/admin-import-clients')}
             className="border-primary text-primary hover:bg-primary/10"
           >
-            <FileSpreadsheet className="h-4 w-4 mr-2" />
-            Importar XLSX (Acessos)
+            <Upload className="h-4 w-4 mr-2" />
+            Importar CSV
           </Button>
           <Dialog open={showAddDialog} onOpenChange={(open) => {
             setShowAddDialog(open);

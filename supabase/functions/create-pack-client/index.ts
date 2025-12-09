@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
       console.error('Error deleting existing packs:', deletePacksError);
     }
 
-    // Insert new pack purchases with import_source
+    // Insert new pack purchases
     const packPurchases = packs.map(pack => ({
       user_id: userId,
       pack_slug: pack.pack_slug,
@@ -177,8 +177,7 @@ Deno.serve(async (req) => {
       has_bonus_access: pack.has_bonus,
       expires_at: pack.expires_at,
       is_active: true,
-      purchased_at: new Date().toISOString(),
-      import_source: 'xlsx_acessos'
+      purchased_at: new Date().toISOString()
     }));
 
     console.log('Inserting pack purchases:', packPurchases);

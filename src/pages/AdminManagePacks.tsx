@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, Wrench } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -17,10 +17,10 @@ interface Pack {
   slug: string;
   cover_url: string | null;
   display_order: number;
-  type: 'pack' | 'bonus' | 'curso' | 'ferramenta';
+  type: 'pack' | 'bonus' | 'curso';
 }
 
-type ItemType = 'pack' | 'bonus' | 'curso' | 'ferramenta';
+type ItemType = 'pack' | 'bonus' | 'curso';
 
 const AdminManagePacks = () => {
   const navigate = useNavigate();
@@ -317,7 +317,6 @@ const AdminManagePacks = () => {
       case 'pack': return <Package className="w-5 h-5" />;
       case 'bonus': return <Gift className="w-5 h-5" />;
       case 'curso': return <GraduationCap className="w-5 h-5" />;
-      case 'ferramenta': return <Wrench className="w-5 h-5" />;
     }
   };
 
@@ -326,7 +325,6 @@ const AdminManagePacks = () => {
       case 'pack': return 'Pack';
       case 'bonus': return 'Bônus';
       case 'curso': return 'Curso';
-      case 'ferramenta': return 'Ferramenta de IA';
     }
   };
 
@@ -448,15 +446,6 @@ const AdminManagePacks = () => {
                   <span className="font-medium">Curso</span>
                   <span className="text-xs text-muted-foreground">Curso ou treinamento</span>
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="h-auto py-4 flex flex-col items-center gap-2"
-                  onClick={() => handleTypeSelect('ferramenta')}
-                >
-                  <Wrench className="w-8 h-8 text-green-500" />
-                  <span className="font-medium">Ferramenta de IA</span>
-                  <span className="text-xs text-muted-foreground">IA que muda roupa, pose, etc</span>
-                </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -529,7 +518,7 @@ const AdminManagePacks = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ItemType)} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="pack" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
               Packs
@@ -545,11 +534,6 @@ const AdminManagePacks = () => {
               Cursos
               <Badge variant="secondary" className="ml-1">{getPacksByType('curso').length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="ferramenta" className="flex items-center gap-2">
-              <Wrench className="w-4 h-4" />
-              Ferramentas IA
-              <Badge variant="secondary" className="ml-1">{getPacksByType('ferramenta').length}</Badge>
-            </TabsTrigger>
           </TabsList>
 
           <p className="text-sm text-muted-foreground mb-4">
@@ -564,9 +548,6 @@ const AdminManagePacks = () => {
           </TabsContent>
           <TabsContent value="curso">
             {renderPackList('curso')}
-          </TabsContent>
-          <TabsContent value="ferramenta">
-            {renderPackList('ferramenta')}
           </TabsContent>
         </Tabs>
 
