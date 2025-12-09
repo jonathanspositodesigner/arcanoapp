@@ -129,7 +129,8 @@ const AdminPackPurchases = () => {
   };
 
   const fetchPurchases = async () => {
-    // Fetch ALL purchases using pagination to avoid 1000 record limit
+    // Fetch purchases EXCLUDING old sales data (csv_vendas)
+    // Only show: xlsx_acessos (access imports), manual, or NULL
     let allPurchases: any[] = [];
     let from = 0;
     const pageSize = 1000;
@@ -138,6 +139,7 @@ const AdminPackPurchases = () => {
       const { data: purchasesData, error } = await supabase
         .from('user_pack_purchases')
         .select('*')
+        .or('import_source.neq.csv_vendas,import_source.is.null')
         .order('purchased_at', { ascending: false })
         .range(from, from + pageSize - 1);
 
