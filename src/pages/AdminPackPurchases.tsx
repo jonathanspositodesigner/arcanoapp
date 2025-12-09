@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, Upload, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, FileSpreadsheet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addMonths, addYears } from "date-fns";
@@ -514,7 +514,7 @@ const AdminPackPurchases = () => {
     return matchesSearch && matchesPack && matchesStatus;
   });
 
-  // Group purchases by user for display
+  // Group purchases by user for display - deduplicate by user_id + pack_slug
   const groupedClients: GroupedClient[] = [];
   const userMap = new Map<string, GroupedClient>();
   
@@ -530,7 +530,13 @@ const AdminPackPurchases = () => {
       userMap.set(purchase.user_id, client);
       groupedClients.push(client);
     }
-    userMap.get(purchase.user_id)!.purchases.push(purchase);
+    
+    // Only add if this pack_slug doesn't already exist for this user (deduplicate)
+    const existingClient = userMap.get(purchase.user_id)!;
+    const alreadyHasPack = existingClient.purchases.some(p => p.pack_slug === purchase.pack_slug);
+    if (!alreadyHasPack) {
+      existingClient.purchases.push(purchase);
+    }
   });
 
   if (isLoading) {
@@ -576,7 +582,7 @@ const AdminPackPurchases = () => {
                 <Package className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total de Compras</p>
+                <p className="text-sm text-muted-foreground">Total de Acessos</p>
                 <p className="text-2xl font-bold">{purchases.length}</p>
               </div>
             </div>
@@ -688,16 +694,8 @@ const AdminPackPurchases = () => {
           </Select>
           <Button 
             variant="outline" 
-            onClick={() => navigate('/admin-import-clients')}
-            className="border-primary text-primary hover:bg-primary/10"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            Importar CSV (Vendas)
-          </Button>
-          <Button 
-            variant="outline" 
             onClick={() => navigate('/admin-import-access')}
-            className="border-green-500 text-green-500 hover:bg-green-500/10"
+            className="border-primary text-primary hover:bg-primary/10"
           >
             <FileSpreadsheet className="h-4 w-4 mr-2" />
             Importar XLSX (Acessos)
