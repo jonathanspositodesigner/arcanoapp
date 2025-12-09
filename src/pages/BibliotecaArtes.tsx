@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -39,7 +39,7 @@ interface PackItem {
   name: string;
   cover_url: string | null;
   display_order: number;
-  type: 'pack' | 'bonus' | 'curso';
+  type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample';
 }
 
 const isVideoUrl = (url: string) => {
@@ -58,7 +58,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 
-type SidebarSection = 'packs' | 'bonus' | 'cursos';
+type SidebarSection = 'packs' | 'bonus' | 'cursos' | 'updates' | 'free-sample';
 
 const BibliotecaArtes = () => {
   const navigate = useNavigate();
@@ -238,7 +238,7 @@ const BibliotecaArtes = () => {
   };
 
   // Get packs filtered by type
-  const getPacksByType = (type: 'pack' | 'bonus' | 'curso') => {
+  const getPacksByType = (type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample') => {
     return dbPacks.filter(p => p.type === type);
   };
 
@@ -434,6 +434,36 @@ const BibliotecaArtes = () => {
             {getPacksByType('curso').length}
           </Badge>
         </button>
+
+        <button
+          onClick={() => { setActiveSection('updates'); setSelectedPack(null); setSidebarOpen(false); }}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
+            activeSection === 'updates' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+          }`}
+        >
+          <RefreshCw className="h-5 w-5" />
+          <span className="font-medium">Atualizações</span>
+          <Badge variant="secondary" className="ml-auto text-xs">
+            {getPacksByType('updates').length}
+          </Badge>
+        </button>
+
+        <button
+          onClick={() => { setActiveSection('free-sample'); setSelectedPack(null); setSidebarOpen(false); }}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
+            activeSection === 'free-sample' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+          }`}
+        >
+          <Sparkles className="h-5 w-5" />
+          <span className="font-medium">Amostras Grátis</span>
+          <Badge variant="secondary" className="ml-auto text-xs">
+            {getPacksByType('free-sample').length}
+          </Badge>
+        </button>
       </nav>
 
       <div className="px-4 pt-4 border-t border-border mt-auto space-y-2">
@@ -466,6 +496,8 @@ const BibliotecaArtes = () => {
       case 'packs': return 'Packs';
       case 'bonus': return 'Bônus';
       case 'cursos': return 'Cursos';
+      case 'updates': return 'Atualizações de Artes';
+      case 'free-sample': return 'Amostras Grátis';
     }
   };
 
@@ -474,6 +506,8 @@ const BibliotecaArtes = () => {
       case 'packs': return getPacksByType('pack');
       case 'bonus': return getPacksByType('bonus');
       case 'cursos': return getPacksByType('curso');
+      case 'updates': return getPacksByType('updates');
+      case 'free-sample': return getPacksByType('free-sample');
     }
   };
 
