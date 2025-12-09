@@ -36,7 +36,8 @@ const PlanosArtes = () => {
   const fetchPacks = async () => {
     const { data, error } = await supabase
       .from("artes_packs")
-      .select("id, name, slug, cover_url")
+      .select("id, name, slug, cover_url, type")
+      .eq("type", "pack")
       .order("display_order", { ascending: true });
 
     if (!error && data) {
