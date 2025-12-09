@@ -110,76 +110,81 @@ const AdminAnalyticsDashboard = () => {
       // Meia-noite de hoje para buscar acessos de hoje
       const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
-      // ========== BUSCA SEPARADA: Acessos de HOJE (sempre independente do filtro) ==========
-      let todayViewsData: Array<{ device_type: string; viewed_at: string }> = [];
-      let todayPage = 0;
-      let todayHasMore = true;
+      // ========== BUSCA SESSÕES ÚNICAS DAS BIBLIOTECAS (prompts e artes) ==========
+      const { data: todaySessionsData } = await supabase
+        .from("user_sessions")
+        .select("session_id, device_type, entered_at, page_path")
+        .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"])
+        .gte("entered_at", todayMidnight);
 
-      while (todayHasMore) {
-        const { data, error } = await supabase
-          .from("page_views")
-          .select("device_type, viewed_at")
-          .gte("viewed_at", todayMidnight)
-          .order("viewed_at", { ascending: false })
-          .range(todayPage * 1000, (todayPage + 1) * 1000 - 1);
-        
-        if (error) {
-          console.error("Error fetching today views:", error);
-          break;
-        }
-        
-        if (data && data.length > 0) {
-          todayViewsData = [...todayViewsData, ...data];
-          todayPage++;
-          todayHasMore = data.length === 1000;
-        } else {
-          todayHasMore = false;
-        }
+      // Conta sessões únicas de hoje
+      const todayUniqueSessions = new Set<string>();
+      const todayMobileSet = new Set<string>();
+      const todayDesktopSet = new Set<string>();
+      
+      if (todaySessionsData) {
+        todaySessionsData.forEach(s => {
+          todayUniqueSessions.add(s.session_id);
+          if (s.device_type === "mobile") {
+            todayMobileSet.add(s.session_id);
+          } else {
+            todayDesktopSet.add(s.session_id);
+          }
+        });
       }
 
-      const todayMobile = todayViewsData.filter((v) => v.device_type === "mobile").length;
-      const todayDesktop = todayViewsData.filter((v) => v.device_type === "desktop").length;
-      const todayTotal = todayViewsData.length;
+      const todayTotal = todayUniqueSessions.size;
+      const todayMobile = todayMobileSet.size;
+      const todayDesktop = todayDesktopSet.size;
 
       // ========== BUSCA DO PERÍODO SELECIONADO ==========
-      let allViewsData: Array<{ device_type: string; viewed_at: string }> = [];
-      let page = 0;
-      const pageSize = 1000;
-      let hasMore = true;
+      let sessionsQuery = supabase
+        .from("user_sessions")
+        .select("session_id, device_type, entered_at, page_path")
+        .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"])
+        .order("entered_at", { ascending: false });
+      
+      if (threshold) {
+        sessionsQuery = sessionsQuery.gte("entered_at", threshold);
+      }
+      
+      const { data: allSessionsData } = await sessionsQuery;
 
-      while (hasMore) {
-        let query = supabase
-          .from("page_views")
-          .select("device_type, viewed_at")
-          .order("viewed_at", { ascending: false })
-          .range(page * pageSize, (page + 1) * pageSize - 1);
-        
-        if (threshold) {
-          query = query.gte("viewed_at", threshold);
-        }
-        
-        const { data, error } = await query;
-        
-        if (error) {
-          console.error("Error fetching page views:", error);
-          break;
-        }
-        
-        if (data && data.length > 0) {
-          allViewsData = [...allViewsData, ...data];
-          page++;
-          hasMore = data.length === pageSize;
-        } else {
-          hasMore = false;
-        }
+      // Conta sessões únicas do período
+      const uniqueSessions = new Set<string>();
+      const mobileSessionsSet = new Set<string>();
+      const desktopSessionsSet = new Set<string>();
+      const sessionsByDate: Record<string, { mobile: Set<string>; desktop: Set<string> }> = {};
+      
+      // Inicializa todos os dias
+      daysArray.forEach(day => {
+        sessionsByDate[day] = { mobile: new Set(), desktop: new Set() };
+      });
+
+      if (allSessionsData) {
+        allSessionsData.forEach(s => {
+          uniqueSessions.add(s.session_id);
+          const date = extractDateFromTimestamp(s.entered_at);
+          
+          if (s.device_type === "mobile") {
+            mobileSessionsSet.add(s.session_id);
+            if (sessionsByDate[date]) {
+              sessionsByDate[date].mobile.add(s.session_id);
+            }
+          } else {
+            desktopSessionsSet.add(s.session_id);
+            if (sessionsByDate[date]) {
+              sessionsByDate[date].desktop.add(s.session_id);
+            }
+          }
+        });
       }
 
-      // Processa os dados do período
-      const mobile = allViewsData.filter((v) => v.device_type === "mobile").length;
-      const desktop = allViewsData.filter((v) => v.device_type === "desktop").length;
+      const mobile = mobileSessionsSet.size;
+      const desktop = desktopSessionsSet.size;
       
       setPageViews({ 
-        total: allViewsData.length, 
+        total: uniqueSessions.size, 
         mobile, 
         desktop,
         todayTotal,
@@ -187,36 +192,15 @@ const AdminAnalyticsDashboard = () => {
         todayDesktop
       });
 
-      // Process chart data
-      const mobileByDate: Record<string, number> = {};
-      const desktopByDate: Record<string, number> = {};
-      
-      // Inicializa todos os dias com 0
-      daysArray.forEach(day => {
-        mobileByDate[day] = 0;
-        desktopByDate[day] = 0;
-      });
-
-      // Conta acessos por dia
-      allViewsData.forEach(view => {
-        const date = extractDateFromTimestamp(view.viewed_at);
-        if (mobileByDate[date] !== undefined) {
-          if (view.device_type === "mobile") {
-            mobileByDate[date]++;
-          } else {
-            desktopByDate[date]++;
-          }
-        }
-      });
-
-      // Gera os dados do gráfico
+      // Process chart data - usa sessões únicas por dia
       const chartDataPoints = daysArray.map(dateStr => {
         const [, month, day] = dateStr.split('-');
+        const dayData = sessionsByDate[dateStr] || { mobile: new Set(), desktop: new Set() };
         return {
           date: `${day}/${month}`,
-          mobile: mobileByDate[dateStr] || 0,
-          desktop: desktopByDate[dateStr] || 0,
-          total: (mobileByDate[dateStr] || 0) + (desktopByDate[dateStr] || 0),
+          mobile: dayData.mobile.size,
+          desktop: dayData.desktop.size,
+          total: dayData.mobile.size + dayData.desktop.size,
         };
       });
 
@@ -344,27 +328,37 @@ const AdminAnalyticsDashboard = () => {
       }
 
 
-      // ========== FETCH SESSION STATS ==========
-      let sessionsQuery = supabase
+      // ========== FETCH SESSION STATS (bounce rate e tempo médio) ==========
+      let statsSessionsQuery = supabase
         .from("user_sessions")
         .select("session_id, page_path, duration_seconds, entered_at")
-        .eq("page_path", "/biblioteca-prompts");
+        .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"]);
       
       if (threshold) {
-        sessionsQuery = sessionsQuery.gte("entered_at", threshold);
+        statsSessionsQuery = statsSessionsQuery.gte("entered_at", threshold);
       }
-      const { data: sessionsData } = await sessionsQuery;
+      const { data: statsSessionsData } = await statsSessionsQuery;
 
-      if (sessionsData) {
-        const totalSessions = sessionsData.length;
+      if (statsSessionsData) {
+        // Agrupa por session_id para ter sessões únicas
+        const sessionMap = new Map<string, { duration: number }>();
+        statsSessionsData.forEach(s => {
+          if (!sessionMap.has(s.session_id) || (s.duration_seconds || 0) > (sessionMap.get(s.session_id)?.duration || 0)) {
+            sessionMap.set(s.session_id, { duration: s.duration_seconds || 0 });
+          }
+        });
+        
+        const uniqueSessionsList = Array.from(sessionMap.values());
+        const totalSessions = uniqueSessionsList.length;
+        
         // Bounce = session < 3 seconds
-        const bounceCount = sessionsData.filter(s => (s.duration_seconds || 0) < 3).length;
+        const bounceCount = uniqueSessionsList.filter(s => s.duration < 3).length;
         const bounceRate = totalSessions > 0 ? Math.round((bounceCount / totalSessions) * 100) : 0;
         
         // Average duration (exclude bounces for more accurate reading)
-        const nonBounceSessions = sessionsData.filter(s => (s.duration_seconds || 0) >= 3);
+        const nonBounceSessions = uniqueSessionsList.filter(s => s.duration >= 3);
         const avgDuration = nonBounceSessions.length > 0 
-          ? Math.round(nonBounceSessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0) / nonBounceSessions.length)
+          ? Math.round(nonBounceSessions.reduce((sum, s) => sum + s.duration, 0) / nonBounceSessions.length)
           : 0;
 
         setSessionStats({
