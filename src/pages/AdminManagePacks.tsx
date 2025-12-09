@@ -18,11 +18,11 @@ interface Pack {
   slug: string;
   cover_url: string | null;
   display_order: number;
-  type: 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia';
+  type: 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
   is_visible: boolean;
 }
 
-type ItemType = 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia';
+type ItemType = 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
 
 const AdminManagePacks = () => {
   const navigate = useNavigate();
@@ -76,6 +76,10 @@ const AdminManagePacks = () => {
   };
 
   const getPacksByType = (type: ItemType) => {
+    // Include 'ferramenta' type when filtering for 'ferramentas_ia'
+    if (type === 'ferramentas_ia') {
+      return packs.filter(p => p.type === 'ferramentas_ia' || p.type === 'ferramenta');
+    }
     return packs.filter(p => p.type === type);
   };
 
