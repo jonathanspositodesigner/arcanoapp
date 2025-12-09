@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.create-premium-user-artes]
 verify_jwt = false
+
+[functions.delete-auth-user-artes]
+verify_jwt = false
+
+[functions.update-user-password-artes]
+verify_jwt = false
