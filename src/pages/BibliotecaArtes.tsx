@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -79,6 +79,19 @@ const BibliotecaArtes = () => {
   const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
   const [dbCategories, setDbCategories] = useState<string[]>([]);
+  const [selectedPack, setSelectedPack] = useState<string>("Todos os Packs");
+
+  const PACK_OPTIONS = [
+    "Todos os Packs",
+    "Pack Arcano Vol.1",
+    "Pack Arcano Vol.2",
+    "Pack Arcano Vol.3",
+    "Pack de Agendas",
+    "Pack de Halloween",
+    "Pack de Fim de Ano",
+    "Pack de Carnaval",
+    "Atualização Grátis"
+  ];
 
   useEffect(() => {
     fetchArtes();
@@ -114,7 +127,7 @@ const BibliotecaArtes = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory]);
+  }, [selectedCategory, selectedPack]);
 
   const fetchArtes = async () => {
     const [adminResult, partnerResult, clicksResult] = await Promise.all([
@@ -182,8 +195,14 @@ const BibliotecaArtes = () => {
   };
 
   const getFilteredAndSortedArtes = () => {
+    // First, apply pack filter
+    const applyPackFilter = (items: ArteItem[]) => {
+      if (selectedPack === "Todos os Packs") return items;
+      return items.filter(a => a.pack === selectedPack);
+    };
+
     if (selectedCategory === "Ver Tudo") {
-      return shuffledVerTudo;
+      return applyPackFilter(shuffledVerTudo);
     }
 
     const sortByDate = (a: ArteItem, b: ArteItem) => {
@@ -193,16 +212,16 @@ const BibliotecaArtes = () => {
     };
 
     if (selectedCategory === "Populares") {
-      return [...allArtes].sort(sortByClicks);
+      return applyPackFilter([...allArtes].sort(sortByClicks));
     }
     if (selectedCategory === "Novos") {
-      return [...allArtes].sort(sortByDate).slice(0, 16);
+      return applyPackFilter([...allArtes].sort(sortByDate).slice(0, 16));
     }
     if (selectedCategory === "Grátis") {
-      return allArtes.filter(a => !a.isPremium).sort(sortByDate);
+      return applyPackFilter(allArtes.filter(a => !a.isPremium).sort(sortByDate));
     }
 
-    return allArtes.filter(a => a.category === selectedCategory).sort(sortByDate);
+    return applyPackFilter(allArtes.filter(a => a.category === selectedCategory).sort(sortByDate));
   };
 
   const filteredArtes = getFilteredAndSortedArtes();
@@ -457,6 +476,24 @@ const BibliotecaArtes = () => {
             <p className="text-muted-foreground mt-1">
               Artes editáveis PSD e Canva para eventos
             </p>
+          </div>
+
+          {/* Pack Filter */}
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2">
+              {PACK_OPTIONS.map(pack => (
+                <Button
+                  key={pack}
+                  variant={selectedPack === pack ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedPack(pack)}
+                  className={`text-xs sm:text-sm ${selectedPack === pack ? 'bg-primary' : ''}`}
+                >
+                  {pack === "Todos os Packs" && <Package className="h-3 w-3 mr-1" />}
+                  {pack}
+                </Button>
+              ))}
+            </div>
           </div>
 
           {/* Grid */}
