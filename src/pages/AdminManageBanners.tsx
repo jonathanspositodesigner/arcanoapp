@@ -500,6 +500,11 @@ const AdminManageBanners = () => {
                       <h3 className="text-xs sm:text-sm font-bold text-white mb-1 line-clamp-2 leading-tight">
                         {formData.title || "Título do Banner"}
                       </h3>
+                      {formData.description && (
+                        <p className="text-[10px] text-white/80 mb-1 line-clamp-1">
+                          {formData.description}
+                        </p>
+                      )}
                       <span className="inline-block bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded">
                         {formData.button_text || "Saiba mais"}
                       </span>
