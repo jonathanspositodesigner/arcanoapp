@@ -10,11 +10,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, X, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 
+const PACK_OPTIONS = [
+  "Pack Arcano Vol.1",
+  "Pack Arcano Vol.2",
+  "Pack Arcano Vol.3",
+  "Pack de Agendas",
+  "Pack de Halloween",
+  "Pack de Fim de Ano",
+  "Pack de Carnaval",
+  "Atualização Grátis"
+];
+
 interface MediaData {
   file: File;
   preview: string;
   title: string;
   category: string;
+  pack: string;
   description: string;
   canvaLink: string;
   driveLink: string;
@@ -110,6 +122,7 @@ const PartnerUploadArtes = () => {
         preview: URL.createObjectURL(file),
         title: "",
         category: "",
+        pack: "",
         description: "",
         canvaLink: "",
         driveLink: "",
@@ -171,7 +184,7 @@ const PartnerUploadArtes = () => {
   };
 
   const allFieldsFilled = mediaFiles.every(
-    (media) => media.title.trim() && media.category && media.canvaLink.trim()
+    (media) => media.title.trim() && media.category && media.pack && media.canvaLink.trim()
   );
 
   const formatTitle = (title: string) => {
@@ -206,6 +219,7 @@ const PartnerUploadArtes = () => {
             partner_id: partnerId,
             title: formatTitle(media.title),
             category: media.category,
+            pack: media.pack,
             description: media.description || null,
             image_url: filePath,
             is_premium: true,
@@ -365,6 +379,25 @@ const PartnerUploadArtes = () => {
                     {categories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.name} className="text-white">
                         {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm text-white/60">Pack <span className="text-red-500">*</span></label>
+                <Select
+                  value={currentMedia.pack}
+                  onValueChange={(value) => updateMediaData(currentIndex, "pack", value)}
+                >
+                  <SelectTrigger className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white">
+                    <SelectValue placeholder="Selecione o pack" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a2e] border-[#2d4a5e]/50 z-50">
+                    {PACK_OPTIONS.map((pack) => (
+                      <SelectItem key={pack} value={pack} className="text-white">
+                        {pack}
                       </SelectItem>
                     ))}
                   </SelectContent>

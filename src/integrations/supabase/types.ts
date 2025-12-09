@@ -85,6 +85,7 @@ export type Database = {
           id: string
           image_url: string
           is_premium: boolean
+          pack: string | null
           title: string
           tutorial_url: string | null
           updated_at: string | null
@@ -100,6 +101,7 @@ export type Database = {
           id?: string
           image_url: string
           is_premium?: boolean
+          pack?: string | null
           title: string
           tutorial_url?: string | null
           updated_at?: string | null
@@ -115,6 +117,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_premium?: boolean
+          pack?: string | null
           title?: string
           tutorial_url?: string | null
           updated_at?: string | null
@@ -476,6 +479,7 @@ export type Database = {
           id: string
           image_url: string
           is_premium: boolean | null
+          pack: string | null
           partner_id: string
           rejected: boolean | null
           rejected_at: string | null
@@ -500,6 +504,7 @@ export type Database = {
           id?: string
           image_url: string
           is_premium?: boolean | null
+          pack?: string | null
           partner_id: string
           rejected?: boolean | null
           rejected_at?: string | null
@@ -524,6 +529,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_premium?: boolean | null
+          pack?: string | null
           partner_id?: string
           rejected?: boolean | null
           rejected_at?: string | null
