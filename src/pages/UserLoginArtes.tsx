@@ -15,17 +15,7 @@ const UserLoginArtes = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Check if user is already logged in - go directly to biblioteca
-  useEffect(() => {
-    const checkExistingSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        // Usuário já logado, vai direto para biblioteca
-        navigate("/biblioteca-artes");
-      }
-    };
-    checkExistingSession();
-  }, [navigate]);
+  // No auto-redirect - user may want to switch accounts
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
