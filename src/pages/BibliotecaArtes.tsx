@@ -38,7 +38,7 @@ interface PackItem {
   name: string;
   cover_url: string | null;
   display_order: number;
-  type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample' | 'tutorial' | 'ferramentas_ia';
+  type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
   is_visible: boolean;
 }
 const isVideoUrl = (url: string) => {
@@ -230,6 +230,10 @@ const BibliotecaArtes = () => {
 
   // Get packs filtered by type
   const getPacksByType = (type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample' | 'tutorial' | 'ferramentas_ia') => {
+    // Include 'ferramenta' type when filtering for 'ferramentas_ia'
+    if (type === 'ferramentas_ia') {
+      return dbPacks.filter(p => p.type === 'ferramentas_ia' || p.type === 'ferramenta');
+    }
     return dbPacks.filter(p => p.type === type);
   };
   const filteredArtes = getFilteredAndSortedArtes();
