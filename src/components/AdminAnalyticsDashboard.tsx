@@ -456,11 +456,11 @@ const [pageViews, setPageViews] = useState({
     fetchAnalytics();
   }, [dateFilter, refreshKey]);
 
-  // Auto-refresh a cada 30 segundos
+  // Auto-refresh a cada 60 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setRefreshKey(prev => prev + 1);
-    }, 30000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);
