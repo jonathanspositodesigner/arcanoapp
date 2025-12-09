@@ -139,6 +139,28 @@ const PRODUCT_MAPPING: Record<string, { packs: string[]; access_type: "3_meses" 
   
   // === FORJA DE SELOS 3D ILIMITADA ===
   "I.A Ilimitada que Gera Selos 3D Animados": { packs: ["forja-selos-3d-ilimitada"], access_type: "vitalicio", has_bonus: false },
+  
+  // === ASSINATURA PREMIUM ANUAL - ACESSO TOTAL ===
+  "Assinatura 1 ano Arcano Premium": { 
+    packs: [
+      "pack-arcano-vol-1", 
+      "pack-arcano-vol-2", 
+      "pack-arcano-vol-3", 
+      "pack-agendas", 
+      "pack-de-carnaval", 
+      "pack-de-halloween", 
+      "pack-fim-de-ano",
+      "bonus-19-videos-animados",
+      "bonus-190-videos-animados",
+      "upscaller-arcano",
+      "curso-artes-animadas-photoshop",
+      "curso-boas-vindas",
+      "eventoia-como-criar-selos-3d-animados",
+      "forja-selos-3d-ilimitada"
+    ], 
+    access_type: "1_ano", 
+    has_bonus: true 
+  },
 };
 
 // Products to ignore (not mapped to any pack)
