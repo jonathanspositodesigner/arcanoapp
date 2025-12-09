@@ -13,6 +13,7 @@ export const usePremiumArtesStatus = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [userPacks, setUserPacks] = useState<PackAccess[]>([]);
+  const [expiredPacks, setExpiredPacks] = useState<PackAccess[]>([]);
   const [hasBonusAccess, setHasBonusAccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
@@ -44,6 +45,25 @@ export const usePremiumArtesStatus = () => {
     }
   };
 
+  const checkExpiredPacks = async (userId: string) => {
+    try {
+      const { data: expired, error } = await supabase.rpc('get_user_expired_packs', {
+        _user_id: userId
+      });
+
+      if (error) {
+        console.error("Error fetching expired packs:", error);
+        setExpiredPacks([]);
+        return;
+      }
+
+      setExpiredPacks((expired || []) as PackAccess[]);
+    } catch (error) {
+      console.error("Error checking expired packs:", error);
+      setExpiredPacks([]);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -55,12 +75,16 @@ export const usePremiumArtesStatus = () => {
         // Defer async operations with setTimeout to avoid deadlocks
         if (currentSession?.user) {
           setTimeout(() => {
-            checkPackAccess(currentSession.user.id).then(() => {
+            Promise.all([
+              checkPackAccess(currentSession.user.id),
+              checkExpiredPacks(currentSession.user.id)
+            ]).then(() => {
               setIsLoading(false);
             });
           }, 0);
         } else {
           setUserPacks([]);
+          setExpiredPacks([]);
           setHasBonusAccess(false);
           setIsLoading(false);
         }
@@ -75,7 +99,10 @@ export const usePremiumArtesStatus = () => {
         setUser(existingSession?.user ?? null);
         
         if (existingSession?.user) {
-          await checkPackAccess(existingSession.user.id);
+          await Promise.all([
+            checkPackAccess(existingSession.user.id),
+            checkExpiredPacks(existingSession.user.id)
+          ]);
         }
         setIsLoading(false);
       });
@@ -92,6 +119,14 @@ export const usePremiumArtesStatus = () => {
     return userPacks.find(p => p.pack_slug === packSlug);
   };
 
+  const hasExpiredPack = (packSlug: string): boolean => {
+    return expiredPacks.some(p => p.pack_slug === packSlug);
+  };
+
+  const getExpiredPackInfo = (packSlug: string): PackAccess | undefined => {
+    return expiredPacks.find(p => p.pack_slug === packSlug);
+  };
+
   // Legacy compatibility: isPremium = has at least one pack
   const isPremium = userPacks.length > 0;
 
@@ -106,7 +141,17 @@ export const usePremiumArtesStatus = () => {
     setUser(null);
     setSession(null);
     setUserPacks([]);
+    setExpiredPacks([]);
     setHasBonusAccess(false);
+  };
+
+  const refetch = () => {
+    if (user) {
+      Promise.all([
+        checkPackAccess(user.id),
+        checkExpiredPacks(user.id)
+      ]);
+    }
   };
 
   return { 
@@ -115,12 +160,15 @@ export const usePremiumArtesStatus = () => {
     isPremium, // Has at least one pack
     planType,
     userPacks, // List of all packs user has access to
+    expiredPacks, // List of expired packs
     hasBonusAccess, // Has access to bonus content (legacy)
     hasAccessToBonusAndUpdates, // Has at least 1 active pack = access to all bonus/updates
     hasAccessToPack, // Function to check specific pack access
     getPackAccessInfo, // Function to get pack details
+    hasExpiredPack, // Function to check if pack is expired
+    getExpiredPackInfo, // Function to get expired pack details
     isLoading, 
     logout,
-    refetch: () => user && checkPackAccess(user.id)
+    refetch
   };
 };

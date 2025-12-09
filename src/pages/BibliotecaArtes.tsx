@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -64,8 +64,11 @@ const BibliotecaArtes = () => {
     user,
     isPremium,
     userPacks,
+    expiredPacks,
     hasBonusAccess,
     hasAccessToPack,
+    hasExpiredPack,
+    getExpiredPackInfo,
     logout
   } = usePremiumArtesStatus();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -643,6 +646,9 @@ const BibliotecaArtes = () => {
               // For bonus/updates: any active pack = access. For regular packs: need specific pack
               const isBonusOrUpdatesType = pack.type === 'bonus' || pack.type === 'updates';
               const hasPackAccess = isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug);
+              const isExpired = !isBonusOrUpdatesType && hasExpiredPack(packSlug);
+              const expiredInfo = isExpired ? getExpiredPackInfo(packSlug) : null;
+              
               return <Card key={pack.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => {
                 setSelectedPack(pack.name);
                 setSelectedCategory("Todos");
@@ -653,10 +659,17 @@ const BibliotecaArtes = () => {
                             {activeSection === 'bonus' ? <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" /> : <Package className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />}
                           </div>}
                         
-                        {/* Access Tag */}
+                        {/* Access Tag - Priority: Active > Expired > None */}
                         {hasPackAccess && <div className="absolute top-2 right-2 z-10">
                             <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
                               DISPONÍVEL
+                            </Badge>
+                          </div>}
+                        
+                        {!hasPackAccess && isExpired && <div className="absolute top-2 right-2 z-10">
+                            <Badge className="bg-red-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              ACESSO EXPIRADO
                             </Badge>
                           </div>}
                         
@@ -668,6 +681,21 @@ const BibliotecaArtes = () => {
                           <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
                             {arteCount} {arteCount === 1 ? 'arte' : 'artes'}
                           </Badge>
+                          
+                          {/* Renewal Button for expired packs */}
+                          {!hasPackAccess && isExpired && (
+                            <Button
+                              size="sm"
+                              className="mt-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
+                              }}
+                            >
+                              <RotateCcw className="h-3 w-3 mr-1" />
+                              Renovar com Desconto
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </Card>;
