@@ -59,8 +59,15 @@ const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Track session for this page
-  useSessionTracker("/biblioteca-prompts");
+  // Check for collection slug in URL first
+  const colecaoParam = searchParams.get("colecao");
+  
+  // Track session - use collection path if coming from collection link
+  const sessionPath = colecaoParam 
+    ? `/colecao/${colecaoParam}` 
+    : "/biblioteca-prompts";
+  useSessionTracker(sessionPath);
+  
   const {
     user,
     isPremium,
@@ -92,18 +99,13 @@ const BibliotecaPrompts = () => {
   const [tutorialUrl, setTutorialUrl] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [collectionSlug, setCollectionSlug] = useState<string | null>(null);
+  const [collectionSlug, setCollectionSlug] = useState<string | null>(colecaoParam);
   const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
   const [showArcaneStudioModal, setShowArcaneStudioModal] = useState(false);
 
   useEffect(() => {
     fetchCommunityPrompts();
-    // Check for collection slug in URL
-    const colecao = searchParams.get("colecao");
-    if (colecao) {
-      setCollectionSlug(colecao);
-    }
   }, []);
 
   // Open modal from URL parameter
