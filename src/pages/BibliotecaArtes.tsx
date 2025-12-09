@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -448,22 +449,24 @@ const BibliotecaArtes = () => {
         `}>
           <div className="p-4">
             <h2 className="text-lg font-bold text-foreground mb-4">Categorias</h2>
-            <div className="space-y-1">
-              {categories.map(category => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "ghost"}
-                  className="w-full justify-start"
-                  onClick={() => {
-                    setSelectedCategory(category);
-                    setSidebarOpen(false);
-                  }}
-                >
-                  {getCategoryIcon(category)}
-                  {category}
-                </Button>
-              ))}
-            </div>
+            <Select value={selectedCategory} onValueChange={(value) => {
+              setSelectedCategory(value);
+              setSidebarOpen(false);
+            }}>
+              <SelectTrigger className="w-full bg-background border-border">
+                <SelectValue placeholder="Selecione uma categoria" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border z-50">
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>
+                    <span className="flex items-center">
+                      {getCategoryIcon(category)}
+                      {category}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </aside>
 
