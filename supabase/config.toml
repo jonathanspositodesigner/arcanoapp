@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.update-user-password-artes]
 verify_jwt = false
+
+[functions.create-pack-client]
+verify_jwt = false
