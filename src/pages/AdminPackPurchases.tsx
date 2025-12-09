@@ -69,6 +69,14 @@ const AdminPackPurchases = () => {
   const [filterPack, setFilterPack] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
+  
+  // Expired clients modal state
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
+  const [expiredViewMode, setExpiredViewMode] = useState<'some' | 'all'>('some');
+  
   // Add/Edit dialog state
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingClient, setEditingClient] = useState<GroupedClient | null>(null);
@@ -573,21 +581,49 @@ const AdminPackPurchases = () => {
               </div>
             </div>
           </Card>
-          <Card className="p-4">
+          <Card 
+            className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={() => setShowExpiredModal(true)}
+          >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-red-500/10 rounded-lg">
-                <User className="h-5 w-5 text-red-500" />
+                <Calendar className="h-5 w-5 text-red-500" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Clientes Inativos</p>
-                <p className="text-2xl font-bold">
-                  {(() => {
-                    const userIds = [...new Set(purchases.map(p => p.user_id))];
-                    return userIds.filter(userId => 
-                      !purchases.some(p => p.user_id === userId && p.is_active)
-                    ).length;
-                  })()}
-                </p>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Packs Vencidos</p>
+                <div className="flex items-center gap-4">
+                  <div>
+                    <p className="text-xl font-bold text-amber-600">
+                      {(() => {
+                        const now = new Date();
+                        const userIds = [...new Set(purchases.map(p => p.user_id))];
+                        return userIds.filter(userId => 
+                          purchases.some(p => 
+                            p.user_id === userId && 
+                            p.expires_at && 
+                            new Date(p.expires_at) < now
+                          )
+                        ).length;
+                      })()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">c/ algum vencido</p>
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold text-red-600">
+                      {(() => {
+                        const now = new Date();
+                        const userIds = [...new Set(purchases.map(p => p.user_id))];
+                        return userIds.filter(userId => {
+                          const userPurchases = purchases.filter(p => p.user_id === userId);
+                          return userPurchases.every(p => 
+                            p.expires_at && new Date(p.expires_at) < now
+                          );
+                        }).length;
+                      })()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">todos vencidos</p>
+                  </div>
+                </div>
               </div>
             </div>
           </Card>
@@ -865,7 +901,9 @@ const AdminPackPurchases = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {groupedClients.map((client) => (
+              {groupedClients
+                .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                .map((client) => (
                 <TableRow key={client.user_id}>
                   <TableCell>
                     <div>
@@ -937,7 +975,165 @@ const AdminPackPurchases = () => {
               )}
             </TableBody>
           </Table>
+          
+          {/* Pagination */}
+          {groupedClients.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between p-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, groupedClients.length)} de {groupedClients.length} clientes
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.ceil(groupedClients.length / ITEMS_PER_PAGE) }, (_, i) => i + 1)
+                    .filter(page => 
+                      page === 1 || 
+                      page === Math.ceil(groupedClients.length / ITEMS_PER_PAGE) ||
+                      Math.abs(page - currentPage) <= 2
+                    )
+                    .map((page, index, arr) => (
+                      <span key={page}>
+                        {index > 0 && arr[index - 1] !== page - 1 && (
+                          <span className="px-2 text-muted-foreground">...</span>
+                        )}
+                        <Button
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
+                      </span>
+                    ))
+                  }
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(groupedClients.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={currentPage === Math.ceil(groupedClients.length / ITEMS_PER_PAGE)}
+                >
+                  Próximo
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
+
+        {/* Expired Clients Modal */}
+        <Dialog open={showExpiredModal} onOpenChange={setShowExpiredModal}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Clientes com Packs Vencidos</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div className="flex gap-2">
+                <Button 
+                  variant={expiredViewMode === 'some' ? 'default' : 'outline'}
+                  onClick={() => setExpiredViewMode('some')}
+                  size="sm"
+                >
+                  Com algum pack vencido
+                </Button>
+                <Button 
+                  variant={expiredViewMode === 'all' ? 'default' : 'outline'}
+                  onClick={() => setExpiredViewMode('all')}
+                  size="sm"
+                >
+                  Todos os packs vencidos
+                </Button>
+              </div>
+              
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Packs Vencidos</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(() => {
+                    const now = new Date();
+                    const userIds = [...new Set(purchases.map(p => p.user_id))];
+                    
+                    const expiredClients = userIds.filter(userId => {
+                      const userPurchases = purchases.filter(p => p.user_id === userId);
+                      const hasExpired = userPurchases.some(p => p.expires_at && new Date(p.expires_at) < now);
+                      const allExpired = userPurchases.every(p => p.expires_at && new Date(p.expires_at) < now);
+                      
+                      return expiredViewMode === 'all' ? allExpired : hasExpired;
+                    });
+                    
+                    return expiredClients.map(userId => {
+                      const userPurchases = purchases.filter(p => p.user_id === userId);
+                      const firstPurchase = userPurchases[0];
+                      const expiredPacks = userPurchases.filter(p => p.expires_at && new Date(p.expires_at) < now);
+                      
+                      return (
+                        <TableRow key={userId}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{firstPurchase.user_name || 'Sem nome'}</p>
+                              <p className="text-sm text-muted-foreground">{firstPurchase.user_email}</p>
+                              {firstPurchase.user_phone && (
+                                <p className="text-xs text-muted-foreground">{firstPurchase.user_phone}</p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {expiredPacks.map((purchase) => (
+                                <Badge 
+                                  key={purchase.id} 
+                                  variant="outline"
+                                  className="text-xs bg-red-500/10 text-red-600 border-red-500/30"
+                                >
+                                  {getPackName(purchase.pack_slug)} - venceu em {format(new Date(purchase.expires_at!), "dd/MM/yy", { locale: ptBR })}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => openWhatsApp(firstPurchase.user_phone || '')}
+                                title="WhatsApp"
+                              >
+                                <MessageCircle className="h-4 w-4 text-green-500" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setShowExpiredModal(false);
+                                  openEditDialog(firstPurchase);
+                                }}
+                                title="Editar"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    });
+                  })()}
+                </TableBody>
+              </Table>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
