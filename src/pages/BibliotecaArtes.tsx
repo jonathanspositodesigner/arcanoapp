@@ -731,7 +731,10 @@ const BibliotecaArtes = () => {
                 const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
                 const isAnimating = animatingClicks.has(arteId);
                 const packSlug = toPackSlug(arte.pack);
-                const hasAccess = !arte.isPremium || hasAccessToPack(packSlug);
+                // Check if arte belongs to a tutorial pack - tutorials are free for everyone
+                const artePackInfo = dbPacks.find(p => p.name === arte.pack);
+                const isTutorialType = artePackInfo?.type === 'tutorial';
+                const hasAccess = isTutorialType || !arte.isPremium || hasAccessToPack(packSlug);
                 return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
                           {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} autoPlay muted loop playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
@@ -823,10 +826,14 @@ const BibliotecaArtes = () => {
                 const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
                 const isAnimating = animatingClicks.has(arteId);
                 const packSlug = toPackSlug(arte.pack);
+                // Check if arte belongs to a tutorial pack - tutorials are free for everyone
+                const artePackInfo = dbPacks.find(p => p.name === arte.pack);
+                const isTutorialType = artePackInfo?.type === 'tutorial';
+                // For tutorials: always free for everyone
                 // For bonus/updates: any active pack grants access
                 // For regular packs: need specific pack access
                 const isBonusOrUpdatesSection = activeSection === 'bonus' || activeSection === 'updates';
-                const hasAccess = !arte.isPremium || (isBonusOrUpdatesSection ? isPremium : hasAccessToPack(packSlug));
+                const hasAccess = isTutorialType || !arte.isPremium || (isBonusOrUpdatesSection ? isPremium : hasAccessToPack(packSlug));
                 return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
                           {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} autoPlay muted loop playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
@@ -893,12 +900,14 @@ const BibliotecaArtes = () => {
         <DialogContent className="max-w-[95vw] sm:max-w-fit max-h-[95vh] overflow-y-auto">
           {selectedArte && (() => {
           const packSlug = toPackSlug(selectedArte.pack);
-          // Check if arte belongs to bonus or updates pack type
+          // Check if arte belongs to bonus, updates, or tutorial pack type
           const selectedPackInfo = dbPacks.find(p => p.name === selectedArte.pack);
           const isBonusOrUpdatesType = selectedPackInfo?.type === 'bonus' || selectedPackInfo?.type === 'updates';
+          const isTutorialType = selectedPackInfo?.type === 'tutorial';
+          // For tutorials: always free for everyone (logged in or not)
           // For bonus/updates: any active pack grants access
           // For regular packs: need specific pack access
-          const hasAccess = !selectedArte.isPremium || (isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug));
+          const hasAccess = isTutorialType || !selectedArte.isPremium || (isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug));
           return <div className="space-y-4">
                 <div className="flex justify-center">
                   {isVideoUrl(selectedArte.imageUrl) ? <SecureVideo src={selectedArte.imageUrl} className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} controls /> : <SecureImage src={selectedArte.imageUrl} alt={selectedArte.title} className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} />}
