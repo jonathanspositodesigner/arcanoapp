@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -38,7 +38,7 @@ interface PackItem {
   name: string;
   cover_url: string | null;
   display_order: number;
-  type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample';
+  type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample' | 'tutorial' | 'ferramentas_ia';
 }
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -53,7 +53,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   }
   return shuffled;
 };
-type SidebarSection = 'packs' | 'bonus' | 'cursos' | 'updates' | 'free-sample' | 'all-artes';
+type SidebarSection = 'packs' | 'bonus' | 'cursos' | 'updates' | 'free-sample' | 'all-artes' | 'tutorial' | 'ferramentas_ia';
 const BibliotecaArtes = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -228,7 +228,7 @@ const BibliotecaArtes = () => {
   };
 
   // Get packs filtered by type
-  const getPacksByType = (type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample') => {
+  const getPacksByType = (type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample' | 'tutorial' | 'ferramentas_ia') => {
     return dbPacks.filter(p => p.type === type);
   };
   const filteredArtes = getFilteredAndSortedArtes();
@@ -407,6 +407,30 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
+        setActiveSection('tutorial');
+        setSelectedPack(null);
+        setSidebarOpen(false);
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'tutorial' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
+          <BookOpen className="h-5 w-5" />
+          <span className="font-medium">Tutoriais</span>
+          <Badge variant="secondary" className="ml-auto text-xs">
+            {getPacksByType('tutorial').length}
+          </Badge>
+        </button>
+
+        <button onClick={() => {
+        setActiveSection('ferramentas_ia');
+        setSelectedPack(null);
+        setSidebarOpen(false);
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'ferramentas_ia' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
+          <Cpu className="h-5 w-5" />
+          <span className="font-medium">Ferramentas de IA</span>
+          <Badge variant="secondary" className="ml-auto text-xs">
+            {getPacksByType('ferramentas_ia').length}
+          </Badge>
+        </button>
+
+        <button onClick={() => {
         setActiveSection('all-artes');
         setSelectedPack(null);
         setSelectedCategory("Todos");
@@ -445,6 +469,10 @@ const BibliotecaArtes = () => {
         return 'Amostras Grátis';
       case 'all-artes':
         return 'Todas as Artes';
+      case 'tutorial':
+        return 'Tutoriais';
+      case 'ferramentas_ia':
+        return 'Ferramentas de IA';
     }
   };
   const getCurrentItems = () => {
@@ -459,6 +487,10 @@ const BibliotecaArtes = () => {
         return getPacksByType('updates');
       case 'free-sample':
         return getPacksByType('free-sample');
+      case 'tutorial':
+        return getPacksByType('tutorial');
+      case 'ferramentas_ia':
+        return getPacksByType('ferramentas_ia');
       case 'all-artes':
         return [];
       // Will show artes directly, not packs
