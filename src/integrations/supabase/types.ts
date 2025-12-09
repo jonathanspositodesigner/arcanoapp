@@ -549,6 +549,36 @@ export type Database = {
         }
         Relationships: []
       }
+      import_log: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          import_hash: string
+          processed_at: string | null
+          product_name: string
+          purchase_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          import_hash: string
+          processed_at?: string | null
+          product_name: string
+          purchase_date: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          import_hash?: string
+          processed_at?: string | null
+          product_name?: string
+          purchase_date?: string
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           device_type: string

@@ -14,6 +14,8 @@ interface ClientData {
     access_type: "3_meses" | "6_meses" | "1_ano" | "vitalicio";
     has_bonus_access: boolean;
     purchase_date: string;
+    product_name: string;
+    import_hash: string;
   }[];
 }
 
@@ -91,7 +93,31 @@ Deno.serve(async (req) => {
       errors: [] as { email: string; error: string }[],
       created: 0,
       updated: 0,
+      skipped: 0,
     };
+
+    // Collect all hashes from this batch to check existing
+    const allHashes: string[] = [];
+    for (const client of clients) {
+      for (const pack of client.packs) {
+        if (pack.import_hash) {
+          allHashes.push(pack.import_hash);
+        }
+      }
+    }
+
+    // Fetch existing hashes in one query
+    const existingHashesSet = new Set<string>();
+    if (allHashes.length > 0) {
+      const { data: existingLogs } = await supabaseAdmin
+        .from("import_log")
+        .select("import_hash")
+        .in("import_hash", allHashes);
+      
+      if (existingLogs) {
+        existingLogs.forEach((log: { import_hash: string }) => existingHashesSet.add(log.import_hash));
+      }
+    }
 
     for (const client of clients) {
       try {
@@ -104,11 +130,20 @@ Deno.serve(async (req) => {
 
         const normalizedEmail = email.toLowerCase().trim();
 
-        // Check if user exists - FIXED: Use pagination to search properly instead of listUsers()
+        // Filter out already imported packs
+        const newPacks = packs.filter(pack => !existingHashesSet.has(pack.import_hash));
+        
+        if (newPacks.length === 0) {
+          results.skipped++;
+          console.log(`All packs already imported for: ${normalizedEmail}`);
+          continue;
+        }
+
+        // Check if user exists
         let userId: string;
         let isNewUser = false;
 
-        // First, try to find user by querying profiles table (faster than auth pagination)
+        // First, try to find user by querying profiles table
         const { data: existingProfile } = await supabaseAdmin
           .from("profiles")
           .select("id")
@@ -140,7 +175,7 @@ Deno.serve(async (req) => {
             );
             
             if (usersPage.users.length < perPage) {
-              break; // No more pages
+              break;
             }
             
             page++;
@@ -187,9 +222,11 @@ Deno.serve(async (req) => {
           console.error(`Error upserting profile for ${normalizedEmail}:`, profileError);
         }
 
-        // Process each pack for this client
-        for (const pack of packs) {
-          const { pack_slug, access_type, has_bonus_access, purchase_date } = pack;
+        // Process each NEW pack for this client
+        const importLogEntries: { import_hash: string; email: string; product_name: string; purchase_date: string }[] = [];
+
+        for (const pack of newPacks) {
+          const { pack_slug, access_type, has_bonus_access, purchase_date, product_name, import_hash } = pack;
 
           // Calculate expires_at based on purchase_date and access_type
           let expiresAt: string | null = null;
@@ -247,6 +284,27 @@ Deno.serve(async (req) => {
               console.error(`Error inserting pack ${pack_slug} for ${normalizedEmail}:`, insertError);
             }
           }
+
+          // Add to import log entries (only if hash exists)
+          if (import_hash) {
+            importLogEntries.push({
+              import_hash,
+              email: normalizedEmail,
+              product_name: product_name || pack_slug,
+              purchase_date: purchase_date.split('T')[0],
+            });
+          }
+        }
+
+        // Batch insert import log entries
+        if (importLogEntries.length > 0) {
+          const { error: logError } = await supabaseAdmin
+            .from("import_log")
+            .upsert(importLogEntries, { onConflict: "import_hash", ignoreDuplicates: true });
+          
+          if (logError) {
+            console.error(`Error logging imports for ${normalizedEmail}:`, logError);
+          }
         }
 
         results.success++;
@@ -256,7 +314,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Import completed: ${results.success} success, ${results.errors.length} errors`);
+    console.log(`Import completed: ${results.success} success, ${results.skipped} skipped, ${results.errors.length} errors`);
 
     return new Response(JSON.stringify(results), {
       status: 200,
