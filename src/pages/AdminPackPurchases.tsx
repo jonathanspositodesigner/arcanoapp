@@ -200,11 +200,15 @@ const AdminPackPurchases = () => {
     }
 
     try {
-      let userId: string;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Sessão expirada. Faça login novamente.");
+        return;
+      }
 
       if (editingClient) {
-        // Editing existing client
-        userId = editingClient.user_id;
+        // Editing existing client - update via direct queries (admin has permission)
+        const userId = editingClient.user_id;
 
         // Get existing purchase IDs for this user
         const existingIds = editingClient.purchases.map(p => p.id);
@@ -243,105 +247,65 @@ const AdminPackPurchases = () => {
           }
         }
 
+        // Update profile info via edge function (to reset password if needed)
+        const response = await fetch(
+          `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/update-user-password-artes`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ 
+              user_id: userId, 
+              new_password: formData.email.toLowerCase().trim() 
+            })
+          }
+        );
+
+        if (!response.ok) {
+          console.error('Error updating password:', await response.json());
+        }
+
         toast.success("Cliente atualizado com sucesso!");
       } else {
-        // Creating new client
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', formData.email)
-          .maybeSingle();
-
-        if (existingProfile) {
-          userId = existingProfile.id;
-          
-          // Profile exists, update password via edge function to ensure it's the email
-          const passwordToUse = formData.email.toLowerCase().trim();
-          const { data: { session } } = await supabase.auth.getSession();
-          
-          if (session) {
-            const response = await fetch(
-              `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/update-user-password-artes`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({ 
-                  user_id: userId, 
-                  new_password: passwordToUse 
-                })
-              }
-            );
-
-            if (!response.ok) {
-              const result = await response.json();
-              console.error('Error updating password:', result);
-            }
-          }
-
-          // Update profile info
-          await supabase.from('profiles').update({
-            name: formData.name,
-            phone: formData.phone,
-            password_changed: false
-          }).eq('id', userId);
-        } else {
-          // No profile exists, try to create new user
-          const passwordToUse = formData.email.toLowerCase().trim();
-
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: formData.email,
-            password: passwordToUse,
-            options: {
-              emailRedirectTo: `${window.location.origin}/`
-            }
-          });
-
-          if (authError) {
-            // Check if user already exists in Auth but not in profiles
-            if (authError.message.includes('already registered') || authError.message.includes('already been registered')) {
-              // User exists in Auth but no profile - we need to find the user and update password
-              toast.error("Este email já está registrado no sistema. Use a função de editar para atualizar.");
-              return;
-            }
-            toast.error("Erro ao criar usuário: " + authError.message);
-            return;
-          }
-
-          if (!authData.user) {
-            toast.error("Erro ao criar usuário: Usuário não retornado");
-            return;
-          }
-
-          userId = authData.user.id;
-
-          await supabase.from('profiles').upsert({
-            id: userId,
-            email: formData.email,
-            name: formData.name,
-            phone: formData.phone,
-            password_changed: false
-          });
-        }
-
-        // Insert all pack accesses
-        for (const access of formData.packAccesses) {
+        // Creating new client - use edge function to avoid session switching
+        const packsToCreate = formData.packAccesses.map(access => {
           const hasBonus = access.access_type === '1_ano' || access.access_type === 'vitalicio';
           const expiresAt = calculateExpiresAt(access.access_type);
-
-          await supabase.from('user_pack_purchases').insert({
-            user_id: userId,
+          return {
             pack_slug: access.pack_slug,
             access_type: access.access_type,
-            has_bonus_access: hasBonus,
-            is_active: access.is_active,
+            has_bonus: hasBonus,
             expires_at: expiresAt
-          });
+          };
+        });
+
+        const response = await fetch(
+          `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/create-pack-client`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              name: formData.name,
+              phone: formData.phone,
+              packs: packsToCreate
+            })
+          }
+        );
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+          toast.error(result.error || "Erro ao criar cliente");
+          return;
         }
 
-        toast.success("Cliente cadastrado com sucesso!");
+        toast.success(result.message || "Cliente cadastrado com sucesso!");
       }
 
       setShowAddDialog(false);
