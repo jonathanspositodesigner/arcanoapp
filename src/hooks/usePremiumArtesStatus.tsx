@@ -2,46 +2,49 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 
+interface PackAccess {
+  pack_slug: string;
+  access_type: string;
+  has_bonus: boolean;
+  expires_at: string | null;
+}
+
 export const usePremiumArtesStatus = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isPremium, setIsPremium] = useState(false);
-  const [planType, setPlanType] = useState<string | null>(null);
+  const [userPacks, setUserPacks] = useState<PackAccess[]>([]);
+  const [hasBonusAccess, setHasBonusAccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
 
-  useEffect(() => {
-    const checkPremiumStatus = async (userId: string) => {
-      try {
-        // Check if premium artes using RPC
-        const { data: isPremiumData, error: isPremiumError } = await supabase.rpc('is_premium_artes');
-        const premiumStatus = !isPremiumError && isPremiumData === true;
-        setIsPremium(premiumStatus);
+  const checkPackAccess = async (userId: string) => {
+    try {
+      // Get user's active packs using the database function
+      const { data: packs, error } = await supabase.rpc('get_user_packs', {
+        _user_id: userId
+      });
 
-        // Get plan type
-        if (premiumStatus) {
-          const { data: premiumData, error: premiumError } = await supabase
-            .from('premium_artes_users')
-            .select('plan_type')
-            .eq('user_id', userId)
-            .eq('is_active', true)
-            .maybeSingle();
-
-          if (!premiumError && premiumData) {
-            setPlanType(premiumData.plan_type);
-          } else {
-            setPlanType(null);
-          }
-        } else {
-          setPlanType(null);
-        }
-      } catch (error) {
-        console.error('Error checking premium artes status:', error);
-        setIsPremium(false);
-        setPlanType(null);
+      if (error) {
+        console.error("Error fetching user packs:", error);
+        setUserPacks([]);
+        setHasBonusAccess(false);
+        return;
       }
-    };
 
+      const packList = (packs || []) as PackAccess[];
+      setUserPacks(packList);
+
+      // Check if user has any pack with bonus access
+      const hasBonus = packList.some((p: PackAccess) => p.has_bonus);
+      setHasBonusAccess(hasBonus);
+    } catch (error) {
+      console.error("Error checking pack access:", error);
+      setUserPacks([]);
+      setHasBonusAccess(false);
+    }
+  };
+
+  useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
@@ -52,13 +55,13 @@ export const usePremiumArtesStatus = () => {
         // Defer async operations with setTimeout to avoid deadlocks
         if (currentSession?.user) {
           setTimeout(() => {
-            checkPremiumStatus(currentSession.user.id).then(() => {
+            checkPackAccess(currentSession.user.id).then(() => {
               setIsLoading(false);
             });
           }, 0);
         } else {
-          setIsPremium(false);
-          setPlanType(null);
+          setUserPacks([]);
+          setHasBonusAccess(false);
           setIsLoading(false);
         }
       }
@@ -72,7 +75,7 @@ export const usePremiumArtesStatus = () => {
         setUser(existingSession?.user ?? null);
         
         if (existingSession?.user) {
-          await checkPremiumStatus(existingSession.user.id);
+          await checkPackAccess(existingSession.user.id);
         }
         setIsLoading(false);
       });
@@ -81,13 +84,39 @@ export const usePremiumArtesStatus = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const hasAccessToPack = (packSlug: string): boolean => {
+    return userPacks.some(p => p.pack_slug === packSlug);
+  };
+
+  const getPackAccessInfo = (packSlug: string): PackAccess | undefined => {
+    return userPacks.find(p => p.pack_slug === packSlug);
+  };
+
+  // Legacy compatibility: isPremium = has at least one pack
+  const isPremium = userPacks.length > 0;
+
+  // Legacy compatibility: planType based on bonus access
+  const planType = hasBonusAccess ? 'bonus_access' : (isPremium ? 'pack_only' : null);
+
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    setIsPremium(false);
-    setPlanType(null);
+    setUserPacks([]);
+    setHasBonusAccess(false);
   };
 
-  return { user, session, isPremium, planType, isLoading, logout };
+  return { 
+    user, 
+    session, 
+    isPremium, // Has at least one pack
+    planType,
+    userPacks, // List of all packs user has access to
+    hasBonusAccess, // Has access to bonus content
+    hasAccessToPack, // Function to check specific pack access
+    getPackAccessInfo, // Function to get pack details
+    isLoading, 
+    logout,
+    refetch: () => user && checkPackAccess(user.id)
+  };
 };
