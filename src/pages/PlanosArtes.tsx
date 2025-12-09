@@ -51,6 +51,7 @@ const PlanosArtes = () => {
       label: "Acesso 6 Meses",
       price: "R$ 27,00",
       icon: Clock,
+      buttonText: "Desbloquear 6 Meses",
       features: [
         "Acesso completo ao pack selecionado",
         "Download ilimitado das artes",
@@ -65,6 +66,7 @@ const PlanosArtes = () => {
       label: "Acesso 1 Ano",
       price: "R$ 37,00",
       icon: Star,
+      buttonText: "Desbloquear 1 Ano",
       features: [
         "Tudo do acesso de 6 meses",
         "Acesso por 12 meses",
@@ -79,6 +81,7 @@ const PlanosArtes = () => {
       label: "Acesso Vitalício",
       price: "R$ 47,00",
       icon: Gift,
+      buttonText: "Desbloquear Acesso Vitalício",
       features: [
         "Tudo do acesso de 1 ano",
         "Acesso permanente ao pack",
@@ -221,13 +224,13 @@ const PlanosArtes = () => {
                       <Button
                         className={`w-full ${
                           option.highlighted
-                            ? "bg-[#2d4a5e] hover:bg-[#3d5a6e]"
-                            : "bg-[#2d4a5e]/50 hover:bg-[#2d4a5e]"
-                        } text-white`}
+                            ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30 animate-pulse"
+                            : "bg-[#2d4a5e]/50 hover:bg-[#2d4a5e] text-white"
+                        }`}
                         onClick={() => handleSelectOption(option.type)}
                       >
                         <Star className="h-4 w-4 mr-2" />
-                        Comprar Agora
+                        {option.buttonText}
                       </Button>
                     </CardContent>
                   </Card>
