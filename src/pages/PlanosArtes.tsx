@@ -189,7 +189,7 @@ const PlanosArtes = () => {
                     }`}
                   >
                     {option.highlighted && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-white px-4 py-1 rounded-full text-sm font-medium">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
                         Melhor Custo-Benefício
                       </div>
                     )}
