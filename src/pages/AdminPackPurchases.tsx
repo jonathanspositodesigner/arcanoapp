@@ -356,6 +356,29 @@ const AdminPackPurchases = () => {
     fetchPurchases();
   };
 
+  const handleDeleteClient = async (client: GroupedClient) => {
+    if (!confirm(`Tem certeza que deseja EXCLUIR COMPLETAMENTE o cliente "${client.user_email}"? Isso irá remover todos os acessos, perfil e conta de login.`)) return;
+
+    try {
+      // Delete all pack purchases
+      for (const purchase of client.purchases) {
+        await supabase.from('user_pack_purchases').delete().eq('id', purchase.id);
+      }
+
+      // Delete profile
+      await supabase.from('profiles').delete().eq('id', client.user_id);
+
+      // Delete premium_artes_users if exists
+      await supabase.from('premium_artes_users').delete().eq('user_id', client.user_id);
+
+      toast.success("Cliente excluído com sucesso!");
+      fetchPurchases();
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      toast.error("Erro ao excluir cliente");
+    }
+  };
+
   const handleToggleActive = async (purchase: PackPurchase) => {
     const { error } = await supabase
       .from('user_pack_purchases')
@@ -848,6 +871,15 @@ const AdminPackPurchases = () => {
                         title="Editar"
                       >
                         <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteClient(client)}
+                        title="Excluir cliente"
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
