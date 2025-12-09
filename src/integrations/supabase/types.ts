@@ -1119,6 +1119,7 @@ export type Database = {
           greenn_contract_id: string | null
           has_bonus_access: boolean
           id: string
+          import_source: string | null
           is_active: boolean
           pack_slug: string
           purchased_at: string
@@ -1132,6 +1133,7 @@ export type Database = {
           greenn_contract_id?: string | null
           has_bonus_access?: boolean
           id?: string
+          import_source?: string | null
           is_active?: boolean
           pack_slug: string
           purchased_at?: string
@@ -1145,6 +1147,7 @@ export type Database = {
           greenn_contract_id?: string | null
           has_bonus_access?: boolean
           id?: string
+          import_source?: string | null
           is_active?: boolean
           pack_slug?: string
           purchased_at?: string
