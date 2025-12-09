@@ -416,21 +416,6 @@ const AdminDashboard = () => {
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-premium')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full">
-                    <Crown className="h-12 w-12 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-foreground">
-                    ​Gerenciar Clientes
-      
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Gerenciar usuários premium de Artes
-                  </p>
-                </div>
-              </Card>
-
               <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-categories-artes')}>
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="p-4 bg-indigo-500 rounded-full">
