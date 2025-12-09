@@ -40,6 +40,8 @@ interface PackAccess {
   access_type: '3_meses' | '6_meses' | '1_ano' | 'vitalicio';
   is_active: boolean;
   id?: string; // for existing purchases
+  purchased_at?: string; // purchase date for expiration calculation
+  expires_at?: string | null; // calculated expiration date
 }
 
 interface ClientFormData {
@@ -428,7 +430,9 @@ const AdminPackPurchases = () => {
         pack_slug: p.pack_slug,
         access_type: p.access_type,
         is_active: p.is_active,
-        id: p.id
+        id: p.id,
+        purchased_at: p.purchased_at,
+        expires_at: p.expires_at
       }))
     });
     setShowAddDialog(true);
@@ -700,61 +704,100 @@ const AdminPackPurchases = () => {
                   {formData.packAccesses.map((access, index) => (
                     <Card key={index} className="p-4">
                       <div className="flex items-start gap-4">
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <div className="space-y-1">
-                            <Label className="text-xs">Pack</Label>
-                            <Select 
-                              value={access.pack_slug} 
-                              onValueChange={(v) => updatePackAccess(index, 'pack_slug', v)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {packs.map(pack => (
-                                  <SelectItem 
-                                    key={pack.id} 
-                                    value={pack.slug}
-                                    disabled={formData.packAccesses.some((pa, i) => i !== index && pa.pack_slug === pack.slug)}
-                                  >
-                                    {pack.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                        <div className="flex-1 space-y-3">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Pack</Label>
+                              <Select 
+                                value={access.pack_slug} 
+                                onValueChange={(v) => updatePackAccess(index, 'pack_slug', v)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {packs.map(pack => (
+                                    <SelectItem 
+                                      key={pack.id} 
+                                      value={pack.slug}
+                                      disabled={formData.packAccesses.some((pa, i) => i !== index && pa.pack_slug === pack.slug)}
+                                    >
+                                      {pack.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Tipo de Acesso</Label>
+                              <Select 
+                                value={access.access_type} 
+                                onValueChange={(v: '3_meses' | '6_meses' | '1_ano' | 'vitalicio') => updatePackAccess(index, 'access_type', v)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="3_meses">3 Meses</SelectItem>
+                                  <SelectItem value="6_meses">6 Meses</SelectItem>
+                                  <SelectItem value="1_ano">1 Ano (+ Bônus)</SelectItem>
+                                  <SelectItem value="vitalicio">Vitalício (+ Bônus)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Status</Label>
+                              <Select 
+                                value={access.is_active ? "active" : "inactive"} 
+                                onValueChange={(v) => updatePackAccess(index, 'is_active', v === "active")}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="active">Ativo</SelectItem>
+                                  <SelectItem value="inactive">Inativo</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">Tipo de Acesso</Label>
-                            <Select 
-                              value={access.access_type} 
-                              onValueChange={(v: '3_meses' | '6_meses' | '1_ano' | 'vitalicio') => updatePackAccess(index, 'access_type', v)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="3_meses">3 Meses</SelectItem>
-                                <SelectItem value="6_meses">6 Meses</SelectItem>
-                                <SelectItem value="1_ano">1 Ano (+ Bônus)</SelectItem>
-                                <SelectItem value="vitalicio">Vitalício (+ Bônus)</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">Status</Label>
-                            <Select 
-                              value={access.is_active ? "active" : "inactive"} 
-                              onValueChange={(v) => updatePackAccess(index, 'is_active', v === "active")}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="active">Ativo</SelectItem>
-                                <SelectItem value="inactive">Inativo</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          
+                          {/* Expiration info for existing purchases */}
+                          {access.id && access.purchased_at && (
+                            <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                <span>Compra: {format(new Date(access.purchased_at), "dd/MM/yyyy", { locale: ptBR })}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                {access.access_type === 'vitalicio' ? (
+                                  <Badge variant="outline" className="text-xs bg-purple-500/10 text-purple-600 border-purple-500/30">
+                                    Acesso Vitalício
+                                  </Badge>
+                                ) : access.expires_at ? (
+                                  <>
+                                    <span>Expira: </span>
+                                    <Badge 
+                                      variant="outline" 
+                                      className={`text-xs ${
+                                        new Date(access.expires_at) < new Date() 
+                                          ? 'bg-red-500/10 text-red-600 border-red-500/30'
+                                          : new Date(access.expires_at) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                          ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                                          : 'bg-green-500/10 text-green-600 border-green-500/30'
+                                      }`}
+                                    >
+                                      {format(new Date(access.expires_at), "dd/MM/yyyy", { locale: ptBR })}
+                                    </Badge>
+                                  </>
+                                ) : (
+                                  <Badge variant="outline" className="text-xs">
+                                    Sem data de expiração
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <Button 
                           type="button" 
