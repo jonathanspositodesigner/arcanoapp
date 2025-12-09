@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users, HelpCircle, Flame, User, LogOut, Settings } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users, Flame, User, LogOut, Settings } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +13,6 @@ import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
 import { trackPromptClick, hasClickedInSession } from "@/hooks/usePromptClickTracker";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
-import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import ArcaneAIStudioModal from "@/components/ArcaneAIStudioModal";
 import { useSessionTracker } from "@/hooks/useSessionTracker";
@@ -94,19 +93,10 @@ const BibliotecaPrompts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collectionSlug, setCollectionSlug] = useState<string | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
   const [showArcaneStudioModal, setShowArcaneStudioModal] = useState(false);
 
-  // Check if first time user - show tutorial only on first visit
-  useEffect(() => {
-    const tutorialCompleted = localStorage.getItem("biblioteca-tutorial-completed");
-    if (!tutorialCompleted) {
-      // Small delay to let the page render first
-      setTimeout(() => setShowOnboarding(true), 1000);
-    }
-  }, []);
   useEffect(() => {
     fetchCommunityPrompts();
     // Check for collection slug in URL
@@ -593,14 +583,6 @@ const BibliotecaPrompts = () => {
                 </>}
             </Button>}
 
-          {/* Tutorial button */}
-          <Button onClick={() => {
-          localStorage.removeItem("biblioteca-tutorial-completed");
-          setShowOnboarding(true);
-        }} variant="ghost" className="w-full mt-4 text-muted-foreground hover:text-foreground">
-            <HelpCircle className="h-4 w-4 mr-2" />
-            Ver tutorial novamente
-          </Button>
         </aside>
 
         {/* Main Content */}
@@ -884,9 +866,6 @@ const BibliotecaPrompts = () => {
       searchParams.delete("colecao");
       setSearchParams(searchParams);
     }} />}
-
-      {/* Onboarding Tutorial */}
-      {showOnboarding && <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />}
 
       {/* Arcane AI Studio Modal */}
       <ArcaneAIStudioModal open={showArcaneStudioModal} onOpenChange={setShowArcaneStudioModal} isPremium={isPremium} planType={planType} isLoggedIn={!!user} />
