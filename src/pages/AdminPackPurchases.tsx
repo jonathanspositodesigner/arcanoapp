@@ -912,38 +912,68 @@ const AdminPackPurchases = () => {
                           
                           {/* Expiration info for existing purchases */}
                           {access.id && access.purchased_at && (
-                            <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                <span>Compra: {format(new Date(access.purchased_at), "dd/MM/yyyy", { locale: ptBR })}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                {access.access_type === 'vitalicio' ? (
-                                  <Badge variant="outline" className="text-xs bg-purple-500/10 text-purple-600 border-purple-500/30">
-                                    Acesso Vitalício
-                                  </Badge>
-                                ) : access.expires_at ? (
-                                  <>
-                                    <span>Expira: </span>
-                                    <Badge 
-                                      variant="outline" 
-                                      className={`text-xs ${
-                                        new Date(access.expires_at) < new Date() 
-                                          ? 'bg-red-500/10 text-red-600 border-red-500/30'
-                                          : new Date(access.expires_at) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                                          ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                                          : 'bg-green-500/10 text-green-600 border-green-500/30'
-                                      }`}
-                                    >
-                                      {format(new Date(access.expires_at), "dd/MM/yyyy", { locale: ptBR })}
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>Compra: {format(new Date(access.purchased_at), "dd/MM/yyyy", { locale: ptBR })}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  {access.access_type === 'vitalicio' ? (
+                                    <Badge variant="outline" className="text-xs bg-purple-500/10 text-purple-600 border-purple-500/30">
+                                      Acesso Vitalício
                                     </Badge>
-                                  </>
-                                ) : (
-                                  <Badge variant="outline" className="text-xs">
-                                    Sem data de expiração
-                                  </Badge>
-                                )}
+                                  ) : access.expires_at ? (
+                                    <>
+                                      <span>Expira: </span>
+                                      <Badge 
+                                        variant="outline" 
+                                        className={`text-xs ${
+                                          new Date(access.expires_at) < new Date() 
+                                            ? 'bg-red-500/10 text-red-600 border-red-500/30'
+                                            : new Date(access.expires_at) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                            ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                                            : 'bg-green-500/10 text-green-600 border-green-500/30'
+                                        }`}
+                                      >
+                                        {format(new Date(access.expires_at), "dd/MM/yyyy", { locale: ptBR })}
+                                      </Badge>
+                                    </>
+                                  ) : (
+                                    <Badge variant="outline" className="text-xs">
+                                      Sem data de expiração
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
+                              
+                              {/* Expired pack indicator and renew button */}
+                              {access.access_type !== 'vitalicio' && access.expires_at && new Date(access.expires_at) < new Date() && (
+                                <div className="flex items-center justify-between p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
+                                  <div className="flex items-center gap-2">
+                                    <Badge className="bg-red-500 text-white text-xs">
+                                      ACESSO EXPIRADO
+                                    </Badge>
+                                    <span className="text-xs text-red-600">
+                                      Expirou em {format(new Date(access.expires_at), "dd/MM/yyyy", { locale: ptBR })}
+                                    </span>
+                                  </div>
+                                  <Button 
+                                    type="button" 
+                                    size="sm" 
+                                    className="bg-green-600 hover:bg-green-700 text-white text-xs"
+                                    onClick={() => {
+                                      const packName = packs.find(p => p.slug === access.pack_slug)?.name || access.pack_slug;
+                                      const whatsappMessage = encodeURIComponent(
+                                        `Olá! Gostaria de renovar meu acesso ao ${packName} com desconto especial.`
+                                      );
+                                      window.open(`https://api.whatsapp.com/send/?phone=&text=${whatsappMessage}&type=phone_number&app_absent=0`, '_blank');
+                                    }}
+                                  >
+                                    Renovar com Desconto
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
