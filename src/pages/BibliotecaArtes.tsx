@@ -66,7 +66,7 @@ const BibliotecaArtes = () => {
 
   useSessionTracker("/biblioteca-artes");
 
-  const { user, isPremium, logout } = usePremiumArtesStatus();
+  const { user, isPremium, userPacks, hasBonusAccess, hasAccessToPack, logout } = usePremiumArtesStatus();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -125,7 +125,10 @@ const BibliotecaArtes = () => {
     if (itemId && allArtes.length > 0) {
       const item = allArtes.find(a => a.id === itemId);
       if (item) {
-        if (item.isPremium && !isPremium) {
+        const packSlug = item.pack?.toLowerCase().replace(/\s+/g, '-') || '';
+        const hasAccess = hasAccessToPack(packSlug) || !item.isPremium;
+        
+        if (item.isPremium && !hasAccess) {
           setPremiumModalItem(item);
           setShowPremiumModal(true);
         } else {
@@ -133,7 +136,7 @@ const BibliotecaArtes = () => {
         }
       }
     }
-  }, [searchParams, allArtes, isPremium]);
+  }, [searchParams, allArtes, userPacks]);
 
   useEffect(() => {
     setShuffledVerTudo(shuffleArray(allArtes));
@@ -320,7 +323,12 @@ const BibliotecaArtes = () => {
 
   const handleItemClick = (item: ArteItem) => {
     setSearchParams({ item: String(item.id) });
-    if (item.isPremium && !isPremium) {
+    
+    // Check if user has access to this pack
+    const packSlug = item.pack?.toLowerCase().replace(/\s+/g, '-') || '';
+    const hasAccess = hasAccessToPack(packSlug) || !item.isPremium;
+    
+    if (item.isPremium && !hasAccess) {
       setPremiumModalItem(item);
       setShowPremiumModal(true);
     } else {
@@ -488,21 +496,27 @@ const BibliotecaArtes = () => {
         {/* Top Bar - Desktop */}
         <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-end sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            {!isPremium && <>
+            {userPacks.length === 0 && <>
               <Button onClick={() => navigate("/login-artes")} variant="ghost" size="sm">
                 <LogIn className="h-4 w-4 mr-2" />
                 Login
               </Button>
               <Button onClick={() => navigate("/planos-artes")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                 <Star className="h-3 w-3 mr-2" fill="currentColor" />
-                Torne-se Premium
+                Comprar Pack
               </Button>
             </>}
-            {isPremium && <>
+            {userPacks.length > 0 && <>
               <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
                 <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                Premium Ativo
+                {userPacks.length} {userPacks.length === 1 ? 'Pack' : 'Packs'}
               </Badge>
+              {hasBonusAccess && (
+                <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
+                  <Gift className="h-3 w-3 mr-1" />
+                  Bônus
+                </Badge>
+              )}
               <Button onClick={() => navigate("/perfil-artes")} variant="ghost" size="sm">
                 <Settings className="h-4 w-4 mr-2" />
                 Meu Perfil
@@ -528,20 +542,20 @@ const BibliotecaArtes = () => {
             </Button>
             <img alt="Arcano Lab" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" onClick={() => navigate('/')} />
           </div>
-          {!isPremium && <div className="flex items-center gap-2">
+          {userPacks.length === 0 && <div className="flex items-center gap-2">
               <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
                 <LogIn className="h-4 w-4 mr-1" />
                 Login
               </Button>
               <Button onClick={() => navigate("/planos-artes")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
                 <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                Premium
+                Comprar
               </Button>
             </div>}
-          {isPremium && <div className="flex items-center gap-2">
+          {userPacks.length > 0 && <div className="flex items-center gap-2">
               <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
                 <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                Premium
+                {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
               </Badge>
               <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
                 <Settings className="h-4 w-4" />
@@ -737,7 +751,7 @@ const BibliotecaArtes = () => {
                             />
                           )}
                           
-                          {arte.isPremium && !isPremium && (
+                          {arte.isPremium && !hasAccessToPack(arte.pack?.toLowerCase().replace(/\s+/g, '-') || '') && (
                             <div className="absolute top-2 right-2">
                               <Lock className="h-5 w-5 text-white drop-shadow-lg" />
                             </div>
@@ -902,7 +916,9 @@ const BibliotecaArtes = () => {
               <div>
                 <h2 className="text-xl font-bold text-foreground">{premiumModalItem.title}</h2>
                 <p className="text-muted-foreground mt-2">
-                  Esta arte é exclusiva para assinantes Premium
+                  {premiumModalItem.pack 
+                    ? `Esta arte faz parte do pack "${premiumModalItem.pack}". Adquira o pack para ter acesso completo.`
+                    : "Esta arte é exclusiva. Adquira um pack para ter acesso."}
                 </p>
               </div>
 
@@ -911,9 +927,15 @@ const BibliotecaArtes = () => {
                   <LogIn className="h-4 w-4 mr-2" />
                   Fazer Login
                 </Button>
-                <Button onClick={() => navigate('/planos-artes')} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                <Button 
+                  onClick={() => {
+                    const packSlug = premiumModalItem.pack?.toLowerCase().replace(/\s+/g, '-') || '';
+                    navigate(`/planos-artes${packSlug ? `?pack=${packSlug}` : ''}`);
+                  }} 
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+                >
                   <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                  Torne-se Premium
+                  Comprar Pack
                 </Button>
               </div>
             </div>

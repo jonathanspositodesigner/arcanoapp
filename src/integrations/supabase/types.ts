@@ -312,6 +312,42 @@ export type Database = {
         }
         Relationships: []
       }
+      artes_bonus_content: {
+        Row: {
+          content_type: string
+          content_url: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_type?: string
+          content_url: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_type?: string
+          content_url?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       artes_categories: {
         Row: {
           created_at: string
@@ -997,6 +1033,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_pack_purchases: {
+        Row: {
+          access_type: Database["public"]["Enums"]["artes_access_type"]
+          created_at: string
+          expires_at: string | null
+          greenn_contract_id: string | null
+          has_bonus_access: boolean
+          id: string
+          is_active: boolean
+          pack_slug: string
+          purchased_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_type: Database["public"]["Enums"]["artes_access_type"]
+          created_at?: string
+          expires_at?: string | null
+          greenn_contract_id?: string | null
+          has_bonus_access?: boolean
+          id?: string
+          is_active?: boolean
+          pack_slug: string
+          purchased_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_type?: Database["public"]["Enums"]["artes_access_type"]
+          created_at?: string
+          expires_at?: string | null
+          greenn_contract_id?: string | null
+          has_bonus_access?: boolean
+          id?: string
+          is_active?: boolean
+          pack_slug?: string
+          purchased_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -1061,6 +1139,20 @@ export type Database = {
     Functions: {
       get_daily_arte_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_copy_count: { Args: { _user_id: string }; Returns: number }
+      get_user_packs: {
+        Args: { _user_id: string }
+        Returns: {
+          access_type: Database["public"]["Enums"]["artes_access_type"]
+          expires_at: string
+          has_bonus: boolean
+          pack_slug: string
+        }[]
+      }
+      has_bonus_access: { Args: { _user_id: string }; Returns: boolean }
+      has_pack_access: {
+        Args: { _pack_slug: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1073,6 +1165,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "partner"
+      artes_access_type: "6_meses" | "1_ano" | "vitalicio"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1201,6 +1294,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "partner"],
+      artes_access_type: ["6_meses", "1_ano", "vitalicio"],
     },
   },
 } as const
