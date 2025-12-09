@@ -136,6 +136,9 @@ const PRODUCT_MAPPING: Record<string, { packs: string[]; access_type: "3_meses" 
   "19 Videos Animados": { packs: ["bonus-19-videos-animados"], access_type: "1_ano", has_bonus: true },
   "190 Videos Animados": { packs: ["bonus-190-videos-animados"], access_type: "vitalicio", has_bonus: false },
   "Evento.ia": { packs: ["eventoia-como-criar-selos-3d-animados"], access_type: "vitalicio", has_bonus: false },
+  
+  // === FORJA DE SELOS 3D ILIMITADA ===
+  "I.A Ilimitada que Gera Selos 3D Animados": { packs: ["forja-selos-3d-ilimitada"], access_type: "vitalicio", has_bonus: false },
 };
 
 // Products to ignore (not mapped to any pack)
