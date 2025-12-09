@@ -125,18 +125,11 @@ const BibliotecaArtes = () => {
     if (itemId && allArtes.length > 0) {
       const item = allArtes.find(a => a.id === itemId);
       if (item) {
-        const packSlug = item.pack?.toLowerCase().replace(/\s+/g, '-') || '';
-        const hasAccess = hasAccessToPack(packSlug) || !item.isPremium;
-        
-        if (item.isPremium && !hasAccess) {
-          setPremiumModalItem(item);
-          setShowPremiumModal(true);
-        } else {
-          setSelectedArte(item);
-        }
+        // Always open detail modal - access control handled inside modal
+        setSelectedArte(item);
       }
     }
-  }, [searchParams, allArtes, userPacks]);
+  }, [searchParams, allArtes]);
 
   useEffect(() => {
     setShuffledVerTudo(shuffleArray(allArtes));
@@ -323,17 +316,8 @@ const BibliotecaArtes = () => {
 
   const handleItemClick = (item: ArteItem) => {
     setSearchParams({ item: String(item.id) });
-    
-    // Check if user has access to this pack
-    const packSlug = item.pack?.toLowerCase().replace(/\s+/g, '-') || '';
-    const hasAccess = hasAccessToPack(packSlug) || !item.isPremium;
-    
-    if (item.isPremium && !hasAccess) {
-      setPremiumModalItem(item);
-      setShowPremiumModal(true);
-    } else {
-      setSelectedArte(item);
-    }
+    // Always open the detail modal - access control will be handled inside
+    setSelectedArte(item);
   };
 
   const handleCloseModal = () => {
@@ -759,6 +743,9 @@ const BibliotecaArtes = () => {
                     const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
                     const isAnimating = animatingClicks.has(arteId);
 
+                    const packSlug = arte.pack?.toLowerCase().replace(/\s+/g, '-') || '';
+                    const hasAccess = hasAccessToPack(packSlug) || !arte.isPremium;
+
                     return (
                       <Card 
                         key={arte.id} 
@@ -785,7 +772,7 @@ const BibliotecaArtes = () => {
                             />
                           )}
                           
-                          {arte.isPremium && !hasAccessToPack(arte.pack?.toLowerCase().replace(/\s+/g, '-') || '') && (
+                          {!hasAccess && (
                             <div className="absolute top-2 right-2">
                               <Lock className="h-5 w-5 text-white drop-shadow-lg" />
                             </div>
@@ -808,6 +795,19 @@ const BibliotecaArtes = () => {
                           <div className="mt-1">
                             {getBadgeContent(arte)}
                           </div>
+                          {!hasAccess && (
+                            <Button
+                              size="sm"
+                              className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/planos-artes?pack=${packSlug}`);
+                              }}
+                            >
+                              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                              Comprar Pack
+                            </Button>
+                          )}
                         </div>
                       </Card>
                     );
@@ -852,75 +852,101 @@ const BibliotecaArtes = () => {
       {/* Arte Detail Modal */}
       <Dialog open={!!selectedArte} onOpenChange={() => handleCloseModal()}>
         <DialogContent className="max-w-[340px] sm:max-w-[540px]">
-          {selectedArte && (
-            <div className="space-y-4">
-              <div className="w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] mx-auto">
-                {isVideoUrl(selectedArte.imageUrl) ? (
-                  <SecureVideo
-                    src={selectedArte.imageUrl}
-                    className="w-full h-full object-cover rounded-lg"
-                    isPremium={selectedArte.isPremium || false}
-                    controls
-                  />
-                ) : (
-                  <SecureImage
-                    src={selectedArte.imageUrl}
-                    alt={selectedArte.title}
-                    className="w-full h-full object-cover rounded-lg"
-                    isPremium={selectedArte.isPremium || false}
-                  />
-                )}
-              </div>
-              
-              <div className="text-center">
-                <h2 className="text-lg font-bold text-foreground">{selectedArte.title}</h2>
-                <div className="mt-2 flex flex-wrap justify-center gap-1">
-                  {getBadgeContent(selectedArte)}
-                  {selectedArte.category && (
-                    <Badge variant="secondary" className="text-xs">
-                      {selectedArte.category}
-                    </Badge>
+          {selectedArte && (() => {
+            const packSlug = selectedArte.pack?.toLowerCase().replace(/\s+/g, '-') || '';
+            const hasAccess = hasAccessToPack(packSlug) || !selectedArte.isPremium;
+            
+            return (
+              <div className="space-y-4">
+                <div className="w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] mx-auto">
+                  {isVideoUrl(selectedArte.imageUrl) ? (
+                    <SecureVideo
+                      src={selectedArte.imageUrl}
+                      className="w-full h-full object-cover rounded-lg"
+                      isPremium={selectedArte.isPremium || false}
+                      controls
+                    />
+                  ) : (
+                    <SecureImage
+                      src={selectedArte.imageUrl}
+                      alt={selectedArte.title}
+                      className="w-full h-full object-cover rounded-lg"
+                      isPremium={selectedArte.isPremium || false}
+                    />
                   )}
                 </div>
-                {selectedArte.description && (
-                  <p className="text-muted-foreground text-sm mt-2">{selectedArte.description}</p>
-                )}
-              </div>
+                
+                <div className="text-center">
+                  <h2 className="text-lg font-bold text-foreground">{selectedArte.title}</h2>
+                  <div className="mt-2 flex flex-wrap justify-center gap-1">
+                    {getBadgeContent(selectedArte)}
+                    {selectedArte.category && (
+                      <Badge variant="secondary" className="text-xs">
+                        {selectedArte.category}
+                      </Badge>
+                    )}
+                  </div>
+                  {selectedArte.description && (
+                    <p className="text-muted-foreground text-sm mt-2">{selectedArte.description}</p>
+                  )}
+                </div>
 
-              <div className="flex flex-col gap-2">
-                {selectedArte.canvaLink && (
-                  <Button 
-                    onClick={() => window.open(selectedArte.canvaLink, '_blank')} 
-                    className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Abrir no Canva
-                  </Button>
-                )}
-                {selectedArte.driveLink && (
-                  <Button 
-                    onClick={() => window.open(selectedArte.driveLink, '_blank')} 
-                    className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Baixar PSD
-                  </Button>
-                )}
-                {selectedArte.downloadUrl && (
-                  <Button onClick={() => handleDownload(selectedArte)} className="w-full" variant="outline">
-                    <Download className="h-4 w-4 mr-2" />
-                    Baixar Arquivo
-                  </Button>
-                )}
-                {!selectedArte.canvaLink && !selectedArte.driveLink && !selectedArte.downloadUrl && (
-                  <Button onClick={() => handleDownload(selectedArte)} className="w-full">
-                    <Download className="h-4 w-4 mr-2" />
-                    Baixar Imagem
-                  </Button>
+                {hasAccess ? (
+                  <div className="flex flex-col gap-2">
+                    {selectedArte.canvaLink && (
+                      <Button 
+                        onClick={() => window.open(selectedArte.canvaLink, '_blank')} 
+                        className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Abrir no Canva
+                      </Button>
+                    )}
+                    {selectedArte.driveLink && (
+                      <Button 
+                        onClick={() => window.open(selectedArte.driveLink, '_blank')} 
+                        className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Baixar PSD
+                      </Button>
+                    )}
+                    {selectedArte.downloadUrl && (
+                      <Button onClick={() => handleDownload(selectedArte)} className="w-full" variant="outline">
+                        <Download className="h-4 w-4 mr-2" />
+                        Baixar Arquivo
+                      </Button>
+                    )}
+                    {!selectedArte.canvaLink && !selectedArte.driveLink && !selectedArte.downloadUrl && (
+                      <Button onClick={() => handleDownload(selectedArte)} className="w-full">
+                        <Download className="h-4 w-4 mr-2" />
+                        Baixar Imagem
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-center text-muted-foreground text-sm">
+                      Adquira o pack "{selectedArte.pack}" para ter acesso completo a esta arte.
+                    </p>
+                    {!user && (
+                      <Button onClick={() => navigate('/login-artes')} variant="outline" className="w-full">
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Fazer Login
+                      </Button>
+                    )}
+                    <Button 
+                      onClick={() => navigate(`/planos-artes?pack=${packSlug}`)}
+                      className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white"
+                    >
+                      <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                      Comprar Pack
+                    </Button>
+                  </div>
                 )}
               </div>
-            </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
