@@ -95,6 +95,9 @@ export const usePremiumArtesStatus = () => {
   // Legacy compatibility: isPremium = has at least one pack
   const isPremium = userPacks.length > 0;
 
+  // Any user with at least 1 active pack has access to all bonus and updates
+  const hasAccessToBonusAndUpdates = userPacks.length > 0;
+
   // Legacy compatibility: planType based on bonus access
   const planType = hasBonusAccess ? 'bonus_access' : (isPremium ? 'pack_only' : null);
 
@@ -112,7 +115,8 @@ export const usePremiumArtesStatus = () => {
     isPremium, // Has at least one pack
     planType,
     userPacks, // List of all packs user has access to
-    hasBonusAccess, // Has access to bonus content
+    hasBonusAccess, // Has access to bonus content (legacy)
+    hasAccessToBonusAndUpdates, // Has at least 1 active pack = access to all bonus/updates
     hasAccessToPack, // Function to check specific pack access
     getPackAccessInfo, // Function to get pack details
     isLoading, 

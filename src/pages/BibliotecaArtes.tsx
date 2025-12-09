@@ -745,7 +745,10 @@ const BibliotecaArtes = () => {
                     const isAnimating = animatingClicks.has(arteId);
 
                     const packSlug = toPackSlug(arte.pack);
-                    const hasAccess = hasAccessToPack(packSlug) || !arte.isPremium;
+                    // For bonus/updates: any active pack grants access
+                    // For regular packs: need specific pack access
+                    const isBonusOrUpdatesSection = activeSection === 'bonus' || activeSection === 'updates';
+                    const hasAccess = !arte.isPremium || (isBonusOrUpdatesSection ? isPremium : hasAccessToPack(packSlug));
 
                     return (
                       <Card 
@@ -855,7 +858,12 @@ const BibliotecaArtes = () => {
         <DialogContent className="max-w-[340px] sm:max-w-[540px]">
           {selectedArte && (() => {
             const packSlug = toPackSlug(selectedArte.pack);
-            const hasAccess = hasAccessToPack(packSlug) || !selectedArte.isPremium;
+            // Check if arte belongs to bonus or updates pack type
+            const selectedPackInfo = dbPacks.find(p => p.name === selectedArte.pack);
+            const isBonusOrUpdatesType = selectedPackInfo?.type === 'bonus' || selectedPackInfo?.type === 'updates';
+            // For bonus/updates: any active pack grants access
+            // For regular packs: need specific pack access
+            const hasAccess = !selectedArte.isPremium || (isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug));
             
             return (
               <div className="space-y-4">
@@ -976,11 +984,19 @@ const BibliotecaArtes = () => {
               
               <div>
                 <h2 className="text-xl font-bold text-foreground">{premiumModalItem.title}</h2>
-                <p className="text-muted-foreground mt-2">
-                  {premiumModalItem.pack 
-                    ? `Esta arte faz parte do pack "${premiumModalItem.pack}". Adquira o pack para ter acesso completo.`
-                    : "Esta arte é exclusiva. Adquira um pack para ter acesso."}
-                </p>
+                {(() => {
+                  const packInfo = dbPacks.find(p => p.name === premiumModalItem.pack);
+                  const isBonusOrUpdates = packInfo?.type === 'bonus' || packInfo?.type === 'updates';
+                  return (
+                    <p className="text-muted-foreground mt-2">
+                      {isBonusOrUpdates 
+                        ? "Este conteúdo é exclusivo para membros. Adquira qualquer pack para ter acesso a todos os bônus e atualizações."
+                        : premiumModalItem.pack 
+                          ? `Esta arte faz parte do pack "${premiumModalItem.pack}". Adquira o pack para ter acesso completo.`
+                          : "Esta arte é exclusiva. Adquira um pack para ter acesso."}
+                    </p>
+                  );
+                })()}
               </div>
 
               <div className="flex flex-col gap-2">
