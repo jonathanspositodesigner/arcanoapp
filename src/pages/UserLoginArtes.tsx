@@ -15,7 +15,7 @@ const UserLoginArtes = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Check if user is already logged in and premium
+  // Check if user is already logged in and premium - go directly to biblioteca
   useEffect(() => {
     const checkExistingSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -23,18 +23,9 @@ const UserLoginArtes = () => {
         // Check if premium artes
         const { data: isPremium } = await supabase.rpc('is_premium_artes');
         if (isPremium) {
-          // Check if password was changed
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('password_changed')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          
-          if (profile && !profile.password_changed) {
-            navigate("/change-password-artes");
-          } else {
-            navigate("/biblioteca-artes");
-          }
+          // Se já está logado e é premium, vai direto para biblioteca
+          // A verificação de password_changed só ocorre no handleLogin
+          navigate("/biblioteca-artes");
         }
       }
     };
