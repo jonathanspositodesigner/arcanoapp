@@ -21,19 +21,19 @@ interface ParsedClient {
   }[];
 }
 
-// Product mapping based on the confirmed plan
+// Product mapping based on the confirmed plan - using correct database slugs
 const PRODUCT_MAPPING: Record<string, { packs: string[]; access_type: "6_meses" | "1_ano" | "vitalicio"; has_bonus: boolean }> = {
-  "Pack Arcano I - Baú Arcano": { packs: ["arcano-vol1"], access_type: "1_ano", has_bonus: true },
-  "Pack Arcano I - Bag Iniciante": { packs: ["arcano-vol1"], access_type: "6_meses", has_bonus: false },
-  "Garanta Acesso Vitalício as artes!": { packs: ["arcano-vol1"], access_type: "vitalicio", has_bonus: true },
-  "Pack Arcano II - Pacote Completo": { packs: ["arcano-vol2"], access_type: "1_ano", has_bonus: true },
-  "Pack Arcano II - Garanta Acesso Vitalício as artes!": { packs: ["arcano-vol2"], access_type: "vitalicio", has_bonus: true },
-  "Pack Agendas Arcanas - Completo": { packs: ["agendas"], access_type: "1_ano", has_bonus: true },
-  "Pack Agendas Arcanas - Básico": { packs: ["agendas"], access_type: "6_meses", has_bonus: false },
-  "Pack Agendas - Garanta Acesso Vitalício as artes!": { packs: ["agendas"], access_type: "vitalicio", has_bonus: true },
-  "Carnaval Arcano 1 - Pack Especial de Carnaval - Básico": { packs: ["carnaval"], access_type: "6_meses", has_bonus: false },
-  "Carnaval Arcano 1 - Pack Especial de Carnaval": { packs: ["carnaval"], access_type: "1_ano", has_bonus: true },
-  "Combo: 3 Packs pelo preço de 1": { packs: ["arcano-vol1", "arcano-vol2", "agendas"], access_type: "1_ano", has_bonus: true },
+  "Pack Arcano I - Baú Arcano": { packs: ["pack-arcano-vol-1"], access_type: "1_ano", has_bonus: true },
+  "Pack Arcano I - Bag Iniciante": { packs: ["pack-arcano-vol-1"], access_type: "6_meses", has_bonus: false },
+  "Garanta Acesso Vitalício as artes!": { packs: ["pack-arcano-vol-1"], access_type: "vitalicio", has_bonus: true },
+  "Pack Arcano II - Pacote Completo": { packs: ["pack-arcano-vol-2"], access_type: "1_ano", has_bonus: true },
+  "Pack Arcano II - Garanta Acesso Vitalício as artes!": { packs: ["pack-arcano-vol-2"], access_type: "vitalicio", has_bonus: true },
+  "Pack Agendas Arcanas - Completo": { packs: ["pack-agendas"], access_type: "1_ano", has_bonus: true },
+  "Pack Agendas Arcanas - Básico": { packs: ["pack-agendas"], access_type: "6_meses", has_bonus: false },
+  "Pack Agendas - Garanta Acesso Vitalício as artes!": { packs: ["pack-agendas"], access_type: "vitalicio", has_bonus: true },
+  "Carnaval Arcano 1 - Pack Especial de Carnaval - Básico": { packs: ["pack-de-carnaval"], access_type: "6_meses", has_bonus: false },
+  "Carnaval Arcano 1 - Pack Especial de Carnaval": { packs: ["pack-de-carnaval"], access_type: "1_ano", has_bonus: true },
+  "Combo: 3 Packs pelo preço de 1": { packs: ["pack-arcano-vol-1", "pack-arcano-vol-2", "pack-agendas"], access_type: "1_ano", has_bonus: true },
   "Pack + 19 Videos Animados para Evento After Effects": { packs: ["bonus-19-videos-animados"], access_type: "1_ano", has_bonus: true },
   "Curso de Como Fazer Artes Animadas no Photoshop": { packs: ["curso-artes-animadas-photoshop"], access_type: "1_ano", has_bonus: false },
   "MODULOS BOAS VINDAS": { packs: ["curso-boas-vindas"], access_type: "vitalicio", has_bonus: false },
@@ -149,20 +149,20 @@ const AdminImportClients = () => {
     const data = parseCSV(text);
     setRawData(data);
 
-    // Process the data
+    // Process the data - using Portuguese column names from CSV
     const totalSales = data.length;
-    const paidSales = data.filter((row) => row.status === "paid");
+    const paidSales = data.filter((row) => row["Status da venda"] === "paid" || row.status === "paid");
     
     let ignoredCount = 0;
     let mappedCount = 0;
     const clientsMap = new Map<string, ParsedClient>();
 
     for (const row of paidSales) {
-      const productName = row.product_name || row.product || "";
-      const email = (row.customer_email || row.email || "").toLowerCase().trim();
-      const name = row.customer_name || row.name || "";
-      const phone = row.customer_phone || row.phone || "";
-      const purchaseDate = row.created_at || row.date || new Date().toISOString();
+      const productName = row["Nome do produto"] || row.product_name || row.product || "";
+      const email = (row["Email do cliente"] || row.customer_email || row.email || "").toLowerCase().trim();
+      const name = row["Nome do cliente"] || row.customer_name || row.name || "";
+      const phone = row["Telefone"] || row.customer_phone || row.phone || "";
+      const purchaseDate = row["Data"] || row.created_at || row.date || new Date().toISOString();
 
       // Check if product should be ignored
       if (IGNORED_PRODUCTS.some((p) => productName.includes(p))) {
