@@ -291,9 +291,6 @@ const AdminDashboard = () => {
               </Card>
 
             </div>
-
-            {/* Analytics Dashboard */}
-            <AdminAnalyticsDashboard />
           </TabsContent>
 
           {/* Artes Arcanas Tab Content */}
@@ -460,6 +457,9 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Analytics Dashboard - Outside tabs */}
+        <AdminAnalyticsDashboard />
       </div>
     </div>;
 };
