@@ -611,6 +611,11 @@ const BibliotecaArtes = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getCurrentItems().map(pack => {
                   const arteCount = getPackArteCount(pack.name);
+                  const packSlug = toPackSlug(pack.name);
+                  // For bonus/updates: any active pack = access. For regular packs: need specific pack
+                  const isBonusOrUpdatesType = pack.type === 'bonus' || pack.type === 'updates';
+                  const hasPackAccess = isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug);
+                  
                   return (
                     <Card 
                       key={pack.id}
@@ -637,6 +642,16 @@ const BibliotecaArtes = () => {
                             )}
                           </div>
                         )}
+                        
+                        {/* Access Tag */}
+                        {hasPackAccess && (
+                          <div className="absolute top-2 right-2 z-10">
+                            <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                              DISPONÍVEL
+                            </Badge>
+                          </div>
+                        )}
+                        
                         {/* Overlay with pack info */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
                           <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
@@ -661,33 +676,49 @@ const BibliotecaArtes = () => {
             {/* Cursos View */}
             {activeSection === 'cursos' && !selectedPack && (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                {getPacksByType('curso').map(curso => (
-                  <Card 
-                    key={curso.id}
-                    className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
-                    onClick={() => handleCursoClick(curso)}
-                  >
-                    <div className="aspect-[3/4] relative overflow-hidden">
-                      {curso.cover_url ? (
-                        <img 
-                          src={curso.cover_url} 
-                          alt={curso.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
-                          <GraduationCap className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+                {getPacksByType('curso').map(curso => {
+                  const cursoSlug = toPackSlug(curso.name);
+                  // For cursos: any active pack grants access (same as bonus)
+                  const hasCursoAccess = isPremium;
+                  
+                  return (
+                    <Card 
+                      key={curso.id}
+                      className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
+                      onClick={() => handleCursoClick(curso)}
+                    >
+                      <div className="aspect-[3/4] relative overflow-hidden">
+                        {curso.cover_url ? (
+                          <img 
+                            src={curso.cover_url} 
+                            alt={curso.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
+                            <GraduationCap className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+                          </div>
+                        )}
+                        
+                        {/* Access Tag */}
+                        {hasCursoAccess && (
+                          <div className="absolute top-2 right-2 z-10">
+                            <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                              DISPONÍVEL
+                            </Badge>
+                          </div>
+                        )}
+                        
+                        {/* Overlay with curso info */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
+                          <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+                            {curso.name}
+                          </h3>
                         </div>
-                      )}
-                      {/* Overlay with curso info */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
-                        <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
-                          {curso.name}
-                        </h3>
                       </div>
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
                 {getPacksByType('curso').length === 0 && (
                   <div className="col-span-full text-center py-12">
                     <p className="text-muted-foreground">Nenhum curso disponível</p>
