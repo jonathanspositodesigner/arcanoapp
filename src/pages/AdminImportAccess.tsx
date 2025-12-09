@@ -322,6 +322,7 @@ const AdminImportAccess = () => {
                   purchased_at: new Date().toISOString(),
                   expires_at: null,
                   is_active: true,
+                  import_source: "xlsx_acessos",
                 });
             }
           }
