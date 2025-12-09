@@ -27,12 +27,24 @@ const validateFile = (file: File): string | null => {
   return null;
 };
 
+const PACK_OPTIONS = [
+  "Pack Arcano Vol.1",
+  "Pack Arcano Vol.2",
+  "Pack Arcano Vol.3",
+  "Pack de Agendas",
+  "Pack de Halloween",
+  "Pack de Fim de Ano",
+  "Pack de Carnaval",
+  "Atualização Grátis"
+];
+
 interface MediaData {
   file: File;
   preview: string;
   title: string;
   description: string;
   category: string;
+  pack: string;
   isVideo: boolean;
   isPremium: boolean;
   hasTutorial: boolean;
@@ -108,6 +120,7 @@ const AdminUploadArtes = () => {
           title: "",
           description: "",
           category: "",
+          pack: "",
           isVideo,
           isPremium: false,
           hasTutorial: false,
@@ -158,7 +171,7 @@ const AdminUploadArtes = () => {
       setCurrentIndex(currentIndex - 1);
     }
   };
-  const allFieldsFilled = mediaFiles.every(media => media.title && media.category && media.canvaLink && media.driveLink);
+  const allFieldsFilled = mediaFiles.every(media => media.title && media.category && media.pack && media.canvaLink && media.driveLink);
   const handleSubmitAll = async () => {
     for (const media of mediaFiles) {
       if (!media.title.trim()) {
@@ -167,6 +180,10 @@ const AdminUploadArtes = () => {
       }
       if (!media.category) {
         toast.error(`Categoria é obrigatória para "${media.title}"`);
+        return;
+      }
+      if (!media.pack) {
+        toast.error(`Pack é obrigatório para "${media.title}"`);
         return;
       }
       if (!media.canvaLink.trim()) {
@@ -218,6 +235,7 @@ const AdminUploadArtes = () => {
           title: media.title.charAt(0).toUpperCase() + media.title.slice(1).toLowerCase(),
           description: media.description || null,
           category: media.category,
+          pack: media.pack,
           image_url: publicUrl,
           download_url: downloadUrl,
           is_premium: media.isPremium,
@@ -342,6 +360,20 @@ const AdminUploadArtes = () => {
                       <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                     ))}
                     <SelectItem value="__new__" className="text-primary font-medium">+ Adicionar nova categoria</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="pack">Pack <span className="text-destructive">*</span></Label>
+                <Select value={currentMedia.pack} onValueChange={value => updateMediaData('pack', value)}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Selecione o pack" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    {PACK_OPTIONS.map(pack => (
+                      <SelectItem key={pack} value={pack}>{pack}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

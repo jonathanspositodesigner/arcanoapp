@@ -28,6 +28,17 @@ const formatTitle = (title: string): string => {
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/webm", "video/quicktime"];
 
+const PACK_OPTIONS = [
+  "Pack Arcano Vol.1",
+  "Pack Arcano Vol.2",
+  "Pack Arcano Vol.3",
+  "Pack de Agendas",
+  "Pack de Halloween",
+  "Pack de Fim de Ano",
+  "Pack de Carnaval",
+  "Atualização Grátis"
+];
+
 type ArteType = 'admin' | 'partner';
 
 interface Arte {
@@ -35,6 +46,7 @@ interface Arte {
   title: string;
   description?: string;
   category: string;
+  pack?: string;
   image_url: string;
   download_url?: string;
   type: ArteType;
@@ -57,6 +69,7 @@ const AdminManageArtes = () => {
   const [editDescription, setEditDescription] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [editIsPremium, setEditIsPremium] = useState(false);
+  const [editPack, setEditPack] = useState("");
   const [editHasTutorial, setEditHasTutorial] = useState(false);
   const [editTutorialUrl, setEditTutorialUrl] = useState("");
   const [editBonusClicks, setEditBonusClicks] = useState(0);
@@ -160,6 +173,7 @@ const AdminManageArtes = () => {
     setEditTitle(arte.title);
     setEditDescription(arte.description || "");
     setEditCategory(arte.category);
+    setEditPack(arte.pack || "");
     setEditIsPremium(arte.is_premium || false);
     setEditHasTutorial(!!arte.tutorial_url);
     setEditTutorialUrl(arte.tutorial_url || "");
@@ -235,6 +249,7 @@ const AdminManageArtes = () => {
         title: formatTitle(editTitle),
         description: editDescription || null,
         category: editCategory,
+        pack: editPack || null,
         image_url: newImageUrl,
         bonus_clicks: editBonusClicks,
         canva_link: editCanvaLink || null,
@@ -467,6 +482,18 @@ const AdminManageArtes = () => {
                       <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                     ))}
                     <SelectItem value="__new__" className="text-primary font-medium">+ Adicionar nova categoria</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Pack</Label>
+                <Select value={editPack} onValueChange={setEditPack}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione o pack" /></SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    {PACK_OPTIONS.map(pack => (
+                      <SelectItem key={pack} value={pack}>{pack}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

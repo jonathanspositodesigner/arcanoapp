@@ -19,6 +19,7 @@ interface ArteItem {
   imageUrl: string;
   downloadUrl?: string;
   category?: string;
+  pack?: string;
   isExclusive?: boolean;
   isPremium?: boolean;
   tutorialUrl?: string;
@@ -134,6 +135,7 @@ const BibliotecaArtes = () => {
       imageUrl: item.image_url,
       downloadUrl: item.download_url,
       category: item.category,
+      pack: (item as any).pack || null,
       isExclusive: true,
       isPremium: (item as any).is_premium || false,
       tutorialUrl: item.tutorial_url || null,
@@ -152,6 +154,7 @@ const BibliotecaArtes = () => {
       imageUrl: item.image_url,
       downloadUrl: item.download_url,
       category: item.category,
+      pack: (item as any).pack || null,
       isExclusive: true,
       isPremium: (item as any).is_premium ?? true,
       tutorialUrl: item.tutorial_url || null,
@@ -319,9 +322,11 @@ const BibliotecaArtes = () => {
             Grátis
           </Badge>
         )}
-        <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs">
-          Arte Exclusiva
-        </Badge>
+        {item.pack && (
+          <Badge className="bg-primary/80 text-white border-0 text-[10px] sm:text-xs">
+            {item.pack}
+          </Badge>
+        )}
       </div>
     );
   };
