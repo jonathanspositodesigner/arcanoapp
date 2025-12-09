@@ -835,7 +835,19 @@ const BibliotecaArtes = () => {
                           <div className="mt-1">
                             {getBadgeContent(arte)}
                           </div>
-                          {!hasAccess && (
+                          {hasAccess ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full mt-2 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleItemClick(arte);
+                              }}
+                            >
+                              Ver detalhes
+                            </Button>
+                          ) : (
                             <Button
                               size="sm"
                               className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs"
@@ -989,7 +1001,19 @@ const BibliotecaArtes = () => {
                           <div className="mt-1">
                             {getBadgeContent(arte)}
                           </div>
-                          {!hasAccess && (
+                          {hasAccess ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full mt-2 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleItemClick(arte);
+                              }}
+                            >
+                              Ver detalhes
+                            </Button>
+                          ) : (
                             <Button
                               size="sm"
                               className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs"
