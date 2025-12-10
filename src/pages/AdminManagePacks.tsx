@@ -350,8 +350,8 @@ const AdminManagePacks = () => {
         updateData.download_url = downloadUrl || null;
       }
       
-      // Only save tutorial_lessons for tutorial type
-      if (formData.type === 'tutorial') {
+      // Save tutorial_lessons for tutorial and ferramentas_ia types
+      if (formData.type === 'tutorial' || formData.type === 'ferramentas_ia' || formData.type === 'ferramenta') {
         updateData.tutorial_lessons = tutorialLessons.length > 0 ? tutorialLessons : [];
       }
       
@@ -1010,8 +1010,8 @@ const AdminManagePacks = () => {
                   </div>
                 )}
                 
-                {/* Tutorial Lessons Editor - Only for tutorial type */}
-                {editingPack?.type === 'tutorial' && (
+                {/* Tutorial Lessons Editor - For tutorial and ferramentas_ia types */}
+                {(editingPack?.type === 'tutorial' || editingPack?.type === 'ferramentas_ia' || editingPack?.type === 'ferramenta') && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <Label className="font-semibold flex items-center gap-2">

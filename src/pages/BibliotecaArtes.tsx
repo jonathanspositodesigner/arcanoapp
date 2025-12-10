@@ -681,6 +681,15 @@ const BibliotecaArtes = () => {
               };
               
               return <Card key={pack.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => {
+                // For ferramentas_ia type: navigate to video lessons page
+                if (isToolType) {
+                  if (isPremium) {
+                    navigate(`/ferramenta-ia-artes/${pack.slug}`);
+                  } else {
+                    navigate('/planos-artes');
+                  }
+                  return;
+                }
                 // For bonus type: don't navigate to pack view, handle action directly
                 if (isBonusType) {
                   if (isPremium && pack.download_url) {
@@ -769,6 +778,11 @@ const BibliotecaArtes = () => {
                                 </div>
                               )}
                             </Button>
+                          ) : isToolType ? (
+                            <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
+                              <Play className="h-3 w-3 mr-1" />
+                              Vídeo Aulas
+                            </Badge>
                           ) : (
                             <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
                               {arteCount} {arteCount === 1 ? 'arte' : 'artes'}
