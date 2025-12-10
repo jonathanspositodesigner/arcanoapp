@@ -28,6 +28,7 @@ interface PackPurchase {
   purchased_at: string;
   expires_at: string | null;
   greenn_contract_id: string | null;
+  product_name: string | null;
   user_email?: string;
   user_name?: string;
   user_phone?: string;
@@ -46,6 +47,7 @@ interface PackAccess {
   id?: string; // for existing purchases
   purchased_at?: string; // purchase date for expiration calculation
   expires_at?: string | null; // calculated expiration date
+  product_name?: string | null; // original product name from Greenn
 }
 
 interface ClientFormData {
@@ -534,7 +536,8 @@ const AdminPackPurchases = () => {
         is_active: p.is_active,
         id: p.id,
         purchased_at: p.purchased_at,
-        expires_at: p.expires_at
+        expires_at: p.expires_at,
+        product_name: p.product_name
       }))
     });
     setShowAddDialog(true);
@@ -1016,10 +1019,16 @@ const AdminPackPurchases = () => {
                           {/* Expiration info for existing purchases */}
                           {access.id && access.purchased_at && (
                             <div className="space-y-2">
+                              {/* Product name if available */}
+                              {access.product_name && (
+                                <div className="text-xs text-muted-foreground bg-blue-500/10 border border-blue-500/20 rounded-lg px-2 py-1">
+                                  <span className="font-medium text-blue-600">Produto:</span> {access.product_name}
+                                </div>
+                              )}
                               <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
                                 <div className="flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
-                                  <span>Compra: {format(new Date(access.purchased_at), "dd/MM/yyyy", { locale: ptBR })}</span>
+                                  <span>Compra: {format(new Date(access.purchased_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   {access.access_type === 'vitalicio' ? (

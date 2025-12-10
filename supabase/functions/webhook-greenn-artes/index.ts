@@ -352,6 +352,7 @@ Deno.serve(async (req) => {
               has_bonus_access: hasBonusAccess || existingPurchase.has_bonus_access,
               expires_at: newExpiresAt ? newExpiresAt.toISOString() : null,
               greenn_contract_id: contractId,
+              product_name: productName || offerName,
               updated_at: new Date().toISOString()
             })
             .eq('id', existingPurchase.id)
@@ -376,7 +377,8 @@ Deno.serve(async (req) => {
             access_type: accessType,
             has_bonus_access: hasBonusAccess,
             expires_at: expiresAt ? expiresAt.toISOString() : null,
-            greenn_contract_id: contractId
+            greenn_contract_id: contractId,
+            product_name: productName || offerName
           })
 
         if (insertError) {

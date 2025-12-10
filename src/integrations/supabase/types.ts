@@ -1137,6 +1137,7 @@ export type Database = {
           import_source: string | null
           is_active: boolean
           pack_slug: string
+          product_name: string | null
           purchased_at: string
           updated_at: string
           user_id: string
@@ -1151,6 +1152,7 @@ export type Database = {
           import_source?: string | null
           is_active?: boolean
           pack_slug: string
+          product_name?: string | null
           purchased_at?: string
           updated_at?: string
           user_id: string
@@ -1165,6 +1167,7 @@ export type Database = {
           import_source?: string | null
           is_active?: boolean
           pack_slug?: string
+          product_name?: string | null
           purchased_at?: string
           updated_at?: string
           user_id?: string
