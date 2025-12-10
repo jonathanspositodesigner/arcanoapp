@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff, Copy, Webhook, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -20,9 +20,22 @@ interface Pack {
   display_order: number;
   type: 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
   is_visible: boolean;
+  greenn_product_id_6_meses?: number | null;
+  greenn_product_id_1_ano?: number | null;
+  greenn_product_id_order_bump?: number | null;
+  greenn_product_id_vitalicio?: number | null;
 }
 
 type ItemType = 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
+
+interface WebhookFormData {
+  greenn_product_id_6_meses: string;
+  greenn_product_id_1_ano: string;
+  greenn_product_id_order_bump: string;
+  greenn_product_id_vitalicio: string;
+}
+
+const WEBHOOK_URL = "https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-greenn-artes";
 
 const AdminManagePacks = () => {
   const navigate = useNavigate();
@@ -39,6 +52,13 @@ const AdminManagePacks = () => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<ItemType>('pack');
   const [activeTab, setActiveTab] = useState<ItemType>('pack');
+  const [editTab, setEditTab] = useState<'info' | 'webhook'>('info');
+  const [webhookFormData, setWebhookFormData] = useState<WebhookFormData>({
+    greenn_product_id_6_meses: '',
+    greenn_product_id_1_ano: '',
+    greenn_product_id_order_bump: '',
+    greenn_product_id_vitalicio: ''
+  });
 
   useEffect(() => {
     checkAdmin();
@@ -334,6 +354,44 @@ const AdminManagePacks = () => {
     setFormData({ name: pack.name, slug: pack.slug, type: pack.type });
     setCoverPreview(pack.cover_url);
     setCoverFile(null);
+    setEditTab('info');
+    setWebhookFormData({
+      greenn_product_id_6_meses: pack.greenn_product_id_6_meses?.toString() || '',
+      greenn_product_id_1_ano: pack.greenn_product_id_1_ano?.toString() || '',
+      greenn_product_id_order_bump: pack.greenn_product_id_order_bump?.toString() || '',
+      greenn_product_id_vitalicio: pack.greenn_product_id_vitalicio?.toString() || ''
+    });
+  };
+
+  const handleCopyWebhook = () => {
+    navigator.clipboard.writeText(WEBHOOK_URL);
+    toast.success("URL do webhook copiada!");
+  };
+
+  const handleSaveWebhookConfig = async () => {
+    if (!editingPack) return;
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("artes_packs")
+        .update({
+          greenn_product_id_6_meses: webhookFormData.greenn_product_id_6_meses ? parseInt(webhookFormData.greenn_product_id_6_meses) : null,
+          greenn_product_id_1_ano: webhookFormData.greenn_product_id_1_ano ? parseInt(webhookFormData.greenn_product_id_1_ano) : null,
+          greenn_product_id_order_bump: webhookFormData.greenn_product_id_order_bump ? parseInt(webhookFormData.greenn_product_id_order_bump) : null,
+          greenn_product_id_vitalicio: webhookFormData.greenn_product_id_vitalicio ? parseInt(webhookFormData.greenn_product_id_vitalicio) : null
+        })
+        .eq("id", editingPack.id);
+
+      if (error) throw error;
+
+      toast.success("Configuração de webhook salva!");
+      fetchPacks();
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao salvar configuração");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const getTypeIcon = (type: ItemType) => {
@@ -631,107 +689,200 @@ const AdminManagePacks = () => {
 
         {/* Edit Dialog */}
         <Dialog open={!!editingPack} onOpenChange={(open) => { if (!open) { setEditingPack(null); resetForm(); } }}>
-          <DialogContent>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 {editingPack && getTypeIcon(editingPack.type)}
                 Editar {editingPack && getTypeLabel(editingPack.type)}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div>
-                <Label>Nome</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="Nome do item"
-                />
-              </div>
-              <div>
-                <Label>Categoria</Label>
-                <Select value={formData.type} onValueChange={(value: ItemType) => setFormData({ ...formData, type: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pack">
-                      <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4" />
-                        Pack
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="bonus">
-                      <div className="flex items-center gap-2">
-                        <Gift className="w-4 h-4" />
-                        Bônus
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="curso">
-                      <div className="flex items-center gap-2">
-                        <GraduationCap className="w-4 h-4" />
-                        Curso
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="tutorial">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4" />
-                        Tutorial
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="ferramentas_ia">
-                      <div className="flex items-center gap-2">
-                        <Cpu className="w-4 h-4" />
-                        Ferramentas de IA
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Slug (URL)</Label>
-                <Input
-                  value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  placeholder="slug-do-item"
-                />
-              </div>
-              <div>
-                <Label>Imagem de Capa</Label>
-                <div className="mt-2">
-                  {coverPreview ? (
-                    <div className="relative">
-                      <img
-                        src={coverPreview}
-                        alt="Preview"
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-2 right-2"
-                        onClick={() => { setCoverFile(null); setCoverPreview(null); }}
-                      >
-                        Remover
-                      </Button>
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                      <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                      <span className="text-sm text-muted-foreground">Clique para enviar</span>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleCoverChange}
-                      />
-                    </label>
-                  )}
+            
+            <Tabs value={editTab} onValueChange={(v) => setEditTab(v as 'info' | 'webhook')} className="w-full mt-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="info" className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  Informações
+                </TabsTrigger>
+                <TabsTrigger value="webhook" className="flex items-center gap-2">
+                  <Webhook className="w-4 h-4" />
+                  Webhook
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="info" className="space-y-4 mt-4">
+                <div>
+                  <Label>Nome</Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    placeholder="Nome do item"
+                  />
                 </div>
-              </div>
-              <Button onClick={handleEdit} disabled={saving} className="w-full">
-                {saving ? "Salvando..." : "Salvar Alterações"}
-              </Button>
-            </div>
+                <div>
+                  <Label>Categoria</Label>
+                  <Select value={formData.type} onValueChange={(value: ItemType) => setFormData({ ...formData, type: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pack">
+                        <div className="flex items-center gap-2">
+                          <Package className="w-4 h-4" />
+                          Pack
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="bonus">
+                        <div className="flex items-center gap-2">
+                          <Gift className="w-4 h-4" />
+                          Bônus
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="curso">
+                        <div className="flex items-center gap-2">
+                          <GraduationCap className="w-4 h-4" />
+                          Curso
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="tutorial">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4" />
+                          Tutorial
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="ferramentas_ia">
+                        <div className="flex items-center gap-2">
+                          <Cpu className="w-4 h-4" />
+                          Ferramentas de IA
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Slug (URL)</Label>
+                  <Input
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    placeholder="slug-do-item"
+                  />
+                </div>
+                <div>
+                  <Label>Imagem de Capa</Label>
+                  <div className="mt-2">
+                    {coverPreview ? (
+                      <div className="relative">
+                        <img
+                          src={coverPreview}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onClick={() => { setCoverFile(null); setCoverPreview(null); }}
+                        >
+                          Remover
+                        </Button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+                        <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                        <span className="text-sm text-muted-foreground">Clique para enviar</span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleCoverChange}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+                <Button onClick={handleEdit} disabled={saving} className="w-full">
+                  {saving ? "Salvando..." : "Salvar Alterações"}
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="webhook" className="space-y-4 mt-4">
+                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Webhook className="w-5 h-5 text-primary" />
+                    <Label className="font-semibold">URL do Webhook</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Cole esta URL no seu produto da Greenn para receber as vendas automaticamente.
+                  </p>
+                  <div className="flex gap-2">
+                    <Input 
+                      value={WEBHOOK_URL} 
+                      readOnly 
+                      className="text-xs bg-background"
+                    />
+                    <Button variant="outline" size="icon" onClick={handleCopyWebhook}>
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <Label className="font-semibold mb-3 block">IDs dos Produtos Greenn</Label>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Cole o ID de cada produto/oferta da Greenn no campo correspondente ao tipo de acesso.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm">ID Produto 6 Meses</Label>
+                      <Input
+                        type="number"
+                        value={webhookFormData.greenn_product_id_6_meses}
+                        onChange={(e) => setWebhookFormData(prev => ({ ...prev, greenn_product_id_6_meses: e.target.value }))}
+                        placeholder="Ex: 89608"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Acesso 6 meses (sem bônus)</p>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm">ID Produto 1 Ano</Label>
+                      <Input
+                        type="number"
+                        value={webhookFormData.greenn_product_id_1_ano}
+                        onChange={(e) => setWebhookFormData(prev => ({ ...prev, greenn_product_id_1_ano: e.target.value }))}
+                        placeholder="Ex: 89595"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Acesso 1 ano (com bônus)</p>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm">ID Order Bump Vitalício</Label>
+                      <Input
+                        type="number"
+                        value={webhookFormData.greenn_product_id_order_bump}
+                        onChange={(e) => setWebhookFormData(prev => ({ ...prev, greenn_product_id_order_bump: e.target.value }))}
+                        placeholder="Ex: 92417"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Order bump para upgrade vitalício (com bônus)</p>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm">ID Vitalício Standalone</Label>
+                      <Input
+                        type="number"
+                        value={webhookFormData.greenn_product_id_vitalicio}
+                        onChange={(e) => setWebhookFormData(prev => ({ ...prev, greenn_product_id_vitalicio: e.target.value }))}
+                        placeholder="Ex: 149334"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Produto vitalício avulso (com bônus)</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button onClick={handleSaveWebhookConfig} disabled={saving} className="w-full">
+                  {saving ? "Salvando..." : "Salvar Configuração Webhook"}
+                </Button>
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
       </div>

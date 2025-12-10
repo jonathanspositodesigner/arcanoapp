@@ -12,18 +12,9 @@ interface ProductMapping {
   hasBonusAccess: boolean
 }
 
-// Mapeamento de Product ID para pack e tipo de acesso
-// Pack Arcano Vol.1:
-// - 89608: 6 meses (sem bônus)
-// - 89595: 1 ano (com bônus)
-// - 92417: Vitalício order bump (com bônus)
-// - 149334: Vitalício standalone (com bônus)
-// Pack Arcano Vol.2:
-// - 115168: 6 meses (sem bônus)
-// - 115163: 1 ano (com bônus)
-// - 115171: Vitalício order bump (com bônus)
-// - 149342: Vitalício standalone (com bônus)
-const PRODUCT_ID_MAPPING: Record<number, ProductMapping> = {
+// Mapeamento LEGADO de Product ID para pack e tipo de acesso
+// Novos mapeamentos devem ser feitos via interface admin em artes_packs
+const LEGACY_PRODUCT_ID_MAPPING: Record<number, ProductMapping> = {
   // Pack Arcano Vol.1
   89608: { packSlug: 'pack-arcano-vol-1', accessType: '6_meses', hasBonusAccess: false },
   89595: { packSlug: 'pack-arcano-vol-1', accessType: '1_ano', hasBonusAccess: true },
@@ -32,8 +23,8 @@ const PRODUCT_ID_MAPPING: Record<number, ProductMapping> = {
   // Pack Arcano Vol.2
   115168: { packSlug: 'pack-arcano-vol-2', accessType: '6_meses', hasBonusAccess: false },
   115163: { packSlug: 'pack-arcano-vol-2', accessType: '1_ano', hasBonusAccess: true },
-  115171: { packSlug: 'pack-arcano-vol-2', accessType: 'vitalicio', hasBonusAccess: true }, // Order Bump
-  149342: { packSlug: 'pack-arcano-vol-2', accessType: 'vitalicio', hasBonusAccess: true }, // Standalone
+  115171: { packSlug: 'pack-arcano-vol-2', accessType: 'vitalicio', hasBonusAccess: true },
+  149342: { packSlug: 'pack-arcano-vol-2', accessType: 'vitalicio', hasBonusAccess: true },
 }
 
 interface GreennArtesWebhookPayload {
@@ -64,6 +55,44 @@ interface GreennArtesWebhookPayload {
     id?: string
     amount?: number
   }
+}
+
+// Função para buscar mapeamento no banco de dados
+async function findProductMappingInDatabase(supabase: any, productId: number): Promise<ProductMapping | null> {
+  console.log(`🔍 Searching database for product ID: ${productId}`)
+  
+  // Buscar em todas as colunas de product ID
+  const { data: packs, error } = await supabase
+    .from('artes_packs')
+    .select('slug, greenn_product_id_6_meses, greenn_product_id_1_ano, greenn_product_id_order_bump, greenn_product_id_vitalicio')
+  
+  if (error) {
+    console.error('Error fetching packs:', error)
+    return null
+  }
+
+  for (const pack of packs || []) {
+    // Verificar cada coluna de product ID
+    if (pack.greenn_product_id_6_meses === productId) {
+      console.log(`✅ Found in DB: ${pack.slug} (6_meses)`)
+      return { packSlug: pack.slug, accessType: '6_meses', hasBonusAccess: false }
+    }
+    if (pack.greenn_product_id_1_ano === productId) {
+      console.log(`✅ Found in DB: ${pack.slug} (1_ano)`)
+      return { packSlug: pack.slug, accessType: '1_ano', hasBonusAccess: true }
+    }
+    if (pack.greenn_product_id_order_bump === productId) {
+      console.log(`✅ Found in DB: ${pack.slug} (order_bump -> vitalicio)`)
+      return { packSlug: pack.slug, accessType: 'vitalicio', hasBonusAccess: true }
+    }
+    if (pack.greenn_product_id_vitalicio === productId) {
+      console.log(`✅ Found in DB: ${pack.slug} (vitalicio standalone)`)
+      return { packSlug: pack.slug, accessType: 'vitalicio', hasBonusAccess: true }
+    }
+  }
+
+  console.log(`❌ Product ID ${productId} not found in database`)
+  return null
 }
 
 Deno.serve(async (req) => {
@@ -114,17 +143,34 @@ Deno.serve(async (req) => {
     let packSlug = ''
     let accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio' = '6_meses'
     let hasBonusAccess = false
+    let mappingSource = 'none'
 
-    // PRIMEIRO: Tentar mapear por Product ID (mais preciso)
-    if (productId && PRODUCT_ID_MAPPING[productId]) {
-      const mapping = PRODUCT_ID_MAPPING[productId]
-      packSlug = mapping.packSlug
-      accessType = mapping.accessType
-      hasBonusAccess = mapping.hasBonusAccess
-      console.log(`✅ Product ID ${productId} MAPPED to: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
-    } else {
-      // FALLBACK: Usar detecção por nome (para produtos ainda não mapeados)
-      console.log(`⚠️ Product ID ${productId} NOT in mapping, falling back to name detection`)
+    if (productId) {
+      // PRIMEIRO: Tentar buscar no banco de dados (configurado via admin interface)
+      const dbMapping = await findProductMappingInDatabase(supabase, productId)
+      
+      if (dbMapping) {
+        packSlug = dbMapping.packSlug
+        accessType = dbMapping.accessType
+        hasBonusAccess = dbMapping.hasBonusAccess
+        mappingSource = 'database'
+        console.log(`✅ Product ID ${productId} MAPPED via DATABASE to: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
+      } 
+      // SEGUNDO: Fallback para mapeamento legado (hardcoded)
+      else if (LEGACY_PRODUCT_ID_MAPPING[productId]) {
+        const mapping = LEGACY_PRODUCT_ID_MAPPING[productId]
+        packSlug = mapping.packSlug
+        accessType = mapping.accessType
+        hasBonusAccess = mapping.hasBonusAccess
+        mappingSource = 'legacy_mapping'
+        console.log(`✅ Product ID ${productId} MAPPED via LEGACY to: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
+      }
+    }
+    
+    // TERCEIRO: Fallback para detecção por nome (para produtos ainda não mapeados)
+    if (!packSlug) {
+      console.log(`⚠️ Product ID ${productId} NOT in any mapping, falling back to name detection`)
+      mappingSource = 'name_detection'
       
       const nameLower = (productName + ' ' + offerName).toLowerCase()
       
@@ -175,13 +221,14 @@ Deno.serve(async (req) => {
           error: 'Could not determine pack from product',
           productId,
           productName,
-          offerName
+          offerName,
+          hint: 'Configure o Product ID na interface admin em Gerenciar Packs > Editar > Webhook'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`Final detection: pack=${packSlug}, accessType=${accessType}, hasBonusAccess=${hasBonusAccess}`)
+    console.log(`Final detection: pack=${packSlug}, accessType=${accessType}, hasBonusAccess=${hasBonusAccess}, source=${mappingSource}`)
 
     // Handle paid status - activate pack access
     if (status === 'paid' || status === 'approved') {
@@ -348,7 +395,7 @@ Deno.serve(async (req) => {
           access_type: accessType,
           has_bonus_access: hasBonusAccess,
           expires_at: expiresAt ? expiresAt.toISOString() : null,
-          mapped_by: productId && PRODUCT_ID_MAPPING[productId] ? 'product_id' : 'name_detection'
+          mapped_by: mappingSource
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
