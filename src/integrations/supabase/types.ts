@@ -380,6 +380,10 @@ export type Database = {
           cover_url: string | null
           created_at: string
           display_order: number
+          greenn_product_id_1_ano: number | null
+          greenn_product_id_6_meses: number | null
+          greenn_product_id_order_bump: number | null
+          greenn_product_id_vitalicio: number | null
           id: string
           is_visible: boolean
           name: string
@@ -391,6 +395,10 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           display_order?: number
+          greenn_product_id_1_ano?: number | null
+          greenn_product_id_6_meses?: number | null
+          greenn_product_id_order_bump?: number | null
+          greenn_product_id_vitalicio?: number | null
           id?: string
           is_visible?: boolean
           name: string
@@ -402,6 +410,10 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           display_order?: number
+          greenn_product_id_1_ano?: number | null
+          greenn_product_id_6_meses?: number | null
+          greenn_product_id_order_bump?: number | null
+          greenn_product_id_vitalicio?: number | null
           id?: string
           is_visible?: boolean
           name?: string
