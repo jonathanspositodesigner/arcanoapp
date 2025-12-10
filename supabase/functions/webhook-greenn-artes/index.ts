@@ -12,6 +12,17 @@ interface ProductMapping {
   hasBonusAccess: boolean
 }
 
+// Interface para promoções
+interface PromotionMapping {
+  promotionId: string
+  promotionSlug: string
+  hasBonusAccess: boolean
+  items: Array<{
+    packSlug: string
+    accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio'
+  }>
+}
+
 // Mapeamento LEGADO de Product ID para pack e tipo de acesso
 // Novos mapeamentos devem ser feitos via interface admin em artes_packs
 const LEGACY_PRODUCT_ID_MAPPING: Record<number, ProductMapping> = {
@@ -57,9 +68,62 @@ interface GreennArtesWebhookPayload {
   }
 }
 
-// Função para buscar mapeamento no banco de dados
+// Função para buscar promoção no banco de dados
+async function findPromotionMappingInDatabase(supabase: any, productId: number): Promise<PromotionMapping | null> {
+  console.log(`🔍 Searching PROMOTIONS for product ID: ${productId}`)
+  
+  // Buscar promoção pelo product ID
+  const { data: promotion, error } = await supabase
+    .from('artes_promotions')
+    .select('id, slug, has_bonus_access, greenn_product_id')
+    .eq('greenn_product_id', productId)
+    .eq('is_active', true)
+    .maybeSingle()
+  
+  if (error) {
+    console.error('Error fetching promotion:', error)
+    return null
+  }
+
+  if (!promotion) {
+    console.log(`❌ Product ID ${productId} not found in promotions`)
+    return null
+  }
+
+  console.log(`✅ Found PROMOTION: ${promotion.slug} (ID: ${promotion.id})`)
+
+  // Buscar itens da promoção
+  const { data: items, error: itemsError } = await supabase
+    .from('artes_promotion_items')
+    .select('pack_slug, access_type')
+    .eq('promotion_id', promotion.id)
+
+  if (itemsError) {
+    console.error('Error fetching promotion items:', itemsError)
+    return null
+  }
+
+  if (!items || items.length === 0) {
+    console.error(`⚠️ Promotion ${promotion.slug} has no items configured!`)
+    return null
+  }
+
+  console.log(`📦 Promotion includes ${items.length} packs:`, items.map((i: { pack_slug: string; access_type: string }) => `${i.pack_slug} (${i.access_type})`).join(', '))
+
+  return {
+    promotionId: promotion.id,
+    promotionSlug: promotion.slug,
+    hasBonusAccess: promotion.has_bonus_access,
+    items: items.map((item: { pack_slug: string; access_type: '3_meses' | '6_meses' | '1_ano' | 'vitalicio' }) => ({
+      packSlug: item.pack_slug,
+      accessType: item.access_type
+    }))
+  }
+}
+
+// Função para buscar mapeamento de pack individual no banco de dados
 async function findProductMappingInDatabase(supabase: any, productId: number): Promise<ProductMapping | null> {
-  console.log(`🔍 Searching database for product ID: ${productId}`)
+  console.log(`🔍 Searching PACKS for product ID: ${productId}`)
   
   // Buscar em todas as colunas de product ID
   const { data: packs, error } = await supabase
@@ -91,8 +155,130 @@ async function findProductMappingInDatabase(supabase: any, productId: number): P
     }
   }
 
-  console.log(`❌ Product ID ${productId} not found in database`)
+  console.log(`❌ Product ID ${productId} not found in packs database`)
   return null
+}
+
+// Função para calcular data de expiração
+function calculateExpirationDate(accessType: string): Date | null {
+  if (accessType === 'vitalicio') {
+    return null // Never expires
+  }
+  
+  const expiresAt = new Date()
+  
+  if (accessType === '3_meses') {
+    expiresAt.setMonth(expiresAt.getMonth() + 3)
+  } else if (accessType === '6_meses') {
+    expiresAt.setMonth(expiresAt.getMonth() + 6)
+  } else if (accessType === '1_ano') {
+    expiresAt.setFullYear(expiresAt.getFullYear() + 1)
+  }
+  
+  return expiresAt
+}
+
+// Função para processar compra de um pack
+async function processPackPurchase(
+  supabase: any,
+  userId: string,
+  packSlug: string,
+  accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio',
+  hasBonusAccess: boolean,
+  contractId: string | undefined,
+  productName: string
+): Promise<void> {
+  console.log(`📦 Processing pack purchase: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
+  
+  const expiresAt = calculateExpirationDate(accessType)
+  
+  // Check if user already has this pack
+  const { data: existingPurchase, error: checkError } = await supabase
+    .from('user_pack_purchases')
+    .select('id, expires_at, access_type, has_bonus_access')
+    .eq('user_id', userId)
+    .eq('pack_slug', packSlug)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (checkError) {
+    console.error('Error checking existing purchase:', checkError)
+    throw checkError
+  }
+
+  if (existingPurchase) {
+    // Update existing purchase - check if should upgrade
+    console.log(`User already has ${packSlug}, checking for upgrade`)
+    
+    const accessPriority: Record<string, number> = { '3_meses': 1, '6_meses': 2, '1_ano': 3, 'vitalicio': 4 }
+    const currentPriority = accessPriority[existingPurchase.access_type] || 0
+    const newPriority = accessPriority[accessType] || 0
+    
+    // Upgrade if new access is higher priority OR extend if same type
+    if (newPriority >= currentPriority) {
+      let newExpiresAt = expiresAt
+      
+      // If not upgrading to lifetime and currently not lifetime, extend from current expiration
+      if (accessType !== 'vitalicio' && existingPurchase.access_type !== 'vitalicio' && existingPurchase.expires_at) {
+        const currentExpires = new Date(existingPurchase.expires_at)
+        const now = new Date()
+        
+        if (currentExpires > now && expiresAt) {
+          // Extend from current expiration
+          newExpiresAt = new Date(currentExpires)
+          if (accessType === '3_meses') {
+            newExpiresAt.setMonth(newExpiresAt.getMonth() + 3)
+          } else if (accessType === '6_meses') {
+            newExpiresAt.setMonth(newExpiresAt.getMonth() + 6)
+          } else if (accessType === '1_ano') {
+            newExpiresAt.setFullYear(newExpiresAt.getFullYear() + 1)
+          }
+        }
+      }
+
+      const { error: updateError } = await supabase
+        .from('user_pack_purchases')
+        .update({
+          access_type: accessType,
+          has_bonus_access: hasBonusAccess || existingPurchase.has_bonus_access,
+          expires_at: newExpiresAt ? newExpiresAt.toISOString() : null,
+          greenn_contract_id: contractId,
+          product_name: productName,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingPurchase.id)
+
+      if (updateError) {
+        console.error('Error updating purchase:', updateError)
+        throw updateError
+      }
+      
+      console.log(`✅ Updated pack purchase: ${packSlug} (${accessType})`)
+    } else {
+      console.log(`⏭️ Skipping update - current access (${existingPurchase.access_type}) is higher than new (${accessType})`)
+    }
+  } else {
+    // Insert new purchase
+    console.log(`Creating new pack purchase for ${packSlug}`)
+    const { error: insertError } = await supabase
+      .from('user_pack_purchases')
+      .insert({
+        user_id: userId,
+        pack_slug: packSlug,
+        access_type: accessType,
+        has_bonus_access: hasBonusAccess,
+        expires_at: expiresAt ? expiresAt.toISOString() : null,
+        greenn_contract_id: contractId,
+        product_name: productName
+      })
+
+    if (insertError) {
+      console.error('Error inserting purchase:', insertError)
+      throw insertError
+    }
+    
+    console.log(`✅ Created new pack purchase: ${packSlug} (${accessType})`)
+  }
 }
 
 Deno.serve(async (req) => {
@@ -139,40 +325,45 @@ Deno.serve(async (req) => {
     console.log(`Product ID: ${productId}, Product: ${productName}, Offer: ${offerName}, Offer Hash: ${offerHash}`)
     console.log(`Sale Amount: ${saleAmount}`)
 
-    // Detectar pack e tipo de acesso
-    let packSlug = ''
-    let accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio' = '6_meses'
-    let hasBonusAccess = false
-    let mappingSource = 'none'
+    // Variáveis para armazenar o tipo de mapeamento encontrado
+    let mappingType: 'promotion' | 'pack' | 'legacy' | 'name_detection' | 'none' = 'none'
+    let promotionMapping: PromotionMapping | null = null
+    let packMapping: ProductMapping | null = null
 
     if (productId) {
-      // PRIMEIRO: Tentar buscar no banco de dados (configurado via admin interface)
-      const dbMapping = await findProductMappingInDatabase(supabase, productId)
+      // PRIMEIRO: Tentar buscar em PROMOÇÕES (combos)
+      promotionMapping = await findPromotionMappingInDatabase(supabase, productId)
       
-      if (dbMapping) {
-        packSlug = dbMapping.packSlug
-        accessType = dbMapping.accessType
-        hasBonusAccess = dbMapping.hasBonusAccess
-        mappingSource = 'database'
-        console.log(`✅ Product ID ${productId} MAPPED via DATABASE to: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
-      } 
-      // SEGUNDO: Fallback para mapeamento legado (hardcoded)
-      else if (LEGACY_PRODUCT_ID_MAPPING[productId]) {
-        const mapping = LEGACY_PRODUCT_ID_MAPPING[productId]
-        packSlug = mapping.packSlug
-        accessType = mapping.accessType
-        hasBonusAccess = mapping.hasBonusAccess
-        mappingSource = 'legacy_mapping'
-        console.log(`✅ Product ID ${productId} MAPPED via LEGACY to: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
+      if (promotionMapping) {
+        mappingType = 'promotion'
+        console.log(`🎁 Product ID ${productId} is a PROMOTION: ${promotionMapping.promotionSlug}`)
+      } else {
+        // SEGUNDO: Tentar buscar em PACKS individuais (configurado via admin interface)
+        packMapping = await findProductMappingInDatabase(supabase, productId)
+        
+        if (packMapping) {
+          mappingType = 'pack'
+          console.log(`📦 Product ID ${productId} is a PACK: ${packMapping.packSlug}`)
+        }
+        // TERCEIRO: Fallback para mapeamento legado (hardcoded)
+        else if (LEGACY_PRODUCT_ID_MAPPING[productId]) {
+          packMapping = LEGACY_PRODUCT_ID_MAPPING[productId]
+          mappingType = 'legacy'
+          console.log(`📜 Product ID ${productId} found in LEGACY mapping: ${packMapping.packSlug}`)
+        }
       }
     }
     
-    // TERCEIRO: Fallback para detecção por nome (para produtos ainda não mapeados)
-    if (!packSlug) {
+    // QUARTO: Fallback para detecção por nome (para produtos ainda não mapeados)
+    if (mappingType === 'none') {
       console.log(`⚠️ Product ID ${productId} NOT in any mapping, falling back to name detection`)
-      mappingSource = 'name_detection'
+      mappingType = 'name_detection'
       
       const nameLower = (productName + ' ' + offerName).toLowerCase()
+      
+      let packSlug = ''
+      let accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio' = '6_meses'
+      let hasBonusAccess = false
       
       // Detectar pack pelo nome
       if (nameLower.includes('vol.1') || nameLower.includes('vol 1') || nameLower.includes('volume 1')) {
@@ -211,24 +402,28 @@ Deno.serve(async (req) => {
         hasBonusAccess = false
       }
 
-      console.log(`Name detection result: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
+      if (packSlug) {
+        packMapping = { packSlug, accessType, hasBonusAccess }
+        console.log(`Name detection result: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
+      }
     }
 
-    if (!packSlug) {
-      console.error(`❌ Could not determine pack from productId=${productId}, product=${productName}, offer=${offerName}`)
+    // Se não encontrou nenhum mapeamento, retornar erro
+    if (mappingType !== 'promotion' && !packMapping) {
+      console.error(`❌ Could not determine pack/promotion from productId=${productId}, product=${productName}, offer=${offerName}`)
       return new Response(
         JSON.stringify({ 
-          error: 'Could not determine pack from product',
+          error: 'Could not determine pack/promotion from product',
           productId,
           productName,
           offerName,
-          hint: 'Configure o Product ID na interface admin em Gerenciar Packs > Editar > Webhook'
+          hint: 'Configure o Product ID na interface admin em Gerenciar Packs > Editar > Webhook OU em Gerenciar Promoções'
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`Final detection: pack=${packSlug}, accessType=${accessType}, hasBonusAccess=${hasBonusAccess}, source=${mappingSource}`)
+    console.log(`Final detection type: ${mappingType}`)
 
     // Handle paid status - activate pack access
     if (status === 'paid' || status === 'approved') {
@@ -282,128 +477,74 @@ Deno.serve(async (req) => {
         console.error('Error upserting profile:', profileError)
       }
 
-      // Calculate expiration date
-      let expiresAt: Date | null = null
+      // Processar com base no tipo de mapeamento
+      let processedPacks: string[] = []
       
-      if (accessType === '3_meses') {
-        expiresAt = new Date()
-        expiresAt.setMonth(expiresAt.getMonth() + 3)
-      } else if (accessType === '6_meses') {
-        expiresAt = new Date()
-        expiresAt.setMonth(expiresAt.getMonth() + 6)
-      } else if (accessType === '1_ano') {
-        expiresAt = new Date()
-        expiresAt.setFullYear(expiresAt.getFullYear() + 1)
-      }
-      // vitalicio = null (never expires)
-
-      console.log(`Setting expires_at to: ${expiresAt ? expiresAt.toISOString() : 'never (lifetime)'}`)
-
-      // Check if user already has this pack
-      const { data: existingPurchase, error: checkError } = await supabase
-        .from('user_pack_purchases')
-        .select('id, expires_at, access_type, has_bonus_access')
-        .eq('user_id', userId)
-        .eq('pack_slug', packSlug)
-        .eq('is_active', true)
-        .maybeSingle()
-
-      if (checkError) {
-        console.error('Error checking existing purchase:', checkError)
-        throw checkError
-      }
-
-      if (existingPurchase) {
-        // Update existing purchase - check if should upgrade
-        console.log('User already has this pack, checking for upgrade')
+      if (mappingType === 'promotion' && promotionMapping) {
+        // PROMOÇÃO: Processar múltiplos packs
+        console.log(`🎁 Processing PROMOTION with ${promotionMapping.items.length} packs`)
         
-        const accessPriority: Record<string, number> = { '3_meses': 1, '6_meses': 2, '1_ano': 3, 'vitalicio': 4 }
-        const currentPriority = accessPriority[existingPurchase.access_type] || 0
-        const newPriority = accessPriority[accessType] || 0
-        
-        // Upgrade if new access is higher priority OR extend if same type
-        if (newPriority >= currentPriority) {
-          let newExpiresAt = expiresAt
-          
-          // If not upgrading to lifetime and currently not lifetime, extend from current expiration
-          if (accessType !== 'vitalicio' && existingPurchase.access_type !== 'vitalicio' && existingPurchase.expires_at) {
-            const currentExpires = new Date(existingPurchase.expires_at)
-            const now = new Date()
-            
-            if (currentExpires > now && expiresAt) {
-              // Extend from current expiration
-              if (accessType === '3_meses') {
-                newExpiresAt = new Date(currentExpires)
-                newExpiresAt.setMonth(newExpiresAt.getMonth() + 3)
-              } else if (accessType === '6_meses') {
-                newExpiresAt = new Date(currentExpires)
-                newExpiresAt.setMonth(newExpiresAt.getMonth() + 6)
-              } else if (accessType === '1_ano') {
-                newExpiresAt = new Date(currentExpires)
-                newExpiresAt.setFullYear(newExpiresAt.getFullYear() + 1)
-              }
-            }
-          }
-
-          const { error: updateError } = await supabase
-            .from('user_pack_purchases')
-            .update({
-              access_type: accessType,
-              has_bonus_access: hasBonusAccess || existingPurchase.has_bonus_access,
-              expires_at: newExpiresAt ? newExpiresAt.toISOString() : null,
-              greenn_contract_id: contractId,
-              product_name: productName || offerName,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', existingPurchase.id)
-
-          if (updateError) {
-            console.error('Error updating purchase:', updateError)
-            throw updateError
-          }
-          
-          console.log(`Updated pack purchase: ${packSlug} (${accessType})`)
-        } else {
-          console.log(`Skipping update - current access (${existingPurchase.access_type}) is higher than new (${accessType})`)
+        for (const item of promotionMapping.items) {
+          await processPackPurchase(
+            supabase,
+            userId!,
+            item.packSlug,
+            item.accessType,
+            promotionMapping.hasBonusAccess,
+            contractId,
+            `${productName} (Promoção: ${promotionMapping.promotionSlug})`
+          )
+          processedPacks.push(`${item.packSlug} (${item.accessType})`)
         }
-      } else {
-        // Insert new purchase
-        console.log('Creating new pack purchase')
-        const { error: insertError } = await supabase
-          .from('user_pack_purchases')
-          .insert({
-            user_id: userId,
-            pack_slug: packSlug,
-            access_type: accessType,
-            has_bonus_access: hasBonusAccess,
+        
+        console.log(`✅ PROMOTION activated for ${email}: ${promotionMapping.promotionSlug}`)
+        console.log(`   Packs granted: ${processedPacks.join(', ')}`)
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: `Promotion activated for ${email}`,
+            type: 'promotion',
+            promotion: promotionMapping.promotionSlug,
+            packs_granted: processedPacks,
+            has_bonus_access: promotionMapping.hasBonusAccess,
+            mapped_by: mappingType
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      } else if (packMapping) {
+        // PACK INDIVIDUAL: Processar um pack
+        await processPackPurchase(
+          supabase,
+          userId!,
+          packMapping.packSlug,
+          packMapping.accessType,
+          packMapping.hasBonusAccess,
+          contractId,
+          productName || offerName
+        )
+        
+        const expiresAt = calculateExpirationDate(packMapping.accessType)
+        
+        console.log(`✅ Pack access activated for ${email}: ${packMapping.packSlug} (${packMapping.accessType})`)
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: `Pack access activated for ${email}`,
+            type: 'pack',
+            pack: packMapping.packSlug,
+            access_type: packMapping.accessType,
+            has_bonus_access: packMapping.hasBonusAccess,
             expires_at: expiresAt ? expiresAt.toISOString() : null,
-            greenn_contract_id: contractId,
-            product_name: productName || offerName
-          })
-
-        if (insertError) {
-          console.error('Error inserting purchase:', insertError)
-          throw insertError
-        }
+            mapped_by: mappingType
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
-
-      console.log(`✅ Pack access activated for ${email}: ${packSlug} (${accessType})`)
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: `Pack access activated for ${email}`,
-          pack: packSlug,
-          access_type: accessType,
-          has_bonus_access: hasBonusAccess,
-          expires_at: expiresAt ? expiresAt.toISOString() : null,
-          mapped_by: mappingSource
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
     }
 
-    // Handle refunded/chargeback - deactivate specific pack
+    // Handle refunded/chargeback - deactivate specific pack(s)
     if (status === 'refunded' || status === 'chargeback') {
       console.log(`Processing ${status} status - deactivating pack access`)
       
@@ -411,18 +552,33 @@ Deno.serve(async (req) => {
       const existingUser = existingUsers?.users.find(u => u.email?.toLowerCase() === email)
 
       if (existingUser) {
-        const { error: updateError } = await supabase
-          .from('user_pack_purchases')
-          .update({ is_active: false, updated_at: new Date().toISOString() })
-          .eq('user_id', existingUser.id)
-          .eq('pack_slug', packSlug)
+        if (mappingType === 'promotion' && promotionMapping) {
+          // Deactivate all packs from promotion
+          for (const item of promotionMapping.items) {
+            const { error: updateError } = await supabase
+              .from('user_pack_purchases')
+              .update({ is_active: false, updated_at: new Date().toISOString() })
+              .eq('user_id', existingUser.id)
+              .eq('pack_slug', item.packSlug)
 
-        if (updateError) {
-          console.error('Error deactivating pack:', updateError)
-          throw updateError
+            if (updateError) {
+              console.error(`Error deactivating pack ${item.packSlug}:`, updateError)
+            }
+          }
+          console.log(`Promotion packs deactivated for ${email}: ${promotionMapping.promotionSlug}`)
+        } else if (packMapping) {
+          const { error: updateError } = await supabase
+            .from('user_pack_purchases')
+            .update({ is_active: false, updated_at: new Date().toISOString() })
+            .eq('user_id', existingUser.id)
+            .eq('pack_slug', packMapping.packSlug)
+
+          if (updateError) {
+            console.error('Error deactivating pack:', updateError)
+            throw updateError
+          }
+          console.log(`Pack access deactivated for ${email}: ${packMapping.packSlug}`)
         }
-
-        console.log(`Pack access deactivated for ${email}: ${packSlug}`)
       }
 
       return new Response(
