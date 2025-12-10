@@ -24,9 +24,26 @@ interface Pack {
   greenn_product_id_1_ano?: number | null;
   greenn_product_id_order_bump?: number | null;
   greenn_product_id_vitalicio?: number | null;
+  // Normal checkout links
   checkout_link_6_meses?: string | null;
   checkout_link_1_ano?: string | null;
   checkout_link_vitalicio?: string | null;
+  // Prices (in cents)
+  price_6_meses?: number | null;
+  price_1_ano?: number | null;
+  price_vitalicio?: number | null;
+  // Enabled toggles
+  enabled_6_meses?: boolean;
+  enabled_1_ano?: boolean;
+  enabled_vitalicio?: boolean;
+  // Renewal checkout links (30% OFF)
+  checkout_link_renovacao_6_meses?: string | null;
+  checkout_link_renovacao_1_ano?: string | null;
+  checkout_link_renovacao_vitalicio?: string | null;
+  // Member checkout links (20% OFF)
+  checkout_link_membro_6_meses?: string | null;
+  checkout_link_membro_1_ano?: string | null;
+  checkout_link_membro_vitalicio?: string | null;
 }
 
 type ItemType = 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
@@ -38,10 +55,27 @@ interface WebhookFormData {
   greenn_product_id_vitalicio: string;
 }
 
-interface CheckoutLinksFormData {
+interface SalesFormData {
+  // Prices
+  price_6_meses: string;
+  price_1_ano: string;
+  price_vitalicio: string;
+  // Enabled toggles
+  enabled_6_meses: boolean;
+  enabled_1_ano: boolean;
+  enabled_vitalicio: boolean;
+  // Normal checkout links
   checkout_link_6_meses: string;
   checkout_link_1_ano: string;
   checkout_link_vitalicio: string;
+  // Renewal checkout links (30% OFF)
+  checkout_link_renovacao_6_meses: string;
+  checkout_link_renovacao_1_ano: string;
+  checkout_link_renovacao_vitalicio: string;
+  // Member checkout links (20% OFF)
+  checkout_link_membro_6_meses: string;
+  checkout_link_membro_1_ano: string;
+  checkout_link_membro_vitalicio: string;
 }
 
 const WEBHOOK_URL = "https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-greenn-artes";
@@ -68,10 +102,22 @@ const AdminManagePacks = () => {
     greenn_product_id_order_bump: '',
     greenn_product_id_vitalicio: ''
   });
-  const [checkoutLinksFormData, setCheckoutLinksFormData] = useState<CheckoutLinksFormData>({
+  const [salesFormData, setSalesFormData] = useState<SalesFormData>({
+    price_6_meses: '',
+    price_1_ano: '',
+    price_vitalicio: '',
+    enabled_6_meses: true,
+    enabled_1_ano: true,
+    enabled_vitalicio: true,
     checkout_link_6_meses: '',
     checkout_link_1_ano: '',
-    checkout_link_vitalicio: ''
+    checkout_link_vitalicio: '',
+    checkout_link_renovacao_6_meses: '',
+    checkout_link_renovacao_1_ano: '',
+    checkout_link_renovacao_vitalicio: '',
+    checkout_link_membro_6_meses: '',
+    checkout_link_membro_1_ano: '',
+    checkout_link_membro_vitalicio: ''
   });
 
   useEffect(() => {
@@ -375,10 +421,22 @@ const AdminManagePacks = () => {
       greenn_product_id_order_bump: pack.greenn_product_id_order_bump?.toString() || '',
       greenn_product_id_vitalicio: pack.greenn_product_id_vitalicio?.toString() || ''
     });
-    setCheckoutLinksFormData({
+    setSalesFormData({
+      price_6_meses: pack.price_6_meses?.toString() || '2700',
+      price_1_ano: pack.price_1_ano?.toString() || '3700',
+      price_vitalicio: pack.price_vitalicio?.toString() || '4700',
+      enabled_6_meses: pack.enabled_6_meses ?? true,
+      enabled_1_ano: pack.enabled_1_ano ?? true,
+      enabled_vitalicio: pack.enabled_vitalicio ?? true,
       checkout_link_6_meses: pack.checkout_link_6_meses || '',
       checkout_link_1_ano: pack.checkout_link_1_ano || '',
-      checkout_link_vitalicio: pack.checkout_link_vitalicio || ''
+      checkout_link_vitalicio: pack.checkout_link_vitalicio || '',
+      checkout_link_renovacao_6_meses: pack.checkout_link_renovacao_6_meses || '',
+      checkout_link_renovacao_1_ano: pack.checkout_link_renovacao_1_ano || '',
+      checkout_link_renovacao_vitalicio: pack.checkout_link_renovacao_vitalicio || '',
+      checkout_link_membro_6_meses: pack.checkout_link_membro_6_meses || '',
+      checkout_link_membro_1_ano: pack.checkout_link_membro_1_ano || '',
+      checkout_link_membro_vitalicio: pack.checkout_link_membro_vitalicio || ''
     });
   };
 
@@ -413,7 +471,7 @@ const AdminManagePacks = () => {
     }
   };
 
-  const handleSaveCheckoutLinks = async () => {
+  const handleSaveSalesConfig = async () => {
     if (!editingPack) return;
     
     setSaving(true);
@@ -421,21 +479,43 @@ const AdminManagePacks = () => {
       const { error } = await supabase
         .from("artes_packs")
         .update({
-          checkout_link_6_meses: checkoutLinksFormData.checkout_link_6_meses || null,
-          checkout_link_1_ano: checkoutLinksFormData.checkout_link_1_ano || null,
-          checkout_link_vitalicio: checkoutLinksFormData.checkout_link_vitalicio || null
+          // Prices
+          price_6_meses: salesFormData.price_6_meses ? parseInt(salesFormData.price_6_meses) : null,
+          price_1_ano: salesFormData.price_1_ano ? parseInt(salesFormData.price_1_ano) : null,
+          price_vitalicio: salesFormData.price_vitalicio ? parseInt(salesFormData.price_vitalicio) : null,
+          // Enabled toggles
+          enabled_6_meses: salesFormData.enabled_6_meses,
+          enabled_1_ano: salesFormData.enabled_1_ano,
+          enabled_vitalicio: salesFormData.enabled_vitalicio,
+          // Normal checkout links
+          checkout_link_6_meses: salesFormData.checkout_link_6_meses || null,
+          checkout_link_1_ano: salesFormData.checkout_link_1_ano || null,
+          checkout_link_vitalicio: salesFormData.checkout_link_vitalicio || null,
+          // Renewal checkout links
+          checkout_link_renovacao_6_meses: salesFormData.checkout_link_renovacao_6_meses || null,
+          checkout_link_renovacao_1_ano: salesFormData.checkout_link_renovacao_1_ano || null,
+          checkout_link_renovacao_vitalicio: salesFormData.checkout_link_renovacao_vitalicio || null,
+          // Member checkout links
+          checkout_link_membro_6_meses: salesFormData.checkout_link_membro_6_meses || null,
+          checkout_link_membro_1_ano: salesFormData.checkout_link_membro_1_ano || null,
+          checkout_link_membro_vitalicio: salesFormData.checkout_link_membro_vitalicio || null
         })
         .eq("id", editingPack.id);
 
       if (error) throw error;
 
-      toast.success("Links de vendas salvos!");
+      toast.success("Configurações de vendas salvas!");
       fetchPacks();
     } catch (error: any) {
-      toast.error(error.message || "Erro ao salvar links");
+      toast.error(error.message || "Erro ao salvar configurações");
     } finally {
       setSaving(false);
     }
+  };
+  
+  const formatPriceInput = (cents: string) => {
+    const value = parseInt(cents) || 0;
+    return `R$ ${(value / 100).toFixed(2).replace('.', ',')}`;
   };
 
   const getTypeIcon = (type: ItemType) => {
@@ -931,54 +1011,210 @@ const AdminManagePacks = () => {
                 </Button>
               </TabsContent>
 
-              <TabsContent value="links" className="space-y-4 mt-4">
-                <div className="bg-muted/50 rounded-lg p-4">
+              <TabsContent value="links" className="space-y-6 mt-4 max-h-[60vh] overflow-y-auto pr-2">
+                {/* PREÇO NORMAL */}
+                <div className="border rounded-lg p-4 space-y-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Link className="w-5 h-5 text-primary" />
-                    <Label className="font-semibold">Links de Checkout</Label>
+                    <Label className="font-semibold text-lg">💰 Preço Normal</Label>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Configure os links de venda para cada opção de acesso deste pack.
-                  </p>
+                  
+                  {/* 6 Meses */}
+                  <div className="border-b pb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="font-medium">6 Meses</Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Habilitado</span>
+                        <input
+                          type="checkbox"
+                          checked={salesFormData.enabled_6_meses}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, enabled_6_meses: e.target.checked }))}
+                          className="w-4 h-4"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Valor (centavos)</Label>
+                        <Input
+                          type="number"
+                          value={salesFormData.price_6_meses}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, price_6_meses: e.target.value }))}
+                          placeholder="2700"
+                        />
+                        <p className="text-xs text-green-600 mt-1">{formatPriceInput(salesFormData.price_6_meses)}</p>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Link Checkout</Label>
+                        <Input
+                          type="url"
+                          value={salesFormData.checkout_link_6_meses}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_6_meses: e.target.value }))}
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* 1 Ano */}
+                  <div className="border-b pb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="font-medium">1 Ano</Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Habilitado</span>
+                        <input
+                          type="checkbox"
+                          checked={salesFormData.enabled_1_ano}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, enabled_1_ano: e.target.checked }))}
+                          className="w-4 h-4"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Valor (centavos)</Label>
+                        <Input
+                          type="number"
+                          value={salesFormData.price_1_ano}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, price_1_ano: e.target.value }))}
+                          placeholder="3700"
+                        />
+                        <p className="text-xs text-green-600 mt-1">{formatPriceInput(salesFormData.price_1_ano)}</p>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Link Checkout</Label>
+                        <Input
+                          type="url"
+                          value={salesFormData.checkout_link_1_ano}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_1_ano: e.target.value }))}
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Vitalício */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="font-medium">Vitalício</Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Habilitado</span>
+                        <input
+                          type="checkbox"
+                          checked={salesFormData.enabled_vitalicio}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, enabled_vitalicio: e.target.checked }))}
+                          className="w-4 h-4"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Valor (centavos)</Label>
+                        <Input
+                          type="number"
+                          value={salesFormData.price_vitalicio}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, price_vitalicio: e.target.value }))}
+                          placeholder="4700"
+                        />
+                        <p className="text-xs text-green-600 mt-1">{formatPriceInput(salesFormData.price_vitalicio)}</p>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Link Checkout</Label>
+                        <Input
+                          type="url"
+                          value={salesFormData.checkout_link_vitalicio}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_vitalicio: e.target.value }))}
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-sm font-medium">Link 6 Meses</Label>
-                    <Input
-                      type="url"
-                      value={checkoutLinksFormData.checkout_link_6_meses}
-                      onChange={(e) => setCheckoutLinksFormData(prev => ({ ...prev, checkout_link_6_meses: e.target.value }))}
-                      placeholder="https://greenn.com.br/checkout/..."
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">URL do checkout para acesso de 6 meses</p>
+                {/* RENOVAÇÃO COM DESCONTO (30% OFF) */}
+                <div className="border rounded-lg p-4 space-y-4 border-green-500/30 bg-green-500/5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className="bg-green-500/20 text-green-600">🔄 30% OFF</Badge>
+                    <Label className="font-semibold">Renovação com Desconto</Label>
                   </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Links para clientes que estão renovando acesso expirado
+                  </p>
                   
-                  <div>
-                    <Label className="text-sm font-medium">Link 1 Ano</Label>
-                    <Input
-                      type="url"
-                      value={checkoutLinksFormData.checkout_link_1_ano}
-                      onChange={(e) => setCheckoutLinksFormData(prev => ({ ...prev, checkout_link_1_ano: e.target.value }))}
-                      placeholder="https://greenn.com.br/checkout/..."
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">URL do checkout para acesso de 1 ano</p>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm">Link Renovação 6 Meses</Label>
+                      <Input
+                        type="url"
+                        value={salesFormData.checkout_link_renovacao_6_meses}
+                        onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_renovacao_6_meses: e.target.value }))}
+                        placeholder="https://greenn.com.br/checkout/..."
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm">Link Renovação 1 Ano</Label>
+                      <Input
+                        type="url"
+                        value={salesFormData.checkout_link_renovacao_1_ano}
+                        onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_renovacao_1_ano: e.target.value }))}
+                        placeholder="https://greenn.com.br/checkout/..."
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm">Link Renovação Vitalício</Label>
+                      <Input
+                        type="url"
+                        value={salesFormData.checkout_link_renovacao_vitalicio}
+                        onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_renovacao_vitalicio: e.target.value }))}
+                        placeholder="https://greenn.com.br/checkout/..."
+                      />
+                    </div>
                   </div>
+                </div>
+
+                {/* DESCONTO PARA MEMBROS (20% OFF) */}
+                <div className="border rounded-lg p-4 space-y-4 border-purple-500/30 bg-purple-500/5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className="bg-purple-500/20 text-purple-600">👑 20% OFF</Badge>
+                    <Label className="font-semibold">Desconto para Membros</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Links para membros que já possuem um pack e querem comprar outro
+                  </p>
                   
-                  <div>
-                    <Label className="text-sm font-medium">Link Vitalício</Label>
-                    <Input
-                      type="url"
-                      value={checkoutLinksFormData.checkout_link_vitalicio}
-                      onChange={(e) => setCheckoutLinksFormData(prev => ({ ...prev, checkout_link_vitalicio: e.target.value }))}
-                      placeholder="https://greenn.com.br/checkout/..."
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">URL do checkout para acesso vitalício</p>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm">Link Membro 6 Meses</Label>
+                      <Input
+                        type="url"
+                        value={salesFormData.checkout_link_membro_6_meses}
+                        onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_membro_6_meses: e.target.value }))}
+                        placeholder="https://greenn.com.br/checkout/..."
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm">Link Membro 1 Ano</Label>
+                      <Input
+                        type="url"
+                        value={salesFormData.checkout_link_membro_1_ano}
+                        onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_membro_1_ano: e.target.value }))}
+                        placeholder="https://greenn.com.br/checkout/..."
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm">Link Membro Vitalício</Label>
+                      <Input
+                        type="url"
+                        value={salesFormData.checkout_link_membro_vitalicio}
+                        onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_membro_vitalicio: e.target.value }))}
+                        placeholder="https://greenn.com.br/checkout/..."
+                      />
+                    </div>
                   </div>
                 </div>
                 
-                <Button onClick={handleSaveCheckoutLinks} disabled={saving} className="w-full">
-                  {saving ? "Salvando..." : "Salvar Links de Vendas"}
+                <Button onClick={handleSaveSalesConfig} disabled={saving} className="w-full">
+                  {saving ? "Salvando..." : "Salvar Configurações de Vendas"}
                 </Button>
               </TabsContent>
             </Tabs>
