@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff, Copy, Webhook, Settings } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff, Copy, Webhook, Settings, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -24,6 +24,9 @@ interface Pack {
   greenn_product_id_1_ano?: number | null;
   greenn_product_id_order_bump?: number | null;
   greenn_product_id_vitalicio?: number | null;
+  checkout_link_6_meses?: string | null;
+  checkout_link_1_ano?: string | null;
+  checkout_link_vitalicio?: string | null;
 }
 
 type ItemType = 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
@@ -33,6 +36,12 @@ interface WebhookFormData {
   greenn_product_id_1_ano: string;
   greenn_product_id_order_bump: string;
   greenn_product_id_vitalicio: string;
+}
+
+interface CheckoutLinksFormData {
+  checkout_link_6_meses: string;
+  checkout_link_1_ano: string;
+  checkout_link_vitalicio: string;
 }
 
 const WEBHOOK_URL = "https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-greenn-artes";
@@ -52,12 +61,17 @@ const AdminManagePacks = () => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<ItemType>('pack');
   const [activeTab, setActiveTab] = useState<ItemType>('pack');
-  const [editTab, setEditTab] = useState<'info' | 'webhook'>('info');
+  const [editTab, setEditTab] = useState<'info' | 'webhook' | 'links'>('info');
   const [webhookFormData, setWebhookFormData] = useState<WebhookFormData>({
     greenn_product_id_6_meses: '',
     greenn_product_id_1_ano: '',
     greenn_product_id_order_bump: '',
     greenn_product_id_vitalicio: ''
+  });
+  const [checkoutLinksFormData, setCheckoutLinksFormData] = useState<CheckoutLinksFormData>({
+    checkout_link_6_meses: '',
+    checkout_link_1_ano: '',
+    checkout_link_vitalicio: ''
   });
 
   useEffect(() => {
@@ -361,6 +375,11 @@ const AdminManagePacks = () => {
       greenn_product_id_order_bump: pack.greenn_product_id_order_bump?.toString() || '',
       greenn_product_id_vitalicio: pack.greenn_product_id_vitalicio?.toString() || ''
     });
+    setCheckoutLinksFormData({
+      checkout_link_6_meses: pack.checkout_link_6_meses || '',
+      checkout_link_1_ano: pack.checkout_link_1_ano || '',
+      checkout_link_vitalicio: pack.checkout_link_vitalicio || ''
+    });
   };
 
   const handleCopyWebhook = () => {
@@ -389,6 +408,31 @@ const AdminManagePacks = () => {
       fetchPacks();
     } catch (error: any) {
       toast.error(error.message || "Erro ao salvar configuração");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveCheckoutLinks = async () => {
+    if (!editingPack) return;
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("artes_packs")
+        .update({
+          checkout_link_6_meses: checkoutLinksFormData.checkout_link_6_meses || null,
+          checkout_link_1_ano: checkoutLinksFormData.checkout_link_1_ano || null,
+          checkout_link_vitalicio: checkoutLinksFormData.checkout_link_vitalicio || null
+        })
+        .eq("id", editingPack.id);
+
+      if (error) throw error;
+
+      toast.success("Links de vendas salvos!");
+      fetchPacks();
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao salvar links");
     } finally {
       setSaving(false);
     }
@@ -697,15 +741,19 @@ const AdminManagePacks = () => {
               </DialogTitle>
             </DialogHeader>
             
-            <Tabs value={editTab} onValueChange={(v) => setEditTab(v as 'info' | 'webhook')} className="w-full mt-4">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="info" className="flex items-center gap-2">
-                  <Settings className="w-4 h-4" />
-                  Informações
+            <Tabs value={editTab} onValueChange={(v) => setEditTab(v as 'info' | 'webhook' | 'links')} className="w-full mt-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="info" className="flex items-center gap-1 text-xs">
+                  <Settings className="w-3 h-3" />
+                  Info
                 </TabsTrigger>
-                <TabsTrigger value="webhook" className="flex items-center gap-2">
-                  <Webhook className="w-4 h-4" />
+                <TabsTrigger value="webhook" className="flex items-center gap-1 text-xs">
+                  <Webhook className="w-3 h-3" />
                   Webhook
+                </TabsTrigger>
+                <TabsTrigger value="links" className="flex items-center gap-1 text-xs">
+                  <Link className="w-3 h-3" />
+                  Vendas
                 </TabsTrigger>
               </TabsList>
 
@@ -880,6 +928,57 @@ const AdminManagePacks = () => {
                 
                 <Button onClick={handleSaveWebhookConfig} disabled={saving} className="w-full">
                   {saving ? "Salvando..." : "Salvar Configuração Webhook"}
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="links" className="space-y-4 mt-4">
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Link className="w-5 h-5 text-primary" />
+                    <Label className="font-semibold">Links de Checkout</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Configure os links de venda para cada opção de acesso deste pack.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium">Link 6 Meses</Label>
+                    <Input
+                      type="url"
+                      value={checkoutLinksFormData.checkout_link_6_meses}
+                      onChange={(e) => setCheckoutLinksFormData(prev => ({ ...prev, checkout_link_6_meses: e.target.value }))}
+                      placeholder="https://greenn.com.br/checkout/..."
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">URL do checkout para acesso de 6 meses</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Link 1 Ano</Label>
+                    <Input
+                      type="url"
+                      value={checkoutLinksFormData.checkout_link_1_ano}
+                      onChange={(e) => setCheckoutLinksFormData(prev => ({ ...prev, checkout_link_1_ano: e.target.value }))}
+                      placeholder="https://greenn.com.br/checkout/..."
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">URL do checkout para acesso de 1 ano</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Link Vitalício</Label>
+                    <Input
+                      type="url"
+                      value={checkoutLinksFormData.checkout_link_vitalicio}
+                      onChange={(e) => setCheckoutLinksFormData(prev => ({ ...prev, checkout_link_vitalicio: e.target.value }))}
+                      placeholder="https://greenn.com.br/checkout/..."
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">URL do checkout para acesso vitalício</p>
+                  </div>
+                </div>
+                
+                <Button onClick={handleSaveCheckoutLinks} disabled={saving} className="w-full">
+                  {saving ? "Salvando..." : "Salvar Links de Vendas"}
                 </Button>
               </TabsContent>
             </Tabs>
