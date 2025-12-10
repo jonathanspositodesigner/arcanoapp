@@ -1128,14 +1128,24 @@ const BibliotecaArtes = () => {
                       Acessar Curso
                     </Button>
                   </div> : <div className="flex flex-col gap-2">
-                    <Button onClick={() => navigate(`/planos-artes?packSlug=${cursoSlug}`)} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
+                    <Button onClick={() => {
+                      // Se for membro (tem algum pack ativo), abre com desconto de membro
+                      // Se não for membro ou não estiver logado, abre preço normal
+                      if (isPremium) {
+                        navigate(`/planos-artes-membro?pack=${cursoSlug}`);
+                      } else {
+                        navigate(`/planos-artes?pack=${cursoSlug}`);
+                      }
+                    }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
                       Comprar Curso
                     </Button>
-                    <Button onClick={() => {
-                /* Link será adicionado depois */toast.info("Link será configurado em breve");
-              }} variant="outline" className="w-full">
-                      Quero conhecer mais
+                    <Button 
+                      onClick={() => window.open('https://voxvisual.com.br/eventoia3/?utm_source=aplicativo&utm_medium=aplicativo&utm_campaign=aplicativo&utm_id=aplicativo', '_blank')} 
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      Saiba mais
                     </Button>
                   </div>}
               </div>;
