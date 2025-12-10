@@ -12,6 +12,8 @@ import AdminUpload from "./pages/AdminUpload";
 import AdminUploadArtes from "./pages/AdminUploadArtes";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminFerramentas from "./pages/AdminFerramentas";
+import AdminMarketing from "./pages/AdminMarketing";
 import AdminCommunityReview from "./pages/AdminCommunityReview";
 import AdminArtesReview from "./pages/AdminArtesReview";
 import AdminManageImages from "./pages/AdminManageImages";
@@ -89,6 +91,8 @@ const AppContent = () => {
         <Route path="/contribuir" element={<ContributePrompts />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin-ferramentas" element={<AdminFerramentas />} />
+        <Route path="/admin-marketing" element={<AdminMarketing />} />
         <Route path="/admin-upload" element={<AdminUpload />} />
         <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
         <Route path="/admin-community-review" element={<AdminCommunityReview />} />
