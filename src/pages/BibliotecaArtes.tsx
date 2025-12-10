@@ -1118,6 +1118,15 @@ const BibliotecaArtes = () => {
         })()}
         </DialogContent>
       </Dialog>
+
+      {/* Floating Menu Button - Mobile Only */}
+      <button 
+        onClick={() => setSidebarOpen(true)}
+        className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground px-6 py-3 rounded-full shadow-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
+      >
+        <Menu className="h-5 w-5" />
+        <span className="font-medium">Menu</span>
+      </button>
     </div>;
 };
 export default BibliotecaArtes;
