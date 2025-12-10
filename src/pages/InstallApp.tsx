@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Download, Smartphone, Monitor, Share, Plus, MoreVertical } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import InstallTutorialInteractive from "@/components/InstallTutorialInteractive";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -14,17 +14,12 @@ const InstallApp = () => {
   const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     // Check if already installed
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setIsInstalled(true);
     }
-
-    // Check if iOS
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    setIsIOS(isIOSDevice);
 
     // Listen for install prompt
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -106,105 +101,8 @@ const InstallApp = () => {
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Video Tutorial */}
-            <Card className="p-4 overflow-hidden">
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                controls
-                className="w-full rounded-lg"
-              >
-                <source src="/videos/install-tutorial.mp4" type="video/mp4" />
-                Seu navegador não suporta vídeos.
-              </video>
-            </Card>
-
-            {isIOS ? (
-              <Card className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-gradient-primary rounded-full flex-shrink-0">
-                    <Smartphone className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground mb-3">
-                      No iPhone/iPad
-                    </h3>
-                      <ol className="space-y-4 text-muted-foreground">
-                      <li className="flex items-start gap-3">
-                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</span>
-                        <span>Toque no botão <Share className="inline h-4 w-4 mx-1" /> Compartilhar na barra do Safari</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</span>
-                        <span>Role e toque em <Plus className="inline h-4 w-4 mx-1" /> "Adicionar à Tela de Início"</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</span>
-                        <span>Toque em "Adicionar" no canto superior direito</span>
-                      </li>
-                    </ol>
-                  </div>
-                </div>
-              </Card>
-            ) : (
-              <>
-                <Card className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-gradient-primary rounded-full flex-shrink-0">
-                      <Smartphone className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-foreground mb-3">
-                        No Android
-                      </h3>
-                      <ol className="space-y-4 text-muted-foreground">
-                        <li className="flex items-start gap-3">
-                          <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</span>
-                          <span>Toque no menu <MoreVertical className="inline h-4 w-4 mx-1" /> (três pontos) do Chrome</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</span>
-                          <span>Toque em "Instalar app" ou "Adicionar à tela inicial"</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</span>
-                          <span>Confirme a instalação</span>
-                        </li>
-                      </ol>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-blue-500 rounded-full flex-shrink-0">
-                      <Monitor className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-foreground mb-3">
-                        No Computador
-                      </h3>
-                      <ol className="space-y-4 text-muted-foreground">
-                        <li className="flex items-start gap-3">
-                          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">1</span>
-                          <span>No Chrome, clique no ícone de instalação <Download className="inline h-4 w-4 mx-1" /> na barra de endereço</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</span>
-                          <span>Ou clique no menu (três pontos) e depois "Instalar ArcanoApp"</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                          <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</span>
-                          <span>Confirme a instalação</span>
-                        </li>
-                      </ol>
-                    </div>
-                  </div>
-                </Card>
-              </>
-            )}
+            {/* Interactive Tutorial */}
+            <InstallTutorialInteractive />
           </div>
         )}
 
