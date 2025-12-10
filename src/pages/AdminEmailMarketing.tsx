@@ -172,6 +172,18 @@ const AdminEmailMarketing = () => {
       return;
     }
 
+    // Validar se custom_email tem o email preenchido
+    if (campaign.recipient_filter === "custom_email" && !campaign.filter_value) {
+      toast.error("Digite o email do destinatário");
+      return;
+    }
+
+    // Validar se specific_pack tem o pack selecionado
+    if (campaign.recipient_filter === "specific_pack" && !campaign.filter_value) {
+      toast.error("Selecione o pack");
+      return;
+    }
+
     if (!campaign.id) {
       await handleSaveDraft();
     }
@@ -377,12 +389,17 @@ const AdminEmailMarketing = () => {
                     <Label>Destinatários</Label>
                     <RecipientSelector
                       value={campaign.recipient_filter}
-                      onChange={(value) => setCampaign({ ...campaign, recipient_filter: value })}
-                      packValue={campaign.filter_value}
+                      onChange={(value) => setCampaign({ ...campaign, recipient_filter: value, filter_value: "" })}
+                      packValue={campaign.recipient_filter === "specific_pack" ? campaign.filter_value : ""}
                       onPackChange={(value) => setCampaign({ ...campaign, filter_value: value })}
-                      customEmail={campaign.filter_value}
+                      customEmail={campaign.recipient_filter === "custom_email" ? campaign.filter_value : ""}
                       onCustomEmailChange={(value) => setCampaign({ ...campaign, filter_value: value })}
                     />
+                    {campaign.recipient_filter === "custom_email" && campaign.filter_value && (
+                      <p className="text-xs text-green-600 mt-1">
+                        ✓ Email definido: {campaign.filter_value}
+                      </p>
+                    )}
                   </div>
                 </div>
 
