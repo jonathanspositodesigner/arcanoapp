@@ -512,7 +512,7 @@ const BibliotecaPrompts = () => {
           </div>
 
           {/* Install App Button */}
-          <Button onClick={() => navigate("/install")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-2">
+          <Button onClick={() => navigate("/install-app")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-2">
             <Smartphone className="h-4 w-4 mr-2" />
             Instalar App
           </Button>
@@ -558,7 +558,7 @@ const BibliotecaPrompts = () => {
         {/* Main Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pb-24 lg:pb-8 overflow-x-hidden max-w-full">
           {/* Mobile Install App Button */}
-          <Button onClick={() => navigate("/install")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden">
+          <Button onClick={() => navigate("/install-app")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden">
             <Smartphone className="h-4 w-4 mr-2" />
             Instalar App
           </Button>

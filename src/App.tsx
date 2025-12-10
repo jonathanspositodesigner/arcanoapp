@@ -106,7 +106,6 @@ const AppContent = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/profile-settings" element={<ProfileSettings />} />
-        <Route path="/install" element={<InstallApp />} />
         <Route path="/install-app" element={<InstallApp />} />
         <Route path="/planos" element={<Planos />} />
         <Route path="/upgrade" element={<UpgradePlano />} />
