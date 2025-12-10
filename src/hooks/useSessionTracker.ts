@@ -16,9 +16,10 @@ const getDeviceType = (): string => {
   return "desktop";
 };
 
-const getOrCreateSession = (): { sessionId: string; isNew: boolean } => {
+const getOrCreateSession = (): { sessionId: string; isNew: boolean; alreadyRecorded: boolean } => {
   const storedSession = sessionStorage.getItem("tracking_session_id");
   const lastActivityStr = sessionStorage.getItem("tracking_last_activity");
+  const wasRecorded = sessionStorage.getItem("tracking_session_recorded") === "true";
   const now = Date.now();
 
   // Check if session exists and is still valid (within 30 min timeout)
@@ -29,7 +30,7 @@ const getOrCreateSession = (): { sessionId: string; isNew: boolean } => {
     if (timeSinceActivity < SESSION_TIMEOUT_MS) {
       // Session still valid, update last activity
       sessionStorage.setItem("tracking_last_activity", now.toString());
-      return { sessionId: storedSession, isNew: false };
+      return { sessionId: storedSession, isNew: false, alreadyRecorded: wasRecorded };
     }
   }
 
@@ -37,7 +38,8 @@ const getOrCreateSession = (): { sessionId: string; isNew: boolean } => {
   const newSessionId = generateSessionId();
   sessionStorage.setItem("tracking_session_id", newSessionId);
   sessionStorage.setItem("tracking_last_activity", now.toString());
-  return { sessionId: newSessionId, isNew: true };
+  sessionStorage.removeItem("tracking_session_recorded"); // Reset recorded flag for new session
+  return { sessionId: newSessionId, isNew: true, alreadyRecorded: false };
 };
 
 export const useSessionTracker = () => {
@@ -45,16 +47,14 @@ export const useSessionTracker = () => {
   const sessionIdRef = useRef<string | null>(null);
   const enteredAtRef = useRef<Date | null>(null);
   const sessionRecordIdRef = useRef<string | null>(null);
-  const hasRecordedSession = useRef<boolean>(false);
 
   useEffect(() => {
     // Get or create session with 30-min timeout logic
-    const { sessionId, isNew } = getOrCreateSession();
+    const { sessionId, isNew, alreadyRecorded } = getOrCreateSession();
     sessionIdRef.current = sessionId;
 
-    // Only record a new session entry if this is a new session
-    if (isNew && !hasRecordedSession.current) {
-      hasRecordedSession.current = true;
+    // Only record a new session entry if this is a new session AND not already recorded
+    if (isNew && !alreadyRecorded) {
       enteredAtRef.current = new Date();
       
       const deviceType = getDeviceType();
@@ -76,10 +76,15 @@ export const useSessionTracker = () => {
 
         if (!error && data) {
           sessionRecordIdRef.current = data.id;
+          // Mark this session as recorded in sessionStorage
+          sessionStorage.setItem("tracking_session_recorded", "true");
         }
       };
 
       recordEntry();
+    } else if (!isNew && !alreadyRecorded) {
+      // Existing session but not recorded yet (edge case) - don't record
+      sessionStorage.setItem("tracking_last_activity", Date.now().toString());
     } else {
       // For existing sessions, just update last activity
       sessionStorage.setItem("tracking_last_activity", Date.now().toString());
