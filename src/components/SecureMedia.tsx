@@ -1,6 +1,7 @@
 import { useState, useEffect, memo } from 'react';
 import { getSignedMediaUrl, parseStorageUrl } from '@/hooks/useSignedUrl';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2 } from 'lucide-react';
 
 interface SecureImageProps {
   src: string;
@@ -97,7 +98,13 @@ export const SecureImage = memo(({
   }, [src, isPremium]);
 
   if (isLoading) {
-    return <Skeleton className={`${className} bg-muted`} />;
+    return (
+      <div className={`${className} bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden`}>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" 
+             style={{ animation: 'shimmer 2s infinite' }} />
+        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
+      </div>
+    );
   }
 
   if (error || !signedUrl) {
@@ -195,7 +202,13 @@ export const SecureVideo = memo(({
   }, [src, isPremium]);
 
   if (isLoading) {
-    return <Skeleton className={`${className} bg-muted`} />;
+    return (
+      <div className={`${className} bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden`}>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" 
+             style={{ animation: 'shimmer 2s infinite' }} />
+        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
+      </div>
+    );
   }
 
   if (error || !signedUrl) {
