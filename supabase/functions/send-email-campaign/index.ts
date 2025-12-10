@@ -94,22 +94,8 @@ serve(async (req) => {
           .not("email", "is", null);
         recipients = profiles?.map((p) => p.email).filter(Boolean) || [];
       }
-    } else if (filter === "premium_artes") {
-      const { data } = await supabaseClient
-        .from("premium_artes_users")
-        .select("user_id")
-        .eq("is_active", true);
-      
-      if (data && data.length > 0) {
-        const userIds = data.map((p) => p.user_id);
-        const { data: profiles } = await supabaseClient
-          .from("profiles")
-          .select("email")
-          .in("id", userIds)
-          .not("email", "is", null);
-        recipients = profiles?.map((p) => p.email).filter(Boolean) || [];
-      }
-    } else if (filter === "pack_purchasers") {
+    } else if (filter === "artes_clients") {
+      // All clients with any pack from Biblioteca de Artes
       const { data } = await supabaseClient
         .from("user_pack_purchases")
         .select("user_id")
@@ -123,6 +109,43 @@ serve(async (req) => {
           .in("id", userIds)
           .not("email", "is", null);
         recipients = profiles?.map((p) => p.email).filter(Boolean) || [];
+      }
+    } else if (filter === "artes_expired") {
+      // Clients with ALL packs expired
+      const { data: allPurchases } = await supabaseClient
+        .from("user_pack_purchases")
+        .select("user_id, access_type, expires_at")
+        .eq("is_active", true);
+      
+      if (allPurchases && allPurchases.length > 0) {
+        const now = new Date();
+        const userPacks: Record<string, { hasActive: boolean }> = {};
+        
+        allPurchases.forEach(purchase => {
+          if (!userPacks[purchase.user_id]) {
+            userPacks[purchase.user_id] = { hasActive: false };
+          }
+          // Check if this pack is still active (not expired)
+          if (purchase.access_type === 'vitalicio' || 
+              !purchase.expires_at || 
+              new Date(purchase.expires_at) > now) {
+            userPacks[purchase.user_id].hasActive = true;
+          }
+        });
+
+        // Get users where ALL packs are expired
+        const expiredUserIds = Object.entries(userPacks)
+          .filter(([_, data]) => !data.hasActive)
+          .map(([userId, _]) => userId);
+
+        if (expiredUserIds.length > 0) {
+          const { data: profiles } = await supabaseClient
+            .from("profiles")
+            .select("email")
+            .in("id", expiredUserIds)
+            .not("email", "is", null);
+          recipients = profiles?.map((p) => p.email).filter(Boolean) || [];
+        }
       }
     } else if (filter === "specific_pack" && campaign.filter_value) {
       const { data } = await supabaseClient
