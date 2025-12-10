@@ -380,6 +380,8 @@ const AdminEmailMarketing = () => {
                       onChange={(value) => setCampaign({ ...campaign, recipient_filter: value })}
                       packValue={campaign.filter_value}
                       onPackChange={(value) => setCampaign({ ...campaign, filter_value: value })}
+                      customEmail={campaign.filter_value}
+                      onCustomEmailChange={(value) => setCampaign({ ...campaign, filter_value: value })}
                     />
                   </div>
                 </div>

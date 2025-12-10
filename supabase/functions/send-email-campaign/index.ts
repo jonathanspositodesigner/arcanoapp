@@ -227,6 +227,10 @@ serve(async (req) => {
         if (profiles) allProfiles.push(...profiles);
       }
       recipients = allProfiles.map((p) => p.email).filter(Boolean);
+    } else if (filter === "custom_email" && campaign.filter_value) {
+      // Send to a specific custom email
+      recipients = [campaign.filter_value.trim()];
+      console.log(`Custom email recipient: ${campaign.filter_value}`);
     }
 
     // Remove duplicates

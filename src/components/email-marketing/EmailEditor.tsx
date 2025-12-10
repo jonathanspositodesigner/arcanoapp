@@ -5,7 +5,7 @@ import {
   Bold, Italic, Underline, Strikethrough, 
   AlignLeft, AlignCenter, AlignRight, 
   List, ListOrdered, Link, Image, 
-  Type, Palette, Square, Smile
+  Type, Palette, Square, Smile, ALargeSmall
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,6 +14,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const EMOJI_CATEGORIES = {
   "Populares": ["😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "😚", "😙", "🥲", "😋"],
@@ -23,6 +30,16 @@ const EMOJI_CATEGORIES = {
   "Fogo & Energia": ["🔥", "⚡", "💥", "💢", "💯", "❗", "❓", "❕", "❔", "‼️", "⁉️", "🚀", "💪", "🎯", "💡", "🔔", "🔊", "📢", "📣", "🎬"],
   "Corações": ["❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞", "💓", "💗", "💖", "💝", "💘", "💟", "♥️"],
 };
+
+const FONT_SIZES = [
+  { label: "10px", value: "1" },
+  { label: "12px", value: "2" },
+  { label: "14px", value: "3" },
+  { label: "16px", value: "4" },
+  { label: "18px", value: "5" },
+  { label: "24px", value: "6" },
+  { label: "32px", value: "7" },
+];
 
 interface EmailEditorProps {
   value: string;
@@ -282,6 +299,20 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
         </Button>
 
         <div className="w-px h-6 bg-border mx-1" />
+
+        {/* Font size */}
+        <Select onValueChange={(val) => execCommand("fontSize", val)}>
+          <SelectTrigger className="w-[70px] h-8">
+            <ALargeSmall className="h-4 w-4" />
+          </SelectTrigger>
+          <SelectContent>
+            {FONT_SIZES.map((size) => (
+              <SelectItem key={size.value} value={size.value}>
+                {size.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Text color */}
         <Popover>
