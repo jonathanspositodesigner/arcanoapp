@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Bell, BellOff, Youtube, AlertTriangle, Users, Flame, User, LogOut, Settings } from "lucide-react";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, User, LogOut, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -77,13 +76,6 @@ const BibliotecaPrompts = () => {
     hasReachedLimit,
     recordCopy
   } = useDailyPromptLimit(user, planType);
-  const {
-    isSupported: pushSupported,
-    isSubscribed: pushSubscribed,
-    isLoading: pushLoading,
-    subscribe: pushSubscribe,
-    unsubscribe: pushUnsubscribe
-  } = usePushNotifications();
   const [contentType, setContentType] = useState<"exclusive" | "community">("exclusive");
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
@@ -561,27 +553,6 @@ const BibliotecaPrompts = () => {
           <Button onClick={() => navigate("/contribuir")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mt-4">
             Envie o seu prompt 
           </Button>
-
-          {/* Push Notifications Button */}
-          {pushSupported && <Button onClick={async () => {
-          if (pushSubscribed) {
-            await pushUnsubscribe();
-          } else {
-            // Clear dismissed state to allow re-subscription
-            localStorage.removeItem("push-notification-dismissed");
-            localStorage.removeItem("push-notification-dismissed-time");
-            await pushSubscribe();
-          }
-        }} disabled={pushLoading} variant={pushSubscribed ? "outline" : "default"} className={`w-full mt-2 font-semibold ${pushSubscribed ? "border-border hover:bg-secondary" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"}`}>
-              {pushSubscribed ? <>
-                  <BellOff className="h-4 w-4 mr-2" />
-                  Desativar Notificações
-                </> : <>
-                  <Bell className="h-4 w-4 mr-2" />
-                  Ativar Notificações
-                </>}
-            </Button>}
-
         </aside>
 
         {/* Main Content */}
