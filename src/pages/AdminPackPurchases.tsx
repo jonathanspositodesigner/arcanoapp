@@ -5,6 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -931,25 +935,49 @@ const AdminPackPurchases = () => {
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div className="space-y-1">
                               <Label className="text-xs">Pack</Label>
-                              <Select 
-                                value={access.pack_slug} 
-                                onValueChange={(v) => updatePackAccess(index, 'pack_slug', v)}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {packs.map(pack => (
-                                    <SelectItem 
-                                      key={pack.id} 
-                                      value={pack.slug}
-                                      disabled={formData.packAccesses.some((pa, i) => i !== index && pa.pack_slug === pack.slug)}
-                                    >
-                                      {pack.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className="w-full justify-between font-normal"
+                                  >
+                                    {access.pack_slug
+                                      ? packs.find((pack) => pack.slug === access.pack_slug)?.name || access.pack_slug
+                                      : "Selecione um pack..."}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[300px] p-0" align="start">
+                                  <Command>
+                                    <CommandInput placeholder="Buscar pack..." />
+                                    <CommandList>
+                                      <CommandEmpty>Nenhum pack encontrado.</CommandEmpty>
+                                      <CommandGroup>
+                                        {packs
+                                          .filter(pack => !formData.packAccesses.some((pa, i) => i !== index && pa.pack_slug === pack.slug))
+                                          .map((pack) => (
+                                            <CommandItem
+                                              key={pack.id}
+                                              value={pack.name}
+                                              onSelect={() => {
+                                                updatePackAccess(index, 'pack_slug', pack.slug);
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  access.pack_slug === pack.slug ? "opacity-100" : "opacity-0"
+                                                )}
+                                              />
+                                              {pack.name}
+                                            </CommandItem>
+                                          ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">Tipo de Acesso</Label>
