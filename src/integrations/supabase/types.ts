@@ -423,6 +423,71 @@ export type Database = {
         }
         Relationships: []
       }
+      artes_promotion_items: {
+        Row: {
+          access_type: Database["public"]["Enums"]["artes_access_type"]
+          created_at: string
+          id: string
+          pack_slug: string
+          promotion_id: string
+        }
+        Insert: {
+          access_type: Database["public"]["Enums"]["artes_access_type"]
+          created_at?: string
+          id?: string
+          pack_slug: string
+          promotion_id: string
+        }
+        Update: {
+          access_type?: Database["public"]["Enums"]["artes_access_type"]
+          created_at?: string
+          id?: string
+          pack_slug?: string
+          promotion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artes_promotion_items_promotion_id_fkey"
+            columns: ["promotion_id"]
+            isOneToOne: false
+            referencedRelation: "artes_promotions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artes_promotions: {
+        Row: {
+          created_at: string
+          greenn_product_id: number | null
+          has_bonus_access: boolean
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          greenn_product_id?: number | null
+          has_bonus_access?: boolean
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          greenn_product_id?: number | null
+          has_bonus_access?: boolean
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       community_artes: {
         Row: {
           approved: boolean | null
