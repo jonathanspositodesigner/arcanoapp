@@ -37,10 +37,19 @@ const COLORS = [
 
 const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const [linkUrl, setLinkUrl] = useState("");
-  const [showLinkInput, setShowLinkInput] = useState(false);
   const [emojiCategory, setEmojiCategory] = useState("Populares");
   const isInternalChange = useRef(false);
+
+  // Link state
+  const [showLinkPopover, setShowLinkPopover] = useState(false);
+  const [linkText, setLinkText] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
+
+  // Button state
+  const [showButtonPopover, setShowButtonPopover] = useState(false);
+  const [buttonText, setButtonText] = useState("");
+  const [buttonUrl, setButtonUrl] = useState("");
+  const [buttonColor, setButtonColor] = useState("#552b99");
 
   // Set initial content only once or when value changes externally
   useEffect(() => {
@@ -98,16 +107,51 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
   };
 
   const insertLink = () => {
-    if (linkUrl) {
-      execCommand("createLink", linkUrl);
-      setLinkUrl("");
-      setShowLinkInput(false);
+    if (!linkUrl) {
+      toast.error("Digite a URL do link");
+      return;
     }
+    
+    const selection = window.getSelection();
+    const hasSelection = selection && selection.toString().trim().length > 0;
+    
+    if (hasSelection) {
+      // Has selected text - create link on it
+      execCommand("createLink", linkUrl);
+    } else if (linkText) {
+      // No selection but has text - insert new link
+      const linkHtml = `<a href="${linkUrl}" style="color: #552b99;">${linkText}</a>`;
+      execCommand("insertHTML", linkHtml);
+    } else {
+      toast.error("Selecione um texto ou digite o texto do link");
+      return;
+    }
+    
+    setLinkUrl("");
+    setLinkText("");
+    setShowLinkPopover(false);
+    toast.success("Link inserido!");
   };
 
-  const insertButton = (color: string) => {
-    const buttonHtml = `<a href="#" style="display: inline-block; padding: 12px 24px; background-color: ${color}; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 8px 0;">Clique Aqui</a>`;
+  const insertButton = () => {
+    if (!buttonText) {
+      toast.error("Digite o texto do botão");
+      return;
+    }
+    if (!buttonUrl) {
+      toast.error("Digite a URL do botão");
+      return;
+    }
+    
+    const buttonHtml = `<a href="${buttonUrl}" style="display: inline-block; padding: 12px 24px; background-color: ${buttonColor}; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 8px 0;">${buttonText}</a>`;
     execCommand("insertHTML", buttonHtml);
+    
+    // Reset fields
+    setButtonText("");
+    setButtonUrl("");
+    setButtonColor("#552b99");
+    setShowButtonPopover(false);
+    toast.success("Botão inserido!");
   };
 
   return (
@@ -254,22 +298,29 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
         <div className="w-px h-6 bg-border mx-1" />
 
         {/* Link */}
-        <Popover open={showLinkInput} onOpenChange={setShowLinkInput}>
+        <Popover open={showLinkPopover} onOpenChange={setShowLinkPopover}>
           <PopoverTrigger asChild>
             <Button type="button" variant="ghost" size="sm" title="Inserir link">
               <Link className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80">
-            <div className="flex gap-2">
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                💡 Selecione um texto no editor OU digite o texto abaixo
+              </p>
               <Input
-                placeholder="https://..."
+                placeholder="Texto do link (opcional se selecionado)"
+                value={linkText}
+                onChange={(e) => setLinkText(e.target.value)}
+              />
+              <Input
+                placeholder="URL (https://...)"
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && insertLink()}
               />
-              <Button type="button" size="sm" onClick={insertLink}>
-                OK
+              <Button type="button" size="sm" onClick={insertLink} className="w-full">
+                Inserir Link
               </Button>
             </div>
           </PopoverContent>
@@ -294,39 +345,41 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
         />
 
         {/* CTA Button */}
-        <Popover>
+        <Popover open={showButtonPopover} onOpenChange={setShowButtonPopover}>
           <PopoverTrigger asChild>
             <Button type="button" variant="ghost" size="sm" title="Inserir botão">
               <Square className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-2">
-            <p className="text-sm text-muted-foreground mb-2">Cor do botão:</p>
-            <div className="grid grid-cols-4 gap-1">
-              <button
-                type="button"
-                className="w-8 h-8 rounded"
-                style={{ backgroundColor: "#552b99" }}
-                onClick={() => insertButton("#552b99")}
+          <PopoverContent className="w-80">
+            <div className="space-y-3">
+              <Input
+                placeholder="Texto do botão"
+                value={buttonText}
+                onChange={(e) => setButtonText(e.target.value)}
               />
-              <button
-                type="button"
-                className="w-8 h-8 rounded"
-                style={{ backgroundColor: "#0095FF" }}
-                onClick={() => insertButton("#0095FF")}
+              <Input
+                placeholder="URL do botão (https://...)"
+                value={buttonUrl}
+                onChange={(e) => setButtonUrl(e.target.value)}
               />
-              <button
-                type="button"
-                className="w-8 h-8 rounded"
-                style={{ backgroundColor: "#22c55e" }}
-                onClick={() => insertButton("#22c55e")}
-              />
-              <button
-                type="button"
-                className="w-8 h-8 rounded"
-                style={{ backgroundColor: "#f97316" }}
-                onClick={() => insertButton("#f97316")}
-              />
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Cor do botão:</p>
+                <div className="grid grid-cols-6 gap-1">
+                  {["#552b99", "#0095FF", "#22c55e", "#f97316", "#ef4444", "#000000"].map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={`w-8 h-8 rounded border-2 ${buttonColor === color ? "border-foreground" : "border-transparent"}`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => setButtonColor(color)}
+                    />
+                  ))}
+                </div>
+              </div>
+              <Button type="button" size="sm" onClick={insertButton} className="w-full">
+                Inserir Botão
+              </Button>
             </div>
           </PopoverContent>
         </Popover>
