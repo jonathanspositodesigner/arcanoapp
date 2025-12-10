@@ -225,6 +225,16 @@ const BibliotecaArtes = () => {
       return allArtes.filter(a => a.category === selectedCategory).sort(sortByDate);
     }
 
+    // "Amostras Grátis" section - show all free-sample artes directly without pack selection
+    if (activeSection === 'free-sample' && !selectedPack) {
+      const freeSamplePacks = dbPacks.filter(p => p.type === 'free-sample').map(p => p.name);
+      const freeSampleArtes = allArtes.filter(a => freeSamplePacks.includes(a.pack || ''));
+      if (selectedCategory === "Todos") {
+        return freeSampleArtes.sort(sortByDate);
+      }
+      return freeSampleArtes.filter(a => a.category === selectedCategory).sort(sortByDate);
+    }
+
     // Must have a pack selected to show artes for other sections
     if (!selectedPack) return [];
 
@@ -641,8 +651,8 @@ const BibliotecaArtes = () => {
             {/* Banner Carousel - Only show when no pack is selected */}
             {!selectedPack && <BannerCarousel />}
 
-            {/* Pack/Bonus Selection View - excludes tutorial section */}
-            {!selectedPack && activeSection !== 'cursos' && activeSection !== 'tutorial' && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {/* Pack/Bonus Selection View - excludes tutorial, cursos, all-artes, and free-sample sections */}
+            {!selectedPack && activeSection !== 'cursos' && activeSection !== 'tutorial' && activeSection !== 'all-artes' && activeSection !== 'free-sample' && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getCurrentItems().map(pack => {
               const arteCount = getPackArteCount(pack.name);
               const packSlug = toPackSlug(pack.name);
@@ -858,6 +868,77 @@ const BibliotecaArtes = () => {
                 {/* Empty state */}
                 {paginatedArtes.length === 0 && <div className="text-center py-12">
                     <p className="text-muted-foreground">Nenhuma arte encontrada</p>
+                  </div>}
+
+                {/* Pagination */}
+                {totalPages > 1 && <div className="flex justify-center items-center gap-4 mt-8">
+                    <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-muted-foreground">
+                      Página {currentPage} de {totalPages}
+                    </span>
+                    <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>}
+              </>}
+
+            {/* Free Sample View - show artes directly without pack selection */}
+            {activeSection === 'free-sample' && !selectedPack && <>
+                {/* Category Filter */}
+                <div className="mb-6">
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
+                  setSelectedCategory(category);
+                  setCurrentPage(1);
+                }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
+                        {category}
+                      </Button>)}
+                  </div>
+                </div>
+
+                {/* Artes Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                  {paginatedArtes.map(arte => {
+                const isVideo = isVideoUrl(arte.imageUrl);
+                const arteId = String(arte.id);
+                const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
+                const isAnimating = animatingClicks.has(arteId);
+                // Free sample artes are always accessible
+                const hasAccess = true;
+                return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
+                        <div className="relative aspect-square">
+                          {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={false} autoPlay muted loop playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={false} />}
+                          
+                          <div className="absolute bottom-2 left-2 right-2">
+                            <Badge variant="secondary" className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
+                              <Copy className="h-2.5 w-2.5" />
+                              {totalClicks}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="p-2 sm:p-3">
+                          <h3 className="font-semibold text-sm text-foreground line-clamp-1">
+                            {arte.title}
+                          </h3>
+                          <div className="mt-1">
+                            {getBadgeContent(arte)}
+                          </div>
+                          <Button size="sm" variant="outline" className="w-full mt-2 text-xs" onClick={e => {
+                      e.stopPropagation();
+                      handleItemClick(arte);
+                    }}>
+                              Editar Agora 
+                            </Button>
+                        </div>
+                      </Card>;
+              })}
+                </div>
+
+                {/* Empty state */}
+                {paginatedArtes.length === 0 && <div className="text-center py-12">
+                    <p className="text-muted-foreground">Nenhuma arte grátis encontrada</p>
                   </div>}
 
                 {/* Pagination */}
