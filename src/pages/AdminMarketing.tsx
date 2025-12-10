@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Mail, Send, Save, TestTube, Loader2, 
-  MailCheck, FileText, Users
+  MailCheck, FileText, Users, ChevronDown, ChevronUp,
+  Megaphone, Share2, Target, Calendar
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import EmailEditor from "@/components/email-marketing/EmailEditor";
@@ -14,6 +15,11 @@ import RecipientSelector from "@/components/email-marketing/RecipientSelector";
 import CampaignHistory from "@/components/email-marketing/CampaignHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface Campaign {
   id?: string;
@@ -28,6 +34,7 @@ interface Campaign {
 }
 
 const AdminMarketing = () => {
+  const [emailMarketingOpen, setEmailMarketingOpen] = useState(true);
   const [campaign, setCampaign] = useState<Campaign>({
     title: "",
     subject: "",
@@ -116,7 +123,6 @@ const AdminMarketing = () => {
       return;
     }
 
-    // Save draft first if needed
     if (!campaign.id) {
       await handleSaveDraft();
     }
@@ -151,7 +157,6 @@ const AdminMarketing = () => {
       return;
     }
 
-    // Save first
     if (!campaign.id) {
       await handleSaveDraft();
     }
@@ -210,6 +215,7 @@ const AdminMarketing = () => {
         filter_value: data.filter_value || "",
         status: data.status,
       });
+      setEmailMarketingOpen(true);
     }
   };
 
@@ -230,6 +236,7 @@ const AdminMarketing = () => {
         recipient_filter: data.recipient_filter,
         filter_value: data.filter_value || "",
       });
+      setEmailMarketingOpen(true);
       toast.info("Campanha duplicada. Edite e salve.");
     }
   };
@@ -237,216 +244,288 @@ const AdminMarketing = () => {
   return (
     <AdminLayout>
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">E-mail Marketing</h1>
-        <p className="text-muted-foreground mb-8">Crie e envie campanhas de email</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Marketing</h1>
+        <p className="text-muted-foreground mb-8">Ferramentas de divulgação e campanhas</p>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/20 rounded-lg">
-                <FileText className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.totalCampaigns}</p>
-                <p className="text-sm text-muted-foreground">Campanhas enviadas</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/20 rounded-lg">
-                <MailCheck className="h-5 w-5 text-green-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.totalSent}</p>
-                <p className="text-sm text-muted-foreground">Emails enviados</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/20 rounded-lg">
-                <Users className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stats.lastCampaign 
-                    ? new Date(stats.lastCampaign).toLocaleDateString("pt-BR")
-                    : "-"
-                  }
-                </p>
-                <p className="text-sm text-muted-foreground">Última campanha</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="create" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="create" className="gap-2">
-              <Mail className="h-4 w-4" />
-              Nova Campanha
-            </TabsTrigger>
-            <TabsTrigger value="history" className="gap-2">
-              <FileText className="h-4 w-4" />
-              Histórico
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="create">
-            <Card className="p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left column - Form */}
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="title">Título interno</Label>
-                    <Input
-                      id="title"
-                      placeholder="Ex: Black Friday 2024"
-                      value={campaign.title}
-                      onChange={(e) => setCampaign({ ...campaign, title: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="subject">Assunto do email</Label>
-                    <Input
-                      id="subject"
-                      placeholder="Ex: 🔥 Oferta especial só hoje!"
-                      value={campaign.subject}
-                      onChange={(e) => setCampaign({ ...campaign, subject: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="sender_name">Nome do remetente</Label>
-                      <Input
-                        id="sender_name"
-                        placeholder="Arcano Lab"
-                        value={campaign.sender_name}
-                        onChange={(e) => setCampaign({ ...campaign, sender_name: e.target.value })}
-                      />
+        <div className="space-y-6">
+          {/* Email Marketing Card */}
+          <Collapsible open={emailMarketingOpen} onOpenChange={setEmailMarketingOpen}>
+            <Card className="overflow-hidden">
+              <CollapsibleTrigger asChild>
+                <div className="p-6 cursor-pointer hover:bg-muted/30 transition-colors flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/20 rounded-lg">
+                      <Mail className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <Label htmlFor="sender_email">Email do remetente</Label>
-                      <Input
-                        id="sender_email"
-                        placeholder="contato@dominio.com"
-                        value={campaign.sender_email}
-                        onChange={(e) => setCampaign({ ...campaign, sender_email: e.target.value })}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Use um domínio verificado no Resend
+                      <h2 className="text-xl font-bold text-foreground">E-mail Marketing</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Crie e envie campanhas de email para seus usuários
                       </p>
                     </div>
                   </div>
-
-                  <div>
-                    <Label>Destinatários</Label>
-                    <RecipientSelector
-                      value={campaign.recipient_filter}
-                      onChange={(value) => setCampaign({ ...campaign, recipient_filter: value })}
-                      packValue={campaign.filter_value}
-                      onPackChange={(value) => setCampaign({ ...campaign, filter_value: value })}
-                    />
+                  <div className="flex items-center gap-4">
+                    <div className="text-right hidden sm:block">
+                      <p className="text-sm text-muted-foreground">Campanhas enviadas</p>
+                      <p className="text-lg font-bold">{stats.totalCampaigns}</p>
+                    </div>
+                    {emailMarketingOpen ? (
+                      <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                    )}
                   </div>
                 </div>
+              </CollapsibleTrigger>
 
-                {/* Right column - Test */}
-                <div className="space-y-4">
-                  <Card className="p-4 bg-muted/30">
-                    <h3 className="font-medium mb-3 flex items-center gap-2">
-                      <TestTube className="h-4 w-4" />
-                      Enviar email de teste
-                    </h3>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="seu@email.com"
-                        value={testEmail}
-                        onChange={(e) => setTestEmail(e.target.value)}
-                      />
-                      <Button
-                        variant="outline"
-                        onClick={handleSendTest}
-                        disabled={sendingTest || !campaign.content}
-                      >
-                        {sendingTest ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          "Testar"
-                        )}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Envie um email de teste antes de disparar para todos
-                    </p>
-                  </Card>
-
-                  {campaign.status === "sent" && (
-                    <Card className="p-4 bg-green-500/10 border-green-500/30">
-                      <p className="text-sm text-green-600 font-medium">
-                        ✓ Esta campanha já foi enviada
-                      </p>
+              <CollapsibleContent>
+                <div className="border-t border-border p-6">
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <Card className="p-4 bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/20 rounded-lg">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold">{stats.totalCampaigns}</p>
+                          <p className="text-sm text-muted-foreground">Campanhas enviadas</p>
+                        </div>
+                      </div>
                     </Card>
-                  )}
-                </div>
-              </div>
+                    <Card className="p-4 bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-500/20 rounded-lg">
+                          <MailCheck className="h-5 w-5 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold">{stats.totalSent}</p>
+                          <p className="text-sm text-muted-foreground">Emails enviados</p>
+                        </div>
+                      </div>
+                    </Card>
+                    <Card className="p-4 bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-500/20 rounded-lg">
+                          <Users className="h-5 w-5 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold">
+                            {stats.lastCampaign 
+                              ? new Date(stats.lastCampaign).toLocaleDateString("pt-BR")
+                              : "-"
+                            }
+                          </p>
+                          <p className="text-sm text-muted-foreground">Última campanha</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
 
-              {/* Editor */}
-              <div className="mt-6">
-                <Label>Conteúdo do email</Label>
-                <div className="mt-2">
-                  <EmailEditor
-                    value={campaign.content}
-                    onChange={(html) => setCampaign({ ...campaign, content: html })}
-                  />
-                </div>
-              </div>
+                  <Tabs defaultValue="create" className="space-y-6">
+                    <TabsList>
+                      <TabsTrigger value="create" className="gap-2">
+                        <Mail className="h-4 w-4" />
+                        Nova Campanha
+                      </TabsTrigger>
+                      <TabsTrigger value="history" className="gap-2">
+                        <FileText className="h-4 w-4" />
+                        Histórico
+                      </TabsTrigger>
+                    </TabsList>
 
-              {/* Actions */}
-              <div className="flex justify-between items-center mt-6 pt-6 border-t border-border">
-                <Button variant="outline" onClick={resetForm}>
-                  Limpar
-                </Button>
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={handleSaveDraft}
-                    disabled={saving}
-                  >
-                    {saving ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Save className="h-4 w-4 mr-2" />
-                    )}
-                    Salvar Rascunho
-                  </Button>
-                  <Button
-                    onClick={handleSendCampaign}
-                    disabled={sending || campaign.status === "sent"}
-                  >
-                    {sending ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    Enviar Campanha
-                  </Button>
+                    <TabsContent value="create">
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {/* Left column - Form */}
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="title">Título interno</Label>
+                              <Input
+                                id="title"
+                                placeholder="Ex: Black Friday 2024"
+                                value={campaign.title}
+                                onChange={(e) => setCampaign({ ...campaign, title: e.target.value })}
+                              />
+                            </div>
+
+                            <div>
+                              <Label htmlFor="subject">Assunto do email</Label>
+                              <Input
+                                id="subject"
+                                placeholder="Ex: 🔥 Oferta especial só hoje!"
+                                value={campaign.subject}
+                                onChange={(e) => setCampaign({ ...campaign, subject: e.target.value })}
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="sender_name">Nome do remetente</Label>
+                                <Input
+                                  id="sender_name"
+                                  placeholder="Arcano Lab"
+                                  value={campaign.sender_name}
+                                  onChange={(e) => setCampaign({ ...campaign, sender_name: e.target.value })}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="sender_email">Email do remetente</Label>
+                                <Input
+                                  id="sender_email"
+                                  placeholder="contato@dominio.com"
+                                  value={campaign.sender_email}
+                                  onChange={(e) => setCampaign({ ...campaign, sender_email: e.target.value })}
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Use um domínio verificado no Resend
+                                </p>
+                              </div>
+                            </div>
+
+                            <div>
+                              <Label>Destinatários</Label>
+                              <RecipientSelector
+                                value={campaign.recipient_filter}
+                                onChange={(value) => setCampaign({ ...campaign, recipient_filter: value })}
+                                packValue={campaign.filter_value}
+                                onPackChange={(value) => setCampaign({ ...campaign, filter_value: value })}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Right column - Test */}
+                          <div className="space-y-4">
+                            <Card className="p-4 bg-muted/30">
+                              <h3 className="font-medium mb-3 flex items-center gap-2">
+                                <TestTube className="h-4 w-4" />
+                                Enviar email de teste
+                              </h3>
+                              <div className="flex gap-2">
+                                <Input
+                                  placeholder="seu@email.com"
+                                  value={testEmail}
+                                  onChange={(e) => setTestEmail(e.target.value)}
+                                />
+                                <Button
+                                  variant="outline"
+                                  onClick={handleSendTest}
+                                  disabled={sendingTest || !campaign.content}
+                                >
+                                  {sendingTest ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    "Testar"
+                                  )}
+                                </Button>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Envie um email de teste antes de disparar para todos
+                              </p>
+                            </Card>
+
+                            {campaign.status === "sent" && (
+                              <Card className="p-4 bg-green-500/10 border-green-500/30">
+                                <p className="text-sm text-green-600 font-medium">
+                                  ✓ Esta campanha já foi enviada
+                                </p>
+                              </Card>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Editor */}
+                        <div>
+                          <Label>Conteúdo do email</Label>
+                          <div className="mt-2">
+                            <EmailEditor
+                              value={campaign.content}
+                              onChange={(html) => setCampaign({ ...campaign, content: html })}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-between items-center pt-6 border-t border-border">
+                          <Button variant="outline" onClick={resetForm}>
+                            Limpar
+                          </Button>
+                          <div className="flex gap-3">
+                            <Button
+                              variant="outline"
+                              onClick={handleSaveDraft}
+                              disabled={saving}
+                            >
+                              {saving ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <Save className="h-4 w-4 mr-2" />
+                              )}
+                              Salvar Rascunho
+                            </Button>
+                            <Button
+                              onClick={handleSendCampaign}
+                              disabled={sending || campaign.status === "sent"}
+                            >
+                              {sending ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <Send className="h-4 w-4 mr-2" />
+                              )}
+                              Enviar Campanha
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="history">
+                      <CampaignHistory
+                        onEdit={handleEdit}
+                        onDuplicate={handleDuplicate}
+                        refreshTrigger={refreshHistory}
+                      />
+                    </TabsContent>
+                  </Tabs>
                 </div>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+
+          {/* Upcoming Features */}
+          <h3 className="text-lg font-semibold text-foreground">Em breve</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="p-6 opacity-60">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="p-4 bg-green-500/20 rounded-full">
+                  <Share2 className="h-10 w-10 text-green-500" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground">Links de Afiliados</h3>
+                <p className="text-sm text-muted-foreground">Gerencie programa de afiliados</p>
               </div>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="history">
-            <CampaignHistory
-              onEdit={handleEdit}
-              onDuplicate={handleDuplicate}
-              refreshTrigger={refreshHistory}
-            />
-          </TabsContent>
-        </Tabs>
+            <Card className="p-6 opacity-60">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="p-4 bg-orange-500/20 rounded-full">
+                  <Target className="h-10 w-10 text-orange-500" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground">Campanhas</h3>
+                <p className="text-sm text-muted-foreground">Crie e acompanhe campanhas promocionais</p>
+              </div>
+            </Card>
+
+            <Card className="p-6 opacity-60">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="p-4 bg-purple-500/20 rounded-full">
+                  <Calendar className="h-10 w-10 text-purple-500" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground">Agendamento</h3>
+                <p className="text-sm text-muted-foreground">Agende publicações e promoções</p>
+              </div>
+            </Card>
+          </div>
+        </div>
       </div>
     </AdminLayout>
   );
