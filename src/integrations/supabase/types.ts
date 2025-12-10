@@ -488,6 +488,33 @@ export type Database = {
         }
         Relationships: []
       }
+      blacklisted_emails: {
+        Row: {
+          auto_blocked: boolean | null
+          blocked_at: string | null
+          email: string
+          id: string
+          notes: string | null
+          reason: string | null
+        }
+        Insert: {
+          auto_blocked?: boolean | null
+          blocked_at?: string | null
+          email: string
+          id?: string
+          notes?: string | null
+          reason?: string | null
+        }
+        Update: {
+          auto_blocked?: boolean | null
+          blocked_at?: string | null
+          email?: string
+          id?: string
+          notes?: string | null
+          reason?: string | null
+        }
+        Relationships: []
+      }
       community_artes: {
         Row: {
           approved: boolean | null
@@ -1293,6 +1320,42 @@ export type Database = {
           page_path?: string
           session_id?: string
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      webhook_logs: {
+        Row: {
+          email: string | null
+          error_message: string | null
+          id: string
+          mapping_type: string | null
+          payload: Json
+          product_id: number | null
+          received_at: string | null
+          result: string | null
+          status: string | null
+        }
+        Insert: {
+          email?: string | null
+          error_message?: string | null
+          id?: string
+          mapping_type?: string | null
+          payload: Json
+          product_id?: number | null
+          received_at?: string | null
+          result?: string | null
+          status?: string | null
+        }
+        Update: {
+          email?: string | null
+          error_message?: string | null
+          id?: string
+          mapping_type?: string | null
+          payload?: Json
+          product_id?: number | null
+          received_at?: string | null
+          result?: string | null
+          status?: string | null
         }
         Relationships: []
       }

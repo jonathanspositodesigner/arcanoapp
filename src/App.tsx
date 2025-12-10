@@ -61,6 +61,8 @@ import AdminManageAdmins from "./pages/AdminManageAdmins";
 import ForjaSelos3DArtes from "./pages/ForjaSelos3DArtes";
 import TutorialArtes from "./pages/TutorialArtes";
 import AdminManagePromotions from "./pages/AdminManagePromotions";
+import AdminManageBlacklist from "./pages/AdminManageBlacklist";
+import AdminWebhookLogs from "./pages/AdminWebhookLogs";
 import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
@@ -137,6 +139,8 @@ const AppContent = () => {
         <Route path="/forja-selos-3d-artes" element={<ForjaSelos3DArtes />} />
         <Route path="/tutorial-artes/:slug" element={<TutorialArtes />} />
         <Route path="/admin-manage-promotions" element={<AdminManagePromotions />} />
+        <Route path="/admin-blacklist" element={<AdminManageBlacklist />} />
+        <Route path="/admin-webhook-logs" element={<AdminWebhookLogs />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
