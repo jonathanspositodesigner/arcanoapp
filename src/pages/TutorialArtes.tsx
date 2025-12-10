@@ -63,6 +63,14 @@ const TutorialArtes = () => {
   }, [slug, navigate]);
 
   const getEmbedUrl = (url: string) => {
+    // Se for um código iframe, extrair o src
+    if (url.includes('<iframe')) {
+      const srcMatch = url.match(/src=["']([^"']+)["']/);
+      if (srcMatch && srcMatch[1]) {
+        return srcMatch[1];
+      }
+    }
+    
     if (url.includes("youtube.com/watch")) {
       const videoId = url.split("v=")[1]?.split("&")[0];
       return `https://www.youtube.com/embed/${videoId}`;
@@ -71,7 +79,7 @@ const TutorialArtes = () => {
       const videoId = url.split("youtu.be/")[1]?.split("?")[0];
       return `https://www.youtube.com/embed/${videoId}`;
     }
-    if (url.includes("vimeo.com/")) {
+    if (url.includes("vimeo.com/") && !url.includes("player.vimeo.com")) {
       const videoId = url.split("vimeo.com/")[1]?.split("?")[0];
       return `https://player.vimeo.com/video/${videoId}`;
     }
