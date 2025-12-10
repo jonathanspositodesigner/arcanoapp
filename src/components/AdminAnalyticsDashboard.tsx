@@ -40,9 +40,8 @@ interface SessionStats {
 }
 
 interface CollectionStats {
-  totalCollectionSessions: number;
-  convertedToLibrary: number;
-  conversionRate: number;
+  totalViews: number;
+  topCollections: { name: string; count: number }[];
 }
 
 const AdminAnalyticsDashboard = () => {
@@ -73,7 +72,7 @@ const [pageViews, setPageViews] = useState({
     totalSessions: 0, bounceCount: 0, bounceRate: 0, avgDuration: 0
   });
   const [collectionStats, setCollectionStats] = useState<CollectionStats>({
-    totalCollectionSessions: 0, convertedToLibrary: 0, conversionRate: 0
+    totalViews: 0, topCollections: []
   });
   const [isLoading, setIsLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -748,57 +747,37 @@ const [pageViews, setPageViews] = useState({
         });
       }
 
-      // ========== FETCH COLLECTION STATS ==========
-      let collectionSessionsQuery = supabase
-        .from("user_sessions")
-        .select("session_id, page_path")
-        .like("page_path", "/colecao/%");
+      // ========== FETCH COLLECTION STATS from collection_views table ==========
+      let collectionViewsQuery = supabase
+        .from("collection_views")
+        .select("collection_slug, collection_name, viewed_at");
       
       if (threshold.start) {
-        collectionSessionsQuery = collectionSessionsQuery.gte("entered_at", threshold.start);
+        collectionViewsQuery = collectionViewsQuery.gte("viewed_at", threshold.start);
       }
       if (threshold.end) {
-        collectionSessionsQuery = collectionSessionsQuery.lte("entered_at", threshold.end);
+        collectionViewsQuery = collectionViewsQuery.lte("viewed_at", threshold.end);
       }
-      const { data: collectionSessionsData } = await collectionSessionsQuery;
+      const { data: collectionViewsData } = await collectionViewsQuery;
 
-      if (collectionSessionsData) {
-        // Get unique session IDs that came from collection links
-        const collectionSessionIds = new Set(collectionSessionsData.map(s => s.session_id));
-        const totalCollectionSessions = collectionSessionIds.size;
+      if (collectionViewsData) {
+        const totalViews = collectionViewsData.length;
 
-        // Check how many of these sessions also visited the library
-        let librarySessionsQuery = supabase
-          .from("user_sessions")
-          .select("session_id")
-          .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"]);
-        
-        if (threshold.start) {
-          librarySessionsQuery = librarySessionsQuery.gte("entered_at", threshold.start);
-        }
-        if (threshold.end) {
-          librarySessionsQuery = librarySessionsQuery.lte("entered_at", threshold.end);
-        }
-        const { data: librarySessionsData } = await librarySessionsQuery;
-
-        const librarySessionIds = new Set(librarySessionsData?.map(s => s.session_id) || []);
-        
-        // Count how many collection sessions converted to library visits
-        let convertedToLibrary = 0;
-        collectionSessionIds.forEach(sessionId => {
-          if (librarySessionIds.has(sessionId)) {
-            convertedToLibrary++;
-          }
+        // Count views per collection
+        const collectionCounts: Record<string, number> = {};
+        collectionViewsData.forEach((view) => {
+          collectionCounts[view.collection_name] = (collectionCounts[view.collection_name] || 0) + 1;
         });
 
-        const conversionRate = totalCollectionSessions > 0 
-          ? Math.round((convertedToLibrary / totalCollectionSessions) * 100) 
-          : 0;
+        // Rank collections by view count
+        const topCollections = Object.entries(collectionCounts)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
 
         setCollectionStats({
-          totalCollectionSessions,
-          convertedToLibrary,
-          conversionRate
+          totalViews,
+          topCollections
         });
       }
 
@@ -1059,17 +1038,22 @@ const [pageViews, setPageViews] = useState({
               
               <div className="space-y-3">
                 <div className="text-center">
-                  <p className="text-4xl font-bold text-indigo-500">{collectionStats.totalCollectionSessions}</p>
+                  <p className="text-4xl font-bold text-indigo-500">{collectionStats.totalViews}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    sessões via link de coleção
+                    aberturas de coleções
                   </p>
                 </div>
-                <div className="pt-2 border-t border-border">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Foram para biblioteca:</span>
-                    <span className="font-medium text-green-500">{collectionStats.convertedToLibrary} ({collectionStats.conversionRate}%)</span>
+                {collectionStats.topCollections.length > 0 && (
+                  <div className="pt-2 border-t border-border space-y-1.5">
+                    <p className="text-xs text-muted-foreground font-medium">Top Coleções:</p>
+                    {collectionStats.topCollections.slice(0, 3).map((col, index) => (
+                      <div key={col.name} className="flex justify-between text-xs">
+                        <span className="text-muted-foreground truncate max-w-[140px]">{index + 1}. {col.name}</span>
+                        <span className="font-medium text-indigo-500">{col.count}</span>
+                      </div>
+                    ))}
                   </div>
-                </div>
+                )}
               </div>
             </Card>
           </div>
