@@ -1,5 +1,6 @@
 import { useState, useEffect, memo, useRef } from 'react';
 import { getSignedMediaUrl, parseStorageUrl } from '@/hooks/useSignedUrl';
+import { preloadCache, getCachedSignedUrl } from '@/hooks/useImagePreloader';
 import { Loader2 } from 'lucide-react';
 
 interface SecureImageProps {
@@ -23,8 +24,8 @@ interface SecureVideoProps {
   onClick?: () => void;
 }
 
-// Cache for signed URLs at component level
-const signedUrlCache = new Map<string, string>();
+// Use shared preload cache
+const signedUrlCache = preloadCache;
 
 export const SecureImage = memo(({ 
   src, 
