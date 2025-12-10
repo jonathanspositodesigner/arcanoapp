@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import AdminLayout from "@/components/AdminLayout";
 import EmailEditor from "@/components/email-marketing/EmailEditor";
 import RecipientSelector from "@/components/email-marketing/RecipientSelector";
 import CampaignHistory from "@/components/email-marketing/CampaignHistory";
+import EmojiPicker from "@/components/email-marketing/EmojiPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -299,22 +300,32 @@ const AdminEmailMarketing = () => {
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="title">Título interno</Label>
-                    <Input
-                      id="title"
-                      placeholder="Ex: Black Friday 2024"
-                      value={campaign.title}
-                      onChange={(e) => setCampaign({ ...campaign, title: e.target.value })}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="title"
+                        placeholder="Ex: Black Friday 2024"
+                        value={campaign.title}
+                        onChange={(e) => setCampaign({ ...campaign, title: e.target.value })}
+                      />
+                      <EmojiPicker
+                        onSelect={(emoji) => setCampaign({ ...campaign, title: campaign.title + emoji })}
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <Label htmlFor="subject">Assunto do email</Label>
-                    <Input
-                      id="subject"
-                      placeholder="Ex: 🔥 Oferta especial só hoje!"
-                      value={campaign.subject}
-                      onChange={(e) => setCampaign({ ...campaign, subject: e.target.value })}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="subject"
+                        placeholder="Ex: 🔥 Oferta especial só hoje!"
+                        value={campaign.subject}
+                        onChange={(e) => setCampaign({ ...campaign, subject: e.target.value })}
+                      />
+                      <EmojiPicker
+                        onSelect={(emoji) => setCampaign({ ...campaign, subject: campaign.subject + emoji })}
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">

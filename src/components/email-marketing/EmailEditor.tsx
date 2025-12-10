@@ -5,7 +5,7 @@ import {
   Bold, Italic, Underline, Strikethrough, 
   AlignLeft, AlignCenter, AlignRight, 
   List, ListOrdered, Link, Image, 
-  Type, Palette, Square
+  Type, Palette, Square, Smile
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,6 +14,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
+const EMOJI_CATEGORIES = {
+  "Populares": ["😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "😚", "😙", "🥲", "😋"],
+  "Gestos": ["👍", "👎", "👊", "✊", "🤛", "🤜", "🤞", "✌️", "🤟", "🤘", "👌", "🤌", "🤏", "👈", "👉", "👆", "👇", "☝️", "👋", "🤚"],
+  "Celebração": ["🎉", "🎊", "🎁", "🎈", "🎂", "🎄", "🎃", "🎆", "🎇", "✨", "💫", "🌟", "⭐", "🏆", "🥇", "🥈", "🥉", "🏅", "🎖️", "🎗️"],
+  "Negócios": ["💼", "📈", "📉", "💰", "💵", "💴", "💶", "💷", "💳", "💎", "📊", "📋", "📌", "📍", "🔗", "📧", "📨", "📩", "📤", "📥"],
+  "Fogo & Energia": ["🔥", "⚡", "💥", "💢", "💯", "❗", "❓", "❕", "❔", "‼️", "⁉️", "🚀", "💪", "🎯", "💡", "🔔", "🔊", "📢", "📣", "🎬"],
+  "Corações": ["❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞", "💓", "💗", "💖", "💝", "💘", "💟", "♥️"],
+};
 
 interface EmailEditorProps {
   value: string;
@@ -30,6 +39,11 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [linkUrl, setLinkUrl] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
+  const [emojiCategory, setEmojiCategory] = useState("Populares");
+
+  const insertEmoji = (emoji: string) => {
+    execCommand("insertHTML", emoji);
+  };
 
   const execCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -301,6 +315,44 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
                 style={{ backgroundColor: "#f97316" }}
                 onClick={() => insertButton("#f97316")}
               />
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <div className="w-px h-6 bg-border mx-1" />
+
+        {/* Emoji picker */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button type="button" variant="ghost" size="sm" title="Inserir emoji">
+              <Smile className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-2">
+            <div className="flex flex-wrap gap-1 mb-2 pb-2 border-b border-border">
+              {Object.keys(EMOJI_CATEGORIES).map((category) => (
+                <Button
+                  key={category}
+                  variant={emojiCategory === category ? "secondary" : "ghost"}
+                  size="sm"
+                  className="text-xs h-7 px-2"
+                  onClick={() => setEmojiCategory(category)}
+                >
+                  {category}
+                </Button>
+              ))}
+            </div>
+            <div className="grid grid-cols-10 gap-1 max-h-48 overflow-y-auto">
+              {EMOJI_CATEGORIES[emojiCategory as keyof typeof EMOJI_CATEGORIES].map((emoji, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className="text-xl hover:bg-muted rounded p-1 transition-colors"
+                  onClick={() => insertEmoji(emoji)}
+                >
+                  {emoji}
+                </button>
+              ))}
             </div>
           </PopoverContent>
         </Popover>
