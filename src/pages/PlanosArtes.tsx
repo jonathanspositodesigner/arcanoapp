@@ -51,10 +51,6 @@ const PlanosArtes = () => {
     setLoading(false);
   };
 
-  // Packs with single lifetime option only
-  const singleOptionPacks = ["pack-fim-de-ano", "pack-de-halloween", "pack-de-carnaval"];
-  const isSingleOptionPack = selectedPack ? singleOptionPacks.includes(selectedPack.slug) : false;
-
   // Original prices in centavos
   const originalPrices = {
     "6_meses": 2700,
@@ -62,18 +58,7 @@ const PlanosArtes = () => {
     "vitalicio": 4700
   };
 
-  // Special price for single option packs (R$37)
-  const singleOptionPrice = 3700;
-
   const calculatePrice = (type: string) => {
-    if (isSingleOptionPack) {
-      const price = singleOptionPrice;
-      if (isRenewal) {
-        return (price * (1 - RENEWAL_DISCOUNT)) / 100;
-      }
-      return price / 100;
-    }
-    
     const original = originalPrices[type as keyof typeof originalPrices];
     if (isRenewal) {
       const discounted = original * (1 - RENEWAL_DISCOUNT);
@@ -84,24 +69,6 @@ const PlanosArtes = () => {
 
   const formatPrice = (value: number) => {
     return `R$ ${value.toFixed(2).replace('.', ',')}`;
-  };
-
-  const singleAccessOption = {
-    type: "vitalicio",
-    label: "Acesso Vitalício",
-    originalPrice: "R$ 37,00",
-    price: formatPrice(calculatePrice("vitalicio")),
-    icon: Gift,
-    buttonText: "Desbloquear Acesso Vitalício",
-    features: [
-      "Acesso permanente ao pack",
-      "Download ilimitado das artes",
-      "Arquivos editáveis (PSD e Canva)",
-      "Todas as atualizações futuras",
-      "Acesso ao conteúdo bônus exclusivo"
-    ],
-    hasBonus: true,
-    highlighted: true
   };
 
   const accessOptions = [
@@ -154,8 +121,6 @@ const PlanosArtes = () => {
       highlighted: true
     }
   ];
-
-  const displayOptions = isSingleOptionPack ? [singleAccessOption] : accessOptions;
 
   const handleSelectOption = (accessType: string) => {
     // TODO: Integrate with Greenn payment for specific pack and access type
@@ -261,8 +226,8 @@ const PlanosArtes = () => {
               </div>
             )}
 
-            <div className={`grid gap-6 ${isSingleOptionPack ? 'md:grid-cols-1 max-w-md mx-auto' : 'md:grid-cols-3'}`}>
-              {displayOptions.map((option) => {
+            <div className="grid md:grid-cols-3 gap-6">
+              {accessOptions.map((option) => {
                 const IconComponent = option.icon;
                 return (
                   <Card
