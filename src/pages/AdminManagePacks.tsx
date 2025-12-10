@@ -1021,11 +1021,11 @@ const AdminManagePacks = () => {
                   </div>
                   
                   {/* 6 Meses */}
-                  <div className="border-b pb-4">
+                  <div className={`border-b pb-4 ${!salesFormData.enabled_6_meses ? 'opacity-50' : ''}`}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Label className="font-medium">6 Meses</Label>
-                        {salesFormData.price_6_meses && salesFormData.checkout_link_6_meses && (
+                        {salesFormData.enabled_6_meses && salesFormData.price_6_meses && salesFormData.checkout_link_6_meses && (
                           <Check className="w-4 h-4 text-green-500" />
                         )}
                       </div>
@@ -1046,9 +1046,10 @@ const AdminManagePacks = () => {
                             value={salesFormData.price_6_meses}
                             onChange={(e) => setSalesFormData(prev => ({ ...prev, price_6_meses: e.target.value }))}
                             placeholder="2700"
-                            className={salesFormData.price_6_meses ? "pr-8 border-green-500/50" : ""}
+                            disabled={!salesFormData.enabled_6_meses}
+                            className={salesFormData.price_6_meses && salesFormData.enabled_6_meses ? "pr-8 border-green-500/50" : ""}
                           />
-                          {salesFormData.price_6_meses && (
+                          {salesFormData.price_6_meses && salesFormData.enabled_6_meses && (
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
@@ -1062,9 +1063,10 @@ const AdminManagePacks = () => {
                             value={salesFormData.checkout_link_6_meses}
                             onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_6_meses: e.target.value }))}
                             placeholder="https://..."
-                            className={salesFormData.checkout_link_6_meses ? "pr-8 border-green-500/50" : ""}
+                            disabled={!salesFormData.enabled_6_meses}
+                            className={salesFormData.checkout_link_6_meses && salesFormData.enabled_6_meses ? "pr-8 border-green-500/50" : ""}
                           />
-                          {salesFormData.checkout_link_6_meses && (
+                          {salesFormData.checkout_link_6_meses && salesFormData.enabled_6_meses && (
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
@@ -1073,11 +1075,11 @@ const AdminManagePacks = () => {
                   </div>
                   
                   {/* 1 Ano */}
-                  <div className="border-b pb-4">
+                  <div className={`border-b pb-4 ${!salesFormData.enabled_1_ano ? 'opacity-50' : ''}`}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Label className="font-medium">1 Ano</Label>
-                        {salesFormData.price_1_ano && salesFormData.checkout_link_1_ano && (
+                        {salesFormData.enabled_1_ano && salesFormData.price_1_ano && salesFormData.checkout_link_1_ano && (
                           <Check className="w-4 h-4 text-green-500" />
                         )}
                       </div>
@@ -1098,9 +1100,10 @@ const AdminManagePacks = () => {
                             value={salesFormData.price_1_ano}
                             onChange={(e) => setSalesFormData(prev => ({ ...prev, price_1_ano: e.target.value }))}
                             placeholder="3700"
-                            className={salesFormData.price_1_ano ? "pr-8 border-green-500/50" : ""}
+                            disabled={!salesFormData.enabled_1_ano}
+                            className={salesFormData.price_1_ano && salesFormData.enabled_1_ano ? "pr-8 border-green-500/50" : ""}
                           />
-                          {salesFormData.price_1_ano && (
+                          {salesFormData.price_1_ano && salesFormData.enabled_1_ano && (
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
@@ -1114,9 +1117,10 @@ const AdminManagePacks = () => {
                             value={salesFormData.checkout_link_1_ano}
                             onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_1_ano: e.target.value }))}
                             placeholder="https://..."
-                            className={salesFormData.checkout_link_1_ano ? "pr-8 border-green-500/50" : ""}
+                            disabled={!salesFormData.enabled_1_ano}
+                            className={salesFormData.checkout_link_1_ano && salesFormData.enabled_1_ano ? "pr-8 border-green-500/50" : ""}
                           />
-                          {salesFormData.checkout_link_1_ano && (
+                          {salesFormData.checkout_link_1_ano && salesFormData.enabled_1_ano && (
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
@@ -1125,11 +1129,11 @@ const AdminManagePacks = () => {
                   </div>
                   
                   {/* Vitalício */}
-                  <div>
+                  <div className={!salesFormData.enabled_vitalicio ? 'opacity-50' : ''}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Label className="font-medium">Vitalício</Label>
-                        {salesFormData.price_vitalicio && salesFormData.checkout_link_vitalicio && (
+                        {salesFormData.enabled_vitalicio && salesFormData.price_vitalicio && salesFormData.checkout_link_vitalicio && (
                           <Check className="w-4 h-4 text-green-500" />
                         )}
                       </div>
@@ -1150,9 +1154,10 @@ const AdminManagePacks = () => {
                             value={salesFormData.price_vitalicio}
                             onChange={(e) => setSalesFormData(prev => ({ ...prev, price_vitalicio: e.target.value }))}
                             placeholder="4700"
-                            className={salesFormData.price_vitalicio ? "pr-8 border-green-500/50" : ""}
+                            disabled={!salesFormData.enabled_vitalicio}
+                            className={salesFormData.price_vitalicio && salesFormData.enabled_vitalicio ? "pr-8 border-green-500/50" : ""}
                           />
-                          {salesFormData.price_vitalicio && (
+                          {salesFormData.price_vitalicio && salesFormData.enabled_vitalicio && (
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
@@ -1166,9 +1171,10 @@ const AdminManagePacks = () => {
                             value={salesFormData.checkout_link_vitalicio}
                             onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_vitalicio: e.target.value }))}
                             placeholder="https://..."
-                            className={salesFormData.checkout_link_vitalicio ? "pr-8 border-green-500/50" : ""}
+                            disabled={!salesFormData.enabled_vitalicio}
+                            className={salesFormData.checkout_link_vitalicio && salesFormData.enabled_vitalicio ? "pr-8 border-green-500/50" : ""}
                           />
-                          {salesFormData.checkout_link_vitalicio && (
+                          {salesFormData.checkout_link_vitalicio && salesFormData.enabled_vitalicio && (
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
@@ -1182,75 +1188,81 @@ const AdminManagePacks = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <Badge className="bg-green-500/20 text-green-600">🔄 30% OFF</Badge>
                     <Label className="font-semibold">Renovação com Desconto</Label>
-                    {salesFormData.checkout_link_renovacao_6_meses && salesFormData.checkout_link_renovacao_1_ano && salesFormData.checkout_link_renovacao_vitalicio && (
-                      <Check className="w-4 h-4 text-green-500" />
-                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">
                     Links para clientes que estão renovando acesso expirado
                   </p>
                   
                   <div className="space-y-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Label className="text-sm">Link Renovação 6 Meses</Label>
-                        {salesFormData.checkout_link_renovacao_6_meses && (
-                          <Check className="w-3 h-3 text-green-500" />
-                        )}
+                    {salesFormData.enabled_6_meses && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Renovação 6 Meses</Label>
+                          {salesFormData.checkout_link_renovacao_6_meses && (
+                            <Check className="w-3 h-3 text-green-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_renovacao_6_meses}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_renovacao_6_meses: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_renovacao_6_meses ? "pr-8 border-green-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_renovacao_6_meses && (
+                            <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
                       </div>
-                      <div className="relative">
-                        <Input
-                          type="url"
-                          value={salesFormData.checkout_link_renovacao_6_meses}
-                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_renovacao_6_meses: e.target.value }))}
-                          placeholder="https://greenn.com.br/checkout/..."
-                          className={salesFormData.checkout_link_renovacao_6_meses ? "pr-8 border-green-500/50" : ""}
-                        />
-                        {salesFormData.checkout_link_renovacao_6_meses && (
-                          <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
-                        )}
+                    )}
+                    {salesFormData.enabled_1_ano && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Renovação 1 Ano</Label>
+                          {salesFormData.checkout_link_renovacao_1_ano && (
+                            <Check className="w-3 h-3 text-green-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_renovacao_1_ano}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_renovacao_1_ano: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_renovacao_1_ano ? "pr-8 border-green-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_renovacao_1_ano && (
+                            <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Label className="text-sm">Link Renovação 1 Ano</Label>
-                        {salesFormData.checkout_link_renovacao_1_ano && (
-                          <Check className="w-3 h-3 text-green-500" />
-                        )}
+                    )}
+                    {salesFormData.enabled_vitalicio && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Renovação Vitalício</Label>
+                          {salesFormData.checkout_link_renovacao_vitalicio && (
+                            <Check className="w-3 h-3 text-green-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_renovacao_vitalicio}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_renovacao_vitalicio: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_renovacao_vitalicio ? "pr-8 border-green-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_renovacao_vitalicio && (
+                            <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
                       </div>
-                      <div className="relative">
-                        <Input
-                          type="url"
-                          value={salesFormData.checkout_link_renovacao_1_ano}
-                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_renovacao_1_ano: e.target.value }))}
-                          placeholder="https://greenn.com.br/checkout/..."
-                          className={salesFormData.checkout_link_renovacao_1_ano ? "pr-8 border-green-500/50" : ""}
-                        />
-                        {salesFormData.checkout_link_renovacao_1_ano && (
-                          <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Label className="text-sm">Link Renovação Vitalício</Label>
-                        {salesFormData.checkout_link_renovacao_vitalicio && (
-                          <Check className="w-3 h-3 text-green-500" />
-                        )}
-                      </div>
-                      <div className="relative">
-                        <Input
-                          type="url"
-                          value={salesFormData.checkout_link_renovacao_vitalicio}
-                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_renovacao_vitalicio: e.target.value }))}
-                          placeholder="https://greenn.com.br/checkout/..."
-                          className={salesFormData.checkout_link_renovacao_vitalicio ? "pr-8 border-green-500/50" : ""}
-                        />
-                        {salesFormData.checkout_link_renovacao_vitalicio && (
-                          <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
-                        )}
-                      </div>
-                    </div>
+                    )}
+                    {!salesFormData.enabled_6_meses && !salesFormData.enabled_1_ano && !salesFormData.enabled_vitalicio && (
+                      <p className="text-xs text-muted-foreground italic">Nenhuma opção de preço habilitada</p>
+                    )}
                   </div>
                 </div>
 
@@ -1259,75 +1271,81 @@ const AdminManagePacks = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <Badge className="bg-purple-500/20 text-purple-600">👑 20% OFF</Badge>
                     <Label className="font-semibold">Desconto para Membros</Label>
-                    {salesFormData.checkout_link_membro_6_meses && salesFormData.checkout_link_membro_1_ano && salesFormData.checkout_link_membro_vitalicio && (
-                      <Check className="w-4 h-4 text-green-500" />
-                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">
                     Links para membros que já possuem um pack e querem comprar outro
                   </p>
                   
                   <div className="space-y-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Label className="text-sm">Link Membro 6 Meses</Label>
-                        {salesFormData.checkout_link_membro_6_meses && (
-                          <Check className="w-3 h-3 text-green-500" />
-                        )}
+                    {salesFormData.enabled_6_meses && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Membro 6 Meses</Label>
+                          {salesFormData.checkout_link_membro_6_meses && (
+                            <Check className="w-3 h-3 text-green-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_membro_6_meses}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_membro_6_meses: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_membro_6_meses ? "pr-8 border-green-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_membro_6_meses && (
+                            <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
                       </div>
-                      <div className="relative">
-                        <Input
-                          type="url"
-                          value={salesFormData.checkout_link_membro_6_meses}
-                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_membro_6_meses: e.target.value }))}
-                          placeholder="https://greenn.com.br/checkout/..."
-                          className={salesFormData.checkout_link_membro_6_meses ? "pr-8 border-green-500/50" : ""}
-                        />
-                        {salesFormData.checkout_link_membro_6_meses && (
-                          <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
-                        )}
+                    )}
+                    {salesFormData.enabled_1_ano && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Membro 1 Ano</Label>
+                          {salesFormData.checkout_link_membro_1_ano && (
+                            <Check className="w-3 h-3 text-green-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_membro_1_ano}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_membro_1_ano: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_membro_1_ano ? "pr-8 border-green-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_membro_1_ano && (
+                            <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Label className="text-sm">Link Membro 1 Ano</Label>
-                        {salesFormData.checkout_link_membro_1_ano && (
-                          <Check className="w-3 h-3 text-green-500" />
-                        )}
+                    )}
+                    {salesFormData.enabled_vitalicio && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Membro Vitalício</Label>
+                          {salesFormData.checkout_link_membro_vitalicio && (
+                            <Check className="w-3 h-3 text-green-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_membro_vitalicio}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_membro_vitalicio: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_membro_vitalicio ? "pr-8 border-green-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_membro_vitalicio && (
+                            <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
                       </div>
-                      <div className="relative">
-                        <Input
-                          type="url"
-                          value={salesFormData.checkout_link_membro_1_ano}
-                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_membro_1_ano: e.target.value }))}
-                          placeholder="https://greenn.com.br/checkout/..."
-                          className={salesFormData.checkout_link_membro_1_ano ? "pr-8 border-green-500/50" : ""}
-                        />
-                        {salesFormData.checkout_link_membro_1_ano && (
-                          <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Label className="text-sm">Link Membro Vitalício</Label>
-                        {salesFormData.checkout_link_membro_vitalicio && (
-                          <Check className="w-3 h-3 text-green-500" />
-                        )}
-                      </div>
-                      <div className="relative">
-                        <Input
-                          type="url"
-                          value={salesFormData.checkout_link_membro_vitalicio}
-                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_membro_vitalicio: e.target.value }))}
-                          placeholder="https://greenn.com.br/checkout/..."
-                          className={salesFormData.checkout_link_membro_vitalicio ? "pr-8 border-green-500/50" : ""}
-                        />
-                        {salesFormData.checkout_link_membro_vitalicio && (
-                          <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
-                        )}
-                      </div>
-                    </div>
+                    )}
+                    {!salesFormData.enabled_6_meses && !salesFormData.enabled_1_ano && !salesFormData.enabled_vitalicio && (
+                      <p className="text-xs text-muted-foreground italic">Nenhuma opção de preço habilitada</p>
+                    )}
                   </div>
                 </div>
                 
