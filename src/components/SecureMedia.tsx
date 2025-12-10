@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useRef } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { getSignedMediaUrl, parseStorageUrl } from '@/hooks/useSignedUrl';
 import { Loader2 } from 'lucide-react';
 
@@ -25,6 +25,20 @@ interface SecureVideoProps {
 
 // Cache for signed URLs at component level
 const signedUrlCache = new Map<string, string>();
+const lqipCache = new Map<string, string>();
+
+// Generate LQIP URL by adding transform params for tiny image
+const generateLQIPUrl = (signedUrl: string): string => {
+  try {
+    const url = new URL(signedUrl);
+    // Add Supabase image transform for tiny placeholder (20px width)
+    url.searchParams.set('width', '20');
+    url.searchParams.set('quality', '20');
+    return url.toString();
+  } catch {
+    return signedUrl;
+  }
+};
 
 export const SecureImage = memo(({ 
   src, 
@@ -35,24 +49,23 @@ export const SecureImage = memo(({
   onClick 
 }: SecureImageProps) => {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [lqipUrl, setLqipUrl] = useState<string | null>(null);
+  const [lqipLoaded, setLqipLoaded] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     let isMounted = true;
     setImageLoaded(false);
+    setLqipLoaded(false);
     
     const loadImage = async () => {
-      // Check if URL needs signing (is a Supabase storage URL)
       const parsed = parseStorageUrl(src);
       
       if (!parsed) {
-        // Not a Supabase storage URL, use directly
         setSignedUrl(src);
-        setIsLoading(false);
+        setLqipUrl(src);
         return;
       }
 
@@ -60,8 +73,9 @@ export const SecureImage = memo(({
       const cacheKey = src;
       if (signedUrlCache.has(cacheKey)) {
         if (isMounted) {
-          setSignedUrl(signedUrlCache.get(cacheKey)!);
-          setIsLoading(false);
+          const cached = signedUrlCache.get(cacheKey)!;
+          setSignedUrl(cached);
+          setLqipUrl(lqipCache.get(cacheKey) || generateLQIPUrl(cached));
         }
         return;
       }
@@ -69,16 +83,17 @@ export const SecureImage = memo(({
       try {
         const url = await getSignedMediaUrl(src);
         if (isMounted) {
+          const lqip = generateLQIPUrl(url);
           signedUrlCache.set(cacheKey, url);
+          lqipCache.set(cacheKey, lqip);
           setSignedUrl(url);
-          setIsLoading(false);
+          setLqipUrl(lqip);
         }
       } catch (err) {
         console.error('Failed to get signed URL:', err);
         if (isMounted) {
-          // Use original URL as fallback
           setSignedUrl(src);
-          setIsLoading(false);
+          setLqipUrl(src);
         }
       }
     };
@@ -90,14 +105,18 @@ export const SecureImage = memo(({
     };
   }, [src, retryCount]);
 
+  const handleLqipLoad = () => {
+    setLqipLoaded(true);
+  };
+
   const handleImageLoad = () => {
     setImageLoaded(true);
   };
 
   const handleImageError = () => {
     if (retryCount < 2) {
-      // Clear cache and retry
       signedUrlCache.delete(src);
+      lqipCache.delete(src);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
       }, 1000);
@@ -116,22 +135,32 @@ export const SecureImage = memo(({
 
   return (
     <div className={`${className} relative overflow-hidden`}>
-      {/* Blur placeholder / loading state */}
-      {(!imageLoaded || isLoading) && (
-        <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center z-10">
+      {/* Loading spinner - only show if LQIP hasn't loaded */}
+      {!lqipLoaded && (
+        <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center z-20">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" />
           <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
         </div>
       )}
       
-      {/* Actual image with blur transition */}
+      {/* LQIP - Low Quality Image Placeholder (blurred tiny image) */}
+      {lqipUrl && !imageLoaded && (
+        <img
+          src={lqipUrl}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover blur-lg scale-110 z-10"
+          onLoad={handleLqipLoad}
+        />
+      )}
+      
+      {/* Full quality image */}
       {signedUrl && (
         <img
-          ref={imgRef}
           src={signedUrl}
           alt={alt}
-          className={`w-full h-full object-cover transition-all duration-500 ${
-            imageLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
+          className={`w-full h-full object-cover transition-opacity duration-500 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           loading={loading}
           onClick={onClick}
