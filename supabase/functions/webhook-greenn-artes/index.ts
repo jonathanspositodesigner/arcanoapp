@@ -597,39 +597,78 @@ Deno.serve(async (req) => {
 
     // Handle refunded/chargeback - deactivate specific pack(s)
     if (status === 'refunded' || status === 'chargeback') {
-      console.log(`Processing ${status} status - deactivating pack access`)
+      console.log(`Processing ${status} status - deactivating pack access for product ID: ${productId}`)
       
-      const { data: existingUsers } = await supabase.auth.admin.listUsers()
-      const existingUser = existingUsers?.users.find(u => u.email?.toLowerCase() === email)
+      // Buscar usuário com paginação completa
+      let userId: string | null = null
+      
+      // Primeiro tentar pela tabela profiles
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle()
+      
+      if (profile) {
+        userId = profile.id
+        console.log(`Found user via profiles: ${userId}`)
+      } else {
+        // Fallback: busca paginada
+        let page = 1
+        const perPage = 1000
+        
+        while (!userId) {
+          const { data: usersData } = await supabase.auth.admin.listUsers({
+            page: page,
+            perPage: perPage
+          })
+          
+          if (!usersData?.users || usersData.users.length === 0) break
+          
+          const foundUser = usersData.users.find(u => u.email?.toLowerCase() === email)
+          if (foundUser) {
+            userId = foundUser.id
+            console.log(`Found user via listUsers (page ${page}): ${userId}`)
+          } else if (usersData.users.length < perPage) {
+            break
+          } else {
+            page++
+          }
+        }
+      }
 
-      if (existingUser) {
+      if (userId) {
         if (mappingType === 'promotion' && promotionMapping) {
           // Deactivate all packs from promotion
           for (const item of promotionMapping.items) {
             const { error: updateError } = await supabase
               .from('user_pack_purchases')
               .update({ is_active: false, updated_at: new Date().toISOString() })
-              .eq('user_id', existingUser.id)
+              .eq('user_id', userId)
               .eq('pack_slug', item.packSlug)
 
             if (updateError) {
               console.error(`Error deactivating pack ${item.packSlug}:`, updateError)
+            } else {
+              console.log(`✅ Pack ${item.packSlug} deactivated for ${email}`)
             }
           }
-          console.log(`Promotion packs deactivated for ${email}: ${promotionMapping.promotionSlug}`)
+          console.log(`🚫 Promotion packs deactivated for ${email}: ${promotionMapping.promotionSlug}`)
         } else if (packMapping) {
           const { error: updateError } = await supabase
             .from('user_pack_purchases')
             .update({ is_active: false, updated_at: new Date().toISOString() })
-            .eq('user_id', existingUser.id)
+            .eq('user_id', userId)
             .eq('pack_slug', packMapping.packSlug)
 
           if (updateError) {
             console.error('Error deactivating pack:', updateError)
             throw updateError
           }
-          console.log(`Pack access deactivated for ${email}: ${packMapping.packSlug}`)
+          console.log(`🚫 Pack access deactivated for ${email}: ${packMapping.packSlug}`)
         }
+      } else {
+        console.log(`User not found for email: ${email}, cannot deactivate pack`)
       }
 
       return new Response(
