@@ -11,6 +11,9 @@ interface Pack {
   name: string;
   slug: string;
   cover_url: string | null;
+  checkout_link_6_meses: string | null;
+  checkout_link_1_ano: string | null;
+  checkout_link_vitalicio: string | null;
 }
 
 const PlanosArtes = () => {
@@ -41,12 +44,12 @@ const PlanosArtes = () => {
   const fetchPacks = async () => {
     const { data, error } = await supabase
       .from("artes_packs")
-      .select("id, name, slug, cover_url, type")
+      .select("id, name, slug, cover_url, type, checkout_link_6_meses, checkout_link_1_ano, checkout_link_vitalicio")
       .eq("type", "pack")
       .order("display_order", { ascending: true });
 
     if (!error && data) {
-      setPacks(data);
+      setPacks(data as Pack[]);
     }
     setLoading(false);
   };
@@ -123,10 +126,28 @@ const PlanosArtes = () => {
   ];
 
   const handleSelectOption = (accessType: string) => {
-    // TODO: Integrate with Greenn payment for specific pack and access type
-    // The product name in Greenn should follow pattern: "Pack {PackName} - {AccessType}"
-    // E.g.: "Pack Arcano Vol.1 - 6 meses", "Pack Halloween - 1 ano", "Pack Carnaval - vitalício"
-    window.open("https://voxvisual.com.br/linksbio/", "_blank");
+    if (!selectedPack) return;
+    
+    let checkoutLink: string | null = null;
+    
+    switch (accessType) {
+      case "6_meses":
+        checkoutLink = selectedPack.checkout_link_6_meses;
+        break;
+      case "1_ano":
+        checkoutLink = selectedPack.checkout_link_1_ano;
+        break;
+      case "vitalicio":
+        checkoutLink = selectedPack.checkout_link_vitalicio;
+        break;
+    }
+    
+    if (checkoutLink) {
+      window.open(checkoutLink, "_blank");
+    } else {
+      // Fallback se não houver link configurado
+      window.open("https://voxvisual.com.br/linksbio/", "_blank");
+    }
   };
 
   if (loading) {
