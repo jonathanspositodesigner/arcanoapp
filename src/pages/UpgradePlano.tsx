@@ -205,7 +205,7 @@ const UpgradePlano = () => {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <img 
             src={logoHorizontal} 
-            alt="Arcano Lab" 
+            alt="ArcanoApp" 
             className="h-8 cursor-pointer" 
             onClick={() => navigate('/')}
           />

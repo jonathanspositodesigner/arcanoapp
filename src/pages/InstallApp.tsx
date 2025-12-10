@@ -65,9 +65,9 @@ const InstallApp = () => {
         </Button>
 
         <div className="text-center mb-8">
-          <img src={logoHorizontal} alt="Arcano Lab" className="h-16 w-auto mx-auto mb-4" />
+          <img src={logoHorizontal} alt="ArcanoApp" className="h-16 w-auto mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Instale o Arcano Lab
+            Instale o ArcanoApp
           </h1>
           <p className="text-muted-foreground">
             Tenha acesso rápido ao app direto da sua tela inicial
@@ -83,7 +83,7 @@ const InstallApp = () => {
               App já instalado!
             </h2>
             <p className="text-muted-foreground mb-4">
-              O Arcano Lab já está instalado no seu dispositivo. Procure o ícone na sua tela inicial.
+              O ArcanoApp já está instalado no seu dispositivo. Procure o ícone na sua tela inicial.
             </p>
             <Button onClick={() => navigate("/biblioteca-prompts")} className="bg-gradient-primary">
               Ir para Biblioteca
@@ -102,7 +102,7 @@ const InstallApp = () => {
             </p>
             <Button onClick={handleInstall} size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8">
               <Download className="mr-2 h-5 w-5" />
-              Instalar Arcano Lab
+              Instalar ArcanoApp
             </Button>
           </Card>
         ) : (
@@ -194,7 +194,7 @@ const InstallApp = () => {
                         </li>
                         <li className="flex items-start gap-3">
                           <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">2</span>
-                          <span>Ou clique no menu (três pontos) e depois "Instalar Arcano Lab"</span>
+                          <span>Ou clique no menu (três pontos) e depois "Instalar ArcanoApp"</span>
                         </li>
                         <li className="flex items-start gap-3">
                           <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</span>

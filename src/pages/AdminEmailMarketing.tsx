@@ -216,7 +216,7 @@ const AdminEmailMarketing = () => {
       title: "",
       subject: "",
       content: "<p>Escreva seu email aqui...</p>",
-      sender_name: "Arcano Lab",
+      sender_name: "ArcanoApp",
       sender_email: "contato@seudominio.com",
       recipient_filter: "all",
       filter_value: "",
@@ -366,7 +366,7 @@ const AdminEmailMarketing = () => {
                       <Label htmlFor="sender_name">Nome do remetente</Label>
                       <Input
                         id="sender_name"
-                        placeholder="Arcano Lab"
+                        placeholder="ArcanoApp"
                         value={campaign.sender_name}
                         onChange={(e) => setCampaign({ ...campaign, sender_name: e.target.value })}
                       />

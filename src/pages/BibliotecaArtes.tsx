@@ -377,7 +377,7 @@ const BibliotecaArtes = () => {
   };
   const SidebarContent = () => <div className="flex flex-col h-full py-4">
       <div className="px-4 mb-6 flex justify-center">
-        <img alt="Arcano Lab" onClick={() => navigate('/')} src="/lovable-uploads/67562963-438f-4677-8000-81acb1886f7c.png" className="h-10 cursor-pointer hover:opacity-80 transition-opacity" />
+        <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/67562963-438f-4677-8000-81acb1886f7c.png" className="h-10 cursor-pointer hover:opacity-80 transition-opacity" />
       </div>
       
       <nav className="flex-1 px-2 space-y-1">
@@ -615,7 +615,7 @@ const BibliotecaArtes = () => {
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            <img alt="Arcano Lab" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
+            <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
           </div>
           {userPacks.length === 0 && <div className="flex items-center gap-2">
               <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
