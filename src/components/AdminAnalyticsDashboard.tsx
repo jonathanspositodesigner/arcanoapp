@@ -134,25 +134,20 @@ const [pageViews, setPageViews] = useState({
       // Meia-noite de hoje para buscar acessos de hoje
       const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
-      // ========== BUSCA SESSÕES ÚNICAS DAS BIBLIOTECAS (prompts e artes) ==========
+      // ========== BUSCA SESSÕES DE HOJE (todas as páginas) ==========
       const { data: todaySessionsData } = await supabase
         .from("user_sessions")
-        .select("session_id, device_type, entered_at, page_path")
-        .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"])
+        .select("session_id, device_type, entered_at")
         .gte("entered_at", todayMidnight);
 
-      // Conta sessões únicas de hoje e sessões totais
+      // Conta sessões de hoje (cada session_id = 1 acesso)
       const todayUniqueSessions = new Set<string>();
       const todayMobileSet = new Set<string>();
       const todayDesktopSet = new Set<string>();
-      const todaySessionCounts: Record<string, number> = {};
-      let todayTotalSessionCount = 0;
       
       if (todaySessionsData) {
-        todayTotalSessionCount = todaySessionsData.length;
         todaySessionsData.forEach(s => {
           todayUniqueSessions.add(s.session_id);
-          todaySessionCounts[s.session_id] = (todaySessionCounts[s.session_id] || 0) + 1;
           if (s.device_type === "mobile") {
             todayMobileSet.add(s.session_id);
           } else {
@@ -164,14 +159,11 @@ const [pageViews, setPageViews] = useState({
       const todayTotal = todayUniqueSessions.size;
       const todayMobile = todayMobileSet.size;
       const todayDesktop = todayDesktopSet.size;
-      // Usuários que retornaram = sessões únicas que aparecem mais de uma vez
-      const todayReturning = Object.values(todaySessionCounts).filter(count => count > 1).length;
 
-      // ========== BUSCA DO PERÍODO SELECIONADO ==========
+      // ========== BUSCA DO PERÍODO SELECIONADO (todas as páginas) ==========
       let sessionsQuery = supabase
         .from("user_sessions")
-        .select("session_id, device_type, entered_at, page_path")
-        .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"])
+        .select("session_id, device_type, entered_at")
         .order("entered_at", { ascending: false });
       
       if (threshold) {
@@ -180,13 +172,11 @@ const [pageViews, setPageViews] = useState({
       
       const { data: allSessionsData } = await sessionsQuery;
 
-      // Conta sessões únicas do período e sessões totais
+      // Conta sessões do período (cada session_id = 1 acesso)
       const uniqueSessions = new Set<string>();
       const mobileSessionsSet = new Set<string>();
       const desktopSessionsSet = new Set<string>();
       const sessionsByDate: Record<string, { mobile: Set<string>; desktop: Set<string> }> = {};
-      const periodSessionCounts: Record<string, number> = {};
-      let periodTotalSessionCount = 0;
       
       // Inicializa todos os dias
       daysArray.forEach(day => {
@@ -194,10 +184,8 @@ const [pageViews, setPageViews] = useState({
       });
 
       if (allSessionsData) {
-        periodTotalSessionCount = allSessionsData.length;
         allSessionsData.forEach(s => {
           uniqueSessions.add(s.session_id);
-          periodSessionCounts[s.session_id] = (periodSessionCounts[s.session_id] || 0) + 1;
           const date = extractDateFromTimestamp(s.entered_at);
           
           if (s.device_type === "mobile") {
@@ -216,8 +204,6 @@ const [pageViews, setPageViews] = useState({
 
       const mobile = mobileSessionsSet.size;
       const desktop = desktopSessionsSet.size;
-      // Usuários que retornaram no período = sessões únicas que aparecem mais de uma vez
-      const periodReturning = Object.values(periodSessionCounts).filter(count => count > 1).length;
       
       setPageViews({ 
         total: uniqueSessions.size, 
@@ -227,11 +213,11 @@ const [pageViews, setPageViews] = useState({
         todayMobile,
         todayDesktop,
         todayUnique: todayUniqueSessions.size,
-        todayTotalSessions: todayTotalSessionCount,
-        todayReturning,
+        todayTotalSessions: todayTotal,
+        todayReturning: 0, // Removed - not applicable with new session logic
         periodUnique: uniqueSessions.size,
-        periodTotalSessions: periodTotalSessionCount,
-        periodReturning
+        periodTotalSessions: uniqueSessions.size,
+        periodReturning: 0 // Removed - not applicable with new session logic
       });
 
       // Process chart data - usa sessões únicas por dia

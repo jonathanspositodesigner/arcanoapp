@@ -59,7 +59,7 @@ type SidebarSection = 'packs' | 'bonus' | 'cursos' | 'updates' | 'free-sample' |
 const BibliotecaArtes = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  useSessionTracker("/biblioteca-artes");
+  useSessionTracker();
   const {
     user,
     isPremium,
