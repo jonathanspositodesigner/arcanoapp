@@ -351,7 +351,7 @@ const BibliotecaArtes = () => {
   };
   const SidebarContent = () => <div className="flex flex-col h-full py-4">
       <div className="px-4 mb-6">
-        <img alt="Arcano Lab" onClick={() => navigate('/')} src={logoHorizontal} className="h-8 cursor-pointer hover:opacity-80 transition-opacity" />
+        <img alt="Arcano Lab" onClick={() => navigate('/')} src="/lovable-uploads/67562963-438f-4677-8000-81acb1886f7c.png" className="h-10 cursor-pointer hover:opacity-80 transition-opacity" />
       </div>
       
       <nav className="flex-1 px-2 space-y-1">
@@ -455,39 +455,23 @@ const BibliotecaArtes = () => {
 
       {/* WhatsApp Group Buttons */}
       <div className="px-4 pt-4 border-t border-border space-y-3">
-        {userPacks.length > 0 ? (
-          <div className="space-y-2">
+        {userPacks.length > 0 ? <div className="space-y-2">
             <p className="text-xs text-muted-foreground text-center">Faça parte do nosso grupo exclusivo para membros</p>
-            <Button 
-              onClick={() => window.open("https://chat.whatsapp.com/JOUGeS21VHq92hJWyxpOJC", "_blank")} 
-              size="sm" 
-              className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white"
-            >
+            <Button onClick={() => window.open("https://chat.whatsapp.com/JOUGeS21VHq92hJWyxpOJC", "_blank")} size="sm" className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white">
               <MessageCircle className="h-4 w-4 mr-2" />
               Entrar no grupo
             </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
+          </div> : <div className="space-y-2">
             <p className="text-xs text-muted-foreground text-center">Entre para os nossos grupos gratuitos</p>
-            <Button 
-              onClick={() => window.open("https://chat.whatsapp.com/DJz6BbLDbbK9MBX8YiTsbw", "_blank")} 
-              size="sm" 
-              className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white"
-            >
+            <Button onClick={() => window.open("https://chat.whatsapp.com/DJz6BbLDbbK9MBX8YiTsbw", "_blank")} size="sm" className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white">
               <MessageCircle className="h-4 w-4 mr-2" />
               Grupo Free WhatsApp
             </Button>
-            <Button 
-              onClick={() => window.open("https://t.me/+8NKj2KNvLPswZTIx", "_blank")} 
-              size="sm" 
-              className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white"
-            >
+            <Button onClick={() => window.open("https://t.me/+8NKj2KNvLPswZTIx", "_blank")} size="sm" className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white">
               <Send className="h-4 w-4 mr-2" />
               Grupo de Avisos Telegram
             </Button>
-          </div>
-        )}
+          </div>}
       </div>
 
       <div className="px-4 pt-4 border-t border-border mt-auto space-y-2">
@@ -648,7 +632,6 @@ const BibliotecaArtes = () => {
               const hasPackAccess = isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug);
               const isExpired = !isBonusOrUpdatesType && hasExpiredPack(packSlug);
               const expiredInfo = isExpired ? getExpiredPackInfo(packSlug) : null;
-              
               return <Card key={pack.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => {
                 setSelectedPack(pack.name);
                 setSelectedCategory("Todos");
@@ -683,19 +666,13 @@ const BibliotecaArtes = () => {
                           </Badge>
                           
                           {/* Renewal Button for expired packs */}
-                          {!hasPackAccess && isExpired && (
-                            <Button
-                              size="sm"
-                              className="mt-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
-                              }}
-                            >
+                          {!hasPackAccess && isExpired && <Button size="sm" className="mt-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                      e.stopPropagation();
+                      navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
+                    }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
                               Renovar com Desconto
-                            </Button>
-                          )}
+                            </Button>}
                         </div>
                       </div>
                     </Card>;
@@ -1112,13 +1089,13 @@ const BibliotecaArtes = () => {
 
                 {hasCursoAccess ? <div className="flex flex-col gap-2">
                     <Button onClick={() => {
-                      // Navegar para página do curso baseado no slug
-                      if (cursoSlug === 'forja-selos-3d-ilimitada') {
-                        navigate('/forja-selos-3d-artes');
-                      } else {
-                        toast.info("Link será configurado em breve");
-                      }
-                    }} className="w-full">
+                // Navegar para página do curso baseado no slug
+                if (cursoSlug === 'forja-selos-3d-ilimitada') {
+                  navigate('/forja-selos-3d-artes');
+                } else {
+                  toast.info("Link será configurado em breve");
+                }
+              }} className="w-full">
                       <User className="h-4 w-4 mr-2" />
                       Acessar Curso
                     </Button>
