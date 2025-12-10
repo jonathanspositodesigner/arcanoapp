@@ -688,31 +688,52 @@ export type Database = {
       }
       email_campaign_logs: {
         Row: {
+          bounced_at: string | null
           campaign_id: string
+          click_count: number | null
+          clicked_at: string | null
+          complained_at: string | null
           created_at: string
+          delivered_at: string | null
           email: string
           error_message: string | null
           id: string
+          open_count: number | null
+          opened_at: string | null
           resend_id: string | null
           sent_at: string | null
           status: string
         }
         Insert: {
+          bounced_at?: string | null
           campaign_id: string
+          click_count?: number | null
+          clicked_at?: string | null
+          complained_at?: string | null
           created_at?: string
+          delivered_at?: string | null
           email: string
           error_message?: string | null
           id?: string
+          open_count?: number | null
+          opened_at?: string | null
           resend_id?: string | null
           sent_at?: string | null
           status?: string
         }
         Update: {
+          bounced_at?: string | null
           campaign_id?: string
+          click_count?: number | null
+          clicked_at?: string | null
+          complained_at?: string | null
           created_at?: string
+          delivered_at?: string | null
           email?: string
           error_message?: string | null
           id?: string
+          open_count?: number | null
+          opened_at?: string | null
           resend_id?: string | null
           sent_at?: string | null
           status?: string
@@ -729,11 +750,16 @@ export type Database = {
       }
       email_campaigns: {
         Row: {
+          bounced_count: number | null
+          clicked_count: number | null
+          complained_count: number | null
           content: string
           created_at: string
+          delivered_count: number | null
           failed_count: number | null
           filter_value: string | null
           id: string
+          opened_count: number | null
           recipient_filter: string
           recipients_count: number | null
           sender_email: string
@@ -746,11 +772,16 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bounced_count?: number | null
+          clicked_count?: number | null
+          complained_count?: number | null
           content: string
           created_at?: string
+          delivered_count?: number | null
           failed_count?: number | null
           filter_value?: string | null
           id?: string
+          opened_count?: number | null
           recipient_filter?: string
           recipients_count?: number | null
           sender_email: string
@@ -763,11 +794,16 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bounced_count?: number | null
+          clicked_count?: number | null
+          complained_count?: number | null
           content?: string
           created_at?: string
+          delivered_count?: number | null
           failed_count?: number | null
           filter_value?: string | null
           id?: string
+          opened_count?: number | null
           recipient_filter?: string
           recipients_count?: number | null
           sender_email?: string
