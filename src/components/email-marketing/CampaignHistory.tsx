@@ -29,7 +29,10 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, Copy, Trash2, Loader2, CheckCircle, XCircle, Clock, Send, FileText, AlertTriangle } from "lucide-react";
+import { 
+  Eye, Copy, Trash2, Loader2, CheckCircle, XCircle, Clock, Send, 
+  FileText, AlertTriangle, Mail, MousePointer, Ban, MailOpen 
+} from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -41,6 +44,11 @@ interface Campaign {
   recipients_count: number;
   sent_count: number;
   failed_count: number;
+  delivered_count: number;
+  opened_count: number;
+  clicked_count: number;
+  bounced_count: number;
+  complained_count: number;
   sent_at: string | null;
   created_at: string;
 }
@@ -52,6 +60,13 @@ interface EmailLog {
   resend_id: string | null;
   error_message: string | null;
   sent_at: string | null;
+  delivered_at: string | null;
+  opened_at: string | null;
+  clicked_at: string | null;
+  bounced_at: string | null;
+  complained_at: string | null;
+  open_count: number;
+  click_count: number;
 }
 
 interface CampaignHistoryProps {
@@ -160,48 +175,101 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
     }
   };
 
-  const getLogStatusBadge = (status: string) => {
-    switch (status) {
-      case "sent":
-        return (
-          <Badge className="gap-1 bg-green-500 text-white">
-            <CheckCircle className="h-3 w-3" />
-            Enviado
-          </Badge>
-        );
-      case "failed":
-        return (
-          <Badge variant="destructive" className="gap-1">
-            <XCircle className="h-3 w-3" />
-            Falhou
-          </Badge>
-        );
-      case "rate_limited":
-        return (
-          <Badge className="gap-1 bg-orange-500 text-white">
-            <AlertTriangle className="h-3 w-3" />
-            Rate Limit
-          </Badge>
-        );
-      case "pending":
-        return (
-          <Badge variant="outline" className="gap-1">
-            <Clock className="h-3 w-3" />
-            Pendente
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const getLogStatusBadge = (log: EmailLog) => {
+    // Show most relevant status based on tracking data
+    if (log.complained_at) {
+      return (
+        <Badge className="gap-1 bg-red-700 text-white">
+          <Ban className="h-3 w-3" />
+          Spam
+        </Badge>
+      );
     }
+    if (log.bounced_at) {
+      return (
+        <Badge variant="destructive" className="gap-1">
+          <XCircle className="h-3 w-3" />
+          Bounce
+        </Badge>
+      );
+    }
+    if (log.clicked_at) {
+      return (
+        <Badge className="gap-1 bg-purple-500 text-white">
+          <MousePointer className="h-3 w-3" />
+          Clicou ({log.click_count || 1})
+        </Badge>
+      );
+    }
+    if (log.opened_at) {
+      return (
+        <Badge className="gap-1 bg-blue-500 text-white">
+          <MailOpen className="h-3 w-3" />
+          Abriu ({log.open_count || 1})
+        </Badge>
+      );
+    }
+    if (log.delivered_at || log.status === "delivered") {
+      return (
+        <Badge className="gap-1 bg-green-500 text-white">
+          <CheckCircle className="h-3 w-3" />
+          Entregue
+        </Badge>
+      );
+    }
+    if (log.status === "sent") {
+      return (
+        <Badge className="gap-1 bg-green-400 text-white">
+          <Mail className="h-3 w-3" />
+          Enviado
+        </Badge>
+      );
+    }
+    if (log.status === "failed") {
+      return (
+        <Badge variant="destructive" className="gap-1">
+          <XCircle className="h-3 w-3" />
+          Falhou
+        </Badge>
+      );
+    }
+    if (log.status === "rate_limited") {
+      return (
+        <Badge className="gap-1 bg-orange-500 text-white">
+          <AlertTriangle className="h-3 w-3" />
+          Rate Limit
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="gap-1">
+        <Clock className="h-3 w-3" />
+        Pendente
+      </Badge>
+    );
   };
 
   const getReportSummary = () => {
-    const sent = emailLogs.filter(l => l.status === "sent").length;
+    const sent = emailLogs.filter(l => l.status === "sent" || l.status === "delivered" || l.delivered_at).length;
+    const delivered = emailLogs.filter(l => l.delivered_at || l.status === "delivered").length;
+    const opened = emailLogs.filter(l => l.opened_at).length;
+    const clicked = emailLogs.filter(l => l.clicked_at).length;
+    const bounced = emailLogs.filter(l => l.bounced_at || l.status === "bounced").length;
+    const complained = emailLogs.filter(l => l.complained_at || l.status === "complained").length;
     const failed = emailLogs.filter(l => l.status === "failed").length;
     const rateLimited = emailLogs.filter(l => l.status === "rate_limited").length;
-    const pending = emailLogs.filter(l => l.status === "pending").length;
     
-    return { sent, failed, rateLimited, pending, total: emailLogs.length };
+    return { 
+      sent, 
+      delivered, 
+      opened, 
+      clicked, 
+      bounced, 
+      complained,
+      failed, 
+      rateLimited, 
+      total: emailLogs.length 
+    };
   };
 
   if (loading) {
@@ -237,6 +305,8 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
               <TableHead>Assunto</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-center">Enviados</TableHead>
+              <TableHead className="text-center">Abertos</TableHead>
+              <TableHead className="text-center">Cliques</TableHead>
               <TableHead>Data</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
@@ -258,6 +328,30 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
                           ({campaign.failed_count} falhas)
                         </span>
                       )}
+                    </span>
+                  ) : (
+                    "-"
+                  )}
+                </TableCell>
+                <TableCell className="text-center">
+                  {campaign.status === "sent" && campaign.sent_count > 0 ? (
+                    <span className="text-blue-500 font-medium">
+                      {campaign.opened_count || 0}
+                      <span className="text-xs text-muted-foreground ml-1">
+                        ({((campaign.opened_count || 0) / campaign.sent_count * 100).toFixed(0)}%)
+                      </span>
+                    </span>
+                  ) : (
+                    "-"
+                  )}
+                </TableCell>
+                <TableCell className="text-center">
+                  {campaign.status === "sent" && campaign.sent_count > 0 ? (
+                    <span className="text-purple-500 font-medium">
+                      {campaign.clicked_count || 0}
+                      <span className="text-xs text-muted-foreground ml-1">
+                        ({((campaign.clicked_count || 0) / campaign.sent_count * 100).toFixed(0)}%)
+                      </span>
                     </span>
                   ) : (
                     "-"
@@ -334,7 +428,7 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
 
       {/* Email Report Dialog */}
       <Dialog open={!!reportCampaign} onOpenChange={() => setReportCampaign(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh]">
+        <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Relatório de Envio: {reportCampaign?.title}</DialogTitle>
           </DialogHeader>
@@ -345,19 +439,29 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Summary Cards */}
+              {/* Summary Cards - Primary Metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <Card className="p-3 text-center bg-green-50 dark:bg-green-950">
                   <div className="text-2xl font-bold text-green-600">{summary.sent}</div>
                   <div className="text-xs text-muted-foreground">Enviados</div>
                 </Card>
-                <Card className="p-3 text-center bg-red-50 dark:bg-red-950">
-                  <div className="text-2xl font-bold text-red-600">{summary.failed}</div>
-                  <div className="text-xs text-muted-foreground">Falharam</div>
+                <Card className="p-3 text-center bg-blue-50 dark:bg-blue-950">
+                  <div className="text-2xl font-bold text-blue-600">{summary.opened}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Abriram
+                    {summary.sent > 0 && (
+                      <span className="ml-1">({((summary.opened / summary.sent) * 100).toFixed(0)}%)</span>
+                    )}
+                  </div>
                 </Card>
-                <Card className="p-3 text-center bg-orange-50 dark:bg-orange-950">
-                  <div className="text-2xl font-bold text-orange-600">{summary.rateLimited}</div>
-                  <div className="text-xs text-muted-foreground">Rate Limit</div>
+                <Card className="p-3 text-center bg-purple-50 dark:bg-purple-950">
+                  <div className="text-2xl font-bold text-purple-600">{summary.clicked}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Clicaram
+                    {summary.sent > 0 && (
+                      <span className="ml-1">({((summary.clicked / summary.sent) * 100).toFixed(0)}%)</span>
+                    )}
+                  </div>
                 </Card>
                 <Card className="p-3 text-center bg-gray-50 dark:bg-gray-900">
                   <div className="text-2xl font-bold">{summary.total}</div>
@@ -365,39 +469,66 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
                 </Card>
               </div>
 
-              {/* Success Rate */}
-              {summary.total > 0 && (
-                <div className="text-center text-sm text-muted-foreground">
-                  Taxa de sucesso: <span className="font-bold text-foreground">{((summary.sent / summary.total) * 100).toFixed(1)}%</span>
-                </div>
-              )}
+              {/* Secondary Metrics */}
+              <div className="grid grid-cols-4 gap-2">
+                <Card className="p-2 text-center">
+                  <div className="text-lg font-semibold text-green-500">{summary.delivered}</div>
+                  <div className="text-xs text-muted-foreground">Entregues</div>
+                </Card>
+                <Card className="p-2 text-center">
+                  <div className="text-lg font-semibold text-red-500">{summary.failed}</div>
+                  <div className="text-xs text-muted-foreground">Falharam</div>
+                </Card>
+                <Card className="p-2 text-center">
+                  <div className="text-lg font-semibold text-orange-500">{summary.bounced}</div>
+                  <div className="text-xs text-muted-foreground">Bounces</div>
+                </Card>
+                <Card className="p-2 text-center">
+                  <div className="text-lg font-semibold text-red-700">{summary.complained}</div>
+                  <div className="text-xs text-muted-foreground">Spam</div>
+                </Card>
+              </div>
 
               {/* Email List */}
-              <ScrollArea className="h-[400px] border rounded-md">
+              <ScrollArea className="h-[350px] border rounded-md">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Email</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>ID Resend</TableHead>
-                      <TableHead>Erro</TableHead>
-                      <TableHead>Hora</TableHead>
+                      <TableHead className="text-center">Aberturas</TableHead>
+                      <TableHead className="text-center">Cliques</TableHead>
+                      <TableHead>Último Evento</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {emailLogs.map((log) => (
                       <TableRow key={log.id}>
                         <TableCell className="font-mono text-sm">{log.email}</TableCell>
-                        <TableCell>{getLogStatusBadge(log.status)}</TableCell>
-                        <TableCell className="font-mono text-xs text-muted-foreground">
-                          {log.resend_id || "-"}
+                        <TableCell>{getLogStatusBadge(log)}</TableCell>
+                        <TableCell className="text-center">
+                          {log.opened_at ? (
+                            <span className="text-blue-500 font-medium">{log.open_count || 1}</span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
                         </TableCell>
-                        <TableCell className="max-w-[150px] truncate text-xs text-destructive" title={log.error_message || ""}>
-                          {log.error_message || "-"}
+                        <TableCell className="text-center">
+                          {log.clicked_at ? (
+                            <span className="text-purple-500 font-medium">{log.click_count || 1}</span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
-                          {log.sent_at
-                            ? format(new Date(log.sent_at), "HH:mm:ss", { locale: ptBR })
+                          {log.clicked_at
+                            ? format(new Date(log.clicked_at), "dd/MM HH:mm", { locale: ptBR })
+                            : log.opened_at
+                            ? format(new Date(log.opened_at), "dd/MM HH:mm", { locale: ptBR })
+                            : log.delivered_at
+                            ? format(new Date(log.delivered_at), "dd/MM HH:mm", { locale: ptBR })
+                            : log.sent_at
+                            ? format(new Date(log.sent_at), "dd/MM HH:mm", { locale: ptBR })
                             : "-"}
                         </TableCell>
                       </TableRow>
@@ -405,6 +536,11 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
                   </TableBody>
                 </Table>
               </ScrollArea>
+
+              {/* Webhook Info */}
+              <div className="text-xs text-muted-foreground text-center p-2 bg-muted/50 rounded">
+                Os dados de abertura e cliques são atualizados em tempo real via webhooks da Resend
+              </div>
             </div>
           )}
         </DialogContent>
