@@ -64,7 +64,7 @@ const PlanosArtes = () => {
         checkout_link_6_meses, checkout_link_1_ano, checkout_link_vitalicio,
         checkout_link_renovacao_6_meses, checkout_link_renovacao_1_ano, checkout_link_renovacao_vitalicio
       `)
-      .eq("type", "pack")
+      .in("type", ["pack", "curso"])
       .order("display_order", { ascending: true });
 
     if (!error && data) {

@@ -67,7 +67,7 @@ const PlanosArtesMembro = () => {
         enabled_6_meses, enabled_1_ano, enabled_vitalicio,
         checkout_link_membro_6_meses, checkout_link_membro_1_ano, checkout_link_membro_vitalicio
       `)
-      .eq("type", "pack")
+      .in("type", ["pack", "curso"])
       .order("display_order", { ascending: true });
 
     if (!error && data) {
