@@ -363,6 +363,8 @@ const BibliotecaArtes = () => {
           <span className="font-medium">Instalar App</span>
         </button>
 
+        <div className="h-px bg-border my-3" />
+
         <button onClick={() => {
         setActiveSection('tutorial');
         setSelectedPack(null);
