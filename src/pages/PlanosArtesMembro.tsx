@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, ArrowLeft, Gift, Clock, Percent, Crown } from "lucide-react";
+import { Check, Star, ArrowLeft, Gift, Clock, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 
@@ -12,6 +12,18 @@ interface Pack {
   name: string;
   slug: string;
   cover_url: string | null;
+  // Prices (in cents)
+  price_6_meses: number | null;
+  price_1_ano: number | null;
+  price_vitalicio: number | null;
+  // Enabled toggles
+  enabled_6_meses: boolean;
+  enabled_1_ano: boolean;
+  enabled_vitalicio: boolean;
+  // Member checkout links (20% OFF)
+  checkout_link_membro_6_meses: string | null;
+  checkout_link_membro_1_ano: string | null;
+  checkout_link_membro_vitalicio: string | null;
 }
 
 const PlanosArtesMembro = () => {
@@ -49,12 +61,17 @@ const PlanosArtesMembro = () => {
   const fetchPacks = async () => {
     const { data, error } = await supabase
       .from("artes_packs")
-      .select("id, name, slug, cover_url, type")
+      .select(`
+        id, name, slug, cover_url, type,
+        price_6_meses, price_1_ano, price_vitalicio,
+        enabled_6_meses, enabled_1_ano, enabled_vitalicio,
+        checkout_link_membro_6_meses, checkout_link_membro_1_ano, checkout_link_membro_vitalicio
+      `)
       .eq("type", "pack")
       .order("display_order", { ascending: true });
 
     if (!error && data) {
-      setPacks(data);
+      setPacks(data as Pack[]);
     }
     setLoading(false);
   };
@@ -64,15 +81,18 @@ const PlanosArtesMembro = () => {
     !userPacks.some(up => up.pack_slug === pack.slug)
   );
 
-  // Original prices in centavos
-  const originalPrices = {
-    "6_meses": 2700,
-    "1_ano": 3700,
-    "vitalicio": 4700
+  const getPrice = (type: string): number => {
+    if (!selectedPack) return 0;
+    switch (type) {
+      case "6_meses": return selectedPack.price_6_meses || 2700;
+      case "1_ano": return selectedPack.price_1_ano || 3700;
+      case "vitalicio": return selectedPack.price_vitalicio || 4700;
+      default: return 0;
+    }
   };
 
   const calculatePrice = (type: string) => {
-    const original = originalPrices[type as keyof typeof originalPrices];
+    const original = getPrice(type);
     const discounted = original * (1 - MEMBER_DISCOUNT);
     return discounted / 100;
   };
@@ -81,61 +101,95 @@ const PlanosArtesMembro = () => {
     return `R$ ${value.toFixed(2).replace('.', ',')}`;
   };
 
-  const accessOptions = [
-    {
-      type: "6_meses",
-      label: "Acesso 6 Meses",
-      originalPrice: "R$ 27,00",
-      price: formatPrice(calculatePrice("6_meses")),
-      icon: Clock,
-      buttonText: "Desbloquear 6 Meses",
-      features: [
-        "Acesso completo ao pack selecionado",
-        "Download ilimitado das artes",
-        "Arquivos editáveis (PSD e Canva)",
-        "Atualizações do pack por 6 meses"
-      ],
-      hasBonus: false,
-      highlighted: false
-    },
-    {
-      type: "1_ano",
-      label: "Acesso 1 Ano",
-      originalPrice: "R$ 37,00",
-      price: formatPrice(calculatePrice("1_ano")),
-      icon: Star,
-      buttonText: "Desbloquear 1 Ano",
-      features: [
-        "Tudo do acesso de 6 meses",
-        "Acesso por 12 meses",
-        "Acesso ao conteúdo bônus exclusivo",
-        "Novidades e atualizações premium"
-      ],
-      hasBonus: true,
-      highlighted: false
-    },
-    {
-      type: "vitalicio",
-      label: "Acesso Vitalício",
-      originalPrice: "R$ 47,00",
-      price: formatPrice(calculatePrice("vitalicio")),
-      icon: Gift,
-      buttonText: "Desbloquear Acesso Vitalício",
-      features: [
-        "Tudo do acesso de 1 ano",
-        "Acesso permanente ao pack",
-        "Todas as atualizações futuras",
-        "Conteúdo bônus exclusivo para sempre"
-      ],
-      hasBonus: true,
-      highlighted: true
+  const formatOriginalPrice = (type: string) => {
+    const cents = getPrice(type);
+    return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
+  };
+
+  const isEnabled = (type: string): boolean => {
+    if (!selectedPack) return true;
+    switch (type) {
+      case "6_meses": return selectedPack.enabled_6_meses ?? true;
+      case "1_ano": return selectedPack.enabled_1_ano ?? true;
+      case "vitalicio": return selectedPack.enabled_vitalicio ?? true;
+      default: return true;
     }
-  ];
+  };
+
+  const getAccessOptions = () => {
+    const allOptions = [
+      {
+        type: "6_meses",
+        label: "Acesso 6 Meses",
+        icon: Clock,
+        buttonText: "Desbloquear 6 Meses",
+        features: [
+          "Acesso completo ao pack selecionado",
+          "Download ilimitado das artes",
+          "Arquivos editáveis (PSD e Canva)",
+          "Atualizações do pack por 6 meses"
+        ],
+        hasBonus: false,
+        highlighted: false
+      },
+      {
+        type: "1_ano",
+        label: "Acesso 1 Ano",
+        icon: Star,
+        buttonText: "Desbloquear 1 Ano",
+        features: [
+          "Tudo do acesso de 6 meses",
+          "Acesso por 12 meses",
+          "Acesso ao conteúdo bônus exclusivo",
+          "Novidades e atualizações premium"
+        ],
+        hasBonus: true,
+        highlighted: false
+      },
+      {
+        type: "vitalicio",
+        label: "Acesso Vitalício",
+        icon: Gift,
+        buttonText: "Desbloquear Acesso Vitalício",
+        features: [
+          "Tudo do acesso de 1 ano",
+          "Acesso permanente ao pack",
+          "Todas as atualizações futuras",
+          "Conteúdo bônus exclusivo para sempre"
+        ],
+        hasBonus: true,
+        highlighted: true
+      }
+    ];
+
+    // Filter only enabled options
+    return allOptions.filter(opt => isEnabled(opt.type));
+  };
 
   const handleSelectOption = (accessType: string) => {
-    // TODO: Integrate with Greenn payment for member discount checkout
-    // Use specific checkout links for 20% OFF member pricing
-    window.open("https://voxvisual.com.br/linksbio/", "_blank");
+    if (!selectedPack) return;
+    
+    let checkoutLink: string | null = null;
+    
+    // Use member links (20% OFF)
+    switch (accessType) {
+      case "6_meses":
+        checkoutLink = selectedPack.checkout_link_membro_6_meses;
+        break;
+      case "1_ano":
+        checkoutLink = selectedPack.checkout_link_membro_1_ano;
+        break;
+      case "vitalicio":
+        checkoutLink = selectedPack.checkout_link_membro_vitalicio;
+        break;
+    }
+    
+    if (checkoutLink) {
+      window.open(checkoutLink, "_blank");
+    } else {
+      // Fallback se não houver link configurado
+      window.open("https://voxvisual.com.br/linksbio/", "_blank");
+    }
   };
 
   if (loading || authLoading) {
@@ -145,6 +199,8 @@ const PlanosArtesMembro = () => {
       </div>
     );
   }
+
+  const accessOptions = getAccessOptions();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] p-4">
@@ -240,7 +296,7 @@ const PlanosArtesMembro = () => {
               </div>
             )}
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className={`grid gap-6 ${accessOptions.length === 1 ? 'max-w-md mx-auto' : accessOptions.length === 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'md:grid-cols-3'}`}>
               {accessOptions.map((option) => {
                 const IconComponent = option.icon;
                 return (
@@ -268,11 +324,11 @@ const PlanosArtesMembro = () => {
                       <CardTitle className="text-lg text-white">{option.label}</CardTitle>
                       <div className="mt-4">
                         <div className="flex items-center justify-center gap-2 mb-1">
-                          <span className="text-white/40 line-through text-lg">{option.originalPrice}</span>
+                          <span className="text-white/40 line-through text-lg">{formatOriginalPrice(option.type)}</span>
                           <Badge className="bg-purple-500/20 text-purple-400 text-xs">-20%</Badge>
                         </div>
                         <span className="text-3xl font-bold text-purple-400">
-                          {option.price}
+                          {formatPrice(calculatePrice(option.type))}
                         </span>
                         <span className="text-white/60 text-sm block mt-1">pagamento único</span>
                       </div>

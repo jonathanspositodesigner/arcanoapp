@@ -379,10 +379,19 @@ export type Database = {
         Row: {
           checkout_link_1_ano: string | null
           checkout_link_6_meses: string | null
+          checkout_link_membro_1_ano: string | null
+          checkout_link_membro_6_meses: string | null
+          checkout_link_membro_vitalicio: string | null
+          checkout_link_renovacao_1_ano: string | null
+          checkout_link_renovacao_6_meses: string | null
+          checkout_link_renovacao_vitalicio: string | null
           checkout_link_vitalicio: string | null
           cover_url: string | null
           created_at: string
           display_order: number
+          enabled_1_ano: boolean | null
+          enabled_6_meses: boolean | null
+          enabled_vitalicio: boolean | null
           greenn_product_id_1_ano: number | null
           greenn_product_id_6_meses: number | null
           greenn_product_id_order_bump: number | null
@@ -390,6 +399,9 @@ export type Database = {
           id: string
           is_visible: boolean
           name: string
+          price_1_ano: number | null
+          price_6_meses: number | null
+          price_vitalicio: number | null
           slug: string
           type: string
           updated_at: string
@@ -397,10 +409,19 @@ export type Database = {
         Insert: {
           checkout_link_1_ano?: string | null
           checkout_link_6_meses?: string | null
+          checkout_link_membro_1_ano?: string | null
+          checkout_link_membro_6_meses?: string | null
+          checkout_link_membro_vitalicio?: string | null
+          checkout_link_renovacao_1_ano?: string | null
+          checkout_link_renovacao_6_meses?: string | null
+          checkout_link_renovacao_vitalicio?: string | null
           checkout_link_vitalicio?: string | null
           cover_url?: string | null
           created_at?: string
           display_order?: number
+          enabled_1_ano?: boolean | null
+          enabled_6_meses?: boolean | null
+          enabled_vitalicio?: boolean | null
           greenn_product_id_1_ano?: number | null
           greenn_product_id_6_meses?: number | null
           greenn_product_id_order_bump?: number | null
@@ -408,6 +429,9 @@ export type Database = {
           id?: string
           is_visible?: boolean
           name: string
+          price_1_ano?: number | null
+          price_6_meses?: number | null
+          price_vitalicio?: number | null
           slug: string
           type?: string
           updated_at?: string
@@ -415,10 +439,19 @@ export type Database = {
         Update: {
           checkout_link_1_ano?: string | null
           checkout_link_6_meses?: string | null
+          checkout_link_membro_1_ano?: string | null
+          checkout_link_membro_6_meses?: string | null
+          checkout_link_membro_vitalicio?: string | null
+          checkout_link_renovacao_1_ano?: string | null
+          checkout_link_renovacao_6_meses?: string | null
+          checkout_link_renovacao_vitalicio?: string | null
           checkout_link_vitalicio?: string | null
           cover_url?: string | null
           created_at?: string
           display_order?: number
+          enabled_1_ano?: boolean | null
+          enabled_6_meses?: boolean | null
+          enabled_vitalicio?: boolean | null
           greenn_product_id_1_ano?: number | null
           greenn_product_id_6_meses?: number | null
           greenn_product_id_order_bump?: number | null
@@ -426,6 +459,9 @@ export type Database = {
           id?: string
           is_visible?: boolean
           name?: string
+          price_1_ano?: number | null
+          price_6_meses?: number | null
+          price_vitalicio?: number | null
           slug?: string
           type?: string
           updated_at?: string
