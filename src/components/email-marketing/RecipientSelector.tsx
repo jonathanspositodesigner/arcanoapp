@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Crown, Package, Sparkles } from "lucide-react";
+import { Users, Crown, Package, Sparkles, AlertTriangle, Palette } from "lucide-react";
 
 interface RecipientSelectorProps {
   value: string;
@@ -19,8 +19,8 @@ interface RecipientSelectorProps {
 interface Counts {
   all: number;
   premiumPrompts: number;
-  premiumArtes: number;
-  packPurchasers: number;
+  artesClients: number;
+  artesExpired: number;
 }
 
 interface Pack {
@@ -37,8 +37,8 @@ const RecipientSelector = ({
   const [counts, setCounts] = useState<Counts>({
     all: 0,
     premiumPrompts: 0,
-    premiumArtes: 0,
-    packPurchasers: 0,
+    artesClients: 0,
+    artesExpired: 0,
   });
   const [packs, setPacks] = useState<Pack[]>([]);
 
@@ -54,31 +54,49 @@ const RecipientSelector = ({
       .select("*", { count: "exact", head: true })
       .not("email", "is", null);
 
-    // Premium prompts
+    // Premium prompts users
     const { count: premiumPromptsCount } = await supabase
       .from("premium_users")
       .select("*", { count: "exact", head: true })
       .eq("is_active", true);
 
-    // Premium artes
-    const { count: premiumArtesCount } = await supabase
-      .from("premium_artes_users")
-      .select("*", { count: "exact", head: true })
-      .eq("is_active", true);
-
-    // Pack purchasers (unique users)
-    const { data: packData } = await supabase
+    // Artes clients (unique users with any pack purchase)
+    const { data: artesData } = await supabase
       .from("user_pack_purchases")
       .select("user_id")
       .eq("is_active", true);
     
-    const uniquePackUsers = new Set(packData?.map(p => p.user_id) || []);
+    const uniqueArtesUsers = new Set(artesData?.map(p => p.user_id) || []);
+
+    // Clients with all packs expired
+    const { data: allPurchases } = await supabase
+      .from("user_pack_purchases")
+      .select("user_id, access_type, expires_at")
+      .eq("is_active", true);
+
+    // Group by user and check if ALL packs are expired
+    const userPacks: Record<string, { hasActive: boolean }> = {};
+    const now = new Date();
+    
+    allPurchases?.forEach(purchase => {
+      if (!userPacks[purchase.user_id]) {
+        userPacks[purchase.user_id] = { hasActive: false };
+      }
+      // Check if this pack is still active
+      if (purchase.access_type === 'vitalicio' || 
+          !purchase.expires_at || 
+          new Date(purchase.expires_at) > now) {
+        userPacks[purchase.user_id].hasActive = true;
+      }
+    });
+
+    const expiredCount = Object.values(userPacks).filter(u => !u.hasActive).length;
 
     setCounts({
       all: allCount || 0,
       premiumPrompts: premiumPromptsCount || 0,
-      premiumArtes: premiumArtesCount || 0,
-      packPurchasers: uniquePackUsers.size,
+      artesClients: uniqueArtesUsers.size,
+      artesExpired: expiredCount,
     });
   };
 
@@ -106,25 +124,25 @@ const RecipientSelector = ({
               <span className="text-muted-foreground">({counts.all})</span>
             </div>
           </SelectItem>
+          <SelectItem value="artes_clients">
+            <div className="flex items-center gap-2">
+              <Palette className="h-4 w-4 text-amber-500" />
+              <span>Clientes Artes (qualquer pack)</span>
+              <span className="text-muted-foreground">({counts.artesClients})</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="artes_expired">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <span>Clientes com packs vencidos</span>
+              <span className="text-muted-foreground">({counts.artesExpired})</span>
+            </div>
+          </SelectItem>
           <SelectItem value="premium_prompts">
             <div className="flex items-center gap-2">
               <Crown className="h-4 w-4 text-yellow-500" />
               <span>Premium Prompts</span>
               <span className="text-muted-foreground">({counts.premiumPrompts})</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="premium_artes">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-purple-500" />
-              <span>Premium Artes</span>
-              <span className="text-muted-foreground">({counts.premiumArtes})</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="pack_purchasers">
-            <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-blue-500" />
-              <span>Compradores de Packs</span>
-              <span className="text-muted-foreground">({counts.packPurchasers})</span>
             </div>
           </SelectItem>
           <SelectItem value="specific_pack">
