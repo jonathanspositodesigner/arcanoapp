@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, X, Check, Share, Plus, MoreVertical, Download, Info } from "lucide-react";
 
 type DeviceType = "ios" | "android" | "desktop";
-type BrowserType = "safari" | "chrome" | "firefox" | "edge" | "samsung" | "other";
+type BrowserType = "safari" | "chrome" | "firefox" | "edge" | "samsung" | "opera" | "brave" | "duckduckgo" | "other";
 
 interface Step {
   title: string;
@@ -23,9 +23,9 @@ const iosSafariSteps: Step[] = [
   { title: "Confirme a instalação", description: "Toque em \"Adicionar\" no canto superior direito" },
 ];
 
-// iOS Chrome
+// iOS Chrome (same for Brave, Opera on iOS)
 const iosChromeSteps: Step[] = [
-  { title: "Toque nos três pontinhos", description: "No canto superior direito do Chrome" },
+  { title: "Toque nos três pontinhos", description: "No canto superior direito do navegador" },
   { title: "Toque em \"Adicionar à Tela de Início\"", description: "Role o menu e encontre essa opção" },
   { title: "Confirme a instalação", description: "Toque em \"Adicionar\" para confirmar" },
 ];
@@ -35,6 +35,13 @@ const iosFirefoxSteps: Step[] = [
   { title: "Toque no menu (três linhas)", description: "No canto inferior direito do Firefox" },
   { title: "Toque em \"Compartilhar\"", description: "No menu que aparecer" },
   { title: "Adicionar à Tela de Início", description: "Role e toque em \"Adicionar à Tela de Início\"" },
+];
+
+// iOS DuckDuckGo
+const iosDuckDuckGoSteps: Step[] = [
+  { title: "Toque no ícone de compartilhar", description: "Na barra inferior do DuckDuckGo" },
+  { title: "Toque em \"Adicionar à Tela de Início\"", description: "Role o menu e encontre essa opção" },
+  { title: "Confirme a instalação", description: "Toque em \"Adicionar\" para confirmar" },
 ];
 
 // Android Chrome
@@ -55,6 +62,27 @@ const androidSamsungSteps: Step[] = [
 const androidFirefoxSteps: Step[] = [
   { title: "Toque nos três pontinhos", description: "No canto superior direito do Firefox" },
   { title: "Toque em \"Instalar\"", description: "Procure a opção \"Instalar\" no menu" },
+  { title: "Confirme a instalação", description: "Toque em \"Adicionar\" para confirmar" },
+];
+
+// Android Opera
+const androidOperaSteps: Step[] = [
+  { title: "Toque no ícone do Opera", description: "No canto inferior direito (ícone vermelho)" },
+  { title: "Toque em \"Adicionar à tela inicial\"", description: "Role o menu e encontre essa opção" },
+  { title: "Confirme a instalação", description: "Toque em \"Adicionar\" para confirmar" },
+];
+
+// Android Brave
+const androidBraveSteps: Step[] = [
+  { title: "Toque nos três pontinhos", description: "No canto inferior direito do Brave" },
+  { title: "Toque em \"Instalar app\"", description: "No menu que aparecer, procure por \"Instalar app\"" },
+  { title: "Confirme a instalação", description: "Toque em \"Instalar\" no popup de confirmação" },
+];
+
+// Android DuckDuckGo
+const androidDuckDuckGoSteps: Step[] = [
+  { title: "Toque nos três pontinhos", description: "No canto superior direito do DuckDuckGo" },
+  { title: "Toque em \"Adicionar à Tela Inicial\"", description: "Role o menu e encontre essa opção" },
   { title: "Confirme a instalação", description: "Toque em \"Adicionar\" para confirmar" },
 ];
 
@@ -79,10 +107,37 @@ const desktopFirefoxSteps: Step[] = [
   { title: "Acesse facilmente", description: "Use os favoritos para acessar rapidamente" },
 ];
 
+// Desktop Opera
+const desktopOperaSteps: Step[] = [
+  { title: "Clique no ícone de instalação", description: "Na barra de endereço do Opera, à direita" },
+  { title: "Clique em \"Instalar\"", description: "No popup que aparecer, confirme a instalação" },
+  { title: "Pronto!", description: "O app será instalado e abrirá automaticamente" },
+];
+
+// Desktop Brave
+const desktopBraveSteps: Step[] = [
+  { title: "Clique no ícone de instalação", description: "Na barra de endereço do Brave, à direita" },
+  { title: "Clique em \"Instalar\"", description: "No popup que aparecer, confirme a instalação" },
+  { title: "Pronto!", description: "O app será instalado e abrirá automaticamente" },
+];
+
+// Desktop DuckDuckGo (limited support)
+const desktopDuckDuckGoSteps: Step[] = [
+  { title: "DuckDuckGo tem suporte limitado", description: "Recomendamos usar Chrome ou Edge para instalar" },
+  { title: "Adicione aos favoritos", description: "Pressione Ctrl+D (ou Cmd+D no Mac)" },
+  { title: "Acesse facilmente", description: "Use os favoritos para acessar rapidamente" },
+];
+
 function detectBrowser(): BrowserType {
   const ua = navigator.userAgent.toLowerCase();
   
-  // Check for Samsung Internet first (it also includes "chrome" in UA)
+  // Check for DuckDuckGo first
+  if (ua.includes("duckduckgo")) return "duckduckgo";
+  // Check for Brave (has "brave" in ua on some versions, or check for brave object)
+  if (ua.includes("brave") || (navigator as any).brave) return "brave";
+  // Check for Opera (includes "opr/" or "opera")
+  if (ua.includes("opr/") || ua.includes("opera")) return "opera";
+  // Check for Samsung Internet (it also includes "chrome" in UA)
   if (ua.includes("samsungbrowser")) return "samsung";
   // Check for Edge (it also includes "chrome" in UA)
   if (ua.includes("edg/") || ua.includes("edge")) return "edge";
@@ -106,20 +161,27 @@ function detectDevice(): DeviceType {
 
 function getStepsForConfig(device: DeviceType, browser: BrowserType): DeviceBrowserConfig {
   if (device === "ios") {
-    if (browser === "chrome") return { steps: iosChromeSteps, label: "Chrome no iPhone" };
+    if (browser === "chrome" || browser === "brave" || browser === "opera") return { steps: iosChromeSteps, label: `${browser === "chrome" ? "Chrome" : browser === "brave" ? "Brave" : "Opera"} no iPhone` };
     if (browser === "firefox") return { steps: iosFirefoxSteps, label: "Firefox no iPhone" };
+    if (browser === "duckduckgo") return { steps: iosDuckDuckGoSteps, label: "DuckDuckGo no iPhone" };
     return { steps: iosSafariSteps, label: "Safari no iPhone" };
   }
   
   if (device === "android") {
     if (browser === "samsung") return { steps: androidSamsungSteps, label: "Samsung Internet" };
     if (browser === "firefox") return { steps: androidFirefoxSteps, label: "Firefox no Android" };
+    if (browser === "opera") return { steps: androidOperaSteps, label: "Opera no Android" };
+    if (browser === "brave") return { steps: androidBraveSteps, label: "Brave no Android" };
+    if (browser === "duckduckgo") return { steps: androidDuckDuckGoSteps, label: "DuckDuckGo no Android" };
     return { steps: androidChromeSteps, label: "Chrome no Android" };
   }
   
   // Desktop
   if (browser === "edge") return { steps: desktopEdgeSteps, label: "Microsoft Edge" };
   if (browser === "firefox") return { steps: desktopFirefoxSteps, label: "Firefox" };
+  if (browser === "opera") return { steps: desktopOperaSteps, label: "Opera" };
+  if (browser === "brave") return { steps: desktopBraveSteps, label: "Brave" };
+  if (browser === "duckduckgo") return { steps: desktopDuckDuckGoSteps, label: "DuckDuckGo" };
   return { steps: desktopChromeSteps, label: "Chrome" };
 }
 
