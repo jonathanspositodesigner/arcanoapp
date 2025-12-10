@@ -607,6 +607,7 @@ const InstallTutorialInteractive = () => {
   const [deviceType, setDeviceType] = useState<DeviceType>("android");
   const [browserType, setBrowserType] = useState<BrowserType>("chrome");
   const [currentStep, setCurrentStep] = useState(0);
+  const [showBrowserSelector, setShowBrowserSelector] = useState(false);
 
   useEffect(() => {
     // Detect device and browser
@@ -634,10 +635,48 @@ const InstallTutorialInteractive = () => {
     setCurrentStep(0);
   };
 
+  const handleBrowserChange = (browser: BrowserType) => {
+    setBrowserType(browser);
+    setCurrentStep(0);
+    setShowBrowserSelector(false);
+  };
+
+  const getBrowsersForDevice = (): { value: BrowserType; label: string }[] => {
+    if (deviceType === "ios") {
+      return [
+        { value: "safari", label: "Safari" },
+        { value: "chrome", label: "Chrome" },
+        { value: "firefox", label: "Firefox" },
+        { value: "brave", label: "Brave" },
+        { value: "opera", label: "Opera" },
+        { value: "duckduckgo", label: "DuckDuckGo" },
+      ];
+    }
+    if (deviceType === "android") {
+      return [
+        { value: "chrome", label: "Chrome" },
+        { value: "firefox", label: "Firefox" },
+        { value: "samsung", label: "Samsung Internet" },
+        { value: "opera", label: "Opera" },
+        { value: "brave", label: "Brave" },
+        { value: "duckduckgo", label: "DuckDuckGo" },
+      ];
+    }
+    // Desktop
+    return [
+      { value: "chrome", label: "Chrome" },
+      { value: "edge", label: "Microsoft Edge" },
+      { value: "firefox", label: "Firefox" },
+      { value: "opera", label: "Opera" },
+      { value: "brave", label: "Brave" },
+      { value: "duckduckgo", label: "DuckDuckGo" },
+    ];
+  };
+
   const renderMockup = () => {
     // iOS mockups
     if (deviceType === "ios") {
-      if (browserType === "chrome") {
+      if (browserType === "chrome" || browserType === "brave" || browserType === "opera") {
         return <IOSChromeMockup step={currentStep} />;
       }
       return <IOSMockup step={currentStep} />;
@@ -654,18 +693,46 @@ const InstallTutorialInteractive = () => {
 
   return (
     <Card className="p-6 overflow-hidden">
-      {/* Detected Browser Info */}
+      {/* Detected Browser Info with Edit Button */}
       <div className="flex items-center justify-center gap-2 mb-4 text-sm text-muted-foreground bg-muted/50 rounded-lg py-2 px-3">
-        <Info className="h-4 w-4" />
+        <Info className="h-4 w-4 flex-shrink-0" />
         <span>Detectado: <strong className="text-foreground">{config.label}</strong></span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowBrowserSelector(!showBrowserSelector)}
+          className="h-6 px-2 text-xs ml-1"
+        >
+          {showBrowserSelector ? "Fechar" : "Alterar"}
+        </Button>
       </div>
+
+      {/* Browser Selector (collapsible) */}
+      {showBrowserSelector && (
+        <div className="mb-4 p-3 bg-muted/30 rounded-lg animate-fade-in">
+          <p className="text-xs text-muted-foreground mb-2 text-center">Selecione seu navegador:</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {getBrowsersForDevice().map((browser) => (
+              <Button
+                key={browser.value}
+                variant={browserType === browser.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleBrowserChange(browser.value)}
+                className={`text-xs ${browserType === browser.value ? "bg-gradient-primary" : ""}`}
+              >
+                {browser.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Device Type Selector */}
       <div className="flex justify-center gap-2 mb-6">
         <Button
           variant={deviceType === "ios" ? "default" : "outline"}
           size="sm"
-          onClick={() => { setDeviceType("ios"); setCurrentStep(0); }}
+          onClick={() => { setDeviceType("ios"); setBrowserType("safari"); setCurrentStep(0); }}
           className={deviceType === "ios" ? "bg-gradient-primary" : ""}
         >
           iPhone
@@ -673,7 +740,7 @@ const InstallTutorialInteractive = () => {
         <Button
           variant={deviceType === "android" ? "default" : "outline"}
           size="sm"
-          onClick={() => { setDeviceType("android"); setCurrentStep(0); }}
+          onClick={() => { setDeviceType("android"); setBrowserType("chrome"); setCurrentStep(0); }}
           className={deviceType === "android" ? "bg-gradient-primary" : ""}
         >
           Android
@@ -681,7 +748,7 @@ const InstallTutorialInteractive = () => {
         <Button
           variant={deviceType === "desktop" ? "default" : "outline"}
           size="sm"
-          onClick={() => { setDeviceType("desktop"); setCurrentStep(0); }}
+          onClick={() => { setDeviceType("desktop"); setBrowserType("chrome"); setCurrentStep(0); }}
           className={deviceType === "desktop" ? "bg-gradient-primary" : ""}
         >
           Computador
