@@ -646,10 +646,10 @@ const BibliotecaArtes = () => {
                 {getCurrentItems().map(pack => {
               const arteCount = getPackArteCount(pack.name);
               const packSlug = toPackSlug(pack.name);
-              // For bonus/updates: any active pack = access. For regular packs: need specific pack
-              const isBonusOrUpdatesType = pack.type === 'bonus' || pack.type === 'updates';
-              const hasPackAccess = isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug);
-              const isExpired = !isBonusOrUpdatesType && hasExpiredPack(packSlug);
+              // For bonus/updates/ferramentas_ia: any active pack = access. For regular packs: need specific pack
+              const isBonusOrUpdatesOrToolType = pack.type === 'bonus' || pack.type === 'updates' || pack.type === 'ferramentas_ia' || pack.type === 'ferramenta';
+              const hasPackAccess = isBonusOrUpdatesOrToolType ? isPremium : hasAccessToPack(packSlug);
+              const isExpired = !isBonusOrUpdatesOrToolType && hasExpiredPack(packSlug);
               const expiredInfo = isExpired ? getExpiredPackInfo(packSlug) : null;
               return <Card key={pack.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => {
                 setSelectedPack(pack.name);
