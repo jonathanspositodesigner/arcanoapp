@@ -12,6 +12,7 @@ interface LessonButton {
 
 interface Lesson {
   title: string;
+  description?: string;
   videoUrl: string;
   buttons?: LessonButton[];
 }
@@ -132,6 +133,9 @@ const TutorialArtes = () => {
               <Card key={index}>
                 <CardHeader>
                   <CardTitle className="text-lg">{lesson.title}</CardTitle>
+                  {lesson.description && (
+                    <p className="text-muted-foreground text-sm mt-1">{lesson.description}</p>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="aspect-video rounded-lg overflow-hidden bg-black">

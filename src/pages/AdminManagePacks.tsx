@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -15,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TutorialLesson {
   title: string;
+  description: string;
   videoUrl: string;
   buttons: { text: string; url: string }[];
 }
@@ -471,7 +473,7 @@ const AdminManagePacks = () => {
   };
 
   const addLesson = () => {
-    setTutorialLessons([...tutorialLessons, { title: '', videoUrl: '', buttons: [] }]);
+    setTutorialLessons([...tutorialLessons, { title: '', description: '', videoUrl: '', buttons: [] }]);
   };
 
   const updateLesson = (index: number, field: keyof TutorialLesson, value: any) => {
@@ -1051,6 +1053,16 @@ const AdminManagePacks = () => {
                             value={lesson.title}
                             onChange={(e) => updateLesson(lessonIndex, 'title', e.target.value)}
                             placeholder="Ex: Aula 1 - Introdução"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Descrição (opcional)</Label>
+                          <Textarea
+                            value={lesson.description || ''}
+                            onChange={(e) => updateLesson(lessonIndex, 'description', e.target.value)}
+                            placeholder="Descreva o conteúdo desta aula..."
+                            className="min-h-[60px]"
                           />
                         </div>
                         
