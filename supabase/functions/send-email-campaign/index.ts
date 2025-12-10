@@ -255,46 +255,82 @@ serve(async (req) => {
       })
       .eq("id", campaign_id);
 
-    // Send emails in batches of 50
-    const BATCH_SIZE = 50;
+    // Send emails one by one with rate limit respect (max 2/second = 500ms delay)
+    // Using sequential sending to avoid rate limit errors
     let sentCount = 0;
     let failedCount = 0;
+    const DELAY_BETWEEN_EMAILS = 600; // 600ms delay = ~1.6 emails/second (safe margin under 2/sec limit)
+    const MAX_RETRIES = 3;
 
-    for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
-      const batch = recipients.slice(i, i + BATCH_SIZE);
-      
-      const promises = batch.map(async (email) => {
+    console.log(`Starting to send ${recipients.length} emails with ${DELAY_BETWEEN_EMAILS}ms delay between each`);
+
+    for (let i = 0; i < recipients.length; i++) {
+      const email = recipients[i];
+      let success = false;
+      let retries = 0;
+
+      while (!success && retries < MAX_RETRIES) {
         try {
-          await resend.emails.send({
+          const result = await resend.emails.send({
             from: `${campaign.sender_name} <${campaign.sender_email}>`,
             to: [email],
             subject: campaign.subject,
             html: campaign.content,
           });
-          return { success: true };
-        } catch (error) {
-          console.error(`Failed to send to ${email}:`, error);
-          return { success: false };
+
+          if (result.error) {
+            // Check if rate limit error
+            const errorMsg = result.error.message || "";
+            if (errorMsg.includes("rate_limit") || errorMsg.includes("429") || errorMsg.includes("Too many requests")) {
+              console.log(`Rate limit hit for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+              retries++;
+              continue;
+            }
+            throw new Error(result.error.message);
+          }
+
+          success = true;
+          sentCount++;
+          console.log(`[${i + 1}/${recipients.length}] Sent to ${email}`);
+        } catch (error: any) {
+          // Check if rate limit error in exception
+          const errorMsg = error.message || "";
+          if (errorMsg.includes("rate_limit") || errorMsg.includes("429") || errorMsg.includes("Too many requests")) {
+            console.log(`Rate limit exception for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            retries++;
+            continue;
+          }
+          
+          console.error(`Failed to send to ${email}:`, error.message);
+          failedCount++;
+          break;
         }
-      });
+      }
 
-      const results = await Promise.all(promises);
-      
-      sentCount += results.filter((r) => r.success).length;
-      failedCount += results.filter((r) => !r.success).length;
+      // If all retries failed due to rate limit
+      if (!success && retries >= MAX_RETRIES) {
+        console.error(`Max retries reached for ${email}`);
+        failedCount++;
+      }
 
-      // Update progress
-      await supabaseClient
-        .from("email_campaigns")
-        .update({ 
-          sent_count: sentCount,
-          failed_count: failedCount
-        })
-        .eq("id", campaign_id);
+      // Update progress every 10 emails
+      if ((i + 1) % 10 === 0 || i === recipients.length - 1) {
+        await supabaseClient
+          .from("email_campaigns")
+          .update({ 
+            sent_count: sentCount,
+            failed_count: failedCount
+          })
+          .eq("id", campaign_id);
+        
+        console.log(`Progress: ${sentCount} sent, ${failedCount} failed, ${recipients.length - i - 1} remaining`);
+      }
 
-      // Small delay between batches to avoid rate limits
-      if (i + BATCH_SIZE < recipients.length) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Delay between emails to respect rate limit (except for last email)
+      if (i < recipients.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_EMAILS));
       }
     }
 
