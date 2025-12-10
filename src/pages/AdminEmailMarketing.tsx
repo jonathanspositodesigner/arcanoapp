@@ -117,20 +117,41 @@ const AdminEmailMarketing = () => {
       return;
     }
 
-    if (!campaign.id) {
-      await handleSaveDraft();
-    }
-
-    if (!campaign.id && !campaign.title) {
-      toast.error("Salve a campanha primeiro");
+    if (!campaign.title || !campaign.subject) {
+      toast.error("Preencha título e assunto primeiro");
       return;
     }
 
     setSendingTest(true);
 
+    // Save draft first and get the ID
+    let campaignId = campaign.id;
+    
+    if (!campaignId) {
+      const payload = {
+        ...campaign,
+        status: "draft",
+      };
+      
+      const { data, error } = await supabase
+        .from("email_campaigns")
+        .insert(payload)
+        .select()
+        .single();
+      
+      if (error || !data) {
+        toast.error("Erro ao salvar campanha");
+        setSendingTest(false);
+        return;
+      }
+      
+      campaignId = data.id;
+      setCampaign(prev => ({ ...prev, id: data.id }));
+    }
+
     const { data, error } = await supabase.functions.invoke("send-email-campaign", {
       body: {
-        campaign_id: campaign.id,
+        campaign_id: campaignId,
         test_email: testEmail,
       },
     });
