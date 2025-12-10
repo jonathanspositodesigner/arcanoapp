@@ -1,59 +1,127 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, X, Check, Share, Plus, MoreVertical, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Check, Share, Plus, MoreVertical, Download, Info } from "lucide-react";
 
 type DeviceType = "ios" | "android" | "desktop";
+type BrowserType = "safari" | "chrome" | "firefox" | "edge" | "samsung" | "other";
 
 interface Step {
   title: string;
   description: string;
 }
 
-const iosSteps: Step[] = [
-  {
-    title: "Toque no ícone Compartilhar",
-    description: "Na barra inferior do Safari, toque no ícone de compartilhar",
-  },
-  {
-    title: "Adicionar à Tela de Início",
-    description: "Role o menu e toque em \"Adicionar à Tela de Início\"",
-  },
-  {
-    title: "Confirme a instalação",
-    description: "Toque em \"Adicionar\" no canto superior direito",
-  },
+interface DeviceBrowserConfig {
+  steps: Step[];
+  label: string;
+}
+
+// iOS Safari
+const iosSafariSteps: Step[] = [
+  { title: "Toque no ícone Compartilhar", description: "Na barra inferior do Safari, toque no ícone de compartilhar" },
+  { title: "Adicionar à Tela de Início", description: "Role o menu e toque em \"Adicionar à Tela de Início\"" },
+  { title: "Confirme a instalação", description: "Toque em \"Adicionar\" no canto superior direito" },
 ];
 
-const androidSteps: Step[] = [
-  {
-    title: "Toque nos três pontinhos",
-    description: "No canto superior direito do Chrome",
-  },
-  {
-    title: "Toque em \"Instalar app\"",
-    description: "No menu que aparecer, procure por \"Instalar app\"",
-  },
-  {
-    title: "Confirme a instalação",
-    description: "Toque em \"Instalar\" no popup de confirmação",
-  },
+// iOS Chrome
+const iosChromeSteps: Step[] = [
+  { title: "Toque nos três pontinhos", description: "No canto superior direito do Chrome" },
+  { title: "Toque em \"Adicionar à Tela de Início\"", description: "Role o menu e encontre essa opção" },
+  { title: "Confirme a instalação", description: "Toque em \"Adicionar\" para confirmar" },
 ];
 
-const desktopSteps: Step[] = [
-  {
-    title: "Clique no ícone de instalação",
-    description: "Na barra de endereço do Chrome, à direita",
-  },
-  {
-    title: "Clique em \"Instalar\"",
-    description: "No popup que aparecer, confirme a instalação",
-  },
-  {
-    title: "Pronto!",
-    description: "O app será instalado e abrirá automaticamente",
-  },
+// iOS Firefox
+const iosFirefoxSteps: Step[] = [
+  { title: "Toque no menu (três linhas)", description: "No canto inferior direito do Firefox" },
+  { title: "Toque em \"Compartilhar\"", description: "No menu que aparecer" },
+  { title: "Adicionar à Tela de Início", description: "Role e toque em \"Adicionar à Tela de Início\"" },
 ];
+
+// Android Chrome
+const androidChromeSteps: Step[] = [
+  { title: "Toque nos três pontinhos", description: "No canto superior direito do Chrome" },
+  { title: "Toque em \"Instalar app\"", description: "No menu que aparecer, procure por \"Instalar app\"" },
+  { title: "Confirme a instalação", description: "Toque em \"Instalar\" no popup de confirmação" },
+];
+
+// Android Samsung Internet
+const androidSamsungSteps: Step[] = [
+  { title: "Toque no menu (três linhas)", description: "No canto inferior direito do Samsung Internet" },
+  { title: "Toque em \"Adicionar página a\"", description: "Role o menu e encontre essa opção" },
+  { title: "Selecione \"Tela inicial\"", description: "Confirme para adicionar o ícone" },
+];
+
+// Android Firefox
+const androidFirefoxSteps: Step[] = [
+  { title: "Toque nos três pontinhos", description: "No canto superior direito do Firefox" },
+  { title: "Toque em \"Instalar\"", description: "Procure a opção \"Instalar\" no menu" },
+  { title: "Confirme a instalação", description: "Toque em \"Adicionar\" para confirmar" },
+];
+
+// Desktop Chrome
+const desktopChromeSteps: Step[] = [
+  { title: "Clique no ícone de instalação", description: "Na barra de endereço do Chrome, à direita" },
+  { title: "Clique em \"Instalar\"", description: "No popup que aparecer, confirme a instalação" },
+  { title: "Pronto!", description: "O app será instalado e abrirá automaticamente" },
+];
+
+// Desktop Edge
+const desktopEdgeSteps: Step[] = [
+  { title: "Clique nos três pontinhos", description: "No canto superior direito do Edge" },
+  { title: "Vá em \"Apps\" > \"Instalar este site como app\"", description: "Ou clique no ícone na barra de endereço" },
+  { title: "Confirme a instalação", description: "Clique em \"Instalar\" no popup" },
+];
+
+// Desktop Firefox (limited PWA support)
+const desktopFirefoxSteps: Step[] = [
+  { title: "Firefox tem suporte limitado", description: "Recomendamos usar Chrome ou Edge para melhor experiência" },
+  { title: "Adicione aos favoritos", description: "Pressione Ctrl+D para salvar nos favoritos" },
+  { title: "Acesse facilmente", description: "Use os favoritos para acessar rapidamente" },
+];
+
+function detectBrowser(): BrowserType {
+  const ua = navigator.userAgent.toLowerCase();
+  
+  // Check for Samsung Internet first (it also includes "chrome" in UA)
+  if (ua.includes("samsungbrowser")) return "samsung";
+  // Check for Edge (it also includes "chrome" in UA)
+  if (ua.includes("edg/") || ua.includes("edge")) return "edge";
+  // Check for Firefox
+  if (ua.includes("firefox") || ua.includes("fxios")) return "firefox";
+  // Check for Chrome (includes CriOS for iOS Chrome)
+  if (ua.includes("chrome") || ua.includes("crios")) return "chrome";
+  // Check for Safari (must be after Chrome check since Chrome includes "safari" in UA)
+  if (ua.includes("safari") && !ua.includes("chrome")) return "safari";
+  
+  return "other";
+}
+
+function detectDevice(): DeviceType {
+  const ua = navigator.userAgent.toLowerCase();
+  
+  if (/ipad|iphone|ipod/.test(ua)) return "ios";
+  if (/android/.test(ua)) return "android";
+  return "desktop";
+}
+
+function getStepsForConfig(device: DeviceType, browser: BrowserType): DeviceBrowserConfig {
+  if (device === "ios") {
+    if (browser === "chrome") return { steps: iosChromeSteps, label: "Chrome no iPhone" };
+    if (browser === "firefox") return { steps: iosFirefoxSteps, label: "Firefox no iPhone" };
+    return { steps: iosSafariSteps, label: "Safari no iPhone" };
+  }
+  
+  if (device === "android") {
+    if (browser === "samsung") return { steps: androidSamsungSteps, label: "Samsung Internet" };
+    if (browser === "firefox") return { steps: androidFirefoxSteps, label: "Firefox no Android" };
+    return { steps: androidChromeSteps, label: "Chrome no Android" };
+  }
+  
+  // Desktop
+  if (browser === "edge") return { steps: desktopEdgeSteps, label: "Microsoft Edge" };
+  if (browser === "firefox") return { steps: desktopFirefoxSteps, label: "Firefox" };
+  return { steps: desktopChromeSteps, label: "Chrome" };
+}
 
 // iOS Safari Mockup
 const IOSMockup = ({ step }: { step: number }) => (
@@ -178,6 +246,114 @@ const IOSMockup = ({ step }: { step: number }) => (
   </div>
 );
 
+// iOS Chrome Mockup - Menu is in TOP RIGHT (different from Safari)
+const IOSChromeMockup = ({ step }: { step: number }) => (
+  <div className="relative w-full max-w-[280px] mx-auto">
+    {/* iPhone Frame */}
+    <div className="bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
+      {/* Screen */}
+      <div className="bg-gray-100 dark:bg-gray-800 rounded-[2rem] overflow-hidden">
+        {/* Status Bar */}
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+          <div className="w-20 h-4 bg-gray-900 rounded-full" />
+        </div>
+        
+        {/* Chrome Header with 3 dots */}
+        <div className="h-12 bg-white dark:bg-gray-900 flex items-center px-3 gap-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-8 flex items-center px-3">
+            <span className="text-[10px] text-gray-500 truncate">arcanoapp.voxvisual.com.br</span>
+          </div>
+          <div className="relative">
+            <MoreVertical className="h-5 w-5 text-gray-600" />
+            {/* Pulse indicator for Step 1 */}
+            {step === 0 && (
+              <>
+                <span className="absolute -right-1 -top-1 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+                </span>
+                {/* Animated Arrow */}
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 animate-bounce-arrow">
+                  <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[12px] border-t-red-500" />
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        
+        {/* Chrome Content */}
+        <div className="h-[296px] bg-white dark:bg-gray-900 relative">
+          {/* Page Content Placeholder */}
+          <div className="p-4 space-y-3">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+            <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded" />
+          </div>
+          
+          {/* Chrome Menu Dropdown - Step 2 */}
+          {step === 1 && (
+            <div className="absolute top-0 right-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl w-52 animate-slide-down border border-gray-200 dark:border-gray-700">
+              <div className="py-2">
+                <div className="px-4 py-2.5 text-sm text-gray-600">Nova guia</div>
+                <div className="px-4 py-2.5 text-sm text-gray-600">Nova guia anônima</div>
+                <div className="px-4 py-2.5 text-sm text-gray-600">Favoritos</div>
+                <div className="px-4 py-2.5 text-sm font-medium relative bg-primary/10 text-primary flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Adicionar à Tela de Início
+                  {/* Pulse indicator */}
+                  <span className="absolute right-2 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                </div>
+                <div className="px-4 py-2.5 text-sm text-gray-600">Downloads</div>
+              </div>
+            </div>
+          )}
+          
+          {/* Add to Home Popup - Step 3 */}
+          {step === 2 && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center animate-fade-in">
+              <div className="bg-white dark:bg-gray-800 rounded-xl w-[90%] p-4 shadow-xl">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
+                    <span className="text-white font-bold">A</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">ArcanoApp</p>
+                    <p className="text-[10px] text-gray-500">arcanoapp.voxvisual...</p>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button className="px-4 py-2 text-sm text-gray-500">Cancelar</button>
+                  <button className="px-4 py-2 text-sm text-primary font-semibold relative">
+                    Adicionar
+                    {/* Pulse indicator */}
+                    <span className="absolute -right-1 -top-1 flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Chrome Bottom Bar */}
+        <div className="h-10 bg-gray-100 dark:bg-gray-800 flex items-center justify-around px-4 border-t border-gray-200 dark:border-gray-700">
+          <ChevronLeft className="h-5 w-5 text-gray-400" />
+          <ChevronRight className="h-5 w-5 text-gray-400" />
+          <Share className="h-5 w-5 text-gray-400" />
+          <div className="flex gap-0.5">
+            <div className="w-4 h-4 border border-gray-400 rounded text-[8px] flex items-center justify-center">2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 // Android Chrome Mockup
 const AndroidMockup = ({ step }: { step: number }) => (
   <div className="relative w-full max-w-[280px] mx-auto">
@@ -278,7 +454,7 @@ const AndroidMockup = ({ step }: { step: number }) => (
 );
 
 // Desktop Chrome Mockup
-const DesktopMockup = ({ step }: { step: number }) => (
+const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }) => (
   <div className="relative w-full max-w-[400px] mx-auto">
     {/* Browser Window */}
     <div className="bg-gray-200 dark:bg-gray-700 rounded-lg shadow-2xl overflow-hidden">
@@ -367,21 +543,17 @@ const DesktopMockup = ({ step }: { step: number }) => (
 
 const InstallTutorialInteractive = () => {
   const [deviceType, setDeviceType] = useState<DeviceType>("android");
+  const [browserType, setBrowserType] = useState<BrowserType>("chrome");
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    // Detect device type
-    const userAgent = navigator.userAgent.toLowerCase();
-    if (/ipad|iphone|ipod/.test(userAgent)) {
-      setDeviceType("ios");
-    } else if (/android/.test(userAgent)) {
-      setDeviceType("android");
-    } else {
-      setDeviceType("desktop");
-    }
+    // Detect device and browser
+    setDeviceType(detectDevice());
+    setBrowserType(detectBrowser());
   }, []);
 
-  const steps = deviceType === "ios" ? iosSteps : deviceType === "android" ? androidSteps : desktopSteps;
+  const config = getStepsForConfig(deviceType, browserType);
+  const steps = config.steps;
   const totalSteps = steps.length;
 
   const handleNext = () => {
@@ -401,18 +573,31 @@ const InstallTutorialInteractive = () => {
   };
 
   const renderMockup = () => {
-    switch (deviceType) {
-      case "ios":
-        return <IOSMockup step={currentStep} />;
-      case "android":
-        return <AndroidMockup step={currentStep} />;
-      case "desktop":
-        return <DesktopMockup step={currentStep} />;
+    // iOS mockups
+    if (deviceType === "ios") {
+      if (browserType === "chrome") {
+        return <IOSChromeMockup step={currentStep} />;
+      }
+      return <IOSMockup step={currentStep} />;
     }
+    
+    // Android mockups
+    if (deviceType === "android") {
+      return <AndroidMockup step={currentStep} />;
+    }
+    
+    // Desktop mockups
+    return <DesktopMockup step={currentStep} browser={browserType} />;
   };
 
   return (
     <Card className="p-6 overflow-hidden">
+      {/* Detected Browser Info */}
+      <div className="flex items-center justify-center gap-2 mb-4 text-sm text-muted-foreground bg-muted/50 rounded-lg py-2 px-3">
+        <Info className="h-4 w-4" />
+        <span>Detectado: <strong className="text-foreground">{config.label}</strong></span>
+      </div>
+
       {/* Device Type Selector */}
       <div className="flex justify-center gap-2 mb-6">
         <Button
