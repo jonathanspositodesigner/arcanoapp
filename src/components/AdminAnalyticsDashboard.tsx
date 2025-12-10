@@ -1416,7 +1416,283 @@ const [pageViews, setPageViews] = useState({
             </Card>
           </div>
 
-          {/* Chart */}
+          {/* NEW METRICS SECTION */}
+          <h3 className="text-xl font-bold text-foreground mt-8 mb-4">Métricas Avançadas</h3>
+          
+          {/* Row 1: Peak Hours + Conversion Rate + Funnel */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {/* Horário de Pico */}
+            <Card className="p-6 border-2 border-orange-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-orange-500/20 rounded-full">
+                  <Clock className="h-6 w-6 text-orange-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Horário de Pico</p>
+              </div>
+              
+              {hourlyStats.length > 0 ? (
+                <>
+                  <div className="h-[150px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={hourlyStats}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis 
+                          dataKey="hour" 
+                          tick={{ fontSize: 9 }}
+                          tickFormatter={(h) => `${h}h`}
+                          className="text-muted-foreground"
+                        />
+                        <YAxis hide />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: "hsl(var(--card))", 
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px",
+                            fontSize: "12px"
+                          }}
+                          formatter={(value: number) => [value, 'Acessos']}
+                          labelFormatter={(h) => `${h}:00`}
+                        />
+                        <Bar dataKey="count" fill="#f97316" radius={[2, 2, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-3 text-center">
+                    {(() => {
+                      const topHours = [...hourlyStats].sort((a, b) => b.count - a.count).slice(0, 3);
+                      return (
+                        <p className="text-xs text-muted-foreground">
+                          🔥 Pico: <span className="font-bold text-orange-500">
+                            {topHours.map(h => `${h.hour}h`).join(', ')}
+                          </span>
+                        </p>
+                      );
+                    })()}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center">Sem dados</p>
+              )}
+            </Card>
+
+            {/* Taxa de Conversão - Artes */}
+            <Card className="p-6 border-2 border-green-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-green-500/20 rounded-full">
+                  <TrendingUp className="h-6 w-6 text-green-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Taxa de Conversão</p>
+              </div>
+              
+              <div className="text-center space-y-3">
+                <p className={`text-4xl font-bold ${
+                  conversionRate.rate >= 5 ? 'text-green-500' : 
+                  conversionRate.rate >= 2 ? 'text-yellow-500' : 'text-red-500'
+                }`}>
+                  {conversionRate.rate}%
+                </p>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">
+                    👀 {conversionRate.visitors.toLocaleString()} visitantes
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    🛒 {conversionRate.buyers.toLocaleString()} compradores
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground">
+                    Visitantes que compraram packs
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Funil de Engajamento - Prompts */}
+            <Card className="p-6 border-2 border-purple-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-purple-500/20 rounded-full">
+                  <TrendingUp className="h-6 w-6 text-purple-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Funil - Prompts</p>
+              </div>
+              
+              <div className="space-y-3">
+                {/* Funnel visual */}
+                <div className="space-y-2">
+                  <div className="bg-purple-500/20 rounded-lg p-2 text-center">
+                    <p className="text-lg font-bold text-purple-500">{funnelStats.visits.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">Visitas</p>
+                  </div>
+                  <div className="flex justify-center">
+                    <span className="text-xs text-muted-foreground">↓ {funnelStats.clickRate}%</span>
+                  </div>
+                  <div className="bg-purple-500/30 rounded-lg p-2 text-center mx-4">
+                    <p className="text-lg font-bold text-purple-500">{funnelStats.clicks.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">Cliques</p>
+                  </div>
+                  <div className="flex justify-center">
+                    <span className="text-xs text-muted-foreground">↓ {funnelStats.copyRate}%</span>
+                  </div>
+                  <div className="bg-purple-500/40 rounded-lg p-2 text-center mx-8">
+                    <p className="text-lg font-bold text-purple-500">{funnelStats.copies.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">Cópias</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Row 2: Access Types + Retention + Purchase Hours */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {/* Distribuição de Tipos de Acesso */}
+            <Card className="p-6 border-2 border-amber-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-amber-500/20 rounded-full">
+                  <PieChart className="h-6 w-6 text-amber-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Tipos de Acesso</p>
+              </div>
+              
+              {accessTypeStats.length > 0 ? (
+                <>
+                  <div className="h-[120px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={accessTypeStats}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={30}
+                          outerRadius={50}
+                          paddingAngle={2}
+                          dataKey="count"
+                          nameKey="type"
+                        >
+                          {accessTypeStats.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: "hsl(var(--card))", 
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px",
+                            fontSize: "12px"
+                          }}
+                          formatter={(value: number, name: string) => [`${value} (${accessTypeStats.find(s => s.type === name)?.percentage}%)`, name]}
+                        />
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    {accessTypeStats.map((stat, index) => (
+                      <div key={stat.type} className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-1">
+                          <span 
+                            className="w-2 h-2 rounded-full" 
+                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                          />
+                          {stat.type}
+                        </span>
+                        <span className="font-medium">{stat.percentage}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center">Sem dados</p>
+              )}
+            </Card>
+
+            {/* Retenção de Usuários */}
+            <Card className="p-6 border-2 border-cyan-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-cyan-500/20 rounded-full">
+                  <RotateCcw className="h-6 w-6 text-cyan-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Retenção</p>
+              </div>
+              
+              <div className="text-center space-y-3">
+                <p className={`text-4xl font-bold ${
+                  retentionStats.retentionRate >= 40 ? 'text-green-500' : 
+                  retentionStats.retentionRate >= 20 ? 'text-yellow-500' : 'text-red-500'
+                }`}>
+                  {retentionStats.retentionRate}%
+                </p>
+                <div className="flex justify-center gap-6">
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-cyan-500">{retentionStats.newUsers}</p>
+                    <p className="text-xs text-muted-foreground">Novos</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-green-500">{retentionStats.returningUsers}</p>
+                    <p className="text-xs text-muted-foreground">Recorrentes</p>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground">
+                    Usuários que voltaram mais de uma vez
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Compras por Período do Dia */}
+            <Card className="p-6 border-2 border-emerald-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-emerald-500/20 rounded-full">
+                  <ShoppingCart className="h-6 w-6 text-emerald-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Compras por Hora</p>
+              </div>
+              
+              {purchaseHourStats.some(h => h.count > 0) ? (
+                <>
+                  <div className="h-[150px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={purchaseHourStats}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis 
+                          dataKey="hour" 
+                          tick={{ fontSize: 9 }}
+                          tickFormatter={(h) => `${h}h`}
+                          className="text-muted-foreground"
+                        />
+                        <YAxis hide />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: "hsl(var(--card))", 
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px",
+                            fontSize: "12px"
+                          }}
+                          formatter={(value: number) => [value, 'Compras']}
+                          labelFormatter={(h) => `${h}:00`}
+                        />
+                        <Bar dataKey="count" fill="#10b981" radius={[2, 2, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-3 text-center">
+                    {(() => {
+                      const topHours = [...purchaseHourStats].sort((a, b) => b.count - a.count).filter(h => h.count > 0).slice(0, 3);
+                      return topHours.length > 0 ? (
+                        <p className="text-xs text-muted-foreground">
+                          💰 Melhor horário: <span className="font-bold text-emerald-500">
+                            {topHours.map(h => `${h.hour}h`).join(', ')}
+                          </span>
+                        </p>
+                      ) : null;
+                    })()}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center">Sem compras no período</p>
+              )}
+            </Card>
+          </div>
+
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Evolução de Acessos</h3>
             <div className="h-[300px]">
