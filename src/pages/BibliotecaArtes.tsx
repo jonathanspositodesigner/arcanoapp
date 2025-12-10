@@ -15,6 +15,7 @@ import { useSessionTracker } from "@/hooks/useSessionTracker";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import BannerCarousel from "@/components/BannerCarousel";
 import { toPackSlug } from "@/lib/utils";
+import { useImagePreloader } from "@/hooks/useImagePreloader";
 interface ArteItem {
   id: string | number;
   title: string;
@@ -265,6 +266,9 @@ const BibliotecaArtes = () => {
   const totalPages = Math.ceil(filteredArtes.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedArtes = filteredArtes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  // Preload next pages of images for faster loading
+  useImagePreloader(filteredArtes, currentPage, ITEMS_PER_PAGE, 2);
 
   // Categories for filtering within a pack (style categories from database)
   const categories = ["Todos", ...dbCategories];
