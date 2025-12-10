@@ -1125,179 +1125,184 @@ const AdminPackPurchases = () => {
         </div>
 
         {/* Clients Table */}
-        <Card>
-          <Table className="table-fixed w-full">
-            <TableHeader>
-              <TableRow>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 select-none w-[200px]"
-                  onClick={() => handleSort('name')}
-                >
-                  <div className="flex items-center">
-                    Cliente
-                    {getSortIcon('name')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 select-none w-[300px]"
-                  onClick={() => handleSort('packs')}
-                >
-                  <div className="flex items-center">
-                    Packs
-                    {getSortIcon('packs')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 select-none w-[120px]"
-                  onClick={() => handleSort('purchase_date')}
-                >
-                  <div className="flex items-center">
-                    Data Compra
-                    {getSortIcon('purchase_date')}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 select-none w-[120px]"
-                  onClick={() => handleSort('expires_at')}
-                >
-                  <div className="flex items-center">
-                    Vencimento
-                    {getSortIcon('expires_at')}
-                  </div>
-                </TableHead>
-                <TableHead className="text-right w-[100px]">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {groupedClients
-                .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                .map((client) => {
-                  const latestPurchase = getLatestPurchaseDate(client);
-                  const earliestExpiration = getEarliestExpiration(client);
-                  const hasVitalicio = client.purchases.some(p => p.access_type === 'vitalicio');
-                  
-                  return (
-                    <TableRow key={client.user_id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{client.user_name || 'Sem nome'}</p>
-                          <p className="text-sm text-muted-foreground">{client.user_email}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {client.purchases.map((purchase) => (
-                            <Badge 
-                              key={purchase.id} 
-                              variant="outline"
-                              className={`text-xs ${!purchase.is_active ? 'opacity-50 line-through' : ''}`}
-                            >
-                              {getPackName(purchase.pack_slug)} ({getAccessTypeLabel(purchase.access_type)})
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm">
-                          {format(latestPurchase, "dd/MM/yyyy", { locale: ptBR })}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {hasVitalicio ? (
-                          <Badge variant="outline" className="bg-purple-500/10 text-purple-600 border-purple-500/30 text-xs">
-                            Vitalício
-                          </Badge>
-                        ) : earliestExpiration ? (
-                          <Badge 
-                            variant="outline" 
-                            className={`text-xs ${
-                              earliestExpiration < new Date() 
-                                ? 'bg-red-500/10 text-red-600 border-red-500/30'
-                                : earliestExpiration < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                                ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                                : 'bg-green-500/10 text-green-600 border-green-500/30'
-                            }`}
-                          >
-                            {format(earliestExpiration, "dd/MM/yyyy", { locale: ptBR })}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openWhatsApp(client.user_phone)}
-                            title="WhatsApp"
-                          >
-                            <MessageCircle className="h-4 w-4 text-green-500" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openEditDialog(client.purchases[0])}
-                            title="Editar"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteClient(client)}
-                            title="Excluir cliente"
-                            className="text-red-500 hover:text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              {groupedClients.length === 0 && (
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[700px]">
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    Nenhum cliente encontrado
-                  </TableCell>
+                  <TableHead className="w-[80px] sticky left-0 bg-background z-10">Ações</TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none w-[180px]"
+                    onClick={() => handleSort('name')}
+                  >
+                    <div className="flex items-center">
+                      Cliente
+                      {getSortIcon('name')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none w-[280px]"
+                    onClick={() => handleSort('packs')}
+                  >
+                    <div className="flex items-center">
+                      Packs
+                      {getSortIcon('packs')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none w-[100px]"
+                    onClick={() => handleSort('purchase_date')}
+                  >
+                    <div className="flex items-center">
+                      Compra
+                      {getSortIcon('purchase_date')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none w-[100px]"
+                    onClick={() => handleSort('expires_at')}
+                  >
+                    <div className="flex items-center">
+                      Vence
+                      {getSortIcon('expires_at')}
+                    </div>
+                  </TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {groupedClients
+                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                  .map((client) => {
+                    const latestPurchase = getLatestPurchaseDate(client);
+                    const earliestExpiration = getEarliestExpiration(client);
+                    const hasVitalicio = client.purchases.some(p => p.access_type === 'vitalicio');
+                    
+                    return (
+                      <TableRow key={client.user_id}>
+                        <TableCell className="sticky left-0 bg-background z-10">
+                          <div className="flex gap-0.5">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => openWhatsApp(client.user_phone)}
+                              title="WhatsApp"
+                            >
+                              <MessageCircle className="h-4 w-4 text-green-500" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => openEditDialog(client.purchases[0])}
+                              title="Editar"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-red-500 hover:text-red-600"
+                              onClick={() => handleDeleteClient(client)}
+                              title="Excluir cliente"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-sm">{client.user_name || 'Sem nome'}</p>
+                            <p className="text-xs text-muted-foreground truncate max-w-[150px]">{client.user_email}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {client.purchases.map((purchase) => (
+                              <Badge 
+                                key={purchase.id} 
+                                variant="outline"
+                                className={`text-xs ${!purchase.is_active ? 'opacity-50 line-through' : ''}`}
+                              >
+                                {getPackName(purchase.pack_slug)} ({getAccessTypeLabel(purchase.access_type)})
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-xs">
+                            {format(latestPurchase, "dd/MM/yy", { locale: ptBR })}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {hasVitalicio ? (
+                            <Badge variant="outline" className="bg-purple-500/10 text-purple-600 border-purple-500/30 text-xs">
+                              Vitalício
+                            </Badge>
+                          ) : earliestExpiration ? (
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                earliestExpiration < new Date() 
+                                  ? 'bg-red-500/10 text-red-600 border-red-500/30'
+                                  : earliestExpiration < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                  ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                                  : 'bg-green-500/10 text-green-600 border-green-500/30'
+                              }`}
+                            >
+                              {format(earliestExpiration, "dd/MM/yy", { locale: ptBR })}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                {groupedClients.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      Nenhum cliente encontrado
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
           
-          {/* Pagination */}
+          {/* Pagination - Mobile friendly */}
           {groupedClients.length > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-between p-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, groupedClients.length)} de {groupedClients.length} clientes
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 sm:p-4 border-t">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
+                {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, groupedClients.length)} de {groupedClients.length}
               </p>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
                 <Button
                   variant="outline"
                   size="sm"
+                  className="h-8 px-2 sm:px-3 text-xs"
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                 >
-                  Anterior
+                  Ant
                 </Button>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 sm:gap-1">
                   {Array.from({ length: Math.ceil(groupedClients.length / ITEMS_PER_PAGE) }, (_, i) => i + 1)
                     .filter(page => 
                       page === 1 || 
                       page === Math.ceil(groupedClients.length / ITEMS_PER_PAGE) ||
-                      Math.abs(page - currentPage) <= 2
+                      Math.abs(page - currentPage) <= 1
                     )
                     .map((page, index, arr) => (
-                      <span key={page}>
+                      <span key={page} className="flex items-center">
                         {index > 0 && arr[index - 1] !== page - 1 && (
-                          <span className="px-2 text-muted-foreground">...</span>
+                          <span className="px-1 text-muted-foreground text-xs">...</span>
                         )}
                         <Button
                           variant={currentPage === page ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentPage(page)}
-                          className="w-8 h-8 p-0"
+                          className="w-7 h-7 sm:w-8 sm:h-8 p-0 text-xs"
                         >
                           {page}
                         </Button>
@@ -1308,10 +1313,11 @@ const AdminPackPurchases = () => {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="h-8 px-2 sm:px-3 text-xs"
                   onClick={() => setCurrentPage(p => Math.min(Math.ceil(groupedClients.length / ITEMS_PER_PAGE), p + 1))}
                   disabled={currentPage === Math.ceil(groupedClients.length / ITEMS_PER_PAGE)}
                 >
-                  Próximo
+                  Próx
                 </Button>
               </div>
             </div>
