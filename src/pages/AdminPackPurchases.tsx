@@ -127,8 +127,7 @@ const AdminPackPurchases = () => {
   const fetchPacks = async () => {
     const { data } = await supabase
       .from('artes_packs')
-      .select('id, name, slug')
-      .eq('type', 'pack')
+      .select('id, name, slug, type')
       .order('display_order');
     
     setPacks(data || []);
