@@ -777,58 +777,32 @@ const [pageViews, setPageViews] = useState({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             {/* Today's Page Views Card - HIGHLIGHTED */}
             <Card className="p-6 border-2 border-green-500 bg-green-500/10">
-              <div className="flex items-center gap-4 mb-3">
+              <div className="flex items-center gap-4">
                 <div className="p-3 bg-green-500/20 rounded-full">
                   <Eye className="h-8 w-8 text-green-500" />
                 </div>
                 <div>
                   <p className="text-sm text-green-600 font-medium">Acessos Hoje</p>
-                  <p className="text-xs text-green-600/80">
+                  <p className="text-3xl font-bold text-green-600">{pageViews.todayTotalSessions}</p>
+                  <p className="text-xs text-green-600/80 mt-1">
                     📱 {pageViews.todayMobile} · 💻 {pageViews.todayDesktop}
                   </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-green-500/30">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{pageViews.todayUnique}</p>
-                  <p className="text-[10px] text-green-600/70">Únicos</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{pageViews.todayTotalSessions}</p>
-                  <p className="text-[10px] text-green-600/70">Totais</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{pageViews.todayReturning}</p>
-                  <p className="text-[10px] text-green-600/70">Retornaram</p>
                 </div>
               </div>
             </Card>
 
             {/* Total Page Views Card */}
             <Card className="p-6">
-              <div className="flex items-center gap-4 mb-3">
+              <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-500/20 rounded-full">
                   <Eye className="h-8 w-8 text-blue-500" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Acessos no Período</p>
-                  <p className="text-xs text-muted-foreground/80">
+                  <p className="text-3xl font-bold text-foreground">{pageViews.periodTotalSessions.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground/80 mt-1">
                     📱 {pageViews.mobile} · 💻 {pageViews.desktop}
                   </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-border">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-foreground">{pageViews.periodUnique.toLocaleString()}</p>
-                  <p className="text-[10px] text-muted-foreground">Únicos</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-foreground">{pageViews.periodTotalSessions.toLocaleString()}</p>
-                  <p className="text-[10px] text-muted-foreground">Totais</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-foreground">{pageViews.periodReturning.toLocaleString()}</p>
-                  <p className="text-[10px] text-muted-foreground">Retornaram</p>
                 </div>
               </div>
             </Card>
