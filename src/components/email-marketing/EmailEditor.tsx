@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -40,6 +40,17 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
   const [linkUrl, setLinkUrl] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [emojiCategory, setEmojiCategory] = useState("Populares");
+  const isInternalChange = useRef(false);
+
+  // Set initial content only once or when value changes externally
+  useEffect(() => {
+    if (editorRef.current && !isInternalChange.current) {
+      if (editorRef.current.innerHTML !== value) {
+        editorRef.current.innerHTML = value;
+      }
+    }
+    isInternalChange.current = false;
+  }, [value]);
 
   const insertEmoji = (emoji: string) => {
     execCommand("insertHTML", emoji);
@@ -53,6 +64,7 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
 
   const updateContent = () => {
     if (editorRef.current) {
+      isInternalChange.current = true;
       onChange(editorRef.current.innerHTML);
     }
   };
@@ -365,7 +377,6 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
         className="min-h-[300px] p-4 focus:outline-none prose prose-sm max-w-none"
         onInput={updateContent}
         onBlur={updateContent}
-        dangerouslySetInnerHTML={{ __html: value }}
         style={{ 
           backgroundColor: "white", 
           color: "black",
