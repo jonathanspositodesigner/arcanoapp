@@ -42,6 +42,7 @@ interface PackItem {
   display_order: number;
   type: 'pack' | 'bonus' | 'curso' | 'updates' | 'free-sample' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
   is_visible: boolean;
+  download_url?: string | null;
 }
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -663,14 +664,40 @@ const BibliotecaArtes = () => {
               // For bonus/updates/ferramentas_ia: any active pack = access. For regular packs: need specific pack
               const isBonusOrUpdatesOrToolType = pack.type === 'bonus' || pack.type === 'updates' || pack.type === 'ferramentas_ia' || pack.type === 'ferramenta';
               const isToolType = pack.type === 'ferramentas_ia' || pack.type === 'ferramenta';
+              const isBonusType = pack.type === 'bonus';
               const hasPackAccess = isBonusOrUpdatesOrToolType ? isPremium : hasAccessToPack(packSlug);
               const isExpired = !isBonusOrUpdatesOrToolType && hasExpiredPack(packSlug);
               const expiredInfo = isExpired ? getExpiredPackInfo(packSlug) : null;
               const showToolAvailableBadge = isToolType && isPremium;
+              
+              // For bonus: show download button if has access, otherwise show buy pack button
+              const handleBonusAction = (e: React.MouseEvent) => {
+                e.stopPropagation();
+                if (isPremium && pack.download_url) {
+                  window.open(pack.download_url, '_blank');
+                } else {
+                  navigate('/planos-artes');
+                }
+              };
+              
               return <Card key={pack.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => {
-                setSelectedPack(pack.name);
-                setSelectedCategory("Todos");
-                setCurrentPage(1);
+                // For bonus type: don't navigate to pack view, handle action directly
+                if (isBonusType) {
+                  if (isPremium && pack.download_url) {
+                    window.open(pack.download_url, '_blank');
+                  } else if (!isPremium) {
+                    navigate('/planos-artes');
+                  } else {
+                    // Has access but no download URL - go to pack view
+                    setSelectedPack(pack.name);
+                    setSelectedCategory("Todos");
+                    setCurrentPage(1);
+                  }
+                } else {
+                  setSelectedPack(pack.name);
+                  setSelectedCategory("Todos");
+                  setCurrentPage(1);
+                }
               }}>
                       <div className="aspect-[3/4] relative overflow-hidden">
                         {pack.cover_url ? <img src={pack.cover_url} alt={pack.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
@@ -678,8 +705,16 @@ const BibliotecaArtes = () => {
                           </div>}
                         
                         {/* Access Tag - Priority: Active > Expired > None */}
-                        {hasPackAccess && <div className="absolute top-2 right-2 z-10">
+                        {hasPackAccess && !isBonusType && <div className="absolute top-2 right-2 z-10">
                             <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                              DISPONÍVEL
+                            </Badge>
+                          </div>}
+                        
+                        {/* Bonus access badge */}
+                        {isBonusType && isPremium && <div className="absolute top-2 right-2 z-10">
+                            <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                              <Download className="h-3 w-3 mr-1" />
                               DISPONÍVEL
                             </Badge>
                           </div>}
@@ -711,12 +746,34 @@ const BibliotecaArtes = () => {
                           <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
                             {pack.name}
                           </h3>
-                          <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
-                            {arteCount} {arteCount === 1 ? 'arte' : 'artes'}
-                          </Badge>
+                          
+                          {/* For bonus type: show action button instead of arte count */}
+                          {isBonusType ? (
+                            <Button 
+                              size="sm" 
+                              className={`mt-2 text-xs ${isPremium ? 'bg-green-500 hover:bg-green-600' : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90'} text-white`}
+                              onClick={handleBonusAction}
+                            >
+                              {isPremium ? (
+                                <>
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Baixar Bônus
+                                </>
+                              ) : (
+                                <>
+                                  <Package className="h-3 w-3 mr-1" />
+                                  Comprar Pack
+                                </>
+                              )}
+                            </Button>
+                          ) : (
+                            <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
+                              {arteCount} {arteCount === 1 ? 'arte' : 'artes'}
+                            </Badge>
+                          )}
                           
                           {/* Renewal Button for expired packs */}
-                          {!hasPackAccess && isExpired && <Button size="sm" className="mt-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                          {!hasPackAccess && isExpired && !isBonusType && <Button size="sm" className="mt-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
                       e.stopPropagation();
                       navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
                     }}>

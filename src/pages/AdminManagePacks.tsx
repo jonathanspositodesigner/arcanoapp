@@ -45,6 +45,8 @@ interface Pack {
   checkout_link_membro_6_meses?: string | null;
   checkout_link_membro_1_ano?: string | null;
   checkout_link_membro_vitalicio?: string | null;
+  // Bonus download link
+  download_url?: string | null;
 }
 
 type ItemType = 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
@@ -96,6 +98,7 @@ const AdminManagePacks = () => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [selectedType, setSelectedType] = useState<ItemType>('pack');
   const [activeTab, setActiveTab] = useState<ItemType>('pack');
+  const [downloadUrl, setDownloadUrl] = useState('');
   const [editTab, setEditTab] = useState<'info' | 'webhook' | 'links'>('info');
   const [webhookFormData, setWebhookFormData] = useState<WebhookFormData>({
     greenn_product_id_6_meses: '',
@@ -325,14 +328,21 @@ const AdminManagePacks = () => {
         if (newCoverUrl) coverUrl = newCoverUrl;
       }
 
+      const updateData: any = {
+        name: formData.name,
+        slug: formData.slug || generateSlug(formData.name),
+        cover_url: coverUrl,
+        type: formData.type
+      };
+      
+      // Only save download_url for bonus type
+      if (formData.type === 'bonus') {
+        updateData.download_url = downloadUrl || null;
+      }
+      
       const { error } = await supabase
         .from("artes_packs")
-        .update({
-          name: formData.name,
-          slug: formData.slug || generateSlug(formData.name),
-          cover_url: coverUrl,
-          type: formData.type
-        })
+        .update(updateData)
         .eq("id", editingPack.id);
 
       if (error) throw error;
@@ -408,6 +418,7 @@ const AdminManagePacks = () => {
     setFormData({ name: "", slug: "", type: "pack" });
     setCoverFile(null);
     setCoverPreview(null);
+    setDownloadUrl('');
   };
 
   const openEdit = (pack: Pack) => {
@@ -416,6 +427,7 @@ const AdminManagePacks = () => {
     setCoverPreview(pack.cover_url);
     setCoverFile(null);
     setEditTab('info');
+    setDownloadUrl(pack.download_url || '');
     setWebhookFormData({
       greenn_product_id_6_meses: pack.greenn_product_id_6_meses?.toString() || '',
       greenn_product_id_1_ano: pack.greenn_product_id_1_ano?.toString() || '',
@@ -823,19 +835,23 @@ const AdminManagePacks = () => {
             </DialogHeader>
             
             <Tabs value={editTab} onValueChange={(v) => setEditTab(v as 'info' | 'webhook' | 'links')} className="w-full mt-4">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className={`grid w-full ${editingPack?.type === 'bonus' ? 'grid-cols-1' : 'grid-cols-3'}`}>
                 <TabsTrigger value="info" className="flex items-center gap-1 text-xs">
                   <Settings className="w-3 h-3" />
                   Info
                 </TabsTrigger>
-                <TabsTrigger value="webhook" className="flex items-center gap-1 text-xs">
-                  <Webhook className="w-3 h-3" />
-                  Webhook
-                </TabsTrigger>
-                <TabsTrigger value="links" className="flex items-center gap-1 text-xs">
-                  <Link className="w-3 h-3" />
-                  Vendas
-                </TabsTrigger>
+                {editingPack?.type !== 'bonus' && (
+                  <>
+                    <TabsTrigger value="webhook" className="flex items-center gap-1 text-xs">
+                      <Webhook className="w-3 h-3" />
+                      Webhook
+                    </TabsTrigger>
+                    <TabsTrigger value="links" className="flex items-center gap-1 text-xs">
+                      <Link className="w-3 h-3" />
+                      Vendas
+                    </TabsTrigger>
+                  </>
+                )}
               </TabsList>
 
               <TabsContent value="info" className="space-y-4 mt-4">
@@ -928,6 +944,21 @@ const AdminManagePacks = () => {
                     )}
                   </div>
                 </div>
+                {/* Download URL field - Only for bonus type */}
+                {editingPack?.type === 'bonus' && (
+                  <div>
+                    <Label>Link de Download</Label>
+                    <Input
+                      value={downloadUrl}
+                      onChange={(e) => setDownloadUrl(e.target.value)}
+                      placeholder="Ex: https://drive.google.com/..."
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Link para download direto do bônus (Drive, Dropbox, etc.)
+                    </p>
+                  </div>
+                )}
+                
                 <Button onClick={handleEdit} disabled={saving} className="w-full">
                   {saving ? "Salvando..." : "Salvar Alterações"}
                 </Button>
