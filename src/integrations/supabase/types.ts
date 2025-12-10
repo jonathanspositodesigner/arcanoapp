@@ -389,6 +389,7 @@ export type Database = {
           cover_url: string | null
           created_at: string
           display_order: number
+          download_url: string | null
           enabled_1_ano: boolean | null
           enabled_6_meses: boolean | null
           enabled_vitalicio: boolean | null
@@ -419,6 +420,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           display_order?: number
+          download_url?: string | null
           enabled_1_ano?: boolean | null
           enabled_6_meses?: boolean | null
           enabled_vitalicio?: boolean | null
@@ -449,6 +451,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           display_order?: number
+          download_url?: string | null
           enabled_1_ano?: boolean | null
           enabled_6_meses?: boolean | null
           enabled_vitalicio?: boolean | null
