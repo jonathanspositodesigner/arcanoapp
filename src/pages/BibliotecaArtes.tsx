@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -355,6 +355,14 @@ const BibliotecaArtes = () => {
       </div>
       
       <nav className="flex-1 px-2 space-y-1">
+        <button onClick={() => {
+          navigate('/install-app');
+          setSidebarOpen(false);
+        }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700">
+          <Smartphone className="h-5 w-5" />
+          <span className="font-medium">Instalar App</span>
+        </button>
+
         <button onClick={() => {
         setActiveSection('tutorial');
         setSelectedPack(null);
