@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useRef } from 'react';
 import { getSignedMediaUrl, parseStorageUrl } from '@/hooks/useSignedUrl';
 import { Loader2 } from 'lucide-react';
 
@@ -36,11 +36,14 @@ export const SecureImage = memo(({
 }: SecureImageProps) => {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     let isMounted = true;
+    setImageLoaded(false);
     
     const loadImage = async () => {
       // Check if URL needs signing (is a Supabase storage URL)
@@ -87,6 +90,10 @@ export const SecureImage = memo(({
     };
   }, [src, retryCount]);
 
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
   const handleImageError = () => {
     if (retryCount < 2) {
       // Clear cache and retry
@@ -99,16 +106,6 @@ export const SecureImage = memo(({
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className={`${className} bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden`}>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" 
-             style={{ animation: 'shimmer 2s infinite' }} />
-        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className={`${className} bg-muted flex items-center justify-center`}>
@@ -118,14 +115,31 @@ export const SecureImage = memo(({
   }
 
   return (
-    <img
-      src={signedUrl || src}
-      alt={alt}
-      className={className}
-      loading={loading}
-      onClick={onClick}
-      onError={handleImageError}
-    />
+    <div className={`${className} relative overflow-hidden`}>
+      {/* Blur placeholder / loading state */}
+      {(!imageLoaded || isLoading) && (
+        <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" />
+          <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
+        </div>
+      )}
+      
+      {/* Actual image with blur transition */}
+      {signedUrl && (
+        <img
+          ref={imgRef}
+          src={signedUrl}
+          alt={alt}
+          className={`w-full h-full object-cover transition-all duration-500 ${
+            imageLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
+          }`}
+          loading={loading}
+          onClick={onClick}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+        />
+      )}
+    </div>
   );
 });
 
@@ -144,11 +158,13 @@ export const SecureVideo = memo(({
 }: SecureVideoProps) => {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
+    setVideoLoaded(false);
     
     const loadVideo = async () => {
       const parsed = parseStorageUrl(src);
@@ -191,6 +207,10 @@ export const SecureVideo = memo(({
     };
   }, [src, retryCount]);
 
+  const handleVideoLoad = () => {
+    setVideoLoaded(true);
+  };
+
   const handleVideoError = () => {
     if (retryCount < 2) {
       signedUrlCache.delete(src);
@@ -202,16 +222,6 @@ export const SecureVideo = memo(({
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className={`${className} bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden`}>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" 
-             style={{ animation: 'shimmer 2s infinite' }} />
-        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className={`${className} bg-muted flex items-center justify-center`}>
@@ -221,17 +231,33 @@ export const SecureVideo = memo(({
   }
 
   return (
-    <video
-      src={signedUrl || src}
-      className={className}
-      autoPlay={autoPlay}
-      muted={muted}
-      loop={loop}
-      playsInline={playsInline}
-      controls={controls}
-      onClick={onClick}
-      onError={handleVideoError}
-    />
+    <div className={`${className} relative overflow-hidden`}>
+      {/* Blur placeholder / loading state */}
+      {(!videoLoaded || isLoading) && (
+        <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" />
+          <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
+        </div>
+      )}
+      
+      {/* Actual video with blur transition */}
+      {signedUrl && (
+        <video
+          src={signedUrl}
+          className={`w-full h-full object-cover transition-all duration-500 ${
+            videoLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
+          }`}
+          autoPlay={autoPlay}
+          muted={muted}
+          loop={loop}
+          playsInline={playsInline}
+          controls={controls}
+          onClick={onClick}
+          onLoadedData={handleVideoLoad}
+          onError={handleVideoError}
+        />
+      )}
+    </div>
   );
 });
 
