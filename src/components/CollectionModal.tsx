@@ -140,7 +140,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
 
   const handleDownload = useCallback(async (url: string, title: string, isPremiumContent: boolean = false) => {
     try {
-      const signedUrl = await getSecureDownloadUrl(url, isPremiumContent);
+      const signedUrl = await getSecureDownloadUrl(url);
       const response = await fetch(signedUrl);
       const blob = await response.blob();
       const extension = isVideoUrl(url) ? 'mp4' : 'png';

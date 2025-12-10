@@ -27,16 +27,10 @@ export const parseStorageUrl = (url: string): { bucket: string; filePath: string
 export const useSignedUrl = () => {
   const [loading, setLoading] = useState(false);
 
-  const getSignedUrl = useCallback(async (
-    originalUrl: string,
-    isPremium: boolean = false
-  ): Promise<string> => {
-    // Parse the URL to get bucket and file path
+  const getSignedUrl = useCallback(async (originalUrl: string): Promise<string> => {
     const parsed = parseStorageUrl(originalUrl);
     
     if (!parsed) {
-      // If URL doesn't match storage pattern, return original
-      console.log('URL does not match storage pattern, using original:', originalUrl);
       return originalUrl;
     }
 
@@ -51,34 +45,21 @@ export const useSignedUrl = () => {
     setLoading(true);
 
     try {
-      // Get auth session for premium content
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      }
-
       const response = await supabase.functions.invoke('get-signed-url', {
         body: {
           filePath: parsed.filePath,
-          bucket: parsed.bucket,
-          isPremium
+          bucket: parsed.bucket
         }
       });
 
-      if (response.error) {
+      if (response.error || !response.data?.signedUrl) {
         console.error('Error getting signed URL:', response.error);
-        // Fall back to original URL if there's an error
         return originalUrl;
       }
 
       const signedUrl = response.data.signedUrl;
       
-      // Cache the URL with 55 minute expiration (URL expires in 60 min)
+      // Cache the URL with 55 minute expiration
       urlCache[cacheKey] = {
         url: signedUrl,
         expiresAt: Date.now() + 55 * 60 * 1000
@@ -93,16 +74,14 @@ export const useSignedUrl = () => {
     }
   }, []);
 
-  // Batch get signed URLs for multiple files
   const getSignedUrls = useCallback(async (
-    urls: { originalUrl: string; isPremium: boolean }[]
+    urls: { originalUrl: string }[]
   ): Promise<Map<string, string>> => {
     const results = new Map<string, string>();
     
-    // Process in parallel
     await Promise.all(
-      urls.map(async ({ originalUrl, isPremium }) => {
-        const signedUrl = await getSignedUrl(originalUrl, isPremium);
+      urls.map(async ({ originalUrl }) => {
+        const signedUrl = await getSignedUrl(originalUrl);
         results.set(originalUrl, signedUrl);
       })
     );
@@ -117,11 +96,8 @@ export const useSignedUrl = () => {
   };
 };
 
-// Helper function to get signed URL without hook (for use outside components)
-export const getSignedMediaUrl = async (
-  originalUrl: string,
-  isPremium: boolean = false
-): Promise<string> => {
+// Helper function to get signed URL without hook
+export const getSignedMediaUrl = async (originalUrl: string): Promise<string> => {
   const parsed = parseStorageUrl(originalUrl);
   
   if (!parsed) {
@@ -136,49 +112,30 @@ export const getSignedMediaUrl = async (
     return cached.url;
   }
 
-  const attemptFetch = async (retryCount = 0): Promise<string> => {
-    try {
-      // Get user session for premium content authentication
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const response = await supabase.functions.invoke('get-signed-url', {
-        body: {
-          filePath: parsed.filePath,
-          bucket: parsed.bucket,
-          isPremium
-        },
-        headers: session?.access_token ? {
-          Authorization: `Bearer ${session.access_token}`
-        } : undefined
-      });
-
-      if (response.error || !response.data?.signedUrl) {
-        console.error('Error getting signed URL:', response.error);
-        if (retryCount < 2) {
-          await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)));
-          return attemptFetch(retryCount + 1);
-        }
-        return originalUrl;
+  try {
+    const response = await supabase.functions.invoke('get-signed-url', {
+      body: {
+        filePath: parsed.filePath,
+        bucket: parsed.bucket
       }
+    });
 
-      const signedUrl = response.data.signedUrl;
-      
-      // Cache the URL
-      urlCache[cacheKey] = {
-        url: signedUrl,
-        expiresAt: Date.now() + 55 * 60 * 1000
-      };
-
-      return signedUrl;
-    } catch (error) {
-      console.error('Failed to get signed URL:', error);
-      if (retryCount < 2) {
-        await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)));
-        return attemptFetch(retryCount + 1);
-      }
+    if (response.error || !response.data?.signedUrl) {
+      console.error('Error getting signed URL:', response.error);
       return originalUrl;
     }
-  };
 
-  return attemptFetch();
+    const signedUrl = response.data.signedUrl;
+    
+    // Cache the URL
+    urlCache[cacheKey] = {
+      url: signedUrl,
+      expiresAt: Date.now() + 55 * 60 * 1000
+    };
+
+    return signedUrl;
+  } catch (error) {
+    console.error('Failed to get signed URL:', error);
+    return originalUrl;
+  }
 };
