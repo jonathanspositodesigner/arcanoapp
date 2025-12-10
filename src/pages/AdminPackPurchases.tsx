@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, Upload, KeyRound } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, Upload, KeyRound, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addMonths, addYears } from "date-fns";
@@ -72,6 +72,12 @@ const AdminPackPurchases = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 20;
+  
+  // Sorting state
+  type SortField = 'name' | 'purchase_date' | 'packs' | 'expires_at';
+  type SortDirection = 'asc' | 'desc';
+  const [sortField, setSortField] = useState<SortField>('purchase_date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   
   // Expired clients modal state
   const [showExpiredModal, setShowExpiredModal] = useState(false);
@@ -572,7 +578,7 @@ const AdminPackPurchases = () => {
   });
 
   // Group purchases by user for display
-  const groupedClients: GroupedClient[] = [];
+  const groupedClientsUnsorted: GroupedClient[] = [];
   const userMap = new Map<string, GroupedClient>();
   
   filteredPurchases.forEach(purchase => {
@@ -585,9 +591,71 @@ const AdminPackPurchases = () => {
         purchases: []
       };
       userMap.set(purchase.user_id, client);
-      groupedClients.push(client);
+      groupedClientsUnsorted.push(client);
     }
     userMap.get(purchase.user_id)!.purchases.push(purchase);
+  });
+
+  // Sorting logic
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+    setCurrentPage(1);
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return <ArrowUpDown className="h-4 w-4 ml-1 opacity-50" />;
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="h-4 w-4 ml-1" />
+      : <ArrowDown className="h-4 w-4 ml-1" />;
+  };
+
+  const getEarliestExpiration = (client: GroupedClient): Date | null => {
+    const expirations = client.purchases
+      .filter(p => p.expires_at && p.is_active)
+      .map(p => new Date(p.expires_at!));
+    if (expirations.length === 0) return null;
+    return new Date(Math.min(...expirations.map(d => d.getTime())));
+  };
+
+  const getLatestPurchaseDate = (client: GroupedClient): Date => {
+    const dates = client.purchases.map(p => new Date(p.purchased_at));
+    return new Date(Math.max(...dates.map(d => d.getTime())));
+  };
+
+  const groupedClients = [...groupedClientsUnsorted].sort((a, b) => {
+    const multiplier = sortDirection === 'asc' ? 1 : -1;
+    
+    switch (sortField) {
+      case 'name':
+        const nameA = (a.user_name || a.user_email || '').toLowerCase();
+        const nameB = (b.user_name || b.user_email || '').toLowerCase();
+        return multiplier * nameA.localeCompare(nameB);
+      
+      case 'purchase_date':
+        const dateA = getLatestPurchaseDate(a);
+        const dateB = getLatestPurchaseDate(b);
+        return multiplier * (dateA.getTime() - dateB.getTime());
+      
+      case 'packs':
+        return multiplier * (a.purchases.length - b.purchases.length);
+      
+      case 'expires_at':
+        const expA = getEarliestExpiration(a);
+        const expB = getEarliestExpiration(b);
+        // Vitalício (null) goes to end when sorting asc, beginning when desc
+        if (!expA && !expB) return 0;
+        if (!expA) return sortDirection === 'asc' ? 1 : -1;
+        if (!expB) return sortDirection === 'asc' ? -1 : 1;
+        return multiplier * (expA.getTime() - expB.getTime());
+      
+      default:
+        return 0;
+    }
   });
 
   if (isLoading) {
@@ -1004,78 +1072,133 @@ const AdminPackPurchases = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Packs</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/50 select-none"
+                  onClick={() => handleSort('name')}
+                >
+                  <div className="flex items-center">
+                    Cliente
+                    {getSortIcon('name')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/50 select-none"
+                  onClick={() => handleSort('packs')}
+                >
+                  <div className="flex items-center">
+                    Packs
+                    {getSortIcon('packs')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/50 select-none"
+                  onClick={() => handleSort('purchase_date')}
+                >
+                  <div className="flex items-center">
+                    Data Compra
+                    {getSortIcon('purchase_date')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/50 select-none"
+                  onClick={() => handleSort('expires_at')}
+                >
+                  <div className="flex items-center">
+                    Vencimento
+                    {getSortIcon('expires_at')}
+                  </div>
+                </TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {groupedClients
                 .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                .map((client) => (
-                <TableRow key={client.user_id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{client.user_name || 'Sem nome'}</p>
-                      <p className="text-sm text-muted-foreground">{client.user_email}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {client.purchases.map((purchase) => (
-                        <Badge 
-                          key={purchase.id} 
-                          variant="outline"
-                          className={`text-xs ${!purchase.is_active ? 'opacity-50 line-through' : ''}`}
-                        >
-                          {getPackName(purchase.pack_slug)} ({getAccessTypeLabel(purchase.access_type)})
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {client.purchases.every(p => p.is_active) ? (
-                        <Badge className="bg-green-500/20 text-green-600">Todos ativos</Badge>
-                      ) : client.purchases.some(p => p.is_active) ? (
-                        <Badge className="bg-amber-500/20 text-amber-600">Parcial</Badge>
-                      ) : (
-                        <Badge className="bg-red-500/20 text-red-600">Inativo</Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openWhatsApp(client.user_phone)}
-                        title="WhatsApp"
-                      >
-                        <MessageCircle className="h-4 w-4 text-green-500" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditDialog(client.purchases[0])}
-                        title="Editar"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteClient(client)}
-                        title="Excluir cliente"
-                        className="text-red-500 hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                .map((client) => {
+                  const latestPurchase = getLatestPurchaseDate(client);
+                  const earliestExpiration = getEarliestExpiration(client);
+                  const hasVitalicio = client.purchases.some(p => p.access_type === 'vitalicio');
+                  
+                  return (
+                    <TableRow key={client.user_id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{client.user_name || 'Sem nome'}</p>
+                          <p className="text-sm text-muted-foreground">{client.user_email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {client.purchases.map((purchase) => (
+                            <Badge 
+                              key={purchase.id} 
+                              variant="outline"
+                              className={`text-xs ${!purchase.is_active ? 'opacity-50 line-through' : ''}`}
+                            >
+                              {getPackName(purchase.pack_slug)} ({getAccessTypeLabel(purchase.access_type)})
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">
+                          {format(latestPurchase, "dd/MM/yyyy", { locale: ptBR })}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {hasVitalicio ? (
+                          <Badge variant="outline" className="bg-purple-500/10 text-purple-600 border-purple-500/30 text-xs">
+                            Vitalício
+                          </Badge>
+                        ) : earliestExpiration ? (
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs ${
+                              earliestExpiration < new Date() 
+                                ? 'bg-red-500/10 text-red-600 border-red-500/30'
+                                : earliestExpiration < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                                : 'bg-green-500/10 text-green-600 border-green-500/30'
+                            }`}
+                          >
+                            {format(earliestExpiration, "dd/MM/yyyy", { locale: ptBR })}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openWhatsApp(client.user_phone)}
+                            title="WhatsApp"
+                          >
+                            <MessageCircle className="h-4 w-4 text-green-500" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(client.purchases[0])}
+                            title="Editar"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteClient(client)}
+                            title="Excluir cliente"
+                            className="text-red-500 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               {groupedClients.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
