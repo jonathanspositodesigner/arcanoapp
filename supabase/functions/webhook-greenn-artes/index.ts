@@ -460,21 +460,45 @@ Deno.serve(async (req) => {
             userId = profile.id
             console.log(`Found user via profiles table with ID: ${userId}`)
           } else {
-            // Fallback: buscar via listUsers
-            console.log('Profile not found, trying listUsers...')
-            const { data: usersData, error: fetchError } = await supabase.auth.admin.listUsers()
+            // Fallback: buscar via listUsers COM PAGINAÇÃO COMPLETA
+            console.log('Profile not found, trying listUsers with full pagination...')
             
-            if (fetchError) {
-              console.error('Error listing users:', fetchError)
-              throw fetchError
-            }
+            let foundUser = null
+            let page = 1
+            const perPage = 1000
+            
+            while (!foundUser) {
+              console.log(`Searching page ${page}...`)
+              const { data: usersData, error: fetchError } = await supabase.auth.admin.listUsers({
+                page: page,
+                perPage: perPage
+              })
+              
+              if (fetchError) {
+                console.error('Error listing users:', fetchError)
+                throw fetchError
+              }
 
-            const existingUser = usersData?.users?.find(u => u.email?.toLowerCase() === email)
+              if (!usersData?.users || usersData.users.length === 0) {
+                console.log('No more users to search')
+                break
+              }
+
+              foundUser = usersData.users.find(u => u.email?.toLowerCase() === email)
+              
+              if (foundUser) {
+                userId = foundUser.id
+                console.log(`Found existing user via listUsers (page ${page}) with ID: ${userId}`)
+              } else if (usersData.users.length < perPage) {
+                // Última página
+                console.log('Reached last page, user not found')
+                break
+              } else {
+                page++
+              }
+            }
             
-            if (existingUser) {
-              userId = existingUser.id
-              console.log(`Found existing user via listUsers with ID: ${userId}`)
-            } else {
+            if (!userId) {
               console.error('Could not find existing user despite email_exists error')
               throw new Error(`User with email ${email} exists but could not be found`)
             }
