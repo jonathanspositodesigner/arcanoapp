@@ -1,6 +1,5 @@
 import { useState, useEffect, memo } from 'react';
 import { getSignedMediaUrl, parseStorageUrl } from '@/hooks/useSignedUrl';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 
 interface SecureImageProps {
@@ -38,11 +37,10 @@ export const SecureImage = memo(({
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
-    let retryCount = 0;
-    const maxRetries = 2;
     
     const loadImage = async () => {
       // Check if URL needs signing (is a Supabase storage URL)
@@ -65,29 +63,21 @@ export const SecureImage = memo(({
         return;
       }
 
-      const attemptLoad = async (): Promise<void> => {
-        try {
-          const url = await getSignedMediaUrl(src, isPremium);
-          if (isMounted) {
-            signedUrlCache.set(cacheKey, url);
-            setSignedUrl(url);
-            setIsLoading(false);
-          }
-        } catch (err) {
-          console.error('Failed to get signed URL:', err);
-          if (retryCount < maxRetries && isMounted) {
-            retryCount++;
-            await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
-            return attemptLoad();
-          }
-          if (isMounted) {
-            setError(true);
-            setIsLoading(false);
-          }
+      try {
+        const url = await getSignedMediaUrl(src);
+        if (isMounted) {
+          signedUrlCache.set(cacheKey, url);
+          setSignedUrl(url);
+          setIsLoading(false);
         }
-      };
-
-      await attemptLoad();
+      } catch (err) {
+        console.error('Failed to get signed URL:', err);
+        if (isMounted) {
+          // Use original URL as fallback
+          setSignedUrl(src);
+          setIsLoading(false);
+        }
+      }
     };
 
     loadImage();
@@ -95,7 +85,19 @@ export const SecureImage = memo(({
     return () => {
       isMounted = false;
     };
-  }, [src, isPremium]);
+  }, [src, retryCount]);
+
+  const handleImageError = () => {
+    if (retryCount < 2) {
+      // Clear cache and retry
+      signedUrlCache.delete(src);
+      setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+      }, 1000);
+    } else {
+      setError(true);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -107,7 +109,7 @@ export const SecureImage = memo(({
     );
   }
 
-  if (error || !signedUrl) {
+  if (error) {
     return (
       <div className={`${className} bg-muted flex items-center justify-center`}>
         <span className="text-muted-foreground text-xs">Erro ao carregar</span>
@@ -117,12 +119,12 @@ export const SecureImage = memo(({
 
   return (
     <img
-      src={signedUrl}
+      src={signedUrl || src}
       alt={alt}
       className={className}
       loading={loading}
       onClick={onClick}
-      onError={() => setError(true)}
+      onError={handleImageError}
     />
   );
 });
@@ -143,14 +145,12 @@ export const SecureVideo = memo(({
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
-    let retryCount = 0;
-    const maxRetries = 2;
     
     const loadVideo = async () => {
-      // Check if URL needs signing
       const parsed = parseStorageUrl(src);
       
       if (!parsed) {
@@ -159,7 +159,6 @@ export const SecureVideo = memo(({
         return;
       }
 
-      // Check cache
       const cacheKey = src;
       if (signedUrlCache.has(cacheKey)) {
         if (isMounted) {
@@ -169,29 +168,20 @@ export const SecureVideo = memo(({
         return;
       }
 
-      const attemptLoad = async (): Promise<void> => {
-        try {
-          const url = await getSignedMediaUrl(src, isPremium);
-          if (isMounted) {
-            signedUrlCache.set(cacheKey, url);
-            setSignedUrl(url);
-            setIsLoading(false);
-          }
-        } catch (err) {
-          console.error('Failed to get signed URL:', err);
-          if (retryCount < maxRetries && isMounted) {
-            retryCount++;
-            await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
-            return attemptLoad();
-          }
-          if (isMounted) {
-            setError(true);
-            setIsLoading(false);
-          }
+      try {
+        const url = await getSignedMediaUrl(src);
+        if (isMounted) {
+          signedUrlCache.set(cacheKey, url);
+          setSignedUrl(url);
+          setIsLoading(false);
         }
-      };
-
-      await attemptLoad();
+      } catch (err) {
+        console.error('Failed to get signed URL:', err);
+        if (isMounted) {
+          setSignedUrl(src);
+          setIsLoading(false);
+        }
+      }
     };
 
     loadVideo();
@@ -199,7 +189,18 @@ export const SecureVideo = memo(({
     return () => {
       isMounted = false;
     };
-  }, [src, isPremium]);
+  }, [src, retryCount]);
+
+  const handleVideoError = () => {
+    if (retryCount < 2) {
+      signedUrlCache.delete(src);
+      setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+      }, 1000);
+    } else {
+      setError(true);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -211,7 +212,7 @@ export const SecureVideo = memo(({
     );
   }
 
-  if (error || !signedUrl) {
+  if (error) {
     return (
       <div className={`${className} bg-muted flex items-center justify-center`}>
         <span className="text-muted-foreground text-xs">Erro ao carregar</span>
@@ -221,7 +222,7 @@ export const SecureVideo = memo(({
 
   return (
     <video
-      src={signedUrl}
+      src={signedUrl || src}
       className={className}
       autoPlay={autoPlay}
       muted={muted}
@@ -229,7 +230,7 @@ export const SecureVideo = memo(({
       playsInline={playsInline}
       controls={controls}
       onClick={onClick}
-      onError={() => setError(true)}
+      onError={handleVideoError}
     />
   );
 });
@@ -237,9 +238,6 @@ export const SecureVideo = memo(({
 SecureVideo.displayName = 'SecureVideo';
 
 // Helper function to get signed URL for downloads
-export const getSecureDownloadUrl = async (
-  url: string, 
-  isPremium: boolean = false
-): Promise<string> => {
-  return getSignedMediaUrl(url, isPremium);
+export const getSecureDownloadUrl = async (url: string): Promise<string> => {
+  return getSignedMediaUrl(url);
 };

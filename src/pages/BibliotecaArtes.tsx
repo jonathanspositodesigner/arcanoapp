@@ -294,7 +294,7 @@ const BibliotecaArtes = () => {
   };
   const downloadFile = async (url: string, filename: string, isPremiumContent: boolean = false) => {
     try {
-      const signedUrl = await getSecureDownloadUrl(url, isPremiumContent);
+      const signedUrl = await getSecureDownloadUrl(url);
       const response = await fetch(signedUrl);
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);

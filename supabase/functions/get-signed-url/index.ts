@@ -13,9 +13,9 @@ serve(async (req) => {
   }
 
   try {
-    const { filePath, bucket, isPremium } = await req.json();
+    const { filePath, bucket } = await req.json();
 
-    console.log(`Generating signed URL for ${bucket}/${filePath}, isPremium: ${isPremium}`);
+    console.log(`Generating signed URL for ${bucket}/${filePath}`);
 
     if (!filePath || !bucket) {
       return new Response(
@@ -27,7 +27,7 @@ serve(async (req) => {
       );
     }
 
-    // Create Supabase client with service role for generating signed URLs
+    // Create Supabase client with service role - ALWAYS generate signed URLs
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -39,122 +39,11 @@ serve(async (req) => {
       }
     );
 
-    // For premium content, verify user has premium access
-    if (isPremium) {
-      // Get the authorization header
-      const authHeader = req.headers.get('Authorization');
-      
-      if (!authHeader) {
-        // For non-authenticated users, return an error for premium content
-        return new Response(
-          JSON.stringify({ error: 'Authentication required for premium content' }),
-          { 
-            status: 401, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-
-      // Create user client to verify auth
-      const supabaseUser = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-        {
-          global: {
-            headers: {
-              Authorization: authHeader,
-            },
-          },
-        }
-      );
-
-      const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
-
-      if (authError || !user) {
-        console.error('Auth error:', authError);
-        return new Response(
-          JSON.stringify({ error: 'Invalid authentication' }),
-          { 
-            status: 401, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-
-      // Check if user is admin or partner first
-      const { data: adminRole } = await supabaseAdmin
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .single();
-
-      const { data: partnerRole } = await supabaseAdmin
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'partner')
-        .single();
-
-      // If admin or partner, allow access immediately
-      if (adminRole || partnerRole) {
-        console.log(`User ${user.id} verified as admin/partner`);
-      } else {
-        // Check for premium_users (Biblioteca de Prompts)
-        const { data: premiumData } = await supabaseAdmin
-          .from('premium_users')
-          .select('is_active, expires_at')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .single();
-
-        const isPremiumActive = premiumData && 
-          premiumData.is_active && 
-          (!premiumData.expires_at || new Date(premiumData.expires_at) > new Date());
-
-        // Check for user_pack_purchases (Biblioteca de Artes)
-        const { data: packAccess } = await supabaseAdmin
-          .from('user_pack_purchases')
-          .select('id, is_active, expires_at')
-          .eq('user_id', user.id)
-          .eq('is_active', true);
-
-        const hasActivePackAccess = packAccess && packAccess.some(pack => 
-          pack.is_active && 
-          (!pack.expires_at || new Date(pack.expires_at) > new Date())
-        );
-
-        // Check for premium_artes_users (legacy Artes premium)
-        const { data: premiumArtesData } = await supabaseAdmin
-          .from('premium_artes_users')
-          .select('is_active, expires_at')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .single();
-
-        const isPremiumArtesActive = premiumArtesData && 
-          premiumArtesData.is_active && 
-          (!premiumArtesData.expires_at || new Date(premiumArtesData.expires_at) > new Date());
-
-        if (!isPremiumActive && !hasActivePackAccess && !isPremiumArtesActive) {
-          console.log(`User ${user.id} has no premium, pack, or artes access`);
-          return new Response(
-            JSON.stringify({ error: 'Premium subscription required' }),
-            { 
-              status: 403, 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-            }
-          );
-        }
-
-        console.log(`User ${user.id} verified with access (premium: ${isPremiumActive}, packs: ${hasActivePackAccess}, artes: ${isPremiumArtesActive})`);
-      }
-    }
-
-    // Generate signed URL with 1 hour expiration
+    // Generate signed URL with 1 hour expiration - NO AUTH CHECK
+    // Premium access is already validated on the frontend
     const { data, error } = await supabaseAdmin.storage
       .from(bucket)
-      .createSignedUrl(filePath, 3600); // 1 hour expiration
+      .createSignedUrl(filePath, 3600);
 
     if (error) {
       console.error('Error creating signed URL:', error);
