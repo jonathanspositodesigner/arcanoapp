@@ -350,7 +350,7 @@ const BibliotecaArtes = () => {
       </div>;
   };
   const SidebarContent = () => <div className="flex flex-col h-full py-4">
-      <div className="px-4 mb-6">
+      <div className="px-4 mb-6 flex justify-center">
         <img alt="Arcano Lab" onClick={() => navigate('/')} src="/lovable-uploads/67562963-438f-4677-8000-81acb1886f7c.png" className="h-10 cursor-pointer hover:opacity-80 transition-opacity" />
       </div>
       
