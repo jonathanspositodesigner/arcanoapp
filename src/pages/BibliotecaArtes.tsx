@@ -523,7 +523,7 @@ const BibliotecaArtes = () => {
       case 'cursos':
         return 'Cursos';
       case 'updates':
-        return 'Atualizações de Artes';
+        return 'Atualizações de Artes Exclusivas para Membros';
       case 'free-sample':
         return 'Amostras Grátis';
       case 'all-artes':
