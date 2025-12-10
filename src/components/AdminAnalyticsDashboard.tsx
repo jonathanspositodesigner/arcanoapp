@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2, CalendarIcon } from "lucide-react";
+import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, Funnel, FunnelChart, LabelList, Cell } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -45,6 +45,38 @@ interface CollectionStats {
   topCollections: { name: string; count: number }[];
 }
 
+interface HourlyStats {
+  hour: number;
+  count: number;
+}
+
+interface AccessTypeStats {
+  type: string;
+  count: number;
+  percentage: number;
+}
+
+interface FunnelStats {
+  visits: number;
+  clicks: number;
+  copies: number;
+  clickRate: number;
+  copyRate: number;
+}
+
+interface RetentionStats {
+  newUsers: number;
+  returningUsers: number;
+  retentionRate: number;
+}
+
+interface PurchaseHourStats {
+  hour: number;
+  count: number;
+}
+
+const COLORS = ['#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#3b82f6'];
+
 const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
@@ -78,6 +110,14 @@ const [pageViews, setPageViews] = useState({
   const [isLoading, setIsLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  
+  // New metrics state
+  const [hourlyStats, setHourlyStats] = useState<HourlyStats[]>([]);
+  const [conversionRate, setConversionRate] = useState({ visitors: 0, buyers: 0, rate: 0 });
+  const [funnelStats, setFunnelStats] = useState<FunnelStats>({ visits: 0, clicks: 0, copies: 0, clickRate: 0, copyRate: 0 });
+  const [accessTypeStats, setAccessTypeStats] = useState<AccessTypeStats[]>([]);
+  const [retentionStats, setRetentionStats] = useState<RetentionStats>({ newUsers: 0, returningUsers: 0, retentionRate: 0 });
+  const [purchaseHourStats, setPurchaseHourStats] = useState<PurchaseHourStats[]>([]);
 
   // Retorna a data de início e fim do período em formato ISO
   const getDateThreshold = (): { start: string | null; end: string | null } => {
@@ -812,6 +852,157 @@ const [pageViews, setPageViews] = useState({
           totalViews,
           topCollections
         });
+      }
+
+      // ========== NEW METRIC 1: HORÁRIO DE PICO (Peak Hours) ==========
+      if (allPageViewsData && allPageViewsData.length > 0) {
+        const hourCounts: Record<number, number> = {};
+        for (let i = 0; i < 24; i++) hourCounts[i] = 0;
+        
+        allPageViewsData.forEach(pv => {
+          const hour = new Date(pv.viewed_at).getHours();
+          hourCounts[hour]++;
+        });
+        
+        const hourlyData = Object.entries(hourCounts).map(([hour, count]) => ({
+          hour: parseInt(hour),
+          count
+        })).sort((a, b) => a.hour - b.hour);
+        
+        setHourlyStats(hourlyData);
+      }
+
+      // ========== NEW METRIC 2: TAXA DE CONVERSÃO - ARTES ==========
+      // Visitors to /biblioteca-artes vs pack buyers
+      const bibliotecaArtesVisitors = allPageViewsData?.filter(pv => 
+        pv.viewed_at && pv.user_agent
+      ).length || 0;
+      
+      let purchasesQuery = supabase.from("user_pack_purchases").select("id, purchased_at");
+      if (threshold.start) {
+        purchasesQuery = purchasesQuery.gte("purchased_at", threshold.start);
+      }
+      if (threshold.end) {
+        purchasesQuery = purchasesQuery.lte("purchased_at", threshold.end);
+      }
+      const { data: purchasesData } = await purchasesQuery;
+      const buyersCount = purchasesData?.length || 0;
+      
+      const conversionRateValue = bibliotecaArtesVisitors > 0 
+        ? Math.round((buyersCount / bibliotecaArtesVisitors) * 10000) / 100 
+        : 0;
+      
+      setConversionRate({
+        visitors: bibliotecaArtesVisitors,
+        buyers: buyersCount,
+        rate: conversionRateValue
+      });
+
+      // ========== NEW METRIC 3: FUNIL DE ENGAJAMENTO - PROMPTS ==========
+      // Visits → Clicks → Copies
+      const promptVisits = allPageViewsData?.filter(pv => true).length || 0;
+      
+      let promptClicksQuery = supabase.from("prompt_clicks").select("id");
+      if (threshold.start) {
+        promptClicksQuery = promptClicksQuery.gte("clicked_at", threshold.start);
+      }
+      if (threshold.end) {
+        promptClicksQuery = promptClicksQuery.lte("clicked_at", threshold.end);
+      }
+      const { data: promptClicksData } = await promptClicksQuery;
+      const promptClicksCount = promptClicksData?.length || 0;
+      
+      let promptCopiesQuery = supabase.from("daily_prompt_copies").select("id");
+      if (threshold.start) {
+        promptCopiesQuery = promptCopiesQuery.gte("copied_at", threshold.start);
+      }
+      if (threshold.end) {
+        promptCopiesQuery = promptCopiesQuery.lte("copied_at", threshold.end);
+      }
+      const { data: promptCopiesData } = await promptCopiesQuery;
+      const promptCopiesCount = promptCopiesData?.length || 0;
+      
+      setFunnelStats({
+        visits: promptVisits,
+        clicks: promptClicksCount,
+        copies: promptCopiesCount,
+        clickRate: promptVisits > 0 ? Math.round((promptClicksCount / promptVisits) * 100) : 0,
+        copyRate: promptClicksCount > 0 ? Math.round((promptCopiesCount / promptClicksCount) * 100) : 0
+      });
+
+      // ========== NEW METRIC 4: DISTRIBUIÇÃO DE TIPOS DE ACESSO - ARTES ==========
+      let accessTypesQuery = supabase.from("user_pack_purchases").select("access_type");
+      if (threshold.start) {
+        accessTypesQuery = accessTypesQuery.gte("purchased_at", threshold.start);
+      }
+      if (threshold.end) {
+        accessTypesQuery = accessTypesQuery.lte("purchased_at", threshold.end);
+      }
+      const { data: accessTypesData } = await accessTypesQuery;
+      
+      if (accessTypesData && accessTypesData.length > 0) {
+        const typeCounts: Record<string, number> = {};
+        accessTypesData.forEach(item => {
+          const type = item.access_type || 'unknown';
+          typeCounts[type] = (typeCounts[type] || 0) + 1;
+        });
+        
+        const total = accessTypesData.length;
+        const typeNameMap: Record<string, string> = {
+          '3_meses': '3 Meses',
+          '6_meses': '6 Meses',
+          '1_ano': '1 Ano',
+          'vitalicio': 'Vitalício'
+        };
+        
+        const accessStats = Object.entries(typeCounts).map(([type, count]) => ({
+          type: typeNameMap[type] || type,
+          count,
+          percentage: Math.round((count / total) * 100)
+        })).sort((a, b) => b.count - a.count);
+        
+        setAccessTypeStats(accessStats);
+      }
+
+      // ========== NEW METRIC 5: RETENÇÃO DE USUÁRIOS ==========
+      // Based on user_agent appearing more than once
+      if (allPageViewsData && allPageViewsData.length > 0) {
+        const userAgentCounts: Record<string, number> = {};
+        allPageViewsData.forEach(pv => {
+          if (pv.user_agent) {
+            userAgentCounts[pv.user_agent] = (userAgentCounts[pv.user_agent] || 0) + 1;
+          }
+        });
+        
+        const uniqueAgents = Object.keys(userAgentCounts).length;
+        const returningAgents = Object.values(userAgentCounts).filter(count => count > 1).length;
+        const newAgents = uniqueAgents - returningAgents;
+        
+        setRetentionStats({
+          newUsers: newAgents,
+          returningUsers: returningAgents,
+          retentionRate: uniqueAgents > 0 ? Math.round((returningAgents / uniqueAgents) * 100) : 0
+        });
+      }
+
+      // ========== NEW METRIC 6: COMPRAS POR PERÍODO DO DIA ==========
+      if (purchasesData && purchasesData.length > 0) {
+        const purchaseHourCounts: Record<number, number> = {};
+        for (let i = 0; i < 24; i++) purchaseHourCounts[i] = 0;
+        
+        purchasesData.forEach(purchase => {
+          if (purchase.purchased_at) {
+            const hour = new Date(purchase.purchased_at).getHours();
+            purchaseHourCounts[hour]++;
+          }
+        });
+        
+        const purchaseHourData = Object.entries(purchaseHourCounts).map(([hour, count]) => ({
+          hour: parseInt(hour),
+          count
+        })).sort((a, b) => a.hour - b.hour);
+        
+        setPurchaseHourStats(purchaseHourData);
       }
 
       setIsLoading(false);
