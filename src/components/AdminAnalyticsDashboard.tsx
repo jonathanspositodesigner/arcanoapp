@@ -438,55 +438,23 @@ const [pageViews, setPageViews] = useState({
         setTopCategories(topCats);
       }
 
-      // Fetch top packs for artes
-      let artesWithPackQuery = supabase.from("arte_clicks").select("arte_id, is_admin_arte");
+      // Fetch top purchased packs for artes (from user_pack_purchases)
+      let packPurchasesQuery = supabase.from("user_pack_purchases").select("pack_slug, purchased_at");
       if (threshold.start) {
-        artesWithPackQuery = artesWithPackQuery.gte("clicked_at", threshold.start);
+        packPurchasesQuery = packPurchasesQuery.gte("purchased_at", threshold.start);
       }
       if (threshold.end) {
-        artesWithPackQuery = artesWithPackQuery.lte("clicked_at", threshold.end);
+        packPurchasesQuery = packPurchasesQuery.lte("purchased_at", threshold.end);
       }
-      const { data: arteClicksWithId } = await artesWithPackQuery;
+      const { data: packPurchasesData } = await packPurchasesQuery;
 
-      if (arteClicksWithId && arteClicksWithId.length > 0) {
-        const adminArteIds = arteClicksWithId.filter(a => a.is_admin_arte).map(a => a.arte_id);
-        const partnerArteIds = arteClicksWithId.filter(a => !a.is_admin_arte).map(a => a.arte_id);
-        
+      if (packPurchasesData && packPurchasesData.length > 0) {
         const packCounts: Record<string, number> = {};
         
-        if (adminArteIds.length > 0) {
-          const { data: adminArtes } = await supabase
-            .from("admin_artes")
-            .select("id, pack")
-            .in("id", adminArteIds);
-          
-          if (adminArtes) {
-            const packMap: Record<string, string> = {};
-            adminArtes.forEach(a => { packMap[a.id] = a.pack || 'Sem Pack'; });
-            
-            arteClicksWithId.filter(a => a.is_admin_arte).forEach(click => {
-              const pack = packMap[click.arte_id] || 'Sem Pack';
-              packCounts[pack] = (packCounts[pack] || 0) + 1;
-            });
-          }
-        }
-        
-        if (partnerArteIds.length > 0) {
-          const { data: partnerArtes } = await supabase
-            .from("partner_artes")
-            .select("id, pack")
-            .in("id", partnerArteIds);
-          
-          if (partnerArtes) {
-            const packMap: Record<string, string> = {};
-            partnerArtes.forEach(a => { packMap[a.id] = a.pack || 'Sem Pack'; });
-            
-            arteClicksWithId.filter(a => !a.is_admin_arte).forEach(click => {
-              const pack = packMap[click.arte_id] || 'Sem Pack';
-              packCounts[pack] = (packCounts[pack] || 0) + 1;
-            });
-          }
-        }
+        packPurchasesData.forEach(purchase => {
+          const packName = purchase.pack_slug || 'Sem Pack';
+          packCounts[packName] = (packCounts[packName] || 0) + 1;
+        });
         
         const topPacksList = Object.entries(packCounts)
           .map(([name, count]) => ({ name, count }))
@@ -494,6 +462,8 @@ const [pageViews, setPageViews] = useState({
           .slice(0, 5);
         
         setTopPacks(topPacksList);
+      } else {
+        setTopPacks([]);
       }
 
       // Fetch plan usage stats (copies by plan type)
