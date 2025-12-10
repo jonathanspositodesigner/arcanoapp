@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -1033,6 +1033,15 @@ const BibliotecaArtes = () => {
                     {!selectedArte.canvaLink && !selectedArte.driveLink && !selectedArte.downloadUrl && <Button onClick={() => handleDownload(selectedArte)} className="w-full">
                         <Download className="h-4 w-4 mr-2" />
                         Baixar Imagem
+                      </Button>}
+                    {/* Ver mais Artes button - only for free arts */}
+                    {!selectedArte.isPremium && <Button onClick={() => {
+                        handleCloseModal();
+                        setSelectedPack(null);
+                        setActiveSection('all-artes');
+                      }} variant="outline" className="w-full border-primary text-primary hover:bg-primary/10">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Ver mais Artes
                       </Button>}
                   </div> : <div className="flex flex-col gap-2">
                     <p className="text-center text-muted-foreground text-sm">
