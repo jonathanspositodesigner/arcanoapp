@@ -10,7 +10,9 @@ interface Pack {
   id: string;
   name: string;
   slug: string;
+  type: string;
   cover_url: string | null;
+  is_visible: boolean;
   // Prices (in cents)
   price_6_meses: number | null;
   price_1_ano: number | null;
@@ -58,13 +60,14 @@ const PlanosArtes = () => {
     const { data, error } = await supabase
       .from("artes_packs")
       .select(`
-        id, name, slug, cover_url, type,
+        id, name, slug, cover_url, type, is_visible,
         price_6_meses, price_1_ano, price_vitalicio,
         enabled_6_meses, enabled_1_ano, enabled_vitalicio,
         checkout_link_6_meses, checkout_link_1_ano, checkout_link_vitalicio,
         checkout_link_renovacao_6_meses, checkout_link_renovacao_1_ano, checkout_link_renovacao_vitalicio
       `)
       .in("type", ["pack", "curso"])
+      .eq("is_visible", true)
       .order("display_order", { ascending: true });
 
     if (!error && data) {
@@ -72,6 +75,10 @@ const PlanosArtes = () => {
     }
     setLoading(false);
   };
+
+  // Separate packs and courses
+  const packItems = packs.filter(p => p.type === "pack");
+  const cursoItems = packs.filter(p => p.type === "curso");
 
   const getPrice = (type: string): number => {
     if (!selectedPack) return 0;
@@ -251,29 +258,68 @@ const PlanosArtes = () => {
 
         {!selectedPack && !isRenewal ? (
           // Show pack selection only for normal pricing (not renewal)
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {packs.map((pack) => (
-              <Card
-                key={pack.id}
-                className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all"
-                onClick={() => setSelectedPack(pack)}
-              >
-                <CardContent className="p-4">
-                  {pack.cover_url ? (
-                    <img
-                      src={pack.cover_url}
-                      alt={pack.name}
-                      className="w-full aspect-square object-cover rounded-lg mb-3"
-                    />
-                  ) : (
-                    <div className="w-full aspect-square bg-[#2d4a5e]/30 rounded-lg mb-3 flex items-center justify-center">
-                      <Star className="h-8 w-8 text-[#2d4a5e]" />
-                    </div>
-                  )}
-                  <h3 className="text-white font-medium text-center">{pack.name}</h3>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="space-y-8">
+            {/* Packs de Artes */}
+            {packItems.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-white mb-4">Packs de Artes</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {packItems.map((pack) => (
+                    <Card
+                      key={pack.id}
+                      className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all"
+                      onClick={() => setSelectedPack(pack)}
+                    >
+                      <CardContent className="p-4">
+                        {pack.cover_url ? (
+                          <img
+                            src={pack.cover_url}
+                            alt={pack.name}
+                            className="w-full aspect-square object-cover rounded-lg mb-3"
+                          />
+                        ) : (
+                          <div className="w-full aspect-square bg-[#2d4a5e]/30 rounded-lg mb-3 flex items-center justify-center">
+                            <Star className="h-8 w-8 text-[#2d4a5e]" />
+                          </div>
+                        )}
+                        <h3 className="text-white font-medium text-center">{pack.name}</h3>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Cursos */}
+            {cursoItems.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-white mb-4">Cursos</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {cursoItems.map((pack) => (
+                    <Card
+                      key={pack.id}
+                      className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all"
+                      onClick={() => setSelectedPack(pack)}
+                    >
+                      <CardContent className="p-4">
+                        {pack.cover_url ? (
+                          <img
+                            src={pack.cover_url}
+                            alt={pack.name}
+                            className="w-full aspect-square object-cover rounded-lg mb-3"
+                          />
+                        ) : (
+                          <div className="w-full aspect-square bg-[#2d4a5e]/30 rounded-lg mb-3 flex items-center justify-center">
+                            <Star className="h-8 w-8 text-[#2d4a5e]" />
+                          </div>
+                        )}
+                        <h3 className="text-white font-medium text-center">{pack.name}</h3>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           // Show access options for selected pack (or renewal pack)
