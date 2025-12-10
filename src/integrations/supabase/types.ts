@@ -404,6 +404,7 @@ export type Database = {
           price_6_meses: number | null
           price_vitalicio: number | null
           slug: string
+          tutorial_lessons: Json | null
           type: string
           updated_at: string
         }
@@ -435,6 +436,7 @@ export type Database = {
           price_6_meses?: number | null
           price_vitalicio?: number | null
           slug: string
+          tutorial_lessons?: Json | null
           type?: string
           updated_at?: string
         }
@@ -466,6 +468,7 @@ export type Database = {
           price_6_meses?: number | null
           price_vitalicio?: number | null
           slug?: string
+          tutorial_lessons?: Json | null
           type?: string
           updated_at?: string
         }

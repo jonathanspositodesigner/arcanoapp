@@ -8,10 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff, Copy, Webhook, Settings, Link, Check } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff, Copy, Webhook, Settings, Link, Check, Video, ExternalLink, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface TutorialLesson {
+  title: string;
+  videoUrl: string;
+  buttons: { text: string; url: string }[];
+}
 
 interface Pack {
   id: string;
@@ -47,6 +53,8 @@ interface Pack {
   checkout_link_membro_vitalicio?: string | null;
   // Bonus download link
   download_url?: string | null;
+  // Tutorial lessons
+  tutorial_lessons?: TutorialLesson[] | null;
 }
 
 type ItemType = 'pack' | 'bonus' | 'curso' | 'tutorial' | 'ferramentas_ia' | 'ferramenta';
@@ -155,7 +163,7 @@ const AdminManagePacks = () => {
       toast.error("Erro ao carregar itens");
       return;
     }
-    setPacks((data || []) as Pack[]);
+    setPacks((data || []) as unknown as Pack[]);
     setLoading(false);
   };
 
@@ -340,6 +348,11 @@ const AdminManagePacks = () => {
         updateData.download_url = downloadUrl || null;
       }
       
+      // Only save tutorial_lessons for tutorial type
+      if (formData.type === 'tutorial') {
+        updateData.tutorial_lessons = tutorialLessons.length > 0 ? tutorialLessons : [];
+      }
+      
       const { error } = await supabase
         .from("artes_packs")
         .update(updateData)
@@ -414,11 +427,14 @@ const AdminManagePacks = () => {
     }
   };
 
+  const [tutorialLessons, setTutorialLessons] = useState<TutorialLesson[]>([]);
+
   const resetForm = () => {
     setFormData({ name: "", slug: "", type: "pack" });
     setCoverFile(null);
     setCoverPreview(null);
     setDownloadUrl('');
+    setTutorialLessons([]);
   };
 
   const openEdit = (pack: Pack) => {
@@ -428,6 +444,7 @@ const AdminManagePacks = () => {
     setCoverFile(null);
     setEditTab('info');
     setDownloadUrl(pack.download_url || '');
+    setTutorialLessons((pack.tutorial_lessons as TutorialLesson[]) || []);
     setWebhookFormData({
       greenn_product_id_6_meses: pack.greenn_product_id_6_meses?.toString() || '',
       greenn_product_id_1_ano: pack.greenn_product_id_1_ano?.toString() || '',
@@ -451,6 +468,38 @@ const AdminManagePacks = () => {
       checkout_link_membro_1_ano: pack.checkout_link_membro_1_ano || '',
       checkout_link_membro_vitalicio: pack.checkout_link_membro_vitalicio || ''
     });
+  };
+
+  const addLesson = () => {
+    setTutorialLessons([...tutorialLessons, { title: '', videoUrl: '', buttons: [] }]);
+  };
+
+  const updateLesson = (index: number, field: keyof TutorialLesson, value: any) => {
+    const updated = [...tutorialLessons];
+    updated[index] = { ...updated[index], [field]: value };
+    setTutorialLessons(updated);
+  };
+
+  const removeLesson = (index: number) => {
+    setTutorialLessons(tutorialLessons.filter((_, i) => i !== index));
+  };
+
+  const addLessonButton = (lessonIndex: number) => {
+    const updated = [...tutorialLessons];
+    updated[lessonIndex].buttons = [...(updated[lessonIndex].buttons || []), { text: '', url: '' }];
+    setTutorialLessons(updated);
+  };
+
+  const updateLessonButton = (lessonIndex: number, buttonIndex: number, field: 'text' | 'url', value: string) => {
+    const updated = [...tutorialLessons];
+    updated[lessonIndex].buttons[buttonIndex] = { ...updated[lessonIndex].buttons[buttonIndex], [field]: value };
+    setTutorialLessons(updated);
+  };
+
+  const removeLessonButton = (lessonIndex: number, buttonIndex: number) => {
+    const updated = [...tutorialLessons];
+    updated[lessonIndex].buttons = updated[lessonIndex].buttons.filter((_, i) => i !== buttonIndex);
+    setTutorialLessons(updated);
   };
 
   const handleCopyWebhook = () => {
@@ -835,12 +884,12 @@ const AdminManagePacks = () => {
             </DialogHeader>
             
             <Tabs value={editTab} onValueChange={(v) => setEditTab(v as 'info' | 'webhook' | 'links')} className="w-full mt-4">
-              <TabsList className={`grid w-full ${editingPack?.type === 'bonus' ? 'grid-cols-1' : 'grid-cols-3'}`}>
+              <TabsList className={`grid w-full ${editingPack?.type === 'bonus' || editingPack?.type === 'tutorial' ? 'grid-cols-1' : 'grid-cols-3'}`}>
                 <TabsTrigger value="info" className="flex items-center gap-1 text-xs">
                   <Settings className="w-3 h-3" />
                   Info
                 </TabsTrigger>
-                {editingPack?.type !== 'bonus' && (
+                {editingPack?.type !== 'bonus' && editingPack?.type !== 'tutorial' && (
                   <>
                     <TabsTrigger value="webhook" className="flex items-center gap-1 text-xs">
                       <Webhook className="w-3 h-3" />
@@ -956,6 +1005,111 @@ const AdminManagePacks = () => {
                     <p className="text-xs text-muted-foreground mt-1">
                       Link para download direto do bônus (Drive, Dropbox, etc.)
                     </p>
+                  </div>
+                )}
+                
+                {/* Tutorial Lessons Editor - Only for tutorial type */}
+                {editingPack?.type === 'tutorial' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="font-semibold flex items-center gap-2">
+                        <Video className="w-4 h-4" />
+                        Aulas do Tutorial
+                      </Label>
+                      <Button type="button" variant="outline" size="sm" onClick={addLesson}>
+                        <Plus className="w-4 h-4 mr-1" />
+                        Adicionar Aula
+                      </Button>
+                    </div>
+                    
+                    {tutorialLessons.length === 0 && (
+                      <div className="text-center py-6 text-muted-foreground border-2 border-dashed rounded-lg">
+                        <Video className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Nenhuma aula cadastrada</p>
+                        <p className="text-xs">Clique em "Adicionar Aula" para começar</p>
+                      </div>
+                    )}
+                    
+                    {tutorialLessons.map((lesson, lessonIndex) => (
+                      <div key={lessonIndex} className="border rounded-lg p-4 space-y-3 bg-muted/30">
+                        <div className="flex items-center justify-between">
+                          <Label className="font-medium">Aula {lessonIndex + 1}</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeLesson(lessonIndex)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Título da Aula</Label>
+                          <Input
+                            value={lesson.title}
+                            onChange={(e) => updateLesson(lessonIndex, 'title', e.target.value)}
+                            placeholder="Ex: Aula 1 - Introdução"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label className="text-xs text-muted-foreground">URL do Vídeo (YouTube, Vimeo, etc.)</Label>
+                          <Input
+                            value={lesson.videoUrl}
+                            onChange={(e) => updateLesson(lessonIndex, 'videoUrl', e.target.value)}
+                            placeholder="Ex: https://youtube.com/watch?v=..."
+                          />
+                        </div>
+                        
+                        {/* Lesson Buttons */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                              <ExternalLink className="w-3 h-3" />
+                              Links de Ação (opcional)
+                            </Label>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => addLessonButton(lessonIndex)}
+                              className="h-6 text-xs"
+                            >
+                              <Plus className="w-3 h-3 mr-1" />
+                              Adicionar Link
+                            </Button>
+                          </div>
+                          
+                          {lesson.buttons?.map((button, buttonIndex) => (
+                            <div key={buttonIndex} className="flex gap-2 items-center">
+                              <Input
+                                value={button.text}
+                                onChange={(e) => updateLessonButton(lessonIndex, buttonIndex, 'text', e.target.value)}
+                                placeholder="Texto do botão"
+                                className="flex-1"
+                              />
+                              <Input
+                                value={button.url}
+                                onChange={(e) => updateLessonButton(lessonIndex, buttonIndex, 'url', e.target.value)}
+                                placeholder="URL"
+                                className="flex-1"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeLessonButton(lessonIndex, buttonIndex)}
+                                className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
                 

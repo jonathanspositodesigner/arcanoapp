@@ -5,77 +5,60 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+interface LessonButton {
+  text: string;
+  url: string;
+}
+
 interface Lesson {
   title: string;
   videoUrl: string;
-  buttons?: {
-    text: string;
-    url: string;
-  }[];
+  buttons?: LessonButton[];
 }
 
-interface TutorialConfig {
-  [key: string]: {
-    title: string;
-    description: string;
-    lessons: Lesson[];
-  };
+interface TutorialData {
+  name: string;
+  slug: string;
+  tutorial_lessons: Lesson[] | null;
 }
-
-// Configuração dos tutoriais - adicionar lições aqui
-const tutorialConfigs: TutorialConfig = {
-  "como-editar-no-after-effects": {
-    title: "Como Editar no After Effects",
-    description: "Aprenda a editar suas artes no Adobe After Effects",
-    lessons: [
-      // Adicionar lições aqui quando necessário
-      // {
-      //   title: "Aula 1 - Introdução",
-      //   videoUrl: "https://www.youtube.com/watch?v=VIDEO_ID",
-      //   buttons: [{ text: "Acessar Ferramenta", url: "https://..." }]
-      // },
-    ]
-  },
-  "como-editar-no-photoshop": {
-    title: "Como Editar no Photoshop",
-    description: "Aprenda a editar suas artes no Adobe Photoshop",
-    lessons: []
-  },
-  "como-editar-no-canva": {
-    title: "Como Editar no Canva",
-    description: "Aprenda a editar suas artes no Canva",
-    lessons: []
-  }
-};
 
 const TutorialArtes = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
-  const [packInfo, setPackInfo] = useState<{ name: string; slug: string } | null>(null);
+  const [tutorial, setTutorial] = useState<TutorialData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPackInfo = async () => {
+    const fetchTutorial = async () => {
       if (!slug) {
         navigate("/biblioteca-artes");
         return;
       }
 
-      // Buscar info do pack pelo slug
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("artes_packs")
-        .select("name, slug")
+        .select("name, slug, tutorial_lessons")
         .eq("slug", slug)
         .eq("type", "tutorial")
         .maybeSingle();
 
+      if (error) {
+        console.error("Error fetching tutorial:", error);
+        setLoading(false);
+        return;
+      }
+
       if (data) {
-        setPackInfo(data);
+        setTutorial({
+          name: data.name,
+          slug: data.slug,
+          tutorial_lessons: data.tutorial_lessons as unknown as Lesson[] | null
+        });
       }
       setLoading(false);
     };
 
-    fetchPackInfo();
+    fetchTutorial();
   }, [slug, navigate]);
 
   const getEmbedUrl = (url: string) => {
@@ -102,11 +85,9 @@ const TutorialArtes = () => {
     );
   }
 
-  // Usa config específica ou fallback genérico
-  const config = slug ? tutorialConfigs[slug] : null;
-  const title = config?.title || packInfo?.name || "Tutorial";
-  const description = config?.description || "Aprenda com nossos tutoriais gratuitos";
-  const lessons = config?.lessons || [];
+  const lessons = tutorial?.tutorial_lessons || [];
+  const title = tutorial?.name || "Tutorial";
+  const description = "Aprenda com nossos tutoriais gratuitos";
 
   return (
     <div className="min-h-screen bg-background">
