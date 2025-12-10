@@ -1069,11 +1069,11 @@ const AdminPackPurchases = () => {
 
         {/* Clients Table */}
         <Card>
-          <Table>
+          <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow>
                 <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 select-none"
+                  className="cursor-pointer hover:bg-muted/50 select-none w-[200px]"
                   onClick={() => handleSort('name')}
                 >
                   <div className="flex items-center">
@@ -1082,7 +1082,7 @@ const AdminPackPurchases = () => {
                   </div>
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 select-none"
+                  className="cursor-pointer hover:bg-muted/50 select-none w-[300px]"
                   onClick={() => handleSort('packs')}
                 >
                   <div className="flex items-center">
@@ -1091,7 +1091,7 @@ const AdminPackPurchases = () => {
                   </div>
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 select-none"
+                  className="cursor-pointer hover:bg-muted/50 select-none w-[120px]"
                   onClick={() => handleSort('purchase_date')}
                 >
                   <div className="flex items-center">
@@ -1100,7 +1100,7 @@ const AdminPackPurchases = () => {
                   </div>
                 </TableHead>
                 <TableHead 
-                  className="cursor-pointer hover:bg-muted/50 select-none"
+                  className="cursor-pointer hover:bg-muted/50 select-none w-[120px]"
                   onClick={() => handleSort('expires_at')}
                 >
                   <div className="flex items-center">
@@ -1108,7 +1108,7 @@ const AdminPackPurchases = () => {
                     {getSortIcon('expires_at')}
                   </div>
                 </TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead className="text-right w-[100px]">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
