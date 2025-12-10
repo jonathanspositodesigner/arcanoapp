@@ -138,12 +138,18 @@ export const getSignedMediaUrl = async (
 
   const attemptFetch = async (retryCount = 0): Promise<string> => {
     try {
+      // Get user session for premium content authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const response = await supabase.functions.invoke('get-signed-url', {
         body: {
           filePath: parsed.filePath,
           bucket: parsed.bucket,
           isPremium
-        }
+        },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : undefined
       });
 
       if (response.error || !response.data?.signedUrl) {
