@@ -6,14 +6,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Crown, Package, AlertTriangle, Palette } from "lucide-react";
+import { Users, Crown, Package, AlertTriangle, Palette, Mail } from "lucide-react";
 
 interface RecipientSelectorProps {
   value: string;
   onChange: (value: string) => void;
   packValue?: string;
   onPackChange?: (value: string) => void;
+  customEmail?: string;
+  onCustomEmailChange?: (value: string) => void;
 }
 
 interface Counts {
@@ -32,7 +35,9 @@ const RecipientSelector = ({
   value, 
   onChange, 
   packValue, 
-  onPackChange 
+  onPackChange,
+  customEmail,
+  onCustomEmailChange
 }: RecipientSelectorProps) => {
   const [counts, setCounts] = useState<Counts>({
     all: 0,
@@ -183,6 +188,12 @@ const RecipientSelector = ({
               <span>Pack específico</span>
             </div>
           </SelectItem>
+          <SelectItem value="custom_email">
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-blue-500" />
+              <span>Email específico</span>
+            </div>
+          </SelectItem>
         </SelectContent>
       </Select>
 
@@ -199,6 +210,15 @@ const RecipientSelector = ({
             ))}
           </SelectContent>
         </Select>
+      )}
+
+      {value === "custom_email" && onCustomEmailChange && (
+        <Input
+          type="email"
+          placeholder="Digite o email do destinatário"
+          value={customEmail || ""}
+          onChange={(e) => onCustomEmailChange(e.target.value)}
+        />
       )}
     </div>
   );
