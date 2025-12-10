@@ -34,6 +34,7 @@ interface PlanUsageStats {
 
 interface SessionStats {
   totalSessions: number;
+  trackedSessions: number;
   bounceCount: number;
   bounceRate: number;
   avgDuration: number;
@@ -69,7 +70,7 @@ const [pageViews, setPageViews] = useState({
   const [topCategories, setTopCategories] = useState<{ name: string; count: number }[]>([]);
   const [topPacks, setTopPacks] = useState<{ name: string; count: number }[]>([]);
   const [sessionStats, setSessionStats] = useState<SessionStats>({
-    totalSessions: 0, bounceCount: 0, bounceRate: 0, avgDuration: 0
+    totalSessions: 0, trackedSessions: 0, bounceCount: 0, bounceRate: 0, avgDuration: 0
   });
   const [collectionStats, setCollectionStats] = useState<CollectionStats>({
     totalViews: 0, topCollections: []
@@ -749,11 +750,11 @@ const [pageViews, setPageViews] = useState({
         });
         
         const uniqueSessionsList = Array.from(sessionMap.values());
-        const totalSessions = uniqueSessionsList.length;
+        const trackedSessions = uniqueSessionsList.length;
         
         // Bounce = session < 3 seconds
         const bounceCount = uniqueSessionsList.filter(s => s.duration < 3).length;
-        const bounceRate = totalSessions > 0 ? Math.round((bounceCount / totalSessions) * 100) : 0;
+        const bounceRate = trackedSessions > 0 ? Math.round((bounceCount / trackedSessions) * 100) : 0;
         
         // Average duration (exclude bounces for more accurate reading)
         const nonBounceSessions = uniqueSessionsList.filter(s => s.duration >= 3);
@@ -761,11 +762,21 @@ const [pageViews, setPageViews] = useState({
           ? Math.round(nonBounceSessions.reduce((sum, s) => sum + s.duration, 0) / nonBounceSessions.length)
           : 0;
 
+        // Usa visitantes únicos de page_views como total de sessões
         setSessionStats({
-          totalSessions,
+          totalSessions: periodUnique,
+          trackedSessions,
           bounceCount,
           bounceRate,
           avgDuration
+        });
+      } else {
+        setSessionStats({
+          totalSessions: periodUnique,
+          trackedSessions: 0,
+          bounceCount: 0,
+          bounceRate: 0,
+          avgDuration: 0
         });
       }
 
@@ -1020,7 +1031,10 @@ const [pageViews, setPageViews] = useState({
                 <div className="text-center">
                   <p className="text-4xl font-bold text-red-500">{sessionStats.bounceRate}%</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {sessionStats.bounceCount} de {sessionStats.totalSessions} sessões
+                    {sessionStats.bounceCount} bounces de {sessionStats.trackedSessions} sessões rastreadas
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    ({sessionStats.totalSessions} visitantes únicos no período)
                   </p>
                 </div>
                 <div className="pt-2 border-t border-border text-center">
