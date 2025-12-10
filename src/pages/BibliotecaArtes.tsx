@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -691,6 +691,14 @@ const BibliotecaArtes = () => {
                             <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
                               <Sparkles className="h-3 w-3 mr-1" />
                               DISPONÍVEL
+                            </Badge>
+                          </div>}
+                        
+                        {/* Exclusive for members badge - Updates section */}
+                        {pack.type === 'updates' && <div className="absolute top-2 left-2 z-10">
+                            <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                              <Crown className="h-3 w-3 mr-1" />
+                              Exclusivo para Membros
                             </Badge>
                           </div>}
                         
