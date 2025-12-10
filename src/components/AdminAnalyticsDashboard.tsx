@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2 } from "lucide-react";
+import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2, CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, Funnel, FunnelChart, LabelList, Cell } from "recharts";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
 
-type DateFilter = 1 | 7 | 15 | 30 | 90 | "all";
+type DateFilter = 1 | "yesterday" | 7 | 15 | 30 | 90 | "all" | "custom";
 
 interface PromptRanking {
   prompt_title: string;
@@ -41,6 +47,7 @@ interface CollectionStats {
 
 const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
 const [pageViews, setPageViews] = useState({ 
     total: 0, mobile: 0, desktop: 0, 
     todayTotal: 0, todayMobile: 0, todayDesktop: 0,
@@ -72,33 +79,76 @@ const [pageViews, setPageViews] = useState({
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
-  // Retorna a data de início do período em formato ISO
-  const getDateThreshold = (): string | null => {
-    if (dateFilter === "all") return null;
+  // Retorna a data de início e fim do período em formato ISO
+  const getDateThreshold = (): { start: string | null; end: string | null } => {
+    if (dateFilter === "all") return { start: null, end: null };
     
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
     const day = now.getDate();
     
+    // Para período customizado
+    if (dateFilter === "custom" && customDateRange?.from) {
+      const startDate = new Date(customDateRange.from);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = customDateRange.to ? new Date(customDateRange.to) : new Date(customDateRange.from);
+      endDate.setHours(23, 59, 59, 999);
+      
+      return { start: startDate.toISOString(), end: endDate.toISOString() };
+    }
+    
+    // Para "Ontem"
+    if (dateFilter === "yesterday") {
+      const startDate = new Date(year, month, day - 1, 0, 0, 0, 0);
+      const endDate = new Date(year, month, day - 1, 23, 59, 59, 999);
+      return { start: startDate.toISOString(), end: endDate.toISOString() };
+    }
+    
     // Cria data à meia-noite no horário local
     const startDate = new Date(year, month, day, 0, 0, 0, 0);
     
     // Para "Hoje", usa meia-noite de hoje
     // Para outros filtros, subtrai (dias - 1) para incluir hoje
-    if (dateFilter > 1) {
+    if (typeof dateFilter === 'number' && dateFilter > 1) {
       startDate.setDate(startDate.getDate() - (dateFilter - 1));
     }
     
-    return startDate.toISOString();
+    return { start: startDate.toISOString(), end: null };
   };
 
   // Gera array de datas no formato YYYY-MM-DD
-  const getDaysArray = (days: number | "all"): string[] => {
+  const getDaysArray = (filter: DateFilter): string[] => {
     const result: string[] = [];
-    const numDays = days === "all" ? 30 : days;
-    
     const now = new Date();
+    
+    // Para período customizado
+    if (filter === "custom" && customDateRange?.from) {
+      const startDate = new Date(customDateRange.from);
+      const endDate = customDateRange.to ? new Date(customDateRange.to) : new Date(customDateRange.from);
+      
+      const currentDate = new Date(startDate);
+      while (currentDate <= endDate) {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        result.push(`${year}-${month}-${day}`);
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      return result;
+    }
+    
+    // Para ontem
+    if (filter === "yesterday") {
+      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const year = yesterday.getFullYear();
+      const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+      const day = String(yesterday.getDate()).padStart(2, '0');
+      return [`${year}-${month}-${day}`];
+    }
+    
+    const numDays = filter === "all" ? 30 : (typeof filter === 'number' ? filter : 7);
     
     for (let i = numDays - 1; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
@@ -166,8 +216,11 @@ const [pageViews, setPageViews] = useState({
         .select("session_id, device_type, entered_at")
         .order("entered_at", { ascending: false });
       
-      if (threshold) {
-        sessionsQuery = sessionsQuery.gte("entered_at", threshold);
+      if (threshold.start) {
+        sessionsQuery = sessionsQuery.gte("entered_at", threshold.start);
+      }
+      if (threshold.end) {
+        sessionsQuery = sessionsQuery.lte("entered_at", threshold.end);
       }
       
       const { data: allSessionsData } = await sessionsQuery;
@@ -236,8 +289,11 @@ const [pageViews, setPageViews] = useState({
 
       // Fetch installations
       let installsQuery = supabase.from("app_installations").select("device_type");
-      if (threshold) {
-        installsQuery = installsQuery.gte("installed_at", threshold);
+      if (threshold.start) {
+        installsQuery = installsQuery.gte("installed_at", threshold.start);
+      }
+      if (threshold.end) {
+        installsQuery = installsQuery.lte("installed_at", threshold.end);
       }
       const { data: installsData } = await installsQuery;
       
@@ -249,8 +305,11 @@ const [pageViews, setPageViews] = useState({
 
       // Fetch top prompts
       let clicksQuery = supabase.from("prompt_clicks").select("prompt_title");
-      if (threshold) {
-        clicksQuery = clicksQuery.gte("clicked_at", threshold);
+      if (threshold.start) {
+        clicksQuery = clicksQuery.gte("clicked_at", threshold.start);
+      }
+      if (threshold.end) {
+        clicksQuery = clicksQuery.lte("clicked_at", threshold.end);
       }
       const { data: clicksData } = await clicksQuery;
 
@@ -270,8 +329,11 @@ const [pageViews, setPageViews] = useState({
 
       // Fetch top artes
       let artesClicksQuery = supabase.from("arte_clicks").select("arte_title");
-      if (threshold) {
-        artesClicksQuery = artesClicksQuery.gte("clicked_at", threshold);
+      if (threshold.start) {
+        artesClicksQuery = artesClicksQuery.gte("clicked_at", threshold.start);
+      }
+      if (threshold.end) {
+        artesClicksQuery = artesClicksQuery.lte("clicked_at", threshold.end);
       }
       const { data: artesClicksData } = await artesClicksQuery;
 
@@ -291,8 +353,11 @@ const [pageViews, setPageViews] = useState({
 
       // Fetch top categories for prompts
       let promptsWithCategoryQuery = supabase.from("prompt_clicks").select("prompt_id, is_admin_prompt");
-      if (threshold) {
-        promptsWithCategoryQuery = promptsWithCategoryQuery.gte("clicked_at", threshold);
+      if (threshold.start) {
+        promptsWithCategoryQuery = promptsWithCategoryQuery.gte("clicked_at", threshold.start);
+      }
+      if (threshold.end) {
+        promptsWithCategoryQuery = promptsWithCategoryQuery.lte("clicked_at", threshold.end);
       }
       const { data: promptClicksWithId } = await promptsWithCategoryQuery;
 
@@ -347,8 +412,11 @@ const [pageViews, setPageViews] = useState({
 
       // Fetch top packs for artes
       let artesWithPackQuery = supabase.from("arte_clicks").select("arte_id, is_admin_arte");
-      if (threshold) {
-        artesWithPackQuery = artesWithPackQuery.gte("clicked_at", threshold);
+      if (threshold.start) {
+        artesWithPackQuery = artesWithPackQuery.gte("clicked_at", threshold.start);
+      }
+      if (threshold.end) {
+        artesWithPackQuery = artesWithPackQuery.lte("clicked_at", threshold.end);
       }
       const { data: arteClicksWithId } = await artesWithPackQuery;
 
@@ -409,8 +477,11 @@ const [pageViews, setPageViews] = useState({
       if (premiumUsers) {
         // Get all daily copies
         let copiesQuery = supabase.from("daily_prompt_copies").select("user_id, copy_date");
-        if (threshold) {
-          copiesQuery = copiesQuery.gte("copied_at", threshold);
+        if (threshold.start) {
+          copiesQuery = copiesQuery.gte("copied_at", threshold.start);
+        }
+        if (threshold.end) {
+          copiesQuery = copiesQuery.lte("copied_at", threshold.end);
         }
         const { data: copiesData } = await copiesQuery;
 
@@ -500,8 +571,11 @@ const [pageViews, setPageViews] = useState({
 
       if (premiumArtesUsers || packUsers) {
         let arteCopiesQuery = supabase.from("daily_arte_copies").select("user_id, copy_date");
-        if (threshold) {
-          arteCopiesQuery = arteCopiesQuery.gte("copied_at", threshold);
+        if (threshold.start) {
+          arteCopiesQuery = arteCopiesQuery.gte("copied_at", threshold.start);
+        }
+        if (threshold.end) {
+          arteCopiesQuery = arteCopiesQuery.lte("copied_at", threshold.end);
         }
         const { data: arteCopiesData } = await arteCopiesQuery;
 
@@ -576,8 +650,11 @@ const [pageViews, setPageViews] = useState({
 
       // ========== FETCH TOP PURCHASED PLANS (Prompts) ==========
       let purchasedPlansQuery = supabase.from("premium_users").select("plan_type, subscribed_at");
-      if (threshold) {
-        purchasedPlansQuery = purchasedPlansQuery.gte("subscribed_at", threshold);
+      if (threshold.start) {
+        purchasedPlansQuery = purchasedPlansQuery.gte("subscribed_at", threshold.start);
+      }
+      if (threshold.end) {
+        purchasedPlansQuery = purchasedPlansQuery.lte("subscribed_at", threshold.end);
       }
       const { data: purchasedPlansData } = await purchasedPlansQuery;
 
@@ -604,8 +681,11 @@ const [pageViews, setPageViews] = useState({
 
       // ========== FETCH TOP PURCHASED PACKS (Artes) ==========
       let purchasedPacksQuery = supabase.from("user_pack_purchases").select("pack_slug, purchased_at");
-      if (threshold) {
-        purchasedPacksQuery = purchasedPacksQuery.gte("purchased_at", threshold);
+      if (threshold.start) {
+        purchasedPacksQuery = purchasedPacksQuery.gte("purchased_at", threshold.start);
+      }
+      if (threshold.end) {
+        purchasedPacksQuery = purchasedPacksQuery.lte("purchased_at", threshold.end);
       }
       const { data: purchasedPacksData } = await purchasedPacksQuery;
 
@@ -630,8 +710,11 @@ const [pageViews, setPageViews] = useState({
         .select("session_id, page_path, duration_seconds, entered_at")
         .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"]);
       
-      if (threshold) {
-        statsSessionsQuery = statsSessionsQuery.gte("entered_at", threshold);
+      if (threshold.start) {
+        statsSessionsQuery = statsSessionsQuery.gte("entered_at", threshold.start);
+      }
+      if (threshold.end) {
+        statsSessionsQuery = statsSessionsQuery.lte("entered_at", threshold.end);
       }
       const { data: statsSessionsData } = await statsSessionsQuery;
 
@@ -671,8 +754,11 @@ const [pageViews, setPageViews] = useState({
         .select("session_id, page_path")
         .like("page_path", "/colecao/%");
       
-      if (threshold) {
-        collectionSessionsQuery = collectionSessionsQuery.gte("entered_at", threshold);
+      if (threshold.start) {
+        collectionSessionsQuery = collectionSessionsQuery.gte("entered_at", threshold.start);
+      }
+      if (threshold.end) {
+        collectionSessionsQuery = collectionSessionsQuery.lte("entered_at", threshold.end);
       }
       const { data: collectionSessionsData } = await collectionSessionsQuery;
 
@@ -687,8 +773,11 @@ const [pageViews, setPageViews] = useState({
           .select("session_id")
           .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"]);
         
-        if (threshold) {
-          librarySessionsQuery = librarySessionsQuery.gte("entered_at", threshold);
+        if (threshold.start) {
+          librarySessionsQuery = librarySessionsQuery.gte("entered_at", threshold.start);
+        }
+        if (threshold.end) {
+          librarySessionsQuery = librarySessionsQuery.lte("entered_at", threshold.end);
         }
         const { data: librarySessionsData } = await librarySessionsQuery;
 
@@ -718,7 +807,7 @@ const [pageViews, setPageViews] = useState({
     };
 
     fetchAnalytics();
-  }, [dateFilter, refreshKey]);
+  }, [dateFilter, refreshKey, customDateRange]);
 
 
 
@@ -728,12 +817,19 @@ const [pageViews, setPageViews] = useState({
 
   const filterOptions: { value: DateFilter; label: string }[] = [
     { value: 1, label: "Hoje" },
+    { value: "yesterday", label: "Ontem" },
     { value: 7, label: "7 dias" },
     { value: 15, label: "15 dias" },
     { value: 30, label: "30 dias" },
     { value: 90, label: "90 dias" },
     { value: "all", label: "Todo período" },
   ];
+
+  const formatDateRange = () => {
+    if (!customDateRange?.from) return "Selecionar período";
+    if (!customDateRange.to) return format(customDateRange.from, "dd/MM/yyyy", { locale: ptBR });
+    return `${format(customDateRange.from, "dd/MM", { locale: ptBR })} - ${format(customDateRange.to, "dd/MM/yyyy", { locale: ptBR })}`;
+  };
 
   return (
     <div className="mt-8">
@@ -760,7 +856,7 @@ const [pageViews, setPageViews] = useState({
       <div className="flex flex-wrap gap-2 mb-6">
         {filterOptions.map((option) => (
           <Button
-            key={option.value}
+            key={String(option.value)}
             variant={dateFilter === option.value ? "default" : "outline"}
             size="sm"
             onClick={() => setDateFilter(option.value)}
@@ -768,6 +864,37 @@ const [pageViews, setPageViews] = useState({
             {option.label}
           </Button>
         ))}
+        
+        {/* Custom Date Range Picker */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={dateFilter === "custom" ? "default" : "outline"}
+              size="sm"
+              className="gap-2"
+            >
+              <CalendarIcon className="h-4 w-4" />
+              {dateFilter === "custom" ? formatDateRange() : "Período"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={customDateRange?.from}
+              selected={customDateRange}
+              onSelect={(range) => {
+                setCustomDateRange(range);
+                if (range?.from) {
+                  setDateFilter("custom");
+                }
+              }}
+              numberOfMonths={2}
+              locale={ptBR}
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       {isLoading ? (
