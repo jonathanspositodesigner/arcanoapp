@@ -358,7 +358,7 @@ const BibliotecaArtes = () => {
         <button onClick={() => {
           navigate('/install-app');
           setSidebarOpen(false);
-        }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700">
+        }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700">
           <Smartphone className="h-5 w-5" />
           <span className="font-medium">Instalar App</span>
         </button>
