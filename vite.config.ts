@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => ({
       manifest: {
         name: "ArcanoApp",
         short_name: "ArcanoApp",
-        description: "A plataforma dos criadores do futuro - Prompts e arquivos com IA",
+        description: "ArcanoApp - A plataforma dos criadores do futuro. Prompts e arquivos com IA",
         theme_color: "#552b99",
         background_color: "#fafafa",
         display: "standalone",
