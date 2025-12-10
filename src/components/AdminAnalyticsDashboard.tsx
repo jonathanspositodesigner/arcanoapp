@@ -211,20 +211,42 @@ const [pageViews, setPageViews] = useState({
 
       const todayUnique = todayUniqueAgents.size;
 
-      // ========== BUSCA PAGE VIEWS DO PERÍODO SELECIONADO ==========
-      let pageViewsQuery = supabase
-        .from("page_views")
-        .select("device_type, user_agent, viewed_at")
-        .order("viewed_at", { ascending: false });
+      // ========== BUSCA PAGE VIEWS DO PERÍODO SELECIONADO (com paginação) ==========
+      const fetchAllPageViews = async () => {
+        const allRecords: { device_type: string; user_agent: string | null; viewed_at: string }[] = [];
+        const batchSize = 1000;
+        let offset = 0;
+        let hasMore = true;
+        
+        while (hasMore) {
+          let query = supabase
+            .from("page_views")
+            .select("device_type, user_agent, viewed_at")
+            .order("viewed_at", { ascending: false })
+            .range(offset, offset + batchSize - 1);
+          
+          if (threshold.start) {
+            query = query.gte("viewed_at", threshold.start);
+          }
+          if (threshold.end) {
+            query = query.lte("viewed_at", threshold.end);
+          }
+          
+          const { data } = await query;
+          
+          if (data && data.length > 0) {
+            allRecords.push(...data);
+            offset += batchSize;
+            hasMore = data.length === batchSize;
+          } else {
+            hasMore = false;
+          }
+        }
+        
+        return allRecords;
+      };
       
-      if (threshold.start) {
-        pageViewsQuery = pageViewsQuery.gte("viewed_at", threshold.start);
-      }
-      if (threshold.end) {
-        pageViewsQuery = pageViewsQuery.lte("viewed_at", threshold.end);
-      }
-      
-      const { data: allPageViewsData } = await pageViewsQuery;
+      const allPageViewsData = await fetchAllPageViews();
 
       // Conta page views do período
       let periodTotal = 0;
