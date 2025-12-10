@@ -1326,107 +1326,110 @@ const AdminPackPurchases = () => {
 
         {/* Expired Clients Modal */}
         <Dialog open={showExpiredModal} onOpenChange={setShowExpiredModal}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
             <DialogHeader>
-              <DialogTitle>Clientes com Packs Vencidos</DialogTitle>
+              <DialogTitle className="text-base sm:text-lg">Clientes com Packs Vencidos</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div className="flex gap-2">
+            <div className="space-y-3 sm:space-y-4 mt-2 flex-1 overflow-hidden flex flex-col">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 <Button 
                   variant={expiredViewMode === 'some' ? 'default' : 'outline'}
                   onClick={() => setExpiredViewMode('some')}
                   size="sm"
+                  className="text-xs sm:text-sm h-8"
                 >
-                  Com algum pack vencido
+                  Algum vencido
                 </Button>
                 <Button 
                   variant={expiredViewMode === 'all' ? 'default' : 'outline'}
                   onClick={() => setExpiredViewMode('all')}
                   size="sm"
+                  className="text-xs sm:text-sm h-8"
                 >
-                  Todos os packs vencidos
+                  Todos vencidos
                 </Button>
               </div>
               
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Packs Vencidos</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(() => {
-                    const now = new Date();
-                    const userIds = [...new Set(purchases.map(p => p.user_id))];
-                    
-                    const expiredClients = userIds.filter(userId => {
-                      const userPurchases = purchases.filter(p => p.user_id === userId);
-                      const hasExpired = userPurchases.some(p => p.expires_at && new Date(p.expires_at) < now);
-                      const allExpired = userPurchases.every(p => p.expires_at && new Date(p.expires_at) < now);
+              <div className="overflow-auto flex-1">
+                <Table className="min-w-[500px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[70px] sticky left-0 bg-background z-10">Ações</TableHead>
+                      <TableHead className="w-[180px]">Cliente</TableHead>
+                      <TableHead>Packs Vencidos</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(() => {
+                      const now = new Date();
+                      const userIds = [...new Set(purchases.map(p => p.user_id))];
                       
-                      return expiredViewMode === 'all' ? allExpired : hasExpired;
-                    });
-                    
-                    return expiredClients.map(userId => {
-                      const userPurchases = purchases.filter(p => p.user_id === userId);
-                      const firstPurchase = userPurchases[0];
-                      const expiredPacks = userPurchases.filter(p => p.expires_at && new Date(p.expires_at) < now);
+                      const expiredClients = userIds.filter(userId => {
+                        const userPurchases = purchases.filter(p => p.user_id === userId);
+                        const hasExpired = userPurchases.some(p => p.expires_at && new Date(p.expires_at) < now);
+                        const allExpired = userPurchases.every(p => p.expires_at && new Date(p.expires_at) < now);
+                        
+                        return expiredViewMode === 'all' ? allExpired : hasExpired;
+                      });
                       
-                      return (
-                        <TableRow key={userId}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{firstPurchase.user_name || 'Sem nome'}</p>
-                              <p className="text-sm text-muted-foreground">{firstPurchase.user_email}</p>
-                              {firstPurchase.user_phone && (
-                                <p className="text-xs text-muted-foreground">{firstPurchase.user_phone}</p>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              {expiredPacks.map((purchase) => (
-                                <Badge 
-                                  key={purchase.id} 
-                                  variant="outline"
-                                  className="text-xs bg-red-500/10 text-red-600 border-red-500/30"
+                      return expiredClients.map(userId => {
+                        const userPurchases = purchases.filter(p => p.user_id === userId);
+                        const firstPurchase = userPurchases[0];
+                        const expiredPacks = userPurchases.filter(p => p.expires_at && new Date(p.expires_at) < now);
+                        
+                        return (
+                          <TableRow key={userId}>
+                            <TableCell className="sticky left-0 bg-background z-10">
+                              <div className="flex gap-0.5">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => openWhatsApp(firstPurchase.user_phone || '')}
+                                  title="WhatsApp"
                                 >
-                                  {getPackName(purchase.pack_slug)} - venceu em {format(new Date(purchase.expires_at!), "dd/MM/yy", { locale: ptBR })}
-                                </Badge>
-                              ))}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => openWhatsApp(firstPurchase.user_phone || '')}
-                                title="WhatsApp"
-                              >
-                                <MessageCircle className="h-4 w-4 text-green-500" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setShowExpiredModal(false);
-                                  openEditDialog(firstPurchase);
-                                }}
-                                title="Editar"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    });
-                  })()}
-                </TableBody>
-              </Table>
+                                  <MessageCircle className="h-4 w-4 text-green-500" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => {
+                                    setShowExpiredModal(false);
+                                    openEditDialog(firstPurchase);
+                                  }}
+                                  title="Editar"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium text-sm">{firstPurchase.user_name || 'Sem nome'}</p>
+                                <p className="text-xs text-muted-foreground truncate max-w-[140px]">{firstPurchase.user_email}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap gap-1">
+                                {expiredPacks.map((purchase) => (
+                                  <Badge 
+                                    key={purchase.id} 
+                                    variant="outline"
+                                    className="text-[10px] sm:text-xs bg-red-500/10 text-red-600 border-red-500/30"
+                                  >
+                                    {getPackName(purchase.pack_slug)} - {format(new Date(purchase.expires_at!), "dd/MM/yy", { locale: ptBR })}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      });
+                    })()}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
