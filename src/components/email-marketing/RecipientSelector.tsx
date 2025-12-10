@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Crown, Package, Sparkles, AlertTriangle, Palette } from "lucide-react";
+import { Users, Crown, Package, AlertTriangle, Palette } from "lucide-react";
 
 interface RecipientSelectorProps {
   value: string;
@@ -60,25 +60,57 @@ const RecipientSelector = ({
       .select("*", { count: "exact", head: true })
       .eq("is_active", true);
 
-    // Artes clients (unique users with any pack purchase)
-    const { data: artesData } = await supabase
-      .from("user_pack_purchases")
-      .select("user_id")
-      .eq("is_active", true);
-    
-    const uniqueArtesUsers = new Set(artesData?.map(p => p.user_id) || []);
+    // For artes clients, we need to fetch ALL records to count unique users
+    // Use pagination to get all data
+    let allArtesUserIds: string[] = [];
+    let page = 0;
+    const pageSize = 1000;
+    let hasMore = true;
 
-    // Clients with all packs expired
-    const { data: allPurchases } = await supabase
-      .from("user_pack_purchases")
-      .select("user_id, access_type, expires_at")
-      .eq("is_active", true);
+    while (hasMore) {
+      const { data: artesData } = await supabase
+        .from("user_pack_purchases")
+        .select("user_id, access_type, expires_at")
+        .eq("is_active", true)
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+      
+      if (artesData && artesData.length > 0) {
+        allArtesUserIds = [...allArtesUserIds, ...artesData.map(p => p.user_id)];
+        hasMore = artesData.length === pageSize;
+        page++;
+      } else {
+        hasMore = false;
+      }
+    }
+
+    const uniqueArtesUsers = new Set(allArtesUserIds);
+
+    // Fetch all purchases again to calculate expired
+    let allPurchases: any[] = [];
+    page = 0;
+    hasMore = true;
+
+    while (hasMore) {
+      const { data } = await supabase
+        .from("user_pack_purchases")
+        .select("user_id, access_type, expires_at")
+        .eq("is_active", true)
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+      
+      if (data && data.length > 0) {
+        allPurchases = [...allPurchases, ...data];
+        hasMore = data.length === pageSize;
+        page++;
+      } else {
+        hasMore = false;
+      }
+    }
 
     // Group by user and check if ALL packs are expired
     const userPacks: Record<string, { hasActive: boolean }> = {};
     const now = new Date();
     
-    allPurchases?.forEach(purchase => {
+    allPurchases.forEach(purchase => {
       if (!userPacks[purchase.user_id]) {
         userPacks[purchase.user_id] = { hasActive: false };
       }

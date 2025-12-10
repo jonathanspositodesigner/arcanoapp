@@ -14,6 +14,47 @@ interface SendCampaignRequest {
   test_email?: string;
 }
 
+// Helper function to fetch all records with pagination
+async function fetchAllRecords(supabaseClient: any, table: string, selectFields: string, filters: any = {}) {
+  const allRecords: any[] = [];
+  let page = 0;
+  const pageSize = 1000;
+  let hasMore = true;
+
+  while (hasMore) {
+    let query = supabaseClient
+      .from(table)
+      .select(selectFields)
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+    
+    // Apply filters
+    for (const [key, value] of Object.entries(filters)) {
+      if (value === null) {
+        query = query.not(key, "is", null);
+      } else {
+        query = query.eq(key, value);
+      }
+    }
+
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error(`Error fetching ${table}:`, error);
+      break;
+    }
+    
+    if (data && data.length > 0) {
+      allRecords.push(...data);
+      hasMore = data.length === pageSize;
+      page++;
+    } else {
+      hasMore = false;
+    }
+  }
+
+  return allRecords;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -74,95 +115,104 @@ serve(async (req) => {
     const filter = campaign.recipient_filter;
 
     if (filter === "all") {
-      const { data } = await supabaseClient
-        .from("profiles")
-        .select("email")
-        .not("email", "is", null);
-      recipients = data?.map((p) => p.email).filter(Boolean) || [];
+      const allProfiles = await fetchAllRecords(supabaseClient, "profiles", "email", {});
+      recipients = allProfiles.map((p) => p.email).filter(Boolean);
     } else if (filter === "premium_prompts") {
-      const { data } = await supabaseClient
-        .from("premium_users")
-        .select("user_id")
-        .eq("is_active", true);
+      const premiumUsers = await fetchAllRecords(supabaseClient, "premium_users", "user_id", { is_active: true });
       
-      if (data && data.length > 0) {
-        const userIds = data.map((p) => p.user_id);
-        const { data: profiles } = await supabaseClient
-          .from("profiles")
-          .select("email")
-          .in("id", userIds)
-          .not("email", "is", null);
-        recipients = profiles?.map((p) => p.email).filter(Boolean) || [];
-      }
-    } else if (filter === "artes_clients") {
-      // All clients with any pack from Biblioteca de Artes
-      const { data } = await supabaseClient
-        .from("user_pack_purchases")
-        .select("user_id")
-        .eq("is_active", true);
-      
-      if (data && data.length > 0) {
-        const userIds = [...new Set(data.map((p) => p.user_id))];
-        const { data: profiles } = await supabaseClient
-          .from("profiles")
-          .select("email")
-          .in("id", userIds)
-          .not("email", "is", null);
-        recipients = profiles?.map((p) => p.email).filter(Boolean) || [];
-      }
-    } else if (filter === "artes_expired") {
-      // Clients with ALL packs expired
-      const { data: allPurchases } = await supabaseClient
-        .from("user_pack_purchases")
-        .select("user_id, access_type, expires_at")
-        .eq("is_active", true);
-      
-      if (allPurchases && allPurchases.length > 0) {
-        const now = new Date();
-        const userPacks: Record<string, { hasActive: boolean }> = {};
-        
-        allPurchases.forEach(purchase => {
-          if (!userPacks[purchase.user_id]) {
-            userPacks[purchase.user_id] = { hasActive: false };
-          }
-          // Check if this pack is still active (not expired)
-          if (purchase.access_type === 'vitalicio' || 
-              !purchase.expires_at || 
-              new Date(purchase.expires_at) > now) {
-            userPacks[purchase.user_id].hasActive = true;
-          }
-        });
-
-        // Get users where ALL packs are expired
-        const expiredUserIds = Object.entries(userPacks)
-          .filter(([_, data]) => !data.hasActive)
-          .map(([userId, _]) => userId);
-
-        if (expiredUserIds.length > 0) {
+      if (premiumUsers.length > 0) {
+        const userIds = premiumUsers.map((p) => p.user_id);
+        // Fetch profiles in batches
+        const allProfiles: any[] = [];
+        for (let i = 0; i < userIds.length; i += 100) {
+          const batch = userIds.slice(i, i + 100);
           const { data: profiles } = await supabaseClient
             .from("profiles")
             .select("email")
-            .in("id", expiredUserIds)
+            .in("id", batch)
             .not("email", "is", null);
-          recipients = profiles?.map((p) => p.email).filter(Boolean) || [];
+          if (profiles) allProfiles.push(...profiles);
         }
+        recipients = allProfiles.map((p) => p.email).filter(Boolean);
       }
-    } else if (filter === "specific_pack" && campaign.filter_value) {
-      const { data } = await supabaseClient
-        .from("user_pack_purchases")
-        .select("user_id")
-        .eq("pack_slug", campaign.filter_value)
-        .eq("is_active", true);
+    } else if (filter === "artes_clients") {
+      // All clients with any pack from Biblioteca de Artes
+      const allPurchases = await fetchAllRecords(supabaseClient, "user_pack_purchases", "user_id", { is_active: true });
+      const userIds = [...new Set(allPurchases.map((p) => p.user_id))];
       
-      if (data && data.length > 0) {
-        const userIds = [...new Set(data.map((p) => p.user_id))];
+      console.log(`Found ${userIds.length} unique artes clients`);
+      
+      // Fetch profiles in batches of 100
+      const allProfiles: any[] = [];
+      for (let i = 0; i < userIds.length; i += 100) {
+        const batch = userIds.slice(i, i + 100);
         const { data: profiles } = await supabaseClient
           .from("profiles")
           .select("email")
-          .in("id", userIds)
+          .in("id", batch)
           .not("email", "is", null);
-        recipients = profiles?.map((p) => p.email).filter(Boolean) || [];
+        if (profiles) allProfiles.push(...profiles);
       }
+      recipients = allProfiles.map((p) => p.email).filter(Boolean);
+    } else if (filter === "artes_expired") {
+      // Clients with ALL packs expired
+      const allPurchases = await fetchAllRecords(supabaseClient, "user_pack_purchases", "user_id, access_type, expires_at", { is_active: true });
+      
+      const now = new Date();
+      const userPacks: Record<string, { hasActive: boolean }> = {};
+      
+      allPurchases.forEach((purchase: any) => {
+        if (!userPacks[purchase.user_id]) {
+          userPacks[purchase.user_id] = { hasActive: false };
+        }
+        // Check if this pack is still active (not expired)
+        if (purchase.access_type === 'vitalicio' || 
+            !purchase.expires_at || 
+            new Date(purchase.expires_at) > now) {
+          userPacks[purchase.user_id].hasActive = true;
+        }
+      });
+
+      // Get users where ALL packs are expired
+      const expiredUserIds = Object.entries(userPacks)
+        .filter(([_, data]) => !data.hasActive)
+        .map(([userId, _]) => userId);
+
+      console.log(`Found ${expiredUserIds.length} users with all packs expired`);
+
+      if (expiredUserIds.length > 0) {
+        // Fetch profiles in batches of 100
+        const allProfiles: any[] = [];
+        for (let i = 0; i < expiredUserIds.length; i += 100) {
+          const batch = expiredUserIds.slice(i, i + 100);
+          const { data: profiles } = await supabaseClient
+            .from("profiles")
+            .select("email")
+            .in("id", batch)
+            .not("email", "is", null);
+          if (profiles) allProfiles.push(...profiles);
+        }
+        recipients = allProfiles.map((p) => p.email).filter(Boolean);
+      }
+    } else if (filter === "specific_pack" && campaign.filter_value) {
+      const packPurchases = await fetchAllRecords(supabaseClient, "user_pack_purchases", "user_id", { 
+        is_active: true, 
+        pack_slug: campaign.filter_value 
+      });
+      const userIds = [...new Set(packPurchases.map((p) => p.user_id))];
+      
+      // Fetch profiles in batches of 100
+      const allProfiles: any[] = [];
+      for (let i = 0; i < userIds.length; i += 100) {
+        const batch = userIds.slice(i, i + 100);
+        const { data: profiles } = await supabaseClient
+          .from("profiles")
+          .select("email")
+          .in("id", batch)
+          .not("email", "is", null);
+        if (profiles) allProfiles.push(...profiles);
+      }
+      recipients = allProfiles.map((p) => p.email).filter(Boolean);
     }
 
     // Remove duplicates
