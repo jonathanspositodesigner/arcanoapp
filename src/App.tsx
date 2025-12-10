@@ -27,7 +27,6 @@ import ProfileSettings from "./pages/ProfileSettings";
 import InstallApp from "./pages/InstallApp";
 import Planos from "./pages/Planos";
 import UpgradePlano from "./pages/UpgradePlano";
-import AdminPushNotifications from "./pages/AdminPushNotifications";
 import AdminInstallStats from "./pages/AdminInstallStats";
 import AdminManagePremium from "./pages/AdminManagePremium";
 import AdminPremiumDashboard from "./pages/AdminPremiumDashboard";
@@ -107,7 +106,6 @@ const AppContent = () => {
         <Route path="/install" element={<InstallApp />} />
         <Route path="/planos" element={<Planos />} />
         <Route path="/upgrade" element={<UpgradePlano />} />
-        <Route path="/admin-push-notifications" element={<AdminPushNotifications />} />
         <Route path="/admin-install-stats" element={<AdminInstallStats />} />
         <Route path="/admin-manage-premium" element={<AdminManagePremium />} />
         <Route path="/admin-premium-dashboard" element={<AdminPremiumDashboard />} />

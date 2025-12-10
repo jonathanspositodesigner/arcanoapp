@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Upload, CheckCircle, Settings, Bell, Users, Crown, LayoutDashboard, 
+  Upload, CheckCircle, Settings, Users, Crown, LayoutDashboard, 
   FolderOpen, Inbox, Handshake, Palette, FileText, Tag, Package, 
   Image, ShoppingCart, ShieldCheck, Gift, ShieldBan, FileSearch 
 } from "lucide-react";
@@ -12,19 +12,12 @@ import AdminLayout from "@/components/AdminLayout";
 
 const AdminFerramentas = () => {
   const navigate = useNavigate();
-  const [subscriberCount, setSubscriberCount] = useState(0);
   const [pendingCommunityCount, setPendingCommunityCount] = useState(0);
   const [pendingPartnerCount, setPendingPartnerCount] = useState(0);
   const [pendingArtesPartnerCount, setPendingArtesPartnerCount] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
-      // Fetch subscriber count
-      const { count: subCount } = await supabase
-        .from('push_subscriptions')
-        .select('*', { count: 'exact', head: true });
-      setSubscriberCount(subCount || 0);
-
       // Fetch pending community submissions
       const { count: pendingCount } = await supabase
         .from('community_prompts')
@@ -77,19 +70,7 @@ const AdminFerramentas = () => {
           {/* Prompts Tab Content */}
           <TabsContent value="prompts" className="space-y-6">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="p-6 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-primary/20 rounded-full">
-                    <Users className="h-8 w-8 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Notificações ativas</p>
-                    <p className="text-3xl font-bold text-foreground">{subscriberCount}</p>
-                  </div>
-                </div>
-              </Card>
-
+            <div className="grid grid-cols-1 gap-4">
               <Card 
                 className="p-6 bg-gradient-to-r from-orange-500/10 to-orange-500/5 border-orange-500/20 cursor-pointer hover:shadow-md transition-shadow" 
                 onClick={() => navigate('/admin-community-review')}
@@ -144,16 +125,6 @@ const AdminFerramentas = () => {
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Imagens</h2>
                   <p className="text-muted-foreground hidden sm:block">Edite ou exclua arquivos já publicados</p>
-                </div>
-              </Card>
-
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-push-notifications')}>
-                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                  <div className="p-2 sm:p-4 bg-orange-500 rounded-full">
-                    <Bell className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
-                  </div>
-                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Notificações Push</h2>
-                  <p className="text-muted-foreground hidden sm:block">Envie notificações para usuários inscritos</p>
                 </div>
               </Card>
 
@@ -212,19 +183,7 @@ const AdminFerramentas = () => {
           {/* Artes Arcanas Tab Content */}
           <TabsContent value="artes" className="space-y-6">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="p-6 bg-gradient-to-r from-amber-500/10 to-orange-500/5 border-amber-500/20">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-amber-500/20 rounded-full">
-                    <Users className="h-8 w-8 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Notificações ativas</p>
-                    <p className="text-3xl font-bold text-foreground">{subscriberCount}</p>
-                  </div>
-                </div>
-              </Card>
-
+            <div className="grid grid-cols-1 gap-4">
               <Card 
                 className="p-6 bg-gradient-to-r from-orange-500/10 to-orange-500/5 border-orange-500/20 cursor-pointer hover:shadow-md transition-shadow" 
                 onClick={() => navigate('/admin-artes-review')}
