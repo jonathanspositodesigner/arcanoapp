@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download, Smartphone, Monitor, Share, Plus, MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import logoHorizontal from "@/assets/logo_horizontal.png";
+
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -65,7 +65,6 @@ const InstallApp = () => {
         </Button>
 
         <div className="text-center mb-8">
-          <img src={logoHorizontal} alt="ArcanoApp" className="h-16 w-auto mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Instale o ArcanoApp
           </h1>
