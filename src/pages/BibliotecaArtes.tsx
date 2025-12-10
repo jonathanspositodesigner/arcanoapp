@@ -760,10 +760,13 @@ const BibliotecaArtes = () => {
                                   Baixar Bônus
                                 </>
                               ) : (
-                                <>
-                                  <Package className="h-3 w-3 mr-1" />
-                                  Comprar Pack
-                                </>
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className="text-[10px] text-white/80 text-center">Compre qualquer pack para desbloquear</span>
+                                  <span className="flex items-center">
+                                    <Package className="h-3 w-3 mr-1" />
+                                    Ver packs
+                                  </span>
+                                </div>
                               )}
                             </Button>
                           ) : (
