@@ -34,7 +34,7 @@ const AdminEmailMarketing = () => {
     subject: "",
     content: "<p>Escreva seu email aqui...</p>",
     sender_name: "Vox Visual",
-    sender_email: "onboarding@resend.dev",
+    sender_email: "contato@voxvisual.com.br",
     recipient_filter: "all",
     filter_value: "",
   });
