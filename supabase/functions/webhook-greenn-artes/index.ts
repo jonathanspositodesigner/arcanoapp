@@ -68,11 +68,62 @@ interface GreennArtesWebhookPayload {
   }
 }
 
+// Função para registrar log do webhook
+async function logWebhook(
+  supabase: any,
+  payload: any,
+  status: string | undefined,
+  productId: number | undefined,
+  email: string | undefined,
+  result: 'success' | 'error' | 'skipped' | 'blacklisted',
+  mappingType: string,
+  errorMessage?: string
+): Promise<void> {
+  try {
+    await supabase.from('webhook_logs').insert({
+      payload,
+      status,
+      product_id: productId,
+      email,
+      result,
+      mapping_type: mappingType,
+      error_message: errorMessage
+    })
+  } catch (e) {
+    console.error('Failed to log webhook:', e)
+  }
+}
+
+// Função para verificar se email está na lista negra
+async function isEmailBlacklisted(supabase: any, email: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('blacklisted_emails')
+    .select('id')
+    .eq('email', email.toLowerCase())
+    .maybeSingle()
+  
+  return !!data
+}
+
+// Função para adicionar email à lista negra
+async function addToBlacklist(supabase: any, email: string, reason: string): Promise<void> {
+  try {
+    await supabase.from('blacklisted_emails').upsert({
+      email: email.toLowerCase(),
+      reason,
+      auto_blocked: true,
+      blocked_at: new Date().toISOString()
+    }, { onConflict: 'email' })
+    console.log(`⚠️ Email added to blacklist: ${email} (${reason})`)
+  } catch (e) {
+    console.error('Failed to add to blacklist:', e)
+  }
+}
+
 // Função para buscar promoção no banco de dados
 async function findPromotionMappingInDatabase(supabase: any, productId: number): Promise<PromotionMapping | null> {
   console.log(`🔍 Searching PROMOTIONS for product ID: ${productId}`)
   
-  // Buscar promoção pelo product ID
   const { data: promotion, error } = await supabase
     .from('artes_promotions')
     .select('id, slug, has_bonus_access, greenn_product_id')
@@ -92,7 +143,6 @@ async function findPromotionMappingInDatabase(supabase: any, productId: number):
 
   console.log(`✅ Found PROMOTION: ${promotion.slug} (ID: ${promotion.id})`)
 
-  // Buscar itens da promoção
   const { data: items, error: itemsError } = await supabase
     .from('artes_promotion_items')
     .select('pack_slug, access_type')
@@ -125,7 +175,6 @@ async function findPromotionMappingInDatabase(supabase: any, productId: number):
 async function findProductMappingInDatabase(supabase: any, productId: number): Promise<ProductMapping | null> {
   console.log(`🔍 Searching PACKS for product ID: ${productId}`)
   
-  // Buscar em todas as colunas de product ID
   const { data: packs, error } = await supabase
     .from('artes_packs')
     .select('slug, greenn_product_id_6_meses, greenn_product_id_1_ano, greenn_product_id_order_bump, greenn_product_id_vitalicio')
@@ -136,7 +185,6 @@ async function findProductMappingInDatabase(supabase: any, productId: number): P
   }
 
   for (const pack of packs || []) {
-    // Verificar cada coluna de product ID
     if (pack.greenn_product_id_6_meses === productId) {
       console.log(`✅ Found in DB: ${pack.slug} (6_meses)`)
       return { packSlug: pack.slug, accessType: '6_meses', hasBonusAccess: false }
@@ -162,7 +210,7 @@ async function findProductMappingInDatabase(supabase: any, productId: number): P
 // Função para calcular data de expiração
 function calculateExpirationDate(accessType: string): Date | null {
   if (accessType === 'vitalicio') {
-    return null // Never expires
+    return null
   }
   
   const expiresAt = new Date()
@@ -192,7 +240,6 @@ async function processPackPurchase(
   
   const expiresAt = calculateExpirationDate(accessType)
   
-  // Check if user already has this pack
   const { data: existingPurchase, error: checkError } = await supabase
     .from('user_pack_purchases')
     .select('id, expires_at, access_type, has_bonus_access')
@@ -207,24 +254,20 @@ async function processPackPurchase(
   }
 
   if (existingPurchase) {
-    // Update existing purchase - check if should upgrade
     console.log(`User already has ${packSlug}, checking for upgrade`)
     
     const accessPriority: Record<string, number> = { '3_meses': 1, '6_meses': 2, '1_ano': 3, 'vitalicio': 4 }
     const currentPriority = accessPriority[existingPurchase.access_type] || 0
     const newPriority = accessPriority[accessType] || 0
     
-    // Upgrade if new access is higher priority OR extend if same type
     if (newPriority >= currentPriority) {
       let newExpiresAt = expiresAt
       
-      // If not upgrading to lifetime and currently not lifetime, extend from current expiration
       if (accessType !== 'vitalicio' && existingPurchase.access_type !== 'vitalicio' && existingPurchase.expires_at) {
         const currentExpires = new Date(existingPurchase.expires_at)
         const now = new Date()
         
         if (currentExpires > now && expiresAt) {
-          // Extend from current expiration
           newExpiresAt = new Date(currentExpires)
           if (accessType === '3_meses') {
             newExpiresAt.setMonth(newExpiresAt.getMonth() + 3)
@@ -258,7 +301,6 @@ async function processPackPurchase(
       console.log(`⏭️ Skipping update - current access (${existingPurchase.access_type}) is higher than new (${accessType})`)
     }
   } else {
-    // Insert new purchase
     console.log(`Creating new pack purchase for ${packSlug}`)
     const { error: insertError } = await supabase
       .from('user_pack_purchases')
@@ -286,35 +328,42 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  
+  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
 
-    const payload: GreennArtesWebhookPayload = await req.json()
+  let payload: GreennArtesWebhookPayload = {}
+  let email: string | undefined
+  let status: string | undefined
+  let productId: number | undefined
+  let mappingType: 'promotion' | 'pack' | 'legacy' | 'name_detection' | 'none' = 'none'
+
+  try {
+    payload = await req.json()
     
     console.log('=== GREENN ARTES WEBHOOK RECEIVED ===')
     console.log('Payload:', JSON.stringify(payload, null, 2))
 
-    const email = payload.client?.email?.toLowerCase().trim()
+    email = payload.client?.email?.toLowerCase().trim()
     const clientName = payload.client?.name || ''
     const clientPhone = payload.client?.phone?.replace(/\D/g, '') || ''
     const productName = payload.product?.name || ''
-    const productId = payload.product?.id
+    productId = payload.product?.id
     const offerName = payload.offer?.name || ''
     const offerHash = payload.offer?.hash || ''
-    const status = payload.currentStatus
+    status = payload.currentStatus
     const contractId = payload.contract?.id || payload.sale?.id
     const saleAmount = payload.sale?.amount
     
     if (!email) {
       console.error('No email provided in webhook payload')
+      await logWebhook(supabase, payload, status, productId, email, 'error', 'unknown', 'Email is required')
       return new Response(
         JSON.stringify({ error: 'Email is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -325,8 +374,24 @@ Deno.serve(async (req) => {
     console.log(`Product ID: ${productId}, Product: ${productName}, Offer: ${offerName}, Offer Hash: ${offerHash}`)
     console.log(`Sale Amount: ${saleAmount}`)
 
+    // Verificar lista negra para compras
+    if (status === 'paid' || status === 'approved') {
+      const isBlacklisted = await isEmailBlacklisted(supabase, email)
+      if (isBlacklisted) {
+        console.log(`🚫 Email ${email} is BLACKLISTED - blocking purchase`)
+        await logWebhook(supabase, payload, status, productId, email, 'blacklisted', 'blocked', 'Email is blacklisted')
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'Purchase blocked - email is blacklisted',
+            email
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
     // Variáveis para armazenar o tipo de mapeamento encontrado
-    let mappingType: 'promotion' | 'pack' | 'legacy' | 'name_detection' | 'none' = 'none'
     let promotionMapping: PromotionMapping | null = null
     let packMapping: ProductMapping | null = null
 
@@ -383,7 +448,6 @@ Deno.serve(async (req) => {
       } else if (nameLower.includes('free') || nameLower.includes('grátis') || nameLower.includes('gratis')) {
         packSlug = 'free-updates'
       } else if (nameLower.includes('arcano')) {
-        // Fallback genérico para produtos Arcano sem volume especificado
         packSlug = 'pack-arcano-vol-1'
       }
 
@@ -411,6 +475,7 @@ Deno.serve(async (req) => {
     // Se não encontrou nenhum mapeamento, retornar erro
     if (mappingType !== 'promotion' && !packMapping) {
       console.error(`❌ Could not determine pack/promotion from productId=${productId}, product=${productName}, offer=${offerName}`)
+      await logWebhook(supabase, payload, status, productId, email, 'error', mappingType, 'Could not determine pack/promotion from product')
       return new Response(
         JSON.stringify({ 
           error: 'Could not determine pack/promotion from product',
@@ -432,7 +497,6 @@ Deno.serve(async (req) => {
       let userId: string | null = null
 
       // PRIMEIRO: Tentar criar o usuário diretamente
-      // Se já existir, vai retornar erro email_exists e tratamos buscando o usuário
       console.log(`Attempting to create user with email: ${email}`)
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email: email,
@@ -441,11 +505,9 @@ Deno.serve(async (req) => {
       })
 
       if (createError) {
-        // Se o erro for email_exists, buscar o usuário existente
         if (createError.message?.includes('email') || createError.code === 'email_exists') {
           console.log(`User already exists, fetching from profiles table...`)
           
-          // Buscar usuário pela tabela profiles (mais confiável que listUsers com paginação)
           const { data: profile, error: profileFetchError } = await supabase
             .from('profiles')
             .select('id')
@@ -490,7 +552,6 @@ Deno.serve(async (req) => {
                 userId = foundUser.id
                 console.log(`Found existing user via listUsers (page ${page}) with ID: ${userId}`)
               } else if (usersData.users.length < perPage) {
-                // Última página
                 console.log('Reached last page, user not found')
                 break
               } else {
@@ -532,7 +593,6 @@ Deno.serve(async (req) => {
       let processedPacks: string[] = []
       
       if (mappingType === 'promotion' && promotionMapping) {
-        // PROMOÇÃO: Processar múltiplos packs
         console.log(`🎁 Processing PROMOTION with ${promotionMapping.items.length} packs`)
         
         for (const item of promotionMapping.items) {
@@ -551,6 +611,8 @@ Deno.serve(async (req) => {
         console.log(`✅ PROMOTION activated for ${email}: ${promotionMapping.promotionSlug}`)
         console.log(`   Packs granted: ${processedPacks.join(', ')}`)
         
+        await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+        
         return new Response(
           JSON.stringify({ 
             success: true, 
@@ -564,7 +626,6 @@ Deno.serve(async (req) => {
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       } else if (packMapping) {
-        // PACK INDIVIDUAL: Processar um pack
         await processPackPurchase(
           supabase,
           userId!,
@@ -578,6 +639,8 @@ Deno.serve(async (req) => {
         const expiresAt = calculateExpirationDate(packMapping.accessType)
         
         console.log(`✅ Pack access activated for ${email}: ${packMapping.packSlug} (${packMapping.accessType})`)
+        
+        await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
         
         return new Response(
           JSON.stringify({ 
@@ -595,14 +658,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Handle refunded/chargeback - deactivate specific pack(s)
+    // Handle refunded/chargeback - deactivate specific pack(s) and blacklist on chargeback
     if (status === 'refunded' || status === 'chargeback') {
       console.log(`Processing ${status} status - deactivating pack access for product ID: ${productId}`)
+      
+      // Adicionar à lista negra automaticamente em caso de chargeback
+      if (status === 'chargeback') {
+        await addToBlacklist(supabase, email, 'chargeback')
+      }
       
       // Buscar usuário com paginação completa
       let userId: string | null = null
       
-      // Primeiro tentar pela tabela profiles
       const { data: profile } = await supabase
         .from('profiles')
         .select('id')
@@ -613,7 +680,6 @@ Deno.serve(async (req) => {
         userId = profile.id
         console.log(`Found user via profiles: ${userId}`)
       } else {
-        // Fallback: busca paginada
         let page = 1
         const perPage = 1000
         
@@ -639,7 +705,6 @@ Deno.serve(async (req) => {
 
       if (userId) {
         if (mappingType === 'promotion' && promotionMapping) {
-          // Deactivate all packs from promotion
           for (const item of promotionMapping.items) {
             const { error: updateError } = await supabase
               .from('user_pack_purchases')
@@ -671,14 +736,32 @@ Deno.serve(async (req) => {
         console.log(`User not found for email: ${email}, cannot deactivate pack`)
       }
 
+      await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+
       return new Response(
         JSON.stringify({ success: true, message: `Pack access deactivated for ${email}` }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    // Handle canceled/unpaid/expired - just log, no access change (keep until expires_at)
+    if (status === 'canceled' || status === 'unpaid' || status === 'expired') {
+      console.log(`📋 Received ${status} status - logged but no immediate action (access maintained until expires_at)`)
+      await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: `Webhook received with status: ${status}. Access maintained until expiration date.`
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // For other statuses, just log and acknowledge
     console.log(`Received status ${status} - no action taken`)
+    await logWebhook(supabase, payload, status, productId, email, 'skipped', mappingType)
+    
     return new Response(
       JSON.stringify({ success: true, message: `Webhook received with status: ${status}` }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -687,6 +770,7 @@ Deno.serve(async (req) => {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Internal server error'
     console.error('Webhook processing error:', error)
+    await logWebhook(supabase, payload, status, productId, email, 'error', mappingType, errorMessage)
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
