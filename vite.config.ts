@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
       manifest: {
-        name: "Arcano Lab",
-        short_name: "Arcano Lab",
+        name: "ArcanoApp",
+        short_name: "ArcanoApp",
         description: "A plataforma dos criadores do futuro - Prompts e arquivos com IA",
         theme_color: "#552b99",
         background_color: "#fafafa",

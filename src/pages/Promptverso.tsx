@@ -15,7 +15,7 @@ const Promptverso = () => {
       <div className="text-center space-y-6 sm:space-y-8 w-full max-w-2xl">
         <div className="space-y-3 sm:space-y-4">
           <div className="flex justify-center">
-            <img src={logoHorizontal} alt="Arcano Lab" className="h-8 sm:h-10 w-auto" />
+            <img src={logoHorizontal} alt="ArcanoApp" className="h-8 sm:h-10 w-auto" />
           </div>
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent px-2">
             A plataforma dos criadores do futuro

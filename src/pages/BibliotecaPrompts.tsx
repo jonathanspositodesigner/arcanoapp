@@ -425,7 +425,7 @@ const BibliotecaPrompts = () => {
       {/* Top Bar - Desktop */}
       <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between">
         <div className="flex items-center gap-4">
-          <img alt="Arcano Lab" onClick={() => navigate('/')} src="/lovable-uploads/1598a9b7-8be1-453e-9117-dd811da037e9.png" className="h-8 cursor-pointer hover:opacity-80 transition-opacity" />
+          <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1598a9b7-8be1-453e-9117-dd811da037e9.png" className="h-8 cursor-pointer hover:opacity-80 transition-opacity" />
         </div>
         <div className="flex items-center gap-3">
           <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
@@ -461,7 +461,7 @@ const BibliotecaPrompts = () => {
 
       {/* Top Bar - Mobile */}
       <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
-        <img alt="Arcano Lab" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" />
+        <img alt="ArcanoApp" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" />
         {!isPremium && <div className="flex items-center gap-2">
             <Button onClick={() => navigate("/login")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
@@ -508,7 +508,7 @@ const BibliotecaPrompts = () => {
         `}>
           {/* Logo only on mobile sidebar */}
           <div className="mb-6 flex justify-center lg:hidden">
-            <img alt="Arcano Lab" className="w-[70%] mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} src="/lovable-uploads/7fbeb2fd-d77d-4357-acff-1947c5565fad.png" />
+            <img alt="ArcanoApp" className="w-[70%] mb-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} src="/lovable-uploads/7fbeb2fd-d77d-4357-acff-1947c5565fad.png" />
           </div>
 
           {/* Install App Button */}
