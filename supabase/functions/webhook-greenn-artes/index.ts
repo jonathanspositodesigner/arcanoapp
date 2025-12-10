@@ -429,34 +429,61 @@ Deno.serve(async (req) => {
     if (status === 'paid' || status === 'approved') {
       console.log('Processing PAID status - activating pack access')
       
-      // Check if user exists in auth
-      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers()
-      
-      if (listError) {
-        console.error('Error listing users:', listError)
-        throw listError
-      }
-
       let userId: string | null = null
-      const existingUser = existingUsers.users.find(u => u.email?.toLowerCase() === email)
 
-      if (existingUser) {
-        userId = existingUser.id
-        console.log(`User already exists with ID: ${userId}`)
-      } else {
-        // Create new user with email as password
-        console.log(`Creating new user with email: ${email}`)
-        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-          email: email,
-          password: email,
-          email_confirm: true
-        })
+      // PRIMEIRO: Tentar criar o usuário diretamente
+      // Se já existir, vai retornar erro email_exists e tratamos buscando o usuário
+      console.log(`Attempting to create user with email: ${email}`)
+      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+        email: email,
+        password: email,
+        email_confirm: true
+      })
 
-        if (createError) {
+      if (createError) {
+        // Se o erro for email_exists, buscar o usuário existente
+        if (createError.message?.includes('email') || createError.code === 'email_exists') {
+          console.log(`User already exists, fetching from profiles table...`)
+          
+          // Buscar usuário pela tabela profiles (mais confiável que listUsers com paginação)
+          const { data: profile, error: profileFetchError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', email)
+            .maybeSingle()
+          
+          if (profileFetchError) {
+            console.error('Error fetching profile:', profileFetchError)
+          }
+          
+          if (profile) {
+            userId = profile.id
+            console.log(`Found user via profiles table with ID: ${userId}`)
+          } else {
+            // Fallback: buscar via listUsers
+            console.log('Profile not found, trying listUsers...')
+            const { data: usersData, error: fetchError } = await supabase.auth.admin.listUsers()
+            
+            if (fetchError) {
+              console.error('Error listing users:', fetchError)
+              throw fetchError
+            }
+
+            const existingUser = usersData?.users?.find(u => u.email?.toLowerCase() === email)
+            
+            if (existingUser) {
+              userId = existingUser.id
+              console.log(`Found existing user via listUsers with ID: ${userId}`)
+            } else {
+              console.error('Could not find existing user despite email_exists error')
+              throw new Error(`User with email ${email} exists but could not be found`)
+            }
+          }
+        } else {
           console.error('Error creating user:', createError)
           throw createError
         }
-
+      } else {
         userId = newUser.user.id
         console.log(`New user created with ID: ${userId}`)
       }
