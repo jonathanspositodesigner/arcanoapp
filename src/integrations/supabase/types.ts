@@ -515,6 +515,36 @@ export type Database = {
         }
         Relationships: []
       }
+      collection_views: {
+        Row: {
+          collection_id: string
+          collection_name: string
+          collection_slug: string
+          device_type: string
+          id: string
+          user_agent: string | null
+          viewed_at: string
+        }
+        Insert: {
+          collection_id: string
+          collection_name: string
+          collection_slug: string
+          device_type?: string
+          id?: string
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          collection_id?: string
+          collection_name?: string
+          collection_slug?: string
+          device_type?: string
+          id?: string
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Relationships: []
+      }
       community_artes: {
         Row: {
           approved: boolean | null

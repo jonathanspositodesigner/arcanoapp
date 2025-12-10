@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
+import { trackCollectionView } from "@/hooks/useCollectionViewTracker";
 
 interface CollectionItem {
   id: string;
@@ -37,14 +38,23 @@ const getThumbnailUrl = (url: string) => {
 const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
   const navigate = useNavigate();
   const { isPremium } = usePremiumStatus();
-  const [collection, setCollection] = useState<{ name: string } | null>(null);
+  const [collection, setCollection] = useState<{ name: string; id: string } | null>(null);
   const [items, setItems] = useState<CollectionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<CollectionItem | null>(null);
+  const hasTracked = useRef(false);
 
   useEffect(() => {
     fetchCollection();
   }, [slug]);
+
+  // Track collection view once when collection is loaded
+  useEffect(() => {
+    if (collection && !hasTracked.current) {
+      hasTracked.current = true;
+      trackCollectionView(collection.id, slug, collection.name);
+    }
+  }, [collection, slug]);
 
   const fetchCollection = async () => {
     const { data: collectionData, error: collectionError } = await supabase
@@ -59,7 +69,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
       return;
     }
 
-    setCollection({ name: collectionData.name });
+    setCollection({ name: collectionData.name, id: collectionData.id });
 
     const { data: itemsData, error: itemsError } = await supabase
       .from('admin_collection_items')
