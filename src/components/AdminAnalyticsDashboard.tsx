@@ -702,21 +702,44 @@ const [pageViews, setPageViews] = useState({
         setTopPurchasedPacks(topPacksList);
       }
 
-      // ========== FETCH SESSION STATS (bounce rate e tempo médio) ==========
-      let statsSessionsQuery = supabase
-        .from("user_sessions")
-        .select("session_id, page_path, duration_seconds, entered_at")
-        .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"]);
+      // ========== FETCH SESSION STATS (bounce rate e tempo médio) com paginação ==========
+      const fetchAllSessions = async () => {
+        const allRecords: { session_id: string; page_path: string; duration_seconds: number | null; entered_at: string }[] = [];
+        const batchSize = 1000;
+        let offset = 0;
+        let hasMore = true;
+        
+        while (hasMore) {
+          let query = supabase
+            .from("user_sessions")
+            .select("session_id, page_path, duration_seconds, entered_at")
+            .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"])
+            .range(offset, offset + batchSize - 1);
+          
+          if (threshold.start) {
+            query = query.gte("entered_at", threshold.start);
+          }
+          if (threshold.end) {
+            query = query.lte("entered_at", threshold.end);
+          }
+          
+          const { data } = await query;
+          
+          if (data && data.length > 0) {
+            allRecords.push(...data);
+            offset += batchSize;
+            hasMore = data.length === batchSize;
+          } else {
+            hasMore = false;
+          }
+        }
+        
+        return allRecords;
+      };
       
-      if (threshold.start) {
-        statsSessionsQuery = statsSessionsQuery.gte("entered_at", threshold.start);
-      }
-      if (threshold.end) {
-        statsSessionsQuery = statsSessionsQuery.lte("entered_at", threshold.end);
-      }
-      const { data: statsSessionsData } = await statsSessionsQuery;
+      const statsSessionsData = await fetchAllSessions();
 
-      if (statsSessionsData) {
+      if (statsSessionsData && statsSessionsData.length > 0) {
         // Agrupa por session_id para ter sessões únicas
         const sessionMap = new Map<string, { duration: number }>();
         statsSessionsData.forEach(s => {
