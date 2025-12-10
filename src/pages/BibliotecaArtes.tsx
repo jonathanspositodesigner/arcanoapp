@@ -104,6 +104,17 @@ const BibliotecaArtes = () => {
   const [activeSection, setActiveSection] = useState<SidebarSection>('packs');
   const [showCursoModal, setShowCursoModal] = useState(false);
   const [selectedCurso, setSelectedCurso] = useState<PackItem | null>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
+
+  useEffect(() => {
+    // Check if app is installed as PWA
+    const checkInstalled = () => {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+        || (window.navigator as any).standalone === true;
+      setIsAppInstalled(isStandalone);
+    };
+    checkInstalled();
+  }, []);
   useEffect(() => {
     fetchArtes();
     fetchCategories();
@@ -355,15 +366,19 @@ const BibliotecaArtes = () => {
       </div>
       
       <nav className="flex-1 px-2 space-y-1">
-        <button onClick={() => {
-          navigate('/install-app');
-          setSidebarOpen(false);
-        }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700">
-          <Smartphone className="h-5 w-5" />
-          <span className="font-medium">Instalar App</span>
-        </button>
+        {!isAppInstalled && (
+          <>
+            <button onClick={() => {
+              navigate('/install-app');
+              setSidebarOpen(false);
+            }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700">
+              <Smartphone className="h-5 w-5" />
+              <span className="font-medium">Instalar App</span>
+            </button>
 
-        <div className="h-px bg-border my-3" />
+            <div className="h-px bg-border my-4" />
+          </>
+        )}
 
         <button onClick={() => {
         setActiveSection('tutorial');
