@@ -18,13 +18,22 @@ interface ProductMapping {
 // - 89595: 1 ano (com bônus)
 // - 92417: Vitalício order bump (com bônus)
 // - 149334: Vitalício standalone (com bônus)
+// Pack Arcano Vol.2:
+// - 115168: 6 meses (sem bônus)
+// - 115163: 1 ano (com bônus)
+// - 115171: Vitalício order bump (com bônus)
+// - 149342: Vitalício standalone (com bônus)
 const PRODUCT_ID_MAPPING: Record<number, ProductMapping> = {
   // Pack Arcano Vol.1
   89608: { packSlug: 'pack-arcano-vol-1', accessType: '6_meses', hasBonusAccess: false },
   89595: { packSlug: 'pack-arcano-vol-1', accessType: '1_ano', hasBonusAccess: true },
   92417: { packSlug: 'pack-arcano-vol-1', accessType: 'vitalicio', hasBonusAccess: true },
   149334: { packSlug: 'pack-arcano-vol-1', accessType: 'vitalicio', hasBonusAccess: true },
-  // Outros packs serão adicionados conforme mapeamento...
+  // Pack Arcano Vol.2
+  115168: { packSlug: 'pack-arcano-vol-2', accessType: '6_meses', hasBonusAccess: false },
+  115163: { packSlug: 'pack-arcano-vol-2', accessType: '1_ano', hasBonusAccess: true },
+  115171: { packSlug: 'pack-arcano-vol-2', accessType: 'vitalicio', hasBonusAccess: true }, // Order Bump
+  149342: { packSlug: 'pack-arcano-vol-2', accessType: 'vitalicio', hasBonusAccess: true }, // Standalone
 }
 
 interface GreennArtesWebhookPayload {
