@@ -183,104 +183,111 @@ const [pageViews, setPageViews] = useState({
       // Meia-noite de hoje para buscar acessos de hoje
       const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
-      // ========== BUSCA SESSÕES DE HOJE (todas as páginas) ==========
-      const { data: todaySessionsData } = await supabase
-        .from("user_sessions")
-        .select("session_id, device_type, entered_at")
-        .gte("entered_at", todayMidnight);
+      // ========== BUSCA PAGE VIEWS DE HOJE ==========
+      const { data: todayPageViewsData } = await supabase
+        .from("page_views")
+        .select("device_type, user_agent, viewed_at")
+        .gte("viewed_at", todayMidnight);
 
-      // Conta sessões de hoje (cada session_id = 1 acesso)
-      const todayUniqueSessions = new Set<string>();
-      const todayMobileSet = new Set<string>();
-      const todayDesktopSet = new Set<string>();
+      // Conta page views de hoje
+      let todayTotal = 0;
+      let todayMobile = 0;
+      let todayDesktop = 0;
+      const todayUniqueAgents = new Set<string>();
       
-      if (todaySessionsData) {
-        todaySessionsData.forEach(s => {
-          todayUniqueSessions.add(s.session_id);
-          if (s.device_type === "mobile") {
-            todayMobileSet.add(s.session_id);
+      if (todayPageViewsData) {
+        todayTotal = todayPageViewsData.length;
+        todayPageViewsData.forEach(pv => {
+          if (pv.device_type === "mobile") {
+            todayMobile++;
           } else {
-            todayDesktopSet.add(s.session_id);
+            todayDesktop++;
+          }
+          if (pv.user_agent) {
+            todayUniqueAgents.add(pv.user_agent);
           }
         });
       }
 
-      const todayTotal = todayUniqueSessions.size;
-      const todayMobile = todayMobileSet.size;
-      const todayDesktop = todayDesktopSet.size;
+      const todayUnique = todayUniqueAgents.size;
 
-      // ========== BUSCA DO PERÍODO SELECIONADO (todas as páginas) ==========
-      let sessionsQuery = supabase
-        .from("user_sessions")
-        .select("session_id, device_type, entered_at")
-        .order("entered_at", { ascending: false });
+      // ========== BUSCA PAGE VIEWS DO PERÍODO SELECIONADO ==========
+      let pageViewsQuery = supabase
+        .from("page_views")
+        .select("device_type, user_agent, viewed_at")
+        .order("viewed_at", { ascending: false });
       
       if (threshold.start) {
-        sessionsQuery = sessionsQuery.gte("entered_at", threshold.start);
+        pageViewsQuery = pageViewsQuery.gte("viewed_at", threshold.start);
       }
       if (threshold.end) {
-        sessionsQuery = sessionsQuery.lte("entered_at", threshold.end);
+        pageViewsQuery = pageViewsQuery.lte("viewed_at", threshold.end);
       }
       
-      const { data: allSessionsData } = await sessionsQuery;
+      const { data: allPageViewsData } = await pageViewsQuery;
 
-      // Conta sessões do período (cada session_id = 1 acesso)
-      const uniqueSessions = new Set<string>();
-      const mobileSessionsSet = new Set<string>();
-      const desktopSessionsSet = new Set<string>();
-      const sessionsByDate: Record<string, { mobile: Set<string>; desktop: Set<string> }> = {};
+      // Conta page views do período
+      let periodTotal = 0;
+      let periodMobile = 0;
+      let periodDesktop = 0;
+      const periodUniqueAgents = new Set<string>();
+      const viewsByDate: Record<string, { mobile: number; desktop: number; total: number }> = {};
       
       // Inicializa todos os dias
       daysArray.forEach(day => {
-        sessionsByDate[day] = { mobile: new Set(), desktop: new Set() };
+        viewsByDate[day] = { mobile: 0, desktop: 0, total: 0 };
       });
 
-      if (allSessionsData) {
-        allSessionsData.forEach(s => {
-          uniqueSessions.add(s.session_id);
-          const date = extractDateFromTimestamp(s.entered_at);
+      if (allPageViewsData) {
+        periodTotal = allPageViewsData.length;
+        allPageViewsData.forEach(pv => {
+          const date = extractDateFromTimestamp(pv.viewed_at);
           
-          if (s.device_type === "mobile") {
-            mobileSessionsSet.add(s.session_id);
-            if (sessionsByDate[date]) {
-              sessionsByDate[date].mobile.add(s.session_id);
+          if (pv.device_type === "mobile") {
+            periodMobile++;
+            if (viewsByDate[date]) {
+              viewsByDate[date].mobile++;
+              viewsByDate[date].total++;
             }
           } else {
-            desktopSessionsSet.add(s.session_id);
-            if (sessionsByDate[date]) {
-              sessionsByDate[date].desktop.add(s.session_id);
+            periodDesktop++;
+            if (viewsByDate[date]) {
+              viewsByDate[date].desktop++;
+              viewsByDate[date].total++;
             }
+          }
+          if (pv.user_agent) {
+            periodUniqueAgents.add(pv.user_agent);
           }
         });
       }
 
-      const mobile = mobileSessionsSet.size;
-      const desktop = desktopSessionsSet.size;
+      const periodUnique = periodUniqueAgents.size;
       
       setPageViews({ 
-        total: uniqueSessions.size, 
-        mobile, 
-        desktop,
+        total: periodTotal, 
+        mobile: periodMobile, 
+        desktop: periodDesktop,
         todayTotal,
         todayMobile,
         todayDesktop,
-        todayUnique: todayUniqueSessions.size,
+        todayUnique,
         todayTotalSessions: todayTotal,
-        todayReturning: 0, // Removed - not applicable with new session logic
-        periodUnique: uniqueSessions.size,
-        periodTotalSessions: uniqueSessions.size,
-        periodReturning: 0 // Removed - not applicable with new session logic
+        todayReturning: 0,
+        periodUnique,
+        periodTotalSessions: periodTotal,
+        periodReturning: 0
       });
 
-      // Process chart data - usa sessões únicas por dia
+      // Process chart data - usa page views totais por dia
       const chartDataPoints = daysArray.map(dateStr => {
         const [, month, day] = dateStr.split('-');
-        const dayData = sessionsByDate[dateStr] || { mobile: new Set(), desktop: new Set() };
+        const dayData = viewsByDate[dateStr] || { mobile: 0, desktop: 0, total: 0 };
         return {
           date: `${day}/${month}`,
-          mobile: dayData.mobile.size,
-          desktop: dayData.desktop.size,
-          total: dayData.mobile.size + dayData.desktop.size,
+          mobile: dayData.mobile,
+          desktop: dayData.desktop,
+          total: dayData.total,
         };
       });
 
@@ -889,9 +896,12 @@ const [pageViews, setPageViews] = useState({
                 </div>
                 <div>
                   <p className="text-sm text-green-600 font-medium">Acessos Hoje</p>
-                  <p className="text-3xl font-bold text-green-600">{pageViews.todayTotalSessions}</p>
+                  <p className="text-3xl font-bold text-green-600">{pageViews.todayTotal.toLocaleString()}</p>
                   <p className="text-xs text-green-600/80 mt-1">
                     📱 {pageViews.todayMobile} · 💻 {pageViews.todayDesktop}
+                  </p>
+                  <p className="text-xs text-green-600/60 mt-0.5">
+                    👤 {pageViews.todayUnique} únicos
                   </p>
                 </div>
               </div>
@@ -905,9 +915,12 @@ const [pageViews, setPageViews] = useState({
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Acessos no Período</p>
-                  <p className="text-3xl font-bold text-foreground">{pageViews.periodTotalSessions.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-foreground">{pageViews.total.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground/80 mt-1">
                     📱 {pageViews.mobile} · 💻 {pageViews.desktop}
+                  </p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">
+                    👤 {pageViews.periodUnique.toLocaleString()} únicos
                   </p>
                 </div>
               </div>
