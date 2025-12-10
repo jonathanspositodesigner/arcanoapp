@@ -57,20 +57,20 @@ const AdminFerramentas = () => {
         <p className="text-muted-foreground mb-8">Gerencie arquivos e contribuições das bibliotecas</p>
 
         <Tabs defaultValue="prompts" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 h-14">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 mb-6 h-auto gap-2">
             <TabsTrigger 
               value="prompts" 
-              className="text-lg gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="text-sm sm:text-lg gap-2 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
-              <FileText className="h-5 w-5" />
-              Biblioteca de Prompts
+              <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Biblioteca de Prompts</span>
             </TabsTrigger>
             <TabsTrigger 
               value="artes" 
-              className="text-lg gap-2 data-[state=active]:bg-amber-500 data-[state=active]:text-white"
+              className="text-sm sm:text-lg gap-2 py-3 data-[state=active]:bg-amber-500 data-[state=active]:text-white"
             >
-              <Palette className="h-5 w-5" />
-              Biblioteca de Artes Arcanas
+              <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Biblioteca de Artes Arcanas</span>
             </TabsTrigger>
           </TabsList>
 
