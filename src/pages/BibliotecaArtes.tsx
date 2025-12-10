@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -779,10 +779,24 @@ const BibliotecaArtes = () => {
                               )}
                             </Button>
                           ) : isToolType ? (
-                            <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
-                              <Play className="h-3 w-3 mr-1" />
-                              Vídeo Aulas
-                            </Badge>
+                            isPremium ? (
+                              <Badge className="mt-2 bg-green-500/80 text-white border-0 text-xs self-center backdrop-blur-sm">
+                                <Play className="h-3 w-3 mr-1" />
+                                Vídeo Aulas
+                              </Badge>
+                            ) : (
+                              <Button 
+                                size="sm" 
+                                className="mt-2 text-xs bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate('/planos-artes');
+                                }}
+                              >
+                                <ShoppingCart className="h-3 w-3 mr-1" />
+                                Comprar Ferramenta
+                              </Button>
+                            )
                           ) : (
                             <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
                               {arteCount} {arteCount === 1 ? 'arte' : 'artes'}
