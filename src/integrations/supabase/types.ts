@@ -686,6 +686,60 @@ export type Database = {
         }
         Relationships: []
       }
+      email_campaigns: {
+        Row: {
+          content: string
+          created_at: string
+          failed_count: number | null
+          filter_value: string | null
+          id: string
+          recipient_filter: string
+          recipients_count: number | null
+          sender_email: string
+          sender_name: string
+          sent_at: string | null
+          sent_count: number | null
+          status: string
+          subject: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          failed_count?: number | null
+          filter_value?: string | null
+          id?: string
+          recipient_filter?: string
+          recipients_count?: number | null
+          sender_email: string
+          sender_name?: string
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string
+          subject: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          failed_count?: number | null
+          filter_value?: string | null
+          id?: string
+          recipient_filter?: string
+          recipients_count?: number | null
+          sender_email?: string
+          sender_name?: string
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string
+          subject?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       import_jobs: {
         Row: {
           completed_at: string | null

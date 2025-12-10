@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.manage-admin]
 verify_jwt = false
+
+[functions.send-email-campaign]
+verify_jwt = false
