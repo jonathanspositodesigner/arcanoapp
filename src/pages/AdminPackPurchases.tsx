@@ -387,11 +387,15 @@ const AdminPackPurchases = () => {
   const handleDeleteClient = async (client: GroupedClient) => {
     if (!confirm(`Tem certeza que deseja EXCLUIR COMPLETAMENTE o cliente "${client.user_email}"? Isso irá remover todos os acessos, perfil e conta de login.`)) return;
 
+    // OPTIMISTIC UI: Remove from list IMMEDIATELY
+    const previousPurchases = [...purchases];
+    setPurchases(prev => prev.filter(p => p.user_id !== client.user_id));
+    toast.success("Cliente excluído!");
+
     try {
-      // Delete all pack purchases
-      for (const purchase of client.purchases) {
-        await supabase.from('user_pack_purchases').delete().eq('id', purchase.id);
-      }
+      // Batch delete all pack purchases at once
+      const purchaseIds = client.purchases.map(p => p.id);
+      await supabase.from('user_pack_purchases').delete().in('id', purchaseIds);
 
       // Delete profile
       await supabase.from('profiles').delete().eq('id', client.user_id);
@@ -402,7 +406,7 @@ const AdminPackPurchases = () => {
       // Delete user from Auth via edge function
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        const response = await fetch(
+        fetch(
           `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/delete-auth-user-artes`,
           {
             method: 'POST',
@@ -413,19 +417,11 @@ const AdminPackPurchases = () => {
             body: JSON.stringify({ user_id: client.user_id })
           }
         );
-
-        const result = await response.json();
-        if (!response.ok) {
-          console.error('Error deleting auth user:', result);
-          toast.error("Erro ao excluir usuário do Auth: " + result.error);
-          return;
-        }
       }
-
-      toast.success("Cliente excluído completamente!");
-      fetchPurchases();
     } catch (error) {
       console.error('Error deleting client:', error);
+      // Revert on error
+      setPurchases(previousPurchases);
       toast.error("Erro ao excluir cliente");
     }
   };
