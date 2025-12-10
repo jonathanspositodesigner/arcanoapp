@@ -686,6 +686,47 @@ export type Database = {
         }
         Relationships: []
       }
+      email_campaign_logs: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          email: string
+          error_message: string | null
+          id: string
+          resend_id: string | null
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          email: string
+          error_message?: string | null
+          id?: string
+          resend_id?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          id?: string
+          resend_id?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_campaign_logs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_campaigns: {
         Row: {
           content: string
