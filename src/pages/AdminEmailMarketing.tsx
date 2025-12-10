@@ -33,8 +33,8 @@ const AdminEmailMarketing = () => {
     title: "",
     subject: "",
     content: "<p>Escreva seu email aqui...</p>",
-    sender_name: "Arcano Lab",
-    sender_email: "contato@seudominio.com",
+    sender_name: "Vox Visual",
+    sender_email: "onboarding@resend.dev",
     recipient_filter: "all",
     filter_value: "",
   });
