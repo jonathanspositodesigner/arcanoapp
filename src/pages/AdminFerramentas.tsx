@@ -116,94 +116,94 @@ const AdminFerramentas = () => {
             </div>
 
             {/* Action Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-upload')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-primary rounded-full">
-                    <Upload className="h-12 w-12 text-white" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-upload')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-primary rounded-full">
+                    <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Enviar Arquivo</h2>
-                  <p className="text-muted-foreground">Faça upload de novos arquivos exclusivos para a biblioteca</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Enviar Arquivo</h2>
+                  <p className="text-muted-foreground hidden sm:block">Faça upload de novos arquivos exclusivos para a biblioteca</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-community-review')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-green-500 rounded-full">
-                    <CheckCircle className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-community-review')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-green-500 rounded-full">
+                    <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Analisar Arquivos</h2>
-                  <p className="text-muted-foreground">Aprove ou rejeite contribuições enviadas</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Analisar Arquivos</h2>
+                  <p className="text-muted-foreground hidden sm:block">Aprove ou rejeite contribuições enviadas</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-images')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-blue-500 rounded-full">
-                    <Settings className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-images')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-blue-500 rounded-full">
+                    <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Gerenciar Imagens</h2>
-                  <p className="text-muted-foreground">Edite ou exclua arquivos já publicados</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Imagens</h2>
+                  <p className="text-muted-foreground hidden sm:block">Edite ou exclua arquivos já publicados</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-push-notifications')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-orange-500 rounded-full">
-                    <Bell className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-push-notifications')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-orange-500 rounded-full">
+                    <Bell className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Notificações Push</h2>
-                  <p className="text-muted-foreground">Envie notificações para usuários inscritos</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Notificações Push</h2>
+                  <p className="text-muted-foreground hidden sm:block">Envie notificações para usuários inscritos</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-premium-dashboard')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full">
-                    <LayoutDashboard className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-premium-dashboard')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full">
+                    <LayoutDashboard className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Gerenciar Premium</h2>
-                  <p className="text-muted-foreground">Dashboard de assinaturas premium</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Premium</h2>
+                  <p className="text-muted-foreground hidden sm:block">Dashboard de assinaturas premium</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-collections')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-teal-500 rounded-full">
-                    <FolderOpen className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-collections')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-teal-500 rounded-full">
+                    <FolderOpen className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Coleções</h2>
-                  <p className="text-muted-foreground">Crie coleções com links compartilháveis</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Coleções</h2>
+                  <p className="text-muted-foreground hidden sm:block">Crie coleções com links compartilháveis</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-partners')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
-                    <Handshake className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-partners')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                    <Handshake className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Gerenciar Parceiros</h2>
-                  <p className="text-muted-foreground">Cadastre e gerencie contribuidores</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Parceiros</h2>
+                  <p className="text-muted-foreground hidden sm:block">Cadastre e gerencie contribuidores</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-categories-prompts')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-indigo-500 rounded-full">
-                    <Tag className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-categories-prompts')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-indigo-500 rounded-full">
+                    <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Categorias</h2>
-                  <p className="text-muted-foreground">Gerencie as categorias de prompts</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
+                  <p className="text-muted-foreground hidden sm:block">Gerencie as categorias de prompts</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-admins')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-red-500 to-rose-600 rounded-full">
-                    <ShieldCheck className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-admins')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-red-500 to-rose-600 rounded-full">
+                    <ShieldCheck className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Administradores</h2>
-                  <p className="text-muted-foreground">Gerencie contas de administradores</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Administradores</h2>
+                  <p className="text-muted-foreground hidden sm:block">Gerencie contas de administradores</p>
                 </div>
               </Card>
             </div>
@@ -247,124 +247,124 @@ const AdminFerramentas = () => {
             </div>
 
             {/* Action Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-upload-artes')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
-                    <Upload className="h-12 w-12 text-white" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-upload-artes')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                    <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Enviar Arte</h2>
-                  <p className="text-muted-foreground">Upload de novas artes para a biblioteca</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Enviar Arte</h2>
+                  <p className="text-muted-foreground hidden sm:block">Upload de novas artes para a biblioteca</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-artes-review')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-green-500 rounded-full">
-                    <CheckCircle className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-artes-review')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-green-500 rounded-full">
+                    <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Analisar Artes</h2>
-                  <p className="text-muted-foreground">Aprove ou rejeite contribuições de artes</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Analisar Artes</h2>
+                  <p className="text-muted-foreground hidden sm:block">Aprove ou rejeite contribuições de artes</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-artes')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-blue-500 rounded-full">
-                    <Settings className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-artes')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-blue-500 rounded-full">
+                    <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Gerenciar Artes</h2>
-                  <p className="text-muted-foreground">Edite ou exclua artes já publicadas</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Artes</h2>
+                  <p className="text-muted-foreground hidden sm:block">Edite ou exclua artes já publicadas</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-parceiros-artes')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
-                    <Handshake className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-parceiros-artes')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                    <Handshake className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Gerenciar Parceiros</h2>
-                  <p className="text-muted-foreground">Gerencie colaboradores de artes</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Parceiros</h2>
+                  <p className="text-muted-foreground hidden sm:block">Gerencie colaboradores de artes</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-packs')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full">
-                    <Package className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-packs')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full">
+                    <Package className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Gerenciar Packs</h2>
-                  <p className="text-muted-foreground">Cadastre e edite os packs de artes</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Packs</h2>
+                  <p className="text-muted-foreground hidden sm:block">Cadastre e edite os packs de artes</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-banners')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full">
-                    <Image className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-banners')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full">
+                    <Image className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Gerenciar Banners</h2>
-                  <p className="text-muted-foreground">Carrossel de divulgação da biblioteca</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Banners</h2>
+                  <p className="text-muted-foreground hidden sm:block">Carrossel de divulgação da biblioteca</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-pack-purchases')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full">
-                    <ShoppingCart className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-pack-purchases')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full">
+                    <ShoppingCart className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Gerenciar Clientes</h2>
-                  <p className="text-muted-foreground">Gerenciar acessos de usuários aos packs</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Clientes</h2>
+                  <p className="text-muted-foreground hidden sm:block">Gerenciar acessos de usuários aos packs</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-promotions')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-purple-500 to-violet-500 rounded-full">
-                    <Gift className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-promotions')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-purple-500 to-violet-500 rounded-full">
+                    <Gift className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Promoções</h2>
-                  <p className="text-muted-foreground">Gerencie combos e promoções com webhook</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Promoções</h2>
+                  <p className="text-muted-foreground hidden sm:block">Gerencie combos e promoções com webhook</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-categories-artes')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-indigo-500 rounded-full">
-                    <Tag className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-categories-artes')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-indigo-500 rounded-full">
+                    <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Categorias</h2>
-                  <p className="text-muted-foreground">Gerencie as categorias de artes</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
+                  <p className="text-muted-foreground hidden sm:block">Gerencie as categorias de artes</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-webhook-logs')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full">
-                    <FileSearch className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-webhook-logs')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full">
+                    <FileSearch className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Logs de Webhook</h2>
-                  <p className="text-muted-foreground">Monitore webhooks recebidos</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Logs de Webhook</h2>
+                  <p className="text-muted-foreground hidden sm:block">Monitore webhooks recebidos</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-blacklist')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-red-500 to-rose-600 rounded-full">
-                    <ShieldBan className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-blacklist')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-red-500 to-rose-600 rounded-full">
+                    <ShieldBan className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Lista Negra</h2>
-                  <p className="text-muted-foreground">Emails bloqueados (fraudes)</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Lista Negra</h2>
+                  <p className="text-muted-foreground hidden sm:block">Emails bloqueados (fraudes)</p>
                 </div>
               </Card>
 
-              <Card className="p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/biblioteca-artes')}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
-                    <Palette className="h-12 w-12 text-white" />
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/biblioteca-artes')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                    <Palette className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">Ver Biblioteca</h2>
-                  <p className="text-muted-foreground">Acesse a Biblioteca de Artes Arcanas</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Ver Biblioteca</h2>
+                  <p className="text-muted-foreground hidden sm:block">Acesse a Biblioteca de Artes Arcanas</p>
                 </div>
               </Card>
             </div>
