@@ -16,15 +16,46 @@ const ResetPasswordArtes = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user came from a valid reset link
-    const checkSession = async () => {
+    // Verificar se há erro no hash da URL
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const error = hashParams.get('error');
+    const errorDescription = hashParams.get('error_description');
+    
+    if (error) {
+      toast.error(errorDescription || "Link inválido ou expirado");
+      navigate("/forgot-password-artes");
+      return;
+    }
+
+    // Escutar mudanças de autenticação para detectar recovery
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth event:', event);
+        
+        if (event === 'PASSWORD_RECOVERY') {
+          console.log('Password recovery session detected');
+          return;
+        }
+        
+        if (event === 'SIGNED_IN' && session) {
+          return;
+        }
+      }
+    );
+
+    // Dar tempo para o Supabase processar os tokens do hash antes de verificar sessão
+    const timer = setTimeout(async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error("Link inválido ou expirado");
+        toast.error("Link inválido ou expirado. Solicite um novo link.");
         navigate("/forgot-password-artes");
       }
+    }, 1500);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timer);
     };
-    checkSession();
   }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
