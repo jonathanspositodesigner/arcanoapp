@@ -479,10 +479,6 @@ const BibliotecaArtes = () => {
           <Users className="h-4 w-4 mr-2" />
           Área do Colaborador
         </Button>
-        {isAdmin && <Button onClick={() => navigate("/admin-artes-review")} variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-foreground">
-            <Shield className="h-4 w-4 mr-2" />
-            Admin Artes
-          </Button>}
       </div>
     </div>;
   const getSectionTitle = () => {
