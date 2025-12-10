@@ -648,9 +648,11 @@ const BibliotecaArtes = () => {
               const packSlug = toPackSlug(pack.name);
               // For bonus/updates/ferramentas_ia: any active pack = access. For regular packs: need specific pack
               const isBonusOrUpdatesOrToolType = pack.type === 'bonus' || pack.type === 'updates' || pack.type === 'ferramentas_ia' || pack.type === 'ferramenta';
+              const isToolType = pack.type === 'ferramentas_ia' || pack.type === 'ferramenta';
               const hasPackAccess = isBonusOrUpdatesOrToolType ? isPremium : hasAccessToPack(packSlug);
               const isExpired = !isBonusOrUpdatesOrToolType && hasExpiredPack(packSlug);
               const expiredInfo = isExpired ? getExpiredPackInfo(packSlug) : null;
+              const showToolAvailableBadge = isToolType && isPremium;
               return <Card key={pack.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => {
                 setSelectedPack(pack.name);
                 setSelectedCategory("Todos");
@@ -672,6 +674,13 @@ const BibliotecaArtes = () => {
                             <Badge className="bg-red-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
                               <AlertTriangle className="h-3 w-3 mr-1" />
                               ACESSO EXPIRADO
+                            </Badge>
+                          </div>}
+                        
+                        {showToolAvailableBadge && <div className="absolute top-2 right-2 z-10">
+                            <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                              <Sparkles className="h-3 w-3 mr-1" />
+                              DISPONÍVEL
                             </Badge>
                           </div>}
                         
