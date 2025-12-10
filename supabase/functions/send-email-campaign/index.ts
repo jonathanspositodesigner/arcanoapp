@@ -255,8 +255,26 @@ serve(async (req) => {
       })
       .eq("id", campaign_id);
 
+    // Clear any existing logs for this campaign (in case of retry)
+    await supabaseClient
+      .from("email_campaign_logs")
+      .delete()
+      .eq("campaign_id", campaign_id);
+
+    // Create pending log entries for all recipients
+    const pendingLogs = recipients.map(email => ({
+      campaign_id,
+      email,
+      status: "pending"
+    }));
+
+    // Insert logs in batches of 100
+    for (let i = 0; i < pendingLogs.length; i += 100) {
+      const batch = pendingLogs.slice(i, i + 100);
+      await supabaseClient.from("email_campaign_logs").insert(batch);
+    }
+
     // Send emails one by one with rate limit respect (max 2/second = 500ms delay)
-    // Using sequential sending to avoid rate limit errors
     let sentCount = 0;
     let failedCount = 0;
     const DELAY_BETWEEN_EMAILS = 600; // 600ms delay = ~1.6 emails/second (safe margin under 2/sec limit)
@@ -268,6 +286,8 @@ serve(async (req) => {
       const email = recipients[i];
       let success = false;
       let retries = 0;
+      let resendId: string | null = null;
+      let errorMessage: string | null = null;
 
       while (!success && retries < MAX_RETRIES) {
         try {
@@ -279,32 +299,77 @@ serve(async (req) => {
           });
 
           if (result.error) {
+            errorMessage = result.error.message || "Unknown error";
+            
             // Check if rate limit error
-            const errorMsg = result.error.message || "";
-            if (errorMsg.includes("rate_limit") || errorMsg.includes("429") || errorMsg.includes("Too many requests")) {
+            if (errorMessage.includes("rate_limit") || errorMessage.includes("429") || errorMessage.includes("Too many requests")) {
               console.log(`Rate limit hit for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
               await new Promise((resolve) => setTimeout(resolve, 2000));
               retries++;
               continue;
             }
-            throw new Error(result.error.message);
+            
+            // Other error - don't retry
+            console.error(`Failed to send to ${email}: ${errorMessage}`);
+            failedCount++;
+            
+            // Update log with error
+            await supabaseClient
+              .from("email_campaign_logs")
+              .update({
+                status: "failed",
+                error_message: errorMessage,
+                sent_at: new Date().toISOString()
+              })
+              .eq("campaign_id", campaign_id)
+              .eq("email", email);
+            
+            break;
           }
 
+          // Success!
           success = true;
           sentCount++;
-          console.log(`[${i + 1}/${recipients.length}] Sent to ${email}`);
+          resendId = result.data?.id || null;
+          
+          console.log(`[${i + 1}/${recipients.length}] Sent to ${email} (ID: ${resendId})`);
+          
+          // Update log with success
+          await supabaseClient
+            .from("email_campaign_logs")
+            .update({
+              status: "sent",
+              resend_id: resendId,
+              sent_at: new Date().toISOString()
+            })
+            .eq("campaign_id", campaign_id)
+            .eq("email", email);
+
         } catch (error: any) {
+          errorMessage = error.message || "Unknown exception";
+          
           // Check if rate limit error in exception
-          const errorMsg = error.message || "";
-          if (errorMsg.includes("rate_limit") || errorMsg.includes("429") || errorMsg.includes("Too many requests")) {
+          if (errorMessage && (errorMessage.includes("rate_limit") || errorMessage.includes("429") || errorMessage.includes("Too many requests"))) {
             console.log(`Rate limit exception for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
             await new Promise((resolve) => setTimeout(resolve, 2000));
             retries++;
             continue;
           }
           
-          console.error(`Failed to send to ${email}:`, error.message);
+          console.error(`Failed to send to ${email}:`, errorMessage);
           failedCount++;
+          
+          // Update log with error
+          await supabaseClient
+            .from("email_campaign_logs")
+            .update({
+              status: "failed",
+              error_message: errorMessage,
+              sent_at: new Date().toISOString()
+            })
+            .eq("campaign_id", campaign_id)
+            .eq("email", email);
+          
           break;
         }
       }
@@ -313,6 +378,17 @@ serve(async (req) => {
       if (!success && retries >= MAX_RETRIES) {
         console.error(`Max retries reached for ${email}`);
         failedCount++;
+        
+        // Update log with rate limit failure
+        await supabaseClient
+          .from("email_campaign_logs")
+          .update({
+            status: "rate_limited",
+            error_message: "Max retries exceeded due to rate limiting",
+            sent_at: new Date().toISOString()
+          })
+          .eq("campaign_id", campaign_id)
+          .eq("email", email);
       }
 
       // Update progress every 10 emails
