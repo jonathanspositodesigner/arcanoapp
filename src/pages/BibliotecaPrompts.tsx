@@ -62,11 +62,8 @@ const BibliotecaPrompts = () => {
   // Check for collection slug in URL first
   const colecaoParam = searchParams.get("colecao");
   
-  // Track session - use collection path if coming from collection link
-  const sessionPath = colecaoParam 
-    ? `/colecao/${colecaoParam}` 
-    : "/biblioteca-prompts";
-  useSessionTracker(sessionPath);
+  // Track session
+  useSessionTracker();
   
   const {
     user,
