@@ -112,16 +112,31 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
       return;
     }
     
+    // Focus editor first
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
+    
     const selection = window.getSelection();
-    const hasSelection = selection && selection.toString().trim().length > 0;
+    const hasSelection = selection && selection.toString().trim().length > 0 && 
+                         editorRef.current?.contains(selection.anchorNode);
     
     if (hasSelection) {
-      // Has selected text - create link on it
-      execCommand("createLink", linkUrl);
+      // Has selected text in editor - create link on it
+      document.execCommand("createLink", false, linkUrl);
+      updateContent();
     } else if (linkText) {
-      // No selection but has text - insert new link
-      const linkHtml = `<a href="${linkUrl}" style="color: #552b99;">${linkText}</a>`;
-      execCommand("insertHTML", linkHtml);
+      // No selection but has text - insert new link at end
+      if (editorRef.current) {
+        const range = document.createRange();
+        range.selectNodeContents(editorRef.current);
+        range.collapse(false);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+      const linkHtml = `<a href="${linkUrl}" style="color: #552b99;">${linkText}</a>&nbsp;`;
+      document.execCommand("insertHTML", false, linkHtml);
+      updateContent();
     } else {
       toast.error("Selecione um texto ou digite o texto do link");
       return;
@@ -143,8 +158,25 @@ const EmailEditor = ({ value, onChange }: EmailEditorProps) => {
       return;
     }
     
-    const buttonHtml = `<a href="${buttonUrl}" style="display: inline-block; padding: 12px 24px; background-color: ${buttonColor}; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 8px 0;">${buttonText}</a>`;
-    execCommand("insertHTML", buttonHtml);
+    // Focus editor first and move cursor to end if needed
+    if (editorRef.current) {
+      editorRef.current.focus();
+      
+      // Check if there's a selection in the editor
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0 || !editorRef.current.contains(selection.anchorNode)) {
+        // No selection in editor, move cursor to end
+        const range = document.createRange();
+        range.selectNodeContents(editorRef.current);
+        range.collapse(false); // collapse to end
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+    }
+    
+    const buttonHtml = `<a href="${buttonUrl}" style="display: inline-block; padding: 12px 24px; background-color: ${buttonColor}; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 8px 0;">${buttonText}</a>&nbsp;`;
+    document.execCommand("insertHTML", false, buttonHtml);
+    updateContent();
     
     // Reset fields
     setButtonText("");
