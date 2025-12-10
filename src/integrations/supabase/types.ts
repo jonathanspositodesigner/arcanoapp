@@ -377,6 +377,9 @@ export type Database = {
       }
       artes_packs: {
         Row: {
+          checkout_link_1_ano: string | null
+          checkout_link_6_meses: string | null
+          checkout_link_vitalicio: string | null
           cover_url: string | null
           created_at: string
           display_order: number
@@ -392,6 +395,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          checkout_link_1_ano?: string | null
+          checkout_link_6_meses?: string | null
+          checkout_link_vitalicio?: string | null
           cover_url?: string | null
           created_at?: string
           display_order?: number
@@ -407,6 +413,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          checkout_link_1_ano?: string | null
+          checkout_link_6_meses?: string | null
+          checkout_link_vitalicio?: string | null
           cover_url?: string | null
           created_at?: string
           display_order?: number
