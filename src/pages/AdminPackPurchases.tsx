@@ -672,20 +672,33 @@ const AdminPackPurchases = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-7xl mx-auto py-8 px-4">
-        <div className="flex items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/admin-dashboard')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
+      <div className="container max-w-7xl mx-auto py-4 sm:py-8 px-3 sm:px-4">
+        {/* Header - Mobile friendly */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/admin-dashboard')} className="px-2 sm:px-4">
+              <ArrowLeft className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Voltar</span>
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Gerenciar Clientes de Packs</h1>
-              <p className="text-muted-foreground">Cadastre clientes e gerencie seus acessos aos packs</p>
+            <div className="flex-1">
+              <h1 className="text-xl sm:text-3xl font-bold text-foreground">Gerenciar Clientes</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">Cadastre e gerencie acessos aos packs</p>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="sm:hidden"
+              onClick={() => {
+                toast.info("Atualizando lista...");
+                fetchPurchases();
+              }}
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
           <Button 
             variant="outline" 
+            className="hidden sm:flex"
             onClick={() => {
               toast.info("Atualizando lista...");
               fetchPurchases();
@@ -696,43 +709,43 @@ const AdminPackPurchases = () => {
           </Button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <User className="h-5 w-5 text-primary" />
+        {/* Stats Cards - 2 cols on mobile */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
+          <Card className="p-2 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total de Clientes</p>
-                <p className="text-2xl font-bold">{[...new Set(purchases.map(p => p.user_id))].length}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground">Total Clientes</p>
+                <p className="text-lg sm:text-2xl font-bold">{[...new Set(purchases.map(p => p.user_id))].length}</p>
               </div>
             </div>
           </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg">
-                <Package className="h-5 w-5 text-green-500" />
+          <Card className="p-2 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-green-500/10 rounded-lg">
+                <Package className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total de Compras</p>
-                <p className="text-2xl font-bold">{purchases.length}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground">Total Compras</p>
+                <p className="text-lg sm:text-2xl font-bold">{purchases.length}</p>
               </div>
             </div>
           </Card>
           <Card 
-            className="p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+            className="p-2 sm:p-4 cursor-pointer hover:bg-muted/50 transition-colors"
             onClick={() => setShowExpiredModal(true)}
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-500/10 rounded-lg">
-                <Calendar className="h-5 w-5 text-red-500" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-red-500/10 rounded-lg">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Packs Vencidos</p>
-                <div className="flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] sm:text-sm text-muted-foreground">Packs Vencidos</p>
+                <div className="flex items-center gap-2 sm:gap-4">
                   <div>
-                    <p className="text-xl font-bold text-amber-600">
+                    <p className="text-base sm:text-xl font-bold text-amber-600">
                       {(() => {
                         const now = new Date();
                         const userIds = [...new Set(purchases.map(p => p.user_id))];
@@ -745,10 +758,10 @@ const AdminPackPurchases = () => {
                         ).length;
                       })()}
                     </p>
-                    <p className="text-xs text-muted-foreground">c/ algum vencido</p>
+                    <p className="text-[8px] sm:text-xs text-muted-foreground">algum</p>
                   </div>
                   <div>
-                    <p className="text-xl font-bold text-red-600">
+                    <p className="text-base sm:text-xl font-bold text-red-600">
                       {(() => {
                         const now = new Date();
                         const userIds = [...new Set(purchases.map(p => p.user_id))];
@@ -760,20 +773,20 @@ const AdminPackPurchases = () => {
                         }).length;
                       })()}
                     </p>
-                    <p className="text-xs text-muted-foreground">todos vencidos</p>
+                    <p className="text-[8px] sm:text-xs text-muted-foreground">todos</p>
                   </div>
                 </div>
               </div>
             </div>
           </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-500/10 rounded-lg">
-                <Calendar className="h-5 w-5 text-amber-500" />
+          <Card className="p-2 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-amber-500/10 rounded-lg">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Expirando em 30 dias</p>
-                <p className="text-2xl font-bold">
+                <p className="text-[10px] sm:text-sm text-muted-foreground">Expira 30 dias</p>
+                <p className="text-lg sm:text-2xl font-bold">
                   {(() => {
                     const now = new Date();
                     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
