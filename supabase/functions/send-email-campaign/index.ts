@@ -88,26 +88,40 @@ serve(async (req) => {
     // If test email, send only to that address
     if (test_email) {
       console.log(`Sending test email to: ${test_email}`);
+      console.log(`From: ${campaign.sender_name} <${campaign.sender_email}>`);
+      console.log(`Subject: [TESTE] ${campaign.subject}`);
       
-      const { error: sendError } = await resend.emails.send({
-        from: `${campaign.sender_name} <${campaign.sender_email}>`,
-        to: [test_email],
-        subject: `[TESTE] ${campaign.subject}`,
-        html: campaign.content,
-      });
+      try {
+        const sendResult = await resend.emails.send({
+          from: `${campaign.sender_name} <${campaign.sender_email}>`,
+          to: [test_email],
+          subject: `[TESTE] ${campaign.subject}`,
+          html: campaign.content,
+        });
 
-      if (sendError) {
-        console.error("Error sending test email:", sendError);
+        console.log("Resend API response:", JSON.stringify(sendResult));
+
+        if (sendResult.error) {
+          console.error("Error sending test email:", sendResult.error);
+          return new Response(
+            JSON.stringify({ error: sendResult.error.message }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        console.log("Test email sent successfully, ID:", sendResult.data?.id);
+
         return new Response(
-          JSON.stringify({ error: sendError.message }),
+          JSON.stringify({ success: true, message: "Email de teste enviado!", email_id: sendResult.data?.id }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (sendError: any) {
+        console.error("Exception sending test email:", sendError);
+        return new Response(
+          JSON.stringify({ error: sendError.message || "Erro ao enviar email" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-
-      return new Response(
-        JSON.stringify({ success: true, message: "Email de teste enviado!" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
 
     // Get recipients based on filter
