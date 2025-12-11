@@ -12,6 +12,8 @@ const corsHeaders = {
 interface SendCampaignRequest {
   campaign_id: string;
   test_email?: string;
+  resume?: boolean; // New: resume sending pending emails
+  batch_size?: number; // New: how many emails to send per invocation
 }
 
 // Helper function to fetch all records with pagination
@@ -66,9 +68,10 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { campaign_id, test_email }: SendCampaignRequest = await req.json();
+    const { campaign_id, test_email, resume, batch_size }: SendCampaignRequest = await req.json();
+    const BATCH_SIZE = batch_size || 50; // Default 50 emails per batch (~30 seconds)
 
-    console.log(`Processing campaign: ${campaign_id}, test_email: ${test_email}`);
+    console.log(`Processing campaign: ${campaign_id}, test_email: ${test_email}, resume: ${resume}, batch_size: ${BATCH_SIZE}`);
 
     // Fetch campaign details
     const { data: campaign, error: campaignError } = await supabaseClient
@@ -124,6 +127,203 @@ serve(async (req) => {
       }
     }
 
+    // ========== RESUME MODE ==========
+    // Process only pending emails from existing logs
+    if (resume) {
+      console.log(`RESUME MODE: Processing pending emails for campaign ${campaign_id}`);
+
+      // Fetch pending logs
+      const { data: pendingLogs, error: logsError } = await supabaseClient
+        .from("email_campaign_logs")
+        .select("id, email")
+        .eq("campaign_id", campaign_id)
+        .eq("status", "pending")
+        .limit(BATCH_SIZE);
+
+      if (logsError) {
+        console.error("Error fetching pending logs:", logsError);
+        return new Response(
+          JSON.stringify({ error: "Erro ao buscar emails pendentes" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (!pendingLogs || pendingLogs.length === 0) {
+        // No more pending - mark campaign as complete
+        const sentCount = campaign.sent_count || 0;
+        const failedCount = campaign.failed_count || 0;
+        const finalStatus = failedCount === 0 ? "sent" : "sent";
+        
+        await supabaseClient
+          .from("email_campaigns")
+          .update({ status: finalStatus })
+          .eq("id", campaign_id);
+
+        console.log("No more pending emails - campaign completed");
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            completed: true,
+            message: "Todos os emails foram enviados!",
+            sent_count: sentCount,
+            failed_count: failedCount
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`Found ${pendingLogs.length} pending emails to process`);
+
+      // Update campaign status to sending
+      await supabaseClient
+        .from("email_campaigns")
+        .update({ status: "sending" })
+        .eq("id", campaign_id);
+
+      // Send emails
+      let sentCount = campaign.sent_count || 0;
+      let failedCount = campaign.failed_count || 0;
+      const DELAY_BETWEEN_EMAILS = 600;
+      const MAX_RETRIES = 3;
+
+      for (let i = 0; i < pendingLogs.length; i++) {
+        const log = pendingLogs[i];
+        const email = log.email;
+        let success = false;
+        let retries = 0;
+        let resendId: string | null = null;
+        let errorMessage: string | null = null;
+
+        while (!success && retries < MAX_RETRIES) {
+          try {
+            const result = await resend.emails.send({
+              from: `${campaign.sender_name} <${campaign.sender_email}>`,
+              to: [email],
+              subject: campaign.subject,
+              html: campaign.content,
+            });
+
+            if (result.error) {
+              errorMessage = result.error.message || "Unknown error";
+              
+              if (errorMessage.includes("rate_limit") || errorMessage.includes("429") || errorMessage.includes("Too many requests")) {
+                console.log(`Rate limit hit for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                retries++;
+                continue;
+              }
+              
+              console.error(`Failed to send to ${email}: ${errorMessage}`);
+              failedCount++;
+              
+              await supabaseClient
+                .from("email_campaign_logs")
+                .update({
+                  status: "failed",
+                  error_message: errorMessage,
+                  sent_at: new Date().toISOString()
+                })
+                .eq("id", log.id);
+              
+              break;
+            }
+
+            success = true;
+            sentCount++;
+            resendId = result.data?.id || null;
+            
+            console.log(`[${i + 1}/${pendingLogs.length}] Sent to ${email} (ID: ${resendId})`);
+            
+            await supabaseClient
+              .from("email_campaign_logs")
+              .update({
+                status: "sent",
+                resend_id: resendId,
+                sent_at: new Date().toISOString()
+              })
+              .eq("id", log.id);
+
+          } catch (error: any) {
+            errorMessage = error.message || "Unknown exception";
+            
+            if (errorMessage && (errorMessage.includes("rate_limit") || errorMessage.includes("429") || errorMessage.includes("Too many requests"))) {
+              console.log(`Rate limit exception for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+              retries++;
+              continue;
+            }
+            
+            console.error(`Failed to send to ${email}:`, errorMessage);
+            failedCount++;
+            
+            await supabaseClient
+              .from("email_campaign_logs")
+              .update({
+                status: "failed",
+                error_message: errorMessage,
+                sent_at: new Date().toISOString()
+              })
+              .eq("id", log.id);
+            
+            break;
+          }
+        }
+
+        if (!success && retries >= MAX_RETRIES) {
+          console.error(`Max retries reached for ${email}`);
+          failedCount++;
+          
+          await supabaseClient
+            .from("email_campaign_logs")
+            .update({
+              status: "rate_limited",
+              error_message: "Max retries exceeded due to rate limiting",
+              sent_at: new Date().toISOString()
+            })
+            .eq("id", log.id);
+        }
+
+        // Delay between emails
+        if (i < pendingLogs.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_EMAILS));
+        }
+      }
+
+      // Update campaign counts
+      await supabaseClient
+        .from("email_campaigns")
+        .update({ 
+          sent_count: sentCount,
+          failed_count: failedCount
+        })
+        .eq("id", campaign_id);
+
+      // Check if there are more pending
+      const { count: remainingCount } = await supabaseClient
+        .from("email_campaign_logs")
+        .select("*", { count: "exact", head: true })
+        .eq("campaign_id", campaign_id)
+        .eq("status", "pending");
+
+      const hasMore = (remainingCount || 0) > 0;
+
+      console.log(`Batch completed: ${sentCount} sent, ${failedCount} failed, ${remainingCount || 0} remaining`);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          completed: !hasMore,
+          sent_count: sentCount,
+          failed_count: failedCount,
+          processed_this_batch: pendingLogs.length,
+          remaining: remainingCount || 0,
+          message: hasMore ? `Processados ${pendingLogs.length} emails, restam ${remainingCount}` : "Todos os emails foram enviados!"
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ========== NORMAL MODE ==========
     // Get recipients based on filter
     let recipients: string[] = [];
     const filter = campaign.recipient_filter;
@@ -136,7 +336,6 @@ serve(async (req) => {
       
       if (premiumUsers.length > 0) {
         const userIds = premiumUsers.map((p) => p.user_id);
-        // Fetch profiles in batches
         const allProfiles: any[] = [];
         for (let i = 0; i < userIds.length; i += 100) {
           const batch = userIds.slice(i, i + 100);
@@ -150,13 +349,11 @@ serve(async (req) => {
         recipients = allProfiles.map((p) => p.email).filter(Boolean);
       }
     } else if (filter === "artes_clients") {
-      // All clients with any pack from Biblioteca de Artes
       const allPurchases = await fetchAllRecords(supabaseClient, "user_pack_purchases", "user_id", { is_active: true });
       const userIds = [...new Set(allPurchases.map((p) => p.user_id))];
       
       console.log(`Found ${userIds.length} unique artes clients`);
       
-      // Fetch profiles in batches of 100
       const allProfiles: any[] = [];
       for (let i = 0; i < userIds.length; i += 100) {
         const batch = userIds.slice(i, i + 100);
@@ -169,7 +366,6 @@ serve(async (req) => {
       }
       recipients = allProfiles.map((p) => p.email).filter(Boolean);
     } else if (filter === "artes_expired") {
-      // Clients with ALL packs expired
       const allPurchases = await fetchAllRecords(supabaseClient, "user_pack_purchases", "user_id, access_type, expires_at", { is_active: true });
       
       const now = new Date();
@@ -179,7 +375,6 @@ serve(async (req) => {
         if (!userPacks[purchase.user_id]) {
           userPacks[purchase.user_id] = { hasActive: false };
         }
-        // Check if this pack is still active (not expired)
         if (purchase.access_type === 'vitalicio' || 
             !purchase.expires_at || 
             new Date(purchase.expires_at) > now) {
@@ -187,7 +382,6 @@ serve(async (req) => {
         }
       });
 
-      // Get users where ALL packs are expired
       const expiredUserIds = Object.entries(userPacks)
         .filter(([_, data]) => !data.hasActive)
         .map(([userId, _]) => userId);
@@ -195,7 +389,6 @@ serve(async (req) => {
       console.log(`Found ${expiredUserIds.length} users with all packs expired`);
 
       if (expiredUserIds.length > 0) {
-        // Fetch profiles in batches of 100
         const allProfiles: any[] = [];
         for (let i = 0; i < expiredUserIds.length; i += 100) {
           const batch = expiredUserIds.slice(i, i + 100);
@@ -215,7 +408,6 @@ serve(async (req) => {
       });
       const userIds = [...new Set(packPurchases.map((p) => p.user_id))];
       
-      // Fetch profiles in batches of 100
       const allProfiles: any[] = [];
       for (let i = 0; i < userIds.length; i += 100) {
         const batch = userIds.slice(i, i + 100);
@@ -228,11 +420,9 @@ serve(async (req) => {
       }
       recipients = allProfiles.map((p) => p.email).filter(Boolean);
     } else if (filter === "custom_email" && campaign.filter_value) {
-      // Send to a specific custom email
       recipients = [campaign.filter_value.trim()];
       console.log(`Custom email recipient: ${campaign.filter_value}`);
     } else if (filter === "pending_first_access") {
-      // Users who haven't changed their password (first access pending)
       const allProfiles = await fetchAllRecords(supabaseClient, "profiles", "email, password_changed", {});
       recipients = allProfiles
         .filter((p) => p.email && (p.password_changed === false || p.password_changed === null))
@@ -262,7 +452,7 @@ serve(async (req) => {
       })
       .eq("id", campaign_id);
 
-    // Clear any existing logs for this campaign (in case of retry)
+    // Clear any existing logs for this campaign (fresh start)
     await supabaseClient
       .from("email_campaign_logs")
       .delete()
@@ -281,16 +471,19 @@ serve(async (req) => {
       await supabaseClient.from("email_campaign_logs").insert(batch);
     }
 
-    // Send emails one by one with rate limit respect (max 2/second = 500ms delay)
+    console.log(`Created ${pendingLogs.length} pending log entries`);
+
+    // Process first batch of emails
+    const firstBatch = recipients.slice(0, BATCH_SIZE);
     let sentCount = 0;
     let failedCount = 0;
-    const DELAY_BETWEEN_EMAILS = 600; // 600ms delay = ~1.6 emails/second (safe margin under 2/sec limit)
+    const DELAY_BETWEEN_EMAILS = 600;
     const MAX_RETRIES = 3;
 
-    console.log(`Starting to send ${recipients.length} emails with ${DELAY_BETWEEN_EMAILS}ms delay between each`);
+    console.log(`Starting to send first batch of ${firstBatch.length} emails`);
 
-    for (let i = 0; i < recipients.length; i++) {
-      const email = recipients[i];
+    for (let i = 0; i < firstBatch.length; i++) {
+      const email = firstBatch[i];
       let success = false;
       let retries = 0;
       let resendId: string | null = null;
@@ -308,7 +501,6 @@ serve(async (req) => {
           if (result.error) {
             errorMessage = result.error.message || "Unknown error";
             
-            // Check if rate limit error
             if (errorMessage.includes("rate_limit") || errorMessage.includes("429") || errorMessage.includes("Too many requests")) {
               console.log(`Rate limit hit for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
               await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -316,11 +508,9 @@ serve(async (req) => {
               continue;
             }
             
-            // Other error - don't retry
             console.error(`Failed to send to ${email}: ${errorMessage}`);
             failedCount++;
             
-            // Update log with error
             await supabaseClient
               .from("email_campaign_logs")
               .update({
@@ -334,14 +524,12 @@ serve(async (req) => {
             break;
           }
 
-          // Success!
           success = true;
           sentCount++;
           resendId = result.data?.id || null;
           
-          console.log(`[${i + 1}/${recipients.length}] Sent to ${email} (ID: ${resendId})`);
+          console.log(`[${i + 1}/${firstBatch.length}] Sent to ${email} (ID: ${resendId})`);
           
-          // Update log with success
           await supabaseClient
             .from("email_campaign_logs")
             .update({
@@ -355,7 +543,6 @@ serve(async (req) => {
         } catch (error: any) {
           errorMessage = error.message || "Unknown exception";
           
-          // Check if rate limit error in exception
           if (errorMessage && (errorMessage.includes("rate_limit") || errorMessage.includes("429") || errorMessage.includes("Too many requests"))) {
             console.log(`Rate limit exception for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
             await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -366,7 +553,6 @@ serve(async (req) => {
           console.error(`Failed to send to ${email}:`, errorMessage);
           failedCount++;
           
-          // Update log with error
           await supabaseClient
             .from("email_campaign_logs")
             .update({
@@ -381,12 +567,10 @@ serve(async (req) => {
         }
       }
 
-      // If all retries failed due to rate limit
       if (!success && retries >= MAX_RETRIES) {
         console.error(`Max retries reached for ${email}`);
         failedCount++;
         
-        // Update log with rate limit failure
         await supabaseClient
           .from("email_campaign_logs")
           .update({
@@ -398,45 +582,44 @@ serve(async (req) => {
           .eq("email", email);
       }
 
-      // Update progress every 10 emails
-      if ((i + 1) % 10 === 0 || i === recipients.length - 1) {
-        await supabaseClient
-          .from("email_campaigns")
-          .update({ 
-            sent_count: sentCount,
-            failed_count: failedCount
-          })
-          .eq("id", campaign_id);
-        
-        console.log(`Progress: ${sentCount} sent, ${failedCount} failed, ${recipients.length - i - 1} remaining`);
-      }
-
-      // Delay between emails to respect rate limit (except for last email)
-      if (i < recipients.length - 1) {
+      if (i < firstBatch.length - 1) {
         await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_EMAILS));
       }
     }
 
-    // Update final status
-    const finalStatus = failedCount === 0 ? "sent" : failedCount === recipients.length ? "failed" : "sent";
-    
+    // Update campaign counts
     await supabaseClient
       .from("email_campaigns")
       .update({ 
-        status: finalStatus,
         sent_count: sentCount,
         failed_count: failedCount
       })
       .eq("id", campaign_id);
 
-    console.log(`Campaign completed: ${sentCount} sent, ${failedCount} failed`);
+    const remaining = recipients.length - firstBatch.length;
+    const hasMore = remaining > 0;
+
+    // If no more emails, mark as complete
+    if (!hasMore) {
+      const finalStatus = failedCount === 0 ? "sent" : "sent";
+      await supabaseClient
+        .from("email_campaigns")
+        .update({ status: finalStatus })
+        .eq("id", campaign_id);
+    }
+
+    console.log(`First batch completed: ${sentCount} sent, ${failedCount} failed, ${remaining} remaining`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
+        completed: !hasMore,
         sent_count: sentCount, 
         failed_count: failedCount,
-        total: recipients.length
+        processed_this_batch: firstBatch.length,
+        remaining: remaining,
+        total: recipients.length,
+        message: hasMore ? `Processados ${firstBatch.length} emails, restam ${remaining}. Use resume=true para continuar.` : "Todos os emails foram enviados!"
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

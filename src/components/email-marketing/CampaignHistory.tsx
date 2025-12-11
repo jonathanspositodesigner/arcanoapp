@@ -27,11 +27,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
   Eye, Copy, Trash2, Loader2, CheckCircle, XCircle, Clock, Send, 
-  FileText, AlertTriangle, Mail, MousePointer, Ban, MailOpen, CalendarOff
+  FileText, AlertTriangle, Mail, MousePointer, Ban, MailOpen, CalendarOff,
+  RefreshCw, List, Play, Pause
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -72,6 +74,10 @@ interface EmailLog {
   click_count: number;
 }
 
+interface CampaignWithPending extends Campaign {
+  pending_count?: number;
+}
+
 interface CampaignHistoryProps {
   onEdit: (campaign: Campaign) => void;
   onDuplicate: (campaign: Campaign) => void;
@@ -79,12 +85,26 @@ interface CampaignHistoryProps {
 }
 
 const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistoryProps) => {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [campaigns, setCampaigns] = useState<CampaignWithPending[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [reportCampaign, setReportCampaign] = useState<Campaign | null>(null);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+  
+  // Pending emails modal
+  const [pendingCampaign, setPendingCampaign] = useState<CampaignWithPending | null>(null);
+  const [pendingEmails, setPendingEmails] = useState<EmailLog[]>([]);
+  const [loadingPending, setLoadingPending] = useState(false);
+  
+  // Resume sending state
+  const [resumingCampaignId, setResumingCampaignId] = useState<string | null>(null);
+  const [resumeProgress, setResumeProgress] = useState<{
+    sent: number;
+    failed: number;
+    remaining: number;
+    total: number;
+  } | null>(null);
 
   useEffect(() => {
     fetchCampaigns();
@@ -101,12 +121,34 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
       return;
     }
 
-    setCampaigns(data || []);
+    // Fetch pending counts for campaigns with status sending/cancelled
+    const campaignsWithPending = await Promise.all(
+      (data || []).map(async (campaign) => {
+        if (campaign.status === "sending" || campaign.status === "cancelled") {
+          const { count } = await supabase
+            .from("email_campaign_logs")
+            .select("*", { count: "exact", head: true })
+            .eq("campaign_id", campaign.id)
+            .eq("status", "pending");
+          
+          return { ...campaign, pending_count: count || 0 };
+        }
+        return { ...campaign, pending_count: 0 };
+      })
+    );
+
+    setCampaigns(campaignsWithPending);
     setLoading(false);
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
+
+    // Delete logs first
+    await supabase
+      .from("email_campaign_logs")
+      .delete()
+      .eq("campaign_id", deleteId);
 
     const { error } = await supabase
       .from("email_campaigns")
@@ -143,7 +185,85 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
     setLoadingLogs(false);
   };
 
-  const getStatusBadge = (status: string, campaign?: Campaign) => {
+  const openPendingList = async (campaign: CampaignWithPending) => {
+    setPendingCampaign(campaign);
+    setLoadingPending(true);
+
+    const { data, error } = await supabase
+      .from("email_campaign_logs")
+      .select("*")
+      .eq("campaign_id", campaign.id)
+      .eq("status", "pending")
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      toast.error("Erro ao carregar emails pendentes");
+      setLoadingPending(false);
+      return;
+    }
+
+    setPendingEmails(data || []);
+    setLoadingPending(false);
+  };
+
+  const handleResumeSending = async (campaignId: string) => {
+    setResumingCampaignId(campaignId);
+    setPendingCampaign(null);
+    
+    let completed = false;
+    let iterations = 0;
+    const MAX_ITERATIONS = 100; // Safety limit
+
+    while (!completed && iterations < MAX_ITERATIONS) {
+      iterations++;
+      
+      try {
+        const { data, error } = await supabase.functions.invoke("send-email-campaign", {
+          body: { campaign_id: campaignId, resume: true, batch_size: 50 }
+        });
+
+        if (error) {
+          console.error("Error resuming campaign:", error);
+          toast.error(`Erro ao retomar envio: ${error.message}`);
+          break;
+        }
+
+        if (data) {
+          setResumeProgress({
+            sent: data.sent_count || 0,
+            failed: data.failed_count || 0,
+            remaining: data.remaining || 0,
+            total: (data.sent_count || 0) + (data.failed_count || 0) + (data.remaining || 0)
+          });
+
+          if (data.completed) {
+            completed = true;
+            toast.success(`Envio concluído! ${data.sent_count} enviados, ${data.failed_count} falhas`);
+          } else {
+            console.log(`Batch ${iterations}: ${data.processed_this_batch} processados, ${data.remaining} restantes`);
+          }
+        }
+      } catch (err: any) {
+        console.error("Exception resuming campaign:", err);
+        toast.error(`Erro: ${err.message}`);
+        break;
+      }
+    }
+
+    setResumingCampaignId(null);
+    setResumeProgress(null);
+    fetchCampaigns();
+  };
+
+  const getStatusBadge = (status: string, campaign?: CampaignWithPending) => {
+    // Show pending count if available
+    const pendingBadge = campaign?.pending_count && campaign.pending_count > 0 ? (
+      <Badge variant="outline" className="gap-1 ml-1 text-orange-500 border-orange-500">
+        <Clock className="h-3 w-3" />
+        {campaign.pending_count} pendentes
+      </Badge>
+    ) : null;
+
     switch (status) {
       case "draft":
         return (
@@ -161,10 +281,23 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
         );
       case "sending":
         return (
-          <Badge className="gap-1 bg-blue-500">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Enviando
-          </Badge>
+          <div className="flex flex-wrap gap-1">
+            <Badge className="gap-1 bg-blue-500">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Enviando
+            </Badge>
+            {pendingBadge}
+          </div>
+        );
+      case "cancelled":
+        return (
+          <div className="flex flex-wrap gap-1">
+            <Badge variant="outline" className="gap-1 text-gray-500">
+              <Ban className="h-3 w-3" />
+              Cancelada
+            </Badge>
+            {pendingBadge}
+          </div>
         );
       case "sent":
         return (
@@ -215,7 +348,6 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
   };
 
   const getLogStatusBadge = (log: EmailLog) => {
-    // Show most relevant status based on tracking data
     if (log.complained_at) {
       return (
         <Badge className="gap-1 bg-red-700 text-white">
@@ -297,6 +429,7 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
     const complained = emailLogs.filter(l => l.complained_at || l.status === "complained").length;
     const failed = emailLogs.filter(l => l.status === "failed").length;
     const rateLimited = emailLogs.filter(l => l.status === "rate_limited").length;
+    const pending = emailLogs.filter(l => l.status === "pending").length;
     
     return { 
       sent, 
@@ -306,7 +439,8 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
       bounced, 
       complained,
       failed, 
-      rateLimited, 
+      rateLimited,
+      pending,
       total: emailLogs.length 
     };
   };
@@ -336,6 +470,25 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
 
   return (
     <>
+      {/* Resume Progress Overlay */}
+      {resumingCampaignId && resumeProgress && (
+        <Card className="p-4 mb-4 bg-blue-50 dark:bg-blue-950 border-blue-200">
+          <div className="flex items-center gap-3 mb-2">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+            <span className="font-medium">Retomando envio de emails...</span>
+          </div>
+          <Progress 
+            value={((resumeProgress.sent + resumeProgress.failed) / resumeProgress.total) * 100} 
+            className="mb-2"
+          />
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span className="text-green-600">{resumeProgress.sent} enviados</span>
+            <span className="text-red-600">{resumeProgress.failed} falhas</span>
+            <span className="text-orange-600">{resumeProgress.remaining} restantes</span>
+          </div>
+        </Card>
+      )}
+
       <Card>
         <Table>
           <TableHeader>
@@ -366,7 +519,7 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
                 </TableCell>
                 <TableCell>{getStatusBadge(campaign.status, campaign)}</TableCell>
                 <TableCell className="text-center">
-                  {campaign.status === "sent" || campaign.status === "sending" ? (
+                  {campaign.status === "sent" || campaign.status === "sending" || campaign.status === "cancelled" ? (
                     <span>
                       {campaign.sent_count}/{campaign.recipients_count}
                       {campaign.failed_count > 0 && (
@@ -416,6 +569,34 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
+                    {/* Resume button for campaigns with pending emails */}
+                    {campaign.pending_count && campaign.pending_count > 0 && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openPendingList(campaign)}
+                          title="Ver Pendentes"
+                          className="text-orange-500 hover:text-orange-600"
+                        >
+                          <List className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleResumeSending(campaign.id)}
+                          title="Retomar Envio"
+                          className="text-green-500 hover:text-green-600"
+                          disabled={resumingCampaignId === campaign.id}
+                        >
+                          {resumingCampaignId === campaign.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Play className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </>
+                    )}
                     {campaign.status === "scheduled" && (
                       <Button
                         variant="ghost"
@@ -427,7 +608,7 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
                         <CalendarOff className="h-4 w-4" />
                       </Button>
                     )}
-                    {(campaign.status === "sent" || campaign.status === "sending") && (
+                    {(campaign.status === "sent" || campaign.status === "sending" || campaign.status === "cancelled") && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -489,6 +670,75 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Pending Emails Modal */}
+      <Dialog open={!!pendingCampaign} onOpenChange={() => setPendingCampaign(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-orange-500" />
+              Emails Pendentes: {pendingCampaign?.title}
+            </DialogTitle>
+          </DialogHeader>
+
+          {loadingPending ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="text-orange-500 border-orange-500">
+                  {pendingEmails.length} emails pendentes
+                </Badge>
+                <Button
+                  onClick={() => pendingCampaign && handleResumeSending(pendingCampaign.id)}
+                  className="bg-green-500 hover:bg-green-600"
+                  disabled={!!resumingCampaignId}
+                >
+                  {resumingCampaignId ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 mr-2" />
+                      Retomar Envio
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <ScrollArea className="h-[400px] border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>#</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingEmails.map((log, index) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="text-muted-foreground">{index + 1}</TableCell>
+                        <TableCell className="font-mono text-sm">{log.email}</TableCell>
+                        <TableCell>{getLogStatusBadge(log)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+
+              <div className="text-xs text-muted-foreground text-center p-2 bg-muted/50 rounded">
+                Clique em "Retomar Envio" para continuar enviando os emails pendentes. 
+                O envio será feito em lotes de 50 emails por vez.
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Email Report Dialog */}
       <Dialog open={!!reportCampaign} onOpenChange={() => setReportCampaign(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh]">
@@ -503,7 +753,7 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
           ) : (
             <div className="space-y-4">
               {/* Summary Cards - Primary Metrics */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <Card className="p-3 text-center bg-green-50 dark:bg-green-950">
                   <div className="text-2xl font-bold text-green-600">{summary.sent}</div>
                   <div className="text-xs text-muted-foreground">Enviados</div>
@@ -525,6 +775,10 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
                       <span className="ml-1">({((summary.clicked / summary.sent) * 100).toFixed(0)}%)</span>
                     )}
                   </div>
+                </Card>
+                <Card className="p-3 text-center bg-orange-50 dark:bg-orange-950">
+                  <div className="text-2xl font-bold text-orange-600">{summary.pending}</div>
+                  <div className="text-xs text-muted-foreground">Pendentes</div>
                 </Card>
                 <Card className="p-3 text-center bg-gray-50 dark:bg-gray-900">
                   <div className="text-2xl font-bold">{summary.total}</div>
