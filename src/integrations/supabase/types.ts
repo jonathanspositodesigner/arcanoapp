@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandoned_checkouts: {
+        Row: {
+          abandoned_at: string | null
+          amount: number | null
+          checkout_link: string | null
+          checkout_step: number | null
+          contacted_at: string | null
+          contacted_by: string | null
+          cpf: string | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string | null
+          notes: string | null
+          offer_hash: string | null
+          offer_name: string | null
+          phone: string | null
+          product_id: number | null
+          product_name: string | null
+          remarketing_status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          abandoned_at?: string | null
+          amount?: number | null
+          checkout_link?: string | null
+          checkout_step?: number | null
+          contacted_at?: string | null
+          contacted_by?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          offer_hash?: string | null
+          offer_name?: string | null
+          phone?: string | null
+          product_id?: number | null
+          product_name?: string | null
+          remarketing_status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          abandoned_at?: string | null
+          amount?: number | null
+          checkout_link?: string | null
+          checkout_step?: number | null
+          contacted_at?: string | null
+          contacted_by?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          offer_hash?: string | null
+          offer_name?: string | null
+          phone?: string | null
+          product_id?: number | null
+          product_name?: string | null
+          remarketing_status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       admin_arte_collection_items: {
         Row: {
           arte_id: string
