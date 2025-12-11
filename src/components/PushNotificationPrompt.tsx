@@ -26,6 +26,13 @@ const PushNotificationPrompt = ({ isLoggedIn }: PushNotificationPromptProps) => 
     // Só mostrar se: logado, suportado, E NÃO inscrito
     if (!isLoggedIn || !isSupported || isSubscribed) return;
 
+    // CRÍTICO: Se o navegador já tem permissão granted, NÃO mostrar popup
+    // Isso evita race conditions quando o DB foi limpo mas o browser ainda tem subscription
+    if ('Notification' in window && Notification.permission === 'granted') {
+      console.log('[PushPrompt] Browser already has permission granted, skipping prompt');
+      return;
+    }
+
     // Check if dismissed recently
     const dismissedAt = localStorage.getItem(DISMISS_STORAGE_KEY);
     if (dismissedAt) {
