@@ -6,12 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, ArrowLeft, X, Star, Video } from "lucide-react";
+import { Upload, ArrowLeft, X, Star, Video, Megaphone, Settings } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { AnnouncementConfigModal } from "@/components/AnnouncementConfigModal";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -63,6 +64,23 @@ const AdminUploadArtes = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [packs, setPacks] = useState<Pack[]>([]);
+  
+  // Announcement state
+  const [showAnnouncementConfig, setShowAnnouncementConfig] = useState(false);
+  const [selectedPushTemplate, setSelectedPushTemplate] = useState<{
+    id: string;
+    name: string;
+    title: string;
+    body: string;
+    url: string | null;
+  } | null>(null);
+  const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<{
+    id: string;
+    name: string;
+    subject: string;
+    content: string;
+  } | null>(null);
+  const [isSendingAnnouncement, setIsSendingAnnouncement] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -83,6 +101,38 @@ const AdminUploadArtes = () => {
       .select('id, name')
       .order('display_order', { ascending: true });
     setPacks(data || []);
+  };
+
+  const handleSendAnnouncement = async () => {
+    if (!selectedPushTemplate || !selectedEmailTemplate) {
+      toast.error("Configure os modelos de Push e Email primeiro");
+      setShowAnnouncementConfig(true);
+      return;
+    }
+
+    setIsSendingAnnouncement(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-announcement', {
+        body: {
+          push_title: selectedPushTemplate.title,
+          push_body: selectedPushTemplate.body,
+          push_url: selectedPushTemplate.url || "/biblioteca-artes",
+          email_subject: selectedEmailTemplate.subject,
+          email_content: selectedEmailTemplate.content,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success(
+        `Anúncio enviado! Push: ${data.push?.sent || 0} enviados. Email: ${data.email?.sent || 0} enviados.`
+      );
+    } catch (error) {
+      console.error("Error sending announcement:", error);
+      toast.error("Erro ao enviar anúncio");
+    } finally {
+      setIsSendingAnnouncement(false);
+    }
   };
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -350,12 +400,33 @@ const AdminUploadArtes = () => {
 
         <Card className="p-8 shadow-hover">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-2">
-              Upload de Artes Exclusivas
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Envio de administrador - Artes para eventos
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+              <div>
+                <h1 className="text-4xl font-bold text-foreground mb-2">
+                  Upload de Artes Exclusivas
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                  Envio de administrador - Artes para eventos
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleSendAnnouncement}
+                  disabled={isSendingAnnouncement}
+                  className="bg-gradient-primary hover:opacity-90"
+                >
+                  <Megaphone className="h-4 w-4 mr-2" />
+                  {isSendingAnnouncement ? "Enviando..." : "Anunciar Atualizações"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setShowAnnouncementConfig(true)}
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
 
           <div onDragOver={handleDragOver} onDrop={handleDrop} className="border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer">
@@ -586,6 +657,15 @@ const AdminUploadArtes = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AnnouncementConfigModal
+        open={showAnnouncementConfig}
+        onOpenChange={setShowAnnouncementConfig}
+        onSelectPushTemplate={setSelectedPushTemplate}
+        onSelectEmailTemplate={setSelectedEmailTemplate}
+        selectedPushTemplate={selectedPushTemplate}
+        selectedEmailTemplate={selectedEmailTemplate}
+      />
     </div>;
 };
 export default AdminUploadArtes;
