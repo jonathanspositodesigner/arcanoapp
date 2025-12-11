@@ -103,31 +103,11 @@ export function usePushNotifications() {
             localStorage.setItem(ENDPOINT_KEY, endpoint);
           } else {
             // Subscription exists in browser but not in database
-            // This can happen if database was cleaned - re-register
-            console.log('[Push] Subscription not in database, re-registering...');
-            
-            const json = subscription.toJSON();
-            const { error: insertError } = await supabase
-              .from('push_subscriptions')
-              .insert({
-                endpoint: json.endpoint!,
-                p256dh: json.keys!.p256dh,
-                auth: json.keys!.auth,
-                device_type: getDeviceType(),
-                user_agent: navigator.userAgent
-              });
-
-            if (!insertError) {
-              console.log('[Push] Re-registered subscription in database');
-              setIsSubscribed(true);
-              localStorage.setItem(STORAGE_KEY, 'true');
-              localStorage.setItem(ENDPOINT_KEY, endpoint);
-            } else {
-              console.error('[Push] Failed to re-register:', insertError);
-              setIsSubscribed(false);
-              localStorage.removeItem(STORAGE_KEY);
-              localStorage.removeItem(ENDPOINT_KEY);
-            }
+            // User must manually reactivate - don't auto-register
+            console.log('[Push] Subscription not in database, requires manual activation');
+            setIsSubscribed(false);
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(ENDPOINT_KEY);
           }
         } else {
           // No browser subscription - check if we have a stored endpoint
