@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Upload, CheckCircle, Settings, Users, Crown, LayoutDashboard, 
   FolderOpen, Inbox, Handshake, Palette, FileText, Tag, Package, 
-  Image, ShoppingCart, ShieldCheck, Gift, ShieldBan, FileSearch 
+  Image, ShoppingCart, ShieldCheck, Gift, ShieldBan, FileSearch, UserX
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/AdminLayout";
@@ -15,6 +15,7 @@ const AdminFerramentas = () => {
   const [pendingCommunityCount, setPendingCommunityCount] = useState(0);
   const [pendingPartnerCount, setPendingPartnerCount] = useState(0);
   const [pendingArtesPartnerCount, setPendingArtesPartnerCount] = useState(0);
+  const [pendingAbandonedCount, setPendingAbandonedCount] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -38,6 +39,13 @@ const AdminFerramentas = () => {
         .select('*', { count: 'exact', head: true })
         .eq('approved', false);
       setPendingArtesPartnerCount(artesPartnerPendingCount || 0);
+
+      // Fetch pending abandoned checkouts
+      const { count: abandonedCount } = await supabase
+        .from('abandoned_checkouts')
+        .select('*', { count: 'exact', head: true })
+        .eq('remarketing_status', 'pending');
+      setPendingAbandonedCount(abandonedCount || 0);
     };
 
     fetchStats();
@@ -315,6 +323,21 @@ const AdminFerramentas = () => {
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Lista Negra</h2>
                   <p className="text-muted-foreground hidden sm:block">Emails bloqueados (fraudes)</p>
                 </div>
+              </Card>
+
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative" onClick={() => navigate('/admin-abandoned-checkouts')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-full">
+                    <UserX className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                  </div>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Checkouts Abandonados</h2>
+                  <p className="text-muted-foreground hidden sm:block">Remarketing de leads</p>
+                </div>
+                {pendingAbandonedCount > 0 && (
+                  <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                    {pendingAbandonedCount}
+                  </span>
+                )}
               </Card>
 
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/biblioteca-artes')}>

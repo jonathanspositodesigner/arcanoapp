@@ -338,7 +338,7 @@ Deno.serve(async (req) => {
     }
   })
 
-  let payload: GreennArtesWebhookPayload = {}
+  let payload: any = {}
   let email: string | undefined
   let status: string | undefined
   let productId: number | undefined
@@ -350,6 +350,71 @@ Deno.serve(async (req) => {
     console.log('=== GREENN ARTES WEBHOOK RECEIVED ===')
     console.log('Payload:', JSON.stringify(payload, null, 2))
 
+    // Detectar evento de checkout abandonado ANTES de processar como venda
+    const eventType = payload.event
+    
+    if (eventType === 'checkoutAbandoned') {
+      const leadEmail = payload.lead?.email?.toLowerCase().trim()
+      const leadName = payload.lead?.name || ''
+      const leadPhone = payload.lead?.cellphone?.replace(/\D/g, '') || ''
+      const leadCpf = payload.lead?.cpf || ''
+      const checkoutStep = payload.lead?.step || 0
+      const checkoutLink = payload.link_checkout || ''
+      productId = payload.product?.id
+      const productName = payload.product?.name || ''
+      const offerName = payload.offer?.name || ''
+      const offerHash = payload.offer?.hash || ''
+      const amount = payload.offer?.amount || payload.product?.amount || 0
+
+      console.log(`📋 Checkout abandoned by: ${leadEmail} at step ${checkoutStep}`)
+      console.log(`Product: ${productName} (ID: ${productId}), Amount: ${amount}`)
+      
+      if (leadEmail) {
+        // Verificar se o lead já existe para este produto nas últimas 24h (evitar duplicatas)
+        const { data: existingLead } = await supabase
+          .from('abandoned_checkouts')
+          .select('id')
+          .eq('email', leadEmail)
+          .eq('product_id', productId)
+          .gte('abandoned_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .maybeSingle()
+
+        if (!existingLead) {
+          // Salvar lead para remarketing
+          const { error: insertError } = await supabase.from('abandoned_checkouts').insert({
+            email: leadEmail,
+            name: leadName,
+            phone: leadPhone,
+            cpf: leadCpf,
+            product_id: productId,
+            product_name: productName,
+            offer_name: offerName,
+            offer_hash: offerHash,
+            amount: amount,
+            checkout_link: checkoutLink,
+            checkout_step: checkoutStep,
+            remarketing_status: 'pending'
+          })
+
+          if (insertError) {
+            console.error('Error saving abandoned checkout:', insertError)
+          } else {
+            console.log(`✅ Lead saved for remarketing: ${leadEmail}`)
+          }
+        } else {
+          console.log(`⏭️ Lead already registered recently: ${leadEmail}`)
+        }
+      }
+
+      await logWebhook(supabase, payload, 'abandoned', productId, leadEmail, 'success', 'lead', undefined)
+      
+      return new Response(
+        JSON.stringify({ success: true, message: 'Lead captured for remarketing' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Processamento normal de vendas
     email = payload.client?.email?.toLowerCase().trim()
     const clientName = payload.client?.name || ''
     const clientPhone = payload.client?.phone?.replace(/\D/g, '') || ''
