@@ -1229,6 +1229,10 @@ const BibliotecaArtes = () => {
                         <Eye className="h-4 w-4 mr-2" />
                         Ver mais Artes
                       </Button>}
+                    <Button onClick={() => handleCloseModal()} variant="outline" className="w-full">
+                      <ChevronLeft className="h-4 w-4 mr-2" />
+                      Voltar
+                    </Button>
                   </div> : <div className="flex flex-col gap-2">
                     <p className="text-center text-muted-foreground text-sm">
                       Adquira o pack "{selectedArte.pack}" para ter acesso completo a esta arte.
@@ -1240,6 +1244,10 @@ const BibliotecaArtes = () => {
                     <Button onClick={() => navigate(`/planos-artes?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white">
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
                       Comprar Pack
+                    </Button>
+                    <Button onClick={() => handleCloseModal()} variant="outline" className="w-full">
+                      <ChevronLeft className="h-4 w-4 mr-2" />
+                      Voltar
                     </Button>
                   </div>}
               </div>;
@@ -1277,6 +1285,10 @@ const BibliotecaArtes = () => {
             }} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                   <Star className="h-4 w-4 mr-2" fill="currentColor" />
                   Comprar Pack
+                </Button>
+                <Button onClick={() => handleClosePremiumModal(false)} variant="outline">
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  Voltar
                 </Button>
               </div>
             </div>}
@@ -1322,6 +1334,10 @@ const BibliotecaArtes = () => {
                       <User className="h-4 w-4 mr-2" />
                       Acessar Curso
                     </Button>
+                    <Button onClick={() => setShowCursoModal(false)} variant="outline" className="w-full">
+                      <ChevronLeft className="h-4 w-4 mr-2" />
+                      Voltar
+                    </Button>
                   </div> : <div className="flex flex-col gap-2">
                     <Button onClick={() => {
                       // Se for membro (tem algum pack ativo), abre com desconto de membro
@@ -1341,6 +1357,10 @@ const BibliotecaArtes = () => {
                       className="w-full"
                     >
                       Saiba mais
+                    </Button>
+                    <Button onClick={() => setShowCursoModal(false)} variant="outline" className="w-full">
+                      <ChevronLeft className="h-4 w-4 mr-2" />
+                      Voltar
                     </Button>
                   </div>}
               </div>;
