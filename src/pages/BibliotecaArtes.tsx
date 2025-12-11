@@ -1176,7 +1176,7 @@ const BibliotecaArtes = () => {
 
       {/* Arte Detail Modal */}
       <Dialog open={!!selectedArte} onOpenChange={() => handleCloseModal()}>
-        <DialogContent className="max-w-[95vw] sm:max-w-fit max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-w-[340px] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           {selectedArte && (() => {
           const packSlug = toPackSlug(selectedArte.pack);
           // Check if arte belongs to bonus, updates, or tutorial pack type
@@ -1187,9 +1187,9 @@ const BibliotecaArtes = () => {
           // For bonus/updates: any active pack grants access
           // For regular packs: need specific pack access
           const hasAccess = isTutorialType || !selectedArte.isPremium || (isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug));
-          return <div className="space-y-4">
+          return <div className="space-y-3">
                 <div className="flex justify-center">
-                  {isVideoUrl(selectedArte.imageUrl) ? <SecureVideo src={selectedArte.imageUrl} className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} controls /> : <SecureImage src={selectedArte.imageUrl} alt={selectedArte.title} className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} />}
+                  {isVideoUrl(selectedArte.imageUrl) ? <SecureVideo src={selectedArte.imageUrl} className="max-w-full max-h-[35vh] sm:max-h-[50vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} controls /> : <SecureImage src={selectedArte.imageUrl} alt={selectedArte.title} className="max-w-full max-h-[35vh] sm:max-h-[50vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} />}
                 </div>
                 
                 <div className="text-center">
