@@ -1373,6 +1373,30 @@ export type Database = {
         }
         Relationships: []
       }
+      push_notification_analytics: {
+        Row: {
+          created_at: string
+          device_type: string
+          event_type: string
+          id: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_type?: string
+          event_type: string
+          id?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_type?: string
+          event_type?: string
+          id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       push_notification_logs: {
         Row: {
           body: string

@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Bell, Check, Gift, Sparkles, Zap } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { trackPushNotificationEvent } from "@/hooks/usePushNotificationAnalytics";
 
 const DISMISS_STORAGE_KEY = "push_notification_dismissed_at";
 const SESSION_SHOWN_KEY = "push_notification_prompt_shown_session";
@@ -41,6 +42,8 @@ const PushNotificationPrompt = ({ isLoggedIn }: PushNotificationPromptProps) => 
     const timer = setTimeout(() => {
       setShowModal(true);
       sessionStorage.setItem(SESSION_SHOWN_KEY, "true");
+      // Track prompt shown event
+      trackPushNotificationEvent('prompt_shown');
     }, SHOW_DELAY_MS);
 
     return () => clearTimeout(timer);
@@ -51,7 +54,12 @@ const PushNotificationPrompt = ({ isLoggedIn }: PushNotificationPromptProps) => 
     try {
       const success = await subscribe();
       if (success) {
+        // Track activation via prompt
+        trackPushNotificationEvent('activated_prompt');
         setShowModal(false);
+      } else {
+        // Track permission denied
+        trackPushNotificationEvent('permission_denied');
       }
     } finally {
       setIsActivating(false);
@@ -60,6 +68,8 @@ const PushNotificationPrompt = ({ isLoggedIn }: PushNotificationPromptProps) => 
 
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_STORAGE_KEY, Date.now().toString());
+    // Track dismiss event
+    trackPushNotificationEvent('dismissed');
     setShowModal(false);
   };
 
