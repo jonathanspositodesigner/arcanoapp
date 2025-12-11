@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Mail, Bell, Smartphone, Users, TrendingUp, Eye, XCircle, ShieldX } from "lucide-react";
+import { Mail, Bell, Smartphone, Users, TrendingUp, Eye, XCircle, ShieldX, Send, CheckCircle, MousePointer, AlertTriangle } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { fetchPushNotificationStats, PushNotificationStats } from "@/hooks/usePushNotificationAnalytics";
+import { fetchEmailMarketingStats, EmailMarketingStats } from "@/hooks/useEmailMarketingAnalytics";
 
 const AdminMarketing = () => {
   const navigate = useNavigate();
@@ -17,13 +18,30 @@ const AdminMarketing = () => {
     totalSubscriptions: 0,
     conversionRate: 0
   });
+  const [emailStats, setEmailStats] = useState<EmailMarketingStats>({
+    totalCampaigns: 0,
+    totalSent: 0,
+    totalDelivered: 0,
+    totalOpened: 0,
+    totalClicked: 0,
+    totalBounced: 0,
+    totalComplained: 0,
+    deliveryRate: 0,
+    openRate: 0,
+    clickRate: 0,
+    bounceRate: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadStats = async () => {
       setIsLoading(true);
-      const stats = await fetchPushNotificationStats();
-      setPushStats(stats);
+      const [push, email] = await Promise.all([
+        fetchPushNotificationStats(),
+        fetchEmailMarketingStats()
+      ]);
+      setPushStats(push);
+      setEmailStats(email);
       setIsLoading(false);
     };
     loadStats();
@@ -64,19 +82,87 @@ const AdminMarketing = () => {
           </Card>
         </div>
 
-        {/* Push Notification Analytics Dashboard */}
-        <Card className="p-6 border-2 border-indigo-500/30">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-indigo-500/20 rounded-full">
-              <Bell className="h-6 w-6 text-indigo-500" />
-            </div>
-            <p className="text-lg font-semibold text-foreground">Analytics de Notificações Push</p>
-          </div>
-          
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Carregando...</div>
-          ) : (
-            <>
+        {isLoading ? (
+          <div className="text-center py-8 text-muted-foreground">Carregando analytics...</div>
+        ) : (
+          <div className="space-y-6">
+            {/* Email Marketing Analytics Dashboard */}
+            <Card className="p-6 border-2 border-primary/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-primary/20 rounded-full">
+                  <Mail className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-foreground">Analytics de E-mail Marketing</p>
+                  <p className="text-xs text-muted-foreground">{emailStats.totalCampaigns} campanhas enviadas</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                {/* Total Enviados */}
+                <div className="bg-blue-500/10 rounded-lg p-4 text-center">
+                  <Send className="h-5 w-5 mx-auto mb-2 text-blue-500" />
+                  <p className="text-3xl font-bold text-blue-500">{emailStats.totalSent.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Emails Enviados</p>
+                </div>
+                
+                {/* Entregues */}
+                <div className="bg-green-500/10 rounded-lg p-4 text-center">
+                  <CheckCircle className="h-5 w-5 mx-auto mb-2 text-green-500" />
+                  <p className="text-3xl font-bold text-green-500">{emailStats.totalDelivered.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Entregues</p>
+                  <p className="text-xs font-medium text-green-600">{emailStats.deliveryRate.toFixed(1)}%</p>
+                </div>
+                
+                {/* Abertos */}
+                <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                  <Eye className="h-5 w-5 mx-auto mb-2 text-purple-500" />
+                  <p className="text-3xl font-bold text-purple-500">{emailStats.totalOpened.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Abertos</p>
+                  <p className="text-xs font-medium text-purple-600">{emailStats.openRate.toFixed(1)}%</p>
+                </div>
+                
+                {/* Clicados */}
+                <div className="bg-amber-500/10 rounded-lg p-4 text-center">
+                  <MousePointer className="h-5 w-5 mx-auto mb-2 text-amber-500" />
+                  <p className="text-3xl font-bold text-amber-500">{emailStats.totalClicked.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Clicaram</p>
+                  <p className="text-xs font-medium text-amber-600">{emailStats.clickRate.toFixed(1)}%</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {/* Bounced */}
+                <div className="bg-red-500/10 rounded-lg p-3 text-center">
+                  <AlertTriangle className="h-4 w-4 mx-auto mb-1 text-red-500" />
+                  <p className="text-xl font-bold text-red-500">{emailStats.totalBounced}</p>
+                  <p className="text-xs text-muted-foreground">Bounces ({emailStats.bounceRate.toFixed(1)}%)</p>
+                </div>
+                
+                {/* Spam */}
+                <div className="bg-orange-500/10 rounded-lg p-3 text-center">
+                  <ShieldX className="h-4 w-4 mx-auto mb-1 text-orange-500" />
+                  <p className="text-xl font-bold text-orange-500">{emailStats.totalComplained}</p>
+                  <p className="text-xs text-muted-foreground">Marcaram como Spam</p>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground text-center">
+                  📧 Taxa de abertura = abertos / entregues • Taxa de clique = cliques / abertos
+                </p>
+              </div>
+            </Card>
+
+            {/* Push Notification Analytics Dashboard */}
+            <Card className="p-6 border-2 border-indigo-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-indigo-500/20 rounded-full">
+                  <Bell className="h-6 w-6 text-indigo-500" />
+                </div>
+                <p className="text-lg font-semibold text-foreground">Analytics de Notificações Push</p>
+              </div>
+              
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 {/* Total Ativados */}
                 <div className="bg-green-500/10 rounded-lg p-4 text-center">
@@ -140,9 +226,9 @@ const AdminMarketing = () => {
                   📊 Conversão = usuários que ativaram via prompt / prompts exibidos
                 </p>
               </div>
-            </>
-          )}
-        </Card>
+            </Card>
+          </div>
+        )}
       </div>
     </AdminLayout>
   );
