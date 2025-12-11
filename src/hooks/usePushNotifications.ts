@@ -1,24 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-// VAPID public key - safe to expose (it's a public key)
-const VAPID_PUBLIC_KEY = 'BGO6Xj5pBSTz_0Z9SFnDQNwJIj7Oe9gIvml2MLPA1qTo0JrWc03FY_BzQ0qBgm1bzOdrAW9IfkFZxVrXjGq_pH0';
+// VAPID public key - must match the one in Supabase secrets
+const VAPID_PUBLIC_KEY = 'BLAgxGfZ7touE5QdP1JUoaN8N_HWYT7V2JAXH36oZEqSdWVplpmLVpqdKU8pO6OOD-EoUcMZdfJBHt3xXJBPw0s';
 
+// Convert base64 to Uint8Array for applicationServerKey
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
-
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
-
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
   return outputArray;
 }
 
+// Get device type
 function getDeviceType(): string {
   const ua = navigator.userAgent;
   if (/android/i.test(ua)) return 'android';
@@ -27,100 +25,68 @@ function getDeviceType(): string {
   return 'desktop';
 }
 
-// Check if subscription exists in our database
-async function checkSubscriptionInDatabase(endpoint: string): Promise<boolean> {
-  try {
-    const { data, error } = await supabase
-      .from('push_subscriptions')
-      .select('id')
-      .eq('endpoint', endpoint)
-      .maybeSingle();
-    
-    if (error) {
-      console.error('Error checking subscription in database:', error);
-      return false;
-    }
-    
-    return !!data;
-  } catch (e) {
-    console.error('Error checking subscription:', e);
-    return false;
-  }
-}
-
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [permission, setPermission] = useState<NotificationPermission>('default');
 
-  // Check if push notifications are supported
+  // Check support and current subscription status
   useEffect(() => {
-    const checkSupport = () => {
-      const supported = 
-        'serviceWorker' in navigator && 
-        'PushManager' in window && 
-        'Notification' in window;
-      
-      setIsSupported(supported);
-      
-      if (supported) {
-        setPermission(Notification.permission);
-      }
-    };
-
-    checkSupport();
-  }, []);
-
-  // Check current subscription status
-  useEffect(() => {
-    const checkSubscription = async () => {
-      if (!isSupported) {
+    const checkStatus = async () => {
+      // Check if push is supported
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        console.log('[Push] Not supported in this browser');
+        setIsSupported(false);
         setIsLoading(false);
         return;
       }
 
+      setIsSupported(true);
+      setPermission(Notification.permission);
+
       try {
-        // Register push service worker
-        const registration = await navigator.serviceWorker.register('/push-sw.js', {
-          scope: '/'
-        });
+        // Wait for PWA service worker to be ready (registered by VitePWA)
+        const registration = await navigator.serviceWorker.ready;
+        console.log('[Push] Service worker ready');
 
-        // Wait for service worker to be ready
-        await navigator.serviceWorker.ready;
-
+        // Check for existing subscription
         const subscription = await registration.pushManager.getSubscription();
         
         if (subscription) {
-          // Verify subscription exists in our database
-          const existsInDb = await checkSubscriptionInDatabase(subscription.endpoint);
-          
-          if (!existsInDb) {
-            // Subscription exists in browser but not in our database
-            // This means it's an old/incompatible subscription - clean it up
-            console.log('Found orphan subscription, cleaning up...');
+          // Verify it exists in our database
+          const { data } = await supabase
+            .from('push_subscriptions')
+            .select('id')
+            .eq('endpoint', subscription.endpoint)
+            .maybeSingle();
+
+          if (data) {
+            console.log('[Push] Valid subscription found');
+            setIsSubscribed(true);
+          } else {
+            // Orphan subscription - clean it up
+            console.log('[Push] Orphan subscription found, cleaning up');
             await subscription.unsubscribe();
             setIsSubscribed(false);
-          } else {
-            setIsSubscribed(true);
           }
         } else {
           setIsSubscribed(false);
         }
       } catch (error) {
-        console.error('Error checking push subscription:', error);
+        console.error('[Push] Error checking status:', error);
         setIsSubscribed(false);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkSubscription();
-  }, [isSupported]);
+    checkStatus();
+  }, []);
 
   const subscribe = useCallback(async (): Promise<boolean> => {
     if (!isSupported) {
-      console.error('Push notifications not supported');
+      console.error('[Push] Not supported');
       return false;
     }
 
@@ -132,65 +98,57 @@ export function usePushNotifications() {
       setPermission(permissionResult);
 
       if (permissionResult !== 'granted') {
-        console.log('Push notification permission denied');
+        console.log('[Push] Permission denied');
         return false;
       }
 
-      // Get service worker registration
+      // Get service worker registration (PWA service worker)
       const registration = await navigator.serviceWorker.ready;
 
-      // Clean up any existing subscription first
+      // Clean up any existing subscription
       const existingSubscription = await registration.pushManager.getSubscription();
       if (existingSubscription) {
-        console.log('Cleaning up existing subscription before creating new one...');
-        try {
-          // Remove from database if exists
-          await supabase
-            .from('push_subscriptions')
-            .delete()
-            .eq('endpoint', existingSubscription.endpoint);
-          
-          await existingSubscription.unsubscribe();
-        } catch (e) {
-          console.warn('Error cleaning up old subscription:', e);
-        }
+        console.log('[Push] Removing existing subscription');
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('endpoint', existingSubscription.endpoint);
+        await existingSubscription.unsubscribe();
       }
 
-      // Subscribe to push with our VAPID key
-      console.log('Creating new push subscription...');
+      // Create new subscription
+      console.log('[Push] Creating new subscription with VAPID key');
+      const vapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource
+        applicationServerKey: vapidKey.buffer as ArrayBuffer
       });
 
-      const subscriptionJson = subscription.toJSON();
-      console.log('Subscription created, saving to database...');
+      const json = subscription.toJSON();
+      console.log('[Push] Subscription created:', json.endpoint?.substring(0, 50));
 
       // Save to database
       const { error } = await supabase
         .from('push_subscriptions')
-        .upsert({
-          endpoint: subscription.endpoint,
-          p256dh: subscriptionJson.keys?.p256dh || '',
-          auth: subscriptionJson.keys?.auth || '',
+        .insert({
+          endpoint: json.endpoint!,
+          p256dh: json.keys!.p256dh,
+          auth: json.keys!.auth,
           device_type: getDeviceType(),
           user_agent: navigator.userAgent
-        }, {
-          onConflict: 'endpoint'
         });
 
       if (error) {
-        console.error('Error saving subscription to database:', error);
-        // Clean up the subscription we just created since we couldn't save it
+        console.error('[Push] Database error:', error);
         await subscription.unsubscribe();
         return false;
       }
 
-      console.log('Push subscription activated successfully!');
+      console.log('[Push] Subscription saved successfully');
       setIsSubscribed(true);
       return true;
     } catch (error) {
-      console.error('Error subscribing to push:', error);
+      console.error('[Push] Subscribe error:', error);
       return false;
     } finally {
       setIsLoading(false);
@@ -198,8 +156,6 @@ export function usePushNotifications() {
   }, [isSupported]);
 
   const unsubscribe = useCallback(async (): Promise<boolean> => {
-    if (!isSupported) return false;
-
     try {
       setIsLoading(true);
 
@@ -213,19 +169,19 @@ export function usePushNotifications() {
           .delete()
           .eq('endpoint', subscription.endpoint);
 
-        // Unsubscribe
+        // Unsubscribe from browser
         await subscription.unsubscribe();
       }
 
       setIsSubscribed(false);
       return true;
     } catch (error) {
-      console.error('Error unsubscribing:', error);
+      console.error('[Push] Unsubscribe error:', error);
       return false;
     } finally {
       setIsLoading(false);
     }
-  }, [isSupported]);
+  }, []);
 
   return {
     isSupported,
