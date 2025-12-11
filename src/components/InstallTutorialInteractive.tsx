@@ -928,35 +928,7 @@ const InstallTutorialInteractive = () => {
 
   return (
     <Card className="p-6 overflow-hidden">
-      {/* Device Type Selector - First */}
-      <div className="flex justify-center gap-2 mb-4">
-        <Button
-          variant={deviceType === "ios" ? "default" : "outline"}
-          size="sm"
-          onClick={() => { setDeviceType("ios"); setBrowserType("safari"); setCurrentStep(0); }}
-          className={deviceType === "ios" ? "bg-gradient-primary" : ""}
-        >
-          iPhone
-        </Button>
-        <Button
-          variant={deviceType === "android" ? "default" : "outline"}
-          size="sm"
-          onClick={() => { setDeviceType("android"); setBrowserType("chrome"); setCurrentStep(0); }}
-          className={deviceType === "android" ? "bg-gradient-primary" : ""}
-        >
-          Android
-        </Button>
-        <Button
-          variant={deviceType === "desktop" ? "default" : "outline"}
-          size="sm"
-          onClick={() => { setDeviceType("desktop"); setBrowserType("chrome"); setCurrentStep(0); }}
-          className={deviceType === "desktop" ? "bg-gradient-primary" : ""}
-        >
-          Computador
-        </Button>
-      </div>
-
-      {/* Progress Bar */}
+      {/* Progress Bar - First */}
       <div className="flex justify-center gap-2 mb-4">
         {steps.map((_, index) => (
           <div
@@ -1009,7 +981,35 @@ const InstallTutorialInteractive = () => {
         )}
       </div>
 
-      {/* In-App Browser Warning - At the bottom */}
+      {/* Device Type Selector - At bottom */}
+      <div className="flex justify-center gap-2 mb-4">
+        <Button
+          variant={deviceType === "ios" ? "default" : "outline"}
+          size="sm"
+          onClick={() => { setDeviceType("ios"); setBrowserType("safari"); setCurrentStep(0); }}
+          className={deviceType === "ios" ? "bg-gradient-primary" : ""}
+        >
+          iPhone
+        </Button>
+        <Button
+          variant={deviceType === "android" ? "default" : "outline"}
+          size="sm"
+          onClick={() => { setDeviceType("android"); setBrowserType("chrome"); setCurrentStep(0); }}
+          className={deviceType === "android" ? "bg-gradient-primary" : ""}
+        >
+          Android
+        </Button>
+        <Button
+          variant={deviceType === "desktop" ? "default" : "outline"}
+          size="sm"
+          onClick={() => { setDeviceType("desktop"); setBrowserType("chrome"); setCurrentStep(0); }}
+          className={deviceType === "desktop" ? "bg-gradient-primary" : ""}
+        >
+          Computador
+        </Button>
+      </div>
+
+      {/* In-App Browser Warning */}
       {config.isInAppBrowser && (
         <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg flex items-start gap-2 mb-4">
           <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -1023,7 +1023,7 @@ const InstallTutorialInteractive = () => {
         </div>
       )}
 
-      {/* Detected Browser Info with Edit Button - At the bottom */}
+      {/* Detected Browser Info with Edit Button */}
       <div className={`flex items-center justify-center gap-2 text-sm text-muted-foreground rounded-lg py-2 px-3 ${config.isInAppBrowser ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-muted/50'}`}>
         <Info className="h-4 w-4 flex-shrink-0" />
         <span>Detectado: <strong className="text-foreground">{config.label}</strong></span>
