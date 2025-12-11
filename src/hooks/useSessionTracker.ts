@@ -62,22 +62,26 @@ export const useSessionTracker = () => {
 
       // Record session entry (one record per session)
       const recordEntry = async () => {
-        const { data, error } = await supabase
-          .from("user_sessions")
-          .insert({
-            session_id: sessionId,
-            page_path: location.pathname, // First page visited
-            device_type: deviceType,
-            user_agent: userAgent,
-            entered_at: new Date().toISOString(),
-          })
-          .select("id")
-          .single();
+        try {
+          const { data, error } = await supabase
+            .from("user_sessions")
+            .insert({
+              session_id: sessionId,
+              page_path: location.pathname,
+              device_type: deviceType,
+              user_agent: userAgent,
+              entered_at: new Date().toISOString(),
+            })
+            .select("id")
+            .single();
 
-        if (!error && data) {
-          sessionRecordIdRef.current = data.id;
-          // Mark this session as recorded in sessionStorage
-          sessionStorage.setItem("tracking_session_recorded", "true");
+          if (!error && data) {
+            sessionRecordIdRef.current = data.id;
+            sessionStorage.setItem("tracking_session_recorded", "true");
+          }
+        } catch (e) {
+          // Silently fail - session tracking should not block app
+          console.warn("Session tracking failed:", e);
         }
       };
 
@@ -98,16 +102,20 @@ export const useSessionTracker = () => {
     const updateDuration = async () => {
       if (!sessionRecordIdRef.current || !enteredAtRef.current) return;
 
-      const now = new Date();
-      const durationSeconds = Math.round((now.getTime() - enteredAtRef.current.getTime()) / 1000);
+      try {
+        const now = new Date();
+        const durationSeconds = Math.round((now.getTime() - enteredAtRef.current.getTime()) / 1000);
 
-      await supabase
-        .from("user_sessions")
-        .update({
-          exited_at: now.toISOString(),
-          duration_seconds: durationSeconds,
-        })
-        .eq("id", sessionRecordIdRef.current);
+        await supabase
+          .from("user_sessions")
+          .update({
+            exited_at: now.toISOString(),
+            duration_seconds: durationSeconds,
+          })
+          .eq("id", sessionRecordIdRef.current);
+      } catch (e) {
+        // Silently fail
+      }
     };
 
     // Heartbeat every 30 seconds to update duration
