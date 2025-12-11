@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Crown, Package, AlertTriangle, Palette, Mail } from "lucide-react";
+import { Users, Crown, Package, AlertTriangle, Palette, Mail, KeyRound } from "lucide-react";
 
 interface RecipientSelectorProps {
   value: string;
@@ -24,6 +24,7 @@ interface Counts {
   premiumPrompts: number;
   artesClients: number;
   artesExpired: number;
+  pendingFirstAccess: number;
 }
 
 interface Pack {
@@ -44,6 +45,7 @@ const RecipientSelector = ({
     premiumPrompts: 0,
     artesClients: 0,
     artesExpired: 0,
+    pendingFirstAccess: 0,
   });
   const [packs, setPacks] = useState<Pack[]>([]);
 
@@ -64,6 +66,13 @@ const RecipientSelector = ({
       .from("premium_users")
       .select("*", { count: "exact", head: true })
       .eq("is_active", true);
+
+    // Pending first access (password_changed = false or null)
+    const { count: pendingFirstAccessCount } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .not("email", "is", null)
+      .or("password_changed.is.null,password_changed.eq.false");
 
     // For artes clients, we need to fetch ALL records to count unique users
     // Use pagination to get all data
@@ -134,6 +143,7 @@ const RecipientSelector = ({
       premiumPrompts: premiumPromptsCount || 0,
       artesClients: uniqueArtesUsers.size,
       artesExpired: expiredCount,
+      pendingFirstAccess: pendingFirstAccessCount || 0,
     });
   };
 
@@ -159,6 +169,13 @@ const RecipientSelector = ({
               <Users className="h-4 w-4 text-muted-foreground" />
               <span>Todos os usuários</span>
               <span className="text-muted-foreground">({counts.all})</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="pending_first_access">
+            <div className="flex items-center gap-2">
+              <KeyRound className="h-4 w-4 text-orange-500" />
+              <span>Pendentes 1º acesso (senha não redefinida)</span>
+              <span className="text-muted-foreground">({counts.pendingFirstAccess})</span>
             </div>
           </SelectItem>
           <SelectItem value="artes_clients">

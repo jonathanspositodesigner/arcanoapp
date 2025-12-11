@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart } from "lucide-react";
+import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart, KeyRound, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -10,6 +10,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type DateFilter = 1 | "yesterday" | 7 | 15 | 30 | 90 | "all" | "custom";
 
@@ -118,6 +120,10 @@ const [pageViews, setPageViews] = useState({
   const [accessTypeStats, setAccessTypeStats] = useState<AccessTypeStats[]>([]);
   const [retentionStats, setRetentionStats] = useState<RetentionStats>({ newUsers: 0, returningUsers: 0, retentionRate: 0 });
   const [purchaseHourStats, setPurchaseHourStats] = useState<PurchaseHourStats[]>([]);
+  
+  // First access stats
+  const [firstAccessStats, setFirstAccessStats] = useState({ changed: 0, pending: 0, pendingUsers: [] as { id: string; email: string; name: string | null }[] });
+  const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
 
   // Retorna a data de início e fim do período em formato ISO
   const getDateThreshold = (): { start: string | null; end: string | null } => {
@@ -1005,6 +1011,25 @@ const [pageViews, setPageViews] = useState({
         setPurchaseHourStats(purchaseHourData);
       }
 
+      // ========== FETCH FIRST ACCESS STATS ==========
+      const { data: allProfiles } = await supabase
+        .from("profiles")
+        .select("id, email, name, password_changed")
+        .not("email", "is", null);
+
+      if (allProfiles) {
+        const changed = allProfiles.filter(p => p.password_changed === true).length;
+        const pendingUsers = allProfiles
+          .filter(p => p.password_changed === false || p.password_changed === null)
+          .map(p => ({ id: p.id, email: p.email || '', name: p.name }));
+        
+        setFirstAccessStats({
+          changed,
+          pending: pendingUsers.length,
+          pendingUsers
+        });
+      }
+
       setIsLoading(false);
       setLastUpdate(new Date());
     };
@@ -1287,6 +1312,38 @@ const [pageViews, setPageViews] = useState({
                     ))}
                   </div>
                 )}
+              </div>
+            </Card>
+          </div>
+
+          {/* First Access Stats Card */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <Card 
+              className="p-6 border-2 border-orange-500/30 cursor-pointer hover:bg-orange-500/5 transition-colors"
+              onClick={() => setShowFirstAccessModal(true)}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-orange-500/20 rounded-full">
+                  <KeyRound className="h-6 w-6 text-orange-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Primeiro Acesso (Redefinição de Senha)</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 bg-green-500/10 rounded-lg">
+                  <p className="text-3xl font-bold text-green-500">{firstAccessStats.changed}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Já redefiniram</p>
+                </div>
+                <div className="text-center p-3 bg-orange-500/10 rounded-lg">
+                  <p className="text-3xl font-bold text-orange-500">{firstAccessStats.pending}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Pendentes</p>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-3 border-t border-border text-center">
+                <p className="text-xs text-muted-foreground">
+                  Clique para ver lista de pendentes e enviar email marketing
+                </p>
               </div>
             </Card>
           </div>
@@ -1739,6 +1796,77 @@ const [pageViews, setPageViews] = useState({
           </Card>
         </>
       )}
+
+      {/* First Access Pending Modal */}
+      <Dialog open={showFirstAccessModal} onOpenChange={setShowFirstAccessModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-orange-500" />
+              Usuários Pendentes de 1º Acesso
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-orange-500/10 rounded-lg">
+              <span className="text-sm font-medium">Total de pendentes:</span>
+              <span className="text-lg font-bold text-orange-500">{firstAccessStats.pending}</span>
+            </div>
+            
+            <p className="text-sm text-muted-foreground">
+              Esses usuários ainda não redefiniram a senha inicial. Use o filtro "Pendentes 1º acesso" 
+              no E-mail Marketing para enviar uma campanha específica para eles.
+            </p>
+            
+            <ScrollArea className="h-[400px] border rounded-lg">
+              <div className="p-4 space-y-2">
+                {firstAccessStats.pendingUsers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhum usuário pendente
+                  </p>
+                ) : (
+                  firstAccessStats.pendingUsers.map((user, index) => (
+                    <div 
+                      key={user.id} 
+                      className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-muted-foreground font-medium w-6">
+                          {index + 1}.
+                        </span>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {user.name || 'Sem nome'}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+            
+            <div className="flex justify-end gap-3 pt-2 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setShowFirstAccessModal(false)}
+              >
+                Fechar
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowFirstAccessModal(false);
+                  window.location.href = '/admin-email-marketing';
+                }}
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                Ir para E-mail Marketing
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

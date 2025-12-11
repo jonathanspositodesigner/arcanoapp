@@ -231,6 +231,13 @@ serve(async (req) => {
       // Send to a specific custom email
       recipients = [campaign.filter_value.trim()];
       console.log(`Custom email recipient: ${campaign.filter_value}`);
+    } else if (filter === "pending_first_access") {
+      // Users who haven't changed their password (first access pending)
+      const allProfiles = await fetchAllRecords(supabaseClient, "profiles", "email, password_changed", {});
+      recipients = allProfiles
+        .filter((p) => p.email && (p.password_changed === false || p.password_changed === null))
+        .map((p) => p.email);
+      console.log(`Found ${recipients.length} users with pending first access`);
     }
 
     // Remove duplicates
