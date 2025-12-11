@@ -849,21 +849,14 @@ const InstallTutorialInteractive = () => {
   const steps = config.steps;
   const totalSteps = steps.length;
 
-  const handleNext = () => {
-    if (currentStep < totalSteps - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
+  // Auto-advance animation - cycles through steps automatically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentStep(prev => (prev + 1) % totalSteps);
+    }, 3000); // 3 seconds per step
 
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleReset = () => {
-    setCurrentStep(0);
-  };
+    return () => clearInterval(interval);
+  }, [totalSteps]);
 
   const handleBrowserChange = (browser: BrowserType) => {
     setBrowserType(browser);
@@ -928,57 +921,57 @@ const InstallTutorialInteractive = () => {
 
   return (
     <Card className="p-6 overflow-hidden">
-      {/* Progress Bar - First */}
-      <div className="flex justify-center gap-2 mb-4">
-        {steps.map((_, index) => (
-          <div
+      {/* All Steps Display */}
+      <div className="space-y-6 mb-6">
+        {steps.map((step, index) => (
+          <div 
             key={index}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              index === currentStep
-                ? "w-8 bg-primary"
-                : index < currentStep
-                ? "w-2 bg-primary"
-                : "w-2 bg-gray-300 dark:bg-gray-600"
+            className={`transition-all duration-500 ${
+              index === currentStep 
+                ? "opacity-100 scale-100" 
+                : "opacity-40 scale-95"
             }`}
-          />
+          >
+            {/* Step Header */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-300 ${
+                index === currentStep 
+                  ? "bg-primary text-primary-foreground" 
+                  : index < currentStep 
+                  ? "bg-primary/60 text-primary-foreground" 
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                {index < currentStep ? <Check className="h-4 w-4" /> : index + 1}
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-foreground">{step.title}</h3>
+                <p className="text-sm text-muted-foreground">{step.description}</p>
+              </div>
+            </div>
+
+            {/* Show Mockup only for current step */}
+            {index === currentStep && (
+              <div className="animate-fade-in">
+                {renderMockup()}
+              </div>
+            )}
+          </div>
         ))}
       </div>
 
-      {/* Step Title */}
-      <div className="text-center mb-4">
-        <p className="text-sm text-muted-foreground mb-1">Passo {currentStep + 1} de {totalSteps}</p>
-        <h3 className="text-xl font-bold text-foreground">{steps[currentStep].title}</h3>
-        <p className="text-muted-foreground mt-1">{steps[currentStep].description}</p>
-      </div>
-
-      {/* Mockup */}
-      <div className="mb-4">
-        {renderMockup()}
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between items-center mb-6">
-        <Button
-          variant="ghost"
-          onClick={handlePrev}
-          disabled={currentStep === 0}
-          className="gap-1"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Anterior
-        </Button>
-
-        {currentStep === totalSteps - 1 ? (
-          <Button onClick={handleReset} variant="outline" className="gap-1">
-            <X className="h-4 w-4" />
-            Recomeçar
-          </Button>
-        ) : (
-          <Button onClick={handleNext} className="bg-gradient-primary gap-1">
-            Próximo
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        )}
+      {/* Progress indicator */}
+      <div className="flex justify-center gap-2 mb-6">
+        {steps.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentStep(index)}
+            className={`h-2 rounded-full transition-all duration-300 cursor-pointer hover:opacity-80 ${
+              index === currentStep
+                ? "w-8 bg-primary"
+                : "w-2 bg-muted-foreground/30"
+            }`}
+          />
+        ))}
       </div>
 
       {/* Device Type Selector - At bottom */}
