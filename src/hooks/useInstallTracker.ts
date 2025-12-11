@@ -1,15 +1,11 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
-const isMobileDevice = (): boolean => {
-  const userAgent = navigator.userAgent.toLowerCase();
-  return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(userAgent);
-};
+import { getDeviceType } from "@/lib/deviceUtils";
 
 export const useInstallTracker = () => {
   useEffect(() => {
     const handleAppInstalled = async () => {
-      const deviceType = isMobileDevice() ? 'mobile' : 'desktop';
+      const deviceType = getDeviceType();
       const userAgent = navigator.userAgent;
 
       console.log(`App installed on ${deviceType}`);

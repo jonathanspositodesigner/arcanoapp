@@ -1,30 +1,50 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
+import { getDeviceType } from "@/lib/deviceUtils";
 
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+const SESSION_STORAGE_KEY = "tracking_session_id";
+const SESSION_ACTIVITY_KEY = "tracking_last_activity";
+const SESSION_RECORDED_KEY = "tracking_session_recorded";
+const SESSION_RECORD_ID_KEY = "tracking_session_record_id";
 
 const generateSessionId = (): string => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
-const getDeviceType = (): string => {
-  const userAgent = navigator.userAgent;
-  // Check for mobile devices - case insensitive already in regex
-  if (/Mobile|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(userAgent)) {
-    return "mobile";
+// Use localStorage as fallback for mobile browsers where sessionStorage can be unreliable
+const getStorage = (key: string): string | null => {
+  try {
+    return sessionStorage.getItem(key) || localStorage.getItem(key);
+  } catch {
+    return null;
   }
-  // Also check screen width as fallback for PWA installed on mobile
-  if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-    return "mobile";
-  }
-  return "desktop";
 };
 
-const getOrCreateSession = (): { sessionId: string; isNew: boolean; alreadyRecorded: boolean } => {
-  const storedSession = sessionStorage.getItem("tracking_session_id");
-  const lastActivityStr = sessionStorage.getItem("tracking_last_activity");
-  const wasRecorded = sessionStorage.getItem("tracking_session_recorded") === "true";
+const setStorage = (key: string, value: string): void => {
+  try {
+    sessionStorage.setItem(key, value);
+    localStorage.setItem(key, value);
+  } catch {
+    // Silently fail
+  }
+};
+
+const removeStorage = (key: string): void => {
+  try {
+    sessionStorage.removeItem(key);
+    localStorage.removeItem(key);
+  } catch {
+    // Silently fail
+  }
+};
+
+const getOrCreateSession = (): { sessionId: string; isNew: boolean; alreadyRecorded: boolean; recordId: string | null } => {
+  const storedSession = getStorage(SESSION_STORAGE_KEY);
+  const lastActivityStr = getStorage(SESSION_ACTIVITY_KEY);
+  const wasRecorded = getStorage(SESSION_RECORDED_KEY) === "true";
+  const storedRecordId = getStorage(SESSION_RECORD_ID_KEY);
   const now = Date.now();
 
   // Check if session exists and is still valid (within 30 min timeout)
@@ -34,17 +54,18 @@ const getOrCreateSession = (): { sessionId: string; isNew: boolean; alreadyRecor
 
     if (timeSinceActivity < SESSION_TIMEOUT_MS) {
       // Session still valid, update last activity
-      sessionStorage.setItem("tracking_last_activity", now.toString());
-      return { sessionId: storedSession, isNew: false, alreadyRecorded: wasRecorded };
+      setStorage(SESSION_ACTIVITY_KEY, now.toString());
+      return { sessionId: storedSession, isNew: false, alreadyRecorded: wasRecorded, recordId: storedRecordId };
     }
   }
 
   // Create new session (either no session exists or it expired)
   const newSessionId = generateSessionId();
-  sessionStorage.setItem("tracking_session_id", newSessionId);
-  sessionStorage.setItem("tracking_last_activity", now.toString());
-  sessionStorage.removeItem("tracking_session_recorded"); // Reset recorded flag for new session
-  return { sessionId: newSessionId, isNew: true, alreadyRecorded: false };
+  setStorage(SESSION_STORAGE_KEY, newSessionId);
+  setStorage(SESSION_ACTIVITY_KEY, now.toString());
+  removeStorage(SESSION_RECORDED_KEY);
+  removeStorage(SESSION_RECORD_ID_KEY);
+  return { sessionId: newSessionId, isNew: true, alreadyRecorded: false, recordId: null };
 };
 
 export const useSessionTracker = () => {
@@ -55,8 +76,14 @@ export const useSessionTracker = () => {
 
   useEffect(() => {
     // Get or create session with 30-min timeout logic
-    const { sessionId, isNew, alreadyRecorded } = getOrCreateSession();
+    const { sessionId, isNew, alreadyRecorded, recordId } = getOrCreateSession();
     sessionIdRef.current = sessionId;
+
+    // If we have a stored record ID from a previous page load, use it
+    if (recordId) {
+      sessionRecordIdRef.current = recordId;
+      enteredAtRef.current = new Date();
+    }
 
     // Only record a new session entry if this is a new session AND not already recorded
     if (isNew && !alreadyRecorded) {
@@ -64,6 +91,8 @@ export const useSessionTracker = () => {
       
       const deviceType = getDeviceType();
       const userAgent = navigator.userAgent;
+
+      console.log(`[SessionTracker] New session - Device: ${deviceType}, UserAgent: ${userAgent.substring(0, 50)}...`);
 
       // Record session entry (one record per session)
       const recordEntry = async () => {
@@ -80,23 +109,23 @@ export const useSessionTracker = () => {
             .select("id")
             .single();
 
-          if (!error && data) {
+          if (error) {
+            console.error("[SessionTracker] Insert error:", error);
+          } else if (data) {
+            console.log(`[SessionTracker] Session recorded: ${data.id} (${deviceType})`);
             sessionRecordIdRef.current = data.id;
-            sessionStorage.setItem("tracking_session_recorded", "true");
+            setStorage(SESSION_RECORDED_KEY, "true");
+            setStorage(SESSION_RECORD_ID_KEY, data.id);
           }
         } catch (e) {
-          // Silently fail - session tracking should not block app
-          console.warn("Session tracking failed:", e);
+          console.error("[SessionTracker] Exception:", e);
         }
       };
 
       recordEntry();
-    } else if (!isNew && !alreadyRecorded) {
-      // Existing session but not recorded yet (edge case) - don't record
-      sessionStorage.setItem("tracking_last_activity", Date.now().toString());
     } else {
       // For existing sessions, just update last activity
-      sessionStorage.setItem("tracking_last_activity", Date.now().toString());
+      setStorage(SESSION_ACTIVITY_KEY, Date.now().toString());
     }
   }, []); // Only run once on mount
 
@@ -127,7 +156,7 @@ export const useSessionTracker = () => {
     const heartbeat = setInterval(() => {
       updateDuration();
       // Also update last activity timestamp
-      sessionStorage.setItem("tracking_last_activity", Date.now().toString());
+      setStorage(SESSION_ACTIVITY_KEY, Date.now().toString());
     }, 30000);
 
     // Handle visibility change
@@ -136,7 +165,7 @@ export const useSessionTracker = () => {
         updateDuration();
       } else {
         // User came back - update last activity
-        sessionStorage.setItem("tracking_last_activity", Date.now().toString());
+        setStorage(SESSION_ACTIVITY_KEY, Date.now().toString());
       }
     };
 
