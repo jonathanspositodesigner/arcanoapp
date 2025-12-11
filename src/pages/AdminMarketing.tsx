@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Mail, Bell, Smartphone, Users, TrendingUp, Eye, XCircle, ShieldX, Send, CheckCircle, MousePointer, AlertTriangle, RefreshCw, Trophy, GripVertical, LayoutGrid, RotateCcw } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { fetchPushNotificationStats, PushNotificationStats } from "@/hooks/usePushNotificationAnalytics";
-import { fetchEmailMarketingStats, fetchTopEmailCampaigns, fetchTopPushCampaigns, EmailMarketingStats, TopEmailCampaign, TopPushCampaign } from "@/hooks/useEmailMarketingAnalytics";
+import { useEmailMarketingStats, fetchTopEmailCampaigns, fetchTopPushCampaigns, TopEmailCampaign, TopPushCampaign } from "@/hooks/useEmailMarketingAnalytics";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useDashboardCardOrder } from "@/hooks/useDashboardCardOrder";
@@ -24,33 +24,21 @@ const AdminMarketing = () => {
     totalSubscriptions: 0,
     conversionRate: 0
   });
-  const [emailStats, setEmailStats] = useState<EmailMarketingStats>({
-    totalCampaigns: 0,
-    totalSent: 0,
-    totalDelivered: 0,
-    totalOpened: 0,
-    totalClicked: 0,
-    totalBounced: 0,
-    totalComplained: 0,
-    deliveryRate: 0,
-    openRate: 0,
-    clickRate: 0,
-    bounceRate: 0
-  });
+  // Use the real-time email stats hook
+  const { stats: emailStats, loading: emailLoading, refresh: refreshEmailStats } = useEmailMarketingStats();
+  
   const [topEmailCampaigns, setTopEmailCampaigns] = useState<TopEmailCampaign[]>([]);
   const [topPushCampaigns, setTopPushCampaigns] = useState<TopPushCampaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const loadStats = useCallback(async () => {
-    const [push, email, topEmail, topPush] = await Promise.all([
+    const [push, topEmail, topPush] = await Promise.all([
       fetchPushNotificationStats(),
-      fetchEmailMarketingStats(),
       fetchTopEmailCampaigns(5),
       fetchTopPushCampaigns(5)
     ]);
     setPushStats(push);
-    setEmailStats(email);
     setTopEmailCampaigns(topEmail);
     setTopPushCampaigns(topPush);
   }, []);
@@ -69,7 +57,7 @@ const AdminMarketing = () => {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await loadStats();
+    await Promise.all([loadStats(), refreshEmailStats()]);
     setIsRefreshing(false);
   };
 

@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface EmailMarketingStats {
@@ -24,6 +25,7 @@ export interface TopEmailCampaign {
   clickRate: number;
   openRate: number;
   sent_at: string | null;
+  status: string;
 }
 
 export interface TopPushCampaign {
@@ -35,13 +37,104 @@ export interface TopPushCampaign {
   sent_at: string;
 }
 
+// Hook for real-time email marketing stats
+export function useEmailMarketingStats() {
+  const [stats, setStats] = useState<EmailMarketingStats>(getEmptyStats());
+  const [loading, setLoading] = useState(true);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      // Fetch all campaigns (sent + sending) to include active campaign
+      const { data: campaigns, error } = await supabase
+        .from("email_campaigns")
+        .select("sent_count, delivered_count, opened_count, clicked_count, bounced_count, complained_count, recipients_count, status")
+        .in("status", ["sent", "sending"]);
+
+      if (error) {
+        console.error("[Email Analytics] Error fetching campaigns:", error);
+        return;
+      }
+
+      // Aggregate stats
+      let totalCampaigns = campaigns?.length || 0;
+      let totalSent = 0;
+      let totalDelivered = 0;
+      let totalOpened = 0;
+      let totalClicked = 0;
+      let totalBounced = 0;
+      let totalComplained = 0;
+
+      campaigns?.forEach(campaign => {
+        totalSent += campaign.sent_count || 0;
+        totalDelivered += campaign.delivered_count || 0;
+        totalOpened += campaign.opened_count || 0;
+        totalClicked += campaign.clicked_count || 0;
+        totalBounced += campaign.bounced_count || 0;
+        totalComplained += campaign.complained_count || 0;
+      });
+
+      // Calculate rates
+      const deliveryRate = totalSent > 0 ? (totalDelivered / totalSent) * 100 : 0;
+      const openRate = totalDelivered > 0 ? (totalOpened / totalDelivered) * 100 : 0;
+      const clickRate = totalOpened > 0 ? (totalClicked / totalOpened) * 100 : 0;
+      const bounceRate = totalSent > 0 ? (totalBounced / totalSent) * 100 : 0;
+
+      setStats({
+        totalCampaigns,
+        totalSent,
+        totalDelivered,
+        totalOpened,
+        totalClicked,
+        totalBounced,
+        totalComplained,
+        deliveryRate,
+        openRate,
+        clickRate,
+        bounceRate
+      });
+    } catch (error) {
+      console.error("[Email Analytics] Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+
+    // Subscribe to real-time updates on email_campaigns
+    const channel = supabase
+      .channel('email-marketing-analytics')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'email_campaigns'
+        },
+        () => {
+          console.log('[Email Analytics] Campaign updated, refreshing stats...');
+          fetchStats();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchStats]);
+
+  return { stats, loading, refresh: fetchStats };
+}
+
+// Legacy function for backward compatibility
 export async function fetchEmailMarketingStats(): Promise<EmailMarketingStats> {
   try {
-    // Fetch all campaigns with status 'sent'
+    // Fetch all campaigns (sent + sending) to include active campaigns
     const { data: campaigns, error } = await supabase
       .from("email_campaigns")
-      .select("sent_count, delivered_count, opened_count, clicked_count, bounced_count, complained_count, recipients_count")
-      .eq("status", "sent");
+      .select("sent_count, delivered_count, opened_count, clicked_count, bounced_count, complained_count, recipients_count, status")
+      .in("status", ["sent", "sending"]);
 
     if (error) {
       console.error("[Email Analytics] Error fetching campaigns:", error);
@@ -95,10 +188,10 @@ export async function fetchTopEmailCampaigns(limit: number = 5): Promise<TopEmai
   try {
     const { data: campaigns, error } = await supabase
       .from("email_campaigns")
-      .select("id, title, subject, sent_count, clicked_count, opened_count, delivered_count, sent_at")
-      .eq("status", "sent")
+      .select("id, title, subject, sent_count, clicked_count, opened_count, delivered_count, sent_at, status")
+      .in("status", ["sent", "sending"])
       .gt("sent_count", 0)
-      .order("clicked_count", { ascending: false })
+      .order("sent_count", { ascending: false })
       .limit(limit);
 
     if (error) {
@@ -119,7 +212,8 @@ export async function fetchTopEmailCampaigns(limit: number = 5): Promise<TopEmai
       openRate: campaign.delivered_count && campaign.delivered_count > 0 
         ? ((campaign.opened_count || 0) / campaign.delivered_count) * 100 
         : 0,
-      sent_at: campaign.sent_at
+      sent_at: campaign.sent_at,
+      status: campaign.status
     }));
   } catch (error) {
     console.error("[Email Analytics] Error:", error);
