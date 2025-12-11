@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Crown, Package, AlertTriangle, Palette, Mail, KeyRound } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface RecipientSelectorProps {
   value: string;
@@ -32,6 +33,12 @@ interface Pack {
   name: string;
 }
 
+interface PendingUser {
+  id: string;
+  email: string;
+  name: string | null;
+}
+
 const RecipientSelector = ({ 
   value, 
   onChange, 
@@ -48,11 +55,47 @@ const RecipientSelector = ({
     pendingFirstAccess: 0,
   });
   const [packs, setPacks] = useState<Pack[]>([]);
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
+  const [loadingPendingUsers, setLoadingPendingUsers] = useState(false);
 
   useEffect(() => {
     fetchCounts();
     fetchPacks();
   }, []);
+
+  useEffect(() => {
+    if (value === "pending_first_access") {
+      fetchPendingUsers();
+    }
+  }, [value]);
+
+  const fetchPendingUsers = async () => {
+    setLoadingPendingUsers(true);
+    const allUsers: PendingUser[] = [];
+    const batchSize = 1000;
+    let offset = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, email, name")
+        .not("email", "is", null)
+        .or("password_changed.is.null,password_changed.eq.false")
+        .range(offset, offset + batchSize - 1);
+
+      if (data && data.length > 0) {
+        allUsers.push(...data.map(u => ({ id: u.id, email: u.email || '', name: u.name })));
+        offset += batchSize;
+        hasMore = data.length === batchSize;
+      } else {
+        hasMore = false;
+      }
+    }
+
+    setPendingUsers(allUsers);
+    setLoadingPendingUsers(false);
+  };
 
   const fetchCounts = async () => {
     // All users with email
@@ -236,6 +279,41 @@ const RecipientSelector = ({
           value={customEmail || ""}
           onChange={(e) => onCustomEmailChange(e.target.value)}
         />
+      )}
+
+      {value === "pending_first_access" && (
+        <div className="border rounded-lg">
+          <div className="p-3 bg-orange-500/10 border-b flex items-center justify-between">
+            <span className="text-sm font-medium text-orange-500">
+              Lista de pendentes ({pendingUsers.length})
+            </span>
+            {loadingPendingUsers && (
+              <span className="text-xs text-muted-foreground">Carregando...</span>
+            )}
+          </div>
+          <ScrollArea className="h-[200px]">
+            <div className="p-2 space-y-1">
+              {pendingUsers.length === 0 && !loadingPendingUsers ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Nenhum usuário pendente
+                </p>
+              ) : (
+                pendingUsers.map((user, index) => (
+                  <div 
+                    key={user.id} 
+                    className="flex items-center gap-2 p-2 bg-secondary/50 rounded text-sm"
+                  >
+                    <span className="text-xs text-muted-foreground w-6">{index + 1}.</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{user.name || 'Sem nome'}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </div>
       )}
     </div>
   );
