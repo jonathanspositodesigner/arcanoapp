@@ -12,6 +12,9 @@ interface AnnouncementRequest {
   push_url?: string;
   email_subject: string;
   email_content: string;
+  email_sender_name?: string;
+  email_sender_email?: string;
+  email_title?: string;
 }
 
 serve(async (req) => {
@@ -20,13 +23,21 @@ serve(async (req) => {
   }
 
   try {
-    const { push_title, push_body, push_url, email_subject, email_content }: AnnouncementRequest = await req.json();
+    const { 
+      push_title, 
+      push_body, 
+      push_url, 
+      email_subject, 
+      email_content,
+      email_sender_name = "ArcanoApp",
+      email_sender_email = "contato@voxvisual.com.br",
+      email_title = "Anúncio de Atualizações"
+    }: AnnouncementRequest = await req.json();
 
     console.log("Starting announcement send:", { push_title, email_subject });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -67,74 +78,51 @@ serve(async (req) => {
       }
     }
 
-    // Send emails to all artes clients
-    if (resendApiKey) {
-      // Fetch all users with pack purchases (artes clients)
-      const allEmails: string[] = [];
-      let page = 0;
-      const pageSize = 1000;
-      
-      while (true) {
-        const { data: purchases } = await supabase
-          .from("user_pack_purchases")
-          .select("user_id")
-          .range(page * pageSize, (page + 1) * pageSize - 1);
-        
-        if (!purchases || purchases.length === 0) break;
-        
-        const userIds = [...new Set(purchases.map(p => p.user_id))];
-        
-        // Get emails from profiles
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("email")
-          .in("id", userIds)
-          .not("email", "is", null);
-        
-        if (profiles) {
-          allEmails.push(...profiles.map(p => p.email!).filter(Boolean));
-        }
-        
-        if (purchases.length < pageSize) break;
-        page++;
-      }
+    // Send emails using send-email-campaign motor
+    console.log("Creating email campaign for announcement...");
+    
+    // Create a campaign record
+    const { data: campaignData, error: campaignError } = await supabase
+      .from("email_campaigns")
+      .insert({
+        title: email_title,
+        subject: email_subject,
+        content: email_content,
+        sender_name: email_sender_name,
+        sender_email: email_sender_email,
+        recipient_filter: "artes_pack", // Send to all artes pack purchasers
+        status: "draft",
+      })
+      .select()
+      .single();
 
-      const uniqueEmails = [...new Set(allEmails)];
-      console.log(`Found ${uniqueEmails.length} unique email addresses`);
+    if (campaignError || !campaignData) {
+      console.error("Error creating campaign:", campaignError);
+      throw new Error("Failed to create email campaign");
+    }
 
-      // Send emails in batches using Resend API directly
-      for (const email of uniqueEmails) {
-        try {
-          const response = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${resendApiKey}`,
-            },
-            body: JSON.stringify({
-              from: "ArcanoApp <contato@voxvisual.com.br>",
-              to: [email],
-              subject: email_subject,
-              html: email_content,
-            }),
-          });
+    console.log(`Created campaign ${campaignData.id}, invoking send-email-campaign...`);
 
-          if (response.ok) {
-            emailSent++;
-          } else {
-            console.error(`Failed to send email to ${email}:`, await response.text());
-            emailFailed++;
-          }
-          
-          // Rate limit: 2 requests per second
-          await new Promise(resolve => setTimeout(resolve, 600));
-        } catch (error) {
-          console.error(`Failed to send email to ${email}:`, error);
-          emailFailed++;
-        }
-      }
+    // Invoke send-email-campaign function
+    const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email-campaign`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({
+        campaign_id: campaignData.id,
+      }),
+    });
+
+    if (emailResponse.ok) {
+      const emailResult = await emailResponse.json();
+      emailSent = emailResult.sent || 0;
+      emailFailed = emailResult.failed || 0;
+      console.log(`Emails sent: ${emailSent}, failed: ${emailFailed}`);
     } else {
-      console.log("RESEND_API_KEY not configured, skipping email send");
+      const errorText = await emailResponse.text();
+      console.error("Email campaign error:", errorText);
     }
 
     console.log(`Announcement complete. Push: ${pushSent} sent, ${pushFailed} failed. Email: ${emailSent} sent, ${emailFailed} failed.`);

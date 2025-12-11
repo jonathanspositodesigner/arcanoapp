@@ -14,8 +14,11 @@ interface PushTemplate {
 interface EmailTemplate {
   id: string;
   name: string;
+  title: string;
   subject: string;
   content: string;
+  sender_name: string;
+  sender_email: string;
 }
 
 interface AnnouncementPreviewModalProps {

@@ -78,8 +78,11 @@ const AdminUploadArtes = () => {
   const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<{
     id: string;
     name: string;
+    title: string;
     subject: string;
     content: string;
+    sender_name: string;
+    sender_email: string;
   } | null>(null);
   const [isSendingAnnouncement, setIsSendingAnnouncement] = useState(false);
   const [showAnnouncementPreview, setShowAnnouncementPreview] = useState(false);
@@ -124,8 +127,11 @@ const AdminUploadArtes = () => {
           push_title: selectedPushTemplate.title,
           push_body: selectedPushTemplate.body,
           push_url: selectedPushTemplate.url || "/biblioteca-artes",
+          email_title: selectedEmailTemplate.title,
           email_subject: selectedEmailTemplate.subject,
           email_content: selectedEmailTemplate.content,
+          email_sender_name: selectedEmailTemplate.sender_name,
+          email_sender_email: selectedEmailTemplate.sender_email,
         },
       });
 
