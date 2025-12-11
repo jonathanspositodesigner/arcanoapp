@@ -190,7 +190,7 @@ serve(async (req) => {
     );
 
     const { campaign_id, test_email, resume, batch_size }: SendCampaignRequest = await req.json();
-    const BATCH_SIZE = batch_size || 50;
+    const BATCH_SIZE = batch_size || 30; // Reduced to prevent timeout
 
     console.log(`Processing campaign: ${campaign_id}, test_email: ${test_email}, resume: ${resume}, batch_size: ${BATCH_SIZE}`);
 
