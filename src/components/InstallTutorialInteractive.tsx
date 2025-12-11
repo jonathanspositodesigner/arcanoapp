@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, X, Check, Share, Plus, MoreVertical, Download, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Check, Share, Plus, MoreVertical, Download, Info, ExternalLink, AlertTriangle } from "lucide-react";
 
 type DeviceType = "ios" | "android" | "desktop";
-type BrowserType = "safari" | "chrome" | "firefox" | "edge" | "samsung" | "opera" | "brave" | "duckduckgo" | "other";
+type BrowserType = "safari" | "chrome" | "firefox" | "edge" | "samsung" | "opera" | "brave" | "duckduckgo" | "instagram" | "facebook" | "other";
 
 interface Step {
   title: string;
@@ -14,6 +14,7 @@ interface Step {
 interface DeviceBrowserConfig {
   steps: Step[];
   label: string;
+  isInAppBrowser?: boolean;
 }
 
 // iOS Safari
@@ -42,6 +43,13 @@ const iosDuckDuckGoSteps: Step[] = [
   { title: "Toque no ícone de compartilhar", description: "Na barra inferior do DuckDuckGo" },
   { title: "Toque em \"Adicionar à Tela de Início\"", description: "Role o menu e encontre essa opção" },
   { title: "Confirme a instalação", description: "Toque em \"Adicionar\" para confirmar" },
+];
+
+// In-App Browser (Instagram, Facebook) steps
+const inAppBrowserSteps: Step[] = [
+  { title: "Toque nos três pontinhos", description: "No canto superior direito da tela" },
+  { title: "Abra no navegador externo", description: "Toque em \"Abrir no navegador\" ou similar" },
+  { title: "Continue no navegador", description: "O site abrirá no Safari/Chrome, siga o tutorial normal" },
 ];
 
 // Android Chrome
@@ -128,8 +136,25 @@ const desktopDuckDuckGoSteps: Step[] = [
   { title: "Acesse facilmente", description: "Use os favoritos para acessar rapidamente" },
 ];
 
+function detectInAppBrowser(): BrowserType | null {
+  const ua = navigator.userAgent.toLowerCase();
+  
+  // Check for Instagram in-app browser
+  if (ua.includes("instagram")) return "instagram";
+  // Check for Facebook in-app browser
+  if (ua.includes("fban") || ua.includes("fbav") || ua.includes("fb_iab")) return "facebook";
+  // Check for other common in-app browsers
+  if (ua.includes("line/") || ua.includes("twitter") || ua.includes("tiktok")) return "instagram"; // treat similar
+  
+  return null;
+}
+
 function detectBrowser(): BrowserType {
   const ua = navigator.userAgent.toLowerCase();
+  
+  // First check for in-app browsers
+  const inAppBrowser = detectInAppBrowser();
+  if (inAppBrowser) return inAppBrowser;
   
   // Check for DuckDuckGo first
   if (ua.includes("duckduckgo")) return "duckduckgo";
@@ -160,6 +185,16 @@ function detectDevice(): DeviceType {
 }
 
 function getStepsForConfig(device: DeviceType, browser: BrowserType): DeviceBrowserConfig {
+  // Check for in-app browsers first (Instagram, Facebook, etc.)
+  if (browser === "instagram" || browser === "facebook") {
+    const label = browser === "instagram" ? "Instagram" : "Facebook";
+    return { 
+      steps: inAppBrowserSteps, 
+      label: `Navegador do ${label}`,
+      isInAppBrowser: true
+    };
+  }
+
   if (device === "ios") {
     if (browser === "chrome" || browser === "brave" || browser === "opera") return { steps: iosChromeSteps, label: `${browser === "chrome" ? "Chrome" : browser === "brave" ? "Brave" : "Opera"} no iPhone` };
     if (browser === "firefox") return { steps: iosFirefoxSteps, label: "Firefox no iPhone" };
@@ -415,14 +450,15 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                   </div>
                 </div>
                 
-                {/* Scroll indicator */}
-                <div className="flex items-center justify-center gap-1 py-2">
-                  <div className="animate-bounce text-gray-500">
-                    <ChevronRight className="h-4 w-4 rotate-90" />
+                {/* Enhanced Scroll indicator with animation */}
+                <div className="flex flex-col items-center gap-1 py-2">
+                  <div className="relative h-6 w-4 border-2 border-red-400 rounded-full flex justify-center">
+                    <div className="w-1 h-1.5 bg-red-500 rounded-full mt-1 animate-[scrollDown_1.5s_ease-in-out_infinite]" />
                   </div>
-                  <span className="text-[10px] text-red-500 font-medium animate-pulse">Role para baixo</span>
-                  <div className="animate-bounce text-gray-500">
-                    <ChevronRight className="h-4 w-4 rotate-90" />
+                  <div className="flex items-center gap-1">
+                    <ChevronRight className="h-3 w-3 rotate-90 text-red-500 animate-bounce" />
+                    <span className="text-[10px] text-red-500 font-semibold">Role para baixo</span>
+                    <ChevronRight className="h-3 w-3 rotate-90 text-red-500 animate-bounce" />
                   </div>
                 </div>
               </div>
@@ -492,6 +528,113 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
             <span className="text-[10px] text-blue-500 font-bold">2</span>
           </div>
           <MoreVertical className="h-5 w-5 text-gray-600" />
+        </div>
+        
+        {/* Home Indicator */}
+        <div className="h-5 bg-white dark:bg-gray-900 flex items-center justify-center">
+          <div className="w-32 h-1 bg-gray-900 dark:bg-gray-100 rounded-full" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// In-App Browser Mockup (Instagram, Facebook, etc.)
+const InAppBrowserMockup = ({ step }: { step: number }) => (
+  <div className="relative w-full max-w-[280px] mx-auto">
+    {/* iPhone Frame */}
+    <div className="bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
+      {/* Screen */}
+      <div className="bg-white dark:bg-gray-900 rounded-[2rem] overflow-hidden">
+        {/* Status Bar */}
+        <div className="h-6 bg-gray-100 dark:bg-gray-800 flex items-center justify-between px-6">
+          <span className="text-[10px] text-gray-600 font-medium">9:41</span>
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-2 bg-gray-600 rounded-sm" />
+          </div>
+        </div>
+        
+        {/* In-App Browser Header (Instagram style) */}
+        <div className="bg-white dark:bg-gray-900 px-3 py-2 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+          <X className="h-5 w-5 text-gray-800 dark:text-white" />
+          <div className="flex-1 text-center">
+            <p className="text-[10px] text-gray-600">arcanoapp.voxvisual.com.br</p>
+            <p className="text-[8px] text-pink-500">Instagram</p>
+          </div>
+          <div className="relative">
+            <MoreVertical className="h-5 w-5 text-gray-800 dark:text-white" />
+            {step === 0 && (
+              <>
+                <span className="absolute -right-1 -top-1 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+                </span>
+                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+                  <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[12px] border-b-red-500" />
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        
+        {/* Content Area */}
+        <div className="h-[280px] bg-gray-50 dark:bg-gray-800 relative">
+          {/* Page Content Placeholder */}
+          <div className="p-4 space-y-3">
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+            <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded mt-4" />
+          </div>
+          
+          {/* Menu Dropdown - Step 2 */}
+          {step === 1 && (
+            <div className="absolute top-0 right-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 animate-scale-in w-48">
+              <div className="py-1">
+                <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <Share className="h-4 w-4 text-gray-600" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Compartilhar</span>
+                </div>
+                <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 relative">
+                  <ExternalLink className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">Abrir no navegador</span>
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <Plus className="h-4 w-4 text-gray-600" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Copiar link</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Success Message - Step 3 */}
+          {step === 2 && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center animate-fade-in">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 mx-4 text-center shadow-xl">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Abrindo no navegador...</h3>
+                <p className="text-sm text-gray-500 mb-4">O site abrirá no Safari ou Chrome.<br/>Siga o tutorial normal para instalar.</p>
+                <div className="flex gap-2 justify-center">
+                  <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">Safari</span>
+                  <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-medium">Chrome</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Bottom Navigation (Instagram style) */}
+        <div className="h-12 bg-white dark:bg-gray-900 flex items-center justify-around px-6 border-t border-gray-200 dark:border-gray-700">
+          <ChevronLeft className="h-5 w-5 text-gray-600" />
+          <ChevronRight className="h-5 w-5 text-gray-400" />
+          <Share className="h-5 w-5 text-gray-600" />
+          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-500 to-yellow-500" />
         </div>
         
         {/* Home Indicator */}
@@ -761,6 +904,11 @@ const InstallTutorialInteractive = () => {
   };
 
   const renderMockup = () => {
+    // In-app browser mockup (Instagram, Facebook)
+    if (browserType === "instagram" || browserType === "facebook") {
+      return <InAppBrowserMockup step={currentStep} />;
+    }
+    
     // iOS mockups
     if (deviceType === "ios") {
       if (browserType === "chrome" || browserType === "brave" || browserType === "opera") {
@@ -780,8 +928,22 @@ const InstallTutorialInteractive = () => {
 
   return (
     <Card className="p-6 overflow-hidden">
+      {/* In-App Browser Warning */}
+      {config.isInAppBrowser && (
+        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg flex items-start gap-2">
+          <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Navegador interno detectado</p>
+            <p className="text-xs text-amber-600 dark:text-amber-300 mt-0.5">
+              Você está usando o navegador do {browserType === "instagram" ? "Instagram" : "Facebook"}. 
+              Siga os passos abaixo para abrir no Safari ou Chrome.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Detected Browser Info with Edit Button */}
-      <div className="flex items-center justify-center gap-2 mb-4 text-sm text-muted-foreground bg-muted/50 rounded-lg py-2 px-3">
+      <div className={`flex items-center justify-center gap-2 mb-4 text-sm text-muted-foreground rounded-lg py-2 px-3 ${config.isInAppBrowser ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-muted/50'}`}>
         <Info className="h-4 w-4 flex-shrink-0" />
         <span>Detectado: <strong className="text-foreground">{config.label}</strong></span>
         <Button
