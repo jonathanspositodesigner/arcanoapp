@@ -31,7 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
   Eye, Copy, Trash2, Loader2, CheckCircle, XCircle, Clock, Send, 
-  FileText, AlertTriangle, Mail, MousePointer, Ban, MailOpen 
+  FileText, AlertTriangle, Mail, MousePointer, Ban, MailOpen, CalendarOff
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -51,6 +51,9 @@ interface Campaign {
   complained_count: number;
   sent_at: string | null;
   created_at: string;
+  is_scheduled: boolean;
+  schedule_type: string;
+  next_send_at: string | null;
 }
 
 interface EmailLog {
@@ -140,13 +143,20 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
     setLoadingLogs(false);
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, campaign?: Campaign) => {
     switch (status) {
       case "draft":
         return (
           <Badge variant="outline" className="gap-1">
             <Clock className="h-3 w-3" />
             Rascunho
+          </Badge>
+        );
+      case "scheduled":
+        return (
+          <Badge className="gap-1 bg-orange-500 text-white">
+            <Clock className="h-3 w-3" />
+            Agendada
           </Badge>
         );
       case "sending":
@@ -172,6 +182,35 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
         );
       default:
         return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const handleCancelSchedule = async (campaignId: string) => {
+    const { error } = await supabase
+      .from("email_campaigns")
+      .update({
+        status: "draft",
+        is_scheduled: false,
+        next_send_at: null,
+      })
+      .eq("id", campaignId);
+
+    if (error) {
+      toast.error("Erro ao cancelar agendamento");
+      return;
+    }
+
+    toast.success("Agendamento cancelado");
+    fetchCampaigns();
+  };
+
+  const getScheduleTypeLabel = (type: string) => {
+    switch (type) {
+      case "once": return "Único";
+      case "daily": return "Diário";
+      case "weekly": return "Semanal";
+      case "monthly": return "Mensal";
+      default: return type;
     }
   };
 
@@ -307,18 +346,25 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
               <TableHead className="text-center">Enviados</TableHead>
               <TableHead className="text-center">Abertos</TableHead>
               <TableHead className="text-center">Cliques</TableHead>
-              <TableHead>Data</TableHead>
+              <TableHead>Data / Próximo Envio</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {campaigns.map((campaign) => (
               <TableRow key={campaign.id}>
-                <TableCell className="font-medium">{campaign.title}</TableCell>
+                <TableCell className="font-medium">
+                  {campaign.title}
+                  {campaign.is_scheduled && campaign.schedule_type !== "once" && (
+                    <span className="text-xs text-orange-500 ml-2">
+                      ({getScheduleTypeLabel(campaign.schedule_type)})
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell className="max-w-[200px] truncate">
                   {campaign.subject}
                 </TableCell>
-                <TableCell>{getStatusBadge(campaign.status)}</TableCell>
+                <TableCell>{getStatusBadge(campaign.status, campaign)}</TableCell>
                 <TableCell className="text-center">
                   {campaign.status === "sent" || campaign.status === "sending" ? (
                     <span>
@@ -358,12 +404,29 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
                   )}
                 </TableCell>
                 <TableCell>
-                  {campaign.sent_at
-                    ? format(new Date(campaign.sent_at), "dd/MM/yyyy HH:mm", { locale: ptBR })
-                    : format(new Date(campaign.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                  {campaign.status === "scheduled" && campaign.next_send_at ? (
+                    <span className="text-orange-500">
+                      {format(new Date(campaign.next_send_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                    </span>
+                  ) : campaign.sent_at ? (
+                    format(new Date(campaign.sent_at), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                  ) : (
+                    format(new Date(campaign.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
+                    {campaign.status === "scheduled" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCancelSchedule(campaign.id)}
+                        title="Cancelar Agendamento"
+                        className="text-orange-500 hover:text-orange-600"
+                      >
+                        <CalendarOff className="h-4 w-4" />
+                      </Button>
+                    )}
                     {(campaign.status === "sent" || campaign.status === "sending") && (
                       <Button
                         variant="ghost"
