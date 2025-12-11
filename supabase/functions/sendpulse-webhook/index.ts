@@ -6,21 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// SendPulse webhook event types
-// https://sendpulse.com/knowledge-base/smtp/webhooks
-interface SendPulseWebhookEvent {
-  event: string; // delivered, opened, clicked, spam_complaint, hard_bounce, soft_bounce, unsubscribed
-  email: string;
-  sender_email?: string;
-  send_date?: string;
-  smtp_answer_code?: number;
-  smtp_answer_code_explain?: string;
-  smtp_answer_subcode?: string;
-  smtp_last_response?: string;
-  url?: string; // for click events
-  id?: string; // email ID
-}
-
 serve(async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -33,143 +18,152 @@ serve(async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const event: SendPulseWebhookEvent = await req.json();
+    // Get raw body for logging
+    const rawBody = await req.text();
+    console.log("Raw webhook payload:", rawBody);
     
-    console.log("Received SendPulse webhook event:", event.event);
-    console.log("Email:", event.email);
-    console.log("ID:", event.id);
-
-    // Try to find the log entry by email ID first, then by email
-    let logEntry: any = null;
-
-    if (event.id) {
-      const { data: entryById } = await supabaseClient
-        .from("email_campaign_logs")
-        .select("id, campaign_id, open_count, click_count")
-        .eq("resend_id", event.id)
-        .single();
-      logEntry = entryById;
+    // Parse the payload
+    let payload: any;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch (e) {
+      // Try URL-encoded format
+      const params = new URLSearchParams(rawBody);
+      payload = Object.fromEntries(params.entries());
     }
+    
+    console.log("Parsed payload:", JSON.stringify(payload, null, 2));
+    
+    // SendPulse may send events in different formats
+    // Check if it's an array of events or single event
+    const events = Array.isArray(payload) ? payload : [payload];
+    
+    for (const eventData of events) {
+      // Try different field names that SendPulse might use
+      const eventType = eventData.event || eventData.action || eventData.type || eventData.status;
+      const email = eventData.email || eventData.recipient || eventData.to;
+      const messageId = eventData.id || eventData.message_id || eventData.smtp_id;
+      
+      console.log("Processing event:", eventType, "Email:", email, "ID:", messageId);
 
-    // If not found by ID, try by email (get most recent)
-    if (!logEntry && event.email) {
-      const { data: entryByEmail } = await supabaseClient
-        .from("email_campaign_logs")
-        .select("id, campaign_id, open_count, click_count")
-        .eq("email", event.email)
-        .eq("status", "sent")
-        .order("sent_at", { ascending: false })
-        .limit(1)
-        .single();
-      logEntry = entryByEmail;
-    }
+      if (!eventType) {
+        console.log("No event type found, skipping");
+        continue;
+      }
 
-    if (!logEntry) {
-      console.log("Log entry not found for email:", event.email);
-      return new Response(
-        JSON.stringify({ success: true, message: "Log entry not found, event ignored" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
+      // Try to find the log entry by email ID first, then by email
+      let logEntry: any = null;
 
-    let updateData: Record<string, any> = {};
-    let campaignUpdateField: string | null = null;
-    const eventTime = new Date().toISOString();
+      if (messageId) {
+        const { data: entryById } = await supabaseClient
+          .from("email_campaign_logs")
+          .select("id, campaign_id, open_count, click_count")
+          .eq("resend_id", messageId)
+          .single();
+        logEntry = entryById;
+      }
 
-    switch (event.event) {
-      case "delivered":
+      // If not found by ID, try by email (get most recent)
+      if (!logEntry && email) {
+        const { data: entryByEmail } = await supabaseClient
+          .from("email_campaign_logs")
+          .select("id, campaign_id, open_count, click_count")
+          .eq("email", email)
+          .eq("status", "sent")
+          .order("sent_at", { ascending: false })
+          .limit(1)
+          .single();
+        logEntry = entryByEmail;
+      }
+
+      if (!logEntry) {
+        console.log("Log entry not found for email:", email);
+        continue;
+      }
+
+      let updateData: Record<string, any> = {};
+      let campaignUpdateField: string | null = null;
+      const eventTime = new Date().toISOString();
+
+      // Normalize event type to lowercase
+      const normalizedEvent = eventType.toLowerCase();
+
+      if (normalizedEvent.includes("deliver")) {
         updateData = { 
           status: "delivered",
           delivered_at: eventTime 
         };
         campaignUpdateField = "delivered_count";
-        break;
-
-      case "opened":
+      } else if (normalizedEvent.includes("open")) {
         updateData = { 
           opened_at: eventTime,
           open_count: (logEntry.open_count || 0) + 1
         };
-        // Only increment campaign counter on first open
         if (!logEntry.open_count || logEntry.open_count === 0) {
           campaignUpdateField = "opened_count";
         }
-        break;
-
-      case "clicked":
+      } else if (normalizedEvent.includes("click")) {
         updateData = { 
           clicked_at: eventTime,
           click_count: (logEntry.click_count || 0) + 1
         };
-        // Only increment campaign counter on first click
         if (!logEntry.click_count || logEntry.click_count === 0) {
           campaignUpdateField = "clicked_count";
         }
-        break;
-
-      case "hard_bounce":
-      case "soft_bounce":
+      } else if (normalizedEvent.includes("bounce") || normalizedEvent.includes("hard") || normalizedEvent.includes("soft")) {
         updateData = { 
           status: "bounced",
           bounced_at: eventTime,
-          error_message: event.smtp_last_response || `Email bounced (${event.event})`
+          error_message: `Email bounced (${eventType})`
         };
         campaignUpdateField = "bounced_count";
-        break;
-
-      case "spam_complaint":
+      } else if (normalizedEvent.includes("spam") || normalizedEvent.includes("complaint")) {
         updateData = { 
           status: "complained",
           complained_at: eventTime,
           error_message: "Marked as spam"
         };
         campaignUpdateField = "complained_count";
-        break;
-
-      case "unsubscribed":
+      } else if (normalizedEvent.includes("unsub")) {
         updateData = { 
           status: "unsubscribed",
           error_message: "User unsubscribed"
         };
-        break;
-
-      default:
-        console.log("Unhandled event type:", event.event);
-        return new Response(
-          JSON.stringify({ success: true, message: "Event type not handled" }),
-          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
-    }
-
-    // Update the log entry
-    const { error: updateError } = await supabaseClient
-      .from("email_campaign_logs")
-      .update(updateData)
-      .eq("id", logEntry.id);
-
-    if (updateError) {
-      console.error("Error updating log entry:", updateError);
-      throw updateError;
-    }
-
-    // Update campaign counter if needed
-    if (campaignUpdateField && logEntry.campaign_id) {
-      const { data: campaign } = await supabaseClient
-        .from("email_campaigns")
-        .select(campaignUpdateField)
-        .eq("id", logEntry.campaign_id)
-        .single();
-
-      if (campaign) {
-        const currentCount = (campaign as any)[campaignUpdateField] || 0;
-        await supabaseClient
-          .from("email_campaigns")
-          .update({ [campaignUpdateField]: currentCount + 1 })
-          .eq("id", logEntry.campaign_id);
+      } else {
+        console.log("Unhandled event type:", eventType);
+        continue;
       }
-    }
 
-    console.log("Successfully processed event:", event.event);
+      // Update the log entry
+      const { error: updateError } = await supabaseClient
+        .from("email_campaign_logs")
+        .update(updateData)
+        .eq("id", logEntry.id);
+
+      if (updateError) {
+        console.error("Error updating log entry:", updateError);
+        continue;
+      }
+
+      // Update campaign counter if needed
+      if (campaignUpdateField && logEntry.campaign_id) {
+        const { data: campaign } = await supabaseClient
+          .from("email_campaigns")
+          .select(campaignUpdateField)
+          .eq("id", logEntry.campaign_id)
+          .single();
+
+        if (campaign) {
+          const currentCount = (campaign as any)[campaignUpdateField] || 0;
+          await supabaseClient
+            .from("email_campaigns")
+            .update({ [campaignUpdateField]: currentCount + 1 })
+            .eq("id", logEntry.campaign_id);
+        }
+      }
+
+      console.log("Successfully processed event:", eventType, "for email:", email);
+    }
 
     return new Response(
       JSON.stringify({ success: true }),
