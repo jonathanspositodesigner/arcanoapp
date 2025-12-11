@@ -49,24 +49,15 @@ const InstallApp = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary">
-      <div className="container max-w-2xl mx-auto py-8 px-4">
+      <div className="container max-w-2xl mx-auto py-4 px-4">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6"
+          className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
         </Button>
-
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Instale o ArcanoApp
-          </h1>
-          <p className="text-muted-foreground">
-            Tenha acesso rápido ao app direto da sua tela inicial
-          </p>
-        </div>
 
         {isInstalled ? (
           <Card className="p-8 text-center">
@@ -100,13 +91,10 @@ const InstallApp = () => {
             </Button>
           </Card>
         ) : (
-          <div className="space-y-6">
-            {/* Interactive Tutorial */}
-            <InstallTutorialInteractive />
-          </div>
+          <InstallTutorialInteractive />
         )}
 
-        <div className="mt-8 text-center">
+        <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
             Após instalar, o app abrirá em tela cheia e funcionará mesmo offline!
           </p>
