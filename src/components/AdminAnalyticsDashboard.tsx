@@ -133,6 +133,14 @@ const [pageViews, setPageViews] = useState({
   const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
   const [firstAccessModalView, setFirstAccessModalView] = useState<'changed' | 'pending'>('pending');
   
+  // Refund stats
+  const [refundStats, setRefundStats] = useState({
+    refundedCount: 0,
+    chargebackCount: 0,
+    recentLogs: [] as { email: string; status: string; pack: string; date: string }[]
+  });
+  const [showRefundModal, setShowRefundModal] = useState(false);
+
 
   // Retorna a data de início e fim do período em formato ISO
   const getDateThreshold = (): { start: string | null; end: string | null } => {
@@ -1091,6 +1099,35 @@ const [pageViews, setPageViews] = useState({
         });
       }
 
+      // ========== FETCH REFUND STATS ==========
+      const { data: refundLogsData } = await supabase
+        .from("webhook_logs")
+        .select("email, status, mapping_type, received_at, payload")
+        .or("status.eq.refunded,status.eq.chargeback")
+        .order("received_at", { ascending: false })
+        .limit(50);
+
+      if (refundLogsData) {
+        const refundedCount = refundLogsData.filter(l => l.status === 'refunded').length;
+        const chargebackCount = refundLogsData.filter(l => l.status === 'chargeback').length;
+        
+        const recentLogs = refundLogsData.slice(0, 20).map(log => {
+          const payload = log.payload as any;
+          const packInfo = payload?.product?.name || log.mapping_type || 'Pack não identificado';
+          return {
+            email: log.email || 'Email não registrado',
+            status: log.status || 'desconhecido',
+            pack: packInfo,
+            date: log.received_at ? new Date(log.received_at).toLocaleString('pt-BR') : 'Data não registrada'
+          };
+        });
+
+        setRefundStats({
+          refundedCount,
+          chargebackCount,
+          recentLogs
+        });
+      }
 
       setIsLoading(false);
       setLastUpdate(new Date());
@@ -1827,6 +1864,40 @@ const [pageViews, setPageViews] = useState({
                 <p className="text-sm text-muted-foreground text-center">Sem compras no período</p>
               )}
             </Card>
+
+            {/* Reembolsos e Chargebacks */}
+            <Card 
+              className="p-6 border-2 border-red-500/30 cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => setShowRefundModal(true)}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-red-500/20 rounded-full">
+                  <RotateCcw className="h-6 w-6 text-red-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Reembolsos</p>
+              </div>
+              
+              <div className="text-center space-y-3">
+                <p className="text-4xl font-bold text-red-500">
+                  {refundStats.refundedCount + refundStats.chargebackCount}
+                </p>
+                <div className="flex justify-center gap-6">
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-orange-500">{refundStats.refundedCount}</p>
+                    <p className="text-xs text-muted-foreground">Reembolsos</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-red-600">{refundStats.chargebackCount}</p>
+                    <p className="text-xs text-muted-foreground">Chargebacks</p>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground">
+                    Clique para ver logs detalhados
+                  </p>
+                </div>
+              </div>
+            </Card>
           </div>
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Evolução de Acessos</h3>
@@ -1971,6 +2042,89 @@ const [pageViews, setPageViews] = useState({
                   Ir para E-mail Marketing
                 </Button>
               )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Refund Logs Modal */}
+      <Dialog open={showRefundModal} onOpenChange={setShowRefundModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCcw className="h-5 w-5 text-red-500" />
+              Logs de Reembolsos e Chargebacks
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-orange-500/10 rounded-lg text-center">
+                <p className="text-2xl font-bold text-orange-500">{refundStats.refundedCount}</p>
+                <p className="text-sm text-muted-foreground">Reembolsos</p>
+              </div>
+              <div className="p-4 bg-red-500/10 rounded-lg text-center">
+                <p className="text-2xl font-bold text-red-600">{refundStats.chargebackCount}</p>
+                <p className="text-sm text-muted-foreground">Chargebacks</p>
+              </div>
+            </div>
+            
+            <p className="text-sm text-muted-foreground">
+              Quando um reembolso ou chargeback é processado, o acesso do usuário é automaticamente desativado (is_active = false).
+            </p>
+            
+            <ScrollArea className="h-[400px] border rounded-lg">
+              <div className="p-4 space-y-2">
+                {refundStats.recentLogs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhum reembolso ou chargeback registrado
+                  </p>
+                ) : (
+                  refundStats.recentLogs.map((log, index) => (
+                    <div 
+                      key={index} 
+                      className={`flex items-center justify-between p-3 rounded-lg ${
+                        log.status === 'chargeback' ? 'bg-red-500/10' : 'bg-orange-500/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          log.status === 'chargeback' 
+                            ? 'bg-red-500/20 text-red-600' 
+                            : 'bg-orange-500/20 text-orange-600'
+                        }`}>
+                          {log.status === 'chargeback' ? 'CHARGEBACK' : 'REEMBOLSO'}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{log.email}</p>
+                          <p className="text-xs text-muted-foreground truncate">{log.pack}</p>
+                        </div>
+                      </div>
+                      <div className="text-right ml-2">
+                        <p className="text-xs text-muted-foreground">{log.date}</p>
+                        <p className="text-xs text-red-500">Acesso removido</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+            
+            <div className="flex justify-end gap-3 pt-2 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setShowRefundModal(false)}
+              >
+                Fechar
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowRefundModal(false);
+                  window.location.href = '/admin-webhook-logs';
+                }}
+              >
+                Ver Todos os Logs
+              </Button>
             </div>
           </div>
         </DialogContent>
