@@ -122,8 +122,14 @@ const [pageViews, setPageViews] = useState({
   const [purchaseHourStats, setPurchaseHourStats] = useState<PurchaseHourStats[]>([]);
   
   // First access stats
-  const [firstAccessStats, setFirstAccessStats] = useState({ changed: 0, pending: 0, pendingUsers: [] as { id: string; email: string; name: string | null }[] });
+  const [firstAccessStats, setFirstAccessStats] = useState({ 
+    changed: 0, 
+    pending: 0, 
+    pendingUsers: [] as { id: string; email: string; name: string | null }[],
+    changedUsers: [] as { id: string; email: string; name: string | null }[]
+  });
   const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
+  const [firstAccessModalView, setFirstAccessModalView] = useState<'changed' | 'pending'>('pending');
 
   // Retorna a data de início e fim do período em formato ISO
   const getDateThreshold = (): { start: string | null; end: string | null } => {
@@ -1040,15 +1046,18 @@ const [pageViews, setPageViews] = useState({
       const allProfiles = await fetchAllProfiles();
 
       if (allProfiles && allProfiles.length > 0) {
-        const changed = allProfiles.filter(p => p.password_changed === true).length;
+        const changedUsers = allProfiles
+          .filter(p => p.password_changed === true)
+          .map(p => ({ id: p.id, email: p.email || '', name: p.name }));
         const pendingUsers = allProfiles
           .filter(p => p.password_changed === false || p.password_changed === null)
           .map(p => ({ id: p.id, email: p.email || '', name: p.name }));
         
         setFirstAccessStats({
-          changed,
+          changed: changedUsers.length,
           pending: pendingUsers.length,
-          pendingUsers
+          pendingUsers,
+          changedUsers
         });
       }
 
@@ -1255,7 +1264,7 @@ const [pageViews, setPageViews] = useState({
           </div>
 
           {/* Session Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             {/* Bounce Rate Card */}
             <Card className="p-6 border-2 border-red-500/30">
               <div className="flex items-center gap-3 mb-4">
@@ -1336,35 +1345,42 @@ const [pageViews, setPageViews] = useState({
                 )}
               </div>
             </Card>
-          </div>
 
-          {/* First Access Stats Card */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <Card 
-              className="p-6 border-2 border-orange-500/30 cursor-pointer hover:bg-orange-500/5 transition-colors"
-              onClick={() => setShowFirstAccessModal(true)}
-            >
+            {/* First Access Stats Card */}
+            <Card className="p-6 border-2 border-orange-500/30">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-orange-500/20 rounded-full">
                   <KeyRound className="h-6 w-6 text-orange-500" />
                 </div>
-                <p className="text-sm font-medium text-foreground">Primeiro Acesso (Redefinição de Senha)</p>
+                <p className="text-sm font-medium text-foreground">1º Acesso (Senha)</p>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-green-500/10 rounded-lg">
-                  <p className="text-3xl font-bold text-green-500">{firstAccessStats.changed}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Já redefiniram</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div 
+                  className="text-center p-2 bg-green-500/10 rounded-lg cursor-pointer hover:bg-green-500/20 transition-colors"
+                  onClick={() => {
+                    setFirstAccessModalView('changed');
+                    setShowFirstAccessModal(true);
+                  }}
+                >
+                  <p className="text-2xl font-bold text-green-500">{firstAccessStats.changed}</p>
+                  <p className="text-xs text-muted-foreground">Redefiniram</p>
                 </div>
-                <div className="text-center p-3 bg-orange-500/10 rounded-lg">
-                  <p className="text-3xl font-bold text-orange-500">{firstAccessStats.pending}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Pendentes</p>
+                <div 
+                  className="text-center p-2 bg-orange-500/10 rounded-lg cursor-pointer hover:bg-orange-500/20 transition-colors"
+                  onClick={() => {
+                    setFirstAccessModalView('pending');
+                    setShowFirstAccessModal(true);
+                  }}
+                >
+                  <p className="text-2xl font-bold text-orange-500">{firstAccessStats.pending}</p>
+                  <p className="text-xs text-muted-foreground">Pendentes</p>
                 </div>
               </div>
               
-              <div className="mt-4 pt-3 border-t border-border text-center">
+              <div className="mt-3 pt-2 border-t border-border text-center">
                 <p className="text-xs text-muted-foreground">
-                  Clique para ver lista de pendentes e enviar email marketing
+                  Clique para ver lista
                 </p>
               </div>
             </Card>
@@ -1819,35 +1835,63 @@ const [pageViews, setPageViews] = useState({
         </>
       )}
 
-      {/* First Access Pending Modal */}
+      {/* First Access Modal */}
       <Dialog open={showFirstAccessModal} onOpenChange={setShowFirstAccessModal}>
         <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <KeyRound className="h-5 w-5 text-orange-500" />
-              Usuários Pendentes de 1º Acesso
+              <KeyRound className={`h-5 w-5 ${firstAccessModalView === 'changed' ? 'text-green-500' : 'text-orange-500'}`} />
+              {firstAccessModalView === 'changed' ? 'Usuários que Redefiniram Senha' : 'Usuários Pendentes de 1º Acesso'}
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-orange-500/10 rounded-lg">
-              <span className="text-sm font-medium">Total de pendentes:</span>
-              <span className="text-lg font-bold text-orange-500">{firstAccessStats.pending}</span>
+            {/* Toggle buttons */}
+            <div className="flex gap-2">
+              <Button
+                variant={firstAccessModalView === 'changed' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFirstAccessModalView('changed')}
+                className={firstAccessModalView === 'changed' ? 'bg-green-500 hover:bg-green-600' : ''}
+              >
+                Redefiniram ({firstAccessStats.changed})
+              </Button>
+              <Button
+                variant={firstAccessModalView === 'pending' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFirstAccessModalView('pending')}
+                className={firstAccessModalView === 'pending' ? 'bg-orange-500 hover:bg-orange-600' : ''}
+              >
+                Pendentes ({firstAccessStats.pending})
+              </Button>
+            </div>
+
+            <div className={`flex items-center justify-between p-3 rounded-lg ${
+              firstAccessModalView === 'changed' ? 'bg-green-500/10' : 'bg-orange-500/10'
+            }`}>
+              <span className="text-sm font-medium">
+                {firstAccessModalView === 'changed' ? 'Total que redefiniram:' : 'Total de pendentes:'}
+              </span>
+              <span className={`text-lg font-bold ${firstAccessModalView === 'changed' ? 'text-green-500' : 'text-orange-500'}`}>
+                {firstAccessModalView === 'changed' ? firstAccessStats.changed : firstAccessStats.pending}
+              </span>
             </div>
             
             <p className="text-sm text-muted-foreground">
-              Esses usuários ainda não redefiniram a senha inicial. Use o filtro "Pendentes 1º acesso" 
-              no E-mail Marketing para enviar uma campanha específica para eles.
+              {firstAccessModalView === 'changed' 
+                ? 'Esses usuários já redefiniram a senha inicial e acessaram o sistema.'
+                : 'Esses usuários ainda não redefiniram a senha inicial. Use o filtro "Pendentes 1º acesso" no E-mail Marketing para enviar uma campanha específica para eles.'
+              }
             </p>
             
             <ScrollArea className="h-[400px] border rounded-lg">
               <div className="p-4 space-y-2">
-                {firstAccessStats.pendingUsers.length === 0 ? (
+                {(firstAccessModalView === 'changed' ? firstAccessStats.changedUsers : firstAccessStats.pendingUsers).length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">
-                    Nenhum usuário pendente
+                    {firstAccessModalView === 'changed' ? 'Nenhum usuário redefiniu a senha ainda' : 'Nenhum usuário pendente'}
                   </p>
                 ) : (
-                  firstAccessStats.pendingUsers.map((user, index) => (
+                  (firstAccessModalView === 'changed' ? firstAccessStats.changedUsers : firstAccessStats.pendingUsers).map((user, index) => (
                     <div 
                       key={user.id} 
                       className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg"
@@ -1876,15 +1920,17 @@ const [pageViews, setPageViews] = useState({
               >
                 Fechar
               </Button>
-              <Button
-                onClick={() => {
-                  setShowFirstAccessModal(false);
-                  window.location.href = '/admin-email-marketing';
-                }}
-                className="bg-orange-500 hover:bg-orange-600"
-              >
-                Ir para E-mail Marketing
-              </Button>
+              {firstAccessModalView === 'pending' && (
+                <Button
+                  onClick={() => {
+                    setShowFirstAccessModal(false);
+                    window.location.href = '/admin-email-marketing';
+                  }}
+                  className="bg-orange-500 hover:bg-orange-600"
+                >
+                  Ir para E-mail Marketing
+                </Button>
+              )}
             </div>
           </div>
         </DialogContent>
