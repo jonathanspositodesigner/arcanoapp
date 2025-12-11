@@ -160,14 +160,19 @@ const AdminEmailMarketing = () => {
 
   const handleLoadTemplate = (template: EmailTemplate) => {
     setCampaign({
-      ...campaign,
+      id: undefined, // LIMPAR O ID para forçar nova campanha
       title: template.title || template.name,
       subject: template.subject,
       content: template.content,
       sender_name: template.sender_name || "Vox Visual",
       sender_email: template.sender_email || "contato@voxvisual.com.br",
+      recipient_filter: "all",
+      filter_value: "",
+      is_scheduled: false,
+      schedule_type: "once",
+      scheduled_time: "09:00",
     });
-    toast.success("Modelo carregado!");
+    toast.success("Modelo carregado - Nova campanha criada!");
   };
 
   const handleDeleteTemplate = async () => {
