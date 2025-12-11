@@ -190,7 +190,7 @@ serve(async (req) => {
     );
 
     const { campaign_id, test_email, resume, batch_size }: SendCampaignRequest = await req.json();
-    const BATCH_SIZE = batch_size || 30; // Reduced to prevent timeout
+    const BATCH_SIZE = batch_size || 50; // SendPulse allows 2500+/hour depending on plan
 
     console.log(`Processing campaign: ${campaign_id}, test_email: ${test_email}, resume: ${resume}, batch_size: ${BATCH_SIZE}`);
 
@@ -303,7 +303,7 @@ serve(async (req) => {
 
       let sentCount = campaign.sent_count || 0;
       let failedCount = campaign.failed_count || 0;
-      const DELAY_BETWEEN_EMAILS = 600;
+      const DELAY_BETWEEN_EMAILS = 200; // SendPulse allows ~41/min minimum (2500/hr), 200ms = 300/min is safe
       const MAX_RETRIES = 3;
 
       for (let i = 0; i < pendingLogs.length; i++) {
