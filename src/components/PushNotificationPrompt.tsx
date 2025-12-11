@@ -10,24 +10,16 @@ const SESSION_SHOWN_KEY = "push_notification_prompt_shown_session";
 const DISMISS_DAYS = 7;
 const SHOW_DELAY_MS = 3000;
 
-interface PushNotificationPromptProps {
-  isLoggedIn: boolean;
-}
-
-const PushNotificationPrompt = ({ isLoggedIn }: PushNotificationPromptProps) => {
+const PushNotificationPrompt = () => {
   const [showModal, setShowModal] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
-  const { isSupported, subscribe } = usePushNotifications();
-
-  // FONTE ÚNICA DE VERDADE: Notification.permission
-  const hasPermission = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
+  const { subscribe } = usePushNotifications();
 
   useEffect(() => {
-    // Se já tem permissão do browser, NUNCA mostrar popup
-    if (hasPermission) return;
-    
-    // Só mostrar se: logado e suportado
-    if (!isLoggedIn || !isSupported) return;
+    // LÓGICA SIMPLES: Se browser não suporta ou já tem permissão, não mostra
+    const browserSupports = typeof window !== 'undefined' && 'Notification' in window;
+    if (!browserSupports) return;
+    if (Notification.permission === 'granted') return;
 
     // Check if dismissed recently
     const dismissedAt = localStorage.getItem(DISMISS_STORAGE_KEY);
@@ -45,12 +37,11 @@ const PushNotificationPrompt = ({ isLoggedIn }: PushNotificationPromptProps) => 
     const timer = setTimeout(() => {
       setShowModal(true);
       sessionStorage.setItem(SESSION_SHOWN_KEY, "true");
-      // Track prompt shown event
       trackPushNotificationEvent('prompt_shown');
     }, SHOW_DELAY_MS);
 
     return () => clearTimeout(timer);
-  }, [isLoggedIn, isSupported, hasPermission]);
+  }, []);
 
   const handleActivate = async () => {
     setIsActivating(true);
