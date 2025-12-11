@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Upload, CheckCircle, Settings, Users, Crown, LayoutDashboard, 
   FolderOpen, Inbox, Handshake, Palette, FileText, Tag, Package, 
-  Image, ShoppingCart, ShieldCheck, Gift, ShieldBan, FileSearch, UserX
+  Image, ShoppingCart, ShieldCheck, Gift, ShieldBan, FileSearch, UserX,
+  GripVertical, LayoutGrid, RotateCcw
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/AdminLayout";
+import { useDashboardCardOrder } from "@/hooks/useDashboardCardOrder";
+import { cn } from "@/lib/utils";
 
 const AdminFerramentas = () => {
   const navigate = useNavigate();
@@ -51,11 +55,20 @@ const AdminFerramentas = () => {
     fetchStats();
   }, []);
 
+  // Drag and drop for prompts cards
+  const promptsOrder = useDashboardCardOrder("ferramentas_prompts");
+  // Drag and drop for artes cards
+  const artesOrder = useDashboardCardOrder("ferramentas_artes");
+
   return (
     <AdminLayout>
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Ferramentas</h1>
-        <p className="text-muted-foreground mb-8">Gerencie arquivos e contribuições das bibliotecas</p>
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Ferramentas</h1>
+            <p className="text-muted-foreground">Gerencie arquivos e contribuições das bibliotecas</p>
+          </div>
+        </div>
 
         <Tabs defaultValue="prompts" className="w-full">
           <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 mb-6 h-auto gap-2">
@@ -77,9 +90,41 @@ const AdminFerramentas = () => {
 
           {/* Prompts Tab Content */}
           <TabsContent value="prompts" className="space-y-6">
+            {/* Reorder Controls */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={promptsOrder.isReordering ? "default" : "outline"}
+                size="sm"
+                onClick={() => promptsOrder.setIsReordering(!promptsOrder.isReordering)}
+                className="gap-2"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                {promptsOrder.isReordering ? "Concluir" : "Reorganizar"}
+              </Button>
+              {promptsOrder.isReordering && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={promptsOrder.resetOrder}
+                  className="gap-2 text-muted-foreground"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Resetar
+                </Button>
+              )}
+            </div>
+            
+            {promptsOrder.isReordering && (
+              <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-center">
+                <p className="text-sm text-primary font-medium">
+                  🔄 Arraste os cards para reordenar
+                </p>
+              </div>
+            )}
+            
             {/* Stats Cards */}
             <div className="grid grid-cols-1 gap-4">
-              <Card 
+              <Card
                 className="p-6 bg-gradient-to-r from-orange-500/10 to-orange-500/5 border-orange-500/20 cursor-pointer hover:shadow-md transition-shadow" 
                 onClick={() => navigate('/admin-community-review')}
               >
@@ -105,8 +150,20 @@ const AdminFerramentas = () => {
             </div>
 
             {/* Action Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-upload')}>
+            <div className={cn(
+              "grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6",
+              promptsOrder.isReordering && "[&>*]:ring-2 [&>*]:ring-primary/20 [&>*]:hover:ring-primary/40"
+            )}>
+              <Card 
+                className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
+                onClick={() => !promptsOrder.isReordering && navigate('/admin-upload')}
+                {...promptsOrder.getDragProps("enviar-arquivo")}
+              >
+                {promptsOrder.isReordering && (
+                  <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                    <GripVertical className="h-4 w-4 text-primary" />
+                  </div>
+                )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-primary rounded-full">
                     <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
@@ -116,7 +173,16 @@ const AdminFerramentas = () => {
                 </div>
               </Card>
 
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-community-review')}>
+              <Card 
+                className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
+                onClick={() => !promptsOrder.isReordering && navigate('/admin-community-review')}
+                {...promptsOrder.getDragProps("analisar-arquivos")}
+              >
+                {promptsOrder.isReordering && (
+                  <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                    <GripVertical className="h-4 w-4 text-primary" />
+                  </div>
+                )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-green-500 rounded-full">
                     <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
@@ -126,7 +192,16 @@ const AdminFerramentas = () => {
                 </div>
               </Card>
 
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-images')}>
+              <Card 
+                className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
+                onClick={() => !promptsOrder.isReordering && navigate('/admin-manage-images')}
+                {...promptsOrder.getDragProps("gerenciar-imagens")}
+              >
+                {promptsOrder.isReordering && (
+                  <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                    <GripVertical className="h-4 w-4 text-primary" />
+                  </div>
+                )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-blue-500 rounded-full">
                     <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
@@ -136,7 +211,16 @@ const AdminFerramentas = () => {
                 </div>
               </Card>
 
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-premium-dashboard')}>
+              <Card 
+                className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
+                onClick={() => !promptsOrder.isReordering && navigate('/admin-premium-dashboard')}
+                {...promptsOrder.getDragProps("gerenciar-premium")}
+              >
+                {promptsOrder.isReordering && (
+                  <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                    <GripVertical className="h-4 w-4 text-primary" />
+                  </div>
+                )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full">
                     <LayoutDashboard className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
@@ -146,7 +230,16 @@ const AdminFerramentas = () => {
                 </div>
               </Card>
 
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-collections')}>
+              <Card 
+                className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
+                onClick={() => !promptsOrder.isReordering && navigate('/admin-collections')}
+                {...promptsOrder.getDragProps("colecoes")}
+              >
+                {promptsOrder.isReordering && (
+                  <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                    <GripVertical className="h-4 w-4 text-primary" />
+                  </div>
+                )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-teal-500 rounded-full">
                     <FolderOpen className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
@@ -156,7 +249,16 @@ const AdminFerramentas = () => {
                 </div>
               </Card>
 
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-partners')}>
+              <Card 
+                className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
+                onClick={() => !promptsOrder.isReordering && navigate('/admin-partners')}
+                {...promptsOrder.getDragProps("gerenciar-parceiros")}
+              >
+                {promptsOrder.isReordering && (
+                  <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                    <GripVertical className="h-4 w-4 text-primary" />
+                  </div>
+                )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
                     <Handshake className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
@@ -166,7 +268,16 @@ const AdminFerramentas = () => {
                 </div>
               </Card>
 
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-categories-prompts')}>
+              <Card 
+                className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
+                onClick={() => !promptsOrder.isReordering && navigate('/admin-categories-prompts')}
+                {...promptsOrder.getDragProps("categorias")}
+              >
+                {promptsOrder.isReordering && (
+                  <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                    <GripVertical className="h-4 w-4 text-primary" />
+                  </div>
+                )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-indigo-500 rounded-full">
                     <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
@@ -176,7 +287,16 @@ const AdminFerramentas = () => {
                 </div>
               </Card>
 
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-admins')}>
+              <Card 
+                className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
+                onClick={() => !promptsOrder.isReordering && navigate('/admin-manage-admins')}
+                {...promptsOrder.getDragProps("administradores")}
+              >
+                {promptsOrder.isReordering && (
+                  <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                    <GripVertical className="h-4 w-4 text-primary" />
+                  </div>
+                )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-red-500 to-rose-600 rounded-full">
                     <ShieldCheck className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
@@ -185,11 +305,44 @@ const AdminFerramentas = () => {
                   <p className="text-muted-foreground hidden sm:block">Gerencie contas de administradores</p>
                 </div>
               </Card>
+
             </div>
           </TabsContent>
 
           {/* Artes Arcanas Tab Content */}
           <TabsContent value="artes" className="space-y-6">
+            {/* Reorder Controls */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={artesOrder.isReordering ? "default" : "outline"}
+                size="sm"
+                onClick={() => artesOrder.setIsReordering(!artesOrder.isReordering)}
+                className="gap-2"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                {artesOrder.isReordering ? "Concluir" : "Reorganizar"}
+              </Button>
+              {artesOrder.isReordering && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={artesOrder.resetOrder}
+                  className="gap-2 text-muted-foreground"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Resetar
+                </Button>
+              )}
+            </div>
+            
+            {artesOrder.isReordering && (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-center">
+                <p className="text-sm text-amber-600 font-medium">
+                  🔄 Arraste os cards para reordenar
+                </p>
+              </div>
+            )}
+            
             {/* Stats Cards */}
             <div className="grid grid-cols-1 gap-4">
               <Card 
@@ -214,8 +367,20 @@ const AdminFerramentas = () => {
             </div>
 
             {/* Action Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-upload-artes')}>
+            <div className={cn(
+              "grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6",
+              artesOrder.isReordering && "[&>*]:ring-2 [&>*]:ring-amber-500/20 [&>*]:hover:ring-amber-500/40"
+            )}>
+              <Card 
+                className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
+                onClick={() => !artesOrder.isReordering && navigate('/admin-upload-artes')}
+                {...artesOrder.getDragProps("enviar-arte")}
+              >
+                {artesOrder.isReordering && (
+                  <div className="absolute top-2 right-2 z-10 p-1 bg-amber-500/20 rounded-md">
+                    <GripVertical className="h-4 w-4 text-amber-500" />
+                  </div>
+                )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
                     <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
