@@ -1,8 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { Resend } from "https://esm.sh/resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,8 +9,101 @@ const corsHeaders = {
 interface SendCampaignRequest {
   campaign_id: string;
   test_email?: string;
-  resume?: boolean; // New: resume sending pending emails
-  batch_size?: number; // New: how many emails to send per invocation
+  resume?: boolean;
+  batch_size?: number;
+}
+
+// SendPulse OAuth2 token cache
+let cachedToken: { token: string; expiresAt: number } | null = null;
+
+// Get SendPulse OAuth2 token
+async function getSendPulseToken(): Promise<string> {
+  // Check if we have a valid cached token (with 5 min buffer)
+  if (cachedToken && cachedToken.expiresAt > Date.now() + 300000) {
+    return cachedToken.token;
+  }
+
+  console.log("Fetching new SendPulse token...");
+  
+  const response = await fetch("https://api.sendpulse.com/oauth/access_token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      grant_type: "client_credentials",
+      client_id: Deno.env.get("SENDPULSE_CLIENT_ID"),
+      client_secret: Deno.env.get("SENDPULSE_CLIENT_SECRET"),
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("SendPulse token error:", errorText);
+    throw new Error(`Failed to get SendPulse token: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  
+  // Cache token (expires in 1 hour, we cache for 55 min)
+  cachedToken = {
+    token: data.access_token,
+    expiresAt: Date.now() + 3300000 // 55 minutes
+  };
+
+  console.log("SendPulse token obtained successfully");
+  return data.access_token;
+}
+
+// Send email via SendPulse SMTP API
+async function sendEmailViaSendPulse(params: {
+  from_name: string;
+  from_email: string;
+  to_email: string;
+  to_name?: string;
+  subject: string;
+  html: string;
+}): Promise<{ success: boolean; id?: string; error?: string }> {
+  try {
+    const token = await getSendPulseToken();
+    
+    // Convert HTML to Base64 (SendPulse requirement)
+    const htmlBase64 = btoa(unescape(encodeURIComponent(params.html)));
+    
+    const response = await fetch("https://api.sendpulse.com/smtp/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        email: {
+          html: htmlBase64,
+          text: "", // Plain text version (optional)
+          subject: params.subject,
+          from: {
+            name: params.from_name,
+            email: params.from_email,
+          },
+          to: [{ 
+            email: params.to_email, 
+            name: params.to_name || "" 
+          }],
+        },
+      }),
+    });
+
+    const result = await response.json();
+    
+    console.log("SendPulse API response:", JSON.stringify(result));
+
+    if (result.result === true) {
+      return { success: true, id: result.id };
+    } else {
+      return { success: false, error: result.message || JSON.stringify(result) };
+    }
+  } catch (error: any) {
+    console.error("SendPulse send error:", error);
+    return { success: false, error: error.message || "Unknown error" };
+  }
 }
 
 // Helper function to fetch all records with pagination
@@ -69,7 +159,7 @@ serve(async (req) => {
     );
 
     const { campaign_id, test_email, resume, batch_size }: SendCampaignRequest = await req.json();
-    const BATCH_SIZE = batch_size || 50; // Default 50 emails per batch (~30 seconds)
+    const BATCH_SIZE = batch_size || 50;
 
     console.log(`Processing campaign: ${campaign_id}, test_email: ${test_email}, resume: ${resume}, batch_size: ${BATCH_SIZE}`);
 
@@ -94,45 +184,34 @@ serve(async (req) => {
       console.log(`From: ${campaign.sender_name} <${campaign.sender_email}>`);
       console.log(`Subject: [TESTE] ${campaign.subject}`);
       
-      try {
-        const sendResult = await resend.emails.send({
-          from: `${campaign.sender_name} <${campaign.sender_email}>`,
-          to: [test_email],
-          subject: `[TESTE] ${campaign.subject}`,
-          html: campaign.content,
-        });
+      const sendResult = await sendEmailViaSendPulse({
+        from_name: campaign.sender_name,
+        from_email: campaign.sender_email,
+        to_email: test_email,
+        subject: `[TESTE] ${campaign.subject}`,
+        html: campaign.content,
+      });
 
-        console.log("Resend API response:", JSON.stringify(sendResult));
-
-        if (sendResult.error) {
-          console.error("Error sending test email:", sendResult.error);
-          return new Response(
-            JSON.stringify({ error: sendResult.error.message }),
-            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-
-        console.log("Test email sent successfully, ID:", sendResult.data?.id);
-
+      if (!sendResult.success) {
+        console.error("Error sending test email:", sendResult.error);
         return new Response(
-          JSON.stringify({ success: true, message: "Email de teste enviado!", email_id: sendResult.data?.id }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } catch (sendError: any) {
-        console.error("Exception sending test email:", sendError);
-        return new Response(
-          JSON.stringify({ error: sendError.message || "Erro ao enviar email" }),
+          JSON.stringify({ error: sendResult.error }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      console.log("Test email sent successfully, ID:", sendResult.id);
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Email de teste enviado!", email_id: sendResult.id }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // ========== RESUME MODE ==========
-    // Process only pending emails from existing logs
     if (resume) {
       console.log(`RESUME MODE: Processing pending emails for campaign ${campaign_id}`);
 
-      // Check if campaign is paused before starting
       if (campaign.is_paused) {
         console.log("Campaign is paused, not processing");
         return new Response(
@@ -147,7 +226,6 @@ serve(async (req) => {
         );
       }
 
-      // Fetch pending logs
       const { data: pendingLogs, error: logsError } = await supabaseClient
         .from("email_campaign_logs")
         .select("id, email")
@@ -164,7 +242,6 @@ serve(async (req) => {
       }
 
       if (!pendingLogs || pendingLogs.length === 0) {
-        // No more pending - mark campaign as complete
         const sentCount = campaign.sent_count || 0;
         const failedCount = campaign.failed_count || 0;
         
@@ -188,13 +265,11 @@ serve(async (req) => {
 
       console.log(`Found ${pendingLogs.length} pending emails to process`);
 
-      // Update campaign status to sending
       await supabaseClient
         .from("email_campaigns")
         .update({ status: "sending", is_paused: false })
         .eq("id", campaign_id);
 
-      // Send emails
       let sentCount = campaign.sent_count || 0;
       let failedCount = campaign.failed_count || 0;
       const DELAY_BETWEEN_EMAILS = 600;
@@ -211,7 +286,6 @@ serve(async (req) => {
         if (currentCampaign?.is_paused) {
           console.log("Campaign paused by user, stopping processing");
           
-          // Update campaign status to paused
           await supabaseClient
             .from("email_campaigns")
             .update({ 
@@ -244,69 +318,29 @@ serve(async (req) => {
         const email = log.email;
         let success = false;
         let retries = 0;
-        let resendId: string | null = null;
+        let emailId: string | null = null;
         let errorMessage: string | null = null;
 
         while (!success && retries < MAX_RETRIES) {
-          try {
-            const result = await resend.emails.send({
-              from: `${campaign.sender_name} <${campaign.sender_email}>`,
-              to: [email],
-              subject: campaign.subject,
-              html: campaign.content,
-            });
+          const result = await sendEmailViaSendPulse({
+            from_name: campaign.sender_name,
+            from_email: campaign.sender_email,
+            to_email: email,
+            subject: campaign.subject,
+            html: campaign.content,
+          });
 
-            if (result.error) {
-              errorMessage = result.error.message || "Unknown error";
-              
-              if (errorMessage.includes("rate_limit") || errorMessage.includes("429") || errorMessage.includes("Too many requests")) {
-                console.log(`Rate limit hit for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
-                await new Promise((resolve) => setTimeout(resolve, 2000));
-                retries++;
-                continue;
-              }
-              
-              console.error(`Failed to send to ${email}: ${errorMessage}`);
-              failedCount++;
-              
-              await supabaseClient
-                .from("email_campaign_logs")
-                .update({
-                  status: "failed",
-                  error_message: errorMessage,
-                  sent_at: new Date().toISOString()
-                })
-                .eq("id", log.id);
-              
-              break;
-            }
-
-            success = true;
-            sentCount++;
-            resendId = result.data?.id || null;
+          if (!result.success) {
+            errorMessage = result.error || "Unknown error";
             
-            console.log(`[${i + 1}/${pendingLogs.length}] Sent to ${email} (ID: ${resendId})`);
-            
-            await supabaseClient
-              .from("email_campaign_logs")
-              .update({
-                status: "sent",
-                resend_id: resendId,
-                sent_at: new Date().toISOString()
-              })
-              .eq("id", log.id);
-
-          } catch (error: any) {
-            errorMessage = error.message || "Unknown exception";
-            
-            if (errorMessage && (errorMessage.includes("rate_limit") || errorMessage.includes("429") || errorMessage.includes("Too many requests"))) {
-              console.log(`Rate limit exception for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
+            if (errorMessage.includes("rate") || errorMessage.includes("limit") || errorMessage.includes("429")) {
+              console.log(`Rate limit hit for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
               await new Promise((resolve) => setTimeout(resolve, 2000));
               retries++;
               continue;
             }
             
-            console.error(`Failed to send to ${email}:`, errorMessage);
+            console.error(`Failed to send to ${email}: ${errorMessage}`);
             failedCount++;
             
             await supabaseClient
@@ -320,6 +354,21 @@ serve(async (req) => {
             
             break;
           }
+
+          success = true;
+          sentCount++;
+          emailId = result.id || null;
+          
+          console.log(`[${i + 1}/${pendingLogs.length}] Sent to ${email} (ID: ${emailId})`);
+          
+          await supabaseClient
+            .from("email_campaign_logs")
+            .update({
+              status: "sent",
+              resend_id: emailId, // Keep using resend_id column for compatibility
+              sent_at: new Date().toISOString()
+            })
+            .eq("id", log.id);
         }
 
         if (!success && retries >= MAX_RETRIES) {
@@ -336,7 +385,6 @@ serve(async (req) => {
             .eq("id", log.id);
         }
 
-        // Update campaign counts in real-time after each email
         await supabaseClient
           .from("email_campaigns")
           .update({ 
@@ -345,13 +393,11 @@ serve(async (req) => {
           })
           .eq("id", campaign_id);
 
-        // Delay between emails
         if (i < pendingLogs.length - 1) {
           await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_EMAILS));
         }
       }
 
-      // Check if there are more pending
       const { count: remainingCount } = await supabaseClient
         .from("email_campaign_logs")
         .select("*", { count: "exact", head: true })
@@ -360,7 +406,6 @@ serve(async (req) => {
 
       const hasMore = (remainingCount || 0) > 0;
 
-      // If no more, mark as complete
       if (!hasMore) {
         await supabaseClient
           .from("email_campaigns")
@@ -385,7 +430,6 @@ serve(async (req) => {
     }
 
     // ========== NORMAL MODE ==========
-    // Get recipients based on filter
     let recipients: string[] = [];
     const filter = campaign.recipient_filter;
 
@@ -503,7 +547,6 @@ serve(async (req) => {
       );
     }
 
-    // Update campaign status to sending
     await supabaseClient
       .from("email_campaigns")
       .update({ 
@@ -513,20 +556,17 @@ serve(async (req) => {
       })
       .eq("id", campaign_id);
 
-    // Clear any existing logs for this campaign (fresh start)
     await supabaseClient
       .from("email_campaign_logs")
       .delete()
       .eq("campaign_id", campaign_id);
 
-    // Create pending log entries for all recipients
     const pendingLogs = recipients.map(email => ({
       campaign_id,
       email,
       status: "pending"
     }));
 
-    // Insert logs in batches of 100
     for (let i = 0; i < pendingLogs.length; i += 100) {
       const batch = pendingLogs.slice(i, i + 100);
       await supabaseClient.from("email_campaign_logs").insert(batch);
@@ -534,7 +574,6 @@ serve(async (req) => {
 
     console.log(`Created ${pendingLogs.length} pending log entries`);
 
-    // Process first batch of emails
     const firstBatch = recipients.slice(0, BATCH_SIZE);
     let sentCount = 0;
     let failedCount = 0;
@@ -544,7 +583,6 @@ serve(async (req) => {
     console.log(`Starting to send first batch of ${firstBatch.length} emails`);
 
     for (let i = 0; i < firstBatch.length; i++) {
-      // CHECK FOR PAUSE before each email
       const { data: currentCampaign } = await supabaseClient
         .from("email_campaigns")
         .select("is_paused")
@@ -554,7 +592,6 @@ serve(async (req) => {
       if (currentCampaign?.is_paused) {
         console.log("Campaign paused by user, stopping processing");
         
-        // Update campaign status to paused
         await supabaseClient
           .from("email_campaigns")
           .update({ 
@@ -587,71 +624,29 @@ serve(async (req) => {
       const email = firstBatch[i];
       let success = false;
       let retries = 0;
-      let resendId: string | null = null;
+      let emailId: string | null = null;
       let errorMessage: string | null = null;
 
       while (!success && retries < MAX_RETRIES) {
-        try {
-          const result = await resend.emails.send({
-            from: `${campaign.sender_name} <${campaign.sender_email}>`,
-            to: [email],
-            subject: campaign.subject,
-            html: campaign.content,
-          });
+        const result = await sendEmailViaSendPulse({
+          from_name: campaign.sender_name,
+          from_email: campaign.sender_email,
+          to_email: email,
+          subject: campaign.subject,
+          html: campaign.content,
+        });
 
-          if (result.error) {
-            errorMessage = result.error.message || "Unknown error";
-            
-            if (errorMessage.includes("rate_limit") || errorMessage.includes("429") || errorMessage.includes("Too many requests")) {
-              console.log(`Rate limit hit for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
-              await new Promise((resolve) => setTimeout(resolve, 2000));
-              retries++;
-              continue;
-            }
-            
-            console.error(`Failed to send to ${email}: ${errorMessage}`);
-            failedCount++;
-            
-            await supabaseClient
-              .from("email_campaign_logs")
-              .update({
-                status: "failed",
-                error_message: errorMessage,
-                sent_at: new Date().toISOString()
-              })
-              .eq("campaign_id", campaign_id)
-              .eq("email", email);
-            
-            break;
-          }
-
-          success = true;
-          sentCount++;
-          resendId = result.data?.id || null;
+        if (!result.success) {
+          errorMessage = result.error || "Unknown error";
           
-          console.log(`[${i + 1}/${firstBatch.length}] Sent to ${email} (ID: ${resendId})`);
-          
-          await supabaseClient
-            .from("email_campaign_logs")
-            .update({
-              status: "sent",
-              resend_id: resendId,
-              sent_at: new Date().toISOString()
-            })
-            .eq("campaign_id", campaign_id)
-            .eq("email", email);
-
-        } catch (error: any) {
-          errorMessage = error.message || "Unknown exception";
-          
-          if (errorMessage && (errorMessage.includes("rate_limit") || errorMessage.includes("429") || errorMessage.includes("Too many requests"))) {
-            console.log(`Rate limit exception for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
+          if (errorMessage.includes("rate") || errorMessage.includes("limit") || errorMessage.includes("429")) {
+            console.log(`Rate limit hit for ${email}, waiting 2 seconds before retry ${retries + 1}/${MAX_RETRIES}`);
             await new Promise((resolve) => setTimeout(resolve, 2000));
             retries++;
             continue;
           }
           
-          console.error(`Failed to send to ${email}:`, errorMessage);
+          console.error(`Failed to send to ${email}: ${errorMessage}`);
           failedCount++;
           
           await supabaseClient
@@ -666,6 +661,22 @@ serve(async (req) => {
           
           break;
         }
+
+        success = true;
+        sentCount++;
+        emailId = result.id || null;
+        
+        console.log(`[${i + 1}/${firstBatch.length}] Sent to ${email} (ID: ${emailId})`);
+        
+        await supabaseClient
+          .from("email_campaign_logs")
+          .update({
+            status: "sent",
+            resend_id: emailId,
+            sent_at: new Date().toISOString()
+          })
+          .eq("campaign_id", campaign_id)
+          .eq("email", email);
       }
 
       if (!success && retries >= MAX_RETRIES) {
@@ -683,7 +694,6 @@ serve(async (req) => {
           .eq("email", email);
       }
 
-      // Update campaign counts in real-time after each email
       await supabaseClient
         .from("email_campaigns")
         .update({ 
@@ -697,7 +707,6 @@ serve(async (req) => {
       }
     }
 
-    // Update campaign counts
     await supabaseClient
       .from("email_campaigns")
       .update({ 
@@ -709,12 +718,10 @@ serve(async (req) => {
     const remaining = recipients.length - firstBatch.length;
     const hasMore = remaining > 0;
 
-    // If no more emails, mark as complete
     if (!hasMore) {
-      const finalStatus = failedCount === 0 ? "sent" : "sent";
       await supabaseClient
         .from("email_campaigns")
-        .update({ status: finalStatus })
+        .update({ status: "sent" })
         .eq("id", campaign_id);
     }
 
