@@ -5,15 +5,19 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, User, Camera, Lock, Eye, EyeOff, Save } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, User, Camera, Lock, Eye, EyeOff, Save, Bell, BellOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
   const { user, isPremium, isLoading: premiumLoading } = usePremiumStatus();
+  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   
+  const [showDisableModal, setShowDisableModal] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [bio, setBio] = useState("");
@@ -373,7 +377,105 @@ const ProfileSettings = () => {
             </Button>
           </form>
         </Card>
+
+        {/* Notification Settings */}
+        {isSupported && (
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              Notificações
+            </h2>
+            <div className="text-sm text-muted-foreground">
+              {isSubscribed ? (
+                <div className="flex items-center justify-between">
+                  <span>Notificações estão ativadas</span>
+                  <button
+                    onClick={() => setShowDisableModal(true)}
+                    disabled={pushLoading}
+                    className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+                  >
+                    Desativar
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span>Notificações estão desativadas</span>
+                  <button
+                    onClick={async () => {
+                      const success = await subscribe();
+                      if (success) {
+                        toast.success("Notificações ativadas!");
+                      } else {
+                        toast.error("Erro ao ativar notificações");
+                      }
+                    }}
+                    disabled={pushLoading}
+                    className="text-xs text-green-600 hover:text-green-700 underline transition-colors flex items-center gap-1"
+                  >
+                    <Bell className="h-3 w-3" />
+                    Ativar
+                  </button>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
       </div>
+
+      {/* Disable Notifications Modal */}
+      <Dialog open={showDisableModal} onOpenChange={setShowDisableModal}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-center flex items-center justify-center gap-2">
+              <BellOff className="h-5 w-5 text-red-500" />
+              Desativar Notificações?
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <p className="text-muted-foreground text-sm text-center mb-6">
+              Ao desativar as notificações, você perderá avisos sobre:
+            </p>
+            <ul className="text-muted-foreground text-sm space-y-2 mb-6">
+              <li className="flex items-center gap-2">
+                <span className="text-amber-500">•</span>
+                Novos conteúdos e atualizações
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-amber-500">•</span>
+                Promoções exclusivas
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-amber-500">•</span>
+                Novidades da plataforma
+              </li>
+            </ul>
+
+            <Button
+              className="w-full bg-green-600 hover:bg-green-700 text-white mb-3"
+              onClick={() => setShowDisableModal(false)}
+            >
+              Quero aproveitar os benefícios
+            </Button>
+
+            <button
+              onClick={async () => {
+                const success = await unsubscribe();
+                if (success) {
+                  toast.success("Notificações desativadas");
+                  setShowDisableModal(false);
+                } else {
+                  toast.error("Erro ao desativar notificações");
+                }
+              }}
+              disabled={pushLoading}
+              className="w-full text-xs text-muted-foreground hover:text-foreground underline transition-colors text-center py-2"
+            >
+              {pushLoading ? "Desativando..." : "Prefiro perder os benefícios"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
