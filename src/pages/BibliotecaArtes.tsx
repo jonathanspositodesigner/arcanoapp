@@ -16,6 +16,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import BannerCarousel from "@/components/BannerCarousel";
 import { toPackSlug } from "@/lib/utils";
 import { useImagePreloader } from "@/hooks/useImagePreloader";
+import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
+
 interface ArteItem {
   id: string | number;
   title: string;
@@ -106,17 +108,7 @@ const BibliotecaArtes = () => {
   const [activeSection, setActiveSection] = useState<SidebarSection>('packs');
   const [showCursoModal, setShowCursoModal] = useState(false);
   const [selectedCurso, setSelectedCurso] = useState<PackItem | null>(null);
-  const [isAppInstalled, setIsAppInstalled] = useState(false);
-
-  useEffect(() => {
-    // Check if app is installed as PWA
-    const checkInstalled = () => {
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
-        || (window.navigator as any).standalone === true;
-      setIsAppInstalled(isStandalone);
-    };
-    checkInstalled();
-  }, []);
+  const isAppInstalled = useIsAppInstalled();
   useEffect(() => {
     fetchArtes();
     fetchCategories();
@@ -1343,14 +1335,16 @@ const BibliotecaArtes = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Floating Menu Button - Mobile Only */}
-      <button 
-        onClick={() => setSidebarOpen(true)}
-        className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground px-6 py-3 rounded-full shadow-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
-      >
-        <Menu className="h-5 w-5" />
-        <span className="font-medium">Menu</span>
-      </button>
+      {/* Floating Install App Button - Mobile Only, Hidden when installed */}
+      {!isAppInstalled && (
+        <button 
+          onClick={() => navigate('/install-app')}
+          className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-yellow-500 to-amber-600 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-amber-700 transition-all animate-pulse"
+        >
+          <Smartphone className="h-5 w-5" />
+          <span className="font-medium">Instalar App</span>
+        </button>
+      )}
     </div>;
 };
 export default BibliotecaArtes;
