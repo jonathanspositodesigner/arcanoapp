@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Mail, Share2, Target, Calendar } from "lucide-react";
+import { Mail, Share2, Target, Calendar, Bell } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 const AdminMarketing = () => {
@@ -24,6 +24,19 @@ const AdminMarketing = () => {
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">E-mail Marketing</h2>
               <p className="text-muted-foreground hidden sm:block">Crie e envie campanhas de email</p>
+            </div>
+          </Card>
+
+          <Card 
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" 
+            onClick={() => navigate('/admin-push-notifications')}
+          >
+            <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+              <div className="p-2 sm:p-4 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-full">
+                <Bell className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+              </div>
+              <h2 className="text-xs sm:text-2xl font-bold text-foreground">Notificações Push</h2>
+              <p className="text-muted-foreground hidden sm:block">Envie notificações para o app</p>
             </div>
           </Card>
         </div>

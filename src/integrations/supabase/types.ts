@@ -1373,6 +1373,66 @@ export type Database = {
         }
         Relationships: []
       }
+      push_notification_logs: {
+        Row: {
+          body: string
+          failed_count: number | null
+          id: string
+          sent_at: string
+          sent_count: number | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          body: string
+          failed_count?: number | null
+          id?: string
+          sent_at?: string
+          sent_count?: number | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          body?: string
+          failed_count?: number | null
+          id?: string
+          sent_at?: string
+          sent_count?: number | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          device_type: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_agent: string | null
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          device_type?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_agent?: string | null
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          device_type?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       tutorial_events: {
         Row: {
           created_at: string

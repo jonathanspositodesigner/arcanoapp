@@ -66,6 +66,7 @@ import FerramentaIAArtes from "./pages/FerramentaIAArtes";
 import AdminManagePromotions from "./pages/AdminManagePromotions";
 import AdminManageBlacklist from "./pages/AdminManageBlacklist";
 import AdminWebhookLogs from "./pages/AdminWebhookLogs";
+import AdminPushNotifications from "./pages/AdminPushNotifications";
 import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
@@ -147,6 +148,7 @@ const AppContent = () => {
         <Route path="/admin-manage-promotions" element={<AdminManagePromotions />} />
         <Route path="/admin-blacklist" element={<AdminManageBlacklist />} />
         <Route path="/admin-webhook-logs" element={<AdminWebhookLogs />} />
+        <Route path="/admin-push-notifications" element={<AdminPushNotifications />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

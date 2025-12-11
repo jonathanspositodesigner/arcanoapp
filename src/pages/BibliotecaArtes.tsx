@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -17,6 +17,7 @@ import BannerCarousel from "@/components/BannerCarousel";
 import { toPackSlug } from "@/lib/utils";
 import { useImagePreloader } from "@/hooks/useImagePreloader";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
+import PushNotificationButton from "@/components/PushNotificationButton";
 
 interface ArteItem {
   id: string | number;
@@ -373,7 +374,11 @@ const BibliotecaArtes = () => {
       </div>
       
       <nav className="flex-1 px-2 space-y-1">
-        {!isAppInstalled && (
+        {isAppInstalled ? (
+          <div className="mb-6 px-2">
+            <PushNotificationButton variant="floating" className="w-full justify-center" />
+          </div>
+        ) : (
           <div className="mb-6">
             <button onClick={() => {
               navigate('/install-app');
