@@ -1176,7 +1176,15 @@ const BibliotecaArtes = () => {
 
       {/* Arte Detail Modal */}
       <Dialog open={!!selectedArte} onOpenChange={() => handleCloseModal()}>
-        <DialogContent className="max-w-[95vw] sm:max-w-fit max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-w-[340px] sm:max-w-lg max-h-[90vh] p-0 overflow-hidden">
+          {/* Custom close button - always visible and clickable */}
+          <button 
+            onClick={() => handleCloseModal()} 
+            className="absolute right-3 top-3 z-50 rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          
           {selectedArte && (() => {
           const packSlug = toPackSlug(selectedArte.pack);
           // Check if arte belongs to bonus, updates, or tutorial pack type
@@ -1187,61 +1195,65 @@ const BibliotecaArtes = () => {
           // For bonus/updates: any active pack grants access
           // For regular packs: need specific pack access
           const hasAccess = isTutorialType || !selectedArte.isPremium || (isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug));
-          return <div className="space-y-4">
-                <div className="flex justify-center">
-                  {isVideoUrl(selectedArte.imageUrl) ? <SecureVideo src={selectedArte.imageUrl} className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} controls /> : <SecureImage src={selectedArte.imageUrl} alt={selectedArte.title} className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} />}
+          return <div className="flex flex-col max-h-[85vh]">
+                {/* Image/Video container - limited height for mobile */}
+                <div className="flex-shrink-0 flex justify-center p-4 pb-2">
+                  {isVideoUrl(selectedArte.imageUrl) ? <SecureVideo src={selectedArte.imageUrl} className="max-w-full max-h-[40vh] sm:max-h-[50vh] w-auto h-auto rounded-lg object-contain" isPremium={selectedArte.isPremium || false} controls /> : <SecureImage src={selectedArte.imageUrl} alt={selectedArte.title} className="max-w-full max-h-[40vh] sm:max-h-[50vh] w-auto h-auto rounded-lg object-contain" isPremium={selectedArte.isPremium || false} />}
                 </div>
                 
-                <div className="text-center">
-                  <h2 className="text-lg font-bold text-foreground">{selectedArte.title}</h2>
-                  <div className="mt-2 flex flex-wrap justify-center gap-1">
-                    {getBadgeContent(selectedArte)}
-                    {selectedArte.category && <Badge variant="secondary" className="text-xs">
-                        {selectedArte.category}
-                      </Badge>}
+                {/* Content container - scrollable if needed */}
+                <div className="flex-shrink-0 px-4 pb-4 space-y-3 overflow-y-auto">
+                  <div className="text-center">
+                    <h2 className="text-lg font-bold text-foreground">{selectedArte.title}</h2>
+                    <div className="mt-2 flex flex-wrap justify-center gap-1">
+                      {getBadgeContent(selectedArte)}
+                      {selectedArte.category && <Badge variant="secondary" className="text-xs">
+                          {selectedArte.category}
+                        </Badge>}
+                    </div>
+                    {selectedArte.description && <p className="text-muted-foreground text-sm mt-2">{selectedArte.description}</p>}
                   </div>
-                  {selectedArte.description && <p className="text-muted-foreground text-sm mt-2">{selectedArte.description}</p>}
-                </div>
 
-                {hasAccess ? <div className="flex flex-col gap-2">
-                    {selectedArte.canvaLink && <Button onClick={() => window.open(selectedArte.canvaLink, '_blank')} className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white">
-                        <Download className="h-4 w-4 mr-2" />
-                        Abrir no Canva
-                      </Button>}
-                    {selectedArte.driveLink && <Button onClick={() => window.open(selectedArte.driveLink, '_blank')} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
-                        <Download className="h-4 w-4 mr-2" />
-                        Baixar PSD
-                      </Button>}
-                    {selectedArte.downloadUrl && <Button onClick={() => handleDownload(selectedArte)} className="w-full" variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
-                        Baixar Arquivo
-                      </Button>}
-                    {!selectedArte.canvaLink && !selectedArte.driveLink && !selectedArte.downloadUrl && <Button onClick={() => handleDownload(selectedArte)} className="w-full">
-                        <Download className="h-4 w-4 mr-2" />
-                        Baixar Imagem
-                      </Button>}
-                    {/* Ver mais Artes button - only for free arts */}
-                    {!selectedArte.isPremium && <Button onClick={() => {
-                        handleCloseModal();
-                        setSelectedPack(null);
-                        setActiveSection('all-artes');
-                      }} variant="outline" className="w-full border-primary text-primary hover:bg-primary/10">
-                        <Eye className="h-4 w-4 mr-2" />
-                        Ver mais Artes
-                      </Button>}
-                  </div> : <div className="flex flex-col gap-2">
-                    <p className="text-center text-muted-foreground text-sm">
-                      Adquira o pack "{selectedArte.pack}" para ter acesso completo a esta arte.
-                    </p>
-                    {!user && <Button onClick={() => navigate('/login-artes')} variant="outline" className="w-full">
-                        <LogIn className="h-4 w-4 mr-2" />
-                        Fazer Login
-                      </Button>}
-                    <Button onClick={() => navigate(`/planos-artes?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white">
-                      <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                      Comprar Pack
-                    </Button>
-                  </div>}
+                  {hasAccess ? <div className="flex flex-col gap-2">
+                      {selectedArte.canvaLink && <Button onClick={() => window.open(selectedArte.canvaLink, '_blank')} className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white">
+                          <Download className="h-4 w-4 mr-2" />
+                          Abrir no Canva
+                        </Button>}
+                      {selectedArte.driveLink && <Button onClick={() => window.open(selectedArte.driveLink, '_blank')} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
+                          <Download className="h-4 w-4 mr-2" />
+                          Baixar PSD
+                        </Button>}
+                      {selectedArte.downloadUrl && <Button onClick={() => handleDownload(selectedArte)} className="w-full" variant="outline">
+                          <Download className="h-4 w-4 mr-2" />
+                          Baixar Arquivo
+                        </Button>}
+                      {!selectedArte.canvaLink && !selectedArte.driveLink && !selectedArte.downloadUrl && <Button onClick={() => handleDownload(selectedArte)} className="w-full">
+                          <Download className="h-4 w-4 mr-2" />
+                          Baixar Imagem
+                        </Button>}
+                      {/* Ver mais Artes button - only for free arts */}
+                      {!selectedArte.isPremium && <Button onClick={() => {
+                          handleCloseModal();
+                          setSelectedPack(null);
+                          setActiveSection('all-artes');
+                        }} variant="outline" className="w-full border-primary text-primary hover:bg-primary/10">
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver mais Artes
+                        </Button>}
+                    </div> : <div className="flex flex-col gap-2">
+                      <p className="text-center text-muted-foreground text-sm">
+                        Adquira o pack "{selectedArte.pack}" para ter acesso completo a esta arte.
+                      </p>
+                      {!user && <Button onClick={() => navigate('/login-artes')} variant="outline" className="w-full">
+                          <LogIn className="h-4 w-4 mr-2" />
+                          Fazer Login
+                        </Button>}
+                      <Button onClick={() => navigate(`/planos-artes?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white">
+                        <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                        Comprar Pack
+                      </Button>
+                    </div>}
+                </div>
               </div>;
         })()}
         </DialogContent>
