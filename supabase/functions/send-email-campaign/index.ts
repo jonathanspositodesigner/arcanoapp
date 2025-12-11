@@ -53,6 +53,34 @@ async function getSendPulseToken(): Promise<string> {
   return data.access_token;
 }
 
+// Generate unsubscribe link
+function getUnsubscribeLink(email: string): string {
+  const baseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  return `${baseUrl}/functions/v1/email-unsubscribe?email=${encodeURIComponent(email)}`;
+}
+
+// Add unsubscribe footer to email content
+function addUnsubscribeFooter(html: string, email: string): string {
+  const unsubscribeLink = getUnsubscribeLink(email);
+  
+  const footer = `
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #6b7280;">
+      <p style="margin: 0;">Você está recebendo este email porque está cadastrado em nossa plataforma.</p>
+      <p style="margin: 8px 0 0 0;">
+        <a href="${unsubscribeLink}" style="color: #6b7280; text-decoration: underline;">
+          Clique aqui para cancelar sua inscrição
+        </a>
+      </p>
+    </div>
+  `;
+  
+  // Insert before closing body tag if exists, otherwise append
+  if (html.includes('</body>')) {
+    return html.replace('</body>', `${footer}</body>`);
+  }
+  return html + footer;
+}
+
 // Send email via SendPulse SMTP API
 async function sendEmailViaSendPulse(params: {
   from_name: string;
@@ -65,8 +93,11 @@ async function sendEmailViaSendPulse(params: {
   try {
     const token = await getSendPulseToken();
     
+    // Add unsubscribe footer to email
+    const htmlWithUnsubscribe = addUnsubscribeFooter(params.html, params.to_email);
+    
     // Convert HTML to Base64 (SendPulse requirement)
-    const htmlBase64 = btoa(unescape(encodeURIComponent(params.html)));
+    const htmlBase64 = btoa(unescape(encodeURIComponent(htmlWithUnsubscribe)));
     
     const response = await fetch("https://api.sendpulse.com/smtp/emails", {
       method: "POST",
@@ -538,7 +569,21 @@ serve(async (req) => {
     // Remove duplicates
     recipients = [...new Set(recipients)];
 
-    console.log(`Found ${recipients.length} recipients for filter: ${filter}`);
+    console.log(`Found ${recipients.length} recipients before blacklist filter`);
+
+    // Filter out blacklisted emails
+    const blacklisted = await fetchAllRecords(supabaseClient, "blacklisted_emails", "email", {});
+    const blacklistedSet = new Set(blacklisted.map((b) => b.email.toLowerCase()));
+    
+    const originalCount = recipients.length;
+    recipients = recipients.filter((email) => !blacklistedSet.has(email.toLowerCase()));
+    
+    const removedCount = originalCount - recipients.length;
+    if (removedCount > 0) {
+      console.log(`Removed ${removedCount} blacklisted emails`);
+    }
+
+    console.log(`Final recipient count: ${recipients.length} for filter: ${filter}`);
 
     if (recipients.length === 0) {
       return new Response(
