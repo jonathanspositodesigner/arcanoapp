@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Mail, Save, Check, Pencil, Trash2, X } from "lucide-react";
+import { Bell, Mail, Save, Check, Pencil, Trash2, X, TestTube, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +20,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import EmailEditor from "@/components/email-marketing/EmailEditor";
+import EmojiPicker from "@/components/email-marketing/EmojiPicker";
 
 interface PushTemplate {
   id: string;
@@ -29,11 +31,14 @@ interface PushTemplate {
   url: string | null;
 }
 
-interface EmailTemplate {
+export interface EmailTemplate {
   id: string;
   name: string;
+  title: string;
   subject: string;
   content: string;
+  sender_name: string;
+  sender_email: string;
 }
 
 interface AnnouncementConfigModalProps {
@@ -67,10 +72,17 @@ export function AnnouncementConfigModal({
   // Email state
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
   const [useEmailTemplate, setUseEmailTemplate] = useState(true);
+  const [emailTitle, setEmailTitle] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
-  const [emailContent, setEmailContent] = useState("");
+  const [emailContent, setEmailContent] = useState("<p>Escreva seu email aqui...</p>");
+  const [emailSenderName, setEmailSenderName] = useState("Vox Visual");
+  const [emailSenderEmail, setEmailSenderEmail] = useState("contato@voxvisual.com.br");
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
   const [editingEmailId, setEditingEmailId] = useState<string | null>(null);
+  
+  // Test email state
+  const [testEmail, setTestEmail] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
   
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: "push" | "email"; id: string; name: string } | null>(null);
@@ -104,7 +116,12 @@ export function AnnouncementConfigModal({
       .from("email_templates")
       .select("*")
       .order("created_at", { ascending: false });
-    setEmailTemplates(data || []);
+    setEmailTemplates((data || []).map(t => ({
+      ...t,
+      title: t.title || "",
+      sender_name: t.sender_name || "Vox Visual",
+      sender_email: t.sender_email || "contato@voxvisual.com.br",
+    })));
   };
 
   const handleSavePushTemplate = async () => {
@@ -114,7 +131,6 @@ export function AnnouncementConfigModal({
     }
     
     if (editingPushId) {
-      // Update existing
       setIsSaving(true);
       try {
         const { data, error } = await supabase
@@ -143,7 +159,6 @@ export function AnnouncementConfigModal({
         setIsSaving(false);
       }
     } else {
-      // Create new
       const name = prompt("Digite o nome do modelo:");
       if (!name?.trim()) return;
       
@@ -179,20 +194,22 @@ export function AnnouncementConfigModal({
   };
 
   const handleSaveEmailTemplate = async () => {
-    if (!emailSubject.trim() || !emailContent.trim()) {
-      toast.error("Assunto e conteúdo são obrigatórios");
+    if (!emailTitle.trim() || !emailSubject.trim() || !emailContent.trim()) {
+      toast.error("Título interno, assunto e conteúdo são obrigatórios");
       return;
     }
     
     if (editingEmailId) {
-      // Update existing
       setIsSaving(true);
       try {
         const { data, error } = await supabase
           .from("email_templates")
           .update({
+            title: emailTitle,
             subject: emailSubject,
             content: emailContent,
+            sender_name: emailSenderName,
+            sender_email: emailSenderEmail,
           })
           .eq("id", editingEmailId)
           .select()
@@ -204,7 +221,12 @@ export function AnnouncementConfigModal({
         fetchEmailTemplates();
         resetEmailForm();
         if (data && selectedEmailId === editingEmailId) {
-          onSelectEmailTemplate(data);
+          onSelectEmailTemplate({
+            ...data,
+            title: data.title || "",
+            sender_name: data.sender_name || "Vox Visual",
+            sender_email: data.sender_email || "contato@voxvisual.com.br",
+          });
         }
       } catch (error) {
         console.error("Error updating email template:", error);
@@ -213,7 +235,6 @@ export function AnnouncementConfigModal({
         setIsSaving(false);
       }
     } else {
-      // Create new
       const name = prompt("Digite o nome do modelo:");
       if (!name?.trim()) return;
       
@@ -223,8 +244,11 @@ export function AnnouncementConfigModal({
           .from("email_templates")
           .insert({
             name: name.trim(),
+            title: emailTitle,
             subject: emailSubject,
             content: emailContent,
+            sender_name: emailSenderName,
+            sender_email: emailSenderEmail,
           })
           .select()
           .single();
@@ -236,7 +260,12 @@ export function AnnouncementConfigModal({
         resetEmailForm();
         if (data) {
           setSelectedEmailId(data.id);
-          onSelectEmailTemplate(data);
+          onSelectEmailTemplate({
+            ...data,
+            title: data.title || "",
+            sender_name: data.sender_name || "Vox Visual",
+            sender_email: data.sender_email || "contato@voxvisual.com.br",
+          });
         }
       } catch (error) {
         console.error("Error saving email template:", error);
@@ -244,6 +273,61 @@ export function AnnouncementConfigModal({
       } finally {
         setIsSaving(false);
       }
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    if (!testEmail.trim()) {
+      toast.error("Digite um email para teste");
+      return;
+    }
+
+    if (!emailSubject.trim() || !emailContent.trim()) {
+      toast.error("Preencha o assunto e conteúdo primeiro");
+      return;
+    }
+
+    setSendingTest(true);
+
+    try {
+      // Create a temporary campaign for the test
+      const { data: campaignData, error: campaignError } = await supabase
+        .from("email_campaigns")
+        .insert({
+          title: emailTitle || "Teste de modelo",
+          subject: emailSubject,
+          content: emailContent,
+          sender_name: emailSenderName,
+          sender_email: emailSenderEmail,
+          recipient_filter: "custom_email",
+          filter_value: testEmail,
+          status: "draft",
+        })
+        .select()
+        .single();
+
+      if (campaignError || !campaignData) {
+        throw new Error("Erro ao criar campanha de teste");
+      }
+
+      // Send test email
+      const { data, error } = await supabase.functions.invoke("send-email-campaign", {
+        body: {
+          campaign_id: campaignData.id,
+          test_email: testEmail,
+        },
+      });
+
+      if (error || data?.error) {
+        throw new Error(data?.error || "Erro ao enviar email de teste");
+      }
+
+      toast.success("Email de teste enviado!");
+    } catch (error: any) {
+      console.error("Error sending test email:", error);
+      toast.error(error.message || "Erro ao enviar email de teste");
+    } finally {
+      setSendingTest(false);
     }
   };
 
@@ -257,8 +341,11 @@ export function AnnouncementConfigModal({
 
   const handleEditEmail = (template: EmailTemplate) => {
     setEditingEmailId(template.id);
+    setEmailTitle(template.title || "");
     setEmailSubject(template.subject);
     setEmailContent(template.content);
+    setEmailSenderName(template.sender_name || "Vox Visual");
+    setEmailSenderEmail(template.sender_email || "contato@voxvisual.com.br");
     setUseEmailTemplate(false);
   };
 
@@ -321,8 +408,11 @@ export function AnnouncementConfigModal({
   };
 
   const resetEmailForm = () => {
+    setEmailTitle("");
     setEmailSubject("");
-    setEmailContent("");
+    setEmailContent("<p>Escreva seu email aqui...</p>");
+    setEmailSenderName("Vox Visual");
+    setEmailSenderEmail("contato@voxvisual.com.br");
     setEditingEmailId(null);
     setUseEmailTemplate(true);
   };
@@ -340,7 +430,7 @@ export function AnnouncementConfigModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Configurar Modelos de Anúncio</DialogTitle>
           </DialogHeader>
@@ -565,26 +655,97 @@ export function AnnouncementConfigModal({
                       </Button>
                     </div>
                   )}
+                  
+                  {/* Título interno */}
                   <div>
-                    <Label htmlFor="email-subject">Assunto</Label>
-                    <Input
-                      id="email-subject"
-                      value={emailSubject}
-                      onChange={(e) => setEmailSubject(e.target.value)}
-                      placeholder="Ex: 🎉 Novidades na plataforma!"
-                      className="mt-1"
-                    />
+                    <Label htmlFor="email-title">Título interno</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Input
+                        id="email-title"
+                        value={emailTitle}
+                        onChange={(e) => setEmailTitle(e.target.value)}
+                        placeholder="Ex: Black Friday 2024"
+                        className="flex-1"
+                      />
+                      <EmojiPicker onSelect={(emoji) => setEmailTitle(prev => prev + emoji)} />
+                    </div>
                   </div>
+
+                  {/* Assunto do email */}
                   <div>
-                    <Label htmlFor="email-content">Conteúdo (HTML)</Label>
-                    <Textarea
-                      id="email-content"
-                      value={emailContent}
-                      onChange={(e) => setEmailContent(e.target.value)}
-                      placeholder="<h1>Olá!</h1><p>Confira as novidades...</p>"
-                      className="mt-1 min-h-[150px] font-mono text-sm"
-                    />
+                    <Label htmlFor="email-subject">Assunto do email</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Input
+                        id="email-subject"
+                        value={emailSubject}
+                        onChange={(e) => setEmailSubject(e.target.value)}
+                        placeholder="Ex: 🔥 Oferta especial só hoje!"
+                        className="flex-1"
+                      />
+                      <EmojiPicker onSelect={(emoji) => setEmailSubject(prev => prev + emoji)} />
+                    </div>
                   </div>
+
+                  {/* Remetente */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="email-sender-name">Nome do remetente</Label>
+                      <Input
+                        id="email-sender-name"
+                        value={emailSenderName}
+                        onChange={(e) => setEmailSenderName(e.target.value)}
+                        placeholder="Vox Visual"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email-sender-email">Email do remetente</Label>
+                      <Input
+                        id="email-sender-email"
+                        value={emailSenderEmail}
+                        onChange={(e) => setEmailSenderEmail(e.target.value)}
+                        placeholder="contato@voxvisual.com.br"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Conteúdo do email */}
+                  <div>
+                    <Label>Conteúdo do email</Label>
+                    <div className="mt-1">
+                      <EmailEditor
+                        value={emailContent}
+                        onChange={setEmailContent}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Enviar email de teste */}
+                  <div className="p-4 border border-dashed border-border rounded-lg space-y-3">
+                    <Label className="text-sm font-medium">Enviar email de teste</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={testEmail}
+                        onChange={(e) => setTestEmail(e.target.value)}
+                        placeholder="seu@email.com"
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={handleSendTestEmail}
+                        disabled={sendingTest}
+                      >
+                        {sendingTest ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <TestTube className="h-4 w-4" />
+                        )}
+                        <span className="ml-2">Testar</span>
+                      </Button>
+                    </div>
+                  </div>
+
                   <Button
                     onClick={handleSaveEmailTemplate}
                     disabled={isSaving}
