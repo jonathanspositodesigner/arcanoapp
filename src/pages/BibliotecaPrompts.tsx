@@ -14,7 +14,6 @@ import logoHorizontal from "@/assets/logo_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import ArcaneAIStudioModal from "@/components/ArcaneAIStudioModal";
-import { useSessionTracker } from "@/hooks/useSessionTracker";
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 interface PromptItem {
   id: string | number;
@@ -61,9 +60,6 @@ const BibliotecaPrompts = () => {
 
   // Check for collection slug in URL first
   const colecaoParam = searchParams.get("colecao");
-  
-  // Track session
-  useSessionTracker();
   
   const {
     user,

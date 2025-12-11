@@ -1,16 +1,20 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { useSessionTracker } from "./useSessionTracker";
+import { useAccessTracker } from "./useAccessTracker";
 
 export const usePageViewTracker = () => {
   const location = useLocation();
   
-  // Use the session tracker - it handles all tracking logic now
-  useSessionTracker();
+  // Simple access tracker - records one access per device per day
+  useAccessTracker();
 
-  // Update last activity on any navigation
+  // Update last activity on any navigation (for potential future use)
   useEffect(() => {
-    sessionStorage.setItem("tracking_last_activity", Date.now().toString());
+    try {
+      localStorage.setItem("tracking_last_activity", Date.now().toString());
+    } catch {
+      // Silently fail if localStorage unavailable
+    }
   }, [location.pathname]);
 };
 

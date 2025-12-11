@@ -11,7 +11,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
-import { useSessionTracker } from "@/hooks/useSessionTracker";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import BannerCarousel from "@/components/BannerCarousel";
 import { toPackSlug } from "@/lib/utils";
@@ -65,7 +64,6 @@ type SidebarSection = 'packs' | 'bonus' | 'cursos' | 'updates' | 'free-sample' |
 const BibliotecaArtes = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  useSessionTracker();
   const {
     user,
     isPremium,
