@@ -842,7 +842,7 @@ const BibliotecaPrompts = () => {
       <ArcaneAIStudioModal open={showArcaneStudioModal} onOpenChange={setShowArcaneStudioModal} isPremium={isPremium} planType={planType} isLoggedIn={!!user} />
 
       {/* Push Notification Prompt */}
-      <PushNotificationPrompt isLoggedIn={!!user} />
+      <PushNotificationPrompt />
     </div>;
 };
 export default BibliotecaPrompts;

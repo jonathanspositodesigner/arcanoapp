@@ -8,19 +8,19 @@ import { toast } from "sonner";
 const Index = () => {
   const navigate = useNavigate();
   const isAppInstalled = useIsAppInstalled();
-  const { isSupported, subscribe } = usePushNotifications();
+  const { subscribe } = usePushNotifications();
 
-  // FONTE ÚNICA DE VERDADE: Notification.permission
-  const hasPermission = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
+  // LÓGICA SIMPLES: Mostra botão se browser suporta E permissão não foi concedida
+  const showNotificationButton = typeof window !== 'undefined' && 
+    'Notification' in window && 
+    Notification.permission !== 'granted';
 
   const handleActivateNotifications = async () => {
     const success = await subscribe();
     if (success) {
-      // Track manual activation
       trackPushNotificationEvent('activated_manual');
       toast.success("Notificações ativadas com sucesso!");
     } else {
-      // Track permission denied
       trackPushNotificationEvent('permission_denied');
       toast.error("Não foi possível ativar as notificações");
     }
@@ -54,8 +54,8 @@ const Index = () => {
           </button>
         )}
 
-        {/* Botão Ativar Notificações - só mostra se não tem permissão */}
-        {isSupported && !hasPermission && (
+        {/* Botão Ativar Notificações - mostra se não está ativada */}
+        {showNotificationButton && (
           <button
             onClick={handleActivateNotifications}
             className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"

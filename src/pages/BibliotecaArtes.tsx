@@ -1349,7 +1349,7 @@ const BibliotecaArtes = () => {
       )}
 
       {/* Push Notification Prompt */}
-      <PushNotificationPrompt isLoggedIn={!!user} />
+      <PushNotificationPrompt />
     </div>;
 };
 export default BibliotecaArtes;
