@@ -810,9 +810,17 @@ export type Database = {
           failed_count: number | null
           filter_value: string | null
           id: string
+          is_scheduled: boolean | null
+          last_scheduled_send_at: string | null
+          next_send_at: string | null
           opened_count: number | null
           recipient_filter: string
           recipients_count: number | null
+          schedule_type: string | null
+          scheduled_at: string | null
+          scheduled_day_of_month: number | null
+          scheduled_day_of_week: number | null
+          scheduled_time: string | null
           sender_email: string
           sender_name: string
           sent_at: string | null
@@ -832,9 +840,17 @@ export type Database = {
           failed_count?: number | null
           filter_value?: string | null
           id?: string
+          is_scheduled?: boolean | null
+          last_scheduled_send_at?: string | null
+          next_send_at?: string | null
           opened_count?: number | null
           recipient_filter?: string
           recipients_count?: number | null
+          schedule_type?: string | null
+          scheduled_at?: string | null
+          scheduled_day_of_month?: number | null
+          scheduled_day_of_week?: number | null
+          scheduled_time?: string | null
           sender_email: string
           sender_name?: string
           sent_at?: string | null
@@ -854,9 +870,17 @@ export type Database = {
           failed_count?: number | null
           filter_value?: string | null
           id?: string
+          is_scheduled?: boolean | null
+          last_scheduled_send_at?: string | null
+          next_send_at?: string | null
           opened_count?: number | null
           recipient_filter?: string
           recipients_count?: number | null
+          schedule_type?: string | null
+          scheduled_at?: string | null
+          scheduled_day_of_month?: number | null
+          scheduled_day_of_week?: number | null
+          scheduled_time?: string | null
           sender_email?: string
           sender_name?: string
           sent_at?: string | null
