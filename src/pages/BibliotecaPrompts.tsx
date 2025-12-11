@@ -15,6 +15,7 @@ import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import ArcaneAIStudioModal from "@/components/ArcaneAIStudioModal";
 import { useSessionTracker } from "@/hooks/useSessionTracker";
+import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 interface PromptItem {
   id: string | number;
   title: string;
@@ -839,6 +840,9 @@ const BibliotecaPrompts = () => {
 
       {/* Arcane AI Studio Modal */}
       <ArcaneAIStudioModal open={showArcaneStudioModal} onOpenChange={setShowArcaneStudioModal} isPremium={isPremium} planType={planType} isLoggedIn={!!user} />
+
+      {/* Push Notification Prompt */}
+      <PushNotificationPrompt isLoggedIn={!!user} />
     </div>;
 };
 export default BibliotecaPrompts;
