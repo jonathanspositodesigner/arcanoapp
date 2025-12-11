@@ -24,13 +24,15 @@ export const useAccessTracker = () => {
         const storageKey = `access_tracked_${deviceType}_${today}`;
 
         console.log(`[AccessTracker] Device: ${deviceType}, Date: ${today}`);
+        console.log(`[AccessTracker] Storage key: ${storageKey}`);
 
         // 2. Check if already tracked today for this device
         let alreadyTracked = false;
         try {
           alreadyTracked = localStorage.getItem(storageKey) === "true";
-        } catch {
-          // localStorage might not be available
+          console.log(`[AccessTracker] Already tracked today: ${alreadyTracked}`);
+        } catch (e) {
+          console.log("[AccessTracker] localStorage not available, proceeding anyway");
         }
 
         if (alreadyTracked) {
@@ -42,15 +44,19 @@ export const useAccessTracker = () => {
         // 3. Generate unique session ID
         const sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const userAgent = navigator.userAgent;
+        const pagePath = window.location.pathname;
 
         console.log(`[AccessTracker] Recording new ${deviceType} access...`);
+        console.log(`[AccessTracker] Session ID: ${sessionId}`);
+        console.log(`[AccessTracker] Page: ${pagePath}`);
+        console.log(`[AccessTracker] User Agent: ${userAgent.substring(0, 50)}...`);
 
         // 4. Insert into database
         const { data, error } = await supabase
           .from("user_sessions")
           .insert({
             session_id: sessionId,
-            page_path: window.location.pathname,
+            page_path: pagePath,
             device_type: deviceType,
             user_agent: userAgent,
             entered_at: new Date().toISOString(),
@@ -60,6 +66,7 @@ export const useAccessTracker = () => {
 
         if (error) {
           console.error("[AccessTracker] ERROR inserting:", error.message);
+          console.error("[AccessTracker] Error details:", JSON.stringify(error));
           return;
         }
 
@@ -68,8 +75,9 @@ export const useAccessTracker = () => {
         // 5. Mark as tracked for today
         try {
           localStorage.setItem(storageKey, "true");
-        } catch {
-          // localStorage might not be available
+          console.log(`[AccessTracker] Marked as tracked in localStorage`);
+        } catch (e) {
+          console.log("[AccessTracker] Could not save to localStorage");
         }
 
         hasTrackedRef.current = true;
@@ -78,6 +86,8 @@ export const useAccessTracker = () => {
       }
     };
 
+    // Execute immediately
+    console.log("[AccessTracker] Hook mounted, starting tracking...");
     trackAccess();
   }, []);
 };
