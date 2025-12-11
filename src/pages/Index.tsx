@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { Check, Smartphone } from "lucide-react";
-import PushNotificationButton from "@/components/PushNotificationButton";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -17,10 +16,11 @@ const Index = () => {
         A plataforma dos criadores do futuro!
       </h1>
 
-      {/* Botão Instalar App, App Instalado badge, ou Ativar Notificações */}
+      {/* Botão Instalar App ou Badge App Instalado */}
       {isAppInstalled ? (
-        <div className="mb-6 sm:mb-8">
-          <PushNotificationButton />
+        <div className="mb-6 sm:mb-8 flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600">
+          <Check className="h-4 w-4" />
+          <span className="text-sm font-medium">App Instalado</span>
         </div>
       ) : (
         <button

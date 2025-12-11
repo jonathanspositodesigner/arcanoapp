@@ -17,7 +17,7 @@ import BannerCarousel from "@/components/BannerCarousel";
 import { toPackSlug } from "@/lib/utils";
 import { useImagePreloader } from "@/hooks/useImagePreloader";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
-import PushNotificationButton from "@/components/PushNotificationButton";
+
 
 interface ArteItem {
   id: string | number;
@@ -374,11 +374,7 @@ const BibliotecaArtes = () => {
       </div>
       
       <nav className="flex-1 px-2 space-y-1">
-        {isAppInstalled ? (
-          <div className="mb-6 px-2">
-            <PushNotificationButton variant="floating" className="w-full justify-center" />
-          </div>
-        ) : (
+        {!isAppInstalled && (
           <div className="mb-6">
             <button onClick={() => {
               navigate('/install-app');
