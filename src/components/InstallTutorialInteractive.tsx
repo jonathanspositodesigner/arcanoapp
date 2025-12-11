@@ -928,56 +928,8 @@ const InstallTutorialInteractive = () => {
 
   return (
     <Card className="p-6 overflow-hidden">
-      {/* In-App Browser Warning */}
-      {config.isInAppBrowser && (
-        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg flex items-start gap-2">
-          <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Navegador interno detectado</p>
-            <p className="text-xs text-amber-600 dark:text-amber-300 mt-0.5">
-              Você está usando o navegador do {browserType === "instagram" ? "Instagram" : "Facebook"}. 
-              Siga os passos abaixo para abrir no Safari ou Chrome.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Detected Browser Info with Edit Button */}
-      <div className={`flex items-center justify-center gap-2 mb-4 text-sm text-muted-foreground rounded-lg py-2 px-3 ${config.isInAppBrowser ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-muted/50'}`}>
-        <Info className="h-4 w-4 flex-shrink-0" />
-        <span>Detectado: <strong className="text-foreground">{config.label}</strong></span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowBrowserSelector(!showBrowserSelector)}
-          className="h-6 px-2 text-xs ml-1"
-        >
-          {showBrowserSelector ? "Fechar" : "Alterar"}
-        </Button>
-      </div>
-
-      {/* Browser Selector (collapsible) */}
-      {showBrowserSelector && (
-        <div className="mb-4 p-3 bg-muted/30 rounded-lg animate-fade-in">
-          <p className="text-xs text-muted-foreground mb-2 text-center">Selecione seu navegador:</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {getBrowsersForDevice().map((browser) => (
-              <Button
-                key={browser.value}
-                variant={browserType === browser.value ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleBrowserChange(browser.value)}
-                className={`text-xs ${browserType === browser.value ? "bg-gradient-primary" : ""}`}
-              >
-                {browser.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Device Type Selector */}
-      <div className="flex justify-center gap-2 mb-6">
+      {/* Device Type Selector - First */}
+      <div className="flex justify-center gap-2 mb-4">
         <Button
           variant={deviceType === "ios" ? "default" : "outline"}
           size="sm"
@@ -1005,7 +957,7 @@ const InstallTutorialInteractive = () => {
       </div>
 
       {/* Progress Bar */}
-      <div className="flex justify-center gap-2 mb-6">
+      <div className="flex justify-center gap-2 mb-4">
         {steps.map((_, index) => (
           <div
             key={index}
@@ -1021,19 +973,19 @@ const InstallTutorialInteractive = () => {
       </div>
 
       {/* Step Title */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-4">
         <p className="text-sm text-muted-foreground mb-1">Passo {currentStep + 1} de {totalSteps}</p>
         <h3 className="text-xl font-bold text-foreground">{steps[currentStep].title}</h3>
         <p className="text-muted-foreground mt-1">{steps[currentStep].description}</p>
       </div>
 
       {/* Mockup */}
-      <div className="mb-6">
+      <div className="mb-4">
         {renderMockup()}
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-6">
         <Button
           variant="ghost"
           onClick={handlePrev}
@@ -1056,6 +1008,54 @@ const InstallTutorialInteractive = () => {
           </Button>
         )}
       </div>
+
+      {/* In-App Browser Warning - At the bottom */}
+      {config.isInAppBrowser && (
+        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg flex items-start gap-2 mb-4">
+          <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Navegador interno detectado</p>
+            <p className="text-xs text-amber-600 dark:text-amber-300 mt-0.5">
+              Você está usando o navegador do {browserType === "instagram" ? "Instagram" : "Facebook"}. 
+              Siga os passos acima para abrir no Safari ou Chrome.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Detected Browser Info with Edit Button - At the bottom */}
+      <div className={`flex items-center justify-center gap-2 text-sm text-muted-foreground rounded-lg py-2 px-3 ${config.isInAppBrowser ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-muted/50'}`}>
+        <Info className="h-4 w-4 flex-shrink-0" />
+        <span>Detectado: <strong className="text-foreground">{config.label}</strong></span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowBrowserSelector(!showBrowserSelector)}
+          className="h-6 px-2 text-xs ml-1"
+        >
+          {showBrowserSelector ? "Fechar" : "Alterar"}
+        </Button>
+      </div>
+
+      {/* Browser Selector (collapsible) */}
+      {showBrowserSelector && (
+        <div className="mt-4 p-3 bg-muted/30 rounded-lg animate-fade-in">
+          <p className="text-xs text-muted-foreground mb-2 text-center">Selecione seu navegador:</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {getBrowsersForDevice().map((browser) => (
+              <Button
+                key={browser.value}
+                variant={browserType === browser.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleBrowserChange(browser.value)}
+                className={`text-xs ${browserType === browser.value ? "bg-gradient-primary" : ""}`}
+              >
+                {browser.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
     </Card>
   );
 };
