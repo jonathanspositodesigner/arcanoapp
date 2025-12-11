@@ -612,16 +612,6 @@ const BibliotecaArtes = () => {
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
           </div>
           <div className="flex items-center gap-2">
-            {!isAppInstalled && (
-              <Button 
-                onClick={() => navigate('/install-app')} 
-                size="sm" 
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs"
-              >
-                <Smartphone className="h-4 w-4 mr-1" />
-                Instalar
-              </Button>
-            )}
             {userPacks.length === 0 && <>
               <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
                 <LogIn className="h-4 w-4 mr-1" />
@@ -661,6 +651,17 @@ const BibliotecaArtes = () => {
 
             {/* Banner Carousel - Only show when no pack is selected */}
             {!selectedPack && <BannerCarousel />}
+
+            {/* Install App Button - Below Banner, Mobile Only */}
+            {!selectedPack && !isAppInstalled && (
+              <button 
+                onClick={() => navigate('/install-app')}
+                className="lg:hidden w-full my-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_100%] animate-pulse text-white py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 font-semibold text-lg hover:shadow-xl transition-shadow"
+              >
+                <Smartphone className="h-6 w-6" />
+                <span>Instalar App no Celular</span>
+              </button>
+            )}
 
             {/* Pack/Bonus Selection View - excludes tutorial, cursos, all-artes, and free-sample sections */}
             {!selectedPack && activeSection !== 'cursos' && activeSection !== 'tutorial' && activeSection !== 'all-artes' && activeSection !== 'free-sample' && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
