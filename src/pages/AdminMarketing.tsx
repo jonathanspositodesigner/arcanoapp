@@ -1,10 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Mail, Bell, Smartphone, Users, TrendingUp, Eye, XCircle, ShieldX, Send, CheckCircle, MousePointer, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Mail, Bell, Smartphone, Users, TrendingUp, Eye, XCircle, ShieldX, Send, CheckCircle, MousePointer, AlertTriangle, RefreshCw, Trophy } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { fetchPushNotificationStats, PushNotificationStats } from "@/hooks/usePushNotificationAnalytics";
-import { fetchEmailMarketingStats, EmailMarketingStats } from "@/hooks/useEmailMarketingAnalytics";
+import { fetchEmailMarketingStats, fetchTopEmailCampaigns, fetchTopPushCampaigns, EmailMarketingStats, TopEmailCampaign, TopPushCampaign } from "@/hooks/useEmailMarketingAnalytics";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const AdminMarketing = () => {
   const navigate = useNavigate();
@@ -31,26 +35,55 @@ const AdminMarketing = () => {
     clickRate: 0,
     bounceRate: 0
   });
+  const [topEmailCampaigns, setTopEmailCampaigns] = useState<TopEmailCampaign[]>([]);
+  const [topPushCampaigns, setTopPushCampaigns] = useState<TopPushCampaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const loadStats = useCallback(async () => {
+    const [push, email, topEmail, topPush] = await Promise.all([
+      fetchPushNotificationStats(),
+      fetchEmailMarketingStats(),
+      fetchTopEmailCampaigns(5),
+      fetchTopPushCampaigns(5)
+    ]);
+    setPushStats(push);
+    setEmailStats(email);
+    setTopEmailCampaigns(topEmail);
+    setTopPushCampaigns(topPush);
+  }, []);
 
   useEffect(() => {
-    const loadStats = async () => {
+    const init = async () => {
       setIsLoading(true);
-      const [push, email] = await Promise.all([
-        fetchPushNotificationStats(),
-        fetchEmailMarketingStats()
-      ]);
-      setPushStats(push);
-      setEmailStats(email);
+      await loadStats();
       setIsLoading(false);
     };
-    loadStats();
-  }, []);
+    init();
+  }, [loadStats]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadStats();
+    setIsRefreshing(false);
+  };
 
   return (
     <AdminLayout>
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Marketing</h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-3xl font-bold text-foreground">Marketing</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing || isLoading}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+        </div>
         <p className="text-muted-foreground mb-8">Ferramentas de divulgação e campanhas</p>
 
         {/* Active Tools */}
@@ -154,6 +187,65 @@ const AdminMarketing = () => {
               </div>
             </Card>
 
+            {/* Top Email Campaigns */}
+            <Card className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-amber-500/20 rounded-full">
+                  <Trophy className="h-6 w-6 text-amber-500" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-foreground">Top 5 Campanhas de E-mail</p>
+                  <p className="text-xs text-muted-foreground">Melhores taxas de clique</p>
+                </div>
+              </div>
+              
+              {topEmailCampaigns.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-8">#</TableHead>
+                        <TableHead>Campanha</TableHead>
+                        <TableHead className="text-center">Enviados</TableHead>
+                        <TableHead className="text-center">Abertos</TableHead>
+                        <TableHead className="text-center">Cliques</TableHead>
+                        <TableHead className="text-center">Taxa Clique</TableHead>
+                        <TableHead className="text-right">Data</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {topEmailCampaigns.map((campaign, index) => (
+                        <TableRow key={campaign.id}>
+                          <TableCell className="font-bold text-amber-500">
+                            {index + 1}º
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium text-foreground truncate max-w-[200px]">{campaign.title}</p>
+                              <p className="text-xs text-muted-foreground truncate max-w-[200px]">{campaign.subject}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">{campaign.sent_count}</TableCell>
+                          <TableCell className="text-center">{campaign.opened_count}</TableCell>
+                          <TableCell className="text-center">{campaign.clicked_count}</TableCell>
+                          <TableCell className="text-center">
+                            <span className={`font-bold ${campaign.clickRate >= 5 ? 'text-green-500' : campaign.clickRate >= 2 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                              {campaign.clickRate.toFixed(1)}%
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-muted-foreground">
+                            {campaign.sent_at ? format(new Date(campaign.sent_at), "dd/MM/yy", { locale: ptBR }) : '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-4">Nenhuma campanha de e-mail enviada ainda</p>
+              )}
+            </Card>
+
             {/* Push Notification Analytics Dashboard */}
             <Card className="p-6 border-2 border-indigo-500/30">
               <div className="flex items-center gap-3 mb-4">
@@ -226,6 +318,68 @@ const AdminMarketing = () => {
                   📊 Conversão = usuários que ativaram via prompt / prompts exibidos
                 </p>
               </div>
+            </Card>
+
+            {/* Top Push Campaigns */}
+            <Card className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-indigo-500/20 rounded-full">
+                  <Trophy className="h-6 w-6 text-indigo-500" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-foreground">Top 5 Campanhas Push</p>
+                  <p className="text-xs text-muted-foreground">Maior alcance de envios</p>
+                </div>
+              </div>
+              
+              {topPushCampaigns.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-8">#</TableHead>
+                        <TableHead>Notificação</TableHead>
+                        <TableHead className="text-center">Enviados</TableHead>
+                        <TableHead className="text-center">Falhas</TableHead>
+                        <TableHead className="text-center">Taxa Sucesso</TableHead>
+                        <TableHead className="text-right">Data</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {topPushCampaigns.map((campaign, index) => {
+                        const successRate = campaign.sent_count > 0 
+                          ? ((campaign.sent_count - campaign.failed_count) / campaign.sent_count) * 100 
+                          : 0;
+                        return (
+                          <TableRow key={campaign.id}>
+                            <TableCell className="font-bold text-indigo-500">
+                              {index + 1}º
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium text-foreground truncate max-w-[200px]">{campaign.title}</p>
+                                <p className="text-xs text-muted-foreground truncate max-w-[200px]">{campaign.body}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">{campaign.sent_count}</TableCell>
+                            <TableCell className="text-center text-red-500">{campaign.failed_count}</TableCell>
+                            <TableCell className="text-center">
+                              <span className={`font-bold ${successRate >= 90 ? 'text-green-500' : successRate >= 70 ? 'text-amber-500' : 'text-red-500'}`}>
+                                {successRate.toFixed(1)}%
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right text-xs text-muted-foreground">
+                              {format(new Date(campaign.sent_at), "dd/MM/yy", { locale: ptBR })}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-4">Nenhuma notificação push enviada ainda</p>
+              )}
             </Card>
           </div>
         )}
