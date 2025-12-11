@@ -611,7 +611,18 @@ const BibliotecaArtes = () => {
             </Button>
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
           </div>
-          {userPacks.length === 0 && <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            {!isAppInstalled && (
+              <Button 
+                onClick={() => navigate('/install-app')} 
+                size="sm" 
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs"
+              >
+                <Smartphone className="h-4 w-4 mr-1" />
+                Instalar
+              </Button>
+            )}
+            {userPacks.length === 0 && <>
               <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
                 <LogIn className="h-4 w-4 mr-1" />
                 Login
@@ -620,8 +631,8 @@ const BibliotecaArtes = () => {
                 <Star className="h-3 w-3 mr-1" fill="currentColor" />
                 Comprar
               </Button>
-            </div>}
-          {userPacks.length > 0 && <div className="flex items-center gap-2">
+            </>}
+            {userPacks.length > 0 && <>
               <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
                 <Star className="h-3 w-3 mr-1" fill="currentColor" />
                 {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
@@ -632,7 +643,8 @@ const BibliotecaArtes = () => {
               <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
                 <LogOut className="h-4 w-4" />
               </Button>
-            </div>}
+            </>}
+          </div>
         </header>
 
         {/* Main Content */}
@@ -1337,16 +1349,6 @@ const BibliotecaArtes = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Floating Install App Button - Mobile Only, Hidden when installed */}
-      {!isAppInstalled && (
-        <button 
-          onClick={() => navigate('/install-app')}
-          className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-yellow-500 to-amber-600 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 hover:from-yellow-600 hover:to-amber-700 transition-all animate-pulse"
-        >
-          <Smartphone className="h-5 w-5" />
-          <span className="font-medium">Instalar App</span>
-        </button>
-      )}
 
       {/* Push Notification Prompt */}
       <PushNotificationPrompt />
