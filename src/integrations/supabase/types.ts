@@ -1403,6 +1403,84 @@ export type Database = {
         }
         Relationships: []
       }
+      push_notification_templates: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          name: string
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          name: string
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          name?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      push_scheduled_notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_sent_at: string | null
+          next_send_at: string
+          schedule_type: string
+          scheduled_at: string | null
+          scheduled_day_of_month: number | null
+          scheduled_day_of_week: number | null
+          scheduled_time: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          next_send_at: string
+          schedule_type?: string
+          scheduled_at?: string | null
+          scheduled_day_of_month?: number | null
+          scheduled_day_of_week?: number | null
+          scheduled_time?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          next_send_at?: string
+          schedule_type?: string
+          scheduled_at?: string | null
+          scheduled_day_of_month?: number | null
+          scheduled_day_of_week?: number | null
+          scheduled_time?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
