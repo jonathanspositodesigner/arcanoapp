@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, ArrowLeft, Gift, Clock, Percent } from "lucide-react";
+import { Check, Star, ArrowLeft, Gift, Clock, Percent, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Pack {
@@ -29,6 +29,12 @@ interface Pack {
   checkout_link_renovacao_6_meses: string | null;
   checkout_link_renovacao_1_ano: string | null;
   checkout_link_renovacao_vitalicio: string | null;
+  // Notification discount
+  notification_discount_enabled: boolean;
+  notification_discount_percent: number | null;
+  checkout_link_notif_6_meses: string | null;
+  checkout_link_notif_1_ano: string | null;
+  checkout_link_notif_vitalicio: string | null;
 }
 
 const PlanosArtes = () => {
@@ -39,12 +45,14 @@ const PlanosArtes = () => {
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [packs, setPacks] = useState<Pack[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isNotificationEligible, setIsNotificationEligible] = useState(false);
 
   // Discount configuration for renewals
   const RENEWAL_DISCOUNT = 0.30; // 30% discount
 
   useEffect(() => {
     fetchPacks();
+    checkNotificationEligibility();
   }, []);
 
   useEffect(() => {
@@ -56,6 +64,30 @@ const PlanosArtes = () => {
     }
   }, [packSlug, packs]);
 
+  const checkNotificationEligibility = async () => {
+    // Check localStorage first for quick response
+    const localEligible = localStorage.getItem('push_discount_eligible') === 'true';
+    if (localEligible) {
+      setIsNotificationEligible(true);
+      return;
+    }
+
+    // Verify with database using stored endpoint
+    const storedEndpoint = localStorage.getItem('push_notification_endpoint');
+    if (storedEndpoint) {
+      const { data } = await supabase
+        .from('push_subscriptions')
+        .select('discount_eligible')
+        .eq('endpoint', storedEndpoint)
+        .maybeSingle();
+
+      if (data?.discount_eligible) {
+        setIsNotificationEligible(true);
+        localStorage.setItem('push_discount_eligible', 'true');
+      }
+    }
+  };
+
   const fetchPacks = async () => {
     const { data, error } = await supabase
       .from("artes_packs")
@@ -64,7 +96,9 @@ const PlanosArtes = () => {
         price_6_meses, price_1_ano, price_vitalicio,
         enabled_6_meses, enabled_1_ano, enabled_vitalicio,
         checkout_link_6_meses, checkout_link_1_ano, checkout_link_vitalicio,
-        checkout_link_renovacao_6_meses, checkout_link_renovacao_1_ano, checkout_link_renovacao_vitalicio
+        checkout_link_renovacao_6_meses, checkout_link_renovacao_1_ano, checkout_link_renovacao_vitalicio,
+        notification_discount_enabled, notification_discount_percent,
+        checkout_link_notif_6_meses, checkout_link_notif_1_ano, checkout_link_notif_vitalicio
       `)
       .in("type", ["pack", "curso"])
       .eq("is_visible", true)
@@ -75,6 +109,10 @@ const PlanosArtes = () => {
     }
     setLoading(false);
   };
+
+  // Check if user is eligible for notification discount on this pack
+  const hasNotificationDiscount = selectedPack?.notification_discount_enabled && isNotificationEligible && !isRenewal;
+  const notificationDiscountPercent = selectedPack?.notification_discount_percent || 20;
 
   // Separate packs and courses
   const packItems = packs.filter(p => p.type === "pack");
@@ -94,6 +132,10 @@ const PlanosArtes = () => {
     const original = getPrice(type);
     if (isRenewal) {
       const discounted = original * (1 - RENEWAL_DISCOUNT);
+      return discounted / 100;
+    }
+    if (hasNotificationDiscount) {
+      const discounted = original * (1 - notificationDiscountPercent / 100);
       return discounted / 100;
     }
     return original / 100;
@@ -186,6 +228,19 @@ const PlanosArtes = () => {
           checkoutLink = selectedPack.checkout_link_renovacao_vitalicio;
           break;
       }
+    } else if (hasNotificationDiscount) {
+      // Use notification discount links (20% OFF)
+      switch (accessType) {
+        case "6_meses":
+          checkoutLink = selectedPack.checkout_link_notif_6_meses;
+          break;
+        case "1_ano":
+          checkoutLink = selectedPack.checkout_link_notif_1_ano;
+          break;
+        case "vitalicio":
+          checkoutLink = selectedPack.checkout_link_notif_vitalicio;
+          break;
+      }
     } else {
       // Use normal links
       switch (accessType) {
@@ -238,20 +293,30 @@ const PlanosArtes = () => {
               30% OFF - Renovação Especial
             </Badge>
           )}
+          {hasNotificationDiscount && (
+            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-lg px-4 py-2 mb-4 animate-pulse">
+              <Bell className="h-5 w-5 mr-2" />
+              {notificationDiscountPercent}% OFF - Desconto Exclusivo!
+            </Badge>
+          )}
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             {isRenewal 
               ? `Renove seu acesso ao ${selectedPack?.name || "Pack"}`
-              : selectedPack 
-                ? `Adquira o ${selectedPack.name}` 
-                : "Escolha seu Pack"
+              : hasNotificationDiscount
+                ? `Seu desconto exclusivo no ${selectedPack?.name || "Pack"}`
+                : selectedPack 
+                  ? `Adquira o ${selectedPack.name}` 
+                  : "Escolha seu Pack"
             }
           </h1>
           <p className="text-white/60 max-w-2xl mx-auto">
             {isRenewal
               ? "Aproveite 30% de desconto na renovação do seu acesso!"
-              : selectedPack 
-                ? "Escolha o tipo de acesso ideal para você"
-                : "Selecione um pack para ver as opções de compra"
+              : hasNotificationDiscount
+                ? `Parabéns! Você ativou as notificações e ganhou ${notificationDiscountPercent}% de desconto!`
+                : selectedPack 
+                  ? "Escolha o tipo de acesso ideal para você"
+                  : "Selecione um pack para ver as opções de compra"
             }
           </p>
         </div>
@@ -267,9 +332,15 @@ const PlanosArtes = () => {
                   {packItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all"
+                      className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative"
                       onClick={() => setSelectedPack(pack)}
                     >
+                      {pack.notification_discount_enabled && isNotificationEligible && (
+                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
+                          <Bell className="h-3 w-3" />
+                          {pack.notification_discount_percent || 20}% OFF
+                        </div>
+                      )}
                       <CardContent className="p-4">
                         {pack.cover_url ? (
                           <img
@@ -298,9 +369,15 @@ const PlanosArtes = () => {
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all"
+                      className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative"
                       onClick={() => setSelectedPack(pack)}
                     >
+                      {pack.notification_discount_enabled && isNotificationEligible && (
+                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
+                          <Bell className="h-3 w-3" />
+                          {pack.notification_discount_percent || 20}% OFF
+                        </div>
+                      )}
                       <CardContent className="p-4">
                         {pack.cover_url ? (
                           <img
@@ -374,13 +451,15 @@ const PlanosArtes = () => {
                       </div>
                       <CardTitle className="text-lg text-white">{option.label}</CardTitle>
                       <div className="mt-4">
-                        {isRenewal && (
+                        {(isRenewal || hasNotificationDiscount) && (
                           <div className="flex items-center justify-center gap-2 mb-1">
                             <span className="text-white/40 line-through text-lg">{formatOriginalPrice(option.type)}</span>
-                            <Badge className="bg-green-500/20 text-green-400 text-xs">-30%</Badge>
+                            <Badge className={`text-xs ${isRenewal ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                              -{isRenewal ? '30' : notificationDiscountPercent}%
+                            </Badge>
                           </div>
                         )}
-                        <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : 'text-white'}`}>
+                        <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
                           {formatPrice(calculatePrice(option.type))}
                         </span>
                         <span className="text-white/60 text-sm block mt-1">pagamento único</span>
@@ -401,12 +480,15 @@ const PlanosArtes = () => {
                             ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30 animate-pulse"
                             : isRenewal
                               ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-                              : "bg-[#2d4a5e]/50 hover:bg-[#2d4a5e] text-white"
+                              : hasNotificationDiscount
+                                ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                                : "bg-[#2d4a5e]/50 hover:bg-[#2d4a5e] text-white"
                         }`}
                         onClick={() => handleSelectOption(option.type)}
                       >
-                        <Star className="h-4 w-4 mr-2" />
-                        {isRenewal ? "Renovar Agora" : option.buttonText}
+                        {hasNotificationDiscount && <Bell className="h-4 w-4 mr-2" />}
+                        {!hasNotificationDiscount && <Star className="h-4 w-4 mr-2" />}
+                        {isRenewal ? "Renovar Agora" : hasNotificationDiscount ? "Usar Meu Desconto" : option.buttonText}
                       </Button>
                     </CardContent>
                   </Card>

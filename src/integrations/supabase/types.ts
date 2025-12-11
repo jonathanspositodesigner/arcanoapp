@@ -448,6 +448,9 @@ export type Database = {
           checkout_link_membro_1_ano: string | null
           checkout_link_membro_6_meses: string | null
           checkout_link_membro_vitalicio: string | null
+          checkout_link_notif_1_ano: string | null
+          checkout_link_notif_6_meses: string | null
+          checkout_link_notif_vitalicio: string | null
           checkout_link_renovacao_1_ano: string | null
           checkout_link_renovacao_6_meses: string | null
           checkout_link_renovacao_vitalicio: string | null
@@ -466,6 +469,8 @@ export type Database = {
           id: string
           is_visible: boolean
           name: string
+          notification_discount_enabled: boolean | null
+          notification_discount_percent: number | null
           price_1_ano: number | null
           price_6_meses: number | null
           price_vitalicio: number | null
@@ -480,6 +485,9 @@ export type Database = {
           checkout_link_membro_1_ano?: string | null
           checkout_link_membro_6_meses?: string | null
           checkout_link_membro_vitalicio?: string | null
+          checkout_link_notif_1_ano?: string | null
+          checkout_link_notif_6_meses?: string | null
+          checkout_link_notif_vitalicio?: string | null
           checkout_link_renovacao_1_ano?: string | null
           checkout_link_renovacao_6_meses?: string | null
           checkout_link_renovacao_vitalicio?: string | null
@@ -498,6 +506,8 @@ export type Database = {
           id?: string
           is_visible?: boolean
           name: string
+          notification_discount_enabled?: boolean | null
+          notification_discount_percent?: number | null
           price_1_ano?: number | null
           price_6_meses?: number | null
           price_vitalicio?: number | null
@@ -512,6 +522,9 @@ export type Database = {
           checkout_link_membro_1_ano?: string | null
           checkout_link_membro_6_meses?: string | null
           checkout_link_membro_vitalicio?: string | null
+          checkout_link_notif_1_ano?: string | null
+          checkout_link_notif_6_meses?: string | null
+          checkout_link_notif_vitalicio?: string | null
           checkout_link_renovacao_1_ano?: string | null
           checkout_link_renovacao_6_meses?: string | null
           checkout_link_renovacao_vitalicio?: string | null
@@ -530,6 +543,8 @@ export type Database = {
           id?: string
           is_visible?: boolean
           name?: string
+          notification_discount_enabled?: boolean | null
+          notification_discount_percent?: number | null
           price_1_ano?: number | null
           price_6_meses?: number | null
           price_vitalicio?: number | null
@@ -1639,6 +1654,8 @@ export type Database = {
           auth: string
           created_at: string
           device_type: string
+          discount_claimed_at: string | null
+          discount_eligible: boolean | null
           endpoint: string
           id: string
           p256dh: string
@@ -1648,6 +1665,8 @@ export type Database = {
           auth: string
           created_at?: string
           device_type?: string
+          discount_claimed_at?: string | null
+          discount_eligible?: boolean | null
           endpoint: string
           id?: string
           p256dh: string
@@ -1657,6 +1676,8 @@ export type Database = {
           auth?: string
           created_at?: string
           device_type?: string
+          discount_claimed_at?: string | null
+          discount_eligible?: boolean | null
           endpoint?: string
           id?: string
           p256dh?: string

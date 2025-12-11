@@ -53,6 +53,12 @@ interface Pack {
   checkout_link_membro_6_meses?: string | null;
   checkout_link_membro_1_ano?: string | null;
   checkout_link_membro_vitalicio?: string | null;
+  // Notification discount (20% OFF for push subscribers)
+  notification_discount_enabled?: boolean;
+  notification_discount_percent?: number | null;
+  checkout_link_notif_6_meses?: string | null;
+  checkout_link_notif_1_ano?: string | null;
+  checkout_link_notif_vitalicio?: string | null;
   // Bonus download link
   download_url?: string | null;
   // Tutorial lessons
@@ -89,6 +95,12 @@ interface SalesFormData {
   checkout_link_membro_6_meses: string;
   checkout_link_membro_1_ano: string;
   checkout_link_membro_vitalicio: string;
+  // Notification discount (20% OFF for push subscribers)
+  notification_discount_enabled: boolean;
+  notification_discount_percent: string;
+  checkout_link_notif_6_meses: string;
+  checkout_link_notif_1_ano: string;
+  checkout_link_notif_vitalicio: string;
 }
 
 const WEBHOOK_URL = "https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-greenn-artes";
@@ -131,7 +143,12 @@ const AdminManagePacks = () => {
     checkout_link_renovacao_vitalicio: '',
     checkout_link_membro_6_meses: '',
     checkout_link_membro_1_ano: '',
-    checkout_link_membro_vitalicio: ''
+    checkout_link_membro_vitalicio: '',
+    notification_discount_enabled: false,
+    notification_discount_percent: '20',
+    checkout_link_notif_6_meses: '',
+    checkout_link_notif_1_ano: '',
+    checkout_link_notif_vitalicio: ''
   });
 
   useEffect(() => {
@@ -468,7 +485,12 @@ const AdminManagePacks = () => {
       checkout_link_renovacao_vitalicio: pack.checkout_link_renovacao_vitalicio || '',
       checkout_link_membro_6_meses: pack.checkout_link_membro_6_meses || '',
       checkout_link_membro_1_ano: pack.checkout_link_membro_1_ano || '',
-      checkout_link_membro_vitalicio: pack.checkout_link_membro_vitalicio || ''
+      checkout_link_membro_vitalicio: pack.checkout_link_membro_vitalicio || '',
+      notification_discount_enabled: pack.notification_discount_enabled ?? false,
+      notification_discount_percent: pack.notification_discount_percent?.toString() || '20',
+      checkout_link_notif_6_meses: pack.checkout_link_notif_6_meses || '',
+      checkout_link_notif_1_ano: pack.checkout_link_notif_1_ano || '',
+      checkout_link_notif_vitalicio: pack.checkout_link_notif_vitalicio || ''
     });
   };
 
@@ -562,7 +584,13 @@ const AdminManagePacks = () => {
           // Member checkout links
           checkout_link_membro_6_meses: salesFormData.checkout_link_membro_6_meses || null,
           checkout_link_membro_1_ano: salesFormData.checkout_link_membro_1_ano || null,
-          checkout_link_membro_vitalicio: salesFormData.checkout_link_membro_vitalicio || null
+          checkout_link_membro_vitalicio: salesFormData.checkout_link_membro_vitalicio || null,
+          // Notification discount
+          notification_discount_enabled: salesFormData.notification_discount_enabled,
+          notification_discount_percent: salesFormData.notification_discount_percent ? parseInt(salesFormData.notification_discount_percent) : 20,
+          checkout_link_notif_6_meses: salesFormData.checkout_link_notif_6_meses || null,
+          checkout_link_notif_1_ano: salesFormData.checkout_link_notif_1_ano || null,
+          checkout_link_notif_vitalicio: salesFormData.checkout_link_notif_vitalicio || null
         })
         .eq("id", editingPack.id);
 
@@ -1544,6 +1572,113 @@ const AdminManagePacks = () => {
                       <p className="text-xs text-muted-foreground italic">Nenhuma opção de preço habilitada</p>
                     )}
                   </div>
+                </div>
+
+                {/* DESCONTO POR NOTIFICAÇÃO (20% OFF) */}
+                <div className="border rounded-lg p-4 space-y-4 border-amber-500/30 bg-amber-500/5">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-amber-500/20 text-amber-600">🔔 20% OFF</Badge>
+                      <Label className="font-semibold">Desconto por Notificação</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Ativo</span>
+                      <Switch
+                        checked={salesFormData.notification_discount_enabled}
+                        onCheckedChange={(checked) => setSalesFormData(prev => ({ ...prev, notification_discount_enabled: checked }))}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Desconto para usuários que ativaram notificações push
+                  </p>
+                  
+                  {salesFormData.notification_discount_enabled && (
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm">Percentual de Desconto</Label>
+                        <div className="relative w-32">
+                          <Input
+                            type="number"
+                            value={salesFormData.notification_discount_percent}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, notification_discount_percent: e.target.value }))}
+                            placeholder="20"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+                        </div>
+                      </div>
+                      
+                      {salesFormData.enabled_6_meses && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Label className="text-sm">Link Notif. 6 Meses</Label>
+                            {salesFormData.checkout_link_notif_6_meses && (
+                              <Check className="w-3 h-3 text-green-500" />
+                            )}
+                          </div>
+                          <div className="relative">
+                            <Input
+                              type="url"
+                              value={salesFormData.checkout_link_notif_6_meses}
+                              onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_notif_6_meses: e.target.value }))}
+                              placeholder="https://greenn.com.br/checkout/..."
+                              className={salesFormData.checkout_link_notif_6_meses ? "pr-8 border-green-500/50" : ""}
+                            />
+                            {salesFormData.checkout_link_notif_6_meses && (
+                              <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {salesFormData.enabled_1_ano && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Label className="text-sm">Link Notif. 1 Ano</Label>
+                            {salesFormData.checkout_link_notif_1_ano && (
+                              <Check className="w-3 h-3 text-green-500" />
+                            )}
+                          </div>
+                          <div className="relative">
+                            <Input
+                              type="url"
+                              value={salesFormData.checkout_link_notif_1_ano}
+                              onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_notif_1_ano: e.target.value }))}
+                              placeholder="https://greenn.com.br/checkout/..."
+                              className={salesFormData.checkout_link_notif_1_ano ? "pr-8 border-green-500/50" : ""}
+                            />
+                            {salesFormData.checkout_link_notif_1_ano && (
+                              <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {salesFormData.enabled_vitalicio && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Label className="text-sm">Link Notif. Vitalício</Label>
+                            {salesFormData.checkout_link_notif_vitalicio && (
+                              <Check className="w-3 h-3 text-green-500" />
+                            )}
+                          </div>
+                          <div className="relative">
+                            <Input
+                              type="url"
+                              value={salesFormData.checkout_link_notif_vitalicio}
+                              onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_notif_vitalicio: e.target.value }))}
+                              placeholder="https://greenn.com.br/checkout/..."
+                              className={salesFormData.checkout_link_notif_vitalicio ? "pr-8 border-green-500/50" : ""}
+                            />
+                            {salesFormData.checkout_link_notif_vitalicio && (
+                              <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {!salesFormData.enabled_6_meses && !salesFormData.enabled_1_ano && !salesFormData.enabled_vitalicio && (
+                        <p className="text-xs text-muted-foreground italic">Nenhuma opção de preço habilitada</p>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <Button onClick={handleSaveSalesConfig} disabled={saving} className="w-full">

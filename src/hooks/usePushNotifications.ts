@@ -189,7 +189,7 @@ export function usePushNotifications() {
       const json = subscription.toJSON();
       console.log('[Push] Subscription created:', json.endpoint?.substring(0, 50));
 
-      // Save to database
+      // Save to database with discount eligibility
       const { error } = await supabase
         .from('push_subscriptions')
         .insert({
@@ -197,7 +197,8 @@ export function usePushNotifications() {
           p256dh: json.keys!.p256dh,
           auth: json.keys!.auth,
           device_type: getDeviceType(),
-          user_agent: navigator.userAgent
+          user_agent: navigator.userAgent,
+          discount_eligible: true // Mark as eligible for 20% discount
         });
 
       if (error) {
@@ -206,10 +207,11 @@ export function usePushNotifications() {
         return false;
       }
 
-      console.log('[Push] Subscription saved successfully');
+      console.log('[Push] Subscription saved successfully with discount eligibility');
       setIsSubscribed(true);
       localStorage.setItem(STORAGE_KEY, 'true');
       localStorage.setItem(ENDPOINT_KEY, json.endpoint!);
+      localStorage.setItem('push_discount_eligible', 'true'); // Store locally for quick access
       return true;
     } catch (error) {
       console.error('[Push] Subscribe error:', error);

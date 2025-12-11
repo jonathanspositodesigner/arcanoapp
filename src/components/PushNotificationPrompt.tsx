@@ -85,16 +85,22 @@ const PushNotificationPrompt = () => {
 
           {/* Title */}
           <h2 className="text-2xl font-bold text-foreground">
-            Ative as Notificações! 🔔
+            Ganhe 20% OFF! 🎁
           </h2>
 
           {/* Subtitle */}
           <p className="text-muted-foreground">
-            Não perca nenhuma novidade importante:
+            Ative as notificações e receba 20% de desconto no próximo lançamento!
           </p>
 
           {/* Benefits List */}
           <div className="w-full space-y-3 text-left px-4">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                <Gift className="w-4 h-4 text-amber-500" />
+              </div>
+              <span className="text-sm text-foreground font-medium">20% OFF no próximo pack</span>
+            </div>
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                 <Check className="w-4 h-4 text-green-500" />
@@ -103,15 +109,9 @@ const PushNotificationPrompt = () => {
             </div>
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                <Gift className="w-4 h-4 text-green-500" />
-              </div>
-              <span className="text-sm text-foreground">Promoções e descontos exclusivos</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                 <Sparkles className="w-4 h-4 text-green-500" />
               </div>
-              <span className="text-sm text-foreground">Novos conteúdos adicionados</span>
+              <span className="text-sm text-foreground">Promoções exclusivas</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
@@ -125,14 +125,14 @@ const PushNotificationPrompt = () => {
           <Button
             onClick={handleActivate}
             disabled={isActivating}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-6 text-lg"
+            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-6 text-lg shadow-lg shadow-amber-500/30"
           >
             {isActivating ? (
               "Ativando..."
             ) : (
               <>
-                <Bell className="w-5 h-5 mr-2" />
-                Ativar Notificações
+                <Gift className="w-5 h-5 mr-2" />
+                Ativar e Ganhar 20% OFF
               </>
             )}
           </Button>
