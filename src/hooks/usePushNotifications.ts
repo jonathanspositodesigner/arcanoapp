@@ -31,7 +31,13 @@ function getDeviceType(): string {
 
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  // Inicialização síncrona do localStorage para resposta imediata
+  const [isSubscribed, setIsSubscribed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('push_notification_subscribed') === 'true';
+    }
+    return false;
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [permission, setPermission] = useState<NotificationPermission>('default');
 
