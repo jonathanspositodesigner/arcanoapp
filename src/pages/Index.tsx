@@ -1,8 +1,13 @@
 import { useNavigate } from "react-router-dom";
+import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
+import { Check, Smartphone } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
-  return <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
+  const isAppInstalled = useIsAppInstalled();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
       {/* Logo */}
       <img alt="ArcanoApp" className="h-7 sm:h-8 mb-4" src="/lovable-uploads/c730fa96-d2c9-48f7-8bbb-f5fd02378698.png" />
       
@@ -11,14 +16,21 @@ const Index = () => {
         A plataforma dos criadores do futuro!
       </h1>
 
-      {/* Botão Instalar App */}
-      <button
-        onClick={() => navigate("/install-app")}
-        className="mb-6 sm:mb-8 flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-md hover:shadow-lg"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-        Instalar Aplicativo
-      </button>
+      {/* Botão Instalar App ou Badge App Instalado */}
+      {isAppInstalled ? (
+        <div className="mb-6 sm:mb-8 flex items-center gap-2 px-6 py-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600 dark:text-green-400">
+          <Check className="h-5 w-5" />
+          <span className="font-medium">App Instalado</span>
+        </div>
+      ) : (
+        <button
+          onClick={() => navigate("/install-app")}
+          className="mb-6 sm:mb-8 flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-md hover:shadow-lg"
+        >
+          <Smartphone className="h-5 w-5" />
+          Instalar Aplicativo
+        </button>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl">
         {/* Card - Biblioteca de Artes Arcanas */}
@@ -61,6 +73,8 @@ const Index = () => {
           Área do Colaborador
         </button>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
