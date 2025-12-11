@@ -17,6 +17,7 @@ import BannerCarousel from "@/components/BannerCarousel";
 import { toPackSlug } from "@/lib/utils";
 import { useImagePreloader } from "@/hooks/useImagePreloader";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
+import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 
 
 interface ArteItem {
@@ -1346,6 +1347,9 @@ const BibliotecaArtes = () => {
           <span className="font-medium">Instalar App</span>
         </button>
       )}
+
+      {/* Push Notification Prompt */}
+      <PushNotificationPrompt isLoggedIn={!!user} />
     </div>;
 };
 export default BibliotecaArtes;
