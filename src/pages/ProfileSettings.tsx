@@ -379,7 +379,7 @@ const ProfileSettings = () => {
         </Card>
 
         {/* Notification Settings */}
-        {isSupported && (
+        {isSupported && !pushLoading && (
           <Card className="p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Bell className="h-5 w-5" />
@@ -391,7 +391,6 @@ const ProfileSettings = () => {
                   <span>Notificações estão ativadas</span>
                   <button
                     onClick={() => setShowDisableModal(true)}
-                    disabled={pushLoading}
                     className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
                   >
                     Desativar
@@ -409,7 +408,6 @@ const ProfileSettings = () => {
                         toast.error("Erro ao ativar notificações");
                       }
                     }}
-                    disabled={pushLoading}
                     className="text-xs text-green-600 hover:text-green-700 underline transition-colors flex items-center gap-1"
                   >
                     <Bell className="h-3 w-3" />

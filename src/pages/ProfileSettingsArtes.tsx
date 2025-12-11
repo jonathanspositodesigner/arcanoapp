@@ -284,13 +284,12 @@ const ProfileSettingsArtes = () => {
             </div>
 
             {/* Notification Settings */}
-            {isSupported && (
+            {isSupported && !pushLoading && (
               <div className="border-t border-[#2d4a5e]/30 pt-4 mt-4">
                 <p className="text-xs text-white/40 mb-2">Notificações</p>
                 {isSubscribed ? (
                   <button
                     onClick={() => setShowDisableModal(true)}
-                    disabled={pushLoading}
                     className="text-xs text-white/40 hover:text-white/60 underline transition-colors"
                   >
                     Desativar notificações
@@ -298,7 +297,6 @@ const ProfileSettingsArtes = () => {
                 ) : (
                   <button
                     onClick={handleEnableNotifications}
-                    disabled={pushLoading}
                     className="text-xs text-green-400/70 hover:text-green-400 underline transition-colors flex items-center gap-1"
                   >
                     <Bell className="h-3 w-3" />
