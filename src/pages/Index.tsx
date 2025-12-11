@@ -1,10 +1,22 @@
 import { useNavigate } from "react-router-dom";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
-import { Check, Smartphone } from "lucide-react";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { Check, Smartphone, Bell } from "lucide-react";
+import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
   const isAppInstalled = useIsAppInstalled();
+  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe } = usePushNotifications();
+
+  const handleActivateNotifications = async () => {
+    const success = await subscribe();
+    if (success) {
+      toast.success("Notificações ativadas com sucesso!");
+    } else {
+      toast.error("Não foi possível ativar as notificações");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
@@ -16,21 +28,35 @@ const Index = () => {
         A plataforma dos criadores do futuro!
       </h1>
 
-      {/* Botão Instalar App ou Badge App Instalado */}
-      {isAppInstalled ? (
-        <div className="mb-6 sm:mb-8 flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600">
-          <Check className="h-4 w-4" />
-          <span className="text-sm font-medium">App Instalado</span>
-        </div>
-      ) : (
-        <button
-          onClick={() => navigate("/install-app")}
-          className="mb-6 sm:mb-8 flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-md hover:shadow-lg"
-        >
-          <Smartphone className="h-5 w-5" />
-          Instalar Aplicativo
-        </button>
-      )}
+      {/* Botões de ação */}
+      <div className="flex flex-col sm:flex-row items-center gap-3 mb-6 sm:mb-8">
+        {/* Botão Instalar App ou Badge App Instalado */}
+        {isAppInstalled ? (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600">
+            <Check className="h-4 w-4" />
+            <span className="text-sm font-medium">App Instalado</span>
+          </div>
+        ) : (
+          <button
+            onClick={() => navigate("/install-app")}
+            className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-md hover:shadow-lg"
+          >
+            <Smartphone className="h-5 w-5" />
+            Instalar Aplicativo
+          </button>
+        )}
+
+        {/* Botão Ativar Notificações */}
+        {isSupported && !pushLoading && !isSubscribed && (
+          <button
+            onClick={handleActivateNotifications}
+            className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+          >
+            <Bell className="h-5 w-5" />
+            Ativar Notificações
+          </button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl">
         {/* Card - Biblioteca de Artes Arcanas */}
