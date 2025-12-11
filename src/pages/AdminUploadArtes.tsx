@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { AnnouncementConfigModal } from "@/components/AnnouncementConfigModal";
+import { AnnouncementPreviewModal } from "@/components/AnnouncementPreviewModal";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -81,6 +82,7 @@ const AdminUploadArtes = () => {
     content: string;
   } | null>(null);
   const [isSendingAnnouncement, setIsSendingAnnouncement] = useState(false);
+  const [showAnnouncementPreview, setShowAnnouncementPreview] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -103,12 +105,17 @@ const AdminUploadArtes = () => {
     setPacks(data || []);
   };
 
-  const handleSendAnnouncement = async () => {
+  const handleOpenAnnouncementPreview = () => {
     if (!selectedPushTemplate || !selectedEmailTemplate) {
       toast.error("Configure os modelos de Push e Email primeiro");
       setShowAnnouncementConfig(true);
       return;
     }
+    setShowAnnouncementPreview(true);
+  };
+
+  const handleConfirmSendAnnouncement = async () => {
+    if (!selectedPushTemplate || !selectedEmailTemplate) return;
 
     setIsSendingAnnouncement(true);
     try {
@@ -124,6 +131,7 @@ const AdminUploadArtes = () => {
 
       if (error) throw error;
 
+      setShowAnnouncementPreview(false);
       toast.success(
         `Anúncio enviado! Push: ${data.push?.sent || 0} enviados. Email: ${data.email?.sent || 0} enviados.`
       );
@@ -411,12 +419,12 @@ const AdminUploadArtes = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  onClick={handleSendAnnouncement}
+                  onClick={handleOpenAnnouncementPreview}
                   disabled={isSendingAnnouncement}
                   className="bg-gradient-primary hover:opacity-90"
                 >
                   <Megaphone className="h-4 w-4 mr-2" />
-                  {isSendingAnnouncement ? "Enviando..." : "Anunciar Atualizações"}
+                  Anunciar Atualizações
                 </Button>
                 <Button
                   variant="outline"
@@ -665,6 +673,15 @@ const AdminUploadArtes = () => {
         onSelectEmailTemplate={setSelectedEmailTemplate}
         selectedPushTemplate={selectedPushTemplate}
         selectedEmailTemplate={selectedEmailTemplate}
+      />
+
+      <AnnouncementPreviewModal
+        open={showAnnouncementPreview}
+        onOpenChange={setShowAnnouncementPreview}
+        pushTemplate={selectedPushTemplate}
+        emailTemplate={selectedEmailTemplate}
+        onConfirmSend={handleConfirmSendAnnouncement}
+        isSending={isSendingAnnouncement}
       />
     </div>;
 };
