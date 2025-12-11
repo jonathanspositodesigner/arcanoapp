@@ -89,6 +89,8 @@ const [pageViews, setPageViews] = useState({
     periodUnique: 0, periodTotalSessions: 0, periodReturning: 0
   });
   const [installations, setInstallations] = useState({ total: 0, mobile: 0, desktop: 0 });
+  const [todayInstallations, setTodayInstallations] = useState({ total: 0, mobile: 0, desktop: 0 });
+  const [todayPasswordResets, setTodayPasswordResets] = useState(0);
   const [topPrompts, setTopPrompts] = useState<PromptRanking[]>([]);
   const [topArtes, setTopArtes] = useState<PromptRanking[]>([]);
   const [topRankingViewMode, setTopRankingViewMode] = useState<'prompts' | 'artes'>('prompts');
@@ -373,7 +375,7 @@ const [pageViews, setPageViews] = useState({
 
       setChartData(chartDataPoints);
 
-      // Fetch installations
+      // Fetch installations for period
       let installsQuery = supabase.from("app_installations").select("device_type");
       if (threshold.start) {
         installsQuery = installsQuery.gte("installed_at", threshold.start);
@@ -388,6 +390,27 @@ const [pageViews, setPageViews] = useState({
         const desktop = installsData.filter((i) => i.device_type === "desktop").length;
         setInstallations({ total: installsData.length, mobile, desktop });
       }
+
+      // Fetch today's installations
+      const { data: todayInstallsData } = await supabase
+        .from("app_installations")
+        .select("device_type")
+        .gte("installed_at", todayMidnight);
+      
+      if (todayInstallsData) {
+        const mobile = todayInstallsData.filter((i) => i.device_type === "mobile").length;
+        const desktop = todayInstallsData.filter((i) => i.device_type === "desktop").length;
+        setTodayInstallations({ total: todayInstallsData.length, mobile, desktop });
+      }
+
+      // Fetch today's password resets (users who changed password today)
+      const { data: todayPasswordData } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("password_changed", true)
+        .gte("updated_at", todayMidnight);
+      
+      setTodayPasswordResets(todayPasswordData?.length || 0);
 
       // Fetch top prompts
       let clicksQuery = supabase.from("prompt_clicks").select("prompt_title");
@@ -1184,6 +1207,16 @@ const [pageViews, setPageViews] = useState({
                   <p className="text-xs text-green-600/60 mt-0.5">
                     👤 {pageViews.todayUnique} únicos
                   </p>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-green-500/20 grid grid-cols-2 gap-2">
+                <div className="text-center">
+                  <p className="text-lg font-bold text-green-600">{todayInstallations.total}</p>
+                  <p className="text-xs text-green-600/70">📲 Instalações</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-bold text-green-600">{todayPasswordResets}</p>
+                  <p className="text-xs text-green-600/70">🔑 Redefiniram senha</p>
                 </div>
               </div>
             </Card>
