@@ -92,6 +92,12 @@ const Index = () => {
         </div>
       </div>
 
+      {/* DEBUG TEMPORÁRIO - REMOVER DEPOIS */}
+      <div className="text-xs text-red-500 mt-4 p-2 bg-red-100 rounded">
+        Suporta: {String(typeof window !== 'undefined' && 'Notification' in window)} | 
+        Permissão: {typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'N/A'}
+      </div>
+
       {/* Links de acesso */}
       <div className="mt-8 flex flex-col items-center gap-2">
         <button
