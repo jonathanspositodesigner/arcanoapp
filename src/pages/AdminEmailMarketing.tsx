@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/select";
 import { 
   Mail, Send, Save, TestTube, Loader2, 
-  MailCheck, FileText, Users, Calendar, Clock
+  MailCheck, FileText, Users, Calendar, Clock,
+  BookTemplate, Pencil, Trash2, Download
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import EmailEditor from "@/components/email-marketing/EmailEditor";
@@ -24,6 +25,16 @@ import EmojiPicker from "@/components/email-marketing/EmojiPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Campaign {
   id?: string;
@@ -41,6 +52,17 @@ interface Campaign {
   scheduled_time?: string;
   scheduled_day_of_week?: number;
   scheduled_day_of_month?: number;
+}
+
+interface EmailTemplate {
+  id: string;
+  name: string;
+  title: string;
+  subject: string;
+  content: string;
+  sender_name: string;
+  sender_email: string;
+  created_at: string;
 }
 
 const AdminEmailMarketing = () => {
@@ -68,10 +90,96 @@ const AdminEmailMarketing = () => {
     scheduledCount: 0,
     lastCampaign: null as string | null,
   });
+  
+  // Template state
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [deleteTemplateConfirm, setDeleteTemplateConfirm] = useState<EmailTemplate | null>(null);
 
   useEffect(() => {
     fetchStats();
+    fetchTemplates();
   }, [refreshHistory]);
+
+  const fetchTemplates = async () => {
+    const { data } = await supabase
+      .from("email_templates")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setTemplates((data || []).map(t => ({
+      ...t,
+      title: t.title || "",
+      sender_name: t.sender_name || "Vox Visual",
+      sender_email: t.sender_email || "contato@voxvisual.com.br",
+    })));
+  };
+
+  const handleSaveAsTemplate = async () => {
+    if (!campaign.title || !campaign.subject || !campaign.content) {
+      toast.error("Preencha título, assunto e conteúdo");
+      return;
+    }
+
+    const name = prompt("Digite o nome do modelo:");
+    if (!name?.trim()) return;
+
+    setSavingTemplate(true);
+    try {
+      const { error } = await supabase
+        .from("email_templates")
+        .insert({
+          name: name.trim(),
+          title: campaign.title,
+          subject: campaign.subject,
+          content: campaign.content,
+          sender_name: campaign.sender_name,
+          sender_email: campaign.sender_email,
+        });
+
+      if (error) throw error;
+
+      toast.success("Modelo salvo com sucesso!");
+      fetchTemplates();
+    } catch (error) {
+      console.error("Error saving template:", error);
+      toast.error("Erro ao salvar modelo");
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
+  const handleLoadTemplate = (template: EmailTemplate) => {
+    setCampaign({
+      ...campaign,
+      title: template.title || template.name,
+      subject: template.subject,
+      content: template.content,
+      sender_name: template.sender_name || "Vox Visual",
+      sender_email: template.sender_email || "contato@voxvisual.com.br",
+    });
+    toast.success("Modelo carregado!");
+  };
+
+  const handleDeleteTemplate = async () => {
+    if (!deleteTemplateConfirm) return;
+
+    try {
+      const { error } = await supabase
+        .from("email_templates")
+        .delete()
+        .eq("id", deleteTemplateConfirm.id);
+
+      if (error) throw error;
+
+      toast.success("Modelo excluído!");
+      fetchTemplates();
+    } catch (error) {
+      console.error("Error deleting template:", error);
+      toast.error("Erro ao excluir modelo");
+    } finally {
+      setDeleteTemplateConfirm(null);
+    }
+  };
 
   const fetchStats = async () => {
     const { data: campaigns } = await supabase
@@ -486,6 +594,10 @@ const AdminEmailMarketing = () => {
               <Mail className="h-4 w-4" />
               Nova Campanha
             </TabsTrigger>
+            <TabsTrigger value="templates" className="gap-2">
+              <BookTemplate className="h-4 w-4" />
+              Modelos
+            </TabsTrigger>
             <TabsTrigger value="history" className="gap-2">
               <FileText className="h-4 w-4" />
               Histórico
@@ -732,22 +844,36 @@ const AdminEmailMarketing = () => {
 
               {/* Actions */}
               <div className="flex justify-between items-center mt-6 pt-6 border-t border-border">
+              <div className="flex gap-2">
                 <Button variant="outline" onClick={resetForm}>
                   Limpar
                 </Button>
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={handleSaveDraft}
-                    disabled={saving}
-                  >
-                    {saving ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Save className="h-4 w-4 mr-2" />
-                    )}
-                    Salvar Rascunho
-                  </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleSaveAsTemplate}
+                  disabled={savingTemplate}
+                >
+                  {savingTemplate ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <BookTemplate className="h-4 w-4 mr-2" />
+                  )}
+                  Salvar como Modelo
+                </Button>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleSaveDraft}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Salvar Rascunho
+                </Button>
                   {campaign.is_scheduled ? (
                     <Button
                       onClick={handleScheduleCampaign}
@@ -779,6 +905,70 @@ const AdminEmailMarketing = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="templates">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold">Modelos Salvos</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Reutilize modelos de email para suas campanhas
+                  </p>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {templates.length} modelo(s)
+                </p>
+              </div>
+
+              {templates.length === 0 ? (
+                <div className="text-center py-12">
+                  <BookTemplate className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                  <p className="text-muted-foreground">Nenhum modelo salvo ainda</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Crie uma campanha e clique em "Salvar como Modelo"
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {templates.map((template) => (
+                    <Card key={template.id} className="p-4 hover:border-primary/50 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium truncate">{template.name}</h3>
+                          <p className="text-sm text-muted-foreground truncate mt-1">
+                            {template.subject}
+                          </p>
+                          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                            <span>De: {template.sender_name}</span>
+                            <span>•</span>
+                            <span>{format(new Date(template.created_at), "dd/MM/yyyy")}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleLoadTemplate(template)}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Usar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => setDeleteTemplateConfirm(template)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
           <TabsContent value="history">
             <CampaignHistory
               onEdit={handleEdit}
@@ -788,6 +978,26 @@ const AdminEmailMarketing = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <AlertDialog open={!!deleteTemplateConfirm} onOpenChange={(open) => !open && setDeleteTemplateConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir modelo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o modelo "{deleteTemplateConfirm?.name}"? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteTemplate}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };
