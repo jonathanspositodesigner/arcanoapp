@@ -1,30 +1,32 @@
 import { useState, useEffect } from "react";
 
-const STORAGE_KEY = "dashboard-card-order";
+const DEFAULT_ORDERS: Record<string, string[]> = {
+  dashboard: [
+    "today-access", "period-access", "installations", "top-ranking",
+    "bounce-rate", "avg-time", "collection-links", "first-access",
+    "top-purchased", "top-categories", "hourly-stats", "conversion",
+    "funnel", "access-type", "retention", "purchase-hours", "refunds", "access-chart"
+  ],
+  ferramentas_prompts: [
+    "enviar-arquivo", "analisar-arquivos", "gerenciar-imagens", "gerenciar-premium",
+    "colecoes", "gerenciar-parceiros", "categorias", "administradores"
+  ],
+  ferramentas_artes: [
+    "enviar-arte", "analisar-artes", "gerenciar-artes", "gerenciar-parceiros-artes",
+    "gerenciar-packs", "gerenciar-banners", "gerenciar-clientes", "promocoes",
+    "categorias-artes", "webhook-logs", "blacklist", "importar-clientes", "abandonados"
+  ],
+  marketing: [
+    "email-marketing", "push-notifications", "email-analytics", "top-email",
+    "push-analytics", "top-push"
+  ]
+};
 
-const DEFAULT_CARD_ORDER = [
-  "today-access",
-  "period-access",
-  "installations",
-  "top-ranking",
-  "bounce-rate",
-  "avg-time",
-  "collection-links",
-  "first-access",
-  "top-purchased",
-  "top-categories",
-  "hourly-stats",
-  "access-chart",
-  "funnel",
-  "conversion",
-  "access-type",
-  "purchase-hours",
-  "retention",
-  "refunds"
-];
-
-export const useDashboardCardOrder = () => {
-  const [cardOrder, setCardOrder] = useState<string[]>(DEFAULT_CARD_ORDER);
+export const useDashboardCardOrder = (section: string = "dashboard") => {
+  const STORAGE_KEY = `card-order-${section}`;
+  const defaultOrder = DEFAULT_ORDERS[section] || [];
+  
+  const [cardOrder, setCardOrder] = useState<string[]>(defaultOrder);
   const [draggedCard, setDraggedCard] = useState<string | null>(null);
   const [isReordering, setIsReordering] = useState(false);
 
@@ -35,17 +37,17 @@ export const useDashboardCardOrder = () => {
         const parsed = JSON.parse(saved);
         // Merge with defaults in case new cards were added
         const mergedOrder = [...parsed];
-        DEFAULT_CARD_ORDER.forEach(card => {
+        defaultOrder.forEach(card => {
           if (!mergedOrder.includes(card)) {
             mergedOrder.push(card);
           }
         });
         setCardOrder(mergedOrder);
       } catch {
-        setCardOrder(DEFAULT_CARD_ORDER);
+        setCardOrder(defaultOrder);
       }
     }
-  }, []);
+  }, [STORAGE_KEY, defaultOrder]);
 
   const saveOrder = (order: string[]) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(order));
@@ -79,12 +81,20 @@ export const useDashboardCardOrder = () => {
   };
 
   const resetOrder = () => {
-    saveOrder(DEFAULT_CARD_ORDER);
+    saveOrder(defaultOrder);
   };
 
   const getCardIndex = (cardId: string) => {
     return cardOrder.indexOf(cardId);
   };
+
+  const getDragProps = (cardId: string) => ({
+    draggable: isReordering,
+    onDragStart: () => handleDragStart(cardId),
+    onDragOver: (e: React.DragEvent) => handleDragOver(e, cardId),
+    onDragEnd: handleDragEnd,
+    style: { order: getCardIndex(cardId) }
+  });
 
   return {
     cardOrder,
@@ -95,6 +105,7 @@ export const useDashboardCardOrder = () => {
     handleDragOver,
     handleDragEnd,
     resetOrder,
-    getCardIndex
+    getCardIndex,
+    getDragProps
   };
 };
