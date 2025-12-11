@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart, KeyRound, X } from "lucide-react";
+import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart, KeyRound, X, GripVertical, LayoutGrid } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useDashboardCardOrder } from "@/hooks/useDashboardCardOrder";
+import { DraggableCard } from "@/components/DraggableCard";
 
 type DateFilter = 1 | "yesterday" | 7 | 15 | 30 | 90 | "all" | "custom";
 
@@ -82,7 +84,7 @@ const COLORS = ['#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#3b82f6'];
 const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
-const [pageViews, setPageViews] = useState({ 
+  const [pageViews, setPageViews] = useState({ 
     total: 0, mobile: 0, desktop: 0, 
     todayTotal: 0, todayMobile: 0, todayDesktop: 0,
     todayUnique: 0, todayTotalSessions: 0, todayReturning: 0,
@@ -140,7 +142,19 @@ const [pageViews, setPageViews] = useState({
     recentLogs: [] as { email: string; status: string; pack: string; date: string }[]
   });
   const [showRefundModal, setShowRefundModal] = useState(false);
-
+  
+  // Drag and drop for cards
+  const {
+    cardOrder,
+    draggedCard,
+    isReordering,
+    setIsReordering,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+    resetOrder,
+    getCardIndex
+  } = useDashboardCardOrder();
 
   // Retorna a data de início e fim do período em formato ISO
   const getDateThreshold = (): { start: string | null; end: string | null } => {
@@ -1177,6 +1191,28 @@ const [pageViews, setPageViews] = useState({
           <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           Atualizar
         </Button>
+        
+        <Button
+          variant={isReordering ? "default" : "outline"}
+          size="sm"
+          onClick={() => setIsReordering(!isReordering)}
+          className="gap-2"
+        >
+          <LayoutGrid className="h-4 w-4" />
+          {isReordering ? "Concluir" : "Reorganizar"}
+        </Button>
+        
+        {isReordering && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={resetOrder}
+            className="gap-2 text-muted-foreground"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Resetar
+          </Button>
+        )}
       </div>
       
       {/* Date Filters */}
@@ -1228,9 +1264,31 @@ const [pageViews, setPageViews] = useState({
         <p className="text-muted-foreground">Carregando...</p>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          {isReordering && (
+            <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg text-center">
+              <p className="text-sm text-primary font-medium">
+                🔄 Modo de reorganização ativo - Arraste os cards para reordenar
+              </p>
+            </div>
+          )}
+          <div className={cn(
+            "grid grid-cols-1 md:grid-cols-4 gap-6 mb-6",
+            isReordering && "[&>*]:cursor-grab [&>*]:active:cursor-grabbing [&>*]:ring-2 [&>*]:ring-primary/20 [&>*]:hover:ring-primary/40 [&>*]:transition-all"
+          )}>
             {/* Today's Page Views Card - HIGHLIGHTED */}
-            <Card className="p-6 border-2 border-green-500 bg-green-500/10">
+            <Card 
+              className="p-6 border-2 border-green-500 bg-green-500/10 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("today-access")}
+              onDragOver={(e) => handleDragOver(e, "today-access")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("today-access") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-green-500/20 rounded-full">
                   <Eye className="h-8 w-8 text-green-500" />
@@ -1259,7 +1317,19 @@ const [pageViews, setPageViews] = useState({
             </Card>
 
             {/* Total Page Views Card */}
-            <Card className="p-6">
+            <Card 
+              className="p-6 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("period-access")}
+              onDragOver={(e) => handleDragOver(e, "period-access")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("period-access") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-500/20 rounded-full">
                   <Eye className="h-8 w-8 text-blue-500" />
@@ -1278,7 +1348,19 @@ const [pageViews, setPageViews] = useState({
             </Card>
 
             {/* Installations Card */}
-            <Card className="p-6">
+            <Card 
+              className="p-6 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("installations")}
+              onDragOver={(e) => handleDragOver(e, "installations")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("installations") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-purple-500/20 rounded-full">
                   <Smartphone className="h-8 w-8 text-purple-500" />
@@ -1294,7 +1376,19 @@ const [pageViews, setPageViews] = useState({
             </Card>
 
             {/* Top Prompts/Artes Card */}
-            <Card className="p-6">
+            <Card 
+              className="p-6 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("top-ranking")}
+              onDragOver={(e) => handleDragOver(e, "top-ranking")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("top-ranking") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-yellow-500/20 rounded-full">
@@ -1342,9 +1436,24 @@ const [pageViews, setPageViews] = useState({
           </div>
 
           {/* Session Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <div className={cn(
+            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6",
+            isReordering && "[&>*]:cursor-grab [&>*]:active:cursor-grabbing [&>*]:ring-2 [&>*]:ring-primary/20 [&>*]:hover:ring-primary/40 [&>*]:transition-all"
+          )}>
             {/* Bounce Rate Card */}
-            <Card className="p-6 border-2 border-red-500/30">
+            <Card 
+              className="p-6 border-2 border-red-500/30 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("bounce-rate")}
+              onDragOver={(e) => handleDragOver(e, "bounce-rate")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("bounce-rate") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-red-500/20 rounded-full">
                   <Zap className="h-6 w-6 text-red-500" />
@@ -1371,7 +1480,19 @@ const [pageViews, setPageViews] = useState({
             </Card>
 
             {/* Average Time Card */}
-            <Card className="p-6 border-2 border-teal-500/30">
+            <Card 
+              className="p-6 border-2 border-teal-500/30 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("avg-time")}
+              onDragOver={(e) => handleDragOver(e, "avg-time")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("avg-time") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-teal-500/20 rounded-full">
                   <Timer className="h-6 w-6 text-teal-500" />
@@ -1395,7 +1516,19 @@ const [pageViews, setPageViews] = useState({
             </Card>
 
             {/* Collection Links Card */}
-            <Card className="p-6 border-2 border-indigo-500/30">
+            <Card 
+              className="p-6 border-2 border-indigo-500/30 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("collection-links")}
+              onDragOver={(e) => handleDragOver(e, "collection-links")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("collection-links") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-indigo-500/20 rounded-full">
                   <Link2 className="h-6 w-6 text-indigo-500" />
@@ -1425,7 +1558,19 @@ const [pageViews, setPageViews] = useState({
             </Card>
 
             {/* First Access Stats Card */}
-            <Card className="p-6 border-2 border-orange-500/30">
+            <Card 
+              className="p-6 border-2 border-orange-500/30 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("first-access")}
+              onDragOver={(e) => handleDragOver(e, "first-access")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("first-access") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-orange-500/20 rounded-full">
                   <KeyRound className="h-6 w-6 text-orange-500" />
@@ -1465,9 +1610,24 @@ const [pageViews, setPageViews] = useState({
           </div>
 
           {/* Plan Usage Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className={cn(
+            "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6",
+            isReordering && "[&>*]:cursor-grab [&>*]:active:cursor-grabbing [&>*]:ring-2 [&>*]:ring-primary/20 [&>*]:hover:ring-primary/40 [&>*]:transition-all"
+          )}>
             {/* Top Purchased Plans/Packs Card */}
-            <Card className="p-6">
+            <Card 
+              className="p-6 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("top-purchased")}
+              onDragOver={(e) => handleDragOver(e, "top-purchased")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("top-purchased") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-green-500/20 rounded-full">
@@ -1515,7 +1675,19 @@ const [pageViews, setPageViews] = useState({
             </Card>
 
             {/* Top Categories/Packs Chart */}
-            <Card className="p-6">
+            <Card 
+              className="p-6 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("top-categories")}
+              onDragOver={(e) => handleDragOver(e, "top-categories")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("top-categories") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-medium text-foreground">
                   {todayUsageViewMode === 'prompts' ? 'Top 5 Categorias - Prompts' : 'Top 5 Packs - Artes'}
