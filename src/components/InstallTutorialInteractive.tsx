@@ -25,8 +25,8 @@ const iosSafariSteps: Step[] = [
 
 // iOS Chrome (same for Brave, Opera on iOS)
 const iosChromeSteps: Step[] = [
-  { title: "Toque nos três pontinhos", description: "No canto superior direito do navegador" },
-  { title: "Toque em \"Adicionar à Tela de Início\"", description: "Role o menu e encontre essa opção" },
+  { title: "Toque no ícone Compartilhar", description: "No topo da tela, perto do nome do site" },
+  { title: "Role o menu para baixo", description: "Procure a opção \"Adicionar à Tela de Início\"" },
   { title: "Confirme a instalação", description: "Toque em \"Adicionar\" para confirmar" },
 ];
 
@@ -308,149 +308,190 @@ const IOSMockup = ({ step }: { step: number }) => (
   </div>
 );
 
-// iOS Chrome Mockup - Modern Chrome with bottom bar and 3 dots at bottom right
+// iOS Chrome Mockup - Share button at TOP, opens iOS share sheet
 const IOSChromeMockup = ({ step }: { step: number }) => (
   <div className="relative w-full max-w-[280px] mx-auto">
     {/* iPhone Frame */}
     <div className="bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
       {/* Screen */}
       <div className="bg-white dark:bg-gray-900 rounded-[2rem] overflow-hidden">
-        {/* Status Bar / Dynamic Island */}
-        <div className="h-8 bg-white dark:bg-gray-900 flex items-center justify-center relative">
-          <div className="w-24 h-6 bg-gray-900 rounded-full absolute" />
-          <div className="absolute left-4 text-[10px] text-gray-600 font-medium">9:41</div>
-          <div className="absolute right-4 flex items-center gap-1">
+        {/* Status Bar */}
+        <div className="h-6 bg-gray-100 dark:bg-gray-800 flex items-center justify-between px-6">
+          <span className="text-[10px] text-gray-600 font-medium">9:41</span>
+          <div className="flex items-center gap-1">
             <div className="w-4 h-2 bg-gray-600 rounded-sm" />
           </div>
         </div>
         
+        {/* Chrome Top Bar with URL and Share */}
+        <div className="bg-gray-100 dark:bg-gray-800 px-3 py-2 flex items-center gap-2">
+          <ChevronLeft className="h-5 w-5 text-blue-500 flex-shrink-0" />
+          {/* URL Bar */}
+          <div className="flex-1 bg-white dark:bg-gray-700 rounded-full h-8 flex items-center px-3 gap-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0" />
+            <span className="text-[10px] text-gray-600 dark:text-gray-400 truncate">arcanoapp.voxvisual.com.br</span>
+          </div>
+          {/* Share Button - Highlighted on step 0 */}
+          <div className="relative">
+            <Share className="h-5 w-5 text-blue-500" />
+            {step === 0 && (
+              <>
+                <span className="absolute -right-1 -top-1 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+                </span>
+                {/* Animated Arrow pointing down */}
+                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+                  <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[12px] border-b-red-500" />
+                </div>
+              </>
+            )}
+          </div>
+          <Plus className="h-5 w-5 text-blue-500 flex-shrink-0" />
+        </div>
+        
         {/* Chrome Content Area */}
-        <div className="h-[300px] bg-gray-50 dark:bg-gray-800 relative">
+        <div className="h-[280px] bg-white dark:bg-gray-900 relative">
           {/* Page Content Placeholder */}
           <div className="p-4 space-y-3">
             <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
-            <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded mt-4" />
+            <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded mt-4" />
           </div>
           
-          {/* Chrome Menu from Bottom - Step 2 */}
+          {/* iOS Share Sheet - Step 2 (scroll to find option) */}
           {step === 1 && (
-            <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-2xl shadow-xl animate-slide-up border-t border-gray-200 dark:border-gray-700">
-              <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-2" />
-              <div className="py-3 px-2">
-                {/* Grid of options */}
-                <div className="grid grid-cols-4 gap-2 mb-3">
-                  <div className="flex flex-col items-center gap-1 p-2">
-                    <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                      <Plus className="h-5 w-5 text-gray-600" />
-                    </div>
-                    <span className="text-[9px] text-gray-600">Nova guia</span>
+            <div className="absolute inset-0 bg-black/40">
+              <div className="absolute bottom-0 left-0 right-0 bg-gray-100 dark:bg-gray-800 rounded-t-xl animate-slide-up">
+                {/* Drag Handle */}
+                <div className="w-10 h-1 bg-gray-400 rounded-full mx-auto mt-2" />
+                
+                {/* Site Info Header */}
+                <div className="flex items-center gap-3 p-3 border-b border-gray-200 dark:border-gray-700">
+                  <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+                    <span className="text-xs font-bold text-gray-600">A</span>
                   </div>
-                  <div className="flex flex-col items-center gap-1 p-2">
-                    <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                      <Share className="h-5 w-5 text-gray-600" />
-                    </div>
-                    <span className="text-[9px] text-gray-600">Compartilhar</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-gray-900 dark:text-white">ArcanoApp</p>
+                    <p className="text-[10px] text-gray-500">arcanoapp.voxvisual.com.br</p>
                   </div>
-                  <div className="flex flex-col items-center gap-1 p-2">
-                    <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                      <Download className="h-5 w-5 text-gray-600" />
+                  <X className="h-5 w-5 text-gray-400" />
+                </div>
+                
+                {/* Share Options - AirDrop, Messages, etc */}
+                <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex gap-3 overflow-x-auto pb-1">
+                    <div className="flex flex-col items-center gap-1 min-w-[50px]">
+                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-[10px]">📡</span>
+                      </div>
+                      <span className="text-[8px] text-gray-600">AirDrop</span>
                     </div>
-                    <span className="text-[9px] text-gray-600">Downloads</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1 p-2 relative">
-                    <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                      <Plus className="h-5 w-5 text-primary" />
+                    <div className="flex flex-col items-center gap-1 min-w-[50px]">
+                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-[10px]">💬</span>
+                      </div>
+                      <span className="text-[8px] text-gray-600">Mensagens</span>
                     </div>
-                    <span className="text-[9px] text-primary font-medium">Tela Início</span>
-                    {/* Pulse indicator */}
-                    <span className="absolute right-0 top-0 flex h-4 w-4">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
-                    </span>
+                    <div className="flex flex-col items-center gap-1 min-w-[50px]">
+                      <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center">
+                        <span className="text-white text-[10px]">✉️</span>
+                      </div>
+                      <span className="text-[8px] text-gray-600">E-mail</span>
+                    </div>
                   </div>
                 </div>
-                {/* List options */}
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-2 space-y-1">
-                  <div className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600">
-                    <div className="w-5 h-5 bg-gray-300 rounded" />
-                    Favoritos
+                
+                {/* List Options - with scroll indicator */}
+                <div className="bg-white dark:bg-gray-700 rounded-lg mx-2 mt-2 mb-2">
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-600">
+                    <span className="text-xs text-gray-900 dark:text-white">Copiar</span>
+                    <div className="w-4 h-4 bg-gray-300 rounded" />
                   </div>
-                  <div className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600">
-                    <div className="w-5 h-5 bg-gray-300 rounded" />
-                    Histórico
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <span className="text-xs text-gray-900 dark:text-white">Adicionar à Lista de leitura</span>
+                    <div className="w-4 h-4 bg-gray-300 rounded" />
+                  </div>
+                </div>
+                
+                {/* Scroll indicator */}
+                <div className="flex items-center justify-center gap-1 py-2">
+                  <div className="animate-bounce text-gray-500">
+                    <ChevronRight className="h-4 w-4 rotate-90" />
+                  </div>
+                  <span className="text-[10px] text-red-500 font-medium animate-pulse">Role para baixo</span>
+                  <div className="animate-bounce text-gray-500">
+                    <ChevronRight className="h-4 w-4 rotate-90" />
                   </div>
                 </div>
               </div>
             </div>
           )}
           
-          {/* Add to Home Popup - Step 3 */}
+          {/* iOS Share Sheet Scrolled - Step 3 (showing Add to Home Screen) */}
           {step === 2 && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center animate-fade-in">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl w-[85%] p-5 shadow-xl">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-14 h-14 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-xl">A</span>
+            <div className="absolute inset-0 bg-black/40">
+              <div className="absolute bottom-0 left-0 right-0 bg-gray-100 dark:bg-gray-800 rounded-t-xl animate-fade-in">
+                {/* Drag Handle */}
+                <div className="w-10 h-1 bg-gray-400 rounded-full mx-auto mt-2" />
+                
+                {/* Site Info Header */}
+                <div className="flex items-center gap-3 p-3 border-b border-gray-200 dark:border-gray-700">
+                  <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+                    <span className="text-xs font-bold text-gray-600">A</span>
                   </div>
-                  <div>
-                    <p className="font-semibold">ArcanoApp</p>
-                    <p className="text-xs text-gray-500">arcanoapp.voxvisual.com.br</p>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-gray-900 dark:text-white">ArcanoApp</p>
+                    <p className="text-[10px] text-gray-500">arcanoapp.voxvisual.com.br</p>
+                  </div>
+                  <X className="h-5 w-5 text-gray-400" />
+                </div>
+                
+                {/* Options after scrolling */}
+                <div className="bg-white dark:bg-gray-700 rounded-lg mx-2 mt-2 mb-2">
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-600">
+                    <span className="text-xs text-gray-900 dark:text-white">Adicionar aos favoritos</span>
+                    <div className="w-4 h-4 text-gray-400">⭐</div>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-600">
+                    <span className="text-xs text-gray-900 dark:text-white">Buscar na página</span>
+                    <div className="w-4 h-4 text-gray-400">🔍</div>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 mb-4">Adicionar este site à sua tela de início para acesso rápido.</p>
-                <div className="flex gap-3">
-                  <button className="flex-1 px-4 py-2.5 text-sm text-gray-500 bg-gray-100 dark:bg-gray-700 rounded-xl">Cancelar</button>
-                  <button className="flex-1 px-4 py-2.5 text-sm bg-primary text-white rounded-xl font-semibold relative">
-                    Adicionar
+                
+                {/* Add to Home Screen - Highlighted */}
+                <div className="bg-white dark:bg-gray-700 rounded-lg mx-2 mb-2 relative">
+                  <div className="flex items-center justify-between px-3 py-3 bg-primary/10 rounded-lg border-2 border-primary">
+                    <span className="text-xs font-semibold text-primary">Adicionar à Tela de Início</span>
+                    <Plus className="h-4 w-4 text-primary" />
                     {/* Pulse indicator */}
-                    <span className="absolute -right-1 -top-1 flex h-3 w-3">
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                      <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
                     </span>
-                  </button>
+                  </div>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-700 rounded-lg mx-2 mb-3">
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <span className="text-xs text-gray-900 dark:text-white">Imprimir</span>
+                    <div className="w-4 h-4 text-gray-400">🖨️</div>
+                  </div>
                 </div>
               </div>
             </div>
           )}
         </div>
         
-        {/* Chrome Bottom Toolbar */}
-        <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-          {/* URL Bar */}
-          <div className="px-3 py-2">
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-full h-9 flex items-center px-4">
-              <div className="w-4 h-4 bg-green-500 rounded-full mr-2 flex-shrink-0" />
-              <span className="text-xs text-gray-600 dark:text-gray-400 truncate flex-1">arcanoapp.voxvisual.com.br</span>
-            </div>
+        {/* Chrome Bottom Navigation */}
+        <div className="h-12 bg-gray-100 dark:bg-gray-800 flex items-center justify-around px-6 border-t border-gray-200 dark:border-gray-700">
+          <ChevronLeft className="h-5 w-5 text-gray-400" />
+          <ChevronRight className="h-5 w-5 text-gray-400" />
+          <div className="w-6 h-6 border-2 border-blue-500 rounded flex items-center justify-center">
+            <span className="text-[10px] text-blue-500 font-bold">2</span>
           </div>
-          
-          {/* Navigation Icons */}
-          <div className="flex items-center justify-around px-4 pb-2">
-            <ChevronLeft className="h-6 w-6 text-blue-500" />
-            <ChevronRight className="h-6 w-6 text-gray-300" />
-            <Share className="h-5 w-5 text-blue-500" />
-            <div className="w-6 h-6 border-2 border-blue-500 rounded flex items-center justify-center">
-              <span className="text-[10px] text-blue-500 font-bold">2</span>
-            </div>
-            <div className="relative">
-              <MoreVertical className="h-6 w-6 text-blue-500" />
-              {/* Pulse indicator for Step 1 */}
-              {step === 0 && (
-                <>
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
-                  </span>
-                  {/* Animated Arrow */}
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 animate-bounce-arrow">
-                    <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[12px] border-t-red-500" />
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+          <MoreVertical className="h-5 w-5 text-gray-600" />
         </div>
         
         {/* Home Indicator */}
