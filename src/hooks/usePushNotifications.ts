@@ -4,6 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 // VAPID public key from environment
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
 
+// LocalStorage key for subscription state
+const STORAGE_KEY = 'push_notification_subscribed';
+const ENDPOINT_KEY = 'push_notification_endpoint';
+
 // Convert base64 to Uint8Array for applicationServerKey
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -53,6 +57,16 @@ export function usePushNotifications() {
       setIsSupported(true);
       setPermission(Notification.permission);
 
+      // Quick check localStorage first for faster UI response
+      const storedSubscribed = localStorage.getItem(STORAGE_KEY) === 'true';
+      const storedEndpoint = localStorage.getItem(ENDPOINT_KEY);
+      
+      if (storedSubscribed && storedEndpoint) {
+        console.log('[Push] Found stored subscription state, verifying...');
+        // Temporarily set as subscribed for faster UI
+        setIsSubscribed(true);
+      }
+
       try {
         // Wait for PWA service worker to be ready (registered by VitePWA)
         const registration = await navigator.serviceWorker.ready;
@@ -62,28 +76,82 @@ export function usePushNotifications() {
         const subscription = await registration.pushManager.getSubscription();
         
         if (subscription) {
+          const endpoint = subscription.endpoint;
+          console.log('[Push] Browser subscription found:', endpoint.substring(0, 50));
+          
           // Verify it exists in our database
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('push_subscriptions')
             .select('id')
-            .eq('endpoint', subscription.endpoint)
+            .eq('endpoint', endpoint)
             .maybeSingle();
 
+          if (error) {
+            console.error('[Push] Database error:', error);
+          }
+
           if (data) {
-            console.log('[Push] Valid subscription found');
+            console.log('[Push] Valid subscription confirmed in database');
             setIsSubscribed(true);
+            localStorage.setItem(STORAGE_KEY, 'true');
+            localStorage.setItem(ENDPOINT_KEY, endpoint);
           } else {
-            // Orphan subscription - clean it up
-            console.log('[Push] Orphan subscription found, cleaning up');
-            await subscription.unsubscribe();
-            setIsSubscribed(false);
+            // Subscription exists in browser but not in database
+            // This can happen if database was cleaned - re-register
+            console.log('[Push] Subscription not in database, re-registering...');
+            
+            const json = subscription.toJSON();
+            const { error: insertError } = await supabase
+              .from('push_subscriptions')
+              .insert({
+                endpoint: json.endpoint!,
+                p256dh: json.keys!.p256dh,
+                auth: json.keys!.auth,
+                device_type: getDeviceType(),
+                user_agent: navigator.userAgent
+              });
+
+            if (!insertError) {
+              console.log('[Push] Re-registered subscription in database');
+              setIsSubscribed(true);
+              localStorage.setItem(STORAGE_KEY, 'true');
+              localStorage.setItem(ENDPOINT_KEY, endpoint);
+            } else {
+              console.error('[Push] Failed to re-register:', insertError);
+              setIsSubscribed(false);
+              localStorage.removeItem(STORAGE_KEY);
+              localStorage.removeItem(ENDPOINT_KEY);
+            }
           }
         } else {
+          // No browser subscription - check if we have a stored endpoint
+          if (storedEndpoint) {
+            // Maybe the service worker was reinstalled, check database
+            const { data } = await supabase
+              .from('push_subscriptions')
+              .select('id')
+              .eq('endpoint', storedEndpoint)
+              .maybeSingle();
+            
+            if (data) {
+              // Database has record but browser doesn't - clean up
+              console.log('[Push] Cleaning orphan database record');
+              await supabase
+                .from('push_subscriptions')
+                .delete()
+                .eq('endpoint', storedEndpoint);
+            }
+          }
+          
+          console.log('[Push] No active subscription');
           setIsSubscribed(false);
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(ENDPOINT_KEY);
         }
       } catch (error) {
         console.error('[Push] Error checking status:', error);
-        setIsSubscribed(false);
+        // Don't clear localStorage on error - might be temporary
+        setIsSubscribed(storedSubscribed);
       } finally {
         setIsLoading(false);
       }
@@ -125,7 +193,7 @@ export function usePushNotifications() {
       }
 
       // Create new subscription
-      console.log('[Push] Creating new subscription with VAPID key');
+      console.log('[Push] Creating new subscription with VAPID key:', VAPID_PUBLIC_KEY.substring(0, 20) + '...');
       const vapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -154,6 +222,8 @@ export function usePushNotifications() {
 
       console.log('[Push] Subscription saved successfully');
       setIsSubscribed(true);
+      localStorage.setItem(STORAGE_KEY, 'true');
+      localStorage.setItem(ENDPOINT_KEY, json.endpoint!);
       return true;
     } catch (error) {
       console.error('[Push] Subscribe error:', error);
@@ -181,7 +251,18 @@ export function usePushNotifications() {
         await subscription.unsubscribe();
       }
 
+      // Also clean up stored endpoint if different
+      const storedEndpoint = localStorage.getItem(ENDPOINT_KEY);
+      if (storedEndpoint && (!subscription || subscription.endpoint !== storedEndpoint)) {
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('endpoint', storedEndpoint);
+      }
+
       setIsSubscribed(false);
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(ENDPOINT_KEY);
       return true;
     } catch (error) {
       console.error('[Push] Unsubscribe error:', error);
