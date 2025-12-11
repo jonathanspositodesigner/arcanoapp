@@ -16,9 +16,13 @@ interface PushNotificationPromptProps {
 const PushNotificationPrompt = ({ isLoggedIn }: PushNotificationPromptProps) => {
   const [showModal, setShowModal] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
-  const { isSupported, isSubscribed, subscribe } = usePushNotifications();
+  const { isSupported, isSubscribed, isLoading, subscribe } = usePushNotifications();
 
   useEffect(() => {
+    // CRÍTICO: Não fazer nada enquanto está verificando o status
+    if (isLoading) return;
+    
+    // Só mostrar se: logado, suportado, E NÃO inscrito
     if (!isLoggedIn || !isSupported || isSubscribed) return;
 
     // Check if dismissed recently
@@ -40,7 +44,7 @@ const PushNotificationPrompt = ({ isLoggedIn }: PushNotificationPromptProps) => 
     }, SHOW_DELAY_MS);
 
     return () => clearTimeout(timer);
-  }, [isLoggedIn, isSupported, isSubscribed]);
+  }, [isLoggedIn, isSupported, isSubscribed, isLoading]);
 
   const handleActivate = async () => {
     setIsActivating(true);
