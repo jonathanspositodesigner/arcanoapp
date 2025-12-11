@@ -12,16 +12,16 @@ const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
 
   const menuItems = [
     {
-      label: "FERRAMENTAS",
-      path: "/admin-ferramentas",
-      icon: Wrench,
-      description: "Gerenciar conteúdos"
-    },
-    {
       label: "DASHBOARD",
       path: "/admin-dashboard",
       icon: BarChart3,
       description: "Métricas e analytics"
+    },
+    {
+      label: "FERRAMENTAS",
+      path: "/admin-ferramentas",
+      icon: Wrench,
+      description: "Gerenciar conteúdos"
     },
     {
       label: "MARKETING",
