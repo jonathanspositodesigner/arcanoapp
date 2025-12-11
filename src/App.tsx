@@ -76,6 +76,9 @@ import { usePageViewTracker } from "./hooks/usePageViewTracker";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
+  // Log version to confirm deployment
+  console.log("[APP] ===== VERSION 3.0 LOADED =====", new Date().toISOString());
+  
   // Track app installations and page views
   useInstallTracker();
   usePageViewTracker();
