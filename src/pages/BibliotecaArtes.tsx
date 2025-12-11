@@ -1196,9 +1196,9 @@ const BibliotecaArtes = () => {
           // For regular packs: need specific pack access
           const hasAccess = isTutorialType || !selectedArte.isPremium || (isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug));
           return <div className="flex flex-col max-h-[85vh]">
-                {/* Image/Video container - limited height for mobile */}
-                <div className="flex-shrink-0 flex justify-center p-4 pb-2">
-                  {isVideoUrl(selectedArte.imageUrl) ? <SecureVideo src={selectedArte.imageUrl} className="max-w-full max-h-[40vh] sm:max-h-[50vh] w-auto h-auto rounded-lg object-contain" isPremium={selectedArte.isPremium || false} controls /> : <SecureImage src={selectedArte.imageUrl} alt={selectedArte.title} className="max-w-full max-h-[40vh] sm:max-h-[50vh] w-auto h-auto rounded-lg object-contain" isPremium={selectedArte.isPremium || false} />}
+                {/* Image/Video container - shows full image without cropping */}
+                <div className="flex-shrink-0 flex items-center justify-center p-3 pb-2">
+                  {isVideoUrl(selectedArte.imageUrl) ? <SecureVideo src={selectedArte.imageUrl} className="max-w-full max-h-[42vh] w-auto h-auto rounded-lg object-contain" isPremium={selectedArte.isPremium || false} controls /> : <SecureImage src={selectedArte.imageUrl} alt={selectedArte.title} className="max-w-full max-h-[42vh] w-auto h-auto rounded-lg object-contain" isPremium={selectedArte.isPremium || false} />}
                 </div>
                 
                 {/* Content container - scrollable if needed */}
