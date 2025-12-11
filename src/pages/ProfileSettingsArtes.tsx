@@ -25,8 +25,12 @@ const ProfileSettingsArtes = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showDisableModal, setShowDisableModal] = useState(false);
+  const [justSubscribed, setJustSubscribed] = useState(false);
 
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+  
+  // Estado combinado: hook OU estado local após ativar
+  const effectiveSubscribed = isSubscribed || justSubscribed;
 
   useEffect(() => {
     fetchProfile();
@@ -146,6 +150,7 @@ const ProfileSettingsArtes = () => {
   const handleEnableNotifications = async () => {
     const success = await subscribe();
     if (success) {
+      setJustSubscribed(true); // Força atualização local imediata
       toast.success("Notificações ativadas com sucesso!");
     } else {
       toast.error("Erro ao ativar notificações");
@@ -155,6 +160,7 @@ const ProfileSettingsArtes = () => {
   const handleDisableNotifications = async () => {
     const success = await unsubscribe();
     if (success) {
+      setJustSubscribed(false); // Reset estado local
       toast.success("Notificações desativadas");
       setShowDisableModal(false);
     } else {
@@ -287,7 +293,7 @@ const ProfileSettingsArtes = () => {
             {isSupported && !pushLoading && (
               <div className="border-t border-[#2d4a5e]/30 pt-4 mt-4">
                 <p className="text-xs text-white/40 mb-2">Notificações</p>
-                {isSubscribed ? (
+                {effectiveSubscribed ? (
                   <button
                     onClick={() => setShowDisableModal(true)}
                     className="text-xs text-white/40 hover:text-white/60 underline transition-colors"

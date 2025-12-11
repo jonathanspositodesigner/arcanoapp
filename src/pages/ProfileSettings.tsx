@@ -16,6 +16,10 @@ const ProfileSettings = () => {
   const navigate = useNavigate();
   const { user, isPremium, isLoading: premiumLoading } = usePremiumStatus();
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+  const [justSubscribed, setJustSubscribed] = useState(false);
+  
+  // Estado combinado: hook OU estado local após ativar
+  const effectiveSubscribed = isSubscribed || justSubscribed;
   
   const [showDisableModal, setShowDisableModal] = useState(false);
   const [name, setName] = useState("");
@@ -386,7 +390,7 @@ const ProfileSettings = () => {
               Notificações
             </h2>
             <div className="text-sm text-muted-foreground">
-              {isSubscribed ? (
+              {effectiveSubscribed ? (
                 <div className="flex items-center justify-between">
                   <span>Notificações estão ativadas</span>
                   <button
@@ -403,6 +407,7 @@ const ProfileSettings = () => {
                     onClick={async () => {
                       const success = await subscribe();
                       if (success) {
+                        setJustSubscribed(true);
                         toast.success("Notificações ativadas!");
                       } else {
                         toast.error("Erro ao ativar notificações");
@@ -460,6 +465,7 @@ const ProfileSettings = () => {
               onClick={async () => {
                 const success = await unsubscribe();
                 if (success) {
+                  setJustSubscribed(false);
                   toast.success("Notificações desativadas");
                   setShowDisableModal(false);
                 } else {
