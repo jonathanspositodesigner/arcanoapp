@@ -1011,13 +1011,35 @@ const [pageViews, setPageViews] = useState({
         setPurchaseHourStats(purchaseHourData);
       }
 
-      // ========== FETCH FIRST ACCESS STATS ==========
-      const { data: allProfiles } = await supabase
-        .from("profiles")
-        .select("id, email, name, password_changed")
-        .not("email", "is", null);
+      // ========== FETCH FIRST ACCESS STATS (COM PAGINAÇÃO PARA BUSCAR TODOS) ==========
+      const fetchAllProfiles = async () => {
+        const allRecords: any[] = [];
+        const batchSize = 1000;
+        let offset = 0;
+        let hasMore = true;
+        
+        while (hasMore) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("id, email, name, password_changed")
+            .not("email", "is", null)
+            .range(offset, offset + batchSize - 1);
+          
+          if (data && data.length > 0) {
+            allRecords.push(...data);
+            offset += batchSize;
+            hasMore = data.length === batchSize;
+          } else {
+            hasMore = false;
+          }
+        }
+        
+        return allRecords;
+      };
 
-      if (allProfiles) {
+      const allProfiles = await fetchAllProfiles();
+
+      if (allProfiles && allProfiles.length > 0) {
         const changed = allProfiles.filter(p => p.password_changed === true).length;
         const pendingUsers = allProfiles
           .filter(p => p.password_changed === false || p.password_changed === null)
