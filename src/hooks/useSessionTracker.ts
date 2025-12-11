@@ -9,8 +9,13 @@ const generateSessionId = (): string => {
 };
 
 const getDeviceType = (): string => {
-  const userAgent = navigator.userAgent.toLowerCase();
-  if (/mobile|android|iphone|ipad|tablet/i.test(userAgent)) {
+  const userAgent = navigator.userAgent;
+  // Check for mobile devices - case insensitive already in regex
+  if (/Mobile|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(userAgent)) {
+    return "mobile";
+  }
+  // Also check screen width as fallback for PWA installed on mobile
+  if (typeof window !== 'undefined' && window.innerWidth <= 768) {
     return "mobile";
   }
   return "desktop";
