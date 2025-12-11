@@ -237,53 +237,53 @@ const [pageViews, setPageViews] = useState({
       // Meia-noite de hoje para buscar acessos de hoje
       const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
-      // ========== BUSCA PAGE VIEWS DE HOJE ==========
-      const { data: todayPageViewsData } = await supabase
-        .from("page_views")
-        .select("device_type, user_agent, viewed_at")
-        .gte("viewed_at", todayMidnight);
+      // ========== BUSCA SESSÕES DE HOJE ==========
+      const { data: todaySessionsData } = await supabase
+        .from("user_sessions")
+        .select("device_type, user_agent, entered_at, session_id")
+        .gte("entered_at", todayMidnight);
 
-      // Conta page views de hoje
+      // Conta sessões de hoje (deduplica por session_id)
       let todayTotal = 0;
       let todayMobile = 0;
       let todayDesktop = 0;
-      const todayUniqueAgents = new Set<string>();
+      const todayUniqueSessions = new Set<string>();
       
-      if (todayPageViewsData) {
-        todayTotal = todayPageViewsData.length;
-        todayPageViewsData.forEach(pv => {
-          if (pv.device_type === "mobile") {
-            todayMobile++;
-          } else {
-            todayDesktop++;
-          }
-          if (pv.user_agent) {
-            todayUniqueAgents.add(pv.user_agent);
+      if (todaySessionsData) {
+        todaySessionsData.forEach(session => {
+          if (!todayUniqueSessions.has(session.session_id)) {
+            todayUniqueSessions.add(session.session_id);
+            todayTotal++;
+            if (session.device_type === "mobile") {
+              todayMobile++;
+            } else {
+              todayDesktop++;
+            }
           }
         });
       }
 
-      const todayUnique = todayUniqueAgents.size;
+      const todayUnique = todayUniqueSessions.size;
 
-      // ========== BUSCA PAGE VIEWS DO PERÍODO SELECIONADO (com paginação) ==========
-      const fetchAllPageViews = async () => {
-        const allRecords: { device_type: string; user_agent: string | null; viewed_at: string }[] = [];
+      // ========== BUSCA SESSÕES DO PERÍODO SELECIONADO (com paginação) ==========
+      const fetchAllSessionsForViews = async () => {
+        const allRecords: { device_type: string; user_agent: string | null; entered_at: string; session_id: string }[] = [];
         const batchSize = 1000;
         let offset = 0;
         let hasMore = true;
         
         while (hasMore) {
           let query = supabase
-            .from("page_views")
-            .select("device_type, user_agent, viewed_at")
-            .order("viewed_at", { ascending: false })
+            .from("user_sessions")
+            .select("device_type, user_agent, entered_at, session_id")
+            .order("entered_at", { ascending: false })
             .range(offset, offset + batchSize - 1);
           
           if (threshold.start) {
-            query = query.gte("viewed_at", threshold.start);
+            query = query.gte("entered_at", threshold.start);
           }
           if (threshold.end) {
-            query = query.lte("viewed_at", threshold.end);
+            query = query.lte("entered_at", threshold.end);
           }
           
           const { data } = await query;
@@ -300,45 +300,49 @@ const [pageViews, setPageViews] = useState({
         return allRecords;
       };
       
-      const allPageViewsData = await fetchAllPageViews();
+      const allSessionsData = await fetchAllSessionsForViews();
 
-      // Conta page views do período
+      // Conta sessões do período (deduplica por session_id)
       let periodTotal = 0;
       let periodMobile = 0;
       let periodDesktop = 0;
-      const periodUniqueAgents = new Set<string>();
-      const viewsByDate: Record<string, { mobile: number; desktop: number; total: number }> = {};
+      const periodUniqueSessions = new Set<string>();
+      const sessionsByDate: Record<string, { mobile: number; desktop: number; total: number; sessions: Set<string> }> = {};
       
       // Inicializa todos os dias
       daysArray.forEach(day => {
-        viewsByDate[day] = { mobile: 0, desktop: 0, total: 0 };
+        sessionsByDate[day] = { mobile: 0, desktop: 0, total: 0, sessions: new Set() };
       });
 
-      if (allPageViewsData) {
-        periodTotal = allPageViewsData.length;
-        allPageViewsData.forEach(pv => {
-          const date = extractDateFromTimestamp(pv.viewed_at);
-          
-          if (pv.device_type === "mobile") {
-            periodMobile++;
-            if (viewsByDate[date]) {
-              viewsByDate[date].mobile++;
-              viewsByDate[date].total++;
+      if (allSessionsData) {
+        allSessionsData.forEach(session => {
+          // Deduplica por session_id
+          if (!periodUniqueSessions.has(session.session_id)) {
+            periodUniqueSessions.add(session.session_id);
+            periodTotal++;
+            
+            const date = extractDateFromTimestamp(session.entered_at);
+            
+            if (session.device_type === "mobile") {
+              periodMobile++;
+              if (sessionsByDate[date] && !sessionsByDate[date].sessions.has(session.session_id)) {
+                sessionsByDate[date].sessions.add(session.session_id);
+                sessionsByDate[date].mobile++;
+                sessionsByDate[date].total++;
+              }
+            } else {
+              periodDesktop++;
+              if (sessionsByDate[date] && !sessionsByDate[date].sessions.has(session.session_id)) {
+                sessionsByDate[date].sessions.add(session.session_id);
+                sessionsByDate[date].desktop++;
+                sessionsByDate[date].total++;
+              }
             }
-          } else {
-            periodDesktop++;
-            if (viewsByDate[date]) {
-              viewsByDate[date].desktop++;
-              viewsByDate[date].total++;
-            }
-          }
-          if (pv.user_agent) {
-            periodUniqueAgents.add(pv.user_agent);
           }
         });
       }
 
-      const periodUnique = periodUniqueAgents.size;
+      const periodUnique = periodUniqueSessions.size;
       
       setPageViews({ 
         total: periodTotal, 
@@ -355,10 +359,10 @@ const [pageViews, setPageViews] = useState({
         periodReturning: 0
       });
 
-      // Process chart data - usa page views totais por dia
+      // Process chart data - usa sessões totais por dia
       const chartDataPoints = daysArray.map(dateStr => {
         const [, month, day] = dateStr.split('-');
-        const dayData = viewsByDate[dateStr] || { mobile: 0, desktop: 0, total: 0 };
+        const dayData = sessionsByDate[dateStr] || { mobile: 0, desktop: 0, total: 0 };
         return {
           date: `${day}/${month}`,
           mobile: dayData.mobile,
@@ -868,13 +872,17 @@ const [pageViews, setPageViews] = useState({
       }
 
       // ========== NEW METRIC 1: HORÁRIO DE PICO (Peak Hours) ==========
-      if (allPageViewsData && allPageViewsData.length > 0) {
+      if (allSessionsData && allSessionsData.length > 0) {
         const hourCounts: Record<number, number> = {};
         for (let i = 0; i < 24; i++) hourCounts[i] = 0;
         
-        allPageViewsData.forEach(pv => {
-          const hour = new Date(pv.viewed_at).getHours();
-          hourCounts[hour]++;
+        const processedSessions = new Set<string>();
+        allSessionsData.forEach(session => {
+          if (!processedSessions.has(session.session_id)) {
+            processedSessions.add(session.session_id);
+            const hour = new Date(session.entered_at).getHours();
+            hourCounts[hour]++;
+          }
         });
         
         const hourlyData = Object.entries(hourCounts).map(([hour, count]) => ({
@@ -886,10 +894,8 @@ const [pageViews, setPageViews] = useState({
       }
 
       // ========== NEW METRIC 2: TAXA DE CONVERSÃO - ARTES ==========
-      // Visitors to /biblioteca-artes vs pack buyers
-      const bibliotecaArtesVisitors = allPageViewsData?.filter(pv => 
-        pv.viewed_at && pv.user_agent
-      ).length || 0;
+      // Visitors (sessions) vs pack buyers
+      const bibliotecaArtesVisitors = periodUniqueSessions.size;
       
       let purchasesQuery = supabase.from("user_pack_purchases").select("id, purchased_at");
       if (threshold.start) {
@@ -913,7 +919,7 @@ const [pageViews, setPageViews] = useState({
 
       // ========== NEW METRIC 3: FUNIL DE ENGAJAMENTO - PROMPTS ==========
       // Visits → Clicks → Copies
-      const promptVisits = allPageViewsData?.filter(pv => true).length || 0;
+      const promptVisits = periodTotal;
       
       let promptClicksQuery = supabase.from("prompt_clicks").select("id");
       if (threshold.start) {
@@ -979,11 +985,11 @@ const [pageViews, setPageViews] = useState({
 
       // ========== NEW METRIC 5: RETENÇÃO DE USUÁRIOS ==========
       // Based on user_agent appearing more than once
-      if (allPageViewsData && allPageViewsData.length > 0) {
+      if (allSessionsData && allSessionsData.length > 0) {
         const userAgentCounts: Record<string, number> = {};
-        allPageViewsData.forEach(pv => {
-          if (pv.user_agent) {
-            userAgentCounts[pv.user_agent] = (userAgentCounts[pv.user_agent] || 0) + 1;
+        allSessionsData.forEach(session => {
+          if (session.user_agent) {
+            userAgentCounts[session.user_agent] = (userAgentCounts[session.user_agent] || 0) + 1;
           }
         });
         
