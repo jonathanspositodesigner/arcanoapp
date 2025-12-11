@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-// VAPID public key - must match the one in Supabase secrets
-const VAPID_PUBLIC_KEY = 'BLAgxGfZ7touE5QdP1JUoaN8N_HWYT7V2JAXH36oZEqSdWVplpmLVpqdKU8pO6OOD-EoUcMZdfJBHt3xXJBPw0s';
+// VAPID public key from environment
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
 
 // Convert base64 to Uint8Array for applicationServerKey
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -37,6 +37,14 @@ export function usePushNotifications() {
       // Check if push is supported
       if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
         console.log('[Push] Not supported in this browser');
+        setIsSupported(false);
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if VAPID key is configured
+      if (!VAPID_PUBLIC_KEY) {
+        console.error('[Push] VAPID_PUBLIC_KEY not configured');
         setIsSupported(false);
         setIsLoading(false);
         return;
