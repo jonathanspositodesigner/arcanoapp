@@ -7,7 +7,7 @@ import {
   Upload, CheckCircle, Settings, Users, Crown, LayoutDashboard, 
   FolderOpen, Inbox, Handshake, Palette, FileText, Tag, Package, 
   Image, ShoppingCart, ShieldCheck, Gift, ShieldBan, FileSearch, UserX,
-  GripVertical, LayoutGrid, RotateCcw
+  GripVertical, LayoutGrid, RotateCcw, ReceiptText
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/AdminLayout";
@@ -20,6 +20,7 @@ const AdminFerramentas = () => {
   const [pendingPartnerCount, setPendingPartnerCount] = useState(0);
   const [pendingArtesPartnerCount, setPendingArtesPartnerCount] = useState(0);
   const [pendingAbandonedCount, setPendingAbandonedCount] = useState(0);
+  const [refundCount, setRefundCount] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -50,6 +51,13 @@ const AdminFerramentas = () => {
         .select('*', { count: 'exact', head: true })
         .eq('remarketing_status', 'pending');
       setPendingAbandonedCount(abandonedCount || 0);
+
+      // Fetch refund/chargeback count
+      const { count: refunds } = await supabase
+        .from('webhook_logs')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['refunded', 'chargeback']);
+      setRefundCount(refunds || 0);
     };
 
     fetchStats();
@@ -501,6 +509,21 @@ const AdminFerramentas = () => {
                 {pendingAbandonedCount > 0 && (
                   <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                     {pendingAbandonedCount}
+                  </span>
+                )}
+              </Card>
+
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative" onClick={() => navigate('/admin-dashboard')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-red-600 to-orange-500 rounded-full">
+                    <ReceiptText className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                  </div>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Reembolsos</h2>
+                  <p className="text-muted-foreground hidden sm:block">Logs de reembolsos e chargebacks</p>
+                </div>
+                {refundCount > 0 && (
+                  <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                    {refundCount}
                   </span>
                 )}
               </Card>
