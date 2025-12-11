@@ -116,7 +116,7 @@ export const SecureImage = memo(({
   }
 
   return (
-    <div className={`${className} relative flex items-center justify-center`}>
+    <div className={`${className} relative overflow-hidden`}>
       {/* Blur placeholder / loading state */}
       {(!imageLoaded || isLoading) && (
         <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center z-10">
@@ -125,13 +125,13 @@ export const SecureImage = memo(({
         </div>
       )}
       
-      {/* Actual image with blur transition - object-contain to show full image */}
+      {/* Actual image with blur transition */}
       {signedUrl && (
         <img
           ref={imgRef}
           src={signedUrl}
           alt={alt}
-          className={`max-w-full max-h-full object-contain transition-all duration-500 ${
+          className={`w-full h-full object-cover transition-all duration-500 ${
             imageLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
           }`}
           loading={loading}
@@ -232,7 +232,7 @@ export const SecureVideo = memo(({
   }
 
   return (
-    <div className={`${className} relative flex items-center justify-center`}>
+    <div className={`${className} relative overflow-hidden`}>
       {/* Blur placeholder / loading state */}
       {(!videoLoaded || isLoading) && (
         <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center z-10">
@@ -241,11 +241,11 @@ export const SecureVideo = memo(({
         </div>
       )}
       
-      {/* Actual video with blur transition - object-contain to show full video */}
+      {/* Actual video with blur transition */}
       {signedUrl && (
         <video
           src={signedUrl}
-          className={`max-w-full max-h-full object-contain transition-all duration-500 ${
+          className={`w-full h-full object-cover transition-all duration-500 ${
             videoLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
           }`}
           autoPlay={autoPlay}
