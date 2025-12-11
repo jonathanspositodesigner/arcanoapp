@@ -15,11 +15,10 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 const ProfileSettings = () => {
   const navigate = useNavigate();
   const { user, isPremium, isLoading: premiumLoading } = usePremiumStatus();
-  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
-  const [justSubscribed, setJustSubscribed] = useState(false);
+  const { isSupported, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   
-  // Estado combinado: hook OU estado local após ativar
-  const effectiveSubscribed = isSubscribed || justSubscribed;
+  // FONTE ÚNICA DE VERDADE: Notification.permission
+  const hasPermission = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
   
   const [showDisableModal, setShowDisableModal] = useState(false);
   const [name, setName] = useState("");
@@ -382,15 +381,15 @@ const ProfileSettings = () => {
           </form>
         </Card>
 
-        {/* Notification Settings */}
-        {isSupported && !pushLoading && (
+        {/* Notification Settings - usa permission do browser como fonte de verdade */}
+        {isSupported && (
           <Card className="p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Bell className="h-5 w-5" />
               Notificações
             </h2>
             <div className="text-sm text-muted-foreground">
-              {effectiveSubscribed ? (
+              {hasPermission ? (
                 <div className="flex items-center justify-between">
                   <span>Notificações estão ativadas</span>
                   <button
@@ -407,7 +406,6 @@ const ProfileSettings = () => {
                     onClick={async () => {
                       const success = await subscribe();
                       if (success) {
-                        setJustSubscribed(true);
                         toast.success("Notificações ativadas!");
                       } else {
                         toast.error("Erro ao ativar notificações");
@@ -465,7 +463,6 @@ const ProfileSettings = () => {
               onClick={async () => {
                 const success = await unsubscribe();
                 if (success) {
-                  setJustSubscribed(false);
                   toast.success("Notificações desativadas");
                   setShowDisableModal(false);
                 } else {

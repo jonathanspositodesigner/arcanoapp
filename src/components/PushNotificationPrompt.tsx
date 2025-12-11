@@ -17,21 +17,17 @@ interface PushNotificationPromptProps {
 const PushNotificationPrompt = ({ isLoggedIn }: PushNotificationPromptProps) => {
   const [showModal, setShowModal] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
-  const { isSupported, isSubscribed, isLoading, subscribe } = usePushNotifications();
+  const { isSupported, subscribe } = usePushNotifications();
+
+  // FONTE ÚNICA DE VERDADE: Notification.permission
+  const hasPermission = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
 
   useEffect(() => {
-    // CRÍTICO: Não fazer nada enquanto está verificando o status
-    if (isLoading) return;
+    // Se já tem permissão do browser, NUNCA mostrar popup
+    if (hasPermission) return;
     
-    // Só mostrar se: logado, suportado, E NÃO inscrito
-    if (!isLoggedIn || !isSupported || isSubscribed) return;
-
-    // CRÍTICO: Se o navegador já tem permissão granted, NÃO mostrar popup
-    // Isso evita race conditions quando o DB foi limpo mas o browser ainda tem subscription
-    if ('Notification' in window && Notification.permission === 'granted') {
-      console.log('[PushPrompt] Browser already has permission granted, skipping prompt');
-      return;
-    }
+    // Só mostrar se: logado e suportado
+    if (!isLoggedIn || !isSupported) return;
 
     // Check if dismissed recently
     const dismissedAt = localStorage.getItem(DISMISS_STORAGE_KEY);
@@ -54,7 +50,7 @@ const PushNotificationPrompt = ({ isLoggedIn }: PushNotificationPromptProps) => 
     }, SHOW_DELAY_MS);
 
     return () => clearTimeout(timer);
-  }, [isLoggedIn, isSupported, isSubscribed, isLoading]);
+  }, [isLoggedIn, isSupported, hasPermission]);
 
   const handleActivate = async () => {
     setIsActivating(true);
