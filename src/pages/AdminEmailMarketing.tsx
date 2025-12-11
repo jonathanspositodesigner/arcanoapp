@@ -22,6 +22,7 @@ import EmailEditor from "@/components/email-marketing/EmailEditor";
 import RecipientSelector from "@/components/email-marketing/RecipientSelector";
 import CampaignHistory from "@/components/email-marketing/CampaignHistory";
 import EmojiPicker from "@/components/email-marketing/EmojiPicker";
+import SendingProgress from "@/components/email-marketing/SendingProgress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -35,6 +36,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 
 interface Campaign {
   id?: string;
@@ -95,6 +100,11 @@ const AdminEmailMarketing = () => {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [deleteTemplateConfirm, setDeleteTemplateConfirm] = useState<EmailTemplate | null>(null);
+
+  // Progress modal state
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [sendingCampaignId, setSendingCampaignId] = useState<string | null>(null);
+  const [sendingCampaignTitle, setSendingCampaignTitle] = useState<string>("");
 
   useEffect(() => {
     fetchStats();
@@ -421,31 +431,72 @@ const AdminEmailMarketing = () => {
       return;
     }
 
-    if (!campaign.id) {
-      await handleSaveDraft();
+    let campaignId = campaign.id;
+    
+    if (!campaignId) {
+      // Save draft first to get campaign ID
+      setSaving(true);
+      const payload = {
+        ...campaign,
+        status: "draft",
+      };
+      const { data: savedCampaign, error: saveError } = await supabase
+        .from("email_campaigns")
+        .insert(payload)
+        .select()
+        .single();
+      
+      setSaving(false);
+      
+      if (saveError || !savedCampaign) {
+        toast.error("Erro ao salvar campanha");
+        return;
+      }
+      
+      campaignId = savedCampaign.id;
+      setCampaign({ ...campaign, id: campaignId });
     }
 
-    if (!campaign.id) {
-      toast.error("Erro ao salvar campanha");
-      return;
-    }
+    // Show progress modal
+    setSendingCampaignId(campaignId);
+    setSendingCampaignTitle(campaign.title);
+    setShowProgressModal(true);
 
+    // Start sending in background
     setSending(true);
-
     const { data, error } = await supabase.functions.invoke("send-email-campaign", {
-      body: { campaign_id: campaign.id },
+      body: { campaign_id: campaignId },
     });
-
     setSending(false);
 
     if (error || data?.error) {
-      toast.error(data?.error || "Erro ao enviar campanha");
+      toast.error(data?.error || "Erro ao iniciar envio");
+      setShowProgressModal(false);
       return;
     }
 
-    toast.success(`Campanha enviada! ${data.sent_count} emails enviados.`);
+    // The progress modal will handle the rest via realtime
+    if (data?.completed) {
+      toast.success(`Campanha enviada! ${data.sent_count} emails enviados.`);
+      setShowProgressModal(false);
+      resetForm();
+      setRefreshHistory(prev => prev + 1);
+    }
+  };
+
+  const handleProgressClose = () => {
+    setShowProgressModal(false);
+    setSendingCampaignId(null);
+    setSendingCampaignTitle("");
+  };
+
+  const handleProgressComplete = () => {
     resetForm();
     setRefreshHistory(prev => prev + 1);
+    // Keep modal open briefly to show completion
+    setTimeout(() => {
+      handleProgressClose();
+    }, 1500);
   };
 
   const resetForm = () => {
@@ -998,6 +1049,20 @@ const AdminEmailMarketing = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Sending Progress Modal */}
+      <Dialog open={showProgressModal} onOpenChange={setShowProgressModal}>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+          {sendingCampaignId && (
+            <SendingProgress
+              campaignId={sendingCampaignId}
+              campaignTitle={sendingCampaignTitle}
+              onClose={handleProgressClose}
+              onComplete={handleProgressComplete}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };

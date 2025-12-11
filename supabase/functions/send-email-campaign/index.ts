@@ -132,6 +132,21 @@ serve(async (req) => {
     if (resume) {
       console.log(`RESUME MODE: Processing pending emails for campaign ${campaign_id}`);
 
+      // Check if campaign is paused before starting
+      if (campaign.is_paused) {
+        console.log("Campaign is paused, not processing");
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            paused: true,
+            message: "Campanha pausada",
+            sent_count: campaign.sent_count || 0,
+            failed_count: campaign.failed_count || 0
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Fetch pending logs
       const { data: pendingLogs, error: logsError } = await supabaseClient
         .from("email_campaign_logs")
@@ -152,11 +167,10 @@ serve(async (req) => {
         // No more pending - mark campaign as complete
         const sentCount = campaign.sent_count || 0;
         const failedCount = campaign.failed_count || 0;
-        const finalStatus = failedCount === 0 ? "sent" : "sent";
         
         await supabaseClient
           .from("email_campaigns")
-          .update({ status: finalStatus })
+          .update({ status: "sent", is_paused: false })
           .eq("id", campaign_id);
 
         console.log("No more pending emails - campaign completed");
@@ -177,7 +191,7 @@ serve(async (req) => {
       // Update campaign status to sending
       await supabaseClient
         .from("email_campaigns")
-        .update({ status: "sending" })
+        .update({ status: "sending", is_paused: false })
         .eq("id", campaign_id);
 
       // Send emails
@@ -187,6 +201,45 @@ serve(async (req) => {
       const MAX_RETRIES = 3;
 
       for (let i = 0; i < pendingLogs.length; i++) {
+        // CHECK FOR PAUSE before each email
+        const { data: currentCampaign } = await supabaseClient
+          .from("email_campaigns")
+          .select("is_paused")
+          .eq("id", campaign_id)
+          .single();
+
+        if (currentCampaign?.is_paused) {
+          console.log("Campaign paused by user, stopping processing");
+          
+          // Update campaign status to paused
+          await supabaseClient
+            .from("email_campaigns")
+            .update({ 
+              status: "paused",
+              sent_count: sentCount,
+              failed_count: failedCount
+            })
+            .eq("id", campaign_id);
+
+          const { count: remainingAfterPause } = await supabaseClient
+            .from("email_campaign_logs")
+            .select("*", { count: "exact", head: true })
+            .eq("campaign_id", campaign_id)
+            .eq("status", "pending");
+
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              paused: true,
+              message: "Campanha pausada pelo usuário",
+              sent_count: sentCount,
+              failed_count: failedCount,
+              remaining: remainingAfterPause || 0
+            }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
         const log = pendingLogs[i];
         const email = log.email;
         let success = false;
@@ -283,20 +336,20 @@ serve(async (req) => {
             .eq("id", log.id);
         }
 
+        // Update campaign counts in real-time after each email
+        await supabaseClient
+          .from("email_campaigns")
+          .update({ 
+            sent_count: sentCount,
+            failed_count: failedCount
+          })
+          .eq("id", campaign_id);
+
         // Delay between emails
         if (i < pendingLogs.length - 1) {
           await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_EMAILS));
         }
       }
-
-      // Update campaign counts
-      await supabaseClient
-        .from("email_campaigns")
-        .update({ 
-          sent_count: sentCount,
-          failed_count: failedCount
-        })
-        .eq("id", campaign_id);
 
       // Check if there are more pending
       const { count: remainingCount } = await supabaseClient
@@ -306,6 +359,14 @@ serve(async (req) => {
         .eq("status", "pending");
 
       const hasMore = (remainingCount || 0) > 0;
+
+      // If no more, mark as complete
+      if (!hasMore) {
+        await supabaseClient
+          .from("email_campaigns")
+          .update({ status: "sent", is_paused: false })
+          .eq("id", campaign_id);
+      }
 
       console.log(`Batch completed: ${sentCount} sent, ${failedCount} failed, ${remainingCount || 0} remaining`);
 
@@ -483,6 +544,46 @@ serve(async (req) => {
     console.log(`Starting to send first batch of ${firstBatch.length} emails`);
 
     for (let i = 0; i < firstBatch.length; i++) {
+      // CHECK FOR PAUSE before each email
+      const { data: currentCampaign } = await supabaseClient
+        .from("email_campaigns")
+        .select("is_paused")
+        .eq("id", campaign_id)
+        .single();
+
+      if (currentCampaign?.is_paused) {
+        console.log("Campaign paused by user, stopping processing");
+        
+        // Update campaign status to paused
+        await supabaseClient
+          .from("email_campaigns")
+          .update({ 
+            status: "paused",
+            sent_count: sentCount,
+            failed_count: failedCount
+          })
+          .eq("id", campaign_id);
+
+        const { count: remainingAfterPause } = await supabaseClient
+          .from("email_campaign_logs")
+          .select("*", { count: "exact", head: true })
+          .eq("campaign_id", campaign_id)
+          .eq("status", "pending");
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            paused: true,
+            message: "Campanha pausada pelo usuário",
+            sent_count: sentCount,
+            failed_count: failedCount,
+            remaining: remainingAfterPause || 0,
+            total: recipients.length
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const email = firstBatch[i];
       let success = false;
       let retries = 0;
@@ -581,6 +682,15 @@ serve(async (req) => {
           .eq("campaign_id", campaign_id)
           .eq("email", email);
       }
+
+      // Update campaign counts in real-time after each email
+      await supabaseClient
+        .from("email_campaigns")
+        .update({ 
+          sent_count: sentCount,
+          failed_count: failedCount
+        })
+        .eq("id", campaign_id);
 
       if (i < firstBatch.length - 1) {
         await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_EMAILS));

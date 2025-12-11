@@ -810,6 +810,7 @@ export type Database = {
           failed_count: number | null
           filter_value: string | null
           id: string
+          is_paused: boolean | null
           is_scheduled: boolean | null
           last_scheduled_send_at: string | null
           next_send_at: string | null
@@ -840,6 +841,7 @@ export type Database = {
           failed_count?: number | null
           filter_value?: string | null
           id?: string
+          is_paused?: boolean | null
           is_scheduled?: boolean | null
           last_scheduled_send_at?: string | null
           next_send_at?: string | null
@@ -870,6 +872,7 @@ export type Database = {
           failed_count?: number | null
           filter_value?: string | null
           id?: string
+          is_paused?: boolean | null
           is_scheduled?: boolean | null
           last_scheduled_send_at?: string | null
           next_send_at?: string | null

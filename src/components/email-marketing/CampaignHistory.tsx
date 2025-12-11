@@ -121,10 +121,10 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
       return;
     }
 
-    // Fetch pending counts for campaigns with status sending/cancelled
+    // Fetch pending counts for campaigns with status sending/cancelled/paused
     const campaignsWithPending = await Promise.all(
       (data || []).map(async (campaign) => {
-        if (campaign.status === "sending" || campaign.status === "cancelled") {
+        if (campaign.status === "sending" || campaign.status === "cancelled" || campaign.status === "paused") {
           const { count } = await supabase
             .from("email_campaign_logs")
             .select("*", { count: "exact", head: true })
@@ -295,6 +295,16 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
             <Badge variant="outline" className="gap-1 text-gray-500">
               <Ban className="h-3 w-3" />
               Cancelada
+            </Badge>
+            {pendingBadge}
+          </div>
+        );
+      case "paused":
+        return (
+          <div className="flex flex-wrap gap-1">
+            <Badge className="gap-1 bg-orange-500 text-white">
+              <Pause className="h-3 w-3" />
+              Pausada
             </Badge>
             {pendingBadge}
           </div>
@@ -519,7 +529,7 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
                 </TableCell>
                 <TableCell>{getStatusBadge(campaign.status, campaign)}</TableCell>
                 <TableCell className="text-center">
-                  {campaign.status === "sent" || campaign.status === "sending" || campaign.status === "cancelled" ? (
+                  {campaign.status === "sent" || campaign.status === "sending" || campaign.status === "cancelled" || campaign.status === "paused" ? (
                     <span>
                       {campaign.sent_count}/{campaign.recipients_count}
                       {campaign.failed_count > 0 && (
@@ -608,7 +618,7 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
                         <CalendarOff className="h-4 w-4" />
                       </Button>
                     )}
-                    {(campaign.status === "sent" || campaign.status === "sending" || campaign.status === "cancelled") && (
+                    {(campaign.status === "sent" || campaign.status === "sending" || campaign.status === "cancelled" || campaign.status === "paused") && (
                       <Button
                         variant="ghost"
                         size="sm"
