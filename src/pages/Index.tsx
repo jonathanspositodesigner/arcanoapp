@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { trackPushNotificationEvent } from "@/hooks/usePushNotificationAnalytics";
 import { Check, Smartphone, Bell } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,8 +13,12 @@ const Index = () => {
   const handleActivateNotifications = async () => {
     const success = await subscribe();
     if (success) {
+      // Track manual activation
+      trackPushNotificationEvent('activated_manual');
       toast.success("Notificações ativadas com sucesso!");
     } else {
+      // Track permission denied
+      trackPushNotificationEvent('permission_denied');
       toast.error("Não foi possível ativar as notificações");
     }
   };

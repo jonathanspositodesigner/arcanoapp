@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart, KeyRound, X } from "lucide-react";
+import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart, KeyRound, X, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { fetchPushNotificationStats, PushNotificationStats } from "@/hooks/usePushNotificationAnalytics";
 
 type DateFilter = 1 | "yesterday" | 7 | 15 | 30 | 90 | "all" | "custom";
 
@@ -130,6 +131,18 @@ const [pageViews, setPageViews] = useState({
   });
   const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
   const [firstAccessModalView, setFirstAccessModalView] = useState<'changed' | 'pending'>('pending');
+  
+  // Push notification stats
+  const [pushNotificationStats, setPushNotificationStats] = useState<PushNotificationStats>({
+    promptShown: 0,
+    activatedViaPrompt: 0,
+    activatedViaManual: 0,
+    dismissed: 0,
+    permissionDenied: 0,
+    totalActivated: 0,
+    totalSubscriptions: 0,
+    conversionRate: 0
+  });
 
   // Retorna a data de início e fim do período em formato ISO
   const getDateThreshold = (): { start: string | null; end: string | null } => {
@@ -1061,6 +1074,10 @@ const [pageViews, setPageViews] = useState({
         });
       }
 
+      // ========== FETCH PUSH NOTIFICATION STATS ==========
+      const pushStats = await fetchPushNotificationStats(threshold.start || undefined, threshold.end || undefined);
+      setPushNotificationStats(pushStats);
+
       setIsLoading(false);
       setLastUpdate(new Date());
     };
@@ -1787,6 +1804,73 @@ const [pageViews, setPageViews] = useState({
               )}
             </Card>
           </div>
+
+          {/* Push Notification Analytics Card */}
+          <Card className="p-6 mb-6 border-2 border-indigo-500/30">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-indigo-500/20 rounded-full">
+                <Bell className="h-6 w-6 text-indigo-500" />
+              </div>
+              <p className="text-lg font-semibold text-foreground">Analytics de Notificações Push</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              {/* Total Ativados */}
+              <div className="bg-green-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-green-500">{pushNotificationStats.totalSubscriptions}</p>
+                <p className="text-xs text-muted-foreground mt-1">Dispositivos Ativos</p>
+              </div>
+              
+              {/* Via Prompt */}
+              <div className="bg-blue-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-blue-500">{pushNotificationStats.activatedViaPrompt}</p>
+                <p className="text-xs text-muted-foreground mt-1">Ativados via Prompt</p>
+              </div>
+              
+              {/* Via Manual */}
+              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-purple-500">{pushNotificationStats.activatedViaManual}</p>
+                <p className="text-xs text-muted-foreground mt-1">Ativados Manualmente</p>
+              </div>
+              
+              {/* Taxa de Conversão */}
+              <div className="bg-amber-500/10 rounded-lg p-4 text-center">
+                <p className={`text-3xl font-bold ${
+                  pushNotificationStats.conversionRate >= 30 ? 'text-green-500' : 
+                  pushNotificationStats.conversionRate >= 15 ? 'text-yellow-500' : 'text-red-500'
+                }`}>
+                  {pushNotificationStats.conversionRate.toFixed(1)}%
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Taxa de Conversão</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4">
+              {/* Prompts Exibidos */}
+              <div className="bg-muted/50 rounded-lg p-3 text-center">
+                <p className="text-xl font-bold text-foreground">{pushNotificationStats.promptShown}</p>
+                <p className="text-xs text-muted-foreground">Prompts Exibidos</p>
+              </div>
+              
+              {/* Dispensados */}
+              <div className="bg-orange-500/10 rounded-lg p-3 text-center">
+                <p className="text-xl font-bold text-orange-500">{pushNotificationStats.dismissed}</p>
+                <p className="text-xs text-muted-foreground">Dispensaram</p>
+              </div>
+              
+              {/* Negaram Permissão */}
+              <div className="bg-red-500/10 rounded-lg p-3 text-center">
+                <p className="text-xl font-bold text-red-500">{pushNotificationStats.permissionDenied}</p>
+                <p className="text-xs text-muted-foreground">Negaram Permissão</p>
+              </div>
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground text-center">
+                📊 Conversão = usuários que ativaram via prompt / prompts exibidos
+              </p>
+            </div>
+          </Card>
 
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Evolução de Acessos</h3>
