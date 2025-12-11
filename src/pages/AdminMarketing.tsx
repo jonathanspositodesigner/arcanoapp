@@ -1,10 +1,33 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Mail, Share2, Target, Calendar, Bell } from "lucide-react";
+import { Mail, Bell, Smartphone, Users, TrendingUp, Eye, XCircle, ShieldX } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import { fetchPushNotificationStats, PushNotificationStats } from "@/hooks/usePushNotificationAnalytics";
 
 const AdminMarketing = () => {
   const navigate = useNavigate();
+  const [pushStats, setPushStats] = useState<PushNotificationStats>({
+    promptShown: 0,
+    activatedViaPrompt: 0,
+    activatedViaManual: 0,
+    dismissed: 0,
+    permissionDenied: 0,
+    totalActivated: 0,
+    totalSubscriptions: 0,
+    conversionRate: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      setIsLoading(true);
+      const stats = await fetchPushNotificationStats();
+      setPushStats(stats);
+      setIsLoading(false);
+    };
+    loadStats();
+  }, []);
 
   return (
     <AdminLayout>
@@ -41,39 +64,85 @@ const AdminMarketing = () => {
           </Card>
         </div>
 
-        {/* Upcoming Features */}
-        <h3 className="text-lg font-semibold text-foreground mb-4">Em breve</h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          <Card className="p-3 sm:p-8 opacity-60">
-            <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-              <div className="p-2 sm:p-4 bg-green-500/20 rounded-full">
-                <Share2 className="h-6 w-6 sm:h-10 sm:w-10 text-green-500" />
-              </div>
-              <h2 className="text-xs sm:text-lg font-bold text-foreground">Links de Afiliados</h2>
-              <p className="text-sm text-muted-foreground hidden sm:block">Gerencie programa de afiliados</p>
+        {/* Push Notification Analytics Dashboard */}
+        <Card className="p-6 border-2 border-indigo-500/30">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-indigo-500/20 rounded-full">
+              <Bell className="h-6 w-6 text-indigo-500" />
             </div>
-          </Card>
-
-          <Card className="p-3 sm:p-8 opacity-60">
-            <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-              <div className="p-2 sm:p-4 bg-orange-500/20 rounded-full">
-                <Target className="h-6 w-6 sm:h-10 sm:w-10 text-orange-500" />
+            <p className="text-lg font-semibold text-foreground">Analytics de Notificações Push</p>
+          </div>
+          
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                {/* Total Ativados */}
+                <div className="bg-green-500/10 rounded-lg p-4 text-center">
+                  <Smartphone className="h-5 w-5 mx-auto mb-2 text-green-500" />
+                  <p className="text-3xl font-bold text-green-500">{pushStats.totalSubscriptions}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Dispositivos Ativos</p>
+                </div>
+                
+                {/* Via Prompt */}
+                <div className="bg-blue-500/10 rounded-lg p-4 text-center">
+                  <Users className="h-5 w-5 mx-auto mb-2 text-blue-500" />
+                  <p className="text-3xl font-bold text-blue-500">{pushStats.activatedViaPrompt}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Ativados via Prompt</p>
+                </div>
+                
+                {/* Via Manual */}
+                <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                  <Users className="h-5 w-5 mx-auto mb-2 text-purple-500" />
+                  <p className="text-3xl font-bold text-purple-500">{pushStats.activatedViaManual}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Ativados Manualmente</p>
+                </div>
+                
+                {/* Taxa de Conversão */}
+                <div className="bg-amber-500/10 rounded-lg p-4 text-center">
+                  <TrendingUp className="h-5 w-5 mx-auto mb-2 text-amber-500" />
+                  <p className={`text-3xl font-bold ${
+                    pushStats.conversionRate >= 30 ? 'text-green-500' : 
+                    pushStats.conversionRate >= 15 ? 'text-yellow-500' : 'text-red-500'
+                  }`}>
+                    {pushStats.conversionRate.toFixed(1)}%
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Taxa de Conversão</p>
+                </div>
               </div>
-              <h2 className="text-xs sm:text-lg font-bold text-foreground">Campanhas</h2>
-              <p className="text-sm text-muted-foreground hidden sm:block">Crie e acompanhe campanhas promocionais</p>
-            </div>
-          </Card>
-
-          <Card className="p-3 sm:p-8 opacity-60">
-            <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-              <div className="p-2 sm:p-4 bg-purple-500/20 rounded-full">
-                <Calendar className="h-6 w-6 sm:h-10 sm:w-10 text-purple-500" />
+              
+              <div className="grid grid-cols-3 gap-4">
+                {/* Prompts Exibidos */}
+                <div className="bg-muted/50 rounded-lg p-3 text-center">
+                  <Eye className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                  <p className="text-xl font-bold text-foreground">{pushStats.promptShown}</p>
+                  <p className="text-xs text-muted-foreground">Prompts Exibidos</p>
+                </div>
+                
+                {/* Dispensados */}
+                <div className="bg-orange-500/10 rounded-lg p-3 text-center">
+                  <XCircle className="h-4 w-4 mx-auto mb-1 text-orange-500" />
+                  <p className="text-xl font-bold text-orange-500">{pushStats.dismissed}</p>
+                  <p className="text-xs text-muted-foreground">Dispensaram</p>
+                </div>
+                
+                {/* Negaram Permissão */}
+                <div className="bg-red-500/10 rounded-lg p-3 text-center">
+                  <ShieldX className="h-4 w-4 mx-auto mb-1 text-red-500" />
+                  <p className="text-xl font-bold text-red-500">{pushStats.permissionDenied}</p>
+                  <p className="text-xs text-muted-foreground">Negaram Permissão</p>
+                </div>
               </div>
-              <h2 className="text-xs sm:text-lg font-bold text-foreground">Agendamento</h2>
-              <p className="text-sm text-muted-foreground hidden sm:block">Agende publicações e promoções</p>
-            </div>
-          </Card>
-        </div>
+              
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground text-center">
+                  📊 Conversão = usuários que ativaram via prompt / prompts exibidos
+                </p>
+              </div>
+            </>
+          )}
+        </Card>
       </div>
     </AdminLayout>
   );
