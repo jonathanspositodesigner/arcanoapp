@@ -4,6 +4,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { trackPushNotificationEvent } from "@/hooks/usePushNotificationAnalytics";
 import { Check, Smartphone, Bell } from "lucide-react";
 import { toast } from "sonner";
+import logoHorizontal from "@/assets/logo_horizontal.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
       {/* Logo */}
-      <img alt="ArcanoApp" className="h-7 sm:h-8 mb-4" src="/lovable-uploads/c730fa96-d2c9-48f7-8bbb-f5fd02378698.png" />
+      <img alt="ArcanoApp" className="h-7 sm:h-8 mb-4" src={logoHorizontal} />
       
       {/* Título */}
       <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-6 sm:mb-8 text-center">
