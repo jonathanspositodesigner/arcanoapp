@@ -87,24 +87,7 @@ export const useDashboardGrid = () => {
           // Keep saved positions for existing cards
           const mergedItems = defaultItems.map((defaultItem) => {
             const savedItem = savedItems.find((s) => s.i === defaultItem.i);
-            if (savedItem) {
-              // For abandoned-checkouts, ensure minimum size only on first load (when too small)
-              if (savedItem.i === 'abandoned-checkouts') {
-                const minW = breakpoint === 'lg' ? 4 : breakpoint === 'md' ? 3 : 2;
-                const minH = 5;
-                const needsResize = (savedItem.w || 0) < minW || (savedItem.h || 0) < minH;
-                return {
-                  ...defaultItem,
-                  ...savedItem,
-                  w: needsResize ? Math.max(savedItem.w || defaultItem.w, minW) : savedItem.w,
-                  h: needsResize ? Math.max(savedItem.h || defaultItem.h, minH) : savedItem.h,
-                  minW,
-                  minH,
-                };
-              }
-              return { ...defaultItem, ...savedItem };
-            }
-            return defaultItem;
+            return savedItem ? { ...defaultItem, ...savedItem } : defaultItem;
           });
           
           merged[breakpoint] = mergedItems;
