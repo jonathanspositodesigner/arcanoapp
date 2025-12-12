@@ -88,15 +88,16 @@ export const useDashboardGrid = () => {
           const mergedItems = defaultItems.map((defaultItem) => {
             const savedItem = savedItems.find((s) => s.i === defaultItem.i);
             if (savedItem) {
-              // Force minimum size for abandoned-checkouts card
+              // For abandoned-checkouts, ensure minimum size only on first load (when too small)
               if (savedItem.i === 'abandoned-checkouts') {
                 const minW = breakpoint === 'lg' ? 4 : breakpoint === 'md' ? 3 : 2;
                 const minH = 5;
+                const needsResize = (savedItem.w || 0) < minW || (savedItem.h || 0) < minH;
                 return {
                   ...defaultItem,
                   ...savedItem,
-                  w: Math.max(savedItem.w || defaultItem.w, minW),
-                  h: Math.max(savedItem.h || defaultItem.h, minH),
+                  w: needsResize ? Math.max(savedItem.w || defaultItem.w, minW) : savedItem.w,
+                  h: needsResize ? Math.max(savedItem.h || defaultItem.h, minH) : savedItem.h,
                   minW,
                   minH,
                 };
