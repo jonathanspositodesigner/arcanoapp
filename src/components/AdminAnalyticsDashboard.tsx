@@ -1018,6 +1018,9 @@ const AdminAnalyticsDashboard = () => {
     return `${format(customDateRange.from, "dd/MM", { locale: ptBR })} - ${format(customDateRange.to, "dd/MM/yyyy", { locale: ptBR })}`;
   };
 
+  // Build version timestamp for cache debugging
+  const BUILD_VERSION = "2025-12-12 14:35";
+
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -1026,6 +1029,7 @@ const AdminAnalyticsDashboard = () => {
           <p className="text-xs text-muted-foreground">
             Última atualização: {lastUpdate.toLocaleTimeString('pt-BR')} • Atualiza automaticamente
           </p>
+          <p className="text-[10px] text-muted-foreground/50 font-mono">v{BUILD_VERSION}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
