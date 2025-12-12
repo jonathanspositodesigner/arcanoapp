@@ -107,14 +107,28 @@ const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: 
     );
   }
 
+  const isVideo = finalUrl.includes('.mp4') || finalUrl.includes('.webm') || finalUrl.includes('.mov');
+
   return (
     <div className="relative w-full h-40 rounded-lg overflow-hidden bg-muted">
-      <img 
-        src={finalUrl} 
-        alt={title}
-        className="w-full h-full object-contain"
-        onError={() => setError(true)}
-      />
+      {isVideo ? (
+        <video 
+          src={finalUrl} 
+          className="w-full h-full object-contain"
+          autoPlay
+          muted
+          loop
+          playsInline
+          onError={() => setError(true)}
+        />
+      ) : (
+        <img 
+          src={finalUrl} 
+          alt={title}
+          className="w-full h-full object-contain"
+          onError={() => setError(true)}
+        />
+      )}
     </div>
   );
 };
