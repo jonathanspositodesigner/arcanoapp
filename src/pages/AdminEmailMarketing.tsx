@@ -23,6 +23,7 @@ import RecipientSelector from "@/components/email-marketing/RecipientSelector";
 import CampaignHistory from "@/components/email-marketing/CampaignHistory";
 import EmojiPicker from "@/components/email-marketing/EmojiPicker";
 import SendingProgress from "@/components/email-marketing/SendingProgress";
+import WelcomeEmailTemplates from "@/components/email-marketing/WelcomeEmailTemplates";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -654,6 +655,10 @@ const AdminEmailMarketing = () => {
               <BookTemplate className="h-4 w-4" />
               Modelos
             </TabsTrigger>
+            <TabsTrigger value="welcome" className="gap-2">
+              <MailCheck className="h-4 w-4" />
+              Boas-Vindas
+            </TabsTrigger>
             <TabsTrigger value="history" className="gap-2">
               <FileText className="h-4 w-4" />
               Histórico
@@ -1023,6 +1028,10 @@ const AdminEmailMarketing = () => {
                 </div>
               )}
             </Card>
+          </TabsContent>
+
+          <TabsContent value="welcome">
+            <WelcomeEmailTemplates />
           </TabsContent>
 
           <TabsContent value="history">
