@@ -914,18 +914,24 @@ const AdminAnalyticsDashboard = () => {
         setHourlyStats(hourlyData);
       }
 
-      // Conversion rate
+      // Conversion rate - only count sales from app (from_app = true in webhook_logs)
       const bibliotecaArtesVisitors = periodUniqueSessions.size;
       
-      let purchasesQuery = supabase.from("user_pack_purchases").select("id, purchased_at");
+      // Count only webhook sales that came from the app (utm_source = aplicativo)
+      let appSalesQuery = supabase.from("webhook_logs")
+        .select("id")
+        .eq("from_app", true)
+        .eq("result", "success")
+        .in("status", ["paid", "approved"]);
+      
       if (threshold.start) {
-        purchasesQuery = purchasesQuery.gte("purchased_at", threshold.start);
+        appSalesQuery = appSalesQuery.gte("received_at", threshold.start);
       }
       if (threshold.end) {
-        purchasesQuery = purchasesQuery.lte("purchased_at", threshold.end);
+        appSalesQuery = appSalesQuery.lte("received_at", threshold.end);
       }
-      const { data: purchasesData } = await purchasesQuery;
-      const buyersCount = purchasesData?.length || 0;
+      const { data: appSalesData } = await appSalesQuery;
+      const buyersCount = appSalesData?.length || 0;
       
       const conversionRateValue = bibliotecaArtesVisitors > 0 
         ? Math.round((buyersCount / bibliotecaArtesVisitors) * 10000) / 100 
@@ -1022,12 +1028,21 @@ const AdminAnalyticsDashboard = () => {
         });
       }
 
-      // Purchase hours
-      if (purchasesData && purchasesData.length > 0) {
+      // Purchase hours - use pack purchases data for hourly stats
+      let purchaseHoursQuery = supabase.from("user_pack_purchases").select("id, purchased_at");
+      if (threshold.start) {
+        purchaseHoursQuery = purchaseHoursQuery.gte("purchased_at", threshold.start);
+      }
+      if (threshold.end) {
+        purchaseHoursQuery = purchaseHoursQuery.lte("purchased_at", threshold.end);
+      }
+      const { data: purchaseHoursData } = await purchaseHoursQuery;
+      
+      if (purchaseHoursData && purchaseHoursData.length > 0) {
         const purchaseHourCounts: Record<number, number> = {};
         for (let i = 0; i < 24; i++) purchaseHourCounts[i] = 0;
         
-        purchasesData.forEach(purchase => {
+        purchaseHoursData.forEach(purchase => {
           if (purchase.purchased_at) {
             const hour = new Date(purchase.purchased_at).getHours();
             purchaseHourCounts[hour]++;

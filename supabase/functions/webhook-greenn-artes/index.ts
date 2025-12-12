@@ -68,6 +68,23 @@ interface GreennArtesWebhookPayload {
   }
 }
 
+// Função para extrair UTM source do saleMetas
+function extractUtmSource(payload: any): string | null {
+  const saleMetas = payload.saleMetas || []
+  for (const meta of saleMetas) {
+    if (meta.meta_key === 'utm_source') {
+      return meta.meta_value || null
+    }
+  }
+  return null
+}
+
+// Função para verificar se venda veio do app (UTM = aplicativo)
+function isFromApp(payload: any): boolean {
+  const utmSource = extractUtmSource(payload)
+  return utmSource?.toLowerCase() === 'aplicativo'
+}
+
 // Função para registrar log do webhook
 async function logWebhook(
   supabase: any,
@@ -80,6 +97,9 @@ async function logWebhook(
   errorMessage?: string
 ): Promise<void> {
   try {
+    const utmSource = extractUtmSource(payload)
+    const fromApp = isFromApp(payload)
+    
     await supabase.from('webhook_logs').insert({
       payload,
       status,
@@ -87,8 +107,14 @@ async function logWebhook(
       email,
       result,
       mapping_type: mappingType,
-      error_message: errorMessage
+      error_message: errorMessage,
+      utm_source: utmSource,
+      from_app: fromApp
     })
+    
+    if (fromApp) {
+      console.log(`📱 Sale from APP detected (utm_source: ${utmSource})`)
+    }
   } catch (e) {
     console.error('Failed to log webhook:', e)
   }
