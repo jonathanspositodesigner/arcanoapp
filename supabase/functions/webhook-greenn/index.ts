@@ -37,46 +37,139 @@ interface GreennWebhookPayload {
   }
 }
 
+// Helper function to find user by email with pagination
+async function findUserByEmail(supabase: any, email: string): Promise<string | null> {
+  // First try to find in profiles table (faster)
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (existingProfile?.id) {
+    console.log('Found user via profiles table:', existingProfile.id);
+    return existingProfile.id;
+  }
+
+  // If not found in profiles, search in auth.users with pagination
+  let page = 1;
+  while (page <= 10) { // Max 10000 users
+    const { data: usersPage, error } = await supabase.auth.admin.listUsers({
+      page: page,
+      perPage: 1000
+    });
+
+    if (error) {
+      console.error('Error listing users page', page, error);
+      break;
+    }
+
+    const matchingUser = usersPage?.users.find((u: any) => u.email?.toLowerCase() === email);
+    if (matchingUser) {
+      console.log('Found user via auth.users pagination:', matchingUser.id);
+      return matchingUser.id;
+    }
+
+    if (!usersPage?.users.length || usersPage.users.length < 1000) {
+      break; // Last page
+    }
+    page++;
+  }
+
+  return null;
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  
+  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
 
-    const payload: GreennWebhookPayload = await req.json()
+  let payload: GreennWebhookPayload = {}
+  let logId: string | null = null
+
+  try {
+    payload = await req.json()
     
-    console.log('=== GREENN WEBHOOK RECEIVED ===')
+    console.log('=== GREENN WEBHOOK RECEIVED (PROMPTVERSO) ===')
     console.log('Payload:', JSON.stringify(payload, null, 2))
 
     const email = payload.client?.email?.toLowerCase().trim()
     const clientName = payload.client?.name || ''
-    const clientPhone = payload.client?.phone?.replace(/\D/g, '') || '' // Remove non-digits
+    const clientPhone = payload.client?.phone?.replace(/\D/g, '') || ''
     const productName = payload.product?.name || ''
     const productId = payload.product?.id
     const productPeriod = payload.product?.period || 30
     const status = payload.currentStatus
     const contractId = payload.contract?.id || payload.sale?.id
+
+    // Log webhook receipt immediately
+    const { data: logData } = await supabase
+      .from('webhook_logs')
+      .insert({
+        payload: payload,
+        status: status || 'unknown',
+        product_id: productId,
+        email: email || 'no-email',
+        result: 'processing',
+        from_app: false
+      })
+      .select('id')
+      .single()
+    
+    logId = logData?.id
+    console.log('Webhook logged with ID:', logId)
     
     if (!email) {
       console.error('No email provided in webhook payload')
+      
+      // Update log with error
+      if (logId) {
+        await supabase.from('webhook_logs').update({
+          result: 'error',
+          error_message: 'No email provided'
+        }).eq('id', logId)
+      }
+      
       return new Response(
         JSON.stringify({ error: 'Email is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Get offer name for better plan detection
+    // Check blacklist
+    const { data: blacklisted } = await supabase
+      .from('blacklisted_emails')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (blacklisted) {
+      console.log('Email is blacklisted, ignoring webhook:', email)
+      
+      if (logId) {
+        await supabase.from('webhook_logs').update({
+          result: 'blocked',
+          error_message: 'Email blacklisted'
+        }).eq('id', logId)
+      }
+      
+      return new Response(
+        JSON.stringify({ success: true, message: 'Email blacklisted, webhook ignored' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const offerName = payload.offer?.name || ''
     const trialDays = payload.trial?.days || 7
     const trialEndDate = payload.trial?.end_date
@@ -84,9 +177,7 @@ Deno.serve(async (req) => {
     console.log(`Processing webhook for email: ${email}, name: ${clientName}, phone: ${clientPhone}, status: ${status}`)
     console.log(`Product: ${productName}, Offer: ${offerName}, Period: ${productPeriod} days`)
 
-    // Determine plan type based on product name OR offer name
-    // Products: "Arcano Básico - App ArcanoLab", "Arcano Pro - App ArcanoLab", "Arcano IA Unlimited - App ArcanoLab"
-    // Offers: "#Arcano Pro Anual", "#Arcano Pro Mensal", "#Arcano Unlimited Anual", "#Arcano Unlimited Mensal"
+    // Determine plan type
     let planType = 'arcano_basico'
     const productLower = productName.toLowerCase()
     const offerLower = offerName.toLowerCase()
@@ -100,7 +191,7 @@ Deno.serve(async (req) => {
     
     console.log(`Detected plan type: ${planType}`)
 
-    // Determine billing period based on offer name or product period
+    // Determine billing period
     let billingPeriod = 'monthly'
     if (offerLower.includes('anual') || productPeriod >= 365) {
       billingPeriod = 'yearly'
@@ -108,45 +199,66 @@ Deno.serve(async (req) => {
     
     console.log(`Detected billing period: ${billingPeriod}`)
 
-    // Check if this is a trial status
     const isTrialStatus = status === 'trial' || status === 'trial_started' || status === 'trialing' || status === 'waiting_payment'
     
     // Handle paid status OR trial status - activate or renew premium
     if (status === 'paid' || status === 'approved' || isTrialStatus) {
       const statusType = isTrialStatus ? 'TRIAL' : 'PAID'
       console.log(`Processing ${statusType} status - activating/renewing premium`)
-      console.log('Processing PAID status - activating/renewing premium')
       
-      // Check if user exists in auth
-      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers()
-      
-      if (listError) {
-        console.error('Error listing users:', listError)
-        throw listError
-      }
-
+      // Find or create user - FIXED: using profiles + pagination instead of single listUsers
       let userId: string | null = null
-      const existingUser = existingUsers.users.find(u => u.email?.toLowerCase() === email)
-
-      if (existingUser) {
-        userId = existingUser.id
-        console.log(`User already exists with ID: ${userId}`)
-      } else {
-        // Create new user with email as password
+      
+      // First try to find existing user
+      userId = await findUserByEmail(supabase, email)
+      
+      if (!userId) {
+        // User not found, try to create
         console.log(`Creating new user with email: ${email}`)
         const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
           email: email,
-          password: email, // Using email as password
+          password: email,
           email_confirm: true
         })
 
         if (createError) {
-          console.error('Error creating user:', createError)
-          throw createError
+          // If email_exists error, search again with pagination
+          if (createError.message.includes('already been registered') || createError.message.includes('email_exists')) {
+            console.log('User exists in auth but not found initially, searching with pagination...')
+            
+            let page = 1
+            let found = false
+            while (!found && page <= 10) {
+              const { data: usersPage } = await supabase.auth.admin.listUsers({
+                page: page,
+                perPage: 1000
+              })
+              
+              const matchingUser = usersPage?.users.find((u: any) => u.email?.toLowerCase() === email)
+              if (matchingUser) {
+                userId = matchingUser.id
+                found = true
+                console.log('Found existing user via listUsers pagination:', userId)
+              }
+              
+              if (!usersPage?.users.length || usersPage.users.length < 1000) break
+              page++
+            }
+            
+            if (!found) {
+              throw new Error('User exists but could not be found after pagination search')
+            }
+          } else {
+            throw createError
+          }
+        } else {
+          userId = newUser.user.id
+          console.log(`New user created with ID: ${userId}`)
         }
+      }
 
-        userId = newUser.user.id
-        console.log(`New user created with ID: ${userId}`)
+      if (!userId) {
+        throw new Error('Could not find or create user')
       }
 
       // Upsert profile with name and phone
@@ -162,16 +274,14 @@ Deno.serve(async (req) => {
 
       if (profileError) {
         console.error('Error upserting profile:', profileError)
-        // Don't fail the webhook, profile is supplementary data
       } else {
         console.log(`Profile upserted for user: ${userId}, name: ${clientName}, phone: ${clientPhone}`)
       }
 
-      // Calculate expiration date with validation
+      // Calculate expiration date
       let expiresAt: Date
       const now = new Date()
       
-      // For trial status, use trial end date or calculate 7 days from now
       if (isTrialStatus) {
         if (trialEndDate) {
           expiresAt = new Date(trialEndDate)
@@ -182,17 +292,14 @@ Deno.serve(async (req) => {
           console.log(`Calculated trial expiration (${trialDays} days): ${expiresAt.toISOString()}`)
         }
       } else {
-        // For paid status, use payload date or calculate based on period
         const payloadDate = payload.contract?.current_period_end 
           ? new Date(payload.contract.current_period_end) 
           : null
 
-        // Use payload date only if it's valid and in the future
         if (payloadDate && payloadDate > now) {
           expiresAt = payloadDate
           console.log(`Using payload date: ${expiresAt.toISOString()}`)
         } else {
-          // Calculate based on product period
           expiresAt = new Date()
           expiresAt.setDate(expiresAt.getDate() + productPeriod)
           console.log(`Calculated date (payload invalid/past): ${expiresAt.toISOString()}`)
@@ -214,7 +321,6 @@ Deno.serve(async (req) => {
       }
 
       if (existingPremium) {
-        // Update existing record
         console.log('Updating existing premium record')
         const { error: updateError } = await supabase
           .from('premium_users')
@@ -233,7 +339,6 @@ Deno.serve(async (req) => {
           throw updateError
         }
       } else {
-        // Insert new record
         console.log('Creating new premium record')
         const { error: insertError } = await supabase
           .from('premium_users')
@@ -256,6 +361,14 @@ Deno.serve(async (req) => {
 
       console.log(`Premium activated for ${email} until ${expiresAt.toISOString()}`)
       
+      // Update log with success
+      if (logId) {
+        await supabase.from('webhook_logs').update({
+          result: 'success',
+          mapping_type: planType
+        }).eq('id', logId)
+      }
+      
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -266,25 +379,18 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Handle canceled, unpaid, refunded status - deactivate premium
+    // Handle canceled, unpaid, refunded, chargeback status - deactivate premium
     if (status === 'canceled' || status === 'unpaid' || status === 'refunded' || status === 'chargeback') {
       console.log(`Processing ${status} status - deactivating premium`)
       
-      // Find user by email
-      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers()
-      
-      if (listError) {
-        console.error('Error listing users:', listError)
-        throw listError
-      }
+      // Find user using profiles + pagination - FIXED
+      const userId = await findUserByEmail(supabase, email)
 
-      const existingUser = existingUsers.users.find(u => u.email?.toLowerCase() === email)
-
-      if (existingUser) {
+      if (userId) {
         const { error: updateError } = await supabase
           .from('premium_users')
           .update({ is_active: false })
-          .eq('user_id', existingUser.id)
+          .eq('user_id', userId)
 
         if (updateError) {
           console.error('Error deactivating premium:', updateError)
@@ -292,8 +398,27 @@ Deno.serve(async (req) => {
         }
 
         console.log(`Premium deactivated for ${email}`)
+        
+        // Auto-blacklist on chargeback
+        if (status === 'chargeback') {
+          await supabase.from('blacklisted_emails').upsert({
+            email: email,
+            reason: 'chargeback',
+            auto_blocked: true,
+            blocked_at: new Date().toISOString()
+          }, { onConflict: 'email' })
+          console.log(`Email blacklisted due to chargeback: ${email}`)
+        }
       } else {
         console.log(`User not found for email: ${email}`)
+      }
+
+      // Update log with success
+      if (logId) {
+        await supabase.from('webhook_logs').update({
+          result: 'success',
+          mapping_type: `deactivated_${status}`
+        }).eq('id', logId)
       }
 
       return new Response(
@@ -304,6 +429,14 @@ Deno.serve(async (req) => {
 
     // For other statuses, just log and acknowledge
     console.log(`Received status ${status} - no action taken`)
+    
+    if (logId) {
+      await supabase.from('webhook_logs').update({
+        result: 'ignored',
+        error_message: `Status ${status} not handled`
+      }).eq('id', logId)
+    }
+    
     return new Response(
       JSON.stringify({ success: true, message: `Webhook received with status: ${status}` }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -312,6 +445,15 @@ Deno.serve(async (req) => {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Internal server error'
     console.error('Webhook processing error:', error)
+    
+    // Update log with error
+    if (logId) {
+      await supabase.from('webhook_logs').update({
+        result: 'error',
+        error_message: errorMessage
+      }).eq('id', logId)
+    }
+    
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
