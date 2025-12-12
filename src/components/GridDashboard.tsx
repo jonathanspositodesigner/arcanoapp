@@ -1,12 +1,11 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { Layout, Layouts } from "@/hooks/useDashboardGrid";
+import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const ReactGridLayout = require("react-grid-layout");
-const ResponsiveGridLayout = ReactGridLayout.WidthProvider(ReactGridLayout.Responsive);
+const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface GridDashboardProps {
   layouts: Layouts;
