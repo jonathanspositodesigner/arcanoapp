@@ -1395,7 +1395,7 @@ const AdminAnalyticsDashboard = () => {
                     <Trophy className="h-6 w-6 text-yellow-500" />
                   </div>
                   <p className="text-sm font-medium text-foreground">
-                    {topRankingViewMode === 'prompts' ? 'Top 10 Prompts Copiados' : 'Top 10 Artes Copiadas'}
+                    {topRankingViewMode === 'prompts' ? 'Top 10 Prompts Copiados' : 'Top 10 Artes Baixadas'}
                   </p>
                 </div>
                 <div className="flex gap-1">
