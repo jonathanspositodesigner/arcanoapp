@@ -67,13 +67,23 @@ const UserLoginArtes = () => {
           .eq('id', data.user.id)
           .maybeSingle();
 
-        if (profile && !profile.password_changed) {
+        // CORREÇÃO: Se profile não existe OU password_changed = false, forçar mudança de senha
+        if (!profile || !profile.password_changed) {
+          // Criar/atualizar perfil se não existe
+          if (!profile) {
+            await supabase.from('profiles').upsert({
+              id: data.user.id,
+              email: data.user.email,
+              password_changed: false,
+            }, { onConflict: 'id' });
+          }
           toast.success("Primeiro acesso! Por favor, altere sua senha.");
           navigate("/change-password-artes");
-        } else {
-          toast.success("Login realizado com sucesso!");
-          navigate("/biblioteca-artes");
+          return;
         }
+
+        toast.success("Login realizado com sucesso!");
+        navigate("/biblioteca-artes");
       }
     } catch (error) {
       console.error("Login error:", error);

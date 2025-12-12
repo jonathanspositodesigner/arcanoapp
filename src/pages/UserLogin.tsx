@@ -29,9 +29,10 @@ const UserLogin = () => {
             .from('profiles')
             .select('password_changed')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
 
-          if (profile && !profile.password_changed) {
+          // CORREÇÃO: Se profile não existe OU password_changed = false, forçar mudança
+          if (!profile || !profile.password_changed) {
             navigate('/change-password');
           } else {
             navigate('/biblioteca-prompts');
