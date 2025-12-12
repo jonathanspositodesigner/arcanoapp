@@ -20,6 +20,7 @@ const UserLoginArtes = () => {
   
   // Signup modal state
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
   const [signupName, setSignupName] = useState("");
@@ -110,6 +111,11 @@ const UserLoginArtes = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!signupEmail.trim()) {
+      toast.error("Digite seu email");
+      return;
+    }
+    
     if (signupPassword.length < 6) {
       toast.error("A senha deve ter pelo menos 6 caracteres");
       return;
@@ -125,7 +131,7 @@ const UserLoginArtes = () => {
     try {
       // Create user in Supabase Auth
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: signupEmail.trim(),
         password: signupPassword,
         options: {
           emailRedirectTo: `${window.location.origin}/biblioteca-artes`
@@ -145,7 +151,7 @@ const UserLoginArtes = () => {
         // Create profile with password_changed = true (user chose their own password)
         await supabase.from('profiles').upsert({
           id: data.user.id,
-          email: email.trim().toLowerCase(),
+          email: signupEmail.trim().toLowerCase(),
           name: signupName.trim() || null,
           password_changed: true,
         }, { onConflict: 'id' });
@@ -241,9 +247,11 @@ const UserLoginArtes = () => {
               <Label className="text-white/80">Email</Label>
               <Input
                 type="email"
-                value={email}
-                disabled
-                className="bg-[#0f0f1a] border-emerald-500/30 text-white/60 mt-1"
+                value={signupEmail}
+                onChange={(e) => setSignupEmail(e.target.value)}
+                placeholder="seu@email.com"
+                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white mt-1"
+                required
               />
             </div>
             
@@ -392,13 +400,7 @@ const UserLoginArtes = () => {
                 type="button"
                 variant="outline"
                 className="w-full border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300"
-                onClick={() => {
-                  if (!email.trim()) {
-                    toast.error("Digite seu email primeiro");
-                    return;
-                  }
-                  setShowSignupModal(true);
-                }}
+                onClick={() => setShowSignupModal(true)}
               >
                 <UserPlus className="h-4 w-4 mr-2" />
                 Criar Conta
