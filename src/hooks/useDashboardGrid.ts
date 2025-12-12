@@ -21,9 +21,9 @@ const DEFAULT_LAYOUTS: Layouts = {
     { i: "conversion", x: 4, y: 15, w: 4, h: 6, minW: 3, minH: 4 },
     { i: "retention", x: 8, y: 15, w: 4, h: 5, minW: 2, minH: 4 },
     { i: "purchase-hours", x: 0, y: 21, w: 4, h: 5, minW: 2, minH: 4 },
-    { i: "refunds", x: 4, y: 21, w: 4, h: 5, minW: 2, minH: 3 },
-    { i: "abandoned-checkouts", x: 8, y: 21, w: 4, h: 5, minW: 3, minH: 4 },
-    { i: "access-chart", x: 0, y: 26, w: 12, h: 6, minW: 6, minH: 4 },
+    { i: "refunds", x: 4, y: 21, w: 4, h: 6, minW: 3, minH: 5 },
+    { i: "abandoned-checkouts", x: 8, y: 21, w: 4, h: 6, minW: 4, minH: 5 },
+    { i: "access-chart", x: 0, y: 27, w: 12, h: 6, minW: 6, minH: 4 },
   ],
   md: [
     { i: "today-access", x: 0, y: 0, w: 3, h: 4, minW: 2, minH: 3 },
