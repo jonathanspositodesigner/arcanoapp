@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Smartphone, Trophy, RefreshCw, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart, KeyRound, LayoutGrid, Maximize2 } from "lucide-react";
+import { Eye, Smartphone, Trophy, RefreshCw, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart, KeyRound, LayoutGrid, Maximize2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -101,6 +102,15 @@ const AdminAnalyticsDashboard = () => {
     recentLogs: [] as { email: string; status: string; pack: string; date: string }[]
   });
   const [showRefundModal, setShowRefundModal] = useState(false);
+  
+  // Abandoned checkouts stats
+  const [abandonedCheckoutsStats, setAbandonedCheckoutsStats] = useState({
+    total: 0,
+    pending: 0,
+    potentialValue: 0
+  });
+  
+  const navigate = useNavigate();
   
   // Grid layout system
   const {
@@ -793,6 +803,32 @@ const AdminAnalyticsDashboard = () => {
         });
       }
 
+      // Abandoned checkouts stats
+      let abandonedQuery = supabase
+        .from('abandoned_checkouts')
+        .select('remarketing_status, amount, abandoned_at');
+
+      if (threshold.start) {
+        abandonedQuery = abandonedQuery.gte('abandoned_at', threshold.start);
+        if (threshold.end) {
+          abandonedQuery = abandonedQuery.lte('abandoned_at', threshold.end);
+        }
+      }
+
+      const { data: abandonedData } = await abandonedQuery;
+
+      const abandonedTotal = abandonedData?.length || 0;
+      const abandonedPending = abandonedData?.filter(a => a.remarketing_status === 'pending').length || 0;
+      const abandonedValue = abandonedData
+        ?.filter(a => a.remarketing_status === 'pending')
+        ?.reduce((sum, a) => sum + (a.amount || 0), 0) || 0;
+
+      setAbandonedCheckoutsStats({
+        total: abandonedTotal,
+        pending: abandonedPending,
+        potentialValue: abandonedValue
+      });
+
       setIsLoading(false);
       setLastUpdate(new Date());
     };
@@ -1449,6 +1485,41 @@ const AdminAnalyticsDashboard = () => {
                   <div className="pt-2 border-t border-border">
                     <p className="text-xs text-muted-foreground">
                       Clique para ver logs detalhados
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </GridCard>
+
+            {/* Abandoned Checkouts */}
+            <GridCard key="abandoned-checkouts" isEditing={isEditing} className="border-2 border-orange-500/30 cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="p-6 h-full flex flex-col" onClick={() => navigate('/admin-abandoned-checkouts')}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-orange-500/20 rounded-full">
+                    <AlertCircle className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">Checkouts Abandonados</p>
+                </div>
+                
+                <div className="text-center space-y-3 flex-1 flex flex-col justify-center">
+                  <p className="text-4xl font-bold text-orange-500">
+                    {abandonedCheckoutsStats.total}
+                  </p>
+                  <div className="flex justify-center gap-6">
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-yellow-500">{abandonedCheckoutsStats.pending}</p>
+                      <p className="text-xs text-muted-foreground">Pendentes</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-red-500">
+                        R$ {abandonedCheckoutsStats.potentialValue.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Valor Potencial</p>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      Clique para gerenciar remarketing
                     </p>
                   </div>
                 </div>
