@@ -79,6 +79,11 @@ const AdminAnalyticsDashboard = () => {
   const [conversionRate, setConversionRate] = useState({ visitors: 0, buyers: 0, rate: 0 });
   const [purchaseHourStats, setPurchaseHourStats] = useState<PurchaseHourStats[]>([]);
   
+  // Peak hours and access evolution charts
+  const [peakHours, setPeakHours] = useState<{ hour: number; count: number }[]>([]);
+  const [accessChartData, setAccessChartData] = useState<{ date: string; mobile: number; desktop: number; total: number }[]>([]);
+  const [avgAccessPerDay, setAvgAccessPerDay] = useState(0);
+  
   // First access stats
   const [firstAccessStats, setFirstAccessStats] = useState({ 
     changed: 0, 
@@ -149,12 +154,12 @@ const AdminAnalyticsDashboard = () => {
 
       // Helper function to fetch ALL page_views with pagination
       const fetchAllPageViews = async (startDate: string, endDate?: string | null) => {
-        let allRecords: { device_type: string }[] = [];
+        let allRecords: { device_type: string; viewed_at: string }[] = [];
         let from = 0;
         const batchSize = 1000;
         
         while (true) {
-          let query = supabase.from("page_views").select("device_type");
+          let query = supabase.from("page_views").select("device_type, viewed_at");
           query = query.gte("viewed_at", startDate);
           if (endDate) query = query.lte("viewed_at", endDate);
           query = query.range(from, from + batchSize - 1);
@@ -183,6 +188,41 @@ const AdminAnalyticsDashboard = () => {
       const periodMobile = periodAccessData.filter((a) => a.device_type === "mobile").length;
       const periodDesktop = periodAccessData.filter((a) => a.device_type === "desktop").length;
       setPeriodAccess({ total: periodAccessData.length, mobile: periodMobile, desktop: periodDesktop });
+
+      // Process PEAK HOURS data
+      const hourCounts: Record<number, number> = {};
+      periodAccessData.forEach(access => {
+        const hour = new Date(access.viewed_at).getHours();
+        hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+      });
+      const peakHoursData = Array.from({ length: 24 }, (_, i) => ({
+        hour: i,
+        count: hourCounts[i] || 0
+      }));
+      setPeakHours(peakHoursData);
+
+      // Process ACCESS EVOLUTION data (by date)
+      const dateCounts: Record<string, { mobile: number; desktop: number }> = {};
+      periodAccessData.forEach(access => {
+        const dateStr = new Date(access.viewed_at).toISOString().split('T')[0];
+        if (!dateCounts[dateStr]) dateCounts[dateStr] = { mobile: 0, desktop: 0 };
+        if (access.device_type === 'mobile') dateCounts[dateStr].mobile++;
+        else dateCounts[dateStr].desktop++;
+      });
+      const chartData = Object.entries(dateCounts)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([date, counts]) => ({
+          date: format(new Date(date), 'dd/MM', { locale: ptBR }),
+          mobile: counts.mobile,
+          desktop: counts.desktop,
+          total: counts.mobile + counts.desktop
+        }));
+      setAccessChartData(chartData);
+
+      // Calculate AVERAGE accesses per day (for retention card)
+      const totalDays = Object.keys(dateCounts).length || 1;
+      setAvgAccessPerDay(Math.round(periodAccessData.length / totalDays));
+
       // Fetch installations for period
       let installsQuery = supabase.from("app_installations").select("device_type");
       if (threshold.start) {
@@ -1216,7 +1256,7 @@ const AdminAnalyticsDashboard = () => {
               </div>
             </GridCard>
 
-            {/* Peak Hours - PLACEHOLDER (no session data) */}
+            {/* Peak Hours */}
             <GridCard key="hourly-stats" isEditing={isEditing} className="border-2 border-orange-500/30">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
@@ -1226,9 +1266,51 @@ const AdminAnalyticsDashboard = () => {
                   <p className="text-sm font-medium text-foreground">Horário de Pico</p>
                 </div>
                 
-                <div className="flex-1 flex items-center justify-center">
-                  <p className="text-sm text-muted-foreground text-center">⚠️ Tracking desativado</p>
-                </div>
+                {peakHours.some(h => h.count > 0) ? (
+                  <>
+                    <div className="flex-1 min-h-[120px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={peakHours}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis 
+                            dataKey="hour" 
+                            tick={{ fontSize: 9 }}
+                            tickFormatter={(h) => `${h}h`}
+                            className="text-muted-foreground"
+                          />
+                          <YAxis hide />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: "hsl(var(--card))", 
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "8px",
+                              fontSize: "12px"
+                            }}
+                            formatter={(value: number) => [value, 'Acessos']}
+                            labelFormatter={(h) => `${h}:00`}
+                          />
+                          <Bar dataKey="count" fill="#f97316" radius={[2, 2, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-3 text-center">
+                      {(() => {
+                        const topHours = [...peakHours].sort((a, b) => b.count - a.count).filter(h => h.count > 0).slice(0, 3);
+                        return topHours.length > 0 ? (
+                          <p className="text-xs text-muted-foreground">
+                            🔥 Picos: <span className="font-bold text-orange-500">
+                              {topHours.map(h => `${h.hour}h`).join(', ')}
+                            </span>
+                          </p>
+                        ) : null;
+                      })()}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center">
+                    <p className="text-sm text-muted-foreground text-center">Sem dados no período</p>
+                  </div>
+                )}
               </div>
             </GridCard>
 
@@ -1258,18 +1340,28 @@ const AdminAnalyticsDashboard = () => {
               </div>
             </GridCard>
 
-            {/* Retention - PLACEHOLDER (no session data) */}
+            {/* Retention - Average per day */}
             <GridCard key="retention" isEditing={isEditing} className="border-2 border-cyan-500/30">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-cyan-500/20 rounded-full">
                     <RotateCcw className="h-6 w-6 text-cyan-500" />
                   </div>
-                  <p className="text-sm font-medium text-foreground">Retenção</p>
+                  <p className="text-sm font-medium text-foreground">Média de Acessos</p>
                 </div>
                 
-                <div className="flex-1 flex items-center justify-center">
-                  <p className="text-sm text-muted-foreground text-center">⚠️ Tracking desativado</p>
+                <div className="text-center space-y-3 flex-1 flex flex-col justify-center">
+                  <p className="text-4xl font-bold text-cyan-500">
+                    {avgAccessPerDay}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    📊 Acessos/dia no período
+                  </p>
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      {accessChartData.length} dias com dados
+                    </p>
+                  </div>
                 </div>
               </div>
             </GridCard>
@@ -1363,13 +1455,57 @@ const AdminAnalyticsDashboard = () => {
               </div>
             </GridCard>
 
-            {/* Access Chart - PLACEHOLDER (no session data) */}
+            {/* Access Chart */}
             <GridCard key="access-chart" isEditing={isEditing}>
               <div className="p-6 h-full flex flex-col">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Evolução de Acessos</h3>
-                <div className="flex-1 flex items-center justify-center min-h-[200px]">
-                  <p className="text-sm text-muted-foreground text-center">⚠️ Tracking desativado</p>
-                </div>
+                {accessChartData.length > 0 ? (
+                  <div className="flex-1 min-h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={accessChartData}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis 
+                          dataKey="date" 
+                          tick={{ fontSize: 10 }}
+                          className="text-muted-foreground"
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 10 }}
+                          className="text-muted-foreground"
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: "hsl(var(--card))", 
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px"
+                          }}
+                          labelStyle={{ color: "hsl(var(--foreground))" }}
+                        />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="mobile" 
+                          stroke="#f59e0b" 
+                          strokeWidth={2}
+                          name="Mobile"
+                          dot={false}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="desktop" 
+                          stroke="#8b5cf6" 
+                          strokeWidth={2}
+                          name="Desktop"
+                          dot={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center min-h-[200px]">
+                    <p className="text-sm text-muted-foreground text-center">Sem dados no período</p>
+                  </div>
+                )}
               </div>
             </GridCard>
           </GridDashboard>
