@@ -147,33 +147,42 @@ const AdminAnalyticsDashboard = () => {
       const now = new Date();
       const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
-      // Fetch TODAY's access from page_views
-      const { data: todayAccessData } = await supabase
-        .from("page_views")
-        .select("device_type")
-        .gte("viewed_at", todayMidnight);
-      
-      if (todayAccessData) {
-        const mobile = todayAccessData.filter((a) => a.device_type === "mobile").length;
-        const desktop = todayAccessData.filter((a) => a.device_type === "desktop").length;
-        setTodayAccess({ total: todayAccessData.length, mobile, desktop });
-      }
+      // Helper function to fetch ALL page_views with pagination
+      const fetchAllPageViews = async (startDate: string, endDate?: string | null) => {
+        let allRecords: { device_type: string }[] = [];
+        let from = 0;
+        const batchSize = 1000;
+        
+        while (true) {
+          let query = supabase.from("page_views").select("device_type");
+          query = query.gte("viewed_at", startDate);
+          if (endDate) query = query.lte("viewed_at", endDate);
+          query = query.range(from, from + batchSize - 1);
+          
+          const { data } = await query;
+          if (!data || data.length === 0) break;
+          
+          allRecords = [...allRecords, ...data];
+          from += batchSize;
+          if (data.length < batchSize) break;
+        }
+        
+        return allRecords;
+      };
 
-      // Fetch PERIOD access from page_views
-      let periodAccessQuery = supabase.from("page_views").select("device_type");
-      if (threshold.start) {
-        periodAccessQuery = periodAccessQuery.gte("viewed_at", threshold.start);
-      }
-      if (threshold.end) {
-        periodAccessQuery = periodAccessQuery.lte("viewed_at", threshold.end);
-      }
-      const { data: periodAccessData } = await periodAccessQuery;
-      
-      if (periodAccessData) {
-        const mobile = periodAccessData.filter((a) => a.device_type === "mobile").length;
-        const desktop = periodAccessData.filter((a) => a.device_type === "desktop").length;
-        setPeriodAccess({ total: periodAccessData.length, mobile, desktop });
-      }
+      // Fetch TODAY's access from page_views (with pagination)
+      const todayAccessData = await fetchAllPageViews(todayMidnight);
+      const todayMobile = todayAccessData.filter((a) => a.device_type === "mobile").length;
+      const todayDesktop = todayAccessData.filter((a) => a.device_type === "desktop").length;
+      setTodayAccess({ total: todayAccessData.length, mobile: todayMobile, desktop: todayDesktop });
+
+      // Fetch PERIOD access from page_views (with pagination)
+      const periodAccessData = threshold.start 
+        ? await fetchAllPageViews(threshold.start, threshold.end)
+        : [];
+      const periodMobile = periodAccessData.filter((a) => a.device_type === "mobile").length;
+      const periodDesktop = periodAccessData.filter((a) => a.device_type === "desktop").length;
+      setPeriodAccess({ total: periodAccessData.length, mobile: periodMobile, desktop: periodDesktop });
       // Fetch installations for period
       let installsQuery = supabase.from("app_installations").select("device_type");
       if (threshold.start) {
