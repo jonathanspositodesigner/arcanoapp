@@ -83,7 +83,7 @@ const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: 
 
       try {
         const { data, error: fnError } = await supabase.functions.invoke('get-signed-url', {
-          body: { bucket, path }
+          body: { bucket, filePath: path }
         });
         
         if (fnError || !data?.signedUrl) {
