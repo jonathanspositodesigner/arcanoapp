@@ -79,6 +79,146 @@ async function findUserByEmail(supabase: any, email: string): Promise<string | n
   return null;
 }
 
+// Send welcome email to new premium users via SendPulse
+async function sendWelcomeEmail(email: string, name: string, planType: string): Promise<void> {
+  try {
+    console.log(`📧 Sending welcome email to: ${email}`)
+    
+    const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
+    const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
+    
+    if (!clientId || !clientSecret) {
+      console.error("SendPulse credentials not configured, skipping welcome email")
+      return
+    }
+
+    // Get SendPulse access token
+    const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        grant_type: "client_credentials",
+        client_id: clientId,
+        client_secret: clientSecret,
+      }),
+    })
+
+    if (!tokenResponse.ok) {
+      console.error("Failed to get SendPulse token for welcome email")
+      return
+    }
+
+    const tokenData = await tokenResponse.json()
+    const accessToken = tokenData.access_token
+
+    // Get plan display name
+    const planNames: Record<string, string> = {
+      'arcano_basico': 'Arcano Básico',
+      'arcano_pro': 'Arcano Pro',
+      'arcano_unlimited': 'Arcano IA Unlimited'
+    }
+    const planDisplayName = planNames[planType] || planType
+
+    // Build welcome email HTML
+    const welcomeHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f4; padding: 20px; margin: 0; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .logo { text-align: center; margin-bottom: 30px; }
+    h1 { color: #552b99; text-align: center; margin: 0 0 20px 0; font-size: 28px; }
+    p { color: #333; line-height: 1.6; margin: 0 0 16px 0; }
+    .cta-button { display: block; background: linear-gradient(135deg, #552b99, #7c3aed); color: white; text-align: center; padding: 18px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 30px 0; }
+    .credentials { background: linear-gradient(135deg, #f8f4ff, #ede9fe); border-radius: 12px; padding: 24px; margin: 24px 0; border: 1px solid #ddd6fe; }
+    .credentials h3 { margin: 0 0 16px 0; color: #552b99; font-size: 18px; }
+    .credentials p { margin: 8px 0; color: #333; }
+    .highlight { background: #fff; padding: 10px 16px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 15px; border: 1px solid #e5e7eb; display: inline-block; }
+    .warning { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-top: 16px; }
+    .warning p { color: #92400e; font-size: 13px; margin: 0; }
+    .plan-badge { background: #552b99; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 16px; }
+    .footer { color: #666; font-size: 13px; text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <h1>🎉 Bem-vindo ao ArcanoApp!</h1>
+    </div>
+    
+    <p>Olá${name ? ` <strong>${name}</strong>` : ''}!</p>
+    
+    <p>Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de prompts de IA.</p>
+    
+    <div style="text-align: center;">
+      <span class="plan-badge">✨ ${planDisplayName}</span>
+    </div>
+    
+    <div class="credentials">
+      <h3>📋 Dados do seu primeiro acesso:</h3>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Senha:</strong> <span class="highlight">${email}</span></p>
+      <div class="warning">
+        <p>⚠️ <strong>Importante:</strong> Por segurança, você deverá trocar sua senha no primeiro acesso.</p>
+      </div>
+    </div>
+    
+    <a href="https://arcanolab.voxvisual.com.br/login" class="cta-button">
+      🚀 Acessar Plataforma
+    </a>
+    
+    <p style="text-align: center; color: #666;">
+      Clique no botão acima para fazer seu primeiro login e começar a explorar milhares de prompts!
+    </p>
+    
+    <div class="footer">
+      <p>Se tiver qualquer dúvida, responda este email que iremos te ajudar!</p>
+      <p style="margin-top: 8px;">© ArcanoApp - Biblioteca de Prompts de IA</p>
+    </div>
+  </div>
+</body>
+</html>
+`
+
+    // Convert HTML to Base64 (SendPulse requirement)
+    const htmlBase64 = btoa(unescape(encodeURIComponent(welcomeHtml)))
+
+    // Send email via SendPulse
+    const emailResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        email: {
+          html: htmlBase64,
+          text: `Bem-vindo ao ArcanoApp! Seu acesso está pronto. Email: ${email}, Senha: ${email}. Acesse: https://arcanolab.voxvisual.com.br/login`,
+          subject: "🎉 Bem-vindo ao ArcanoApp - Seu acesso está pronto!",
+          from: {
+            name: "ArcanoApp",
+            email: "contato@voxvisual.com.br",
+          },
+          to: [{ email, name: name || "" }],
+        },
+      }),
+    })
+
+    const result = await emailResponse.json()
+    
+    if (result.result === true) {
+      console.log(`✅ Welcome email sent successfully to ${email}`)
+    } else {
+      console.error(`❌ Failed to send welcome email: ${JSON.stringify(result)}`)
+    }
+  } catch (error) {
+    console.error('Error sending welcome email:', error)
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -360,6 +500,9 @@ Deno.serve(async (req) => {
       }
 
       console.log(`Premium activated for ${email} until ${expiresAt.toISOString()}`)
+      
+      // Send welcome email to new user
+      await sendWelcomeEmail(email, clientName, planType)
       
       // Update log with success
       if (logId) {
