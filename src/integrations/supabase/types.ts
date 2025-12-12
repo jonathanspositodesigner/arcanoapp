@@ -1824,6 +1824,7 @@ export type Database = {
         Row: {
           email: string | null
           error_message: string | null
+          from_app: boolean | null
           id: string
           mapping_type: string | null
           payload: Json
@@ -1831,10 +1832,12 @@ export type Database = {
           received_at: string | null
           result: string | null
           status: string | null
+          utm_source: string | null
         }
         Insert: {
           email?: string | null
           error_message?: string | null
+          from_app?: boolean | null
           id?: string
           mapping_type?: string | null
           payload: Json
@@ -1842,10 +1845,12 @@ export type Database = {
           received_at?: string | null
           result?: string | null
           status?: string | null
+          utm_source?: string | null
         }
         Update: {
           email?: string | null
           error_message?: string | null
+          from_app?: boolean | null
           id?: string
           mapping_type?: string | null
           payload?: Json
@@ -1853,6 +1858,7 @@ export type Database = {
           received_at?: string | null
           result?: string | null
           status?: string | null
+          utm_source?: string | null
         }
         Relationships: []
       }
