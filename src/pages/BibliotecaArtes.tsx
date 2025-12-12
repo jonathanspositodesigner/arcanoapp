@@ -571,34 +571,46 @@ const BibliotecaArtes = () => {
         {/* Top Bar - Desktop */}
         <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-end sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            {userPacks.length === 0 && <>
-              <Button onClick={() => navigate("/login-artes")} variant="ghost" size="sm">
-                <LogIn className="h-4 w-4 mr-2" />
-                Login
-              </Button>
-              <Button onClick={() => navigate("/planos-artes")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
-                <Star className="h-3 w-3 mr-2" fill="currentColor" />
-                Comprar Pack
-              </Button>
-            </>}
-            {userPacks.length > 0 && <>
-              <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
-                <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                {userPacks.length} {userPacks.length === 1 ? 'Pack' : 'Packs'}
-              </Badge>
-              {hasBonusAccess && <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
-                  <Gift className="h-3 w-3 mr-1" />
-                  Bônus
-                </Badge>}
-              <Button onClick={() => navigate("/perfil-artes")} variant="ghost" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Meu Perfil
-              </Button>
-              <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </Button>
-            </>}
+            {!user && (
+              <>
+                <Button onClick={() => navigate("/login-artes")} variant="ghost" size="sm">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login
+                </Button>
+                <Button
+                  onClick={() => navigate("/planos-artes")}
+                  size="sm"
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+                >
+                  <Star className="h-3 w-3 mr-2" fill="currentColor" />
+                  Comprar Pack
+                </Button>
+              </>
+            )}
+            {user && (
+              <>
+                {userPacks.length > 0 && (
+                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+                    <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                    {userPacks.length} {userPacks.length === 1 ? 'Pack' : 'Packs'}
+                  </Badge>
+                )}
+                {hasBonusAccess && (
+                  <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
+                    <Gift className="h-3 w-3 mr-1" />
+                    Bônus
+                  </Badge>
+                )}
+                <Button onClick={() => navigate("/perfil-artes")} variant="ghost" size="sm">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Meu Perfil
+                </Button>
+                <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
+              </>
+            )}
           </div>
         </header>
 
@@ -611,28 +623,34 @@ const BibliotecaArtes = () => {
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
           </div>
           <div className="flex items-center gap-2">
-            {userPacks.length === 0 && <>
-              <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
-                <LogIn className="h-4 w-4 mr-1" />
-                Login
-              </Button>
-              <Button onClick={() => navigate("/planos-artes")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
-                <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                Comprar
-              </Button>
-            </>}
-            {userPacks.length > 0 && <>
-              <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
-                <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
-              </Badge>
-              <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
-                <Settings className="h-4 w-4" />
-              </Button>
-              <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </>}
+            {!user && (
+              <>
+                <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
+                  <LogIn className="h-4 w-4 mr-1" />
+                  Login
+                </Button>
+                <Button onClick={() => navigate("/planos-artes")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
+                  <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                  Comprar
+                </Button>
+              </>
+            )}
+            {user && (
+              <>
+                {userPacks.length > 0 && (
+                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
+                    <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                    {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
+                  </Badge>
+                )}
+                <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+                  <Settings className="h-4 w-4" />
+                </Button>
+                <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </header>
 
