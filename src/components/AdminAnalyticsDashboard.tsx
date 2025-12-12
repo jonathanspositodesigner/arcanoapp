@@ -779,7 +779,7 @@ const AdminAnalyticsDashboard = () => {
         });
       }
 
-      // Conversion rate - simplified (buyers only, no visitor count without sessions)
+      // Conversion rate - using user_sessions for unique visitors
       let appSalesQuery = supabase.from("webhook_logs")
         .select("id")
         .eq("from_app", true)
@@ -796,10 +796,28 @@ const AdminAnalyticsDashboard = () => {
       
       const buyers = appSalesData?.length || 0;
       
+      // Fetch unique sessions for visitor count
+      let sessionsQuery = supabase.from("user_sessions").select("session_id");
+      if (threshold.start) {
+        sessionsQuery = sessionsQuery.gte("created_at", threshold.start);
+      }
+      if (threshold.end) {
+        sessionsQuery = sessionsQuery.lte("created_at", threshold.end);
+      }
+      const { data: sessionsData } = await sessionsQuery;
+      
+      const uniqueVisitors = sessionsData 
+        ? new Set(sessionsData.map(s => s.session_id)).size 
+        : 0;
+      
+      const conversionRateValue = uniqueVisitors > 0 
+        ? (buyers / uniqueVisitors) * 100 
+        : 0;
+      
       setConversionRate({
-        visitors: 0, // No session tracking
+        visitors: uniqueVisitors,
         buyers,
-        rate: 0 // Can't calculate without visitors
+        rate: conversionRateValue
       });
 
       // Purchase hours - use pack purchases data for hourly stats
