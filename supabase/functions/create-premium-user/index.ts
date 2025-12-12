@@ -77,18 +77,22 @@ Deno.serve(async (req: Request) => {
     const normalizedEmail = email.toLowerCase().trim();
     const cleanPhone = phone?.replace(/\D/g, '') || '';
 
-    // Check if user exists
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    // Buscar usuário existente - primeiro pelo profiles, depois tentar criar
     let userId: string | null = null;
     
-    const existingUser = existingUsers?.users.find(u => u.email === normalizedEmail);
+    // Tentar buscar na tabela profiles primeiro
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
     
-    if (existingUser) {
-      userId = existingUser.id;
-      console.log('Found existing user:', userId);
+    if (existingProfile && existingProfile.id) {
+      userId = existingProfile.id;
+      console.log('Found existing user via profiles:', userId);
       
       // Update password to match email for existing users
-      const { error: updatePasswordError } = await supabase.auth.admin.updateUserById(userId, {
+      const { error: updatePasswordError } = await supabase.auth.admin.updateUserById(existingProfile.id, {
         password: normalizedEmail
       });
       
@@ -98,7 +102,7 @@ Deno.serve(async (req: Request) => {
         console.log('Password updated to match email for existing user');
       }
     } else {
-      // Create new user with password equal to email
+      // Tentar criar novo usuário
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email: normalizedEmail,
         password: normalizedEmail,
@@ -106,15 +110,59 @@ Deno.serve(async (req: Request) => {
       });
 
       if (createError) {
-        console.error('Error creating user:', createError);
-        return new Response(
-          JSON.stringify({ error: `Failed to create user: ${createError.message}` }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        // Se erro for email_exists, o usuário existe no auth mas não no profiles
+        // Buscar usando listUsers com paginação
+        if (createError.message.includes('already been registered') || createError.message.includes('email_exists')) {
+          console.log('User exists in auth but not in profiles, searching...');
+          
+          // Buscar em todas as páginas até encontrar
+          let page = 1;
+          let found = false;
+          while (!found && page <= 10) { // Máximo 10 páginas (10000 usuários)
+            const { data: usersPage } = await supabase.auth.admin.listUsers({
+              page: page,
+              perPage: 1000
+            });
+            
+            const matchingUser = usersPage?.users.find(u => u.email?.toLowerCase() === normalizedEmail);
+            if (matchingUser) {
+              userId = matchingUser.id;
+              found = true;
+              console.log('Found existing user via listUsers pagination:', userId);
+              
+              // Update password
+              const { error: updatePwdError } = await supabase.auth.admin.updateUserById(userId, {
+                password: normalizedEmail
+              });
+              if (updatePwdError) {
+                console.error('Error updating password:', updatePwdError);
+              }
+            }
+            
+            if (!usersPage?.users.length || usersPage.users.length < 1000) {
+              break; // Última página
+            }
+            page++;
+          }
+          
+          if (!found) {
+            console.error('Could not find user despite email_exists error');
+            return new Response(
+              JSON.stringify({ error: 'User exists but could not be found. Please try again.' }),
+              { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        } else {
+          console.error('Error creating user:', createError);
+          return new Response(
+            JSON.stringify({ error: `Failed to create user: ${createError.message}` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } else {
+        userId = newUser.user?.id ?? null;
+        console.log('Created new user:', userId);
       }
-
-      userId = newUser.user?.id;
-      console.log('Created new user:', userId);
     }
 
     if (!userId) {
