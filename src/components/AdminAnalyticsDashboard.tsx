@@ -46,6 +46,10 @@ const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   
+  // Access stats (from page_views)
+  const [todayAccess, setTodayAccess] = useState({ total: 0, mobile: 0, desktop: 0 });
+  const [periodAccess, setPeriodAccess] = useState({ total: 0, mobile: 0, desktop: 0 });
+  
   // Stats that DON'T depend on user_sessions (kept)
   const [installations, setInstallations] = useState({ total: 0, mobile: 0, desktop: 0 });
   const [todayInstallations, setTodayInstallations] = useState({ total: 0, mobile: 0, desktop: 0 });
@@ -143,6 +147,33 @@ const AdminAnalyticsDashboard = () => {
       const now = new Date();
       const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
+      // Fetch TODAY's access from page_views
+      const { data: todayAccessData } = await supabase
+        .from("page_views")
+        .select("device_type")
+        .gte("viewed_at", todayMidnight);
+      
+      if (todayAccessData) {
+        const mobile = todayAccessData.filter((a) => a.device_type === "mobile").length;
+        const desktop = todayAccessData.filter((a) => a.device_type === "desktop").length;
+        setTodayAccess({ total: todayAccessData.length, mobile, desktop });
+      }
+
+      // Fetch PERIOD access from page_views
+      let periodAccessQuery = supabase.from("page_views").select("device_type");
+      if (threshold.start) {
+        periodAccessQuery = periodAccessQuery.gte("viewed_at", threshold.start);
+      }
+      if (threshold.end) {
+        periodAccessQuery = periodAccessQuery.lte("viewed_at", threshold.end);
+      }
+      const { data: periodAccessData } = await periodAccessQuery;
+      
+      if (periodAccessData) {
+        const mobile = periodAccessData.filter((a) => a.device_type === "mobile").length;
+        const desktop = periodAccessData.filter((a) => a.device_type === "desktop").length;
+        setPeriodAccess({ total: periodAccessData.length, mobile, desktop });
+      }
       // Fetch installations for period
       let installsQuery = supabase.from("app_installations").select("device_type");
       if (threshold.start) {
@@ -846,7 +877,7 @@ const AdminAnalyticsDashboard = () => {
             isEditing={isEditing}
             onLayoutChange={handleLayoutChange}
           >
-            {/* Today's Stats Card - PLACEHOLDER (no session data) */}
+            {/* Today's Stats Card */}
             <GridCard key="today-access" isEditing={isEditing} className="border-2 border-green-500 bg-green-500/10">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-4">
@@ -855,12 +886,9 @@ const AdminAnalyticsDashboard = () => {
                   </div>
                   <div>
                     <p className="text-sm text-green-600 font-medium">Acessos Hoje</p>
-                    <p className="text-3xl font-bold text-green-600">—</p>
+                    <p className="text-3xl font-bold text-green-600">{todayAccess.total}</p>
                     <p className="text-xs text-green-600/80 mt-1">
-                      📱 — · 💻 —
-                    </p>
-                    <p className="text-xs text-green-600/60 mt-0.5">
-                      ⚠️ Tracking desativado
+                      📱 {todayAccess.mobile} mobile · 💻 {todayAccess.desktop} desktop
                     </p>
                   </div>
                 </div>
@@ -877,7 +905,7 @@ const AdminAnalyticsDashboard = () => {
               </div>
             </GridCard>
 
-            {/* Period Stats Card - PLACEHOLDER (no session data) */}
+            {/* Period Stats Card */}
             <GridCard key="period-access" isEditing={isEditing}>
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-4">
@@ -886,12 +914,9 @@ const AdminAnalyticsDashboard = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Acessos no Período</p>
-                    <p className="text-3xl font-bold text-foreground">—</p>
+                    <p className="text-3xl font-bold text-foreground">{periodAccess.total}</p>
                     <p className="text-xs text-muted-foreground/80 mt-1">
-                      📱 — · 💻 —
-                    </p>
-                    <p className="text-xs text-muted-foreground/60 mt-0.5">
-                      ⚠️ Tracking desativado
+                      📱 {periodAccess.mobile} mobile · 💻 {periodAccess.desktop} desktop
                     </p>
                   </div>
                 </div>
