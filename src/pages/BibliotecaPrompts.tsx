@@ -360,6 +360,13 @@ const BibliotecaPrompts = () => {
     }
   };
   const getEmbedUrl = (url: string): string => {
+    // Se for um código iframe, extrair o src
+    if (url.includes('<iframe')) {
+      const srcMatch = url.match(/src=["']([^"']+)["']/);
+      if (srcMatch && srcMatch[1]) {
+        return srcMatch[1];
+      }
+    }
     // YouTube
     const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     if (youtubeMatch) {
@@ -370,7 +377,6 @@ const BibliotecaPrompts = () => {
     if (vimeoMatch) {
       return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
     }
-    // Return original if no match (might be a direct embed URL)
     return url;
   };
   const openTutorial = (url: string) => {
@@ -668,7 +674,7 @@ const BibliotecaPrompts = () => {
                               <Button 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  window.open(item.tutorialUrl, '_blank');
+                                  openTutorial(item.tutorialUrl);
                                 }} 
                                 variant="outline" 
                                 size="sm" 
