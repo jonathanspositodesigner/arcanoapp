@@ -7,7 +7,7 @@ import {
   Upload, CheckCircle, Settings, Users, Crown, LayoutDashboard, 
   FolderOpen, Inbox, Handshake, Palette, FileText, Tag, Package, 
   Image, ShoppingCart, ShieldCheck, Gift, ShieldBan, FileSearch, UserX,
-  GripVertical, LayoutGrid, RotateCcw, ReceiptText
+  GripVertical, LayoutGrid, RotateCcw, ReceiptText, UserPlus
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/AdminLayout";
@@ -21,6 +21,7 @@ const AdminFerramentas = () => {
   const [pendingArtesPartnerCount, setPendingArtesPartnerCount] = useState(0);
   const [pendingAbandonedCount, setPendingAbandonedCount] = useState(0);
   const [refundCount, setRefundCount] = useState(0);
+  const [leadsCount, setLeadsCount] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -58,6 +59,22 @@ const AdminFerramentas = () => {
         .select('*', { count: 'exact', head: true })
         .in('status', ['refunded', 'chargeback']);
       setRefundCount(refunds || 0);
+
+      // Fetch leads count (users without pack purchases)
+      // Get all user IDs that have pack purchases
+      const { data: purchaseUsers } = await supabase
+        .from('user_pack_purchases')
+        .select('user_id');
+      
+      const purchaseUserIds = new Set((purchaseUsers || []).map(p => p.user_id));
+      
+      // Get total profiles count
+      const { count: totalProfiles } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+      
+      // Leads = total profiles - users with purchases
+      setLeadsCount((totalProfiles || 0) - purchaseUserIds.size);
     };
 
     fetchStats();
@@ -456,6 +473,21 @@ const AdminFerramentas = () => {
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Clientes</h2>
                   <p className="text-muted-foreground hidden sm:block">Gerenciar acessos de usuários aos packs</p>
                 </div>
+              </Card>
+
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative" onClick={() => navigate('/admin-leads')}>
+                <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full">
+                    <UserPlus className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                  </div>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Leads</h2>
+                  <p className="text-muted-foreground hidden sm:block">Usuários que criaram conta sem comprar</p>
+                </div>
+                {leadsCount > 0 && (
+                  <span className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                    {leadsCount}
+                  </span>
+                )}
               </Card>
 
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-promotions')}>
