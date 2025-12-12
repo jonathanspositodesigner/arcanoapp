@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Smartphone, Trophy, RefreshCw, Copy, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart, KeyRound, X, GripVertical, LayoutGrid } from "lucide-react";
+import { Eye, Smartphone, Trophy, RefreshCw, Timer, Zap, Link2, CalendarIcon, Clock, TrendingUp, Users, PieChart, RotateCcw, ShoppingCart, KeyRound, LayoutGrid, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -12,8 +12,9 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useDashboardCardOrder } from "@/hooks/useDashboardCardOrder";
-import { DraggableCard } from "@/components/DraggableCard";
+import { useDashboardGrid } from "@/hooks/useDashboardGrid";
+import { GridDashboard } from "@/components/GridDashboard";
+import { GridCard } from "@/components/GridCard";
 
 type DateFilter = 1 | "yesterday" | 7 | 15 | 30 | 90 | "all" | "custom";
 
@@ -144,18 +145,14 @@ const AdminAnalyticsDashboard = () => {
   });
   const [showRefundModal, setShowRefundModal] = useState(false);
   
-  // Drag and drop for cards
+  // Grid layout system
   const {
-    cardOrder,
-    draggedCard,
-    isReordering,
-    setIsReordering,
-    handleDragStart,
-    handleDragOver,
-    handleDragEnd,
-    resetOrder,
-    getCardIndex
-  } = useDashboardCardOrder();
+    layouts,
+    isEditing,
+    handleLayoutChange,
+    resetLayouts,
+    toggleEditing,
+  } = useDashboardGrid();
 
   // Retorna a data de início e fim do período em formato ISO
   const getDateThreshold = (): { start: string | null; end: string | null } => {
@@ -166,7 +163,6 @@ const AdminAnalyticsDashboard = () => {
     const month = now.getMonth();
     const day = now.getDate();
     
-    // Para período customizado
     if (dateFilter === "custom" && customDateRange?.from) {
       const startDate = new Date(customDateRange.from);
       startDate.setHours(0, 0, 0, 0);
@@ -177,18 +173,14 @@ const AdminAnalyticsDashboard = () => {
       return { start: startDate.toISOString(), end: endDate.toISOString() };
     }
     
-    // Para "Ontem"
     if (dateFilter === "yesterday") {
       const startDate = new Date(year, month, day - 1, 0, 0, 0, 0);
       const endDate = new Date(year, month, day - 1, 23, 59, 59, 999);
       return { start: startDate.toISOString(), end: endDate.toISOString() };
     }
     
-    // Cria data à meia-noite no horário local
     const startDate = new Date(year, month, day, 0, 0, 0, 0);
     
-    // Para "Hoje", usa meia-noite de hoje
-    // Para outros filtros, subtrai (dias - 1) para incluir hoje
     if (typeof dateFilter === 'number' && dateFilter > 1) {
       startDate.setDate(startDate.getDate() - (dateFilter - 1));
     }
@@ -196,12 +188,10 @@ const AdminAnalyticsDashboard = () => {
     return { start: startDate.toISOString(), end: null };
   };
 
-  // Gera array de datas no formato YYYY-MM-DD
   const getDaysArray = (filter: DateFilter): string[] => {
     const result: string[] = [];
     const now = new Date();
     
-    // Para período customizado
     if (filter === "custom" && customDateRange?.from) {
       const startDate = new Date(customDateRange.from);
       const endDate = customDateRange.to ? new Date(customDateRange.to) : new Date(customDateRange.from);
@@ -217,7 +207,6 @@ const AdminAnalyticsDashboard = () => {
       return result;
     }
     
-    // Para ontem
     if (filter === "yesterday") {
       const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
       const year = yesterday.getFullYear();
@@ -238,7 +227,6 @@ const AdminAnalyticsDashboard = () => {
     return result;
   };
 
-  // Extrai data YYYY-MM-DD de um timestamp ISO (convertendo para horário local)
   const extractDateFromTimestamp = (timestamp: string): string => {
     const date = new Date(timestamp);
     const year = date.getFullYear();
@@ -251,15 +239,9 @@ const AdminAnalyticsDashboard = () => {
     const fetchAnalytics = async () => {
       setIsLoading(true);
       const threshold = getDateThreshold();
-      
-      // Gera o array de dias para o gráfico
       const daysArray = getDaysArray(dateFilter);
-      
-      // Data de hoje no formato YYYY-MM-DD
       const now = new Date();
       const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-      
-      // Meia-noite de hoje para buscar acessos de hoje
       const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
       // ========== BUSCA SESSÕES DE HOJE ==========
@@ -268,7 +250,6 @@ const AdminAnalyticsDashboard = () => {
         .select("device_type, user_agent, entered_at, session_id")
         .gte("entered_at", todayMidnight);
 
-      // Conta sessões de hoje (deduplica por session_id)
       let todayTotal = 0;
       let todayMobile = 0;
       let todayDesktop = 0;
@@ -327,21 +308,18 @@ const AdminAnalyticsDashboard = () => {
       
       const allSessionsData = await fetchAllSessionsForViews();
 
-      // Conta sessões do período (deduplica por session_id)
       let periodTotal = 0;
       let periodMobile = 0;
       let periodDesktop = 0;
       const periodUniqueSessions = new Set<string>();
       const sessionsByDate: Record<string, { mobile: number; desktop: number; total: number; sessions: Set<string> }> = {};
       
-      // Inicializa todos os dias
       daysArray.forEach(day => {
         sessionsByDate[day] = { mobile: 0, desktop: 0, total: 0, sessions: new Set() };
       });
 
       if (allSessionsData) {
         allSessionsData.forEach(session => {
-          // Deduplica por session_id
           if (!periodUniqueSessions.has(session.session_id)) {
             periodUniqueSessions.add(session.session_id);
             periodTotal++;
@@ -384,7 +362,6 @@ const AdminAnalyticsDashboard = () => {
         periodReturning: 0
       });
 
-      // Process chart data - usa sessões totais por dia
       const chartDataPoints = daysArray.map(dateStr => {
         const [, month, day] = dateStr.split('-');
         const dayData = sessionsByDate[dateStr] || { mobile: 0, desktop: 0, total: 0 };
@@ -426,7 +403,7 @@ const AdminAnalyticsDashboard = () => {
         setTodayInstallations({ total: todayInstallsData.length, mobile, desktop });
       }
 
-      // Fetch today's password resets (users who changed password today)
+      // Fetch today's password resets
       const { data: todayPasswordData } = await supabase
         .from("profiles")
         .select("id")
@@ -478,7 +455,6 @@ const AdminAnalyticsDashboard = () => {
         artesClicksData.forEach((click) => {
           clickCounts[click.arte_title] = (clickCounts[click.arte_title] || 0) + 1;
           
-          // Count by click type
           if (click.click_type === 'canva') canvaClicks++;
           else if (click.click_type === 'psd') psdClicks++;
           else downloadClicks++;
@@ -504,7 +480,6 @@ const AdminAnalyticsDashboard = () => {
       const { data: promptClicksWithId } = await promptsWithCategoryQuery;
 
       if (promptClicksWithId && promptClicksWithId.length > 0) {
-        // Get categories from admin_prompts
         const adminPromptIds = promptClicksWithId.filter(p => p.is_admin_prompt).map(p => p.prompt_id);
         const partnerPromptIds = promptClicksWithId.filter(p => !p.is_admin_prompt).map(p => p.prompt_id);
         
@@ -552,7 +527,7 @@ const AdminAnalyticsDashboard = () => {
         setTopCategories(topCats);
       }
 
-      // Fetch top purchased packs for artes (from user_pack_purchases)
+      // Fetch top purchased packs for artes
       let packPurchasesQuery = supabase.from("user_pack_purchases").select("pack_slug, purchased_at");
       if (threshold.start) {
         packPurchasesQuery = packPurchasesQuery.gte("purchased_at", threshold.start);
@@ -580,14 +555,13 @@ const AdminAnalyticsDashboard = () => {
         setTopPacks([]);
       }
 
-      // Fetch plan usage stats (copies by plan type)
+      // Fetch plan usage stats
       const { data: premiumUsers } = await supabase
         .from("premium_users")
         .select("user_id, plan_type")
         .eq("is_active", true);
 
       if (premiumUsers) {
-        // Get all daily copies
         let copiesQuery = supabase.from("daily_prompt_copies").select("user_id, copy_date");
         if (threshold.start) {
           copiesQuery = copiesQuery.gte("copied_at", threshold.start);
@@ -598,13 +572,11 @@ const AdminAnalyticsDashboard = () => {
         const { data: copiesData } = await copiesQuery;
 
         if (copiesData) {
-          // Map user_id to plan_type
           const userPlanMap: Record<string, string> = {};
           premiumUsers.forEach(u => {
             if (u.plan_type) userPlanMap[u.user_id] = u.plan_type;
           });
 
-          // Count copies by plan
           const planCopies: Record<string, { copies: number; users: Set<string> }> = {
             arcano_basico: { copies: 0, users: new Set() },
             arcano_pro: { copies: 0, users: new Set() },
@@ -648,7 +620,6 @@ const AdminAnalyticsDashboard = () => {
 
           setPlanUsageStats(stats);
 
-          // Get today's usage for basic and pro plans
           const today = new Date().toISOString().split('T')[0];
           const todayCopies = copiesData.filter(c => c.copy_date === today);
           
@@ -670,7 +641,7 @@ const AdminAnalyticsDashboard = () => {
         }
       }
 
-      // ========== FETCH ARTES USAGE STATS (copies from daily_arte_copies) ==========
+      // Fetch artes usage stats
       const { data: premiumArtesUsers } = await supabase
         .from("premium_artes_users")
         .select("user_id, plan_type")
@@ -760,7 +731,7 @@ const AdminAnalyticsDashboard = () => {
         }
       }
 
-      // ========== FETCH TOP PURCHASED PLANS (Prompts) ==========
+      // Fetch top purchased plans
       let purchasedPlansQuery = supabase.from("premium_users").select("plan_type, subscribed_at");
       if (threshold.start) {
         purchasedPlansQuery = purchasedPlansQuery.gte("subscribed_at", threshold.start);
@@ -791,7 +762,7 @@ const AdminAnalyticsDashboard = () => {
         setTopPurchasedPlans(topPlans);
       }
 
-      // ========== FETCH TOP PURCHASED PACKS (Artes) ==========
+      // Fetch top purchased packs
       let purchasedPacksQuery = supabase.from("user_pack_purchases").select("pack_slug, purchased_at");
       if (threshold.start) {
         purchasedPacksQuery = purchasedPacksQuery.gte("purchased_at", threshold.start);
@@ -799,11 +770,11 @@ const AdminAnalyticsDashboard = () => {
       if (threshold.end) {
         purchasedPacksQuery = purchasedPacksQuery.lte("purchased_at", threshold.end);
       }
-      const { data: purchasedPacksData } = await purchasedPacksQuery;
+      const { data: purchasedPacksDataNew } = await purchasedPacksQuery;
 
-      if (purchasedPacksData) {
+      if (purchasedPacksDataNew) {
         const packCounts: Record<string, number> = {};
-        purchasedPacksData.forEach(p => {
+        purchasedPacksDataNew.forEach(p => {
           const packName = p.pack_slug || 'Sem Pack';
           packCounts[packName] = (packCounts[packName] || 0) + 1;
         });
@@ -816,7 +787,7 @@ const AdminAnalyticsDashboard = () => {
         setTopPurchasedPacks(topPacksList);
       }
 
-      // ========== FETCH SESSION STATS (bounce rate e tempo médio) com paginação ==========
+      // Fetch session stats with pagination
       const fetchAllSessions = async () => {
         const allRecords: { session_id: string; page_path: string; duration_seconds: number | null; entered_at: string }[] = [];
         const batchSize = 1000;
@@ -854,7 +825,6 @@ const AdminAnalyticsDashboard = () => {
       const statsSessionsData = await fetchAllSessions();
 
       if (statsSessionsData && statsSessionsData.length > 0) {
-        // Agrupa por session_id para ter sessões únicas
         const sessionMap = new Map<string, { duration: number }>();
         statsSessionsData.forEach(s => {
           if (!sessionMap.has(s.session_id) || (s.duration_seconds || 0) > (sessionMap.get(s.session_id)?.duration || 0)) {
@@ -865,17 +835,14 @@ const AdminAnalyticsDashboard = () => {
         const uniqueSessionsList = Array.from(sessionMap.values());
         const trackedSessions = uniqueSessionsList.length;
         
-        // Bounce = session < 3 seconds
         const bounceCount = uniqueSessionsList.filter(s => s.duration < 3).length;
         const bounceRate = trackedSessions > 0 ? Math.round((bounceCount / trackedSessions) * 100) : 0;
         
-        // Average duration (exclude bounces for more accurate reading)
         const nonBounceSessions = uniqueSessionsList.filter(s => s.duration >= 3);
         const avgDuration = nonBounceSessions.length > 0 
           ? Math.round(nonBounceSessions.reduce((sum, s) => sum + s.duration, 0) / nonBounceSessions.length)
           : 0;
 
-        // Usa visitantes únicos de page_views como total de sessões
         setSessionStats({
           totalSessions: periodUnique,
           trackedSessions,
@@ -893,7 +860,7 @@ const AdminAnalyticsDashboard = () => {
         });
       }
 
-      // ========== FETCH COLLECTION STATS from collection_views table ==========
+      // Fetch collection stats
       let collectionViewsQuery = supabase
         .from("collection_views")
         .select("collection_slug, collection_name, viewed_at");
@@ -909,13 +876,11 @@ const AdminAnalyticsDashboard = () => {
       if (collectionViewsData) {
         const totalViews = collectionViewsData.length;
 
-        // Count views per collection
         const collectionCounts: Record<string, number> = {};
         collectionViewsData.forEach((view) => {
           collectionCounts[view.collection_name] = (collectionCounts[view.collection_name] || 0) + 1;
         });
 
-        // Rank collections by view count
         const topCollections = Object.entries(collectionCounts)
           .map(([name, count]) => ({ name, count }))
           .sort((a, b) => b.count - a.count)
@@ -927,7 +892,7 @@ const AdminAnalyticsDashboard = () => {
         });
       }
 
-      // ========== NEW METRIC 1: HORÁRIO DE PICO (Peak Hours) ==========
+      // Peak hours
       if (allSessionsData && allSessionsData.length > 0) {
         const hourCounts: Record<number, number> = {};
         for (let i = 0; i < 24; i++) hourCounts[i] = 0;
@@ -949,8 +914,7 @@ const AdminAnalyticsDashboard = () => {
         setHourlyStats(hourlyData);
       }
 
-      // ========== NEW METRIC 2: TAXA DE CONVERSÃO - ARTES ==========
-      // Visitors (sessions) vs pack buyers
+      // Conversion rate
       const bibliotecaArtesVisitors = periodUniqueSessions.size;
       
       let purchasesQuery = supabase.from("user_pack_purchases").select("id, purchased_at");
@@ -973,8 +937,7 @@ const AdminAnalyticsDashboard = () => {
         rate: conversionRateValue
       });
 
-      // ========== NEW METRIC 3: FUNIL DE ENGAJAMENTO - PROMPTS ==========
-      // Visits → Clicks → Copies
+      // Funnel stats
       const promptVisits = periodTotal;
       
       let promptClicksQuery = supabase.from("prompt_clicks").select("id");
@@ -1005,7 +968,7 @@ const AdminAnalyticsDashboard = () => {
         copyRate: promptClicksCount > 0 ? Math.round((promptCopiesCount / promptClicksCount) * 100) : 0
       });
 
-      // ========== NEW METRIC 4: DISTRIBUIÇÃO DE TIPOS DE ACESSO - ARTES ==========
+      // Access types distribution
       let accessTypesQuery = supabase.from("user_pack_purchases").select("access_type");
       if (threshold.start) {
         accessTypesQuery = accessTypesQuery.gte("purchased_at", threshold.start);
@@ -1039,8 +1002,7 @@ const AdminAnalyticsDashboard = () => {
         setAccessTypeStats(accessStats);
       }
 
-      // ========== NEW METRIC 5: RETENÇÃO DE USUÁRIOS ==========
-      // Based on user_agent appearing more than once
+      // Retention
       if (allSessionsData && allSessionsData.length > 0) {
         const userAgentCounts: Record<string, number> = {};
         allSessionsData.forEach(session => {
@@ -1060,7 +1022,7 @@ const AdminAnalyticsDashboard = () => {
         });
       }
 
-      // ========== NEW METRIC 6: COMPRAS POR PERÍODO DO DIA ==========
+      // Purchase hours
       if (purchasesData && purchasesData.length > 0) {
         const purchaseHourCounts: Record<number, number> = {};
         for (let i = 0; i < 24; i++) purchaseHourCounts[i] = 0;
@@ -1080,7 +1042,7 @@ const AdminAnalyticsDashboard = () => {
         setPurchaseHourStats(purchaseHourData);
       }
 
-      // ========== FETCH FIRST ACCESS STATS (COM PAGINAÇÃO PARA BUSCAR TODOS) ==========
+      // First access stats with pagination
       const fetchAllProfiles = async () => {
         const allRecords: any[] = [];
         const batchSize = 1000;
@@ -1124,7 +1086,7 @@ const AdminAnalyticsDashboard = () => {
         });
       }
 
-      // ========== FETCH REFUND STATS ==========
+      // Refund stats
       const { data: refundLogsData } = await supabase
         .from("webhook_logs")
         .select("email, status, mapping_type, received_at, payload")
@@ -1161,8 +1123,6 @@ const AdminAnalyticsDashboard = () => {
     fetchAnalytics();
   }, [dateFilter, refreshKey, customDateRange]);
 
-
-
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
   };
@@ -1185,45 +1145,47 @@ const AdminAnalyticsDashboard = () => {
 
   return (
     <div className="mt-8">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Dashboard de Métricas</h2>
           <p className="text-xs text-muted-foreground">
             Última atualização: {lastUpdate.toLocaleTimeString('pt-BR')} • Atualiza automaticamente
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={isLoading}
-          className="gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          Atualizar
-        </Button>
-        
-        <Button
-          variant={isReordering ? "default" : "outline"}
-          size="sm"
-          onClick={() => setIsReordering(!isReordering)}
-          className="gap-2"
-        >
-          <LayoutGrid className="h-4 w-4" />
-          {isReordering ? "Concluir" : "Reorganizar"}
-        </Button>
-        
-        {isReordering && (
+        <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={resetOrder}
-            className="gap-2 text-muted-foreground"
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="gap-2"
           >
-            <RotateCcw className="h-4 w-4" />
-            Resetar
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Atualizar
           </Button>
-        )}
+          
+          <Button
+            variant={isEditing ? "default" : "outline"}
+            size="sm"
+            onClick={toggleEditing}
+            className="gap-2"
+          >
+            <LayoutGrid className="h-4 w-4" />
+            {isEditing ? "Concluir" : "Editar Layout"}
+          </Button>
+          
+          {isEditing && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetLayouts}
+              className="gap-2 text-muted-foreground"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Resetar
+            </Button>
+          )}
+        </div>
       </div>
       
       {/* Date Filters */}
@@ -1239,7 +1201,6 @@ const AdminAnalyticsDashboard = () => {
           </Button>
         ))}
         
-        {/* Custom Date Range Picker */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -1275,585 +1236,462 @@ const AdminAnalyticsDashboard = () => {
         <p className="text-muted-foreground">Carregando...</p>
       ) : (
         <>
-          {isReordering && (
+          {isEditing && (
             <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg text-center">
               <p className="text-sm text-primary font-medium">
-                🔄 Modo de reorganização ativo - Arraste os cards para reordenar
+                🔄 Modo de edição ativo - Arraste pela barra superior para mover, arraste pelas bordas para redimensionar
               </p>
             </div>
           )}
-          <div className={cn(
-            "grid grid-cols-1 md:grid-cols-4 gap-6 mb-6",
-            isReordering && "[&>*]:cursor-grab [&>*]:active:cursor-grabbing [&>*]:ring-2 [&>*]:ring-primary/20 [&>*]:hover:ring-primary/40 [&>*]:transition-all"
-          )}>
-            {/* Today's Page Views Card - HIGHLIGHTED */}
-            <Card 
-              className="p-6 border-2 border-green-500 bg-green-500/10 relative"
-              draggable={isReordering}
-              onDragStart={() => handleDragStart("today-access")}
-              onDragOver={(e) => handleDragOver(e, "today-access")}
-              onDragEnd={handleDragEnd}
-              style={{ order: getCardIndex("today-access") }}
-            >
-              {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-primary" />
-                </div>
-              )}
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-500/20 rounded-full">
-                  <Eye className="h-8 w-8 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-green-600 font-medium">Acessos Hoje</p>
-                  <p className="text-3xl font-bold text-green-600">{pageViews.todayTotal.toLocaleString()}</p>
-                  <p className="text-xs text-green-600/80 mt-1">
-                    📱 {pageViews.todayMobile} · 💻 {pageViews.todayDesktop}
-                  </p>
-                  <p className="text-xs text-green-600/60 mt-0.5">
-                    👤 {pageViews.todayUnique} únicos
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-green-500/20 grid grid-cols-2 gap-2">
-                <div className="text-center">
-                  <p className="text-lg font-bold text-green-600">{todayInstallations.total}</p>
-                  <p className="text-xs text-green-600/70">📲 Instalações</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-bold text-green-600">{todayPasswordResets}</p>
-                  <p className="text-xs text-green-600/70">🔑 Redefiniram senha</p>
-                </div>
-              </div>
-            </Card>
 
-            {/* Total Page Views Card */}
-            <Card 
-              className="p-6 relative"
-              draggable={isReordering}
-              onDragStart={() => handleDragStart("period-access")}
-              onDragOver={(e) => handleDragOver(e, "period-access")}
-              onDragEnd={handleDragEnd}
-              style={{ order: getCardIndex("period-access") }}
-            >
-              {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-primary" />
+          <GridDashboard
+            layouts={layouts}
+            isEditing={isEditing}
+            onLayoutChange={handleLayoutChange}
+          >
+            {/* Today's Page Views Card */}
+            <GridCard key="today-access" isEditing={isEditing} className="border-2 border-green-500 bg-green-500/10">
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-green-500/20 rounded-full">
+                    <Eye className="h-8 w-8 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-green-600 font-medium">Acessos Hoje</p>
+                    <p className="text-3xl font-bold text-green-600">{pageViews.todayTotal.toLocaleString()}</p>
+                    <p className="text-xs text-green-600/80 mt-1">
+                      📱 {pageViews.todayMobile} · 💻 {pageViews.todayDesktop}
+                    </p>
+                    <p className="text-xs text-green-600/60 mt-0.5">
+                      👤 {pageViews.todayUnique} únicos
+                    </p>
+                  </div>
                 </div>
-              )}
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-500/20 rounded-full">
-                  <Eye className="h-8 w-8 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Acessos no Período</p>
-                  <p className="text-3xl font-bold text-foreground">{pageViews.total.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground/80 mt-1">
-                    📱 {pageViews.mobile} · 💻 {pageViews.desktop}
-                  </p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">
-                    👤 {pageViews.periodUnique.toLocaleString()} únicos
-                  </p>
+                <div className="mt-auto pt-3 border-t border-green-500/20 grid grid-cols-2 gap-2">
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-green-600">{todayInstallations.total}</p>
+                    <p className="text-xs text-green-600/70">📲 Instalações</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-green-600">{todayPasswordResets}</p>
+                    <p className="text-xs text-green-600/70">🔑 Redefiniram senha</p>
+                  </div>
                 </div>
               </div>
-            </Card>
+            </GridCard>
+
+            {/* Period Page Views Card */}
+            <GridCard key="period-access" isEditing={isEditing}>
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-500/20 rounded-full">
+                    <Eye className="h-8 w-8 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Acessos no Período</p>
+                    <p className="text-3xl font-bold text-foreground">{pageViews.total.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground/80 mt-1">
+                      📱 {pageViews.mobile} · 💻 {pageViews.desktop}
+                    </p>
+                    <p className="text-xs text-muted-foreground/60 mt-0.5">
+                      👤 {pageViews.periodUnique.toLocaleString()} únicos
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </GridCard>
 
             {/* Installations Card */}
-            <Card 
-              className="p-6 relative"
-              draggable={isReordering}
-              onDragStart={() => handleDragStart("installations")}
-              onDragOver={(e) => handleDragOver(e, "installations")}
-              onDragEnd={handleDragEnd}
-              style={{ order: getCardIndex("installations") }}
-            >
-              {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-primary" />
-                </div>
-              )}
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-500/20 rounded-full">
-                  <Smartphone className="h-8 w-8 text-purple-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Instalações do App</p>
-                  <p className="text-3xl font-bold text-foreground">{installations.total}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    📱 {installations.mobile} mobile · 💻 {installations.desktop} desktop
-                  </p>
+            <GridCard key="installations" isEditing={isEditing}>
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-purple-500/20 rounded-full">
+                    <Smartphone className="h-8 w-8 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Instalações do App</p>
+                    <p className="text-3xl font-bold text-foreground">{installations.total}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      📱 {installations.mobile} mobile · 💻 {installations.desktop} desktop
+                    </p>
+                  </div>
                 </div>
               </div>
-            </Card>
+            </GridCard>
 
             {/* Top Prompts/Artes Card */}
-            <Card 
-              className="p-6 relative"
-              draggable={isReordering}
-              onDragStart={() => handleDragStart("top-ranking")}
-              onDragOver={(e) => handleDragOver(e, "top-ranking")}
-              onDragEnd={handleDragEnd}
-              style={{ order: getCardIndex("top-ranking") }}
-            >
-              {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-primary" />
-                </div>
-              )}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-yellow-500/20 rounded-full">
-                    <Trophy className="h-6 w-6 text-yellow-500" />
+            <GridCard key="top-ranking" isEditing={isEditing}>
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-yellow-500/20 rounded-full">
+                      <Trophy className="h-6 w-6 text-yellow-500" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground">
+                      {topRankingViewMode === 'prompts' ? 'Top 10 Prompts' : 'Top 10 Artes'}
+                    </p>
                   </div>
-                  <p className="text-sm font-medium text-foreground">
-                    {topRankingViewMode === 'prompts' ? 'Top 10 Prompts Copiados' : 'Top 10 Artes Baixadas'}
-                  </p>
+                  <div className="flex gap-1">
+                    <Button
+                      variant={topRankingViewMode === 'prompts' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTopRankingViewMode('prompts')}
+                      className="h-7 px-2 text-xs"
+                    >
+                      Prompts
+                    </Button>
+                    <Button
+                      variant={topRankingViewMode === 'artes' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTopRankingViewMode('artes')}
+                      className="h-7 px-2 text-xs"
+                    >
+                      Artes
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant={topRankingViewMode === 'prompts' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setTopRankingViewMode('prompts')}
-                    className="h-7 px-2 text-xs"
-                  >
-                    Prompts
-                  </Button>
-                  <Button
-                    variant={topRankingViewMode === 'artes' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setTopRankingViewMode('artes')}
-                    className="h-7 px-2 text-xs"
-                  >
-                    Artes
-                  </Button>
-                </div>
+                {(topRankingViewMode === 'prompts' ? topPrompts : topArtes).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhum clique registrado</p>
+                ) : (
+                  <ul className="space-y-2 overflow-y-auto flex-1">
+                    {(topRankingViewMode === 'prompts' ? topPrompts : topArtes).map((item, index) => (
+                      <li key={item.prompt_title} className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2 truncate">
+                          <span className="font-bold text-primary">{index + 1}.</span>
+                          <span className="truncate text-foreground">{item.prompt_title}</span>
+                        </span>
+                        <span className="text-muted-foreground font-medium ml-2">{item.click_count}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-              {(topRankingViewMode === 'prompts' ? topPrompts : topArtes).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum clique registrado</p>
-              ) : (
-                <ul className="space-y-2 max-h-[200px] overflow-y-auto">
-                  {(topRankingViewMode === 'prompts' ? topPrompts : topArtes).map((item, index) => (
-                    <li key={item.prompt_title} className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2 truncate">
-                        <span className="font-bold text-primary">{index + 1}.</span>
-                        <span className="truncate text-foreground">{item.prompt_title}</span>
-                      </span>
-                      <span className="text-muted-foreground font-medium ml-2">{item.click_count}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
+            </GridCard>
 
             {/* Artes Click Type Stats Card */}
-            <Card 
-              className="p-6 relative"
-              draggable={isReordering}
-              onDragStart={() => handleDragStart("artes-click-types")}
-              onDragOver={(e) => handleDragOver(e, "artes-click-types")}
-              onDragEnd={handleDragEnd}
-              style={{ order: getCardIndex("artes-click-types") }}
-            >
-              {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-primary" />
-                </div>
-              )}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-cyan-500/20 rounded-full">
-                  <PieChart className="h-6 w-6 text-cyan-500" />
-                </div>
-                <p className="text-sm font-medium text-foreground">Downloads por Tipo</p>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[#00C4CC]" />
-                    <span className="text-sm text-foreground">Canva</span>
+            <GridCard key="artes-click-types" isEditing={isEditing}>
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-cyan-500/20 rounded-full">
+                    <PieChart className="h-6 w-6 text-cyan-500" />
                   </div>
-                  <span className="font-bold text-foreground">{artesClickTypeStats.canva}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[#31A8FF]" />
-                    <span className="text-sm text-foreground">PSD</span>
-                  </div>
-                  <span className="font-bold text-foreground">{artesClickTypeStats.psd}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-muted-foreground" />
-                    <span className="text-sm text-foreground">Download</span>
-                  </div>
-                  <span className="font-bold text-foreground">{artesClickTypeStats.download}</span>
+                  <p className="text-sm font-medium text-foreground">Downloads por Tipo</p>
                 </div>
                 
-                <div className="pt-2 border-t border-border">
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Total</span>
-                    <span className="font-medium">{artesClickTypeStats.canva + artesClickTypeStats.psd + artesClickTypeStats.download}</span>
+                <div className="space-y-3 flex-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-[#00C4CC]" />
+                      <span className="text-sm text-foreground">Canva</span>
+                    </div>
+                    <span className="font-bold text-foreground">{artesClickTypeStats.canva}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-[#31A8FF]" />
+                      <span className="text-sm text-foreground">PSD</span>
+                    </div>
+                    <span className="font-bold text-foreground">{artesClickTypeStats.psd}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-muted-foreground" />
+                      <span className="text-sm text-foreground">Download</span>
+                    </div>
+                    <span className="font-bold text-foreground">{artesClickTypeStats.download}</span>
+                  </div>
+                  
+                  <div className="pt-2 border-t border-border mt-auto">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Total</span>
+                      <span className="font-medium">{artesClickTypeStats.canva + artesClickTypeStats.psd + artesClickTypeStats.download}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </Card>
-          </div>
-
-          {/* Session Metrics */}
-          <div className={cn(
-            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6",
-            isReordering && "[&>*]:cursor-grab [&>*]:active:cursor-grabbing [&>*]:ring-2 [&>*]:ring-primary/20 [&>*]:hover:ring-primary/40 [&>*]:transition-all"
-          )}>
+            </GridCard>
 
             {/* Collection Links Card */}
-            <Card 
-              className="p-6 border-2 border-indigo-500/30 relative"
-              draggable={isReordering}
-              onDragStart={() => handleDragStart("collection-links")}
-              onDragOver={(e) => handleDragOver(e, "collection-links")}
-              onDragEnd={handleDragEnd}
-              style={{ order: getCardIndex("collection-links") }}
-            >
-              {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-primary" />
+            <GridCard key="collection-links" isEditing={isEditing} className="border-2 border-indigo-500/30">
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-indigo-500/20 rounded-full">
+                    <Link2 className="h-6 w-6 text-indigo-500" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">Links de Coleções</p>
                 </div>
-              )}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-indigo-500/20 rounded-full">
-                  <Link2 className="h-6 w-6 text-indigo-500" />
+                
+                <div className="space-y-3 flex-1">
+                  <div className="text-center">
+                    <p className="text-4xl font-bold text-indigo-500">{collectionStats.totalViews}</p>
+                    <p className="text-xs text-muted-foreground mt-1">aberturas de coleções</p>
+                  </div>
+                  {collectionStats.topCollections.length > 0 && (
+                    <div className="pt-2 border-t border-border space-y-1.5">
+                      <p className="text-xs text-muted-foreground font-medium">Top Coleções:</p>
+                      {collectionStats.topCollections.slice(0, 3).map((col, index) => (
+                        <div key={col.name} className="flex justify-between text-xs">
+                          <span className="text-muted-foreground truncate max-w-[140px]">{index + 1}. {col.name}</span>
+                          <span className="font-medium text-indigo-500">{col.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm font-medium text-foreground">Links de Coleções</p>
               </div>
-              
-              <div className="space-y-3">
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-indigo-500">{collectionStats.totalViews}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    aberturas de coleções
-                  </p>
+            </GridCard>
+
+            {/* First Access Stats Card */}
+            <GridCard key="first-access" isEditing={isEditing} className="border-2 border-orange-500/30">
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-orange-500/20 rounded-full">
+                    <KeyRound className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">1º Acesso (Senha)</p>
                 </div>
-                {collectionStats.topCollections.length > 0 && (
-                  <div className="pt-2 border-t border-border space-y-1.5">
-                    <p className="text-xs text-muted-foreground font-medium">Top Coleções:</p>
-                    {collectionStats.topCollections.slice(0, 3).map((col, index) => (
-                      <div key={col.name} className="flex justify-between text-xs">
-                        <span className="text-muted-foreground truncate max-w-[140px]">{index + 1}. {col.name}</span>
-                        <span className="font-medium text-indigo-500">{col.count}</span>
+                
+                <div className="grid grid-cols-2 gap-2 flex-1">
+                  <div 
+                    className="text-center p-2 bg-green-500/10 rounded-lg cursor-pointer hover:bg-green-500/20 transition-colors"
+                    onClick={() => {
+                      setFirstAccessModalView('changed');
+                      setShowFirstAccessModal(true);
+                    }}
+                  >
+                    <p className="text-2xl font-bold text-green-500">{firstAccessStats.changed}</p>
+                    <p className="text-xs text-muted-foreground">Redefiniram</p>
+                  </div>
+                  <div 
+                    className="text-center p-2 bg-orange-500/10 rounded-lg cursor-pointer hover:bg-orange-500/20 transition-colors"
+                    onClick={() => {
+                      setFirstAccessModalView('pending');
+                      setShowFirstAccessModal(true);
+                    }}
+                  >
+                    <p className="text-2xl font-bold text-orange-500">{firstAccessStats.pending}</p>
+                    <p className="text-xs text-muted-foreground">Pendentes</p>
+                  </div>
+                </div>
+                
+                <div className="mt-3 pt-2 border-t border-border text-center">
+                  <p className="text-xs text-muted-foreground">Clique para ver lista</p>
+                </div>
+              </div>
+            </GridCard>
+
+            {/* Top Purchased Plans/Packs */}
+            <GridCard key="top-purchased" isEditing={isEditing}>
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-500/20 rounded-full">
+                      <Trophy className="h-6 w-6 text-green-500" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground">
+                      {usageViewMode === 'prompts' ? 'Planos Mais Comprados' : 'Packs Mais Comprados'}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant={usageViewMode === 'prompts' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setUsageViewMode('prompts')}
+                      className="h-7 px-2 text-xs"
+                    >
+                      Prompts
+                    </Button>
+                    <Button
+                      variant={usageViewMode === 'artes' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setUsageViewMode('artes')}
+                      className="h-7 px-2 text-xs"
+                    >
+                      Artes
+                    </Button>
+                  </div>
+                </div>
+                
+                {(usageViewMode === 'prompts' ? topPurchasedPlans : topPurchasedPacks).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhuma compra registrada no período</p>
+                ) : (
+                  <div className="space-y-3 overflow-y-auto flex-1">
+                    {(usageViewMode === 'prompts' ? topPurchasedPlans : topPurchasedPacks).map((item, index) => (
+                      <div key={item.name} className="flex items-center justify-between bg-secondary/50 rounded-lg px-3 py-2">
+                        <span className="flex items-center gap-2">
+                          <span className="font-bold text-primary">{index + 1}.</span>
+                          <span className="text-foreground truncate">{item.name}</span>
+                        </span>
+                        <span className="font-bold text-primary">{item.count} {item.count === 1 ? 'compra' : 'compras'}</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-            </Card>
-
-            {/* First Access Stats Card */}
-            <Card 
-              className="p-6 border-2 border-orange-500/30 relative"
-              draggable={isReordering}
-              onDragStart={() => handleDragStart("first-access")}
-              onDragOver={(e) => handleDragOver(e, "first-access")}
-              onDragEnd={handleDragEnd}
-              style={{ order: getCardIndex("first-access") }}
-            >
-              {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-primary" />
-                </div>
-              )}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-orange-500/20 rounded-full">
-                  <KeyRound className="h-6 w-6 text-orange-500" />
-                </div>
-                <p className="text-sm font-medium text-foreground">1º Acesso (Senha)</p>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <div 
-                  className="text-center p-2 bg-green-500/10 rounded-lg cursor-pointer hover:bg-green-500/20 transition-colors"
-                  onClick={() => {
-                    setFirstAccessModalView('changed');
-                    setShowFirstAccessModal(true);
-                  }}
-                >
-                  <p className="text-2xl font-bold text-green-500">{firstAccessStats.changed}</p>
-                  <p className="text-xs text-muted-foreground">Redefiniram</p>
-                </div>
-                <div 
-                  className="text-center p-2 bg-orange-500/10 rounded-lg cursor-pointer hover:bg-orange-500/20 transition-colors"
-                  onClick={() => {
-                    setFirstAccessModalView('pending');
-                    setShowFirstAccessModal(true);
-                  }}
-                >
-                  <p className="text-2xl font-bold text-orange-500">{firstAccessStats.pending}</p>
-                  <p className="text-xs text-muted-foreground">Pendentes</p>
-                </div>
-              </div>
-              
-              <div className="mt-3 pt-2 border-t border-border text-center">
-                <p className="text-xs text-muted-foreground">
-                  Clique para ver lista
-                </p>
-              </div>
-            </Card>
-          </div>
-
-          {/* Plan Usage Stats */}
-          <div className={cn(
-            "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6",
-            isReordering && "[&>*]:cursor-grab [&>*]:active:cursor-grabbing [&>*]:ring-2 [&>*]:ring-primary/20 [&>*]:hover:ring-primary/40 [&>*]:transition-all"
-          )}>
-            {/* Top Purchased Plans/Packs Card */}
-            <Card 
-              className="p-6 relative"
-              draggable={isReordering}
-              onDragStart={() => handleDragStart("top-purchased")}
-              onDragOver={(e) => handleDragOver(e, "top-purchased")}
-              onDragEnd={handleDragEnd}
-              style={{ order: getCardIndex("top-purchased") }}
-            >
-              {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-primary" />
-                </div>
-              )}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-500/20 rounded-full">
-                    <Trophy className="h-6 w-6 text-green-500" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">
-                    {usageViewMode === 'prompts' ? 'Planos Mais Comprados' : 'Packs Mais Comprados'}
-                  </p>
-                </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant={usageViewMode === 'prompts' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setUsageViewMode('prompts')}
-                    className="h-7 px-2 text-xs"
-                  >
-                    Prompts
-                  </Button>
-                  <Button
-                    variant={usageViewMode === 'artes' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setUsageViewMode('artes')}
-                    className="h-7 px-2 text-xs"
-                  >
-                    Artes
-                  </Button>
-                </div>
-              </div>
-              
-              {(usageViewMode === 'prompts' ? topPurchasedPlans : topPurchasedPacks).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhuma compra registrada no período</p>
-              ) : (
-                <div className="space-y-3">
-                  {(usageViewMode === 'prompts' ? topPurchasedPlans : topPurchasedPacks).map((item, index) => (
-                    <div key={item.name} className="flex items-center justify-between bg-secondary/50 rounded-lg px-3 py-2">
-                      <span className="flex items-center gap-2">
-                        <span className="font-bold text-primary">{index + 1}.</span>
-                        <span className="text-foreground truncate">{item.name}</span>
-                      </span>
-                      <span className="font-bold text-primary">{item.count} {item.count === 1 ? 'compra' : 'compras'}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
+            </GridCard>
 
             {/* Top Categories/Packs Chart */}
-            <Card 
-              className="p-6 relative"
-              draggable={isReordering}
-              onDragStart={() => handleDragStart("top-categories")}
-              onDragOver={(e) => handleDragOver(e, "top-categories")}
-              onDragEnd={handleDragEnd}
-              style={{ order: getCardIndex("top-categories") }}
-            >
-              {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-primary" />
+            <GridCard key="top-categories" isEditing={isEditing}>
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium text-foreground">
+                    {todayUsageViewMode === 'prompts' ? 'Top 5 Categorias - Prompts' : 'Top 5 Packs - Artes'}
+                  </h3>
+                  <div className="flex gap-1">
+                    <Button
+                      variant={todayUsageViewMode === 'prompts' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTodayUsageViewMode('prompts')}
+                      className="h-7 px-2 text-xs"
+                    >
+                      Prompts
+                    </Button>
+                    <Button
+                      variant={todayUsageViewMode === 'artes' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTodayUsageViewMode('artes')}
+                      className="h-7 px-2 text-xs"
+                    >
+                      Artes
+                    </Button>
+                  </div>
                 </div>
-              )}
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-foreground">
-                  {todayUsageViewMode === 'prompts' ? 'Top 5 Categorias - Prompts' : 'Top 5 Packs - Artes'}
-                </h3>
-                <div className="flex gap-1">
-                  <Button
-                    variant={todayUsageViewMode === 'prompts' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setTodayUsageViewMode('prompts')}
-                    className="h-7 px-2 text-xs"
-                  >
-                    Prompts
-                  </Button>
-                  <Button
-                    variant={todayUsageViewMode === 'artes' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setTodayUsageViewMode('artes')}
-                    className="h-7 px-2 text-xs"
-                  >
-                    Artes
-                  </Button>
+                <div className="flex-1 min-h-[150px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart 
+                      data={todayUsageViewMode === 'prompts' ? topCategories : topPacks}
+                      layout="vertical"
+                    >
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis type="number" tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                      <YAxis 
+                        type="category"
+                        dataKey="name" 
+                        tick={{ fontSize: 10 }}
+                        className="text-muted-foreground"
+                        width={100}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: "hsl(var(--card))", 
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px"
+                        }}
+                        labelStyle={{ color: "hsl(var(--foreground))" }}
+                      />
+                      <Bar 
+                        dataKey="count" 
+                        fill={todayUsageViewMode === 'prompts' ? "#8b5cf6" : "#f59e0b"}
+                        radius={[0, 4, 4, 0]}
+                        name="Cliques"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
-              <div className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={todayUsageViewMode === 'prompts' ? topCategories : topPacks}
-                    layout="vertical"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis type="number" tick={{ fontSize: 11 }} className="text-muted-foreground" />
-                    <YAxis 
-                      type="category"
-                      dataKey="name" 
-                      tick={{ fontSize: 10 }}
-                      className="text-muted-foreground"
-                      width={100}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "hsl(var(--card))", 
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px"
-                      }}
-                      labelStyle={{ color: "hsl(var(--foreground))" }}
-                    />
-                    <Bar 
-                      dataKey="count" 
-                      fill={todayUsageViewMode === 'prompts' ? "#8b5cf6" : "#f59e0b"}
-                      radius={[0, 4, 4, 0]}
-                      name="Cliques"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4 space-y-2">
-                {(todayUsageViewMode === 'prompts' ? topCategories : topPacks).length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center">Nenhum dado registrado</p>
-                ) : (
-                  (todayUsageViewMode === 'prompts' ? topCategories : topPacks).map((item, index) => (
-                    <div key={item.name} className="flex items-center justify-between text-sm bg-secondary/50 rounded-lg px-3 py-2">
-                      <span className="flex items-center gap-2">
-                        <span className="font-bold text-primary">{index + 1}.</span>
-                        <span className="text-foreground truncate">{item.name}</span>
-                      </span>
-                      <span className="font-bold text-primary">{item.count}</span>
+            </GridCard>
+
+            {/* Peak Hours */}
+            <GridCard key="hourly-stats" isEditing={isEditing} className="border-2 border-orange-500/30">
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-orange-500/20 rounded-full">
+                    <Clock className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">Horário de Pico</p>
+                </div>
+                
+                {hourlyStats.length > 0 ? (
+                  <>
+                    <div className="flex-1 min-h-[120px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={hourlyStats}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis 
+                            dataKey="hour" 
+                            tick={{ fontSize: 9 }}
+                            tickFormatter={(h) => `${h}h`}
+                            className="text-muted-foreground"
+                          />
+                          <YAxis hide />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: "hsl(var(--card))", 
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "8px",
+                              fontSize: "12px"
+                            }}
+                            formatter={(value: number) => [value, 'Acessos']}
+                            labelFormatter={(h) => `${h}:00`}
+                          />
+                          <Bar dataKey="count" fill="#f97316" radius={[2, 2, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
-                  ))
+                    <div className="mt-3 text-center">
+                      {(() => {
+                        const topHours = [...hourlyStats].sort((a, b) => b.count - a.count).slice(0, 3);
+                        return (
+                          <p className="text-xs text-muted-foreground">
+                            🔥 Pico: <span className="font-bold text-orange-500">
+                              {topHours.map(h => `${h.hour}h`).join(', ')}
+                            </span>
+                          </p>
+                        );
+                      })()}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center">Sem dados</p>
                 )}
               </div>
-            </Card>
-          </div>
+            </GridCard>
 
-          {/* NEW METRICS SECTION */}
-          <h3 className="text-xl font-bold text-foreground mt-8 mb-4">Métricas Avançadas</h3>
-          
-          {/* Row 1: Peak Hours + Conversion Rate + Funnel */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Horário de Pico */}
-            <Card className="p-6 border-2 border-orange-500/30">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-orange-500/20 rounded-full">
-                  <Clock className="h-6 w-6 text-orange-500" />
-                </div>
-                <p className="text-sm font-medium text-foreground">Horário de Pico</p>
-              </div>
-              
-              {hourlyStats.length > 0 ? (
-                <>
-                  <div className="h-[150px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={hourlyStats}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis 
-                          dataKey="hour" 
-                          tick={{ fontSize: 9 }}
-                          tickFormatter={(h) => `${h}h`}
-                          className="text-muted-foreground"
-                        />
-                        <YAxis hide />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: "hsl(var(--card))", 
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "8px",
-                            fontSize: "12px"
-                          }}
-                          formatter={(value: number) => [value, 'Acessos']}
-                          labelFormatter={(h) => `${h}:00`}
-                        />
-                        <Bar dataKey="count" fill="#f97316" radius={[2, 2, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+            {/* Conversion Rate */}
+            <GridCard key="conversion" isEditing={isEditing} className="border-2 border-green-500/30">
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-green-500/20 rounded-full">
+                    <TrendingUp className="h-6 w-6 text-green-500" />
                   </div>
-                  <div className="mt-3 text-center">
-                    {(() => {
-                      const topHours = [...hourlyStats].sort((a, b) => b.count - a.count).slice(0, 3);
-                      return (
-                        <p className="text-xs text-muted-foreground">
-                          🔥 Pico: <span className="font-bold text-orange-500">
-                            {topHours.map(h => `${h.hour}h`).join(', ')}
-                          </span>
-                        </p>
-                      );
-                    })()}
+                  <p className="text-sm font-medium text-foreground">Taxa de Conversão</p>
+                </div>
+                
+                <div className="text-center space-y-3 flex-1 flex flex-col justify-center">
+                  <p className={`text-4xl font-bold ${
+                    conversionRate.rate >= 5 ? 'text-green-500' : 
+                    conversionRate.rate >= 2 ? 'text-yellow-500' : 'text-red-500'
+                  }`}>
+                    {conversionRate.rate}%
+                  </p>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      👀 {conversionRate.visitors.toLocaleString()} visitantes
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      🛒 {conversionRate.buyers.toLocaleString()} compradores
+                    </p>
                   </div>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center">Sem dados</p>
-              )}
-            </Card>
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      Visitantes que compraram packs
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </GridCard>
 
-            {/* Taxa de Conversão - Artes */}
-            <Card className="p-6 border-2 border-green-500/30">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-green-500/20 rounded-full">
-                  <TrendingUp className="h-6 w-6 text-green-500" />
+            {/* Funnel Stats */}
+            <GridCard key="funnel" isEditing={isEditing} className="border-2 border-purple-500/30">
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-purple-500/20 rounded-full">
+                    <TrendingUp className="h-6 w-6 text-purple-500" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">Funil - Prompts</p>
                 </div>
-                <p className="text-sm font-medium text-foreground">Taxa de Conversão</p>
-              </div>
-              
-              <div className="text-center space-y-3">
-                <p className={`text-4xl font-bold ${
-                  conversionRate.rate >= 5 ? 'text-green-500' : 
-                  conversionRate.rate >= 2 ? 'text-yellow-500' : 'text-red-500'
-                }`}>
-                  {conversionRate.rate}%
-                </p>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">
-                    👀 {conversionRate.visitors.toLocaleString()} visitantes
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    🛒 {conversionRate.buyers.toLocaleString()} compradores
-                  </p>
-                </div>
-                <div className="pt-2 border-t border-border">
-                  <p className="text-xs text-muted-foreground">
-                    Visitantes que compraram packs
-                  </p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Funil de Engajamento - Prompts */}
-            <Card className="p-6 border-2 border-purple-500/30">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-purple-500/20 rounded-full">
-                  <TrendingUp className="h-6 w-6 text-purple-500" />
-                </div>
-                <p className="text-sm font-medium text-foreground">Funil - Prompts</p>
-              </div>
-              
-              <div className="space-y-3">
-                {/* Funnel visual */}
-                <div className="space-y-2">
+                
+                <div className="space-y-2 flex-1">
                   <div className="bg-purple-500/20 rounded-lg p-2 text-center">
                     <p className="text-lg font-bold text-purple-500">{funnelStats.visits.toLocaleString()}</p>
                     <p className="text-xs text-muted-foreground">Visitas</p>
@@ -1874,237 +1712,243 @@ const AdminAnalyticsDashboard = () => {
                   </div>
                 </div>
               </div>
-            </Card>
-          </div>
+            </GridCard>
 
-          {/* Row 2: Access Types + Retention + Purchase Hours */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Distribuição de Tipos de Acesso */}
-            <Card className="p-6 border-2 border-amber-500/30">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-amber-500/20 rounded-full">
-                  <PieChart className="h-6 w-6 text-amber-500" />
-                </div>
-                <p className="text-sm font-medium text-foreground">Tipos de Acesso</p>
-              </div>
-              
-              {accessTypeStats.length > 0 ? (
-                <>
-                  <div className="h-[120px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RechartsPieChart>
-                        <Pie
-                          data={accessTypeStats}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={30}
-                          outerRadius={50}
-                          paddingAngle={2}
-                          dataKey="count"
-                          nameKey="type"
-                        >
-                          {accessTypeStats.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: "hsl(var(--card))", 
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "8px",
-                            fontSize: "12px"
-                          }}
-                          formatter={(value: number, name: string) => [`${value} (${accessTypeStats.find(s => s.type === name)?.percentage}%)`, name]}
-                        />
-                      </RechartsPieChart>
-                    </ResponsiveContainer>
+            {/* Access Types */}
+            <GridCard key="access-type" isEditing={isEditing} className="border-2 border-amber-500/30">
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-amber-500/20 rounded-full">
+                    <PieChart className="h-6 w-6 text-amber-500" />
                   </div>
-                  <div className="mt-2 space-y-1">
-                    {accessTypeStats.map((stat, index) => (
-                      <div key={stat.type} className="flex items-center justify-between text-xs">
-                        <span className="flex items-center gap-1">
-                          <span 
-                            className="w-2 h-2 rounded-full" 
-                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  <p className="text-sm font-medium text-foreground">Tipos de Acesso</p>
+                </div>
+                
+                {accessTypeStats.length > 0 ? (
+                  <>
+                    <div className="flex-1 min-h-[100px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RechartsPieChart>
+                          <Pie
+                            data={accessTypeStats}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={25}
+                            outerRadius={45}
+                            paddingAngle={2}
+                            dataKey="count"
+                            nameKey="type"
+                          >
+                            {accessTypeStats.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: "hsl(var(--card))", 
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "8px",
+                              fontSize: "12px"
+                            }}
+                            formatter={(value: number, name: string) => [`${value} (${accessTypeStats.find(s => s.type === name)?.percentage}%)`, name]}
                           />
-                          {stat.type}
-                        </span>
-                        <span className="font-medium">{stat.percentage}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center">Sem dados</p>
-              )}
-            </Card>
-
-            {/* Retenção de Usuários */}
-            <Card className="p-6 border-2 border-cyan-500/30">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-cyan-500/20 rounded-full">
-                  <RotateCcw className="h-6 w-6 text-cyan-500" />
-                </div>
-                <p className="text-sm font-medium text-foreground">Retenção</p>
-              </div>
-              
-              <div className="text-center space-y-3">
-                <p className={`text-4xl font-bold ${
-                  retentionStats.retentionRate >= 40 ? 'text-green-500' : 
-                  retentionStats.retentionRate >= 20 ? 'text-yellow-500' : 'text-red-500'
-                }`}>
-                  {retentionStats.retentionRate}%
-                </p>
-                <div className="flex justify-center gap-6">
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-cyan-500">{retentionStats.newUsers}</p>
-                    <p className="text-xs text-muted-foreground">Novos</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-green-500">{retentionStats.returningUsers}</p>
-                    <p className="text-xs text-muted-foreground">Recorrentes</p>
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-border">
-                  <p className="text-xs text-muted-foreground">
-                    Usuários que voltaram mais de uma vez
-                  </p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Compras por Período do Dia */}
-            <Card className="p-6 border-2 border-emerald-500/30">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-emerald-500/20 rounded-full">
-                  <ShoppingCart className="h-6 w-6 text-emerald-500" />
-                </div>
-                <p className="text-sm font-medium text-foreground">Compras por Hora</p>
-              </div>
-              
-              {purchaseHourStats.some(h => h.count > 0) ? (
-                <>
-                  <div className="h-[150px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={purchaseHourStats}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis 
-                          dataKey="hour" 
-                          tick={{ fontSize: 9 }}
-                          tickFormatter={(h) => `${h}h`}
-                          className="text-muted-foreground"
-                        />
-                        <YAxis hide />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: "hsl(var(--card))", 
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "8px",
-                            fontSize: "12px"
-                          }}
-                          formatter={(value: number) => [value, 'Compras']}
-                          labelFormatter={(h) => `${h}:00`}
-                        />
-                        <Bar dataKey="count" fill="#10b981" radius={[2, 2, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="mt-3 text-center">
-                    {(() => {
-                      const topHours = [...purchaseHourStats].sort((a, b) => b.count - a.count).filter(h => h.count > 0).slice(0, 3);
-                      return topHours.length > 0 ? (
-                        <p className="text-xs text-muted-foreground">
-                          💰 Melhor horário: <span className="font-bold text-emerald-500">
-                            {topHours.map(h => `${h.hour}h`).join(', ')}
+                        </RechartsPieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-2 space-y-1">
+                      {accessTypeStats.map((stat, index) => (
+                        <div key={stat.type} className="flex items-center justify-between text-xs">
+                          <span className="flex items-center gap-1">
+                            <span 
+                              className="w-2 h-2 rounded-full" 
+                              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            />
+                            {stat.type}
                           </span>
-                        </p>
-                      ) : null;
-                    })()}
-                  </div>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center">Sem compras no período</p>
-              )}
-            </Card>
+                          <span className="font-medium">{stat.percentage}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center">Sem dados</p>
+                )}
+              </div>
+            </GridCard>
 
-            {/* Reembolsos e Chargebacks */}
-            <Card 
-              className="p-6 border-2 border-red-500/30 cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => setShowRefundModal(true)}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-red-500/20 rounded-full">
-                  <RotateCcw className="h-6 w-6 text-red-500" />
-                </div>
-                <p className="text-sm font-medium text-foreground">Reembolsos</p>
-              </div>
-              
-              <div className="text-center space-y-3">
-                <p className="text-4xl font-bold text-red-500">
-                  {refundStats.refundedCount + refundStats.chargebackCount}
-                </p>
-                <div className="flex justify-center gap-6">
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-orange-500">{refundStats.refundedCount}</p>
-                    <p className="text-xs text-muted-foreground">Reembolsos</p>
+            {/* Retention */}
+            <GridCard key="retention" isEditing={isEditing} className="border-2 border-cyan-500/30">
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-cyan-500/20 rounded-full">
+                    <RotateCcw className="h-6 w-6 text-cyan-500" />
                   </div>
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-red-600">{refundStats.chargebackCount}</p>
-                    <p className="text-xs text-muted-foreground">Chargebacks</p>
-                  </div>
+                  <p className="text-sm font-medium text-foreground">Retenção</p>
                 </div>
-                <div className="pt-2 border-t border-border">
-                  <p className="text-xs text-muted-foreground">
-                    Clique para ver logs detalhados
+                
+                <div className="text-center space-y-3 flex-1 flex flex-col justify-center">
+                  <p className={`text-4xl font-bold ${
+                    retentionStats.retentionRate >= 40 ? 'text-green-500' : 
+                    retentionStats.retentionRate >= 20 ? 'text-yellow-500' : 'text-red-500'
+                  }`}>
+                    {retentionStats.retentionRate}%
                   </p>
+                  <div className="flex justify-center gap-6">
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-cyan-500">{retentionStats.newUsers}</p>
+                      <p className="text-xs text-muted-foreground">Novos</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-green-500">{retentionStats.returningUsers}</p>
+                      <p className="text-xs text-muted-foreground">Recorrentes</p>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      Usuários que voltaram mais de uma vez
+                    </p>
+                  </div>
                 </div>
               </div>
-            </Card>
-          </div>
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Evolução de Acessos</h3>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="date" 
-                    tick={{ fontSize: 12 }}
-                    className="text-muted-foreground"
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 12 }}
-                    className="text-muted-foreground"
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: "hsl(var(--card))", 
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px"
-                    }}
-                    labelStyle={{ color: "hsl(var(--foreground))" }}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="mobile" 
-                    stroke="#f97316" 
-                    strokeWidth={2}
-                    dot={{ fill: "#f97316", strokeWidth: 2 }}
-                    name="📱 Mobile"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="desktop" 
-                    stroke="#8b5cf6" 
-                    strokeWidth={2}
-                    dot={{ fill: "#8b5cf6", strokeWidth: 2 }}
-                    name="💻 Desktop"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
+            </GridCard>
+
+            {/* Purchase Hours */}
+            <GridCard key="purchase-hours" isEditing={isEditing} className="border-2 border-emerald-500/30">
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-emerald-500/20 rounded-full">
+                    <ShoppingCart className="h-6 w-6 text-emerald-500" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">Compras por Hora</p>
+                </div>
+                
+                {purchaseHourStats.some(h => h.count > 0) ? (
+                  <>
+                    <div className="flex-1 min-h-[120px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={purchaseHourStats}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis 
+                            dataKey="hour" 
+                            tick={{ fontSize: 9 }}
+                            tickFormatter={(h) => `${h}h`}
+                            className="text-muted-foreground"
+                          />
+                          <YAxis hide />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: "hsl(var(--card))", 
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "8px",
+                              fontSize: "12px"
+                            }}
+                            formatter={(value: number) => [value, 'Compras']}
+                            labelFormatter={(h) => `${h}:00`}
+                          />
+                          <Bar dataKey="count" fill="#10b981" radius={[2, 2, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-3 text-center">
+                      {(() => {
+                        const topHours = [...purchaseHourStats].sort((a, b) => b.count - a.count).filter(h => h.count > 0).slice(0, 3);
+                        return topHours.length > 0 ? (
+                          <p className="text-xs text-muted-foreground">
+                            💰 Melhor horário: <span className="font-bold text-emerald-500">
+                              {topHours.map(h => `${h.hour}h`).join(', ')}
+                            </span>
+                          </p>
+                        ) : null;
+                      })()}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center">Sem compras no período</p>
+                )}
+              </div>
+            </GridCard>
+
+            {/* Refunds */}
+            <GridCard key="refunds" isEditing={isEditing} className="border-2 border-red-500/30 cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="p-6 h-full flex flex-col" onClick={() => setShowRefundModal(true)}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-red-500/20 rounded-full">
+                    <RotateCcw className="h-6 w-6 text-red-500" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">Reembolsos</p>
+                </div>
+                
+                <div className="text-center space-y-3 flex-1 flex flex-col justify-center">
+                  <p className="text-4xl font-bold text-red-500">
+                    {refundStats.refundedCount + refundStats.chargebackCount}
+                  </p>
+                  <div className="flex justify-center gap-6">
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-orange-500">{refundStats.refundedCount}</p>
+                      <p className="text-xs text-muted-foreground">Reembolsos</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-red-600">{refundStats.chargebackCount}</p>
+                      <p className="text-xs text-muted-foreground">Chargebacks</p>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      Clique para ver logs detalhados
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </GridCard>
+
+            {/* Access Chart */}
+            <GridCard key="access-chart" isEditing={isEditing}>
+              <div className="p-6 h-full flex flex-col">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Evolução de Acessos</h3>
+                <div className="flex-1 min-h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 12 }}
+                        className="text-muted-foreground"
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 12 }}
+                        className="text-muted-foreground"
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: "hsl(var(--card))", 
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px"
+                        }}
+                        labelStyle={{ color: "hsl(var(--foreground))" }}
+                      />
+                      <Legend />
+                      <Line 
+                        type="monotone" 
+                        dataKey="mobile" 
+                        stroke="#f97316" 
+                        strokeWidth={2}
+                        dot={{ fill: "#f97316", strokeWidth: 2 }}
+                        name="📱 Mobile"
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="desktop" 
+                        stroke="#8b5cf6" 
+                        strokeWidth={2}
+                        dot={{ fill: "#8b5cf6", strokeWidth: 2 }}
+                        name="💻 Desktop"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </GridCard>
+          </GridDashboard>
         </>
       )}
 
@@ -2119,7 +1963,6 @@ const AdminAnalyticsDashboard = () => {
           </DialogHeader>
           
           <div className="space-y-4">
-            {/* Toggle buttons */}
             <div className="flex gap-2">
               <Button
                 variant={firstAccessModalView === 'changed' ? 'default' : 'outline'}
