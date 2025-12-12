@@ -107,7 +107,8 @@ const AdminAnalyticsDashboard = () => {
   const [abandonedCheckoutsStats, setAbandonedCheckoutsStats] = useState({
     total: 0,
     pending: 0,
-    potentialValue: 0
+    potentialValue: 0,
+    today: 0
   });
   
   const navigate = useNavigate();
@@ -822,11 +823,19 @@ const AdminAnalyticsDashboard = () => {
       const abandonedValue = abandonedData
         ?.filter(a => a.remarketing_status === 'pending')
         ?.reduce((sum, a) => sum + (a.amount || 0), 0) || 0;
+      
+      // Count today's abandoned checkouts
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const abandonedToday = abandonedData?.filter(a => 
+        a.abandoned_at && new Date(a.abandoned_at) >= todayStart
+      ).length || 0;
 
       setAbandonedCheckoutsStats({
         total: abandonedTotal,
         pending: abandonedPending,
-        potentialValue: abandonedValue
+        potentialValue: abandonedValue,
+        today: abandonedToday
       });
 
       setIsLoading(false);
@@ -1493,7 +1502,12 @@ const AdminAnalyticsDashboard = () => {
 
             {/* Abandoned Checkouts */}
             <GridCard key="abandoned-checkouts" isEditing={isEditing} className="border-2 border-orange-500/30 cursor-pointer hover:bg-muted/50 transition-colors">
-              <div className="p-6 h-full flex flex-col" onClick={() => navigate('/admin-abandoned-checkouts')}>
+              <div className="p-6 h-full flex flex-col relative" onClick={() => navigate('/admin-abandoned-checkouts')}>
+                {abandonedCheckoutsStats.today > 0 && (
+                  <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 min-w-6 px-1.5 flex items-center justify-center">
+                    +{abandonedCheckoutsStats.today} hoje
+                  </div>
+                )}
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-orange-500/20 rounded-full">
                     <AlertCircle className="h-6 w-6 text-orange-500" />
