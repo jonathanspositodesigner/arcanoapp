@@ -664,6 +664,20 @@ const BibliotecaPrompts = () => {
                               <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Baixar Referência
                             </Button>
+                            {item.tutorialUrl && (
+                              <Button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(item.tutorialUrl, '_blank');
+                                }} 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full border-red-500 text-red-500 hover:bg-red-500/10 text-xs sm:text-sm"
+                              >
+                                <Youtube className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                Ver Tutorial
+                              </Button>
+                            )}
                           </> : <Button onClick={() => navigate("/planos")} size="sm" className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm">
                           <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" fill="currentColor" />
                           Torne-se Premium

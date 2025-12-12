@@ -13,7 +13,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { 
   ArrowLeft, Plus, RefreshCw, Pencil, Trash2, Users, Crown, Clock, 
-  AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, MessageCircle, KeyRound
+  AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, MessageCircle, KeyRound,
+  FileText, ExternalLink
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import {
@@ -86,9 +87,11 @@ const AdminPremiumDashboard = () => {
   const [formGreennContractId, setFormGreennContractId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [webhookStats, setWebhookStats] = useState({ total: 0, errors: 0, refunds: 0 });
 
   useEffect(() => {
     checkAdminAndFetch();
+    fetchWebhookStats();
   }, []);
 
   const checkAdminAndFetch = async () => {
@@ -419,6 +422,22 @@ const AdminPremiumDashboard = () => {
     window.open(`https://api.whatsapp.com/send/?phone=${formattedPhone}&text&type=phone_number&app_absent=0`, '_blank');
   };
 
+  const fetchWebhookStats = async () => {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    
+    const { data: logs } = await supabase
+      .from("webhook_logs")
+      .select("status, result")
+      .gte("received_at", twentyFourHoursAgo);
+    
+    if (logs) {
+      const total = logs.length;
+      const errors = logs.filter(l => l.status === "error" || l.result === "error").length;
+      const refunds = logs.filter(l => l.result === "refund" || l.result === "chargeback").length;
+      setWebhookStats({ total, errors, refunds });
+    }
+  };
+
   const handleResetFirstPassword = async () => {
     if (!selectedUser || !selectedUser.email) {
       toast.error("Email do usuário não encontrado");
@@ -548,6 +567,27 @@ const AdminPremiumDashboard = () => {
                 <p className="text-sm text-muted-foreground">Inativos</p>
                 <p className="text-2xl font-bold">{totalUsers - activeUsers}</p>
               </div>
+            </CardContent>
+          </Card>
+          <Card 
+            className="cursor-pointer hover:bg-secondary/50 transition-colors"
+            onClick={() => navigate("/admin-webhook-logs")}
+          >
+            <CardContent className="p-4 flex items-center gap-4">
+              <FileText className="h-8 w-8 text-blue-500" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Logs Webhook (24h)</p>
+                <p className="text-2xl font-bold">{webhookStats.total}</p>
+                <div className="flex gap-2 text-xs mt-1">
+                  {webhookStats.errors > 0 && (
+                    <span className="text-red-500">{webhookStats.errors} erros</span>
+                  )}
+                  {webhookStats.refunds > 0 && (
+                    <span className="text-orange-500">{webhookStats.refunds} reembolsos</span>
+                  )}
+                </div>
+              </div>
+              <ExternalLink className="h-4 w-4 text-muted-foreground" />
             </CardContent>
           </Card>
         </div>
