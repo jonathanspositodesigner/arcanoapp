@@ -45,64 +45,80 @@ const COLORS = ['#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#3b82f6'];
 
 // Helper component to load signed URLs for ranking item images
 const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: string; type: 'prompt' | 'arte' }) => {
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [finalUrl, setFinalUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchSignedUrl = async () => {
-      // Determine bucket based on type
-      const bucket = type === 'prompt' ? 'admin-prompts' : 'admin-artes';
+      setLoading(true);
+      setError(false);
       
-      // Extract the path from the URL
+      // Extract bucket and path from the URL
+      let bucket = '';
       let path = imageUrl;
-      if (imageUrl.includes('/storage/v1/object/public/')) {
-        const match = imageUrl.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)/);
-        if (match) path = match[1];
-      } else if (imageUrl.includes('/object/public/')) {
-        const match = imageUrl.match(/\/object\/public\/[^/]+\/(.+)/);
-        if (match) path = match[1];
+      
+      // Try to extract bucket from URL patterns
+      const bucketMatch = imageUrl.match(/\/storage\/v1\/object\/(?:public|sign)\/([^/]+)\/(.+)/);
+      if (bucketMatch) {
+        bucket = bucketMatch[1];
+        path = bucketMatch[2];
+      } else {
+        // Fallback bucket based on type
+        bucket = type === 'prompt' ? 'admin-prompts' : 'admin-artes';
+        // Try other URL patterns
+        const pathMatch = imageUrl.match(/\/object\/public\/[^/]+\/(.+)/);
+        if (pathMatch) path = pathMatch[1];
       }
 
       try {
-        const { data } = await supabase.functions.invoke('get-signed-url', {
+        const { data, error: fnError } = await supabase.functions.invoke('get-signed-url', {
           body: { bucket, path }
         });
         
-        if (data?.signedUrl) {
-          setSignedUrl(data.signedUrl);
+        if (fnError) {
+          console.log('Signed URL error, using original:', fnError);
+          setFinalUrl(imageUrl);
+        } else if (data?.signedUrl) {
+          setFinalUrl(data.signedUrl);
         } else {
-          // Fallback to original URL
-          setSignedUrl(imageUrl);
+          setFinalUrl(imageUrl);
         }
-      } catch {
-        setSignedUrl(imageUrl);
+      } catch (err) {
+        console.log('Fetch error, using original:', err);
+        setFinalUrl(imageUrl);
       }
       setLoading(false);
     };
 
-    fetchSignedUrl();
+    if (imageUrl) {
+      fetchSignedUrl();
+    }
   }, [imageUrl, type]);
 
   if (loading) {
     return (
-      <div className="w-full h-48 rounded-lg bg-muted animate-pulse flex items-center justify-center">
+      <div className="w-full h-40 rounded-lg bg-muted animate-pulse flex items-center justify-center">
         <span className="text-xs text-muted-foreground">Carregando...</span>
       </div>
     );
   }
 
+  if (error || !finalUrl) {
+    return (
+      <div className="w-full h-40 rounded-lg bg-muted flex items-center justify-center">
+        <span className="text-xs text-muted-foreground">Imagem não disponível</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted">
+    <div className="relative w-full h-40 rounded-lg overflow-hidden bg-muted">
       <img 
-        src={signedUrl || imageUrl} 
+        src={finalUrl} 
         alt={title}
         className="w-full h-full object-contain"
-        onError={(e) => {
-          // If signed URL fails, try original
-          if (signedUrl && signedUrl !== imageUrl) {
-            (e.target as HTMLImageElement).src = imageUrl;
-          }
-        }}
+        onError={() => setError(true)}
       />
     </div>
   );
@@ -1018,8 +1034,8 @@ const AdminAnalyticsDashboard = () => {
     return `${format(customDateRange.from, "dd/MM", { locale: ptBR })} - ${format(customDateRange.to, "dd/MM/yyyy", { locale: ptBR })}`;
   };
 
-  // Build version timestamp for cache debugging
-  const BUILD_VERSION = "2025-12-12 14:35";
+  // Build version timestamp for cache debugging (horário do Brasil)
+  const BUILD_VERSION = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
   return (
     <div className="mt-8">
