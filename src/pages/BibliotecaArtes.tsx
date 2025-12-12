@@ -1204,11 +1204,17 @@ const BibliotecaArtes = () => {
                 </div>
 
                 {hasAccess ? <div className="flex flex-col gap-2">
-                    {selectedArte.canvaLink && <Button onClick={() => window.open(selectedArte.canvaLink, '_blank')} className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white">
+                    {selectedArte.canvaLink && <Button onClick={async () => {
+                        await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive);
+                        window.open(selectedArte.canvaLink, '_blank');
+                      }} className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white">
                         <Download className="h-4 w-4 mr-2" />
                         Abrir no Canva
                       </Button>}
-                    {selectedArte.driveLink && <Button onClick={() => window.open(selectedArte.driveLink, '_blank')} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
+                    {selectedArte.driveLink && <Button onClick={async () => {
+                        await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive);
+                        window.open(selectedArte.driveLink, '_blank');
+                      }} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
                         <Download className="h-4 w-4 mr-2" />
                         Baixar PSD
                       </Button>}
