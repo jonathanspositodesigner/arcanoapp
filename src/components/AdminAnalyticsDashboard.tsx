@@ -43,6 +43,71 @@ interface PurchaseHourStats {
 
 const COLORS = ['#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#3b82f6'];
 
+// Helper component to load signed URLs for ranking item images
+const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: string; type: 'prompt' | 'arte' }) => {
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSignedUrl = async () => {
+      // Determine bucket based on type
+      const bucket = type === 'prompt' ? 'admin-prompts' : 'admin-artes';
+      
+      // Extract the path from the URL
+      let path = imageUrl;
+      if (imageUrl.includes('/storage/v1/object/public/')) {
+        const match = imageUrl.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)/);
+        if (match) path = match[1];
+      } else if (imageUrl.includes('/object/public/')) {
+        const match = imageUrl.match(/\/object\/public\/[^/]+\/(.+)/);
+        if (match) path = match[1];
+      }
+
+      try {
+        const { data } = await supabase.functions.invoke('get-signed-url', {
+          body: { bucket, path }
+        });
+        
+        if (data?.signedUrl) {
+          setSignedUrl(data.signedUrl);
+        } else {
+          // Fallback to original URL
+          setSignedUrl(imageUrl);
+        }
+      } catch {
+        setSignedUrl(imageUrl);
+      }
+      setLoading(false);
+    };
+
+    fetchSignedUrl();
+  }, [imageUrl, type]);
+
+  if (loading) {
+    return (
+      <div className="w-full h-48 rounded-lg bg-muted animate-pulse flex items-center justify-center">
+        <span className="text-xs text-muted-foreground">Carregando...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted">
+      <img 
+        src={signedUrl || imageUrl} 
+        alt={title}
+        className="w-full h-full object-contain"
+        onError={(e) => {
+          // If signed URL fails, try original
+          if (signedUrl && signedUrl !== imageUrl) {
+            (e.target as HTMLImageElement).src = imageUrl;
+          }
+        }}
+      />
+    </div>
+  );
+};
+
 const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
@@ -1754,37 +1819,35 @@ const AdminAnalyticsDashboard = () => {
 
           {/* Ranking Item Preview Modal */}
           <Dialog open={!!selectedRankingItem} onOpenChange={(open) => !open && setSelectedRankingItem(null)}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-sm sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-lg">
+                <DialogTitle className="text-base">
                   {selectedRankingItem?.type === 'prompt' ? 'Visualizar Prompt' : 'Visualizar Arte'}
                 </DialogTitle>
               </DialogHeader>
               {selectedRankingItem && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {selectedRankingItem.imageUrl && (
-                    <div className="relative w-full aspect-square max-h-[300px] rounded-lg overflow-hidden bg-muted">
-                      <img 
-                        src={selectedRankingItem.imageUrl} 
-                        alt={selectedRankingItem.title}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
+                    <RankingItemImage 
+                      imageUrl={selectedRankingItem.imageUrl} 
+                      title={selectedRankingItem.title}
+                      type={selectedRankingItem.type}
+                    />
                   )}
                   
                   <div>
-                    <h3 className="font-semibold text-foreground text-lg">{selectedRankingItem.title}</h3>
+                    <h3 className="font-semibold text-foreground text-sm">{selectedRankingItem.title}</h3>
                     {selectedRankingItem.category && (
-                      <span className="inline-block mt-1 text-xs bg-primary/20 text-primary px-2 py-1 rounded">
+                      <span className="inline-block mt-1 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">
                         {selectedRankingItem.category}
                       </span>
                     )}
                   </div>
                   
                   {selectedRankingItem.type === 'prompt' && selectedRankingItem.prompt && (
-                    <div className="bg-secondary/50 rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Prompt:</p>
-                      <p className="text-sm text-foreground whitespace-pre-wrap">{selectedRankingItem.prompt}</p>
+                    <div className="bg-secondary/50 rounded-lg p-2 max-h-20 overflow-hidden">
+                      <p className="text-xs text-muted-foreground mb-0.5">Prompt:</p>
+                      <p className="text-xs text-foreground line-clamp-3">{selectedRankingItem.prompt}</p>
                     </div>
                   )}
                   
@@ -1793,7 +1856,7 @@ const AdminAnalyticsDashboard = () => {
                       {selectedRankingItem.canvaLink && (
                         <Button
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 text-xs h-8"
                           style={{ backgroundColor: '#00C4CC' }}
                           onClick={() => window.open(selectedRankingItem.canvaLink, '_blank')}
                         >
@@ -1803,7 +1866,7 @@ const AdminAnalyticsDashboard = () => {
                       {selectedRankingItem.driveLink && (
                         <Button
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 text-xs h-8"
                           style={{ backgroundColor: '#31A8FF' }}
                           onClick={() => window.open(selectedRankingItem.driveLink, '_blank')}
                         >
