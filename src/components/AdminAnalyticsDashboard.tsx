@@ -51,39 +51,30 @@ const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: 
 
   useEffect(() => {
     const fetchSignedUrl = async () => {
+      if (!imageUrl) {
+        setLoading(false);
+        return;
+      }
+      
       setLoading(true);
       setError(false);
       
-      // Parse URL to extract bucket and path
-      // Format: https://xxx.supabase.co/storage/v1/object/public/bucket-name/filename.ext
-      let bucket = '';
-      let path = '';
+      // Parse URL: https://xxx.supabase.co/storage/v1/object/public/bucket-name/filename.ext
+      // Extract bucket and filePath using regex
+      const match = imageUrl.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)/);
       
-      try {
-        const url = new URL(imageUrl);
-        const pathParts = url.pathname.split('/');
-        // Path format: /storage/v1/object/public/bucket-name/filename
-        const publicIndex = pathParts.indexOf('public');
-        if (publicIndex !== -1 && pathParts.length > publicIndex + 2) {
-          bucket = pathParts[publicIndex + 1];
-          path = pathParts.slice(publicIndex + 2).join('/');
-        }
-      } catch {
-        // Fallback: use defaults
-        bucket = type === 'prompt' ? 'admin-prompts' : 'admin-artes';
-        path = imageUrl.split('/').pop() || '';
-      }
-
-      if (!bucket || !path) {
-        console.log('Could not parse image URL:', imageUrl);
+      if (!match) {
         setFinalUrl(imageUrl);
         setLoading(false);
         return;
       }
+      
+      const bucket = match[1];
+      const filePath = match[2];
 
       try {
         const { data, error: fnError } = await supabase.functions.invoke('get-signed-url', {
-          body: { bucket, filePath: path }
+          body: { bucket, filePath }
         });
         
         if (fnError || !data?.signedUrl) {
@@ -97,10 +88,8 @@ const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: 
       setLoading(false);
     };
 
-    if (imageUrl) {
-      fetchSignedUrl();
-    }
-  }, [imageUrl, type]);
+    fetchSignedUrl();
+  }, [imageUrl]);
 
   if (loading) {
     return (
