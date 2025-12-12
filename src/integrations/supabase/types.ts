@@ -316,6 +316,7 @@ export type Database = {
         Row: {
           arte_id: string
           arte_title: string
+          click_type: string
           clicked_at: string
           id: string
           is_admin_arte: boolean
@@ -323,6 +324,7 @@ export type Database = {
         Insert: {
           arte_id: string
           arte_title: string
+          click_type?: string
           clicked_at?: string
           id?: string
           is_admin_arte?: boolean
@@ -330,6 +332,7 @@ export type Database = {
         Update: {
           arte_id?: string
           arte_title?: string
+          click_type?: string
           clicked_at?: string
           id?: string
           is_admin_arte?: boolean

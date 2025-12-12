@@ -95,6 +95,7 @@ const AdminAnalyticsDashboard = () => {
   const [todayPasswordResets, setTodayPasswordResets] = useState(0);
   const [topPrompts, setTopPrompts] = useState<PromptRanking[]>([]);
   const [topArtes, setTopArtes] = useState<PromptRanking[]>([]);
+  const [artesClickTypeStats, setArtesClickTypeStats] = useState({ canva: 0, psd: 0, download: 0 });
   const [topRankingViewMode, setTopRankingViewMode] = useState<'prompts' | 'artes'>('prompts');
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [planUsageStats, setPlanUsageStats] = useState<PlanUsageStats[]>([]);
@@ -458,8 +459,8 @@ const AdminAnalyticsDashboard = () => {
         setTopPrompts(ranked);
       }
 
-      // Fetch top artes
-      let artesClicksQuery = supabase.from("arte_clicks").select("arte_title");
+      // Fetch top artes and click type stats
+      let artesClicksQuery = supabase.from("arte_clicks").select("arte_title, click_type");
       if (threshold.start) {
         artesClicksQuery = artesClicksQuery.gte("clicked_at", threshold.start);
       }
@@ -470,8 +471,17 @@ const AdminAnalyticsDashboard = () => {
 
       if (artesClicksData) {
         const clickCounts: Record<string, number> = {};
+        let canvaClicks = 0;
+        let psdClicks = 0;
+        let downloadClicks = 0;
+        
         artesClicksData.forEach((click) => {
           clickCounts[click.arte_title] = (clickCounts[click.arte_title] || 0) + 1;
+          
+          // Count by click type
+          if (click.click_type === 'canva') canvaClicks++;
+          else if (click.click_type === 'psd') psdClicks++;
+          else downloadClicks++;
         });
 
         const ranked = Object.entries(clickCounts)
@@ -480,6 +490,7 @@ const AdminAnalyticsDashboard = () => {
           .slice(0, 10);
 
         setTopArtes(ranked);
+        setArtesClickTypeStats({ canva: canvaClicks, psd: psdClicks, download: downloadClicks });
       }
 
       // Fetch top categories for prompts
@@ -1432,6 +1443,59 @@ const AdminAnalyticsDashboard = () => {
                   ))}
                 </ul>
               )}
+            </Card>
+
+            {/* Artes Click Type Stats Card */}
+            <Card 
+              className="p-6 relative"
+              draggable={isReordering}
+              onDragStart={() => handleDragStart("artes-click-types")}
+              onDragOver={(e) => handleDragOver(e, "artes-click-types")}
+              onDragEnd={handleDragEnd}
+              style={{ order: getCardIndex("artes-click-types") }}
+            >
+              {isReordering && (
+                <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                  <GripVertical className="h-4 w-4 text-primary" />
+                </div>
+              )}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-cyan-500/20 rounded-full">
+                  <PieChart className="h-6 w-6 text-cyan-500" />
+                </div>
+                <p className="text-sm font-medium text-foreground">Downloads por Tipo</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#00C4CC]" />
+                    <span className="text-sm text-foreground">Canva</span>
+                  </div>
+                  <span className="font-bold text-foreground">{artesClickTypeStats.canva}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#31A8FF]" />
+                    <span className="text-sm text-foreground">PSD</span>
+                  </div>
+                  <span className="font-bold text-foreground">{artesClickTypeStats.psd}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-muted-foreground" />
+                    <span className="text-sm text-foreground">Download</span>
+                  </div>
+                  <span className="font-bold text-foreground">{artesClickTypeStats.download}</span>
+                </div>
+                
+                <div className="pt-2 border-t border-border">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Total</span>
+                    <span className="font-medium">{artesClickTypeStats.canva + artesClickTypeStats.psd + artesClickTypeStats.download}</span>
+                  </div>
+                </div>
+              </div>
             </Card>
           </div>
 
