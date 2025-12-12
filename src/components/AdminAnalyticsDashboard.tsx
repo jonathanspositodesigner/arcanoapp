@@ -23,13 +23,6 @@ interface PromptRanking {
   click_count: number;
 }
 
-interface ChartDataPoint {
-  date: string;
-  mobile: number;
-  desktop: number;
-  total: number;
-}
-
 interface PlanUsageStats {
   plan: string;
   copies: number;
@@ -37,42 +30,9 @@ interface PlanUsageStats {
   avgPerUser: number;
 }
 
-interface SessionStats {
-  totalSessions: number;
-  trackedSessions: number;
-  bounceCount: number;
-  bounceRate: number;
-  avgDuration: number;
-}
-
 interface CollectionStats {
   totalViews: number;
   topCollections: { name: string; count: number }[];
-}
-
-interface HourlyStats {
-  hour: number;
-  count: number;
-}
-
-interface AccessTypeStats {
-  type: string;
-  count: number;
-  percentage: number;
-}
-
-interface FunnelStats {
-  visits: number;
-  clicks: number;
-  copies: number;
-  clickRate: number;
-  copyRate: number;
-}
-
-interface RetentionStats {
-  newUsers: number;
-  returningUsers: number;
-  retentionRate: number;
 }
 
 interface PurchaseHourStats {
@@ -85,12 +45,8 @@ const COLORS = ['#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#3b82f6'];
 const AdminAnalyticsDashboard = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
-  const [pageViews, setPageViews] = useState({ 
-    total: 0, mobile: 0, desktop: 0, 
-    todayTotal: 0, todayMobile: 0, todayDesktop: 0,
-    todayUnique: 0, todayTotalSessions: 0, todayReturning: 0,
-    periodUnique: 0, periodTotalSessions: 0, periodReturning: 0
-  });
+  
+  // Stats that DON'T depend on user_sessions (kept)
   const [installations, setInstallations] = useState({ total: 0, mobile: 0, desktop: 0 });
   const [todayInstallations, setTodayInstallations] = useState({ total: 0, mobile: 0, desktop: 0 });
   const [todayPasswordResets, setTodayPasswordResets] = useState(0);
@@ -98,7 +54,6 @@ const AdminAnalyticsDashboard = () => {
   const [topArtes, setTopArtes] = useState<PromptRanking[]>([]);
   const [artesClickTypeStats, setArtesClickTypeStats] = useState({ canva: 0, psd: 0, download: 0 });
   const [topRankingViewMode, setTopRankingViewMode] = useState<'prompts' | 'artes'>('prompts');
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [planUsageStats, setPlanUsageStats] = useState<PlanUsageStats[]>([]);
   const [artesUsageStats, setArtesUsageStats] = useState<PlanUsageStats[]>([]);
   const [todayUsage, setTodayUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
@@ -109,9 +64,6 @@ const AdminAnalyticsDashboard = () => {
   const [todayUsageViewMode, setTodayUsageViewMode] = useState<'prompts' | 'artes'>('prompts');
   const [topCategories, setTopCategories] = useState<{ name: string; count: number }[]>([]);
   const [topPacks, setTopPacks] = useState<{ name: string; count: number }[]>([]);
-  const [sessionStats, setSessionStats] = useState<SessionStats>({
-    totalSessions: 0, trackedSessions: 0, bounceCount: 0, bounceRate: 0, avgDuration: 0
-  });
   const [collectionStats, setCollectionStats] = useState<CollectionStats>({
     totalViews: 0, topCollections: []
   });
@@ -119,12 +71,8 @@ const AdminAnalyticsDashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   
-  // New metrics state
-  const [hourlyStats, setHourlyStats] = useState<HourlyStats[]>([]);
+  // Conversion rate (simplified - without session dependency)
   const [conversionRate, setConversionRate] = useState({ visitors: 0, buyers: 0, rate: 0 });
-  const [funnelStats, setFunnelStats] = useState<FunnelStats>({ visits: 0, clicks: 0, copies: 0, clickRate: 0, copyRate: 0 });
-  const [accessTypeStats, setAccessTypeStats] = useState<AccessTypeStats[]>([]);
-  const [retentionStats, setRetentionStats] = useState<RetentionStats>({ newUsers: 0, returningUsers: 0, retentionRate: 0 });
   const [purchaseHourStats, setPurchaseHourStats] = useState<PurchaseHourStats[]>([]);
   
   // First access stats
@@ -188,192 +136,12 @@ const AdminAnalyticsDashboard = () => {
     return { start: startDate.toISOString(), end: null };
   };
 
-  const getDaysArray = (filter: DateFilter): string[] => {
-    const result: string[] = [];
-    const now = new Date();
-    
-    if (filter === "custom" && customDateRange?.from) {
-      const startDate = new Date(customDateRange.from);
-      const endDate = customDateRange.to ? new Date(customDateRange.to) : new Date(customDateRange.from);
-      
-      const currentDate = new Date(startDate);
-      while (currentDate <= endDate) {
-        const year = currentDate.getFullYear();
-        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-        const day = String(currentDate.getDate()).padStart(2, '0');
-        result.push(`${year}-${month}-${day}`);
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-      return result;
-    }
-    
-    if (filter === "yesterday") {
-      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-      const year = yesterday.getFullYear();
-      const month = String(yesterday.getMonth() + 1).padStart(2, '0');
-      const day = String(yesterday.getDate()).padStart(2, '0');
-      return [`${year}-${month}-${day}`];
-    }
-    
-    const numDays = filter === "all" ? 30 : (typeof filter === 'number' ? filter : 7);
-    
-    for (let i = numDays - 1; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      result.push(`${year}-${month}-${day}`);
-    }
-    return result;
-  };
-
-  const extractDateFromTimestamp = (timestamp: string): string => {
-    const date = new Date(timestamp);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   useEffect(() => {
     const fetchAnalytics = async () => {
       setIsLoading(true);
       const threshold = getDateThreshold();
-      const daysArray = getDaysArray(dateFilter);
       const now = new Date();
-      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
-
-      // ========== BUSCA SESSÕES DE HOJE ==========
-      const { data: todaySessionsData } = await supabase
-        .from("user_sessions")
-        .select("device_type, user_agent, entered_at, session_id")
-        .gte("entered_at", todayMidnight);
-
-      let todayTotal = 0;
-      let todayMobile = 0;
-      let todayDesktop = 0;
-      const todayUniqueSessions = new Set<string>();
-      
-      if (todaySessionsData) {
-        todaySessionsData.forEach(session => {
-          if (!todayUniqueSessions.has(session.session_id)) {
-            todayUniqueSessions.add(session.session_id);
-            todayTotal++;
-            if (session.device_type === "mobile") {
-              todayMobile++;
-            } else {
-              todayDesktop++;
-            }
-          }
-        });
-      }
-
-      const todayUnique = todayUniqueSessions.size;
-
-      // ========== BUSCA SESSÕES DO PERÍODO SELECIONADO (com paginação) ==========
-      const fetchAllSessionsForViews = async () => {
-        const allRecords: { device_type: string; user_agent: string | null; entered_at: string; session_id: string }[] = [];
-        const batchSize = 1000;
-        let offset = 0;
-        let hasMore = true;
-        
-        while (hasMore) {
-          let query = supabase
-            .from("user_sessions")
-            .select("device_type, user_agent, entered_at, session_id")
-            .order("entered_at", { ascending: false })
-            .range(offset, offset + batchSize - 1);
-          
-          if (threshold.start) {
-            query = query.gte("entered_at", threshold.start);
-          }
-          if (threshold.end) {
-            query = query.lte("entered_at", threshold.end);
-          }
-          
-          const { data } = await query;
-          
-          if (data && data.length > 0) {
-            allRecords.push(...data);
-            offset += batchSize;
-            hasMore = data.length === batchSize;
-          } else {
-            hasMore = false;
-          }
-        }
-        
-        return allRecords;
-      };
-      
-      const allSessionsData = await fetchAllSessionsForViews();
-
-      let periodTotal = 0;
-      let periodMobile = 0;
-      let periodDesktop = 0;
-      const periodUniqueSessions = new Set<string>();
-      const sessionsByDate: Record<string, { mobile: number; desktop: number; total: number; sessions: Set<string> }> = {};
-      
-      daysArray.forEach(day => {
-        sessionsByDate[day] = { mobile: 0, desktop: 0, total: 0, sessions: new Set() };
-      });
-
-      if (allSessionsData) {
-        allSessionsData.forEach(session => {
-          if (!periodUniqueSessions.has(session.session_id)) {
-            periodUniqueSessions.add(session.session_id);
-            periodTotal++;
-            
-            const date = extractDateFromTimestamp(session.entered_at);
-            
-            if (session.device_type === "mobile") {
-              periodMobile++;
-              if (sessionsByDate[date] && !sessionsByDate[date].sessions.has(session.session_id)) {
-                sessionsByDate[date].sessions.add(session.session_id);
-                sessionsByDate[date].mobile++;
-                sessionsByDate[date].total++;
-              }
-            } else {
-              periodDesktop++;
-              if (sessionsByDate[date] && !sessionsByDate[date].sessions.has(session.session_id)) {
-                sessionsByDate[date].sessions.add(session.session_id);
-                sessionsByDate[date].desktop++;
-                sessionsByDate[date].total++;
-              }
-            }
-          }
-        });
-      }
-
-      const periodUnique = periodUniqueSessions.size;
-      
-      setPageViews({ 
-        total: periodTotal, 
-        mobile: periodMobile, 
-        desktop: periodDesktop,
-        todayTotal,
-        todayMobile,
-        todayDesktop,
-        todayUnique,
-        todayTotalSessions: todayTotal,
-        todayReturning: 0,
-        periodUnique,
-        periodTotalSessions: periodTotal,
-        periodReturning: 0
-      });
-
-      const chartDataPoints = daysArray.map(dateStr => {
-        const [, month, day] = dateStr.split('-');
-        const dayData = sessionsByDate[dateStr] || { mobile: 0, desktop: 0, total: 0 };
-        return {
-          date: `${day}/${month}`,
-          mobile: dayData.mobile,
-          desktop: dayData.desktop,
-          total: dayData.total,
-        };
-      });
-
-      setChartData(chartDataPoints);
 
       // Fetch installations for period
       let installsQuery = supabase.from("app_installations").select("device_type");
@@ -787,79 +555,6 @@ const AdminAnalyticsDashboard = () => {
         setTopPurchasedPacks(topPacksList);
       }
 
-      // Fetch session stats with pagination
-      const fetchAllSessions = async () => {
-        const allRecords: { session_id: string; page_path: string; duration_seconds: number | null; entered_at: string }[] = [];
-        const batchSize = 1000;
-        let offset = 0;
-        let hasMore = true;
-        
-        while (hasMore) {
-          let query = supabase
-            .from("user_sessions")
-            .select("session_id, page_path, duration_seconds, entered_at")
-            .in("page_path", ["/biblioteca-prompts", "/biblioteca-artes"])
-            .range(offset, offset + batchSize - 1);
-          
-          if (threshold.start) {
-            query = query.gte("entered_at", threshold.start);
-          }
-          if (threshold.end) {
-            query = query.lte("entered_at", threshold.end);
-          }
-          
-          const { data } = await query;
-          
-          if (data && data.length > 0) {
-            allRecords.push(...data);
-            offset += batchSize;
-            hasMore = data.length === batchSize;
-          } else {
-            hasMore = false;
-          }
-        }
-        
-        return allRecords;
-      };
-      
-      const statsSessionsData = await fetchAllSessions();
-
-      if (statsSessionsData && statsSessionsData.length > 0) {
-        const sessionMap = new Map<string, { duration: number }>();
-        statsSessionsData.forEach(s => {
-          if (!sessionMap.has(s.session_id) || (s.duration_seconds || 0) > (sessionMap.get(s.session_id)?.duration || 0)) {
-            sessionMap.set(s.session_id, { duration: s.duration_seconds || 0 });
-          }
-        });
-        
-        const uniqueSessionsList = Array.from(sessionMap.values());
-        const trackedSessions = uniqueSessionsList.length;
-        
-        const bounceCount = uniqueSessionsList.filter(s => s.duration < 3).length;
-        const bounceRate = trackedSessions > 0 ? Math.round((bounceCount / trackedSessions) * 100) : 0;
-        
-        const nonBounceSessions = uniqueSessionsList.filter(s => s.duration >= 3);
-        const avgDuration = nonBounceSessions.length > 0 
-          ? Math.round(nonBounceSessions.reduce((sum, s) => sum + s.duration, 0) / nonBounceSessions.length)
-          : 0;
-
-        setSessionStats({
-          totalSessions: periodUnique,
-          trackedSessions,
-          bounceCount,
-          bounceRate,
-          avgDuration
-        });
-      } else {
-        setSessionStats({
-          totalSessions: periodUnique,
-          trackedSessions: 0,
-          bounceCount: 0,
-          bounceRate: 0,
-          avgDuration: 0
-        });
-      }
-
       // Fetch collection stats
       let collectionViewsQuery = supabase
         .from("collection_views")
@@ -892,32 +587,7 @@ const AdminAnalyticsDashboard = () => {
         });
       }
 
-      // Peak hours
-      if (allSessionsData && allSessionsData.length > 0) {
-        const hourCounts: Record<number, number> = {};
-        for (let i = 0; i < 24; i++) hourCounts[i] = 0;
-        
-        const processedSessions = new Set<string>();
-        allSessionsData.forEach(session => {
-          if (!processedSessions.has(session.session_id)) {
-            processedSessions.add(session.session_id);
-            const hour = new Date(session.entered_at).getHours();
-            hourCounts[hour]++;
-          }
-        });
-        
-        const hourlyData = Object.entries(hourCounts).map(([hour, count]) => ({
-          hour: parseInt(hour),
-          count
-        })).sort((a, b) => a.hour - b.hour);
-        
-        setHourlyStats(hourlyData);
-      }
-
-      // Conversion rate - only count sales from app (from_app = true in webhook_logs)
-      const bibliotecaArtesVisitors = periodUniqueSessions.size;
-      
-      // Count only webhook sales that came from the app (utm_source = aplicativo)
+      // Conversion rate - simplified (buyers only, no visitor count without sessions)
       let appSalesQuery = supabase.from("webhook_logs")
         .select("id")
         .eq("from_app", true)
@@ -931,102 +601,14 @@ const AdminAnalyticsDashboard = () => {
         appSalesQuery = appSalesQuery.lte("received_at", threshold.end);
       }
       const { data: appSalesData } = await appSalesQuery;
-      const buyersCount = appSalesData?.length || 0;
       
-      const conversionRateValue = bibliotecaArtesVisitors > 0 
-        ? Math.round((buyersCount / bibliotecaArtesVisitors) * 10000) / 100 
-        : 0;
+      const buyers = appSalesData?.length || 0;
       
       setConversionRate({
-        visitors: bibliotecaArtesVisitors,
-        buyers: buyersCount,
-        rate: conversionRateValue
+        visitors: 0, // No session tracking
+        buyers,
+        rate: 0 // Can't calculate without visitors
       });
-
-      // Funnel stats
-      const promptVisits = periodTotal;
-      
-      let promptClicksQuery = supabase.from("prompt_clicks").select("id");
-      if (threshold.start) {
-        promptClicksQuery = promptClicksQuery.gte("clicked_at", threshold.start);
-      }
-      if (threshold.end) {
-        promptClicksQuery = promptClicksQuery.lte("clicked_at", threshold.end);
-      }
-      const { data: promptClicksData } = await promptClicksQuery;
-      const promptClicksCount = promptClicksData?.length || 0;
-      
-      let promptCopiesQuery = supabase.from("daily_prompt_copies").select("id");
-      if (threshold.start) {
-        promptCopiesQuery = promptCopiesQuery.gte("copied_at", threshold.start);
-      }
-      if (threshold.end) {
-        promptCopiesQuery = promptCopiesQuery.lte("copied_at", threshold.end);
-      }
-      const { data: promptCopiesData } = await promptCopiesQuery;
-      const promptCopiesCount = promptCopiesData?.length || 0;
-      
-      setFunnelStats({
-        visits: promptVisits,
-        clicks: promptClicksCount,
-        copies: promptCopiesCount,
-        clickRate: promptVisits > 0 ? Math.round((promptClicksCount / promptVisits) * 100) : 0,
-        copyRate: promptClicksCount > 0 ? Math.round((promptCopiesCount / promptClicksCount) * 100) : 0
-      });
-
-      // Access types distribution
-      let accessTypesQuery = supabase.from("user_pack_purchases").select("access_type");
-      if (threshold.start) {
-        accessTypesQuery = accessTypesQuery.gte("purchased_at", threshold.start);
-      }
-      if (threshold.end) {
-        accessTypesQuery = accessTypesQuery.lte("purchased_at", threshold.end);
-      }
-      const { data: accessTypesData } = await accessTypesQuery;
-      
-      if (accessTypesData && accessTypesData.length > 0) {
-        const typeCounts: Record<string, number> = {};
-        accessTypesData.forEach(item => {
-          const type = item.access_type || 'unknown';
-          typeCounts[type] = (typeCounts[type] || 0) + 1;
-        });
-        
-        const total = accessTypesData.length;
-        const typeNameMap: Record<string, string> = {
-          '3_meses': '3 Meses',
-          '6_meses': '6 Meses',
-          '1_ano': '1 Ano',
-          'vitalicio': 'Vitalício'
-        };
-        
-        const accessStats = Object.entries(typeCounts).map(([type, count]) => ({
-          type: typeNameMap[type] || type,
-          count,
-          percentage: Math.round((count / total) * 100)
-        })).sort((a, b) => b.count - a.count);
-        
-        setAccessTypeStats(accessStats);
-      }
-
-      // Retention
-      if (allSessionsData && allSessionsData.length > 0) {
-        const userAgentCounts: Record<string, number> = {};
-        allSessionsData.forEach(session => {
-          if (session.user_agent) {
-            userAgentCounts[session.user_agent] = (userAgentCounts[session.user_agent] || 0) + 1;
-          }
-        });
-        
-        const uniqueAgents = Object.keys(userAgentCounts).length;
-        const returningAgents = Object.values(userAgentCounts).filter(count => count > 1).length;
-        const newAgents = uniqueAgents - returningAgents;
-        
-        setRetentionStats({
-          newUsers: newAgents,
-          returningUsers: returningAgents,
-          retentionRate: uniqueAgents > 0 ? Math.round((returningAgents / uniqueAgents) * 100) : 0
-        });
-      }
 
       // Purchase hours - use pack purchases data for hourly stats
       let purchaseHoursQuery = supabase.from("user_pack_purchases").select("id, purchased_at");
@@ -1264,7 +846,7 @@ const AdminAnalyticsDashboard = () => {
             isEditing={isEditing}
             onLayoutChange={handleLayoutChange}
           >
-            {/* Today's Page Views Card */}
+            {/* Today's Stats Card - PLACEHOLDER (no session data) */}
             <GridCard key="today-access" isEditing={isEditing} className="border-2 border-green-500 bg-green-500/10">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-4">
@@ -1273,12 +855,12 @@ const AdminAnalyticsDashboard = () => {
                   </div>
                   <div>
                     <p className="text-sm text-green-600 font-medium">Acessos Hoje</p>
-                    <p className="text-3xl font-bold text-green-600">{pageViews.todayTotal.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-green-600">—</p>
                     <p className="text-xs text-green-600/80 mt-1">
-                      📱 {pageViews.todayMobile} · 💻 {pageViews.todayDesktop}
+                      📱 — · 💻 —
                     </p>
                     <p className="text-xs text-green-600/60 mt-0.5">
-                      👤 {pageViews.todayUnique} únicos
+                      ⚠️ Tracking desativado
                     </p>
                   </div>
                 </div>
@@ -1295,7 +877,7 @@ const AdminAnalyticsDashboard = () => {
               </div>
             </GridCard>
 
-            {/* Period Page Views Card */}
+            {/* Period Stats Card - PLACEHOLDER (no session data) */}
             <GridCard key="period-access" isEditing={isEditing}>
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-4">
@@ -1304,12 +886,12 @@ const AdminAnalyticsDashboard = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Acessos no Período</p>
-                    <p className="text-3xl font-bold text-foreground">{pageViews.total.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-foreground">—</p>
                     <p className="text-xs text-muted-foreground/80 mt-1">
-                      📱 {pageViews.mobile} · 💻 {pageViews.desktop}
+                      📱 — · 💻 —
                     </p>
                     <p className="text-xs text-muted-foreground/60 mt-0.5">
-                      👤 {pageViews.periodUnique.toLocaleString()} únicos
+                      ⚠️ Tracking desativado
                     </p>
                   </div>
                 </div>
@@ -1417,85 +999,79 @@ const AdminAnalyticsDashboard = () => {
                   </div>
                   
                   <div className="pt-2 border-t border-border mt-auto">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Total</span>
-                      <span className="font-medium">{artesClickTypeStats.canva + artesClickTypeStats.psd + artesClickTypeStats.download}</span>
-                    </div>
+                    <p className="text-xs text-muted-foreground text-center">
+                      Total: {artesClickTypeStats.canva + artesClickTypeStats.psd + artesClickTypeStats.download} cliques
+                    </p>
                   </div>
                 </div>
               </div>
             </GridCard>
 
             {/* Collection Links Card */}
-            <GridCard key="collection-links" isEditing={isEditing} className="border-2 border-indigo-500/30">
+            <GridCard key="collection-links" isEditing={isEditing}>
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-indigo-500/20 rounded-full">
                     <Link2 className="h-6 w-6 text-indigo-500" />
                   </div>
-                  <p className="text-sm font-medium text-foreground">Links de Coleções</p>
-                </div>
-                
-                <div className="space-y-3 flex-1">
-                  <div className="text-center">
-                    <p className="text-4xl font-bold text-indigo-500">{collectionStats.totalViews}</p>
-                    <p className="text-xs text-muted-foreground mt-1">aberturas de coleções</p>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Links de Coleção</p>
+                    <p className="text-xs text-muted-foreground">Acessos via link de coleção</p>
                   </div>
-                  {collectionStats.topCollections.length > 0 && (
-                    <div className="pt-2 border-t border-border space-y-1.5">
-                      <p className="text-xs text-muted-foreground font-medium">Top Coleções:</p>
-                      {collectionStats.topCollections.slice(0, 3).map((col, index) => (
-                        <div key={col.name} className="flex justify-between text-xs">
-                          <span className="text-muted-foreground truncate max-w-[140px]">{index + 1}. {col.name}</span>
-                          <span className="font-medium text-indigo-500">{col.count}</span>
-                        </div>
-                      ))}
-                    </div>
+                </div>
+                <div className="space-y-2 overflow-y-auto flex-1">
+                  {collectionStats.topCollections.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhum acesso registrado</p>
+                  ) : (
+                    collectionStats.topCollections.map((collection, index) => (
+                      <div key={collection.name} className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2 truncate">
+                          <span className="font-bold text-indigo-500">{index + 1}.</span>
+                          <span className="truncate text-foreground">{collection.name}</span>
+                        </span>
+                        <span className="text-muted-foreground font-medium ml-2">{collection.count}</span>
+                      </div>
+                    ))
                   )}
+                </div>
+                <div className="mt-3 pt-2 border-t border-border">
+                  <p className="text-sm font-medium text-center">
+                    Total: <span className="text-indigo-500">{collectionStats.totalViews}</span> acessos
+                  </p>
                 </div>
               </div>
             </GridCard>
 
             {/* First Access Stats Card */}
-            <GridCard key="first-access" isEditing={isEditing} className="border-2 border-orange-500/30">
-              <div className="p-6 h-full flex flex-col">
+            <GridCard key="first-access" isEditing={isEditing} className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="p-6 h-full flex flex-col" onClick={() => setShowFirstAccessModal(true)}>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-orange-500/20 rounded-full">
-                    <KeyRound className="h-6 w-6 text-orange-500" />
+                  <div className="p-2 bg-amber-500/20 rounded-full">
+                    <KeyRound className="h-6 w-6 text-amber-500" />
                   </div>
-                  <p className="text-sm font-medium text-foreground">1º Acesso (Senha)</p>
+                  <p className="text-sm font-medium text-foreground">Primeiro Acesso</p>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-2 flex-1">
-                  <div 
-                    className="text-center p-2 bg-green-500/10 rounded-lg cursor-pointer hover:bg-green-500/20 transition-colors"
-                    onClick={() => {
-                      setFirstAccessModalView('changed');
-                      setShowFirstAccessModal(true);
-                    }}
-                  >
-                    <p className="text-2xl font-bold text-green-500">{firstAccessStats.changed}</p>
-                    <p className="text-xs text-muted-foreground">Redefiniram</p>
+                <div className="flex-1 flex flex-col justify-center gap-3">
+                  <div className="flex items-center justify-between bg-green-500/10 rounded-lg px-3 py-2">
+                    <span className="text-sm text-foreground">Redefiniram senha</span>
+                    <span className="font-bold text-green-600">{firstAccessStats.changed}</span>
                   </div>
-                  <div 
-                    className="text-center p-2 bg-orange-500/10 rounded-lg cursor-pointer hover:bg-orange-500/20 transition-colors"
-                    onClick={() => {
-                      setFirstAccessModalView('pending');
-                      setShowFirstAccessModal(true);
-                    }}
-                  >
-                    <p className="text-2xl font-bold text-orange-500">{firstAccessStats.pending}</p>
-                    <p className="text-xs text-muted-foreground">Pendentes</p>
+                  <div className="flex items-center justify-between bg-amber-500/10 rounded-lg px-3 py-2">
+                    <span className="text-sm text-foreground">Pendentes</span>
+                    <span className="font-bold text-amber-600">{firstAccessStats.pending}</span>
                   </div>
                 </div>
                 
-                <div className="mt-3 pt-2 border-t border-border text-center">
-                  <p className="text-xs text-muted-foreground">Clique para ver lista</p>
+                <div className="mt-3 pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground text-center">
+                    Clique para ver detalhes
+                  </p>
                 </div>
               </div>
             </GridCard>
 
-            {/* Top Purchased Plans/Packs */}
+            {/* Top Purchased Plans/Packs Card */}
             <GridCard key="top-purchased" isEditing={isEditing}>
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-4">
@@ -1606,7 +1182,7 @@ const AdminAnalyticsDashboard = () => {
               </div>
             </GridCard>
 
-            {/* Peak Hours */}
+            {/* Peak Hours - PLACEHOLDER (no session data) */}
             <GridCard key="hourly-stats" isEditing={isEditing} className="border-2 border-orange-500/30">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
@@ -1616,87 +1192,39 @@ const AdminAnalyticsDashboard = () => {
                   <p className="text-sm font-medium text-foreground">Horário de Pico</p>
                 </div>
                 
-                {hourlyStats.length > 0 ? (
-                  <>
-                    <div className="flex-1 min-h-[120px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={hourlyStats}>
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis 
-                            dataKey="hour" 
-                            tick={{ fontSize: 9 }}
-                            tickFormatter={(h) => `${h}h`}
-                            className="text-muted-foreground"
-                          />
-                          <YAxis hide />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: "hsl(var(--card))", 
-                              border: "1px solid hsl(var(--border))",
-                              borderRadius: "8px",
-                              fontSize: "12px"
-                            }}
-                            formatter={(value: number) => [value, 'Acessos']}
-                            labelFormatter={(h) => `${h}:00`}
-                          />
-                          <Bar dataKey="count" fill="#f97316" radius={[2, 2, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="mt-3 text-center">
-                      {(() => {
-                        const topHours = [...hourlyStats].sort((a, b) => b.count - a.count).slice(0, 3);
-                        return (
-                          <p className="text-xs text-muted-foreground">
-                            🔥 Pico: <span className="font-bold text-orange-500">
-                              {topHours.map(h => `${h.hour}h`).join(', ')}
-                            </span>
-                          </p>
-                        );
-                      })()}
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center">Sem dados</p>
-                )}
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground text-center">⚠️ Tracking desativado</p>
+                </div>
               </div>
             </GridCard>
 
-            {/* Conversion Rate */}
+            {/* Conversion Rate - SIMPLIFIED (no visitor count) */}
             <GridCard key="conversion" isEditing={isEditing} className="border-2 border-green-500/30">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-green-500/20 rounded-full">
                     <TrendingUp className="h-6 w-6 text-green-500" />
                   </div>
-                  <p className="text-sm font-medium text-foreground">Taxa de Conversão</p>
+                  <p className="text-sm font-medium text-foreground">Vendas do App</p>
                 </div>
                 
                 <div className="text-center space-y-3 flex-1 flex flex-col justify-center">
-                  <p className={`text-4xl font-bold ${
-                    conversionRate.rate >= 5 ? 'text-green-500' : 
-                    conversionRate.rate >= 2 ? 'text-yellow-500' : 'text-red-500'
-                  }`}>
-                    {conversionRate.rate}%
+                  <p className="text-4xl font-bold text-green-500">
+                    {conversionRate.buyers}
                   </p>
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">
-                      👀 {conversionRate.visitors.toLocaleString()} visitantes
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      🛒 {conversionRate.buyers.toLocaleString()} compradores
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    🛒 Compras via aplicativo
+                  </p>
                   <div className="pt-2 border-t border-border">
                     <p className="text-xs text-muted-foreground">
-                      Visitantes que compraram packs
+                      ⚠️ Taxa de conversão indisponível
                     </p>
                   </div>
                 </div>
               </div>
             </GridCard>
 
-            {/* Retention */}
+            {/* Retention - PLACEHOLDER (no session data) */}
             <GridCard key="retention" isEditing={isEditing} className="border-2 border-cyan-500/30">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
@@ -1706,28 +1234,8 @@ const AdminAnalyticsDashboard = () => {
                   <p className="text-sm font-medium text-foreground">Retenção</p>
                 </div>
                 
-                <div className="text-center space-y-3 flex-1 flex flex-col justify-center">
-                  <p className={`text-4xl font-bold ${
-                    retentionStats.retentionRate >= 40 ? 'text-green-500' : 
-                    retentionStats.retentionRate >= 20 ? 'text-yellow-500' : 'text-red-500'
-                  }`}>
-                    {retentionStats.retentionRate}%
-                  </p>
-                  <div className="flex justify-center gap-6">
-                    <div className="text-center">
-                      <p className="text-lg font-bold text-cyan-500">{retentionStats.newUsers}</p>
-                      <p className="text-xs text-muted-foreground">Novos</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg font-bold text-green-500">{retentionStats.returningUsers}</p>
-                      <p className="text-xs text-muted-foreground">Recorrentes</p>
-                    </div>
-                  </div>
-                  <div className="pt-2 border-t border-border">
-                    <p className="text-xs text-muted-foreground">
-                      Usuários que voltaram mais de uma vez
-                    </p>
-                  </div>
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground text-center">⚠️ Tracking desativado</p>
                 </div>
               </div>
             </GridCard>
@@ -1821,239 +1329,83 @@ const AdminAnalyticsDashboard = () => {
               </div>
             </GridCard>
 
-            {/* Access Chart */}
+            {/* Access Chart - PLACEHOLDER (no session data) */}
             <GridCard key="access-chart" isEditing={isEditing}>
               <div className="p-6 h-full flex flex-col">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Evolução de Acessos</h3>
-                <div className="flex-1 min-h-[200px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis 
-                        dataKey="date" 
-                        tick={{ fontSize: 12 }}
-                        className="text-muted-foreground"
-                      />
-                      <YAxis 
-                        tick={{ fontSize: 12 }}
-                        className="text-muted-foreground"
-                      />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: "hsl(var(--card))", 
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "8px"
-                        }}
-                        labelStyle={{ color: "hsl(var(--foreground))" }}
-                      />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="mobile" 
-                        stroke="#f97316" 
-                        strokeWidth={2}
-                        dot={{ fill: "#f97316", strokeWidth: 2 }}
-                        name="📱 Mobile"
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="desktop" 
-                        stroke="#8b5cf6" 
-                        strokeWidth={2}
-                        dot={{ fill: "#8b5cf6", strokeWidth: 2 }}
-                        name="💻 Desktop"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                <div className="flex-1 flex items-center justify-center min-h-[200px]">
+                  <p className="text-sm text-muted-foreground text-center">⚠️ Tracking desativado</p>
                 </div>
               </div>
             </GridCard>
           </GridDashboard>
+
+          {/* First Access Modal */}
+          <Dialog open={showFirstAccessModal} onOpenChange={setShowFirstAccessModal}>
+            <DialogContent className="max-w-2xl max-h-[80vh]">
+              <DialogHeader>
+                <DialogTitle>Primeiro Acesso - Detalhes</DialogTitle>
+              </DialogHeader>
+              <div className="flex gap-2 mb-4">
+                <Button
+                  variant={firstAccessModalView === 'pending' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFirstAccessModalView('pending')}
+                >
+                  Pendentes ({firstAccessStats.pending})
+                </Button>
+                <Button
+                  variant={firstAccessModalView === 'changed' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFirstAccessModalView('changed')}
+                >
+                  Redefiniram ({firstAccessStats.changed})
+                </Button>
+              </div>
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-2">
+                  {(firstAccessModalView === 'pending' ? firstAccessStats.pendingUsers : firstAccessStats.changedUsers).map(user => (
+                    <div key={user.id} className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-foreground">{user.name || 'Sem nome'}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
+
+          {/* Refund Modal */}
+          <Dialog open={showRefundModal} onOpenChange={setShowRefundModal}>
+            <DialogContent className="max-w-2xl max-h-[80vh]">
+              <DialogHeader>
+                <DialogTitle>Logs de Reembolsos e Chargebacks</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-3">
+                  {refundStats.recentLogs.map((log, index) => (
+                    <div key={index} className="p-3 bg-secondary/50 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-foreground">{log.email}</span>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          log.status === 'chargeback' ? 'bg-red-500/20 text-red-500' : 'bg-orange-500/20 text-orange-500'
+                        }`}>
+                          {log.status === 'chargeback' ? 'Chargeback' : 'Reembolso'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{log.pack}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{log.date}</p>
+                      <p className="text-xs text-red-500 mt-1">✓ Acesso removido</p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
         </>
       )}
-
-      {/* First Access Modal */}
-      <Dialog open={showFirstAccessModal} onOpenChange={setShowFirstAccessModal}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <KeyRound className={`h-5 w-5 ${firstAccessModalView === 'changed' ? 'text-green-500' : 'text-orange-500'}`} />
-              {firstAccessModalView === 'changed' ? 'Usuários que Redefiniram Senha' : 'Usuários Pendentes de 1º Acesso'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <Button
-                variant={firstAccessModalView === 'changed' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFirstAccessModalView('changed')}
-                className={firstAccessModalView === 'changed' ? 'bg-green-500 hover:bg-green-600' : ''}
-              >
-                Redefiniram ({firstAccessStats.changed})
-              </Button>
-              <Button
-                variant={firstAccessModalView === 'pending' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFirstAccessModalView('pending')}
-                className={firstAccessModalView === 'pending' ? 'bg-orange-500 hover:bg-orange-600' : ''}
-              >
-                Pendentes ({firstAccessStats.pending})
-              </Button>
-            </div>
-
-            <div className={`flex items-center justify-between p-3 rounded-lg ${
-              firstAccessModalView === 'changed' ? 'bg-green-500/10' : 'bg-orange-500/10'
-            }`}>
-              <span className="text-sm font-medium">
-                {firstAccessModalView === 'changed' ? 'Total que redefiniram:' : 'Total de pendentes:'}
-              </span>
-              <span className={`text-lg font-bold ${firstAccessModalView === 'changed' ? 'text-green-500' : 'text-orange-500'}`}>
-                {firstAccessModalView === 'changed' ? firstAccessStats.changed : firstAccessStats.pending}
-              </span>
-            </div>
-            
-            <p className="text-sm text-muted-foreground">
-              {firstAccessModalView === 'changed' 
-                ? 'Esses usuários já redefiniram a senha inicial e acessaram o sistema.'
-                : 'Esses usuários ainda não redefiniram a senha inicial. Use o filtro "Pendentes 1º acesso" no E-mail Marketing para enviar uma campanha específica para eles.'
-              }
-            </p>
-            
-            <ScrollArea className="h-[400px] border rounded-lg">
-              <div className="p-4 space-y-2">
-                {(firstAccessModalView === 'changed' ? firstAccessStats.changedUsers : firstAccessStats.pendingUsers).length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    {firstAccessModalView === 'changed' ? 'Nenhum usuário redefiniu a senha ainda' : 'Nenhum usuário pendente'}
-                  </p>
-                ) : (
-                  (firstAccessModalView === 'changed' ? firstAccessStats.changedUsers : firstAccessStats.pendingUsers).map((user, index) => (
-                    <div 
-                      key={user.id} 
-                      className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground font-medium w-6">
-                          {index + 1}.
-                        </span>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">
-                            {user.name || 'Sem nome'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{user.email}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-            
-            <div className="flex justify-end gap-3 pt-2 border-t">
-              <Button
-                variant="outline"
-                onClick={() => setShowFirstAccessModal(false)}
-              >
-                Fechar
-              </Button>
-              {firstAccessModalView === 'pending' && (
-                <Button
-                  onClick={() => {
-                    setShowFirstAccessModal(false);
-                    window.location.href = '/admin-email-marketing';
-                  }}
-                  className="bg-orange-500 hover:bg-orange-600"
-                >
-                  Ir para E-mail Marketing
-                </Button>
-              )}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Refund Logs Modal */}
-      <Dialog open={showRefundModal} onOpenChange={setShowRefundModal}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <RotateCcw className="h-5 w-5 text-red-500" />
-              Logs de Reembolsos e Chargebacks
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-orange-500/10 rounded-lg text-center">
-                <p className="text-2xl font-bold text-orange-500">{refundStats.refundedCount}</p>
-                <p className="text-sm text-muted-foreground">Reembolsos</p>
-              </div>
-              <div className="p-4 bg-red-500/10 rounded-lg text-center">
-                <p className="text-2xl font-bold text-red-600">{refundStats.chargebackCount}</p>
-                <p className="text-sm text-muted-foreground">Chargebacks</p>
-              </div>
-            </div>
-            
-            <p className="text-sm text-muted-foreground">
-              Quando um reembolso ou chargeback é processado, o acesso do usuário é automaticamente desativado (is_active = false).
-            </p>
-            
-            <ScrollArea className="h-[400px] border rounded-lg">
-              <div className="p-4 space-y-2">
-                {refundStats.recentLogs.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    Nenhum reembolso ou chargeback registrado
-                  </p>
-                ) : (
-                  refundStats.recentLogs.map((log, index) => (
-                    <div 
-                      key={index} 
-                      className={`flex items-center justify-between p-3 rounded-lg ${
-                        log.status === 'chargeback' ? 'bg-red-500/10' : 'bg-orange-500/10'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                          log.status === 'chargeback' 
-                            ? 'bg-red-500/20 text-red-600' 
-                            : 'bg-orange-500/20 text-orange-600'
-                        }`}>
-                          {log.status === 'chargeback' ? 'CHARGEBACK' : 'REEMBOLSO'}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{log.email}</p>
-                          <p className="text-xs text-muted-foreground truncate">{log.pack}</p>
-                        </div>
-                      </div>
-                      <div className="text-right ml-2">
-                        <p className="text-xs text-muted-foreground">{log.date}</p>
-                        <p className="text-xs text-red-500">Acesso removido</p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-            
-            <div className="flex justify-end gap-3 pt-2 border-t">
-              <Button
-                variant="outline"
-                onClick={() => setShowRefundModal(false)}
-              >
-                Fechar
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowRefundModal(false);
-                  window.location.href = '/admin-webhook-logs';
-                }}
-              >
-                Ver Todos os Logs
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
