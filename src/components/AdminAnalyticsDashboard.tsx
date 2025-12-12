@@ -103,6 +103,17 @@ const AdminAnalyticsDashboard = () => {
   });
   const [showRefundModal, setShowRefundModal] = useState(false);
   
+  // Top ranking item preview modal
+  const [selectedRankingItem, setSelectedRankingItem] = useState<{
+    type: 'prompt' | 'arte';
+    title: string;
+    imageUrl: string | null;
+    prompt?: string;
+    category?: string;
+    canvaLink?: string;
+    driveLink?: string;
+  } | null>(null);
+  
   // Abandoned checkouts stats
   const [abandonedCheckoutsStats, setAbandonedCheckoutsStats] = useState({
     total: 0,
@@ -849,6 +860,83 @@ const AdminAnalyticsDashboard = () => {
     setRefreshKey(prev => prev + 1);
   };
 
+  // Fetch ranking item details for preview modal
+  const handleRankingItemClick = async (title: string, type: 'prompt' | 'arte') => {
+    if (type === 'prompt') {
+      // Try admin_prompts first
+      const { data: adminPrompt } = await supabase
+        .from("admin_prompts")
+        .select("title, image_url, prompt, category")
+        .eq("title", title)
+        .maybeSingle();
+      
+      if (adminPrompt) {
+        setSelectedRankingItem({
+          type: 'prompt',
+          title: adminPrompt.title,
+          imageUrl: adminPrompt.image_url,
+          prompt: adminPrompt.prompt,
+          category: adminPrompt.category
+        });
+        return;
+      }
+      
+      // Try partner_prompts
+      const { data: partnerPrompt } = await supabase
+        .from("partner_prompts")
+        .select("title, image_url, prompt, category")
+        .eq("title", title)
+        .maybeSingle();
+      
+      if (partnerPrompt) {
+        setSelectedRankingItem({
+          type: 'prompt',
+          title: partnerPrompt.title,
+          imageUrl: partnerPrompt.image_url,
+          prompt: partnerPrompt.prompt,
+          category: partnerPrompt.category
+        });
+      }
+    } else {
+      // Try admin_artes first
+      const { data: adminArte } = await supabase
+        .from("admin_artes")
+        .select("title, image_url, category, canva_link, drive_link")
+        .eq("title", title)
+        .maybeSingle();
+      
+      if (adminArte) {
+        setSelectedRankingItem({
+          type: 'arte',
+          title: adminArte.title,
+          imageUrl: adminArte.image_url,
+          category: adminArte.category,
+          canvaLink: adminArte.canva_link || undefined,
+          driveLink: adminArte.drive_link || undefined
+        });
+        return;
+      }
+      
+      // Try partner_artes
+      const { data: partnerArte } = await supabase
+        .from("partner_artes")
+        .select("title, image_url, category, canva_link, drive_link")
+        .eq("title", title)
+        .maybeSingle();
+      
+      if (partnerArte) {
+        setSelectedRankingItem({
+          type: 'arte',
+          title: partnerArte.title,
+          imageUrl: partnerArte.image_url,
+          category: partnerArte.category,
+          canvaLink: partnerArte.canva_link || undefined,
+          driveLink: partnerArte.drive_link || undefined
+        });
+      }
+    }
+  };
+
   const filterOptions: { value: DateFilter; label: string }[] = [
     { value: 1, label: "Hoje" },
     { value: "yesterday", label: "Ontem" },
@@ -1071,10 +1159,14 @@ const AdminAnalyticsDashboard = () => {
                 ) : (
                   <ul className="space-y-2 overflow-y-auto flex-1">
                     {(topRankingViewMode === 'prompts' ? topPrompts : topArtes).map((item, index) => (
-                      <li key={item.prompt_title} className="flex items-center justify-between text-sm">
+                      <li 
+                        key={item.prompt_title} 
+                        className="flex items-center justify-between text-sm cursor-pointer hover:bg-muted/50 rounded-md px-2 py-1 -mx-2 transition-colors"
+                        onClick={() => handleRankingItemClick(item.prompt_title, topRankingViewMode === 'prompts' ? 'prompt' : 'arte')}
+                      >
                         <span className="flex items-center gap-2 truncate">
                           <span className="font-bold text-primary">{index + 1}.</span>
-                          <span className="truncate text-foreground">{item.prompt_title}</span>
+                          <span className="truncate text-foreground hover:underline">{item.prompt_title}</span>
                         </span>
                         <span className="text-muted-foreground font-medium ml-2">{item.click_count}</span>
                       </li>
@@ -1657,6 +1749,71 @@ const AdminAnalyticsDashboard = () => {
                   ))}
                 </div>
               </ScrollArea>
+            </DialogContent>
+          </Dialog>
+
+          {/* Ranking Item Preview Modal */}
+          <Dialog open={!!selectedRankingItem} onOpenChange={(open) => !open && setSelectedRankingItem(null)}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="text-lg">
+                  {selectedRankingItem?.type === 'prompt' ? 'Visualizar Prompt' : 'Visualizar Arte'}
+                </DialogTitle>
+              </DialogHeader>
+              {selectedRankingItem && (
+                <div className="space-y-4">
+                  {selectedRankingItem.imageUrl && (
+                    <div className="relative w-full aspect-square max-h-[300px] rounded-lg overflow-hidden bg-muted">
+                      <img 
+                        src={selectedRankingItem.imageUrl} 
+                        alt={selectedRankingItem.title}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+                  
+                  <div>
+                    <h3 className="font-semibold text-foreground text-lg">{selectedRankingItem.title}</h3>
+                    {selectedRankingItem.category && (
+                      <span className="inline-block mt-1 text-xs bg-primary/20 text-primary px-2 py-1 rounded">
+                        {selectedRankingItem.category}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {selectedRankingItem.type === 'prompt' && selectedRankingItem.prompt && (
+                    <div className="bg-secondary/50 rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Prompt:</p>
+                      <p className="text-sm text-foreground whitespace-pre-wrap">{selectedRankingItem.prompt}</p>
+                    </div>
+                  )}
+                  
+                  {selectedRankingItem.type === 'arte' && (
+                    <div className="flex gap-2">
+                      {selectedRankingItem.canvaLink && (
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          style={{ backgroundColor: '#00C4CC' }}
+                          onClick={() => window.open(selectedRankingItem.canvaLink, '_blank')}
+                        >
+                          Abrir no Canva
+                        </Button>
+                      )}
+                      {selectedRankingItem.driveLink && (
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          style={{ backgroundColor: '#31A8FF' }}
+                          onClick={() => window.open(selectedRankingItem.driveLink, '_blank')}
+                        >
+                          Baixar PSD
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </>
