@@ -75,15 +75,6 @@ const AdminUploadArtes = () => {
     body: string;
     url: string | null;
   } | null>(null);
-  const [selectedEmailTemplate, setSelectedEmailTemplate] = useState<{
-    id: string;
-    name: string;
-    title: string;
-    subject: string;
-    content: string;
-    sender_name: string;
-    sender_email: string;
-  } | null>(null);
   const [isSendingAnnouncement, setIsSendingAnnouncement] = useState(false);
   const [showAnnouncementPreview, setShowAnnouncementPreview] = useState(false);
 
@@ -109,8 +100,8 @@ const AdminUploadArtes = () => {
   };
 
   const handleOpenAnnouncementPreview = () => {
-    if (!selectedPushTemplate || !selectedEmailTemplate) {
-      toast.error("Configure os modelos de Push e Email primeiro");
+    if (!selectedPushTemplate) {
+      toast.error("Configure o modelo de Push primeiro");
       setShowAnnouncementConfig(true);
       return;
     }
@@ -118,7 +109,7 @@ const AdminUploadArtes = () => {
   };
 
   const handleConfirmSendAnnouncement = async () => {
-    if (!selectedPushTemplate || !selectedEmailTemplate) return;
+    if (!selectedPushTemplate) return;
 
     setIsSendingAnnouncement(true);
     try {
@@ -127,23 +118,16 @@ const AdminUploadArtes = () => {
           push_title: selectedPushTemplate.title,
           push_body: selectedPushTemplate.body,
           push_url: selectedPushTemplate.url || "/biblioteca-artes",
-          email_title: selectedEmailTemplate.title,
-          email_subject: selectedEmailTemplate.subject,
-          email_content: selectedEmailTemplate.content,
-          email_sender_name: selectedEmailTemplate.sender_name,
-          email_sender_email: selectedEmailTemplate.sender_email,
         },
       });
 
       if (error) throw error;
 
       setShowAnnouncementPreview(false);
-      toast.success(
-        `Anúncio enviado! Push: ${data.push?.sent || 0} enviados. Email: ${data.email?.sent || 0} enviados.`
-      );
+      toast.success(`Push enviado para ${data.push?.sent || 0} usuários!`);
     } catch (error) {
       console.error("Error sending announcement:", error);
-      toast.error("Erro ao enviar anúncio");
+      toast.error("Erro ao enviar push notification");
     } finally {
       setIsSendingAnnouncement(false);
     }
@@ -676,16 +660,13 @@ const AdminUploadArtes = () => {
         open={showAnnouncementConfig}
         onOpenChange={setShowAnnouncementConfig}
         onSelectPushTemplate={setSelectedPushTemplate}
-        onSelectEmailTemplate={setSelectedEmailTemplate}
         selectedPushTemplate={selectedPushTemplate}
-        selectedEmailTemplate={selectedEmailTemplate}
       />
 
       <AnnouncementPreviewModal
         open={showAnnouncementPreview}
         onOpenChange={setShowAnnouncementPreview}
         pushTemplate={selectedPushTemplate}
-        emailTemplate={selectedEmailTemplate}
         onConfirmSend={handleConfirmSendAnnouncement}
         isSending={isSendingAnnouncement}
       />
