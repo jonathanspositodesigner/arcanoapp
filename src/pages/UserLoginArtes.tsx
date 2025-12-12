@@ -1,21 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, EyeOff, ArrowLeft, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, AlertCircle, KeyRound, Mail, Lock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const UserLoginArtes = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
   const navigate = useNavigate();
-
-  // No auto-redirect - user may want to switch accounts
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,10 +29,21 @@ const UserLoginArtes = () => {
       });
 
       if (error) {
+        const newAttempts = failedAttempts + 1;
+        setFailedAttempts(newAttempts);
         toast.error("Email ou senha incorretos");
+        
+        // Show modal after 2 failed attempts
+        if (newAttempts >= 2) {
+          setShowFirstAccessModal(true);
+        }
+        
         setIsLoading(false);
         return;
       }
+
+      // Reset attempts on successful login
+      setFailedAttempts(0);
 
       if (data.user) {
         // Check if first login (password not changed)
@@ -57,8 +69,65 @@ const UserLoginArtes = () => {
     }
   };
 
+  const displayEmail = email.trim() || "seuemail@exemplo.com";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
+      {/* First Access Modal */}
+      <Dialog open={showFirstAccessModal} onOpenChange={setShowFirstAccessModal}>
+        <DialogContent className="max-w-md bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a] border-2 border-amber-500/50 p-0 overflow-hidden">
+          <div className="bg-amber-500/20 p-6 text-center border-b border-amber-500/30">
+            <div className="w-20 h-20 mx-auto bg-amber-500/30 rounded-full flex items-center justify-center mb-4 animate-pulse">
+              <KeyRound className="w-10 h-10 text-amber-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-amber-400">
+              🔑 É o seu PRIMEIRO ACESSO?
+            </h2>
+          </div>
+          
+          <div className="p-6 space-y-4">
+            <p className="text-white/90 text-center text-lg">
+              No primeiro acesso, seu <strong className="text-amber-400">login e senha</strong> são o <strong className="text-amber-400">MESMO EMAIL</strong> que você usou na compra pela Greenn!
+            </p>
+            
+            <div className="bg-[#0f0f1a] rounded-xl p-5 border-2 border-amber-500/40 space-y-3">
+              <div className="flex items-center gap-3 text-white">
+                <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-white/60">Email:</p>
+                  <p className="font-mono text-amber-300 text-sm break-all">{displayEmail}</p>
+                </div>
+              </div>
+              
+              <div className="h-px bg-amber-500/30" />
+              
+              <div className="flex items-center gap-3 text-white">
+                <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-white/60">Senha:</p>
+                  <p className="font-mono text-amber-300 text-sm break-all">{displayEmail}</p>
+                </div>
+              </div>
+            </div>
+            
+            <p className="text-white/60 text-center text-sm">
+              Digite o <strong className="text-amber-400">mesmo email</strong> nos dois campos!
+            </p>
+            
+            <Button
+              onClick={() => setShowFirstAccessModal(false)}
+              className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-6 text-lg"
+            >
+              ENTENDI, VOU TENTAR! ✨
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
         <CardHeader className="text-center">
           <Button
