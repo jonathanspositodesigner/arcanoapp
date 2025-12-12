@@ -54,21 +54,31 @@ const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: 
       setLoading(true);
       setError(false);
       
-      // Extract bucket and path from the URL
+      // Parse URL to extract bucket and path
+      // Format: https://xxx.supabase.co/storage/v1/object/public/bucket-name/filename.ext
       let bucket = '';
-      let path = imageUrl;
+      let path = '';
       
-      // Try to extract bucket from URL patterns
-      const bucketMatch = imageUrl.match(/\/storage\/v1\/object\/(?:public|sign)\/([^/]+)\/(.+)/);
-      if (bucketMatch) {
-        bucket = bucketMatch[1];
-        path = bucketMatch[2];
-      } else {
-        // Fallback bucket based on type
+      try {
+        const url = new URL(imageUrl);
+        const pathParts = url.pathname.split('/');
+        // Path format: /storage/v1/object/public/bucket-name/filename
+        const publicIndex = pathParts.indexOf('public');
+        if (publicIndex !== -1 && pathParts.length > publicIndex + 2) {
+          bucket = pathParts[publicIndex + 1];
+          path = pathParts.slice(publicIndex + 2).join('/');
+        }
+      } catch {
+        // Fallback: use defaults
         bucket = type === 'prompt' ? 'admin-prompts' : 'admin-artes';
-        // Try other URL patterns
-        const pathMatch = imageUrl.match(/\/object\/public\/[^/]+\/(.+)/);
-        if (pathMatch) path = pathMatch[1];
+        path = imageUrl.split('/').pop() || '';
+      }
+
+      if (!bucket || !path) {
+        console.log('Could not parse image URL:', imageUrl);
+        setFinalUrl(imageUrl);
+        setLoading(false);
+        return;
       }
 
       try {
@@ -76,16 +86,12 @@ const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: 
           body: { bucket, path }
         });
         
-        if (fnError) {
-          console.log('Signed URL error, using original:', fnError);
+        if (fnError || !data?.signedUrl) {
           setFinalUrl(imageUrl);
-        } else if (data?.signedUrl) {
-          setFinalUrl(data.signedUrl);
         } else {
-          setFinalUrl(imageUrl);
+          setFinalUrl(data.signedUrl);
         }
-      } catch (err) {
-        console.log('Fetch error, using original:', err);
+      } catch {
         setFinalUrl(imageUrl);
       }
       setLoading(false);
