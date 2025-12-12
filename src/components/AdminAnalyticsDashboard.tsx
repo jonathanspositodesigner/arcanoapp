@@ -1563,7 +1563,7 @@ const AdminAnalyticsDashboard = () => {
               </div>
             </GridCard>
 
-            {/* Conversion Rate - SIMPLIFIED (no visitor count) */}
+            {/* Conversion Rate */}
             <GridCard key="conversion" isEditing={isEditing} className="border-2 border-green-500/30">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
@@ -1575,15 +1575,21 @@ const AdminAnalyticsDashboard = () => {
                 
                 <div className="text-center space-y-3 flex-1 flex flex-col justify-center">
                   <p className="text-4xl font-bold text-green-500">
-                    {conversionRate.buyers}
+                    {conversionRate.visitors > 0 ? `${conversionRate.rate.toFixed(1)}%` : '0%'}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    🛒 Compras via aplicativo
+                    Taxa de conversão no aplicativo
                   </p>
                   <div className="pt-2 border-t border-border">
-                    <p className="text-xs text-muted-foreground">
-                      ⚠️ Taxa de conversão indisponível
-                    </p>
+                    {conversionRate.visitors > 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        {conversionRate.buyers} vendas de {conversionRate.visitors} visitantes
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Nenhum visitante registrado no período
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
