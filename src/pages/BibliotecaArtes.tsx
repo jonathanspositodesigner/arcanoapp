@@ -271,8 +271,8 @@ const BibliotecaArtes = () => {
     }
     return null;
   };
-  const trackArteClick = async (arteId: string, arteTitle: string, isAdmin: boolean) => {
-    const sessionKey = `arte_clicked_${arteId}`;
+  const trackArteClick = async (arteId: string, arteTitle: string, isAdmin: boolean, clickType: 'canva' | 'psd' | 'download' = 'download') => {
+    const sessionKey = `arte_clicked_${arteId}_${clickType}`;
     if (sessionStorage.getItem(sessionKey)) {
       return false;
     }
@@ -280,7 +280,8 @@ const BibliotecaArtes = () => {
       await supabase.from('arte_clicks').insert({
         arte_id: arteId,
         arte_title: arteTitle,
-        is_admin_arte: isAdmin
+        is_admin_arte: isAdmin,
+        click_type: clickType
       });
       sessionStorage.setItem(sessionKey, 'true');
       return true;
@@ -1205,14 +1206,14 @@ const BibliotecaArtes = () => {
 
                 {hasAccess ? <div className="flex flex-col gap-2">
                     {selectedArte.canvaLink && <Button onClick={async () => {
-                        await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive);
+                        await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive, 'canva');
                         window.open(selectedArte.canvaLink, '_blank');
                       }} className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white">
                         <Download className="h-4 w-4 mr-2" />
                         Abrir no Canva
                       </Button>}
                     {selectedArte.driveLink && <Button onClick={async () => {
-                        await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive);
+                        await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive, 'psd');
                         window.open(selectedArte.driveLink, '_blank');
                       }} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
                         <Download className="h-4 w-4 mr-2" />
