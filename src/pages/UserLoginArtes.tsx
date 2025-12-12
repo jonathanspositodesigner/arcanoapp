@@ -29,13 +29,27 @@ const UserLoginArtes = () => {
       });
 
       if (error) {
-        const newAttempts = failedAttempts + 1;
-        setFailedAttempts(newAttempts);
-        toast.error("Email ou senha incorretos");
-        
-        // Show modal after 2 failed attempts
-        if (newAttempts >= 2) {
+        // Check if this email belongs to a first-time user (password_changed = false)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('password_changed')
+          .eq('email', email.trim().toLowerCase())
+          .maybeSingle();
+
+        if (profile && profile.password_changed === false) {
+          // First-time user with wrong password - show modal immediately
+          toast.error("Este é seu primeiro acesso! Use seu email como senha.");
           setShowFirstAccessModal(true);
+        } else {
+          // Regular wrong password or email not found
+          const newAttempts = failedAttempts + 1;
+          setFailedAttempts(newAttempts);
+          toast.error("Email ou senha incorretos");
+          
+          // Show modal after 2 failed attempts as fallback
+          if (newAttempts >= 2) {
+            setShowFirstAccessModal(true);
+          }
         }
         
         setIsLoading(false);
