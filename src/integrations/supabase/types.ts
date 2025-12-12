@@ -1862,6 +1862,93 @@ export type Database = {
         }
         Relationships: []
       }
+      welcome_email_logs: {
+        Row: {
+          click_count: number | null
+          clicked_at: string | null
+          email: string
+          error_message: string | null
+          id: string
+          name: string | null
+          open_count: number | null
+          opened_at: string | null
+          platform: string
+          product_info: string | null
+          sent_at: string
+          status: string | null
+          template_used: string | null
+          tracking_id: string | null
+        }
+        Insert: {
+          click_count?: number | null
+          clicked_at?: string | null
+          email: string
+          error_message?: string | null
+          id?: string
+          name?: string | null
+          open_count?: number | null
+          opened_at?: string | null
+          platform: string
+          product_info?: string | null
+          sent_at?: string
+          status?: string | null
+          template_used?: string | null
+          tracking_id?: string | null
+        }
+        Update: {
+          click_count?: number | null
+          clicked_at?: string | null
+          email?: string
+          error_message?: string | null
+          id?: string
+          name?: string | null
+          open_count?: number | null
+          opened_at?: string | null
+          platform?: string
+          product_info?: string | null
+          sent_at?: string
+          status?: string | null
+          template_used?: string | null
+          tracking_id?: string | null
+        }
+        Relationships: []
+      }
+      welcome_email_templates: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          platform: string
+          sender_email: string
+          sender_name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          platform: string
+          sender_email?: string
+          sender_name?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          platform?: string
+          sender_email?: string
+          sender_name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

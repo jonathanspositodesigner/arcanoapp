@@ -79,18 +79,68 @@ async function findUserByEmail(supabase: any, email: string): Promise<string | n
   return null;
 }
 
-// Send welcome email to new premium users via SendPulse
-async function sendWelcomeEmail(email: string, name: string, planType: string): Promise<void> {
+// Send welcome email to new premium users via SendPulse with tracking
+async function sendWelcomeEmail(supabase: any, email: string, name: string, planType: string): Promise<void> {
   try {
     console.log(`📧 Sending welcome email to: ${email}`)
     
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
     const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")
     
     if (!clientId || !clientSecret) {
       console.error("SendPulse credentials not configured, skipping welcome email")
       return
     }
+
+    // Fetch template from database
+    const { data: template } = await supabase
+      .from('welcome_email_templates')
+      .select('*')
+      .eq('platform', 'promptverso')
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (!template) {
+      console.log('No active template found for promptverso, using default')
+    }
+
+    // Parse template content
+    let templateContent = {
+      heading: 'Bem-vindo ao ArcanoApp!',
+      intro: 'Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de prompts de IA.',
+      button_text: 'Acessar Plataforma',
+      footer: 'Se tiver qualquer dúvida, responda este email que iremos te ajudar!'
+    }
+    
+    if (template?.content) {
+      try {
+        templateContent = JSON.parse(template.content)
+      } catch (e) {
+        console.log('Error parsing template content, using default')
+      }
+    }
+
+    const subject = template?.subject || '🎉 Bem-vindo ao ArcanoApp - Seu acesso está pronto!'
+    const senderName = template?.sender_name || 'ArcanoApp'
+    const senderEmail = template?.sender_email || 'contato@voxvisual.com.br'
+
+    // Generate unique tracking ID
+    const trackingId = crypto.randomUUID()
+    
+    // Get plan display name
+    const planNames: Record<string, string> = {
+      'arcano_basico': 'Arcano Básico',
+      'arcano_pro': 'Arcano Pro',
+      'arcano_unlimited': 'Arcano IA Unlimited'
+    }
+    const planDisplayName = planNames[planType] || planType
+
+    // Build tracking URLs
+    const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
+    const openTrackingPixel = `${trackingBaseUrl}?id=${trackingId}&action=open`
+    const platformUrl = 'https://arcanolab.voxvisual.com.br/login'
+    const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
 
     // Get SendPulse access token
     const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
@@ -111,15 +161,7 @@ async function sendWelcomeEmail(email: string, name: string, planType: string): 
     const tokenData = await tokenResponse.json()
     const accessToken = tokenData.access_token
 
-    // Get plan display name
-    const planNames: Record<string, string> = {
-      'arcano_basico': 'Arcano Básico',
-      'arcano_pro': 'Arcano Pro',
-      'arcano_unlimited': 'Arcano IA Unlimited'
-    }
-    const planDisplayName = planNames[planType] || planType
-
-    // Build welcome email HTML
+    // Build welcome email HTML with tracking
     const welcomeHtml = `
 <!DOCTYPE html>
 <html>
@@ -146,12 +188,12 @@ async function sendWelcomeEmail(email: string, name: string, planType: string): 
 <body>
   <div class="container">
     <div class="logo">
-      <h1>🎉 Bem-vindo ao ArcanoApp!</h1>
+      <h1>🎉 ${templateContent.heading}</h1>
     </div>
     
     <p>Olá${name ? ` <strong>${name}</strong>` : ''}!</p>
     
-    <p>Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de prompts de IA.</p>
+    <p>${templateContent.intro}</p>
     
     <div style="text-align: center;">
       <span class="plan-badge">✨ ${planDisplayName}</span>
@@ -166,8 +208,8 @@ async function sendWelcomeEmail(email: string, name: string, planType: string): 
       </div>
     </div>
     
-    <a href="https://arcanolab.voxvisual.com.br/login" class="cta-button">
-      🚀 Acessar Plataforma
+    <a href="${clickTrackingUrl}" class="cta-button">
+      🚀 ${templateContent.button_text}
     </a>
     
     <p style="text-align: center; color: #666;">
@@ -175,10 +217,11 @@ async function sendWelcomeEmail(email: string, name: string, planType: string): 
     </p>
     
     <div class="footer">
-      <p>Se tiver qualquer dúvida, responda este email que iremos te ajudar!</p>
+      <p>${templateContent.footer}</p>
       <p style="margin-top: 8px;">© ArcanoApp - Biblioteca de Prompts de IA</p>
     </div>
   </div>
+  <img src="${openTrackingPixel}" width="1" height="1" style="display:none" alt="" />
 </body>
 </html>
 `
@@ -196,11 +239,11 @@ async function sendWelcomeEmail(email: string, name: string, planType: string): 
       body: JSON.stringify({
         email: {
           html: htmlBase64,
-          text: `Bem-vindo ao ArcanoApp! Seu acesso está pronto. Email: ${email}, Senha: ${email}. Acesse: https://arcanolab.voxvisual.com.br/login`,
-          subject: "🎉 Bem-vindo ao ArcanoApp - Seu acesso está pronto!",
+          text: `${templateContent.heading} Seu acesso está pronto. Email: ${email}, Senha: ${email}. Acesse: ${platformUrl}`,
+          subject: subject,
           from: {
-            name: "ArcanoApp",
-            email: "contato@voxvisual.com.br",
+            name: senderName,
+            email: senderEmail,
           },
           to: [{ email, name: name || "" }],
         },
@@ -209,8 +252,20 @@ async function sendWelcomeEmail(email: string, name: string, planType: string): 
 
     const result = await emailResponse.json()
     
+    // Log the email send
+    await supabase.from('welcome_email_logs').insert({
+      email,
+      name,
+      platform: 'promptverso',
+      tracking_id: trackingId,
+      template_used: template?.id || 'default',
+      product_info: planDisplayName,
+      status: result.result === true ? 'sent' : 'failed',
+      error_message: result.result !== true ? JSON.stringify(result) : null
+    })
+    
     if (result.result === true) {
-      console.log(`✅ Welcome email sent successfully to ${email}`)
+      console.log(`✅ Welcome email sent successfully to ${email} (tracking: ${trackingId})`)
     } else {
       console.error(`❌ Failed to send welcome email: ${JSON.stringify(result)}`)
     }
@@ -501,8 +556,8 @@ Deno.serve(async (req) => {
 
       console.log(`Premium activated for ${email} until ${expiresAt.toISOString()}`)
       
-      // Send welcome email to new user
-      await sendWelcomeEmail(email, clientName, planType)
+      // Send welcome email to new user with tracking
+      await sendWelcomeEmail(supabase, email, clientName, planType)
       
       // Update log with success
       if (logId) {

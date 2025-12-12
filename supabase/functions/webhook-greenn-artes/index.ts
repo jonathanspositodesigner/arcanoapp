@@ -146,18 +146,60 @@ async function addToBlacklist(supabase: any, email: string, reason: string): Pro
   }
 }
 
-// Send welcome email to new pack purchasers via SendPulse
-async function sendWelcomeEmail(email: string, name: string, packInfo: string): Promise<void> {
+// Send welcome email to new pack purchasers via SendPulse with tracking
+async function sendWelcomeEmail(supabase: any, email: string, name: string, packInfo: string): Promise<void> {
   try {
     console.log(`📧 Sending welcome email to: ${email}`)
     
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
     const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")
     
     if (!clientId || !clientSecret) {
       console.error("SendPulse credentials not configured, skipping welcome email")
       return
     }
+
+    // Fetch template from database
+    const { data: template } = await supabase
+      .from('welcome_email_templates')
+      .select('*')
+      .eq('platform', 'artes')
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (!template) {
+      console.log('No active template found for artes, using default')
+    }
+
+    // Parse template content
+    let templateContent = {
+      heading: 'Bem-vindo à Biblioteca de Artes Arcanas!',
+      intro: 'Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de artes editáveis.',
+      button_text: 'Acessar Plataforma',
+      footer: 'Se tiver qualquer dúvida, responda este email que iremos te ajudar!'
+    }
+    
+    if (template?.content) {
+      try {
+        templateContent = JSON.parse(template.content)
+      } catch (e) {
+        console.log('Error parsing template content, using default')
+      }
+    }
+
+    const subject = template?.subject || '🎨 Bem-vindo à Biblioteca de Artes Arcanas - Seu acesso está pronto!'
+    const senderName = template?.sender_name || 'Biblioteca de Artes Arcanas'
+    const senderEmail = template?.sender_email || 'contato@voxvisual.com.br'
+
+    // Generate unique tracking ID
+    const trackingId = crypto.randomUUID()
+
+    // Build tracking URLs
+    const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
+    const openTrackingPixel = `${trackingBaseUrl}?id=${trackingId}&action=open`
+    const platformUrl = 'https://arcanolab.voxvisual.com.br/login-artes'
+    const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
 
     // Get SendPulse access token
     const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
@@ -178,7 +220,7 @@ async function sendWelcomeEmail(email: string, name: string, packInfo: string): 
     const tokenData = await tokenResponse.json()
     const accessToken = tokenData.access_token
 
-    // Build welcome email HTML
+    // Build welcome email HTML with tracking
     const welcomeHtml = `
 <!DOCTYPE html>
 <html>
@@ -205,12 +247,12 @@ async function sendWelcomeEmail(email: string, name: string, packInfo: string): 
 <body>
   <div class="container">
     <div class="logo">
-      <h1>🎨 Bem-vindo à Biblioteca de Artes Arcanas!</h1>
+      <h1>🎨 ${templateContent.heading}</h1>
     </div>
     
     <p>Olá${name ? ` <strong>${name}</strong>` : ''}!</p>
     
-    <p>Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de artes editáveis.</p>
+    <p>${templateContent.intro}</p>
     
     <div style="text-align: center;">
       <span class="pack-badge">✨ ${packInfo}</span>
@@ -225,8 +267,8 @@ async function sendWelcomeEmail(email: string, name: string, packInfo: string): 
       </div>
     </div>
     
-    <a href="https://arcanolab.voxvisual.com.br/login-artes" class="cta-button">
-      🚀 Acessar Plataforma
+    <a href="${clickTrackingUrl}" class="cta-button">
+      🚀 ${templateContent.button_text}
     </a>
     
     <p style="text-align: center; color: #666;">
@@ -234,10 +276,11 @@ async function sendWelcomeEmail(email: string, name: string, packInfo: string): 
     </p>
     
     <div class="footer">
-      <p>Se tiver qualquer dúvida, responda este email que iremos te ajudar!</p>
+      <p>${templateContent.footer}</p>
       <p style="margin-top: 8px;">© Biblioteca de Artes Arcanas</p>
     </div>
   </div>
+  <img src="${openTrackingPixel}" width="1" height="1" style="display:none" alt="" />
 </body>
 </html>
 `
@@ -255,11 +298,11 @@ async function sendWelcomeEmail(email: string, name: string, packInfo: string): 
       body: JSON.stringify({
         email: {
           html: htmlBase64,
-          text: `Bem-vindo à Biblioteca de Artes Arcanas! Seu acesso está pronto. Email: ${email}, Senha: ${email}. Acesse: https://arcanolab.voxvisual.com.br/login-artes`,
-          subject: "🎨 Bem-vindo à Biblioteca de Artes Arcanas - Seu acesso está pronto!",
+          text: `${templateContent.heading} Seu acesso está pronto. Email: ${email}, Senha: ${email}. Acesse: ${platformUrl}`,
+          subject: subject,
           from: {
-            name: "Biblioteca de Artes Arcanas",
-            email: "contato@voxvisual.com.br",
+            name: senderName,
+            email: senderEmail,
           },
           to: [{ email, name: name || "" }],
         },
@@ -268,8 +311,20 @@ async function sendWelcomeEmail(email: string, name: string, packInfo: string): 
 
     const result = await emailResponse.json()
     
+    // Log the email send
+    await supabase.from('welcome_email_logs').insert({
+      email,
+      name,
+      platform: 'artes',
+      tracking_id: trackingId,
+      template_used: template?.id || 'default',
+      product_info: packInfo,
+      status: result.result === true ? 'sent' : 'failed',
+      error_message: result.result !== true ? JSON.stringify(result) : null
+    })
+    
     if (result.result === true) {
-      console.log(`✅ Welcome email sent successfully to ${email}`)
+      console.log(`✅ Welcome email sent successfully to ${email} (tracking: ${trackingId})`)
     } else {
       console.error(`❌ Failed to send welcome email: ${JSON.stringify(result)}`)
     }
@@ -835,7 +890,7 @@ Deno.serve(async (req) => {
         console.log(`   Packs granted: ${processedPacks.join(', ')}`)
         
         // Send welcome email
-        await sendWelcomeEmail(email, clientName, `Promoção: ${promotionMapping.promotionSlug}`)
+        await sendWelcomeEmail(supabase, email, clientName, `Promoção: ${promotionMapping.promotionSlug}`)
         
         await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
         
@@ -867,7 +922,7 @@ Deno.serve(async (req) => {
         console.log(`✅ Pack access activated for ${email}: ${packMapping.packSlug} (${packMapping.accessType})`)
         
         // Send welcome email
-        await sendWelcomeEmail(email, clientName, `${packMapping.packSlug} (${packMapping.accessType})`)
+        await sendWelcomeEmail(supabase, email, clientName, `${packMapping.packSlug} (${packMapping.accessType})`)
         
         await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
         
