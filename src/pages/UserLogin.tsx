@@ -61,13 +61,29 @@ const UserLogin = () => {
       }
 
       // Check if this is first login (password equals email)
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('password_changed')
         .eq('id', data.user.id)
         .single();
 
-      if (!profile?.password_changed) {
+      // If profile doesn't exist or password not changed, force password change
+      if (profileError || !profile) {
+        // Create profile if it doesn't exist
+        await supabase
+          .from('profiles')
+          .upsert({
+            id: data.user.id,
+            email: data.user.email,
+            password_changed: false,
+          }, { onConflict: 'id' });
+        
+        toast.success("Primeiro acesso! Por favor, crie uma nova senha.");
+        navigate('/change-password');
+        return;
+      }
+
+      if (!profile.password_changed) {
         toast.success("Primeiro acesso! Por favor, crie uma nova senha.");
         navigate('/change-password');
         return;

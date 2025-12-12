@@ -13,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { 
   ArrowLeft, Plus, RefreshCw, Pencil, Trash2, Users, Crown, Clock, 
-  AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, MessageCircle
+  AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, MessageCircle, KeyRound
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import {
@@ -85,6 +85,7 @@ const AdminPremiumDashboard = () => {
   const [formGreennProductId, setFormGreennProductId] = useState("");
   const [formGreennContractId, setFormGreennContractId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   useEffect(() => {
     checkAdminAndFetch();
@@ -416,6 +417,45 @@ const AdminPremiumDashboard = () => {
     }
     const formattedPhone = phone.startsWith('55') ? phone : `55${phone}`;
     window.open(`https://api.whatsapp.com/send/?phone=${formattedPhone}&text&type=phone_number&app_absent=0`, '_blank');
+  };
+
+  const handleResetFirstPassword = async () => {
+    if (!selectedUser || !selectedUser.email) {
+      toast.error("Email do usuário não encontrado");
+      return;
+    }
+
+    if (!confirm(`Tem certeza que deseja redefinir a senha de ${selectedUser.name || selectedUser.email} para o email inicial?`)) {
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      // Call edge function to reset password to email
+      const response = await supabase.functions.invoke("update-user-password-artes", {
+        body: {
+          user_id: selectedUser.user_id,
+          new_password: selectedUser.email,
+        },
+      });
+
+      if (response.error) throw response.error;
+
+      // Set password_changed to false to force password change on next login
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ password_changed: false })
+        .eq("id", selectedUser.user_id);
+
+      if (profileError) throw profileError;
+
+      toast.success("Senha redefinida! O usuário precisará trocar a senha no próximo login.");
+    } catch (error: any) {
+      console.error("Error resetting password:", error);
+      toast.error(error.message || "Erro ao redefinir senha");
+    } finally {
+      setIsResettingPassword(false);
+    }
   };
 
   const totalUsers = premiumUsers.length;
@@ -945,6 +985,23 @@ const AdminPremiumDashboard = () => {
                   value={formGreennContractId}
                   onChange={(e) => setFormGreennContractId(e.target.value)}
                 />
+              </div>
+
+              {/* Reset Password Button */}
+              <div className="pt-4 border-t border-border">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-orange-500 text-orange-600 hover:bg-orange-50"
+                  onClick={handleResetFirstPassword}
+                  disabled={isResettingPassword}
+                >
+                  <KeyRound className="h-4 w-4 mr-2" />
+                  {isResettingPassword ? "Redefinindo..." : "Redefinir Primeira Senha"}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Redefine a senha para o email e força troca no próximo login
+                </p>
               </div>
             </div>
             <DialogFooter>
