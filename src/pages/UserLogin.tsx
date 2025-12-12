@@ -181,12 +181,33 @@ const UserLogin = () => {
       
       if (data.user) {
         // Create profile with password_changed = true (user chose their own password)
-        await supabase.from('profiles').upsert({
+        const { error: profileError } = await supabase.from('profiles').upsert({
           id: data.user.id,
           email: signupEmail.trim().toLowerCase(),
           name: signupName.trim() || null,
           password_changed: true,
         }, { onConflict: 'id' });
+        
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+        }
+        
+        // Verify session is active, if not login manually
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          // Auto-confirm might be off or session not established - login manually
+          const { error: loginError } = await supabase.auth.signInWithPassword({
+            email: signupEmail.trim(),
+            password: signupPassword,
+          });
+          
+          if (loginError) {
+            toast.success("Conta criada! Faça login para continuar.");
+            setShowSignupModal(false);
+            return;
+          }
+        }
         
         toast.success("Conta criada com sucesso! Você está logado.");
         setShowSignupModal(false);
