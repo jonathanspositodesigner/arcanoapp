@@ -4,7 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart, Bell } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart, Bell, UserCheck, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -109,6 +110,12 @@ const BibliotecaArtes = () => {
   const [showCursoModal, setShowCursoModal] = useState(false);
   const [selectedCurso, setSelectedCurso] = useState<PackItem | null>(null);
   const isAppInstalled = useIsAppInstalled();
+  
+  // First access modal states
+  const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
+  const [firstAccessEmail, setFirstAccessEmail] = useState("");
+  const [firstAccessLoading, setFirstAccessLoading] = useState(false);
+  const [showEmailNotFoundModal, setShowEmailNotFoundModal] = useState(false);
   useEffect(() => {
     fetchArtes();
     fetchCategories();
@@ -122,6 +129,64 @@ const BibliotecaArtes = () => {
     });
     setDbPacks((data || []) as PackItem[]);
   };
+
+  // Handle first access email check
+  const handleFirstAccessCheck = async () => {
+    if (!firstAccessEmail.trim()) {
+      toast.error("Digite seu email");
+      return;
+    }
+
+    setFirstAccessLoading(true);
+    try {
+      const { data: profileCheck } = await supabase
+        .rpc('check_profile_exists', { check_email: firstAccessEmail.trim() });
+
+      const profileExists = profileCheck?.[0]?.exists_in_db || false;
+      const passwordChanged = profileCheck?.[0]?.password_changed || false;
+
+      if (!profileExists) {
+        // Email não existe - mostrar modal de erro
+        setShowFirstAccessModal(false);
+        setShowEmailNotFoundModal(true);
+        return;
+      }
+
+      if (profileExists && !passwordChanged) {
+        // PRIMEIRO ACESSO: fazer login com email/email e ir para change-password
+        const { error } = await supabase.auth.signInWithPassword({
+          email: firstAccessEmail.trim(),
+          password: firstAccessEmail.trim()
+        });
+
+        if (!error) {
+          setShowFirstAccessModal(false);
+          setFirstAccessEmail("");
+          toast.success("Bem-vindo! Agora defina sua nova senha.");
+          navigate('/change-password-artes');
+        } else {
+          toast.error("Erro ao acessar. Tente fazer login normalmente.");
+          setShowFirstAccessModal(false);
+          navigate('/login-artes');
+        }
+        return;
+      }
+
+      if (profileExists && passwordChanged) {
+        // Já mudou senha - ir para tela de login normal
+        toast.info("Você já definiu sua senha. Faça login normalmente.");
+        setShowFirstAccessModal(false);
+        setFirstAccessEmail("");
+        navigate('/login-artes');
+      }
+    } catch (error) {
+      console.error("Error checking profile:", error);
+      toast.error("Erro ao verificar email. Tente novamente.");
+    } finally {
+      setFirstAccessLoading(false);
+    }
+  };
+
   const fetchCategories = async () => {
     const {
       data
@@ -573,6 +638,14 @@ const BibliotecaArtes = () => {
           <div className="flex items-center gap-3">
             {!user && (
               <>
+                <Button 
+                  onClick={() => setShowFirstAccessModal(true)}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white animate-pulse"
+                  size="sm"
+                >
+                  <UserCheck className="h-4 w-4 mr-2" />
+                  Já é cliente? Primeiro acesso aqui!
+                </Button>
                 <Button onClick={() => navigate("/login-artes")} variant="ghost" size="sm">
                   <LogIn className="h-4 w-4 mr-2" />
                   Login
@@ -625,6 +698,14 @@ const BibliotecaArtes = () => {
           <div className="flex items-center gap-2">
             {!user && (
               <>
+                <Button 
+                  onClick={() => setShowFirstAccessModal(true)}
+                  size="sm" 
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-xs animate-pulse"
+                >
+                  <UserCheck className="h-4 w-4 mr-1" />
+                  1º Acesso
+                </Button>
                 <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
                   <LogIn className="h-4 w-4 mr-1" />
                   Login
@@ -1396,6 +1477,90 @@ const BibliotecaArtes = () => {
 
       {/* Push Notification Prompt */}
       <PushNotificationPrompt />
+
+      {/* First Access Modal */}
+      <Dialog open={showFirstAccessModal} onOpenChange={setShowFirstAccessModal}>
+        <DialogContent className="max-w-[340px] sm:max-w-md">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto">
+              <UserCheck className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Primeiro Acesso</h2>
+              <p className="text-muted-foreground mt-2 text-sm">
+                Comprou um pack? Coloque seu email de compra aqui para definir sua senha
+              </p>
+            </div>
+            <div className="space-y-3">
+              <Input
+                type="email"
+                placeholder="Digite seu email de compra"
+                value={firstAccessEmail}
+                onChange={(e) => setFirstAccessEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleFirstAccessCheck()}
+                className="w-full"
+              />
+              <Button 
+                onClick={handleFirstAccessCheck}
+                disabled={firstAccessLoading}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+              >
+                {firstAccessLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Verificando...
+                  </>
+                ) : (
+                  <>
+                    <ChevronRight className="h-4 w-4 mr-2" />
+                    Verificar Email
+                  </>
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Não é cliente ainda? <button onClick={() => { setShowFirstAccessModal(false); navigate('/planos-artes'); }} className="text-primary underline">Veja nossos packs</button>
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Not Found Modal */}
+      <Dialog open={showEmailNotFoundModal} onOpenChange={setShowEmailNotFoundModal}>
+        <DialogContent className="max-w-[340px] sm:max-w-md">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
+              <AlertTriangle className="h-8 w-8 text-red-500" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Email não encontrado</h2>
+              <p className="text-muted-foreground mt-2 text-sm">
+                O email <strong className="text-foreground">{firstAccessEmail}</strong> não está cadastrado no sistema.
+              </p>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Verifique se digitou corretamente ou crie uma nova conta.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button 
+                onClick={() => { setShowEmailNotFoundModal(false); setShowFirstAccessModal(true); }}
+                variant="outline"
+                className="w-full"
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Tentar outro email
+              </Button>
+              <Button 
+                onClick={() => { setShowEmailNotFoundModal(false); setFirstAccessEmail(""); navigate('/login-artes'); }}
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Criar Conta
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>;
 };
 export default BibliotecaArtes;
