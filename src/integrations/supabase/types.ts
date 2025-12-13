@@ -1954,6 +1954,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_profile_exists: {
+        Args: { check_email: string }
+        Returns: {
+          exists_in_db: boolean
+          password_changed: boolean
+        }[]
+      }
       get_daily_arte_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_copy_count: { Args: { _user_id: string }; Returns: number }
       get_user_expired_packs: {
