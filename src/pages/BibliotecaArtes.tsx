@@ -687,8 +687,8 @@ const BibliotecaArtes = () => {
           </div>
         </header>
 
-        {/* Top Bar - Mobile */}
-        <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg sticky top-0 z-10">
+        {/* Top Bar - Tablet */}
+        <header className="hidden md:flex lg:hidden bg-primary px-4 py-3 items-center justify-between shadow-lg sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
@@ -701,11 +701,51 @@ const BibliotecaArtes = () => {
                 <Button 
                   onClick={() => setShowFirstAccessModal(true)}
                   size="sm" 
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-xs animate-pulse"
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-sm animate-pulse"
                 >
-                  <UserCheck className="h-4 w-4 mr-1" />
-                  1º Acesso
+                  <UserCheck className="h-4 w-4 mr-2" />
+                  Já é cliente? Primeiro acesso aqui!
                 </Button>
+                <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-sm">
+                  <LogIn className="h-4 w-4 mr-1" />
+                  Login
+                </Button>
+                <Button onClick={() => navigate("/planos-artes")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-sm">
+                  <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                  Comprar
+                </Button>
+              </>
+            )}
+            {user && (
+              <>
+                {userPacks.length > 0 && (
+                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm">
+                    <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                    {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
+                  </Badge>
+                )}
+                <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+                  <Settings className="h-4 w-4" />
+                </Button>
+                <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        </header>
+
+        {/* Top Bar - Mobile */}
+        <header className="md:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
+              <Menu className="h-5 w-5" />
+            </Button>
+            <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
+          </div>
+          <div className="flex items-center gap-2">
+            {!user && (
+              <>
                 <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
                   <LogIn className="h-4 w-4 mr-1" />
                   Login
@@ -734,6 +774,19 @@ const BibliotecaArtes = () => {
             )}
           </div>
         </header>
+
+        {/* First Access Button - Mobile Only (below header, above title) */}
+        {!user && (
+          <div className="md:hidden px-4 pt-4">
+            <Button 
+              onClick={() => setShowFirstAccessModal(true)}
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white animate-pulse"
+            >
+              <UserCheck className="h-4 w-4 mr-2" />
+              Já é cliente? Primeiro acesso aqui!
+            </Button>
+          </div>
+        )}
 
         {/* Main Content */}
         <div className="p-4 lg:p-6">
