@@ -735,6 +735,17 @@ const BibliotecaArtes = () => {
           </div>
         </header>
 
+        {/* Install App Button - Mobile Only, Below Header */}
+        {!isAppInstalled && (
+          <button 
+            onClick={() => navigate('/install-app')}
+            className="lg:hidden w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_100%] animate-pulse text-white py-3 px-4 flex items-center justify-center gap-2 font-semibold text-base"
+          >
+            <Smartphone className="h-5 w-5" />
+            <span>Instalar App no Celular</span>
+          </button>
+        )}
+
         {/* Main Content */}
         <div className="p-4 lg:p-6">
           <div className="max-w-7xl mx-auto">
@@ -750,11 +761,11 @@ const BibliotecaArtes = () => {
             {/* Banner Carousel - Only show when no pack is selected */}
             {!selectedPack && <BannerCarousel />}
 
-            {/* Install App Button - Below Banner, Mobile Only */}
+            {/* Install App Button - Desktop/Tablet Only, Below Banner */}
             {!selectedPack && !isAppInstalled && (
               <button 
                 onClick={() => navigate('/install-app')}
-                className="lg:hidden w-full my-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_100%] animate-pulse text-white py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 font-semibold text-lg hover:shadow-xl transition-shadow"
+                className="hidden lg:flex w-full my-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_100%] animate-pulse text-white py-4 px-6 rounded-xl shadow-lg items-center justify-center gap-3 font-semibold text-lg hover:shadow-xl transition-shadow"
               >
                 <Smartphone className="h-6 w-6" />
                 <span>Instalar App no Celular</span>
