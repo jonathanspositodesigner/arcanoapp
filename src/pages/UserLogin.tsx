@@ -62,23 +62,23 @@ const UserLogin = () => {
       });
 
       if (error) {
-        // Check if this email exists in profiles
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('password_changed')
-          .eq('email', email.trim().toLowerCase())
-          .maybeSingle();
+        // Use RPC function with SECURITY DEFINER to check profile (bypasses RLS)
+        const { data: profileCheck } = await supabase
+          .rpc('check_profile_exists', { check_email: email.trim() });
 
-        if (profile && profile.password_changed === false) {
+        const profileExists = profileCheck?.[0]?.exists_in_db || false;
+        const passwordChanged = profileCheck?.[0]?.password_changed || false;
+
+        if (profileExists && !passwordChanged) {
           // First-time user with wrong password - show modal immediately
           toast.error("Este é seu primeiro acesso! Use seu email como senha.");
           setShowFirstAccessModal(true);
-        } else if (!profile) {
+        } else if (!profileExists) {
           // Email doesn't exist - offer signup
           toast.info("Email não encontrado. Deseja criar uma conta?");
           setShowSignupModal(true);
         } else {
-          // Regular wrong password
+          // Regular wrong password (user already changed password before)
           const newAttempts = failedAttempts + 1;
           setFailedAttempts(newAttempts);
           toast.error("Email ou senha incorretos");
