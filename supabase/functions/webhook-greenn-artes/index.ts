@@ -772,6 +772,35 @@ Deno.serve(async (req) => {
     if (status === 'paid' || status === 'approved') {
       console.log('Processing PAID status - activating pack access')
       
+      // PRIMEIRO: Verificar se existe abandoned_checkout para este email+produto e marcar como convertido
+      if (productId) {
+        const { data: abandonedCheckout, error: abandonedError } = await supabase
+          .from('abandoned_checkouts')
+          .select('id')
+          .eq('email', email)
+          .eq('product_id', productId)
+          .neq('remarketing_status', 'converted')
+          .maybeSingle()
+
+        if (abandonedError) {
+          console.error('Error checking abandoned checkout:', abandonedError)
+        } else if (abandonedCheckout) {
+          const { error: updateError } = await supabase
+            .from('abandoned_checkouts')
+            .update({ 
+              remarketing_status: 'converted',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', abandonedCheckout.id)
+
+          if (updateError) {
+            console.error('Error marking abandoned checkout as converted:', updateError)
+          } else {
+            console.log(`✅ Abandoned checkout marked as CONVERTED for ${email} + product ${productId}`)
+          }
+        }
+      }
+      
       let userId: string | null = null
 
       // PRIMEIRO: Tentar criar o usuário diretamente
@@ -1024,6 +1053,62 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, message: `Pack access deactivated for ${email}` }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Handle waiting_payment - save as abandoned checkout for remarketing
+    if (status === 'waiting_payment') {
+      console.log(`💳 Received waiting_payment - saving as abandoned checkout for remarketing`)
+      
+      const clientName = payload.client?.name || ''
+      const clientPhone = payload.client?.phone?.replace(/\D/g, '') || ''
+      const productName = payload.product?.name || ''
+      const offerName = payload.offer?.name || ''
+      const offerHash = payload.offer?.hash || ''
+      const saleAmount = payload.sale?.amount || 0
+      const checkoutLink = payload.link_checkout || ''
+      
+      // Verificar se já existe abandoned checkout para este email+produto nas últimas 24h
+      const { data: existingAbandoned } = await supabase
+        .from('abandoned_checkouts')
+        .select('id')
+        .eq('email', email)
+        .eq('product_id', productId)
+        .gte('abandoned_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .maybeSingle()
+
+      if (!existingAbandoned) {
+        const { error: insertError } = await supabase.from('abandoned_checkouts').insert({
+          email: email,
+          name: clientName,
+          phone: clientPhone,
+          product_id: productId,
+          product_name: productName,
+          offer_name: offerName,
+          offer_hash: offerHash,
+          amount: saleAmount,
+          checkout_link: checkoutLink,
+          checkout_step: 0, // waiting_payment não tem step específico
+          remarketing_status: 'pending'
+        })
+
+        if (insertError) {
+          console.error('Error saving abandoned checkout from waiting_payment:', insertError)
+        } else {
+          console.log(`✅ Abandoned checkout saved from waiting_payment: ${email}`)
+        }
+      } else {
+        console.log(`⏭️ Abandoned checkout already exists for ${email} + product ${productId}`)
+      }
+
+      await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: `Waiting payment captured as abandoned checkout for remarketing`
+        }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
