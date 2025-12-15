@@ -772,11 +772,13 @@ Deno.serve(async (req) => {
     if (status === 'paid' || status === 'approved') {
       console.log('Processing PAID status - activating pack access')
       
-      // PRIMEIRO: Verificar se existe abandoned_checkout para este email+produto e marcar como convertido
+      // PRIMEIRO: Verificar se existe abandoned_checkout para este email+produto
+      // Se foi abandonado há menos de 15 minutos, DELETAR (não é abandono real, pessoa pagou rápido)
+      // Se foi abandonado há mais de 15 minutos, marcar como CONVERTED
       if (productId) {
         const { data: abandonedCheckout, error: abandonedError } = await supabase
           .from('abandoned_checkouts')
-          .select('id')
+          .select('id, abandoned_at')
           .eq('email', email)
           .eq('product_id', productId)
           .neq('remarketing_status', 'converted')
@@ -785,18 +787,37 @@ Deno.serve(async (req) => {
         if (abandonedError) {
           console.error('Error checking abandoned checkout:', abandonedError)
         } else if (abandonedCheckout) {
-          const { error: updateError } = await supabase
-            .from('abandoned_checkouts')
-            .update({ 
-              remarketing_status: 'converted',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', abandonedCheckout.id)
+          const abandonedAt = new Date(abandonedCheckout.abandoned_at)
+          const now = new Date()
+          const minutesSinceAbandonment = (now.getTime() - abandonedAt.getTime()) / (1000 * 60)
+          
+          if (minutesSinceAbandonment < 15) {
+            // Menos de 15 minutos - não foi abandono real, pessoa pagou rápido, DELETAR registro
+            const { error: deleteError } = await supabase
+              .from('abandoned_checkouts')
+              .delete()
+              .eq('id', abandonedCheckout.id)
 
-          if (updateError) {
-            console.error('Error marking abandoned checkout as converted:', updateError)
+            if (deleteError) {
+              console.error('Error deleting quick-converted checkout:', deleteError)
+            } else {
+              console.log(`🗑️ Deleted quick checkout (${minutesSinceAbandonment.toFixed(1)} min) - not a real abandonment: ${email}`)
+            }
           } else {
-            console.log(`✅ Abandoned checkout marked as CONVERTED for ${email} + product ${productId}`)
+            // Mais de 15 minutos - foi abandono real que depois converteu
+            const { error: updateError } = await supabase
+              .from('abandoned_checkouts')
+              .update({ 
+                remarketing_status: 'converted',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', abandonedCheckout.id)
+
+            if (updateError) {
+              console.error('Error marking abandoned checkout as converted:', updateError)
+            } else {
+              console.log(`✅ Abandoned checkout marked as CONVERTED (after ${minutesSinceAbandonment.toFixed(1)} min) for ${email} + product ${productId}`)
+            }
           }
         }
       }
