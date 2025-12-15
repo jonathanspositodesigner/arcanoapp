@@ -105,9 +105,11 @@ export default function AdminCloudinaryMigration() {
       [key]: { ...prev[key], isRunning: true, errors: [] }
     }));
 
-    const batchSize = 5;
+    const batchSize = 1; // Reduzido de 5 para 1 para evitar estouro de memória
     let hasMore = true;
     let wasStopped = false;
+    let retryCount = 0;
+    const maxRetries = 3;
 
     while (hasMore && !shouldStopRef.current) {
       try {
@@ -121,6 +123,9 @@ export default function AdminCloudinaryMigration() {
         });
 
         if (error) throw error;
+
+        // Reset retry count on success
+        retryCount = 0;
 
         // Check again after async operation
         if (shouldStopRef.current) {
@@ -155,11 +160,25 @@ export default function AdminCloudinaryMigration() {
           toast.success(`Migração de ${config.label} concluída!`);
         }
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Delay maior entre batches para dar tempo da memória ser liberada
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
       } catch (error) {
+        const errorMessage = (error as Error).message;
         console.error(`Migration error for ${key}:`, error);
-        toast.error(`Erro na migração: ${(error as Error).message}`);
+        
+        // Retry com exponential backoff para erros de memória
+        if (errorMessage.includes('WORKER_LIMIT') || errorMessage.includes('Memory') || errorMessage.includes('limit')) {
+          retryCount++;
+          if (retryCount <= maxRetries) {
+            const backoffDelay = Math.pow(2, retryCount) * 1000; // 2s, 4s, 8s
+            toast.warning(`Erro de memória. Tentativa ${retryCount}/${maxRetries} em ${backoffDelay/1000}s...`);
+            await new Promise(resolve => setTimeout(resolve, backoffDelay));
+            continue; // Retry
+          }
+        }
+        
+        toast.error(`Erro na migração: ${errorMessage}`);
         hasMore = false;
       }
     }
