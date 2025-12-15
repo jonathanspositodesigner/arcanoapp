@@ -89,9 +89,13 @@ const AdminAbandonedCheckouts = () => {
   const fetchCheckouts = async () => {
     setLoading(true);
     try {
+      // Só mostrar abandonos com mais de 15 minutos (para evitar mostrar pessoas ainda finalizando)
+      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      
       let query = supabase
         .from('abandoned_checkouts')
         .select('*', { count: 'exact' })
+        .lt('abandoned_at', fifteenMinutesAgo) // Só abandonos com mais de 15 min
         .order('abandoned_at', { ascending: false });
 
       if (statusFilter !== 'all') {
@@ -121,33 +125,40 @@ const AdminAbandonedCheckouts = () => {
 
   const fetchStats = async () => {
     try {
-      // Total
-      const { count: total } = await supabase
+      // Só contar abandonos com mais de 15 minutos (abandonos reais)
+      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      
+      // Total = pending + contacted_whatsapp + contacted_email + ignored (exclui converted)
+      const { count: totalReal } = await supabase
         .from('abandoned_checkouts')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .lt('abandoned_at', fifteenMinutesAgo)
+        .neq('remarketing_status', 'converted');
 
       // Pending
       const { count: pending } = await supabase
         .from('abandoned_checkouts')
         .select('*', { count: 'exact', head: true })
+        .lt('abandoned_at', fifteenMinutesAgo)
         .eq('remarketing_status', 'pending');
 
-      // Converted
+      // Converted (para calcular taxa de conversão)
       const { count: converted } = await supabase
         .from('abandoned_checkouts')
         .select('*', { count: 'exact', head: true })
         .eq('remarketing_status', 'converted');
 
-      // Potential value (sum of pending amounts)
+      // Potential value (sum of pending amounts, só abandonos reais)
       const { data: pendingData } = await supabase
         .from('abandoned_checkouts')
         .select('amount')
+        .lt('abandoned_at', fifteenMinutesAgo)
         .eq('remarketing_status', 'pending');
 
       const potentialValue = pendingData?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0;
 
       setStats({
-        total: total || 0,
+        total: totalReal || 0,
         pending: pending || 0,
         converted: converted || 0,
         potentialValue
