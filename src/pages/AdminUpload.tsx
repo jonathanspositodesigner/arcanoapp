@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { uploadToCloudinary } from "@/hooks/useCloudinaryUpload";
 
 // Validation schema
 const promptSchema = z.object({
@@ -203,40 +204,26 @@ const AdminUpload = () => {
 
     try {
       for (const media of mediaFiles) {
-        // Upload media to storage
-        const fileExt = media.file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `${fileName}`;
+        // Upload media to Cloudinary
+        const uploadResult = await uploadToCloudinary(media.file, 'admin-prompts');
+        
+        if (!uploadResult.success || !uploadResult.url) {
+          throw new Error(uploadResult.error || 'Failed to upload media');
+        }
 
-        const { error: uploadError } = await supabase.storage
-          .from('admin-prompts')
-          .upload(filePath, media.file);
-
-        if (uploadError) throw uploadError;
-
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('admin-prompts')
-          .getPublicUrl(filePath);
+        const publicUrl = uploadResult.url;
 
         // Upload reference images if it's a video
         let referenceImageUrls: string[] = [];
         if (media.isVideo && media.referenceImages.length > 0) {
           for (const refImg of media.referenceImages) {
-            const refExt = refImg.file.name.split('.').pop();
-            const refFileName = `ref_${Math.random().toString(36).substring(2)}.${refExt}`;
+            const refUploadResult = await uploadToCloudinary(refImg.file, 'admin-prompts/references');
             
-            const { error: refUploadError } = await supabase.storage
-              .from('admin-prompts')
-              .upload(refFileName, refImg.file);
+            if (!refUploadResult.success || !refUploadResult.url) {
+              throw new Error(refUploadResult.error || 'Failed to upload reference image');
+            }
 
-            if (refUploadError) throw refUploadError;
-
-            const { data: { publicUrl: refPublicUrl } } = supabase.storage
-              .from('admin-prompts')
-              .getPublicUrl(refFileName);
-
-            referenceImageUrls.push(refPublicUrl);
+            referenceImageUrls.push(refUploadResult.url);
           }
         }
 

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, X, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
+import { uploadToCloudinary } from "@/hooks/useCloudinaryUpload";
 
 interface MediaData {
   file: File;
@@ -206,19 +207,15 @@ const PartnerUploadArtes = () => {
 
     try {
       for (const media of mediaFiles) {
-        // Upload image to storage
-        const fileExt = media.file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `${partnerId}/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('partner-artes')
-          .upload(filePath, media.file);
-
-        if (uploadError) {
+        // Upload image to Cloudinary
+        const uploadResult = await uploadToCloudinary(media.file, 'partner-artes');
+        
+        if (!uploadResult.success || !uploadResult.url) {
           toast.error(`Erro ao fazer upload: ${media.title}`);
           continue;
         }
+
+        const publicUrl = uploadResult.url;
 
         // Insert record in partner_artes
         const { error: insertError } = await supabase
@@ -229,7 +226,7 @@ const PartnerUploadArtes = () => {
             category: media.category,
             pack: media.pack,
             description: media.description || null,
-            image_url: filePath,
+            image_url: publicUrl,
             is_premium: true,
             approved: false,
             canva_link: media.canvaLink || null,

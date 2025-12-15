@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { AnnouncementConfigModal } from "@/components/AnnouncementConfigModal";
 import { AnnouncementPreviewModal } from "@/components/AnnouncementPreviewModal";
+import { uploadToCloudinary } from "@/hooks/useCloudinaryUpload";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -256,22 +257,25 @@ const AdminUploadArtes = () => {
 
     setIsSubmitting(true);
     try {
-      // Upload preview image/video
-      const fileExt = media.file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('admin-artes').upload(fileName, media.file);
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('admin-artes').getPublicUrl(fileName);
+      // Upload preview image/video to Cloudinary
+      const uploadResult = await uploadToCloudinary(media.file, 'admin-artes');
+      
+      if (!uploadResult.success || !uploadResult.url) {
+        throw new Error(uploadResult.error || 'Failed to upload media');
+      }
+      
+      const publicUrl = uploadResult.url;
 
       // Upload download file if exists
       let downloadUrl = null;
       if (media.downloadFile) {
-        const dlExt = media.downloadFile.name.split('.').pop();
-        const dlFileName = `download_${Math.random().toString(36).substring(2)}.${dlExt}`;
-        const { error: dlUploadError } = await supabase.storage.from('admin-artes').upload(dlFileName, media.downloadFile);
-        if (dlUploadError) throw dlUploadError;
-        const { data: { publicUrl: dlPublicUrl } } = supabase.storage.from('admin-artes').getPublicUrl(dlFileName);
-        downloadUrl = dlPublicUrl;
+        const dlUploadResult = await uploadToCloudinary(media.downloadFile, 'admin-artes/downloads');
+        
+        if (!dlUploadResult.success || !dlUploadResult.url) {
+          throw new Error(dlUploadResult.error || 'Failed to upload download file');
+        }
+        
+        downloadUrl = dlUploadResult.url;
       }
 
       // Insert into database
@@ -331,34 +335,25 @@ const AdminUploadArtes = () => {
     setIsSubmitting(true);
     try {
       for (const media of mediaFiles) {
-        // Upload preview image/video
-        const fileExt = media.file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const {
-          error: uploadError
-        } = await supabase.storage.from('admin-artes').upload(fileName, media.file);
-        if (uploadError) throw uploadError;
-        const {
-          data: {
-            publicUrl
-          }
-        } = supabase.storage.from('admin-artes').getPublicUrl(fileName);
+        // Upload preview image/video to Cloudinary
+        const uploadResult = await uploadToCloudinary(media.file, 'admin-artes');
+        
+        if (!uploadResult.success || !uploadResult.url) {
+          throw new Error(uploadResult.error || 'Failed to upload media');
+        }
+        
+        const publicUrl = uploadResult.url;
 
         // Upload download file if exists
         let downloadUrl = null;
         if (media.downloadFile) {
-          const dlExt = media.downloadFile.name.split('.').pop();
-          const dlFileName = `download_${Math.random().toString(36).substring(2)}.${dlExt}`;
-          const {
-            error: dlUploadError
-          } = await supabase.storage.from('admin-artes').upload(dlFileName, media.downloadFile);
-          if (dlUploadError) throw dlUploadError;
-          const {
-            data: {
-              publicUrl: dlPublicUrl
-            }
-          } = supabase.storage.from('admin-artes').getPublicUrl(dlFileName);
-          downloadUrl = dlPublicUrl;
+          const dlUploadResult = await uploadToCloudinary(media.downloadFile, 'admin-artes/downloads');
+          
+          if (!dlUploadResult.success || !dlUploadResult.url) {
+            throw new Error(dlUploadResult.error || 'Failed to upload download file');
+          }
+          
+          downloadUrl = dlUploadResult.url;
         }
 
         // Insert into database

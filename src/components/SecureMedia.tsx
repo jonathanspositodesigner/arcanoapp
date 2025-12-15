@@ -24,6 +24,11 @@ interface SecureVideoProps {
   onClick?: () => void;
 }
 
+// Check if URL is from Cloudinary (doesn't need signed URLs)
+const isCloudinaryUrl = (url: string): boolean => {
+  return url.includes('cloudinary.com') || url.includes('res.cloudinary.com');
+};
+
 // Use shared preload cache
 const signedUrlCache = preloadCache;
 
@@ -47,6 +52,13 @@ export const SecureImage = memo(({
     setImageLoaded(false);
     
     const loadImage = async () => {
+      // Check if URL is from Cloudinary (use directly, no signed URL needed)
+      if (isCloudinaryUrl(src)) {
+        setSignedUrl(src);
+        setIsLoading(false);
+        return;
+      }
+      
       // Check if URL needs signing (is a Supabase storage URL)
       const parsed = parseStorageUrl(src);
       
@@ -168,6 +180,13 @@ export const SecureVideo = memo(({
     setVideoLoaded(false);
     
     const loadVideo = async () => {
+      // Check if URL is from Cloudinary (use directly, no signed URL needed)
+      if (isCloudinaryUrl(src)) {
+        setSignedUrl(src);
+        setIsLoading(false);
+        return;
+      }
+      
       const parsed = parseStorageUrl(src);
       
       if (!parsed) {
