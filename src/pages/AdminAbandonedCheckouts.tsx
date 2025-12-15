@@ -12,10 +12,14 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
 import { 
   Search, MessageCircle, Mail, Check, X, StickyNote, 
   RefreshCw, ChevronLeft, ChevronRight, DollarSign, Users,
-  Clock, TrendingUp
+  Clock, TrendingUp, Send, FileText
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -41,6 +45,15 @@ interface AbandonedCheckout {
   abandoned_at: string;
 }
 
+interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  content: string;
+  sender_name: string | null;
+  sender_email: string | null;
+}
+
 const ITEMS_PER_PAGE = 20;
 
 const AdminAbandonedCheckouts = () => {
@@ -64,6 +77,14 @@ const AdminAbandonedCheckouts = () => {
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [selectedCheckout, setSelectedCheckout] = useState<AbandonedCheckout | null>(null);
   const [notesText, setNotesText] = useState("");
+
+  // Email modal
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailContent, setEmailContent] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const fetchCheckouts = async () => {
     setLoading(true);
@@ -136,9 +157,24 @@ const AdminAbandonedCheckouts = () => {
     }
   };
 
+  const fetchEmailTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('email_templates')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      setEmailTemplates(data || []);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+    }
+  };
+
   useEffect(() => {
     fetchCheckouts();
     fetchStats();
+    fetchEmailTemplates();
   }, [currentPage, statusFilter, searchTerm]);
 
   const updateStatus = async (id: string, newStatus: string) => {
@@ -200,6 +236,76 @@ const AdminAbandonedCheckouts = () => {
     
     window.open(`https://api.whatsapp.com/send/?phone=${checkout.phone}&text=${message}`, '_blank');
     updateStatus(checkout.id, 'contacted_whatsapp');
+  };
+
+  const openEmailModal = (checkout: AbandonedCheckout) => {
+    setSelectedCheckout(checkout);
+    setSelectedTemplateId("");
+    setEmailSubject("");
+    setEmailContent("");
+    setEmailModalOpen(true);
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    
+    if (templateId === "custom") {
+      setEmailSubject("");
+      setEmailContent("");
+      return;
+    }
+
+    const template = emailTemplates.find(t => t.id === templateId);
+    if (template) {
+      // Replace placeholders
+      let subject = template.subject;
+      let content = template.content;
+      
+      const name = selectedCheckout?.name?.split(' ')[0] || 'cliente';
+      const product = selectedCheckout?.product_name || 'nosso produto';
+      const checkoutLink = selectedCheckout?.checkout_link || '';
+      
+      subject = subject.replace(/\{\{nome\}\}/gi, name);
+      subject = subject.replace(/\{\{produto\}\}/gi, product);
+      
+      content = content.replace(/\{\{nome\}\}/gi, name);
+      content = content.replace(/\{\{produto\}\}/gi, product);
+      content = content.replace(/\{\{link\}\}/gi, checkoutLink);
+      
+      setEmailSubject(subject);
+      setEmailContent(content);
+    }
+  };
+
+  const sendEmail = async () => {
+    if (!selectedCheckout || !emailSubject || !emailContent) {
+      toast.error("Preencha o assunto e conteúdo do email");
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-single-email', {
+        body: {
+          to_email: selectedCheckout.email,
+          to_name: selectedCheckout.name || undefined,
+          subject: emailSubject,
+          content: emailContent
+        }
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+
+      toast.success("Email enviado com sucesso!");
+      setEmailModalOpen(false);
+      updateStatus(selectedCheckout.id, 'contacted_email');
+    } catch (error: any) {
+      console.error('Error sending email:', error);
+      toast.error(`Erro ao enviar email: ${error.message}`);
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -414,6 +520,16 @@ const AdminAbandonedCheckouts = () => {
                           >
                             <MessageCircle className="h-4 w-4" />
                           </Button>
+
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => openEmailModal(checkout)}
+                            className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                            title="Enviar Email"
+                          >
+                            <Mail className="h-4 w-4" />
+                          </Button>
                           
                           <Button
                             size="icon"
@@ -506,6 +622,103 @@ const AdminAbandonedCheckouts = () => {
               </Button>
               <Button onClick={saveNotes}>
                 Salvar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Email Modal */}
+        <Dialog open={emailModalOpen} onOpenChange={setEmailModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Enviar Email para {selectedCheckout?.name || selectedCheckout?.email}
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {/* Template selector */}
+              <div className="space-y-2">
+                <Label>Modelo de Email</Label>
+                <Select value={selectedTemplateId} onValueChange={handleTemplateSelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um modelo ou escreva do zero" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="custom">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Escrever do zero
+                      </div>
+                    </SelectItem>
+                    {emailTemplates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Use {"{{nome}}"}, {"{{produto}}"} e {"{{link}}"} como placeholders
+                </p>
+              </div>
+
+              {/* Subject */}
+              <div className="space-y-2">
+                <Label>Assunto *</Label>
+                <Input
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                  placeholder="Assunto do email..."
+                />
+              </div>
+
+              {/* Content */}
+              <div className="space-y-2">
+                <Label>Conteúdo (HTML) *</Label>
+                <Textarea
+                  value={emailContent}
+                  onChange={(e) => setEmailContent(e.target.value)}
+                  placeholder="Conteúdo do email em HTML..."
+                  rows={12}
+                  className="font-mono text-sm"
+                />
+              </div>
+
+              {/* Preview info */}
+              {selectedCheckout && (
+                <div className="p-3 bg-muted/50 rounded-lg text-sm">
+                  <p><strong>Para:</strong> {selectedCheckout.email}</p>
+                  {selectedCheckout.product_name && (
+                    <p><strong>Produto abandonado:</strong> {selectedCheckout.product_name}</p>
+                  )}
+                  {selectedCheckout.checkout_link && (
+                    <p><strong>Link do checkout:</strong> <span className="text-xs break-all">{selectedCheckout.checkout_link}</span></p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEmailModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={sendEmail} 
+                disabled={sendingEmail || !emailSubject || !emailContent}
+              >
+                {sendingEmail ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Enviar Email
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
