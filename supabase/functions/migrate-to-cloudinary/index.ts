@@ -12,7 +12,6 @@ interface MigrationRequest {
   offset?: number;
 }
 
-// Extract bucket and file path from Supabase storage URL
 function parseStorageUrl(url: string): { bucket: string; filePath: string } | null {
   const match = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)/);
   if (match) {
@@ -24,6 +23,23 @@ function parseStorageUrl(url: string): { bucket: string; filePath: string } | nu
   return null;
 }
 
+async function generateSignature(params: Record<string, string>, apiSecret: string): Promise<string> {
+  // Sort keys alphabetically (same as upload-to-cloudinary)
+  const sortedKeys = Object.keys(params).sort();
+  const signatureString = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + apiSecret;
+  
+  console.log('Signature string:', signatureString);
+  
+  const encoder = new TextEncoder();
+  const data = encoder.encode(signatureString);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  console.log('Generated signature:', signature);
+  return signature;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -32,9 +48,11 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const cloudName = Deno.env.get('CLOUDINARY_CLOUD_NAME')!;
-    const apiKey = Deno.env.get('CLOUDINARY_API_KEY')!;
-    const apiSecret = Deno.env.get('CLOUDINARY_API_SECRET')!;
+    const cloudName = Deno.env.get('CLOUDINARY_CLOUD_NAME')!.trim();
+    const apiKey = Deno.env.get('CLOUDINARY_API_KEY')!.trim();
+    const apiSecret = Deno.env.get('CLOUDINARY_API_SECRET')!.trim();
+
+    console.log('Cloudinary config:', { cloudName, apiKeyLength: apiKey.length, apiSecretLength: apiSecret.length });
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
@@ -81,7 +99,6 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Parse the storage URL to get bucket and file path
         const parsed = parseStorageUrl(oldUrl);
         if (!parsed) {
           throw new Error(`Could not parse storage URL: ${oldUrl}`);
@@ -89,11 +106,10 @@ Deno.serve(async (req) => {
 
         console.log(`Getting signed URL for: ${parsed.bucket}/${parsed.filePath}`);
 
-        // Generate a signed URL to download from private bucket
         const { data: signedUrlData, error: signedUrlError } = await supabase
           .storage
           .from(parsed.bucket)
-          .createSignedUrl(parsed.filePath, 60); // 60 seconds expiry
+          .createSignedUrl(parsed.filePath, 60);
 
         if (signedUrlError || !signedUrlData?.signedUrl) {
           throw new Error(`Failed to create signed URL: ${signedUrlError?.message || 'No URL returned'}`);
@@ -106,28 +122,40 @@ Deno.serve(async (req) => {
         }
 
         const blob = await response.blob();
-        const base64 = await blobToBase64(blob);
+        const buffer = await blob.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        const base64 = btoa(binary);
+        const mimeType = blob.type || 'application/octet-stream';
+        const base64Data = `data:${mimeType};base64,${base64}`;
         
-        // Determine resource type
         const contentType = response.headers.get('content-type') || '';
         const resourceType = contentType.startsWith('video/') ? 'video' : 'image';
         
-        // Generate folder based on table
         const folder = `arcanoapp/${table}`;
-        
-        // Upload to Cloudinary
         const timestamp = Math.round(Date.now() / 1000);
-        const paramsToSign = `folder=${folder}&timestamp=${timestamp}`;
-        const signature = await generateSignature(paramsToSign, apiSecret);
+        
+        // Use exact same signature logic as upload-to-cloudinary
+        const params: Record<string, string> = {
+          folder: folder,
+          timestamp: timestamp.toString(),
+        };
+        
+        const signature = await generateSignature(params, apiSecret);
 
         const formData = new FormData();
-        formData.append('file', base64);
+        formData.append('file', base64Data);
         formData.append('api_key', apiKey);
         formData.append('timestamp', timestamp.toString());
         formData.append('signature', signature);
         formData.append('folder', folder);
 
         const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
+        console.log(`Uploading to Cloudinary: ${uploadUrl}`);
+        
         const uploadResponse = await fetch(uploadUrl, {
           method: 'POST',
           body: formData,
@@ -135,6 +163,7 @@ Deno.serve(async (req) => {
 
         if (!uploadResponse.ok) {
           const errorText = await uploadResponse.text();
+          console.error('Cloudinary upload error:', errorText);
           throw new Error(`Cloudinary upload failed: ${errorText}`);
         }
 
@@ -143,7 +172,6 @@ Deno.serve(async (req) => {
 
         console.log(`Uploaded to Cloudinary: ${newUrl}`);
 
-        // Update database with new URL
         const { error: updateError } = await supabase
           .from(table)
           .update({ [column]: newUrl })
@@ -184,23 +212,3 @@ Deno.serve(async (req) => {
     });
   }
 });
-
-async function blobToBase64(blob: Blob): Promise<string> {
-  const buffer = await blob.arrayBuffer();
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  const base64 = btoa(binary);
-  const mimeType = blob.type || 'application/octet-stream';
-  return `data:${mimeType};base64,${base64}`;
-}
-
-async function generateSignature(paramsToSign: string, apiSecret: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(paramsToSign + apiSecret);
-  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
