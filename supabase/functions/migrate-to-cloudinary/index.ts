@@ -27,16 +27,13 @@ async function generateSignature(params: Record<string, string>, apiSecret: stri
   // Sort keys alphabetically (same as upload-to-cloudinary)
   const sortedKeys = Object.keys(params).sort();
   const signatureString = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + apiSecret;
-  
-  console.log('Signature string:', signatureString);
-  
+
   const encoder = new TextEncoder();
   const data = encoder.encode(signatureString);
   const hashBuffer = await crypto.subtle.digest('SHA-1', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  console.log('Generated signature:', signature);
+
   return signature;
 }
 
@@ -60,10 +57,11 @@ Deno.serve(async (req) => {
 
     console.log(`Starting migration for ${table}.${column}, limit: ${limit}, offset: ${offset}`);
 
-    // Fetch records with Supabase URLs
+    // Fetch records with Supabase URLs (somente colunas necessárias)
+    const selectCols = `id, ${column}`;
     const { data: records, error: fetchError } = await supabase
       .from(table)
-      .select('*')
+      .select(selectCols)
       .like(column, '%supabase%')
       .range(offset, offset + limit - 1);
 
@@ -73,10 +71,13 @@ Deno.serve(async (req) => {
     }
 
     if (!records || records.length === 0) {
-      return new Response(JSON.stringify({ 
-        success: true, 
-        migrated: 0, 
-        message: 'No more records to migrate' 
+      return new Response(JSON.stringify({
+        success: true,
+        migrated: 0,
+        failed: 0,
+        errors: [],
+        hasMore: false,
+        message: 'No more records to migrate'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -90,10 +91,12 @@ Deno.serve(async (req) => {
       errors: [] as string[],
     };
 
-    for (const record of records) {
-      const recordId = (record as Record<string, unknown>).id as string;
-      const oldUrl = (record as Record<string, unknown>)[column] as string | null;
-      
+    const safeRecords = records as unknown as Array<Record<string, unknown>>;
+
+    for (const record of safeRecords) {
+      const recordId = record.id as string;
+      const oldUrl = (record[column] as string | null) ?? null;
+
       try {
         if (!oldUrl || !oldUrl.includes('supabase')) {
           continue;
@@ -115,47 +118,43 @@ Deno.serve(async (req) => {
           throw new Error(`Failed to create signed URL: ${signedUrlError?.message || 'No URL returned'}`);
         }
 
-        console.log(`Downloading from signed URL...`);
-        const response = await fetch(signedUrlData.signedUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to download: ${response.status} ${response.statusText}`);
+        // IMPORTANT: não baixar o arquivo nem converter para base64 (estoura memória).
+        // Cloudinary fará o fetch diretamente do signed URL.
+        const sourcePathLower = `${parsed.bucket}/${parsed.filePath}`.toLowerCase();
+        const isDownloadColumn = column.toLowerCase().includes('download');
+
+        let resourceType: 'image' | 'video' | 'raw' = 'image';
+        if (isDownloadColumn) {
+          resourceType = 'raw';
+        } else if (/\.(mp4|webm|mov|m4v)$/.test(sourcePathLower)) {
+          resourceType = 'video';
+        } else if (/\.(png|jpe?g|gif|webp|svg)$/.test(sourcePathLower)) {
+          resourceType = 'image';
+        } else {
+          // fallback seguro: arquivos desconhecidos vão como "raw"
+          resourceType = 'raw';
         }
 
-        const blob = await response.blob();
-        const buffer = await blob.arrayBuffer();
-        const bytes = new Uint8Array(buffer);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        const base64 = btoa(binary);
-        const mimeType = blob.type || 'application/octet-stream';
-        const base64Data = `data:${mimeType};base64,${base64}`;
-        
-        const contentType = response.headers.get('content-type') || '';
-        const resourceType = contentType.startsWith('video/') ? 'video' : 'image';
-        
         const folder = `arcanoapp/${table}`;
         const timestamp = Math.round(Date.now() / 1000);
-        
-        // Use exact same signature logic as upload-to-cloudinary
+
         const params: Record<string, string> = {
           folder: folder,
           timestamp: timestamp.toString(),
         };
-        
+
         const signature = await generateSignature(params, apiSecret);
 
         const formData = new FormData();
-        formData.append('file', base64Data);
+        formData.append('file', signedUrlData.signedUrl);
         formData.append('api_key', apiKey);
         formData.append('timestamp', timestamp.toString());
         formData.append('signature', signature);
         formData.append('folder', folder);
 
         const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
-        console.log(`Uploading to Cloudinary: ${uploadUrl}`);
-        
+        console.log(`Uploading to Cloudinary (remote URL): ${uploadUrl}`);
+
         const uploadResponse = await fetch(uploadUrl, {
           method: 'POST',
           body: formData,
