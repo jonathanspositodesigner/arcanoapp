@@ -3,6 +3,8 @@ import { getSignedMediaUrl, parseStorageUrl } from '@/hooks/useSignedUrl';
 import { preloadCache, getCachedSignedUrl } from '@/hooks/useImagePreloader';
 import { Loader2 } from 'lucide-react';
 
+type ImageSize = 'thumbnail' | 'preview' | 'full';
+
 interface SecureImageProps {
   src: string;
   alt: string;
@@ -10,6 +12,7 @@ interface SecureImageProps {
   className?: string;
   loading?: 'lazy' | 'eager';
   onClick?: () => void;
+  size?: ImageSize;
 }
 
 interface SecureVideoProps {
@@ -29,6 +32,30 @@ const isCloudinaryUrl = (url: string): boolean => {
   return url.includes('cloudinary.com') || url.includes('res.cloudinary.com');
 };
 
+// Get optimized Cloudinary URL with auto quality, format, and optional resize
+const getOptimizedCloudinaryUrl = (url: string, size: ImageSize = 'full'): string => {
+  if (!isCloudinaryUrl(url)) return url;
+  
+  // Define width based on size
+  const widthMap: Record<ImageSize, number | null> = {
+    thumbnail: 400,  // Grid cards
+    preview: 800,    // Modal previews
+    full: null       // Original size for downloads
+  };
+  
+  const width = widthMap[size];
+  const transforms = width 
+    ? `q_auto,f_auto,w_${width}` 
+    : 'q_auto,f_auto';
+  
+  // Insert transforms after /upload/
+  if (url.includes('/upload/')) {
+    return url.replace('/upload/', `/upload/${transforms}/`);
+  }
+  
+  return url;
+};
+
 // Use shared preload cache
 const signedUrlCache = preloadCache;
 
@@ -38,7 +65,8 @@ export const SecureImage = memo(({
   isPremium = false, 
   className = '', 
   loading = 'lazy',
-  onClick 
+  onClick,
+  size = 'thumbnail'
 }: SecureImageProps) => {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,9 +80,9 @@ export const SecureImage = memo(({
     setImageLoaded(false);
     
     const loadImage = async () => {
-      // Check if URL is from Cloudinary (use directly, no signed URL needed)
+      // Check if URL is from Cloudinary - use optimized URL directly
       if (isCloudinaryUrl(src)) {
-        setSignedUrl(src);
+        setSignedUrl(getOptimizedCloudinaryUrl(src, size));
         setIsLoading(false);
         return;
       }
@@ -180,9 +208,9 @@ export const SecureVideo = memo(({
     setVideoLoaded(false);
     
     const loadVideo = async () => {
-      // Check if URL is from Cloudinary (use directly, no signed URL needed)
+      // Check if URL is from Cloudinary - use optimized URL
       if (isCloudinaryUrl(src)) {
-        setSignedUrl(src);
+        setSignedUrl(getOptimizedCloudinaryUrl(src, 'preview'));
         setIsLoading(false);
         return;
       }
