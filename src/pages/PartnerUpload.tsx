@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { uploadToCloudinary } from "@/hooks/useCloudinaryUpload";
 
 const promptSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
@@ -237,34 +238,26 @@ const PartnerUpload = () => {
 
     try {
       for (const media of mediaFiles) {
-        const fileExt = media.file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+        // Upload to Cloudinary
+        const uploadResult = await uploadToCloudinary(media.file, 'partner-prompts');
+        
+        if (!uploadResult.success || !uploadResult.url) {
+          throw new Error(uploadResult.error || 'Failed to upload media');
+        }
 
-        const { error: uploadError } = await supabase.storage
-          .from('partner-prompts')
-          .upload(fileName, media.file);
-
-        if (uploadError) throw uploadError;
-
-        // Store the storage path, not the public URL (bucket is private)
-        const imageStoragePath = `https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/partner-prompts/${fileName}`;
+        const imageStoragePath = uploadResult.url;
 
         // Upload reference images if it's a video
         let referenceImageUrls: string[] = [];
         if (media.isVideo && media.referenceImages.length > 0) {
           for (const refImg of media.referenceImages) {
-            const refExt = refImg.file.name.split('.').pop();
-            const refFileName = `ref_${Math.random().toString(36).substring(2)}.${refExt}`;
+            const refUploadResult = await uploadToCloudinary(refImg.file, 'partner-prompts/references');
             
-            const { error: refUploadError } = await supabase.storage
-              .from('partner-prompts')
-              .upload(refFileName, refImg.file);
+            if (!refUploadResult.success || !refUploadResult.url) {
+              throw new Error(refUploadResult.error || 'Failed to upload reference image');
+            }
 
-            if (refUploadError) throw refUploadError;
-
-            // Store storage path for reference images too
-            const refStoragePath = `https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/partner-prompts/${refFileName}`;
-            referenceImageUrls.push(refStoragePath);
+            referenceImageUrls.push(refUploadResult.url);
           }
         }
 
