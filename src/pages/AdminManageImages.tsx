@@ -72,10 +72,20 @@ const AdminManageImages = () => {
   const [typeFilter, setTypeFilter] = useState<PromptType | 'all'>('all');
   const [sortBy, setSortBy] = useState<SortOption>('date');
   const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('prompts_categories')
+      .select('id, name')
+      .order('display_order', { ascending: true });
+    if (data) setCategories(data);
+  };
 
   const checkAdminAndFetchPrompts = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -557,11 +567,9 @@ const AdminManageImages = () => {
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Selos 3D">Selos 3D</SelectItem>
-                  <SelectItem value="Fotos">Fotos</SelectItem>
-                  <SelectItem value="Cenários">Cenários</SelectItem>
-                  <SelectItem value="Movies para Telão">Movies para Telão</SelectItem>
-                  <SelectItem value="Controles de Câmera">Controles de Câmera</SelectItem>
+                  {categories.map(cat => (
+                    <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
