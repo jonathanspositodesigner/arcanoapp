@@ -12,6 +12,18 @@ interface MigrationRequest {
   offset?: number;
 }
 
+// Extract bucket and file path from Supabase storage URL
+function parseStorageUrl(url: string): { bucket: string; filePath: string } | null {
+  const match = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)/);
+  if (match) {
+    return {
+      bucket: match[1],
+      filePath: decodeURIComponent(match[2])
+    };
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -30,7 +42,7 @@ Deno.serve(async (req) => {
 
     console.log(`Starting migration for ${table}.${column}, limit: ${limit}, offset: ${offset}`);
 
-    // Fetch records with Supabase URLs - use raw query to avoid type issues
+    // Fetch records with Supabase URLs
     const { data: records, error: fetchError } = await supabase
       .from(table)
       .select('*')
@@ -69,11 +81,28 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Download file from Supabase
-        console.log(`Downloading: ${oldUrl}`);
-        const response = await fetch(oldUrl);
+        // Parse the storage URL to get bucket and file path
+        const parsed = parseStorageUrl(oldUrl);
+        if (!parsed) {
+          throw new Error(`Could not parse storage URL: ${oldUrl}`);
+        }
+
+        console.log(`Getting signed URL for: ${parsed.bucket}/${parsed.filePath}`);
+
+        // Generate a signed URL to download from private bucket
+        const { data: signedUrlData, error: signedUrlError } = await supabase
+          .storage
+          .from(parsed.bucket)
+          .createSignedUrl(parsed.filePath, 60); // 60 seconds expiry
+
+        if (signedUrlError || !signedUrlData?.signedUrl) {
+          throw new Error(`Failed to create signed URL: ${signedUrlError?.message || 'No URL returned'}`);
+        }
+
+        console.log(`Downloading from signed URL...`);
+        const response = await fetch(signedUrlData.signedUrl);
         if (!response.ok) {
-          throw new Error(`Failed to download: ${response.status}`);
+          throw new Error(`Failed to download: ${response.status} ${response.statusText}`);
         }
 
         const blob = await response.blob();
