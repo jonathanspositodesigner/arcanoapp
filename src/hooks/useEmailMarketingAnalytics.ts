@@ -34,7 +34,18 @@ export interface TopPushCampaign {
   body: string;
   sent_count: number;
   failed_count: number;
+  clicked_count: number;
   sent_at: string;
+}
+
+export interface PushCampaignStats {
+  totalCampaigns: number;
+  totalSent: number;
+  totalDelivered: number;
+  totalFailed: number;
+  totalClicked: number;
+  deliveryRate: number;
+  clickRate: number;
 }
 
 // Hook for real-time email marketing stats
@@ -225,7 +236,7 @@ export async function fetchTopPushCampaigns(limit: number = 5): Promise<TopPushC
   try {
     const { data: campaigns, error } = await supabase
       .from("push_notification_logs")
-      .select("id, title, body, sent_count, failed_count, sent_at")
+      .select("id, title, body, sent_count, failed_count, clicked_count, sent_at")
       .gt("sent_count", 0)
       .order("sent_count", { ascending: false })
       .limit(limit);
@@ -241,12 +252,66 @@ export async function fetchTopPushCampaigns(limit: number = 5): Promise<TopPushC
       body: campaign.body,
       sent_count: campaign.sent_count || 0,
       failed_count: campaign.failed_count || 0,
+      clicked_count: campaign.clicked_count || 0,
       sent_at: campaign.sent_at
     }));
   } catch (error) {
     console.error("[Push Analytics] Error:", error);
     return [];
   }
+}
+
+export async function fetchPushCampaignStats(): Promise<PushCampaignStats> {
+  try {
+    const { data: campaigns, error } = await supabase
+      .from("push_notification_logs")
+      .select("sent_count, failed_count, clicked_count");
+
+    if (error) {
+      console.error("[Push Analytics] Error fetching stats:", error);
+      return getEmptyPushStats();
+    }
+
+    let totalCampaigns = campaigns?.length || 0;
+    let totalSent = 0;
+    let totalFailed = 0;
+    let totalClicked = 0;
+
+    campaigns?.forEach(campaign => {
+      totalSent += campaign.sent_count || 0;
+      totalFailed += campaign.failed_count || 0;
+      totalClicked += campaign.clicked_count || 0;
+    });
+
+    const totalDelivered = totalSent - totalFailed;
+    const deliveryRate = totalSent > 0 ? (totalDelivered / totalSent) * 100 : 0;
+    const clickRate = totalDelivered > 0 ? (totalClicked / totalDelivered) * 100 : 0;
+
+    return {
+      totalCampaigns,
+      totalSent,
+      totalDelivered,
+      totalFailed,
+      totalClicked,
+      deliveryRate,
+      clickRate
+    };
+  } catch (error) {
+    console.error("[Push Analytics] Error:", error);
+    return getEmptyPushStats();
+  }
+}
+
+function getEmptyPushStats(): PushCampaignStats {
+  return {
+    totalCampaigns: 0,
+    totalSent: 0,
+    totalDelivered: 0,
+    totalFailed: 0,
+    totalClicked: 0,
+    deliveryRate: 0,
+    clickRate: 0
+  };
 }
 
 function getEmptyStats(): EmailMarketingStats {

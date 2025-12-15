@@ -1580,6 +1580,7 @@ export type Database = {
       push_notification_logs: {
         Row: {
           body: string
+          clicked_count: number | null
           failed_count: number | null
           id: string
           sent_at: string
@@ -1589,6 +1590,7 @@ export type Database = {
         }
         Insert: {
           body: string
+          clicked_count?: number | null
           failed_count?: number | null
           id?: string
           sent_at?: string
@@ -1598,6 +1600,7 @@ export type Database = {
         }
         Update: {
           body?: string
+          clicked_count?: number | null
           failed_count?: number | null
           id?: string
           sent_at?: string

@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Mail, Bell, Smartphone, Users, TrendingUp, Eye, XCircle, ShieldX, Send, CheckCircle, MousePointer, AlertTriangle, RefreshCw, Trophy, GripVertical, LayoutGrid, RotateCcw } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { fetchPushNotificationStats, PushNotificationStats } from "@/hooks/usePushNotificationAnalytics";
-import { useEmailMarketingStats, fetchTopEmailCampaigns, fetchTopPushCampaigns, TopEmailCampaign, TopPushCampaign } from "@/hooks/useEmailMarketingAnalytics";
+import { useEmailMarketingStats, fetchTopEmailCampaigns, fetchTopPushCampaigns, fetchPushCampaignStats, TopEmailCampaign, TopPushCampaign, PushCampaignStats } from "@/hooks/useEmailMarketingAnalytics";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useDashboardCardOrder } from "@/hooks/useDashboardCardOrder";
@@ -29,18 +29,29 @@ const AdminMarketing = () => {
   
   const [topEmailCampaigns, setTopEmailCampaigns] = useState<TopEmailCampaign[]>([]);
   const [topPushCampaigns, setTopPushCampaigns] = useState<TopPushCampaign[]>([]);
+  const [pushCampaignStats, setPushCampaignStats] = useState<PushCampaignStats>({
+    totalCampaigns: 0,
+    totalSent: 0,
+    totalDelivered: 0,
+    totalFailed: 0,
+    totalClicked: 0,
+    deliveryRate: 0,
+    clickRate: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const loadStats = useCallback(async () => {
-    const [push, topEmail, topPush] = await Promise.all([
+    const [push, topEmail, topPush, pushCampaign] = await Promise.all([
       fetchPushNotificationStats(),
       fetchTopEmailCampaigns(5),
-      fetchTopPushCampaigns(5)
+      fetchTopPushCampaigns(5),
+      fetchPushCampaignStats()
     ]);
     setPushStats(push);
     setTopEmailCampaigns(topEmail);
     setTopPushCampaigns(topPush);
+    setPushCampaignStats(pushCampaign);
   }, []);
 
   // Drag and drop
@@ -317,50 +328,71 @@ const AdminMarketing = () => {
                 <div className="p-2 bg-indigo-500/20 rounded-full">
                   <Bell className="h-6 w-6 text-indigo-500" />
                 </div>
-                <p className="text-lg font-semibold text-foreground">Analytics de Notificações Push</p>
+                <div>
+                  <p className="text-lg font-semibold text-foreground">Analytics de Notificações Push</p>
+                  <p className="text-xs text-muted-foreground">{pushCampaignStats.totalCampaigns} campanhas enviadas</p>
+                </div>
               </div>
               
+              {/* Campaign Stats - Similar to Email */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                {/* Total Enviados */}
+                <div className="bg-blue-500/10 rounded-lg p-4 text-center">
+                  <Send className="h-5 w-5 mx-auto mb-2 text-blue-500" />
+                  <p className="text-3xl font-bold text-blue-500">{pushCampaignStats.totalSent.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Push Enviados</p>
+                </div>
+                
+                {/* Entregues */}
+                <div className="bg-green-500/10 rounded-lg p-4 text-center">
+                  <CheckCircle className="h-5 w-5 mx-auto mb-2 text-green-500" />
+                  <p className="text-3xl font-bold text-green-500">{pushCampaignStats.totalDelivered.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Entregues</p>
+                  <p className="text-xs font-medium text-green-600">{pushCampaignStats.deliveryRate.toFixed(1)}%</p>
+                </div>
+                
+                {/* Falhas */}
+                <div className="bg-red-500/10 rounded-lg p-4 text-center">
+                  <AlertTriangle className="h-5 w-5 mx-auto mb-2 text-red-500" />
+                  <p className="text-3xl font-bold text-red-500">{pushCampaignStats.totalFailed.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Falhas</p>
+                </div>
+                
+                {/* Clicados */}
+                <div className="bg-amber-500/10 rounded-lg p-4 text-center">
+                  <MousePointer className="h-5 w-5 mx-auto mb-2 text-amber-500" />
+                  <p className="text-3xl font-bold text-amber-500">{pushCampaignStats.totalClicked.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Clicaram</p>
+                  <p className="text-xs font-medium text-amber-600">{pushCampaignStats.clickRate.toFixed(1)}%</p>
+                </div>
+              </div>
+
+              {/* Subscription Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 {/* Total Ativados */}
-                <div className="bg-green-500/10 rounded-lg p-4 text-center">
-                  <Smartphone className="h-5 w-5 mx-auto mb-2 text-green-500" />
-                  <p className="text-3xl font-bold text-green-500">{pushStats.totalSubscriptions}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Dispositivos Ativos</p>
+                <div className="bg-indigo-500/10 rounded-lg p-3 text-center">
+                  <Smartphone className="h-4 w-4 mx-auto mb-1 text-indigo-500" />
+                  <p className="text-xl font-bold text-indigo-500">{pushStats.totalSubscriptions}</p>
+                  <p className="text-xs text-muted-foreground">Dispositivos Ativos</p>
                 </div>
                 
                 {/* Via Prompt */}
-                <div className="bg-blue-500/10 rounded-lg p-4 text-center">
-                  <Users className="h-5 w-5 mx-auto mb-2 text-blue-500" />
-                  <p className="text-3xl font-bold text-blue-500">{pushStats.activatedViaPrompt}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Ativados via Prompt</p>
-                </div>
-                
-                {/* Via Manual */}
-                <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                  <Users className="h-5 w-5 mx-auto mb-2 text-purple-500" />
-                  <p className="text-3xl font-bold text-purple-500">{pushStats.activatedViaManual}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Ativados Manualmente</p>
+                <div className="bg-muted/50 rounded-lg p-3 text-center">
+                  <Users className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                  <p className="text-xl font-bold text-foreground">{pushStats.activatedViaPrompt}</p>
+                  <p className="text-xs text-muted-foreground">Via Prompt</p>
                 </div>
                 
                 {/* Taxa de Conversão */}
-                <div className="bg-amber-500/10 rounded-lg p-4 text-center">
-                  <TrendingUp className="h-5 w-5 mx-auto mb-2 text-amber-500" />
-                  <p className={`text-3xl font-bold ${
+                <div className="bg-muted/50 rounded-lg p-3 text-center">
+                  <TrendingUp className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                  <p className={`text-xl font-bold ${
                     pushStats.conversionRate >= 30 ? 'text-green-500' : 
                     pushStats.conversionRate >= 15 ? 'text-yellow-500' : 'text-red-500'
                   }`}>
                     {pushStats.conversionRate.toFixed(1)}%
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">Taxa de Conversão</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                {/* Prompts Exibidos */}
-                <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <Eye className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                  <p className="text-xl font-bold text-foreground">{pushStats.promptShown}</p>
-                  <p className="text-xs text-muted-foreground">Prompts Exibidos</p>
+                  <p className="text-xs text-muted-foreground">Conversão</p>
                 </div>
                 
                 {/* Dispensados */}
@@ -369,18 +401,11 @@ const AdminMarketing = () => {
                   <p className="text-xl font-bold text-orange-500">{pushStats.dismissed}</p>
                   <p className="text-xs text-muted-foreground">Dispensaram</p>
                 </div>
-                
-                {/* Negaram Permissão */}
-                <div className="bg-red-500/10 rounded-lg p-3 text-center">
-                  <ShieldX className="h-4 w-4 mx-auto mb-1 text-red-500" />
-                  <p className="text-xl font-bold text-red-500">{pushStats.permissionDenied}</p>
-                  <p className="text-xs text-muted-foreground">Negaram Permissão</p>
-                </div>
               </div>
               
               <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-xs text-muted-foreground text-center">
-                  📊 Conversão = usuários que ativaram via prompt / prompts exibidos
+                  📊 Taxa entrega = entregues / enviados • Taxa clique = cliques / entregues
                 </p>
               </div>
             </Card>
@@ -413,15 +438,17 @@ const AdminMarketing = () => {
                         <TableHead className="w-8">#</TableHead>
                         <TableHead>Notificação</TableHead>
                         <TableHead className="text-center">Enviados</TableHead>
-                        <TableHead className="text-center">Falhas</TableHead>
-                        <TableHead className="text-center">Taxa Sucesso</TableHead>
+                        <TableHead className="text-center">Entregues</TableHead>
+                        <TableHead className="text-center">Cliques</TableHead>
+                        <TableHead className="text-center">Taxa Clique</TableHead>
                         <TableHead className="text-right">Data</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {topPushCampaigns.map((campaign, index) => {
-                        const successRate = campaign.sent_count > 0 
-                          ? ((campaign.sent_count - campaign.failed_count) / campaign.sent_count) * 100 
+                        const delivered = campaign.sent_count - campaign.failed_count;
+                        const clickRate = delivered > 0 
+                          ? (campaign.clicked_count / delivered) * 100 
                           : 0;
                         return (
                           <TableRow key={campaign.id}>
@@ -435,10 +462,11 @@ const AdminMarketing = () => {
                               </div>
                             </TableCell>
                             <TableCell className="text-center">{campaign.sent_count}</TableCell>
-                            <TableCell className="text-center text-red-500">{campaign.failed_count}</TableCell>
+                            <TableCell className="text-center text-green-500">{delivered}</TableCell>
+                            <TableCell className="text-center">{campaign.clicked_count}</TableCell>
                             <TableCell className="text-center">
-                              <span className={`font-bold ${successRate >= 90 ? 'text-green-500' : successRate >= 70 ? 'text-amber-500' : 'text-red-500'}`}>
-                                {successRate.toFixed(1)}%
+                              <span className={`font-bold ${clickRate >= 5 ? 'text-green-500' : clickRate >= 2 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                {clickRate.toFixed(1)}%
                               </span>
                             </TableCell>
                             <TableCell className="text-right text-xs text-muted-foreground">
