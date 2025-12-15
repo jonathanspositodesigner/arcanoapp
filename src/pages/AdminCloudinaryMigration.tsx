@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Cloud, CheckCircle, XCircle, Loader2, Play } from "lucide-react";
+import { ArrowLeft, Cloud, CheckCircle, XCircle, Loader2, Play, Square } from "lucide-react";
 import { toast } from "sonner";
 
 interface TableConfig {
@@ -41,6 +41,8 @@ export default function AdminCloudinaryMigration() {
   const [statuses, setStatuses] = useState<Record<string, MigrationStatus>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [runningTable, setRunningTable] = useState<string | null>(null);
+  const [shouldStop, setShouldStop] = useState(false);
+  const shouldStopRef = useRef(false);
 
   useEffect(() => {
     loadStatuses();
@@ -92,9 +94,11 @@ export default function AdminCloudinaryMigration() {
     setIsLoading(false);
   };
 
-  const migrateTable = async (config: TableConfig) => {
+  const migrateTable = async (config: TableConfig): Promise<boolean> => {
     const key = getKey(config);
     setRunningTable(key);
+    setShouldStop(false);
+    shouldStopRef.current = false;
     
     setStatuses(prev => ({
       ...prev,
@@ -103,8 +107,9 @@ export default function AdminCloudinaryMigration() {
 
     const batchSize = 5;
     let hasMore = true;
+    let wasStopped = false;
 
-    while (hasMore) {
+    while (hasMore && !shouldStopRef.current) {
       try {
         const { data, error } = await supabase.functions.invoke('migrate-to-cloudinary', {
           body: {
@@ -116,6 +121,12 @@ export default function AdminCloudinaryMigration() {
         });
 
         if (error) throw error;
+
+        // Check again after async operation
+        if (shouldStopRef.current) {
+          wasStopped = true;
+          break;
+        }
 
         if (data.migrated > 0) {
           setStatuses(prev => ({
@@ -153,21 +164,38 @@ export default function AdminCloudinaryMigration() {
       }
     }
 
+    if (shouldStopRef.current) {
+      wasStopped = true;
+      toast.info('Migração interrompida');
+    }
+
     setStatuses(prev => ({
       ...prev,
       [key]: { ...prev[key], isRunning: false }
     }));
     setRunningTable(null);
+    setShouldStop(false);
+    shouldStopRef.current = false;
+    
+    return !wasStopped;
+  };
+
+  const stopMigration = () => {
+    setShouldStop(true);
+    shouldStopRef.current = true;
   };
 
   const migrateAll = async () => {
     for (const config of TABLES_TO_MIGRATE) {
       const key = getKey(config);
-      if (statuses[key]?.remaining > 0) {
-        await migrateTable(config);
+      if (statuses[key]?.remaining > 0 && !shouldStop) {
+        const completed = await migrateTable(config);
+        if (!completed) break;
       }
     }
-    toast.success('Migração completa de todas as tabelas!');
+    if (!shouldStop) {
+      toast.success('Migração completa de todas as tabelas!');
+    }
   };
 
   const totalStats = Object.values(statuses).reduce(
@@ -216,23 +244,35 @@ export default function AdminCloudinaryMigration() {
                 {totalStats.remaining} restantes
               </span>
             </div>
-            <Button 
-              onClick={migrateAll} 
-              disabled={!!runningTable || totalStats.remaining === 0}
-              className="w-full"
-            >
-              {runningTable ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Migrando...
-                </>
-              ) : (
-                <>
-                  <Play className="h-4 w-4 mr-2" />
-                  Migrar Todos ({totalStats.remaining} arquivos)
-                </>
+            <div className="flex gap-2">
+              <Button 
+                onClick={migrateAll} 
+                disabled={!!runningTable || totalStats.remaining === 0}
+                className="flex-1"
+              >
+                {runningTable ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Migrando...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    Migrar Todos ({totalStats.remaining} arquivos)
+                  </>
+                )}
+              </Button>
+              {runningTable && (
+                <Button 
+                  onClick={stopMigration} 
+                  variant="destructive"
+                  disabled={shouldStop}
+                >
+                  <Square className="h-4 w-4 mr-2" />
+                  {shouldStop ? 'Parando...' : 'Parar'}
+                </Button>
               )}
-            </Button>
+            </div>
           </CardContent>
         </Card>
 
