@@ -48,7 +48,7 @@ const AdminAbandonedCheckouts = () => {
   const [checkouts, setCheckouts] = useState<AbandonedCheckout[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("pending");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   
