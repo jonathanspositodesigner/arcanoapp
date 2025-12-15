@@ -42,9 +42,6 @@ verify_jwt = false
 [functions.send-email-campaign]
 verify_jwt = false
 
-[functions.resend-webhook]
-verify_jwt = false
-
 [functions.sendpulse-webhook]
 verify_jwt = false
 
@@ -70,7 +67,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.upload-to-cloudinary]
-verify_jwt = false
-
-[functions.migrate-to-cloudinary]
 verify_jwt = false
