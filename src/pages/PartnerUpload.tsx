@@ -17,9 +17,7 @@ import { uploadToCloudinary } from "@/hooks/useCloudinaryUpload";
 const promptSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
   prompt: z.string().trim().min(1, "Prompt é obrigatório").max(10000, "Prompt deve ter no máximo 10.000 caracteres"),
-  category: z.enum(["Selos 3D", "Fotos", "Cenários", "Movies para Telão"], { 
-    errorMap: () => ({ message: "Selecione uma categoria válida" })
-  }),
+  category: z.string().min(1, "Selecione uma categoria válida"),
 });
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -62,10 +60,21 @@ const PartnerUpload = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
 
   useEffect(() => {
     checkPartnerAccess();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('prompts_categories')
+      .select('id, name, is_admin_only')
+      .eq('is_admin_only', false)
+      .order('display_order', { ascending: true });
+    if (data) setCategories(data);
+  };
 
   const checkPartnerAccess = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -446,10 +455,9 @@ const PartnerUpload = () => {
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Selos 3D">Selos 3D</SelectItem>
-                    <SelectItem value="Fotos">Fotos</SelectItem>
-                    <SelectItem value="Cenários">Cenários</SelectItem>
-                    <SelectItem value="Movies para Telão">Movies para Telão</SelectItem>
+                    {categories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,9 +22,7 @@ const formatTitle = (title: string): string => {
 const promptSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
   prompt: z.string().trim().min(1, "Prompt é obrigatório").max(10000, "Prompt deve ter no máximo 10.000 caracteres"),
-  category: z.enum(["Selos 3D", "Fotos", "Cenários", "Movies para Telão"], { 
-    errorMap: () => ({ message: "Selecione uma categoria válida" })
-  }),
+  category: z.string().min(1, "Selecione uma categoria válida"),
   contributorName: z.string().trim().max(20, "Nome deve ter no máximo 20 caracteres").optional(),
 });
 
@@ -53,6 +51,19 @@ const ContributePrompts = () => {
   const [mediaPreview, setMediaPreview] = useState<string>("");
   const [isVideo, setIsVideo] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data } = await supabase
+        .from('prompts_categories')
+        .select('id, name, is_admin_only')
+        .eq('is_admin_only', false)
+        .order('display_order', { ascending: true });
+      if (data) setCategories(data);
+    };
+    fetchCategories();
+  }, []);
 
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -214,10 +225,9 @@ const ContributePrompts = () => {
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Selos 3D">Selos 3D</SelectItem>
-                  <SelectItem value="Fotos">Fotos</SelectItem>
-                  <SelectItem value="Cenários">Cenários</SelectItem>
-                  <SelectItem value="Movies para Telão">Movies para Telão</SelectItem>
+                  {categories.map(cat => (
+                    <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

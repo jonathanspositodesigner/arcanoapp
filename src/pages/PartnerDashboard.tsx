@@ -49,9 +49,21 @@ const PartnerDashboard = () => {
   const [editCategory, setEditCategory] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+
   useEffect(() => {
     checkPartnerAndFetchData();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('prompts_categories')
+      .select('id, name, is_admin_only')
+      .eq('is_admin_only', false)
+      .order('display_order', { ascending: true });
+    if (data) setCategories(data);
+  };
 
   const checkPartnerAndFetchData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -534,10 +546,9 @@ const PartnerDashboard = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Selos 3D">Selos 3D</SelectItem>
-                    <SelectItem value="Fotos">Fotos</SelectItem>
-                    <SelectItem value="Cenários">Cenários</SelectItem>
-                    <SelectItem value="Movies para Telão">Movies para Telão</SelectItem>
+                    {categories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
