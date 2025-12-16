@@ -476,6 +476,18 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
+        setActiveSection('updates');
+        setSelectedPack(null);
+        setSidebarOpen(false);
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'updates' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
+          <RefreshCw className="h-5 w-5" />
+          <span className="font-medium">Atualizações</span>
+          <Badge variant="secondary" className="ml-auto text-xs">
+            {getPacksByType('updates').length}
+          </Badge>
+        </button>
+
+        <button onClick={() => {
         setActiveSection('bonus');
         setSelectedPack(null);
         setSidebarOpen(false);
@@ -496,18 +508,6 @@ const BibliotecaArtes = () => {
           <span className="font-medium">Cursos</span>
           <Badge variant="secondary" className="ml-auto text-xs">
             {getPacksByType('curso').length}
-          </Badge>
-        </button>
-
-        <button onClick={() => {
-        setActiveSection('updates');
-        setSelectedPack(null);
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'updates' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <RefreshCw className="h-5 w-5" />
-          <span className="font-medium">Atualizações</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('updates').length}
           </Badge>
         </button>
 
