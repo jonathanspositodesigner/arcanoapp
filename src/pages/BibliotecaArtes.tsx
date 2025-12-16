@@ -978,6 +978,17 @@ const BibliotecaArtes = () => {
                   </div>}
               </div>}
 
+            {/* Mobile Button to open sidebar for Bonus and Updates - Only show in packs section */}
+            {!selectedPack && activeSection === 'packs' && (
+              <Button 
+                className="lg:hidden w-full mt-6 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white py-6 text-base font-semibold"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Gift className="h-5 w-5 mr-2" />
+                Bônus e Atualizações
+              </Button>
+            )}
+
             {/* Tutoriais View - Free for everyone, navigates to lesson page */}
             {activeSection === 'tutorial' && !selectedPack && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getPacksByType('tutorial').map(tutorial => {
