@@ -582,11 +582,20 @@ const AdminGeneralDashboard = () => {
                     <Legend />
                     <Line 
                       type="monotone" 
+                      dataKey="total" 
+                      stroke="#10b981" 
+                      strokeWidth={3}
+                      name="Total"
+                      dot={true}
+                    />
+                    <Line 
+                      type="monotone" 
                       dataKey="mobile" 
                       stroke="#f59e0b" 
                       strokeWidth={2}
                       name="Mobile"
                       dot={false}
+                      opacity={0.7}
                     />
                     <Line 
                       type="monotone" 
@@ -595,6 +604,7 @@ const AdminGeneralDashboard = () => {
                       strokeWidth={2}
                       name="Desktop"
                       dot={false}
+                      opacity={0.7}
                     />
                   </LineChart>
                 </ResponsiveContainer>
