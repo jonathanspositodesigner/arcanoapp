@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Music, FileText, LogOut, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import AdminGoalsCard from "@/components/AdminGoalsCard";
 
 const AdminHub = () => {
   const navigate = useNavigate();
@@ -144,6 +145,11 @@ const AdminHub = () => {
                 </div>
               </Card>
             ))}
+          </div>
+
+          {/* Goals Section */}
+          <div className="mt-12">
+            <AdminGoalsCard />
           </div>
         </div>
       </main>
