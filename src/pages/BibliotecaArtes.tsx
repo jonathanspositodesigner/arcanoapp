@@ -1497,6 +1497,8 @@ const BibliotecaArtes = () => {
                 // Navegar para página do curso baseado no slug
                 if (cursoSlug === 'forja-selos-3d-ilimitada') {
                   navigate('/forja-selos-3d-artes');
+                } else if (cursoSlug === 'eventoia-como-criar-selos-3d-animados') {
+                  window.open('https://blibliotecadeartesarcanas.greenn.club/home', '_blank');
                 } else {
                   toast.info("Link será configurado em breve");
                 }
