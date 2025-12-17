@@ -31,7 +31,7 @@ const AdminGeneralDashboard = () => {
   const [todayPasswordResets, setTodayPasswordResets] = useState(0);
   
   // Conversion and purchases
-  const [conversionRate, setConversionRate] = useState({ visitors: 0, buyers: 0, rate: 0 });
+  const [conversionRate, setConversionRate] = useState({ visitors: 0, uniqueVisitors: 0, buyers: 0, rate: 0 });
   const [purchaseHourStats, setPurchaseHourStats] = useState<{ hour: number; count: number }[]>([]);
   
   // Peak hours and access evolution
@@ -81,12 +81,12 @@ const AdminGeneralDashboard = () => {
 
       // Helper function to fetch ALL page_views with pagination
       const fetchAllPageViews = async (startDate: string, endDate?: string | null) => {
-        let allRecords: { device_type: string; viewed_at: string }[] = [];
+        let allRecords: { device_type: string; viewed_at: string; visitor_id: string | null }[] = [];
         let from = 0;
         const batchSize = 1000;
         
         while (true) {
-          let query = supabase.from("page_views").select("device_type, viewed_at");
+          let query = supabase.from("page_views").select("device_type, viewed_at, visitor_id");
           query = query.gte("viewed_at", startDate);
           if (endDate) query = query.lte("viewed_at", endDate);
           query = query.range(from, from + batchSize - 1);
@@ -204,9 +204,12 @@ const AdminGeneralDashboard = () => {
       
       if (webhookData) {
         const visitors = periodAccessData.length;
+        // Calculate unique visitors using visitor_id (filter out null values from old records)
+        const uniqueVisitorIds = new Set(periodAccessData.map(p => p.visitor_id).filter(Boolean));
+        const uniqueVisitors = uniqueVisitorIds.size || visitors; // Fallback to total if no visitor_ids yet
         const buyers = webhookData.filter(w => w.status === 'paid' || w.status === 'approved').length;
-        const rate = visitors > 0 ? (buyers / visitors) * 100 : 0;
-        setConversionRate({ visitors, buyers, rate });
+        const rate = uniqueVisitors > 0 ? (buyers / uniqueVisitors) * 100 : 0;
+        setConversionRate({ visitors, uniqueVisitors, buyers, rate });
       }
 
       // Fetch purchase hour stats
@@ -409,10 +412,10 @@ const AdminGeneralDashboard = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Vendas do App</p>
                   <p className="text-3xl font-bold text-green-500">
-                    {conversionRate.visitors > 0 ? `${conversionRate.rate.toFixed(1)}%` : '0%'}
+                    {conversionRate.uniqueVisitors > 0 ? `${conversionRate.rate.toFixed(1)}%` : '0%'}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {conversionRate.buyers} vendas de {conversionRate.visitors} visitas
+                    {conversionRate.buyers} vendas de {conversionRate.uniqueVisitors} visitantes únicos
                   </p>
                 </div>
               </div>
