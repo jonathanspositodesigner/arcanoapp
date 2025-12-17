@@ -13,9 +13,20 @@ import ContributePrompts from "./pages/ContributePrompts";
 import AdminUpload from "./pages/AdminUpload";
 import AdminUploadArtes from "./pages/AdminUploadArtes";
 import AdminLogin from "./pages/AdminLogin";
+import AdminHub from "./pages/AdminHub";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminFerramentas from "./pages/AdminFerramentas";
 import AdminMarketing from "./pages/AdminMarketing";
+// New platform-specific admin pages
+import ArtesEventosDashboard from "./pages/admin/ArtesEventosDashboard";
+import ArtesEventosFerramentas from "./pages/admin/ArtesEventosFerramentas";
+import ArtesEventosMarketing from "./pages/admin/ArtesEventosMarketing";
+import ArtesMusicosDashboard from "./pages/admin/ArtesMusicosDashboard";
+import ArtesMusicosFerramentas from "./pages/admin/ArtesMusicosFerramentas";
+import ArtesMusicosMarketing from "./pages/admin/ArtesMusicosMarketing";
+import PromptsDashboard from "./pages/admin/PromptsDashboard";
+import PromptsFerramentas from "./pages/admin/PromptsFerramentas";
+import PromptsMarketing from "./pages/admin/PromptsMarketing";
 import AdminEmailMarketing from "./pages/AdminEmailMarketing";
 import AdminCommunityReview from "./pages/AdminCommunityReview";
 import AdminArtesReview from "./pages/AdminArtesReview";
@@ -105,9 +116,20 @@ const AppContent = () => {
         <Route path="/biblioteca-artes-musicos" element={<BibliotecaArtesMusicos />} />
         <Route path="/contribuir" element={<ContributePrompts />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin-hub" element={<AdminHub />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin-ferramentas" element={<AdminFerramentas />} />
         <Route path="/admin-marketing" element={<AdminMarketing />} />
+        {/* Platform-specific admin routes */}
+        <Route path="/admin-artes-eventos" element={<ArtesEventosDashboard />} />
+        <Route path="/admin-artes-eventos/ferramentas" element={<ArtesEventosFerramentas />} />
+        <Route path="/admin-artes-eventos/marketing" element={<ArtesEventosMarketing />} />
+        <Route path="/admin-artes-musicos" element={<ArtesMusicosDashboard />} />
+        <Route path="/admin-artes-musicos/ferramentas" element={<ArtesMusicosFerramentas />} />
+        <Route path="/admin-artes-musicos/marketing" element={<ArtesMusicosMarketing />} />
+        <Route path="/admin-prompts" element={<PromptsDashboard />} />
+        <Route path="/admin-prompts/ferramentas" element={<PromptsFerramentas />} />
+        <Route path="/admin-prompts/marketing" element={<PromptsMarketing />} />
         <Route path="/admin-email-marketing" element={<AdminEmailMarketing />} />
         <Route path="/admin-upload" element={<AdminUpload />} />
         <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
