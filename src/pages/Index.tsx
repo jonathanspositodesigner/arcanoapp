@@ -5,7 +5,7 @@ import { trackPushNotificationEvent } from "@/hooks/usePushNotificationAnalytics
 import { Check, Smartphone, Bell } from "lucide-react";
 import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
-
+import promptclubLogo from "@/assets/promptclub_logo.png";
 const Index = () => {
   const navigate = useNavigate();
   const isAppInstalled = useIsAppInstalled();
@@ -82,7 +82,7 @@ const Index = () => {
         {/* Card - Biblioteca de Prompts IA */}
         <div onClick={() => navigate("/biblioteca-prompts")} className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50">
           <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
-            <img alt="Biblioteca de Prompts IA" className="w-full h-full object-contain" src="/lovable-uploads/c7d0b526-a28d-43a4-8f43-9654f93029e5.png" />
+            <img alt="Biblioteca de Prompts IA" className="w-full h-full object-contain" src={promptclubLogo} />
           </div>
           <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             Biblioteca de Prompts IA
