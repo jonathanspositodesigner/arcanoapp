@@ -124,7 +124,7 @@ const AdminEmailMarketing = () => {
   useEffect(() => {
     fetchStats();
     fetchTemplates();
-  }, [refreshHistory]);
+  }, [refreshHistory, platform]);
 
   const fetchTemplates = async () => {
     const { data } = await supabase
@@ -212,10 +212,17 @@ const AdminEmailMarketing = () => {
   };
 
   const fetchStats = async () => {
-    const { data: campaigns } = await supabase
+    let query = supabase
       .from("email_campaigns")
-      .select("sent_count, sent_at, status, is_scheduled")
+      .select("sent_count, sent_at, status, is_scheduled, platform")
       .order("sent_at", { ascending: false });
+
+    // Filter by platform if specified
+    if (platform) {
+      query = query.eq("platform", platform);
+    }
+
+    const { data: campaigns } = await query;
 
     if (campaigns) {
       const sentCampaigns = campaigns.filter(c => c.status === "sent");
@@ -1055,6 +1062,7 @@ const AdminEmailMarketing = () => {
               onEdit={handleEdit}
               onDuplicate={handleDuplicate}
               refreshTrigger={refreshHistory}
+              platform={platform}
             />
           </TabsContent>
         </Tabs>

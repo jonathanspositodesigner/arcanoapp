@@ -49,17 +49,24 @@ export interface PushCampaignStats {
 }
 
 // Hook for real-time email marketing stats
-export function useEmailMarketingStats() {
+export function useEmailMarketingStats(platform?: string | null) {
   const [stats, setStats] = useState<EmailMarketingStats>(getEmptyStats());
   const [loading, setLoading] = useState(true);
 
   const fetchStats = useCallback(async () => {
     try {
-      // Fetch all campaigns (sent + sending) to include active campaign
-      const { data: campaigns, error } = await supabase
+      // Build query based on platform
+      let query = supabase
         .from("email_campaigns")
-        .select("sent_count, delivered_count, opened_count, clicked_count, bounced_count, complained_count, recipients_count, status")
+        .select("sent_count, delivered_count, opened_count, clicked_count, bounced_count, complained_count, recipients_count, status, platform")
         .in("status", ["sent", "sending"]);
+
+      // Filter by platform if specified
+      if (platform) {
+        query = query.eq("platform", platform);
+      }
+
+      const { data: campaigns, error } = await query;
 
       if (error) {
         console.error("[Email Analytics] Error fetching campaigns:", error);
@@ -108,14 +115,14 @@ export function useEmailMarketingStats() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [platform]);
 
   useEffect(() => {
     fetchStats();
 
     // Subscribe to real-time updates on email_campaigns
     const channel = supabase
-      .channel('email-marketing-analytics')
+      .channel(`email-marketing-analytics-${platform || 'all'}`)
       .on(
         'postgres_changes',
         {
@@ -133,19 +140,26 @@ export function useEmailMarketingStats() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchStats]);
+  }, [fetchStats, platform]);
 
   return { stats, loading, refresh: fetchStats };
 }
 
 // Legacy function for backward compatibility
-export async function fetchEmailMarketingStats(): Promise<EmailMarketingStats> {
+export async function fetchEmailMarketingStats(platform?: string | null): Promise<EmailMarketingStats> {
   try {
-    // Fetch all campaigns (sent + sending) to include active campaigns
-    const { data: campaigns, error } = await supabase
+    // Build query based on platform
+    let query = supabase
       .from("email_campaigns")
-      .select("sent_count, delivered_count, opened_count, clicked_count, bounced_count, complained_count, recipients_count, status")
+      .select("sent_count, delivered_count, opened_count, clicked_count, bounced_count, complained_count, recipients_count, status, platform")
       .in("status", ["sent", "sending"]);
+
+    // Filter by platform if specified
+    if (platform) {
+      query = query.eq("platform", platform);
+    }
+
+    const { data: campaigns, error } = await query;
 
     if (error) {
       console.error("[Email Analytics] Error fetching campaigns:", error);
@@ -195,15 +209,22 @@ export async function fetchEmailMarketingStats(): Promise<EmailMarketingStats> {
   }
 }
 
-export async function fetchTopEmailCampaigns(limit: number = 5): Promise<TopEmailCampaign[]> {
+export async function fetchTopEmailCampaigns(limit: number = 5, platform?: string | null): Promise<TopEmailCampaign[]> {
   try {
-    const { data: campaigns, error } = await supabase
+    let query = supabase
       .from("email_campaigns")
-      .select("id, title, subject, sent_count, clicked_count, opened_count, delivered_count, sent_at, status")
+      .select("id, title, subject, sent_count, clicked_count, opened_count, delivered_count, sent_at, status, platform")
       .in("status", ["sent", "sending"])
       .gt("sent_count", 0)
       .order("sent_count", { ascending: false })
       .limit(limit);
+
+    // Filter by platform if specified
+    if (platform) {
+      query = query.eq("platform", platform);
+    }
+
+    const { data: campaigns, error } = await query;
 
     if (error) {
       console.error("[Email Analytics] Error fetching top campaigns:", error);

@@ -82,9 +82,10 @@ interface CampaignHistoryProps {
   onEdit: (campaign: Campaign) => void;
   onDuplicate: (campaign: Campaign) => void;
   refreshTrigger?: number;
+  platform?: string | null;
 }
 
-const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistoryProps) => {
+const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger, platform }: CampaignHistoryProps) => {
   const [campaigns, setCampaigns] = useState<CampaignWithPending[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -108,13 +109,20 @@ const CampaignHistory = ({ onEdit, onDuplicate, refreshTrigger }: CampaignHistor
 
   useEffect(() => {
     fetchCampaigns();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, platform]);
 
   const fetchCampaigns = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from("email_campaigns")
       .select("*")
       .order("created_at", { ascending: false });
+
+    // Filter by platform if specified
+    if (platform) {
+      query = query.eq("platform", platform);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       toast.error("Erro ao carregar campanhas");
