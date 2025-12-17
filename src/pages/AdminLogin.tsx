@@ -27,7 +27,7 @@ const AdminLogin = () => {
           .maybeSingle();
         
         if (roleData) {
-          navigate('/admin-dashboard');
+          navigate('/admin-hub');
         }
       }
     };
@@ -61,7 +61,7 @@ const AdminLogin = () => {
       }
 
       toast.success("Login realizado com sucesso!");
-      navigate('/admin-dashboard');
+      navigate('/admin-hub');
     } catch (error: any) {
       toast.error(error.message || "Erro ao fazer login");
     } finally {
