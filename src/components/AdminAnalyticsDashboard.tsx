@@ -133,7 +133,11 @@ const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: 
   );
 };
 
-const AdminAnalyticsDashboard = () => {
+interface AdminAnalyticsDashboardProps {
+  platform?: 'artes-eventos' | 'artes-musicos' | 'prompts';
+}
+
+const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}) => {
   const [dateFilter, setDateFilter] = useState<DateFilter>(7);
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
   
@@ -148,16 +152,17 @@ const AdminAnalyticsDashboard = () => {
   const [topPrompts, setTopPrompts] = useState<PromptRanking[]>([]);
   const [topArtes, setTopArtes] = useState<PromptRanking[]>([]);
   const [artesClickTypeStats, setArtesClickTypeStats] = useState({ canva: 0, psd: 0, download: 0 });
-  const [topRankingViewMode, setTopRankingViewMode] = useState<'prompts' | 'artes'>('prompts');
+  const [topRankingViewMode, setTopRankingViewMode] = useState<'prompts' | 'artes'>(platform === 'artes-eventos' || platform === 'artes-musicos' ? 'artes' : 'prompts');
   const [planUsageStats, setPlanUsageStats] = useState<PlanUsageStats[]>([]);
   const [artesUsageStats, setArtesUsageStats] = useState<PlanUsageStats[]>([]);
   const [todayUsage, setTodayUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
   const [todayArtesUsage, setTodayArtesUsage] = useState({ basicUsed: 0, basicLimit: 10, proUsed: 0, proLimit: 24 });
   const [topPurchasedPlans, setTopPurchasedPlans] = useState<{ name: string; count: number }[]>([]);
   const [topPurchasedPacks, setTopPurchasedPacks] = useState<{ name: string; count: number }[]>([]);
-  const [usageViewMode, setUsageViewMode] = useState<'prompts' | 'artes'>('prompts');
-  const [todayUsageViewMode, setTodayUsageViewMode] = useState<'prompts' | 'artes'>('prompts');
+  const [usageViewMode, setUsageViewMode] = useState<'prompts' | 'artes'>(platform === 'artes-eventos' || platform === 'artes-musicos' ? 'artes' : 'prompts');
+  const [todayUsageViewMode, setTodayUsageViewMode] = useState<'prompts' | 'artes'>(platform === 'artes-eventos' || platform === 'artes-musicos' ? 'artes' : 'prompts');
   const [topCategories, setTopCategories] = useState<{ name: string; count: number }[]>([]);
+  const [topArtesCategories, setTopArtesCategories] = useState<{ name: string; count: number }[]>([]);
   const [topPacks, setTopPacks] = useState<{ name: string; count: number }[]>([]);
   const [collectionStats, setCollectionStats] = useState<CollectionStats>({
     totalViews: 0, topCollections: []
@@ -485,6 +490,64 @@ const AdminAnalyticsDashboard = () => {
           .slice(0, 5);
         
         setTopCategories(topCats);
+      }
+
+      // Fetch top categories for artes (from arte_clicks -> admin_artes/partner_artes)
+      let artesClicksWithCategoryQuery = supabase.from("arte_clicks").select("arte_id, is_admin_arte");
+      if (threshold.start) {
+        artesClicksWithCategoryQuery = artesClicksWithCategoryQuery.gte("clicked_at", threshold.start);
+      }
+      if (threshold.end) {
+        artesClicksWithCategoryQuery = artesClicksWithCategoryQuery.lte("clicked_at", threshold.end);
+      }
+      const { data: artesClicksWithId } = await artesClicksWithCategoryQuery;
+
+      if (artesClicksWithId && artesClicksWithId.length > 0) {
+        const adminArteIds = artesClicksWithId.filter(a => a.is_admin_arte).map(a => a.arte_id);
+        const partnerArteIds = artesClicksWithId.filter(a => !a.is_admin_arte).map(a => a.arte_id);
+        
+        const artesCategoryCounts: Record<string, number> = {};
+        
+        if (adminArteIds.length > 0) {
+          const { data: adminArtes } = await supabase
+            .from("admin_artes")
+            .select("id, category")
+            .in("id", adminArteIds);
+          
+          if (adminArtes) {
+            const categoryMap: Record<string, string> = {};
+            adminArtes.forEach(a => { categoryMap[a.id] = a.category; });
+            
+            artesClicksWithId.filter(a => a.is_admin_arte).forEach(click => {
+              const cat = categoryMap[click.arte_id];
+              if (cat) artesCategoryCounts[cat] = (artesCategoryCounts[cat] || 0) + 1;
+            });
+          }
+        }
+        
+        if (partnerArteIds.length > 0) {
+          const { data: partnerArtes } = await supabase
+            .from("partner_artes")
+            .select("id, category")
+            .in("id", partnerArteIds);
+          
+          if (partnerArtes) {
+            const categoryMap: Record<string, string> = {};
+            partnerArtes.forEach(a => { categoryMap[a.id] = a.category; });
+            
+            artesClicksWithId.filter(a => !a.is_admin_arte).forEach(click => {
+              const cat = categoryMap[click.arte_id];
+              if (cat) artesCategoryCounts[cat] = (artesCategoryCounts[cat] || 0) + 1;
+            });
+          }
+        }
+        
+        const topArtesCats = Object.entries(artesCategoryCounts)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+        
+        setTopArtesCategories(topArtesCats);
       }
 
       // Fetch top purchased packs for artes
@@ -1244,37 +1307,43 @@ const AdminAnalyticsDashboard = () => {
                       <Trophy className="h-6 w-6 text-yellow-500" />
                     </div>
                     <p className="text-sm font-medium text-foreground">
-                      {topRankingViewMode === 'prompts' ? 'Top 10 Prompts' : 'Top 10 Artes'}
+                      {platform === 'artes-eventos' || platform === 'artes-musicos' 
+                        ? 'Top 10 Artes' 
+                        : platform === 'prompts' 
+                          ? 'Top 10 Prompts'
+                          : topRankingViewMode === 'prompts' ? 'Top 10 Prompts' : 'Top 10 Artes'}
                     </p>
                   </div>
-                  <div className="flex gap-1">
-                    <Button
-                      variant={topRankingViewMode === 'prompts' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setTopRankingViewMode('prompts')}
-                      className="h-7 px-2 text-xs"
-                    >
-                      Prompts
-                    </Button>
-                    <Button
-                      variant={topRankingViewMode === 'artes' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setTopRankingViewMode('artes')}
-                      className="h-7 px-2 text-xs"
-                    >
-                      Artes
-                    </Button>
-                  </div>
+                  {!platform && (
+                    <div className="flex gap-1">
+                      <Button
+                        variant={topRankingViewMode === 'prompts' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setTopRankingViewMode('prompts')}
+                        className="h-7 px-2 text-xs"
+                      >
+                        Prompts
+                      </Button>
+                      <Button
+                        variant={topRankingViewMode === 'artes' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setTopRankingViewMode('artes')}
+                        className="h-7 px-2 text-xs"
+                      >
+                        Artes
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                {(topRankingViewMode === 'prompts' ? topPrompts : topArtes).length === 0 ? (
+                {((platform === 'artes-eventos' || platform === 'artes-musicos') ? topArtes : platform === 'prompts' ? topPrompts : topRankingViewMode === 'prompts' ? topPrompts : topArtes).length === 0 ? (
                   <p className="text-sm text-muted-foreground">Nenhum clique registrado</p>
                 ) : (
                   <ul className="space-y-2 overflow-y-auto flex-1">
-                    {(topRankingViewMode === 'prompts' ? topPrompts : topArtes).map((item, index) => (
+                    {((platform === 'artes-eventos' || platform === 'artes-musicos') ? topArtes : platform === 'prompts' ? topPrompts : topRankingViewMode === 'prompts' ? topPrompts : topArtes).map((item, index) => (
                       <li 
                         key={item.prompt_title} 
                         className="flex items-center justify-between text-sm cursor-pointer hover:bg-muted/50 rounded-md px-2 py-1 -mx-2 transition-colors"
-                        onClick={() => handleRankingItemClick(item.prompt_title, topRankingViewMode === 'prompts' ? 'prompt' : 'arte')}
+                        onClick={() => handleRankingItemClick(item.prompt_title, (platform === 'artes-eventos' || platform === 'artes-musicos') ? 'arte' : platform === 'prompts' ? 'prompt' : topRankingViewMode === 'prompts' ? 'prompt' : 'arte')}
                       >
                         <span className="flex items-center gap-2 truncate">
                           <span className="font-bold text-primary">{index + 1}.</span>
@@ -1330,40 +1399,42 @@ const AdminAnalyticsDashboard = () => {
               </div>
             </GridCard>
 
-            {/* Collection Links Card */}
-            <GridCard key="collection-links" isEditing={isEditing}>
-              <div className="p-6 h-full flex flex-col">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-indigo-500/20 rounded-full">
-                    <Link2 className="h-6 w-6 text-indigo-500" />
+            {/* Collection Links Card - Only for prompts platform or no platform */}
+            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && (
+              <GridCard key="collection-links" isEditing={isEditing}>
+                <div className="p-6 h-full flex flex-col">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-indigo-500/20 rounded-full">
+                      <Link2 className="h-6 w-6 text-indigo-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Links de Coleção</p>
+                      <p className="text-xs text-muted-foreground">Acessos via link de coleção</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Links de Coleção</p>
-                    <p className="text-xs text-muted-foreground">Acessos via link de coleção</p>
+                  <div className="space-y-2 overflow-y-auto flex-1">
+                    {collectionStats.topCollections.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">Nenhum acesso registrado</p>
+                    ) : (
+                      collectionStats.topCollections.map((collection, index) => (
+                        <div key={collection.name} className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-2 truncate">
+                            <span className="font-bold text-indigo-500">{index + 1}.</span>
+                            <span className="truncate text-foreground">{collection.name}</span>
+                          </span>
+                          <span className="text-muted-foreground font-medium ml-2">{collection.count}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-border">
+                    <p className="text-sm font-medium text-center">
+                      Total: <span className="text-indigo-500">{collectionStats.totalViews}</span> acessos
+                    </p>
                   </div>
                 </div>
-                <div className="space-y-2 overflow-y-auto flex-1">
-                  {collectionStats.topCollections.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Nenhum acesso registrado</p>
-                  ) : (
-                    collectionStats.topCollections.map((collection, index) => (
-                      <div key={collection.name} className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-2 truncate">
-                          <span className="font-bold text-indigo-500">{index + 1}.</span>
-                          <span className="truncate text-foreground">{collection.name}</span>
-                        </span>
-                        <span className="text-muted-foreground font-medium ml-2">{collection.count}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="mt-3 pt-2 border-t border-border">
-                  <p className="text-sm font-medium text-center">
-                    Total: <span className="text-indigo-500">{collectionStats.totalViews}</span> acessos
-                  </p>
-                </div>
-              </div>
-            </GridCard>
+              </GridCard>
+            )}
 
             {/* First Access Stats Card */}
             <GridCard key="first-access" isEditing={isEditing} className="cursor-pointer hover:bg-muted/50 transition-colors">
@@ -1403,34 +1474,40 @@ const AdminAnalyticsDashboard = () => {
                       <Trophy className="h-6 w-6 text-green-500" />
                     </div>
                     <p className="text-sm font-medium text-foreground">
-                      {usageViewMode === 'prompts' ? 'Planos Mais Comprados' : 'Packs Mais Comprados'}
+                      {platform === 'artes-eventos' || platform === 'artes-musicos' 
+                        ? 'Packs Mais Comprados' 
+                        : platform === 'prompts'
+                          ? 'Planos Mais Comprados'
+                          : usageViewMode === 'prompts' ? 'Planos Mais Comprados' : 'Packs Mais Comprados'}
                     </p>
                   </div>
-                  <div className="flex gap-1">
-                    <Button
-                      variant={usageViewMode === 'prompts' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setUsageViewMode('prompts')}
-                      className="h-7 px-2 text-xs"
-                    >
-                      Prompts
-                    </Button>
-                    <Button
-                      variant={usageViewMode === 'artes' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setUsageViewMode('artes')}
-                      className="h-7 px-2 text-xs"
-                    >
-                      Artes
-                    </Button>
-                  </div>
+                  {!platform && (
+                    <div className="flex gap-1">
+                      <Button
+                        variant={usageViewMode === 'prompts' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setUsageViewMode('prompts')}
+                        className="h-7 px-2 text-xs"
+                      >
+                        Prompts
+                      </Button>
+                      <Button
+                        variant={usageViewMode === 'artes' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setUsageViewMode('artes')}
+                        className="h-7 px-2 text-xs"
+                      >
+                        Artes
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 
-                {(usageViewMode === 'prompts' ? topPurchasedPlans : topPurchasedPacks).length === 0 ? (
+                {((platform === 'artes-eventos' || platform === 'artes-musicos') ? topPurchasedPacks : platform === 'prompts' ? topPurchasedPlans : usageViewMode === 'prompts' ? topPurchasedPlans : topPurchasedPacks).length === 0 ? (
                   <p className="text-sm text-muted-foreground">Nenhuma compra registrada no período</p>
                 ) : (
                   <div className="space-y-3 overflow-y-auto flex-1">
-                    {(usageViewMode === 'prompts' ? topPurchasedPlans : topPurchasedPacks).map((item, index) => (
+                    {((platform === 'artes-eventos' || platform === 'artes-musicos') ? topPurchasedPacks : platform === 'prompts' ? topPurchasedPlans : usageViewMode === 'prompts' ? topPurchasedPlans : topPurchasedPacks).map((item, index) => (
                       <div key={item.name} className="flex items-center justify-between bg-secondary/50 rounded-lg px-3 py-2">
                         <span className="flex items-center gap-2">
                           <span className="font-bold text-primary">{index + 1}.</span>
@@ -1449,31 +1526,37 @@ const AdminAnalyticsDashboard = () => {
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-medium text-foreground">
-                    {todayUsageViewMode === 'prompts' ? 'Top 5 Categorias - Prompts' : 'Top 5 Packs - Artes'}
+                    {platform === 'artes-eventos' || platform === 'artes-musicos' 
+                      ? 'Top 5 Categorias - Artes' 
+                      : platform === 'prompts'
+                        ? 'Top 5 Categorias - Prompts'
+                        : todayUsageViewMode === 'prompts' ? 'Top 5 Categorias - Prompts' : 'Top 5 Packs - Artes'}
                   </h3>
-                  <div className="flex gap-1">
-                    <Button
-                      variant={todayUsageViewMode === 'prompts' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setTodayUsageViewMode('prompts')}
-                      className="h-7 px-2 text-xs"
-                    >
-                      Prompts
-                    </Button>
-                    <Button
-                      variant={todayUsageViewMode === 'artes' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setTodayUsageViewMode('artes')}
-                      className="h-7 px-2 text-xs"
-                    >
-                      Artes
-                    </Button>
-                  </div>
+                  {!platform && (
+                    <div className="flex gap-1">
+                      <Button
+                        variant={todayUsageViewMode === 'prompts' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setTodayUsageViewMode('prompts')}
+                        className="h-7 px-2 text-xs"
+                      >
+                        Prompts
+                      </Button>
+                      <Button
+                        variant={todayUsageViewMode === 'artes' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setTodayUsageViewMode('artes')}
+                        className="h-7 px-2 text-xs"
+                      >
+                        Artes
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 min-h-[150px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart 
-                      data={todayUsageViewMode === 'prompts' ? topCategories : topPacks}
+                      data={(platform === 'artes-eventos' || platform === 'artes-musicos') ? topArtesCategories : platform === 'prompts' ? topCategories : todayUsageViewMode === 'prompts' ? topCategories : topPacks}
                       layout="vertical"
                     >
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -1495,7 +1578,7 @@ const AdminAnalyticsDashboard = () => {
                       />
                       <Bar 
                         dataKey="count" 
-                        fill={todayUsageViewMode === 'prompts' ? "#8b5cf6" : "#f59e0b"}
+                        fill={(platform === 'artes-eventos' || platform === 'artes-musicos') ? "#f59e0b" : platform === 'prompts' ? "#8b5cf6" : todayUsageViewMode === 'prompts' ? "#8b5cf6" : "#f59e0b"}
                         radius={[0, 4, 4, 0]}
                         name="Cliques"
                       />
