@@ -1045,7 +1045,7 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
     };
 
     fetchAnalytics();
-  }, [dateFilter, refreshKey, customDateRange]);
+  }, [dateFilter, refreshKey, customDateRange, platform]);
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
