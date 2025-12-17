@@ -1,4 +1,4 @@
-import { Home, BarChart3, LogOut, ArrowLeft, Mail, Bell, Megaphone } from "lucide-react";
+import { Home, BarChart3, LogOut, ArrowLeft, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -32,18 +32,6 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       label: "MARKETING GERAL",
       icon: Megaphone,
       description: "Visão geral de campanhas"
-    },
-    {
-      id: "email-marketing" as const,
-      label: "E-MAIL MARKETING",
-      icon: Mail,
-      description: "Campanhas de e-mail"
-    },
-    {
-      id: "push-notifications" as const,
-      label: "NOTIFICAÇÕES PUSH",
-      icon: Bell,
-      description: "Enviar notificações"
     }
   ];
 
