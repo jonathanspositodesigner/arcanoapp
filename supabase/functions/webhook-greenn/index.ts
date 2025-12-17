@@ -317,7 +317,8 @@ Deno.serve(async (req) => {
         product_id: productId,
         email: email || 'no-email',
         result: 'processing',
-        from_app: false
+        from_app: false,
+        platform: 'prompts'
       })
       .select('id')
       .single()

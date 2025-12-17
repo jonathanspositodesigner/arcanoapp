@@ -956,13 +956,24 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
         });
       }
 
-      // Refund stats
-      const { data: refundLogsData } = await supabase
+      // Refund stats - filtered by platform
+      let refundQuery = supabase
         .from("webhook_logs")
-        .select("email, status, mapping_type, received_at, payload")
+        .select("email, status, mapping_type, received_at, payload, platform")
         .or("status.eq.refunded,status.eq.chargeback")
         .order("received_at", { ascending: false })
         .limit(50);
+      
+      // Apply platform filter
+      if (platform === 'artes-eventos') {
+        refundQuery = refundQuery.eq('platform', 'artes-eventos');
+      } else if (platform === 'artes-musicos') {
+        refundQuery = refundQuery.eq('platform', 'artes-musicos');
+      } else if (platform === 'prompts') {
+        refundQuery = refundQuery.eq('platform', 'prompts');
+      }
+
+      const { data: refundLogsData } = await refundQuery;
 
       if (refundLogsData) {
         const refundedCount = refundLogsData.filter(l => l.status === 'refunded').length;
@@ -986,10 +997,19 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
         });
       }
 
-      // Abandoned checkouts stats
+      // Abandoned checkouts stats - filtered by platform
       let abandonedQuery = supabase
         .from('abandoned_checkouts')
-        .select('remarketing_status, amount, abandoned_at');
+        .select('remarketing_status, amount, abandoned_at, platform');
+
+      // Apply platform filter
+      if (platform === 'artes-eventos') {
+        abandonedQuery = abandonedQuery.eq('platform', 'artes-eventos');
+      } else if (platform === 'artes-musicos') {
+        abandonedQuery = abandonedQuery.eq('platform', 'artes-musicos');
+      } else if (platform === 'prompts') {
+        abandonedQuery = abandonedQuery.eq('platform', 'prompts');
+      }
 
       if (threshold.start) {
         abandonedQuery = abandonedQuery.gte('abandoned_at', threshold.start);

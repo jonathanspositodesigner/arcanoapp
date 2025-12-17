@@ -31,6 +31,7 @@ export type Database = {
           offer_hash: string | null
           offer_name: string | null
           phone: string | null
+          platform: string | null
           product_id: number | null
           product_name: string | null
           remarketing_status: string | null
@@ -52,6 +53,7 @@ export type Database = {
           offer_hash?: string | null
           offer_name?: string | null
           phone?: string | null
+          platform?: string | null
           product_id?: number | null
           product_name?: string | null
           remarketing_status?: string | null
@@ -73,6 +75,7 @@ export type Database = {
           offer_hash?: string | null
           offer_name?: string | null
           phone?: string | null
+          platform?: string | null
           product_id?: number | null
           product_name?: string | null
           remarketing_status?: string | null
@@ -1867,6 +1870,7 @@ export type Database = {
           id: string
           mapping_type: string | null
           payload: Json
+          platform: string | null
           product_id: number | null
           received_at: string | null
           result: string | null
@@ -1880,6 +1884,7 @@ export type Database = {
           id?: string
           mapping_type?: string | null
           payload: Json
+          platform?: string | null
           product_id?: number | null
           received_at?: string | null
           result?: string | null
@@ -1893,6 +1898,7 @@ export type Database = {
           id?: string
           mapping_type?: string | null
           payload?: Json
+          platform?: string | null
           product_id?: number | null
           received_at?: string | null
           result?: string | null

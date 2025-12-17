@@ -94,7 +94,8 @@ async function logWebhook(
   email: string | undefined,
   result: 'success' | 'error' | 'skipped' | 'blacklisted',
   mappingType: string,
-  errorMessage?: string
+  errorMessage?: string,
+  platform: string = 'artes-eventos'
 ): Promise<void> {
   try {
     const utmSource = extractUtmSource(payload)
@@ -109,7 +110,8 @@ async function logWebhook(
       mapping_type: mappingType,
       error_message: errorMessage,
       utm_source: utmSource,
-      from_app: fromApp
+      from_app: fromApp,
+      platform
     })
     
     if (fromApp) {
@@ -606,7 +608,8 @@ Deno.serve(async (req) => {
             amount: amount,
             checkout_link: checkoutLink,
             checkout_step: checkoutStep,
-            remarketing_status: 'pending'
+            remarketing_status: 'pending',
+            platform: 'artes-eventos'
           })
 
           if (insertError) {
@@ -1111,7 +1114,8 @@ Deno.serve(async (req) => {
           amount: saleAmount,
           checkout_link: checkoutLink,
           checkout_step: 0, // waiting_payment não tem step específico
-          remarketing_status: 'pending'
+          remarketing_status: 'pending',
+          platform: 'artes-eventos'
         })
 
         if (insertError) {
