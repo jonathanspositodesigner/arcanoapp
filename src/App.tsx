@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Promptverso from "./pages/Promptverso";
 import BibliotecaPrompts from "./pages/BibliotecaPrompts";
 import BibliotecaArtes from "./pages/BibliotecaArtes";
+import BibliotecaArtesHub from "./pages/BibliotecaArtesHub";
+import BibliotecaArtesMusicos from "./pages/BibliotecaArtesMusicos";
 import ContributePrompts from "./pages/ContributePrompts";
 import AdminUpload from "./pages/AdminUpload";
 import AdminUploadArtes from "./pages/AdminUploadArtes";
@@ -98,6 +100,8 @@ const AppContent = () => {
         <Route path="/promptverso" element={<Promptverso />} />
         <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
         <Route path="/biblioteca-artes" element={<BibliotecaArtes />} />
+        <Route path="/biblioteca-artes-hub" element={<BibliotecaArtesHub />} />
+        <Route path="/biblioteca-artes-musicos" element={<BibliotecaArtesMusicos />} />
         <Route path="/contribuir" element={<ContributePrompts />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />

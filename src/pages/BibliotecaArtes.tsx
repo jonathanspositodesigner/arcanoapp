@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart, Bell, UserCheck, Loader2 } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart, Bell, UserCheck, Loader2, ArrowLeftRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -641,7 +641,16 @@ const BibliotecaArtes = () => {
       {/* Main Content Area */}
       <div className="flex-1 lg:pl-64">
         {/* Top Bar - Desktop */}
-        <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-end sticky top-0 z-10">
+        <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between sticky top-0 z-10">
+          <Button 
+            onClick={() => navigate("/biblioteca-artes-hub")} 
+            variant="outline" 
+            size="sm"
+            className="text-amber-600 border-amber-500/50 hover:bg-amber-500/10"
+          >
+            <ArrowLeftRight className="h-4 w-4 mr-2" />
+            Trocar Biblioteca
+          </Button>
           <div className="flex items-center gap-3">
             {!user && (
               <>
@@ -701,6 +710,14 @@ const BibliotecaArtes = () => {
               <Menu className="h-5 w-5" />
             </Button>
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
+            <Button 
+              onClick={() => navigate("/biblioteca-artes-hub")} 
+              variant="ghost" 
+              size="sm"
+              className="text-amber-300 hover:bg-amber-500/20"
+            >
+              <ArrowLeftRight className="h-4 w-4" />
+            </Button>
           </div>
           <div className="flex items-center gap-2">
             {!user && (
@@ -744,11 +761,19 @@ const BibliotecaArtes = () => {
 
         {/* Top Bar - Mobile */}
         <header className="md:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg sticky top-0 z-10">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
+            <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-8" />
+            <Button 
+              onClick={() => navigate("/biblioteca-artes-hub")} 
+              variant="ghost" 
+              size="sm"
+              className="text-amber-300 hover:bg-amber-500/20 p-1.5"
+            >
+              <ArrowLeftRight className="h-4 w-4" />
+            </Button>
           </div>
           <div className="flex items-center gap-2">
             {!user && (
