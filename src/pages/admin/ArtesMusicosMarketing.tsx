@@ -24,7 +24,8 @@ const ArtesMusicosMarketing = () => {
     totalSubscriptions: 0,
     conversionRate: 0
   });
-  const { stats: emailStats, loading: emailLoading, refresh: refreshEmailStats } = useEmailMarketingStats();
+  // Filter by 'artes-musicos' platform
+  const { stats: emailStats, loading: emailLoading, refresh: refreshEmailStats } = useEmailMarketingStats('artes-musicos');
   
   const [topEmailCampaigns, setTopEmailCampaigns] = useState<TopEmailCampaign[]>([]);
   const [pushCampaignStats, setPushCampaignStats] = useState<PushCampaignStats>({
@@ -42,7 +43,7 @@ const ArtesMusicosMarketing = () => {
   const loadStats = useCallback(async () => {
     const [push, topEmail, pushCampaign] = await Promise.all([
       fetchPushNotificationStats(),
-      fetchTopEmailCampaigns(5),
+      fetchTopEmailCampaigns(5, 'artes-musicos'), // Filter by artes-musicos platform
       fetchPushCampaignStats()
     ]);
     setPushStats(push);
