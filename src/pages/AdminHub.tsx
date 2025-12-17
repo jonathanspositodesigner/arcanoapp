@@ -9,6 +9,7 @@ import AdminGoalsCard from "@/components/AdminGoalsCard";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AdminHubSidebar from "@/components/AdminHubSidebar";
 import AdminGeneralDashboard from "@/components/AdminGeneralDashboard";
+import HubGeneralMarketing from "@/components/HubGeneralMarketing";
 
 const AdminHub = () => {
   const navigate = useNavigate();
@@ -169,13 +170,7 @@ const AdminHub = () => {
         ) : activeView === "dashboard" ? (
           <AdminGeneralDashboard />
         ) : (
-          <div className="max-w-6xl mx-auto">
-            <iframe 
-              src="/admin-email-marketing" 
-              className="w-full h-[calc(100vh-8rem)] border-0 rounded-lg"
-              title="Marketing Geral"
-            />
-          </div>
+          <HubGeneralMarketing />
         )}
       </main>
     </div>

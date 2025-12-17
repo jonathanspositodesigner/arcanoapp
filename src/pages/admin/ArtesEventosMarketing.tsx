@@ -24,7 +24,8 @@ const ArtesEventosMarketing = () => {
     totalSubscriptions: 0,
     conversionRate: 0
   });
-  const { stats: emailStats, loading: emailLoading, refresh: refreshEmailStats } = useEmailMarketingStats();
+  // Filter by 'artes-eventos' platform
+  const { stats: emailStats, loading: emailLoading, refresh: refreshEmailStats } = useEmailMarketingStats('artes-eventos');
   
   const [topEmailCampaigns, setTopEmailCampaigns] = useState<TopEmailCampaign[]>([]);
   const [topPushCampaigns, setTopPushCampaigns] = useState<TopPushCampaign[]>([]);
@@ -43,7 +44,7 @@ const ArtesEventosMarketing = () => {
   const loadStats = useCallback(async () => {
     const [push, topEmail, topPush, pushCampaign] = await Promise.all([
       fetchPushNotificationStats(),
-      fetchTopEmailCampaigns(5),
+      fetchTopEmailCampaigns(5, 'artes-eventos'), // Filter by artes-eventos platform
       fetchTopPushCampaigns(5),
       fetchPushCampaignStats()
     ]);

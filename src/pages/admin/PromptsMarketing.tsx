@@ -24,7 +24,8 @@ const PromptsMarketing = () => {
     totalSubscriptions: 0,
     conversionRate: 0
   });
-  const { stats: emailStats, loading: emailLoading, refresh: refreshEmailStats } = useEmailMarketingStats();
+  // Filter by 'prompts' platform
+  const { stats: emailStats, loading: emailLoading, refresh: refreshEmailStats } = useEmailMarketingStats('prompts');
   
   const [topEmailCampaigns, setTopEmailCampaigns] = useState<TopEmailCampaign[]>([]);
   const [pushCampaignStats, setPushCampaignStats] = useState<PushCampaignStats>({
@@ -42,7 +43,7 @@ const PromptsMarketing = () => {
   const loadStats = useCallback(async () => {
     const [push, topEmail, pushCampaign] = await Promise.all([
       fetchPushNotificationStats(),
-      fetchTopEmailCampaigns(5),
+      fetchTopEmailCampaigns(5, 'prompts'), // Filter by prompts platform
       fetchPushCampaignStats()
     ]);
     setPushStats(push);
