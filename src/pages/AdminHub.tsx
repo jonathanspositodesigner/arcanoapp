@@ -2,15 +2,19 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Music, FileText, LogOut, ArrowLeft } from "lucide-react";
+import { Sparkles, Music, FileText, Menu } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import AdminGoalsCard from "@/components/AdminGoalsCard";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import AdminHubSidebar from "@/components/AdminHubSidebar";
+import AdminGeneralDashboard from "@/components/AdminGeneralDashboard";
 
 const AdminHub = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeView, setActiveView] = useState<"home" | "dashboard">("home");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -43,6 +47,11 @@ const AdminHub = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
+  };
+
+  const handleViewChange = (view: "home" | "dashboard") => {
+    setActiveView(view);
+    setIsMobileMenuOpen(false);
   };
 
   if (isLoading) {
@@ -92,66 +101,68 @@ const AdminHub = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar ao Site
+    <div className="min-h-screen bg-background flex w-full">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <AdminHubSidebar 
+          activeView={activeView}
+          onViewChange={handleViewChange}
+          onLogout={handleLogout}
+        />
+      </div>
+
+      {/* Mobile Menu */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border p-4 flex items-center justify-between">
+        <h1 className="text-lg font-bold text-foreground">Painel Admin</h1>
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6" />
             </Button>
-          </div>
-          <div className="text-center">
-            <h1 className="text-xl font-bold text-foreground">Painel Administrativo</h1>
-            <p className="text-sm text-muted-foreground">Selecione a plataforma para gerenciar</p>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleLogout}
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sair
-          </Button>
-        </div>
-      </header>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-64">
+            <AdminHubSidebar 
+              activeView={activeView}
+              onViewChange={handleViewChange}
+              onLogout={handleLogout}
+            />
+          </SheetContent>
+        </Sheet>
+      </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-2">Escolha uma Plataforma</h2>
-            <p className="text-muted-foreground">Cada plataforma possui seu próprio painel de gerenciamento</p>
-          </div>
+      <main className="flex-1 p-4 md:p-8 mt-16 md:mt-0">
+        {activeView === "home" ? (
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-foreground mb-2">Escolha uma Plataforma</h2>
+              <p className="text-muted-foreground">Cada plataforma possui seu próprio painel de gerenciamento</p>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {platforms.map((platform) => (
-              <Card
-                key={platform.id}
-                className={`p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 ${platform.borderColor} ${platform.hoverBorder}`}
-                onClick={() => navigate(platform.path)}
-              >
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className={`p-4 bg-gradient-to-r ${platform.color} rounded-full`}>
-                    <platform.icon className="h-10 w-10 text-white" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {platforms.map((platform) => (
+                <Card
+                  key={platform.id}
+                  className={`p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 ${platform.borderColor} ${platform.hoverBorder}`}
+                  onClick={() => navigate(platform.path)}
+                >
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className={`p-4 bg-gradient-to-r ${platform.color} rounded-full`}>
+                      <platform.icon className="h-10 w-10 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground">{platform.title}</h3>
+                      <p className="text-sm font-medium text-primary">{platform.subtitle}</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{platform.description}</p>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground">{platform.title}</h3>
-                    <p className="text-sm font-medium text-primary">{platform.subtitle}</p>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{platform.description}</p>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))}
+            </div>
           </div>
-
-          {/* Goals Section */}
-          <div className="mt-12">
-            <AdminGoalsCard />
-          </div>
-        </div>
+        ) : (
+          <AdminGeneralDashboard />
+        )}
       </main>
     </div>
   );
