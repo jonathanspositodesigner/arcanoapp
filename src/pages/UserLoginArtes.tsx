@@ -41,8 +41,15 @@ const UserLoginArtes = () => {
 
       if (error) {
         // Use RPC function with SECURITY DEFINER to check profile (bypasses RLS)
-        const { data: profileCheck } = await supabase
+        const { data: profileCheck, error: rpcError } = await supabase
           .rpc('check_profile_exists', { check_email: email.trim() });
+
+        if (rpcError) {
+          console.error('Erro ao verificar perfil:', rpcError);
+          toast.error("Erro ao verificar cadastro. Tente novamente.");
+          setIsLoading(false);
+          return;
+        }
 
         const profileExists = profileCheck?.[0]?.exists_in_db || false;
         const passwordChanged = profileCheck?.[0]?.password_changed || false;

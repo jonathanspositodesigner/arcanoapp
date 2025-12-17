@@ -139,8 +139,15 @@ const BibliotecaArtes = () => {
 
     setFirstAccessLoading(true);
     try {
-      const { data: profileCheck } = await supabase
+      const { data: profileCheck, error: rpcError } = await supabase
         .rpc('check_profile_exists', { check_email: firstAccessEmail.trim() });
+
+      if (rpcError) {
+        console.error('Erro ao verificar perfil:', rpcError);
+        toast.error("Erro ao verificar cadastro. Tente novamente.");
+        setFirstAccessLoading(false);
+        return;
+      }
 
       const profileExists = profileCheck?.[0]?.exists_in_db || false;
       const passwordChanged = profileCheck?.[0]?.password_changed || false;
