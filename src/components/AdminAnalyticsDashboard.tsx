@@ -1363,7 +1363,8 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
               </div>
             </GridCard>
 
-            {/* Artes Click Type Stats Card */}
+            {/* Artes Click Type Stats Card - Hidden for prompts platform */}
+            {platform !== 'prompts' && (
             <GridCard key="artes-click-types" isEditing={isEditing}>
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
@@ -1404,6 +1405,7 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
                 </div>
               </div>
             </GridCard>
+            )}
 
             {/* Collection Links Card - Only for prompts platform or no platform */}
             {platform !== 'artes-eventos' && platform !== 'artes-musicos' && (
