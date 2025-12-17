@@ -1234,8 +1234,8 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
             isEditing={isEditing}
             onLayoutChange={handleLayoutChange}
           >
-            {/* Today's Stats Card - Hidden for artes platforms */}
-            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && (
+            {/* Today's Stats Card - Hidden for all platforms (shown in AdminGeneralDashboard) */}
+            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && platform !== 'prompts' && (
             <GridCard key="today-access" isEditing={isEditing} className="border-2 border-green-500 bg-green-500/10">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-4">
@@ -1264,8 +1264,8 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
             </GridCard>
             )}
 
-            {/* Period Stats Card - Hidden for artes platforms */}
-            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && (
+            {/* Period Stats Card - Hidden for all platforms (shown in AdminGeneralDashboard) */}
+            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && platform !== 'prompts' && (
             <GridCard key="period-access" isEditing={isEditing}>
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-4">
@@ -1284,8 +1284,8 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
             </GridCard>
             )}
 
-            {/* Installations Card - Hidden for artes platforms */}
-            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && (
+            {/* Installations Card - Hidden for all platforms (shown in AdminGeneralDashboard) */}
+            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && platform !== 'prompts' && (
             <GridCard key="installations" isEditing={isEditing}>
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-4">
@@ -1594,8 +1594,8 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
               </div>
             </GridCard>
 
-            {/* Peak Hours - Hidden for artes platforms */}
-            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && (
+            {/* Peak Hours - Hidden for all platforms (shown in AdminGeneralDashboard) */}
+            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && platform !== 'prompts' && (
             <GridCard key="hourly-stats" isEditing={isEditing} className="border-2 border-orange-500/30">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
@@ -1654,8 +1654,8 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
             </GridCard>
             )}
 
-            {/* Conversion Rate - Hidden for artes platforms */}
-            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && (
+            {/* Conversion Rate - Hidden for all platforms (shown in AdminGeneralDashboard) */}
+            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && platform !== 'prompts' && (
             <GridCard key="conversion" isEditing={isEditing} className="border-2 border-green-500/30">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
@@ -1688,8 +1688,8 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
             </GridCard>
             )}
 
-            {/* Retention - Average per day - Hidden for artes platforms */}
-            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && (
+            {/* Retention - Average per day - Hidden for all platforms (shown in AdminGeneralDashboard) */}
+            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && platform !== 'prompts' && (
             <GridCard key="retention" isEditing={isEditing} className="border-2 border-cyan-500/30">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
@@ -1716,8 +1716,8 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
             </GridCard>
             )}
 
-            {/* Purchase Hours - Hidden for artes platforms */}
-            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && (
+            {/* Purchase Hours - Hidden for all platforms (shown in AdminGeneralDashboard) */}
+            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && platform !== 'prompts' && (
             <GridCard key="purchase-hours" isEditing={isEditing} className="border-2 border-emerald-500/30">
               <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
@@ -1847,8 +1847,8 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
               </div>
             </GridCard>
 
-            {/* Access Chart - Hidden for artes platforms */}
-            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && (
+            {/* Access Chart - Hidden for all platforms (shown in AdminGeneralDashboard) */}
+            {platform !== 'artes-eventos' && platform !== 'artes-musicos' && platform !== 'prompts' && (
             <GridCard key="access-chart" isEditing={isEditing}>
               <div className="p-6 h-full flex flex-col">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Evolução de Acessos</h3>
