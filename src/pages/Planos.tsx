@@ -19,7 +19,7 @@ const Planos = () => {
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const plans = {
     mensal: [{
-      name: "PromptClub Starter",
+      name: "Starter",
       price: "14,90",
       originalPrice: null,
       perMonth: true,
@@ -58,7 +58,7 @@ const Planos = () => {
       popular: false,
       promo: false
     }, {
-      name: "PromptClub Pro",
+      name: "Pro",
       price: "20,90",
       originalPrice: null,
       perMonth: true,
@@ -98,7 +98,7 @@ const Planos = () => {
       promo: false,
       hasTrial: false
     }, {
-      name: "PromptClub IA Unlimited",
+      name: "IA Unlimited",
       price: "24,90",
       originalPrice: "29,90",
       perMonth: true,
@@ -138,7 +138,7 @@ const Planos = () => {
       promo: true
     }],
     anual: [{
-      name: "PromptClub Starter",
+      name: "Starter",
       price: "9,90",
       originalPrice: "14,90",
       perMonth: true,
@@ -178,7 +178,7 @@ const Planos = () => {
       popular: false,
       promo: false
     }, {
-      name: "PromptClub Pro",
+      name: "Pro",
       price: "14,90",
       originalPrice: "20,90",
       perMonth: true,
@@ -219,7 +219,7 @@ const Planos = () => {
       promo: false,
       hasTrial: true
     }, {
-      name: "PromptClub IA Unlimited",
+      name: "IA Unlimited",
       price: "19,90",
       originalPrice: "29,90",
       perMonth: true,
@@ -357,7 +357,7 @@ const Planos = () => {
               </ul>
 
               {/* Extra Benefits for Unlimited */}
-              {plan.name === "PromptClub IA Unlimited" && <div className="mt-6 pt-4 border-t border-border">
+              {plan.name === "IA Unlimited" && <div className="mt-6 pt-4 border-t border-border">
                   <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">
                     Benefícios extras do plano:
                   </p>
