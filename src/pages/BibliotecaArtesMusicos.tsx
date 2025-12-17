@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, LogIn, User, Settings, LogOut, Loader2, Lock, Play } from "lucide-react";
+import { ArrowLeft, LogIn, Settings, LogOut, Loader2, Lock, Play, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import baaLogo from "@/assets/BAA.png";
@@ -98,8 +98,18 @@ const BibliotecaArtesMusicos = () => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <img src={baaLogo} alt="BAA" className="h-8" />
-            <span className="hidden sm:inline text-violet-300 font-medium">Músicos & Artistas</span>
+            <span className="hidden md:inline text-violet-300 font-medium">Músicos & Artistas</span>
           </div>
+
+          {/* Center - Cadastrar Grátis */}
+          <Button
+            onClick={() => navigate("/planos-artes-musicos")}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span className="hidden sm:inline">Cadastrar Grátis</span>
+            <span className="sm:hidden">Cadastrar</span>
+          </Button>
 
           {/* Right - Auth */}
           <div className="flex items-center gap-2">
