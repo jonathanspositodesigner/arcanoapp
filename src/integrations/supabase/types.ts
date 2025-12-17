@@ -1133,6 +1133,7 @@ export type Database = {
           page_path: string
           user_agent: string | null
           viewed_at: string
+          visitor_id: string | null
         }
         Insert: {
           device_type?: string
@@ -1140,6 +1141,7 @@ export type Database = {
           page_path: string
           user_agent?: string | null
           viewed_at?: string
+          visitor_id?: string | null
         }
         Update: {
           device_type?: string
@@ -1147,6 +1149,7 @@ export type Database = {
           page_path?: string
           user_agent?: string | null
           viewed_at?: string
+          visitor_id?: string | null
         }
         Relationships: []
       }
