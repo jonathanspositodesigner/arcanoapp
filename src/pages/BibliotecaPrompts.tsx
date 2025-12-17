@@ -11,6 +11,7 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
 import { trackPromptClick, hasClickedInSession } from "@/hooks/usePromptClickTracker";
 import logoHorizontal from "@/assets/logo_horizontal.png";
+import promptclubLogo from "@/assets/promptclub_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import ArcaneAIStudioModal from "@/components/ArcaneAIStudioModal";
@@ -428,7 +429,7 @@ const BibliotecaPrompts = () => {
       {/* Top Bar - Desktop */}
       <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between">
         <div className="flex items-center gap-4">
-          <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1598a9b7-8be1-453e-9117-dd811da037e9.png" className="h-8 cursor-pointer hover:opacity-80 transition-opacity" />
+          <img alt="PromptClub" onClick={() => navigate('/')} src={promptclubLogo} className="h-8 cursor-pointer hover:opacity-80 transition-opacity" />
         </div>
         <div className="flex items-center gap-3">
           <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
