@@ -1,36 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Music } from "lucide-react";
+import { Music, Sparkles } from "lucide-react";
 import baaLogo from "@/assets/BAA.png";
-
-// Custom Disco Ball Icon
-const DiscoBallIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    {/* String */}
-    <line x1="32" y1="2" x2="32" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-    {/* Ball */}
-    <circle cx="32" cy="36" r="22" fill="url(#discoBallGradient)" stroke="currentColor" strokeWidth="1.5"/>
-    {/* Reflection squares */}
-    <rect x="24" y="26" width="6" height="5" rx="1" fill="white" fillOpacity="0.9"/>
-    <rect x="34" y="26" width="6" height="5" rx="1" fill="white" fillOpacity="0.7"/>
-    <rect x="19" y="34" width="6" height="5" rx="1" fill="white" fillOpacity="0.6"/>
-    <rect x="29" y="34" width="6" height="5" rx="1" fill="white" fillOpacity="0.8"/>
-    <rect x="39" y="34" width="6" height="5" rx="1" fill="white" fillOpacity="0.5"/>
-    <rect x="24" y="42" width="6" height="5" rx="1" fill="white" fillOpacity="0.7"/>
-    <rect x="34" y="42" width="6" height="5" rx="1" fill="white" fillOpacity="0.6"/>
-    {/* Light rays */}
-    <line x1="10" y1="20" x2="16" y2="26" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
-    <line x1="54" y1="20" x2="48" y2="26" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
-    <line x1="8" y1="40" x2="14" y2="38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
-    <line x1="56" y1="40" x2="50" y2="38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
-    <defs>
-      <linearGradient id="discoBallGradient" x1="10" y1="14" x2="54" y2="58" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#E5E5E5"/>
-        <stop offset="0.5" stopColor="#A0A0A0"/>
-        <stop offset="1" stopColor="#707070"/>
-      </linearGradient>
-    </defs>
-  </svg>
-);
 
 const BibliotecaArtesHub = () => {
   const navigate = useNavigate();
@@ -64,7 +34,7 @@ const BibliotecaArtesHub = () => {
           
           {/* Icon */}
           <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 shadow-lg shadow-amber-500/30 group-hover:shadow-amber-400/50 transition-all">
-            <DiscoBallIcon className="w-12 h-12 sm:w-14 sm:h-14 text-white" />
+            <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
           
           {/* Title */}
