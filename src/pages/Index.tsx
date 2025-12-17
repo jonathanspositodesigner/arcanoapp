@@ -73,7 +73,7 @@ const Index = () => {
             Biblioteca de Prompts IA
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Prompts profissionais para criar imagens incríveis com IA
+            Prompts prontos para criar selos, imagens, logos e muito mais com IA
           </p>
         </div>
       </div>
