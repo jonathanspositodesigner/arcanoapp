@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,9 +7,13 @@ import { fetchPushNotificationStats, PushNotificationStats } from "@/hooks/usePu
 import { useEmailMarketingStats, fetchTopEmailCampaigns, fetchPushCampaignStats, TopEmailCampaign, PushCampaignStats } from "@/hooks/useEmailMarketingAnalytics";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { HubViewType } from "./AdminHubSidebar";
 
-const HubGeneralMarketing = () => {
-  const navigate = useNavigate();
+interface HubGeneralMarketingProps {
+  onNavigate?: (view: HubViewType) => void;
+}
+
+const HubGeneralMarketing = ({ onNavigate }: HubGeneralMarketingProps) => {
   const [pushStats, setPushStats] = useState<PushNotificationStats>({
     promptShown: 0,
     activatedViaPrompt: 0,
@@ -63,6 +66,12 @@ const HubGeneralMarketing = () => {
     setIsRefreshing(false);
   };
 
+  const handleCardClick = (view: HubViewType) => {
+    if (onNavigate) {
+      onNavigate(view);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-2">
@@ -84,7 +93,7 @@ const HubGeneralMarketing = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
         <Card 
           className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" 
-          onClick={() => navigate('/admin-email-marketing')}
+          onClick={() => handleCardClick("email-marketing")}
         >
           <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
             <div className="p-2 sm:p-4 bg-gradient-to-r from-primary to-purple-600 rounded-full">
@@ -97,7 +106,7 @@ const HubGeneralMarketing = () => {
 
         <Card 
           className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" 
-          onClick={() => navigate('/admin-push-notifications')}
+          onClick={() => handleCardClick("push-notifications")}
         >
           <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
             <div className="p-2 sm:p-4 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-full">

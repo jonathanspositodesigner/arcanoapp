@@ -7,15 +7,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminGoalsCard from "@/components/AdminGoalsCard";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import AdminHubSidebar from "@/components/AdminHubSidebar";
+import AdminHubSidebar, { HubViewType } from "@/components/AdminHubSidebar";
 import AdminGeneralDashboard from "@/components/AdminGeneralDashboard";
 import HubGeneralMarketing from "@/components/HubGeneralMarketing";
+import EmailMarketingContent from "@/components/EmailMarketingContent";
+import PushNotificationsContent from "@/components/PushNotificationsContent";
 
 const AdminHub = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeView, setActiveView] = useState<"home" | "dashboard" | "marketing">("home");
+  const [activeView, setActiveView] = useState<HubViewType>("home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -51,7 +53,7 @@ const AdminHub = () => {
     navigate('/');
   };
 
-  const handleViewChange = (view: "home" | "dashboard" | "marketing") => {
+  const handleViewChange = (view: HubViewType) => {
     setActiveView(view);
     setIsMobileMenuOpen(false);
   };
@@ -102,39 +104,10 @@ const AdminHub = () => {
     }
   ];
 
-  return (
-    <div className="min-h-screen bg-background flex w-full">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <AdminHubSidebar 
-          activeView={activeView}
-          onViewChange={handleViewChange}
-          onLogout={handleLogout}
-        />
-      </div>
-
-      {/* Mobile Menu */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border p-4 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-foreground">Painel Admin</h1>
-        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64">
-            <AdminHubSidebar 
-              activeView={activeView}
-              onViewChange={handleViewChange}
-              onLogout={handleLogout}
-            />
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 mt-16 md:mt-0">
-        {activeView === "home" ? (
+  const renderContent = () => {
+    switch (activeView) {
+      case "home":
+        return (
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-foreground mb-2">Escolha uma Plataforma</h2>
@@ -167,11 +140,53 @@ const AdminHub = () => {
               <AdminGoalsCard />
             </div>
           </div>
-        ) : activeView === "dashboard" ? (
-          <AdminGeneralDashboard />
-        ) : (
-          <HubGeneralMarketing />
-        )}
+        );
+      case "dashboard":
+        return <AdminGeneralDashboard />;
+      case "marketing":
+        return <HubGeneralMarketing onNavigate={handleViewChange} />;
+      case "email-marketing":
+        return <EmailMarketingContent />;
+      case "push-notifications":
+        return <PushNotificationsContent />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex w-full">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <AdminHubSidebar 
+          activeView={activeView}
+          onViewChange={handleViewChange}
+          onLogout={handleLogout}
+        />
+      </div>
+
+      {/* Mobile Menu */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border p-4 flex items-center justify-between">
+        <h1 className="text-lg font-bold text-foreground">Painel Admin</h1>
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-64">
+            <AdminHubSidebar 
+              activeView={activeView}
+              onViewChange={handleViewChange}
+              onLogout={handleLogout}
+            />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Main Content */}
+      <main className="flex-1 p-4 md:p-8 mt-16 md:mt-0">
+        {renderContent()}
       </main>
     </div>
   );

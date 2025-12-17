@@ -1,11 +1,13 @@
-import { Home, BarChart3, LogOut, ArrowLeft, Mail } from "lucide-react";
+import { Home, BarChart3, LogOut, ArrowLeft, Mail, Bell, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
+export type HubViewType = "home" | "dashboard" | "marketing" | "email-marketing" | "push-notifications";
+
 interface AdminHubSidebarProps {
-  activeView: "home" | "dashboard" | "marketing";
-  onViewChange: (view: "home" | "dashboard" | "marketing") => void;
+  activeView: HubViewType;
+  onViewChange: (view: HubViewType) => void;
   onLogout: () => void;
 }
 
@@ -28,8 +30,20 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
     {
       id: "marketing" as const,
       label: "MARKETING GERAL",
+      icon: Megaphone,
+      description: "Visão geral de campanhas"
+    },
+    {
+      id: "email-marketing" as const,
+      label: "E-MAIL MARKETING",
       icon: Mail,
-      description: "Campanhas para todos"
+      description: "Campanhas de e-mail"
+    },
+    {
+      id: "push-notifications" as const,
+      label: "NOTIFICAÇÕES PUSH",
+      icon: Bell,
+      description: "Enviar notificações"
     }
   ];
 
