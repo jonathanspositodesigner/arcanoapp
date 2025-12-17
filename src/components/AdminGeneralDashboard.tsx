@@ -5,13 +5,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   Users, ShoppingCart, Eye, TrendingUp, 
-  CalendarIcon, Package, FileText, Image
+  CalendarIcon, FileText, Image
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import AdminGoalsCard from "./AdminGoalsCard";
 
 const AdminGeneralDashboard = () => {
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
@@ -227,8 +226,6 @@ const AdminGeneralDashboard = () => {
         ))}
       </div>
 
-      {/* Goals Section */}
-      <AdminGoalsCard />
     </div>
   );
 };
