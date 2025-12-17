@@ -48,6 +48,7 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}"],
         importScripts: ['/push-handler.js'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
