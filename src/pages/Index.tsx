@@ -9,13 +9,12 @@ import promptclubLogo from "@/assets/promptclub_logo.png";
 const Index = () => {
   const navigate = useNavigate();
   const isAppInstalled = useIsAppInstalled();
-  const { subscribe } = usePushNotifications();
+  const {
+    subscribe
+  } = usePushNotifications();
 
   // LÓGICA SIMPLES: Mostra botão se browser suporta E permissão não foi concedida
-  const showNotificationButton = typeof window !== 'undefined' && 
-    'Notification' in window && 
-    Notification.permission !== 'granted';
-
+  const showNotificationButton = typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted';
   const handleActivateNotifications = async () => {
     const success = await subscribe();
     if (success) {
@@ -26,9 +25,7 @@ const Index = () => {
       toast.error("Não foi possível ativar as notificações");
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
+  return <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
       {/* Logo */}
       <img alt="ArcanoApp" className="h-7 sm:h-8 mb-4" src={logoHorizontal} />
       
@@ -40,31 +37,19 @@ const Index = () => {
       {/* Botões de ação */}
       <div className="flex flex-col sm:flex-row items-center gap-3 mb-6 sm:mb-8">
         {/* Botão Instalar App ou Badge App Instalado */}
-        {isAppInstalled ? (
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600">
+        {isAppInstalled ? <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600">
             <Check className="h-4 w-4" />
             <span className="text-sm font-medium">App Instalado</span>
-          </div>
-        ) : (
-          <button
-            onClick={() => navigate("/install-app")}
-            className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-md hover:shadow-lg"
-          >
+          </div> : <button onClick={() => navigate("/install-app")} className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-md hover:shadow-lg">
             <Smartphone className="h-5 w-5" />
             Instalar Aplicativo
-          </button>
-        )}
+          </button>}
 
         {/* Botão Ativar Notificações - mostra se não está ativada */}
-        {showNotificationButton && (
-          <button
-            onClick={handleActivateNotifications}
-            className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
-          >
+        {showNotificationButton && <button onClick={handleActivateNotifications} className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg">
             <Bell className="h-5 w-5" />
             Ativar Notificações
-          </button>
-        )}
+          </button>}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl">
@@ -76,7 +61,7 @@ const Index = () => {
           <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             Biblioteca de Artes Arcanas
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Artes editáveis PSD e Canva para eventos e Artistas</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Artes para Eventos editáveis PSD e Canva </p>
         </div>
 
         {/* Card - Biblioteca de Prompts IA */}
@@ -95,21 +80,13 @@ const Index = () => {
 
       {/* Links de acesso */}
       <div className="mt-8 flex flex-col items-center gap-2">
-        <button
-          onClick={() => navigate("/admin-login")}
-          className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
-        >
+        <button onClick={() => navigate("/admin-login")} className="text-sm text-muted-foreground hover:text-primary transition-colors underline">
           Acesso Administrador
         </button>
-        <button
-          onClick={() => navigate("/parceiro-login-artes")}
-          className="text-sm text-muted-foreground hover:text-primary transition-colors underline lg:hidden"
-        >
+        <button onClick={() => navigate("/parceiro-login-artes")} className="text-sm text-muted-foreground hover:text-primary transition-colors underline lg:hidden">
           Área do Colaborador
         </button>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
