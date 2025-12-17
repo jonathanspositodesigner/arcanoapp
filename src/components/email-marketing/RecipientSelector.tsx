@@ -18,12 +18,14 @@ interface RecipientSelectorProps {
   onPackChange?: (value: string) => void;
   customEmail?: string;
   onCustomEmailChange?: (value: string) => void;
+  platform?: string | null; // 'prompts' | 'artes-eventos' | 'artes-musicos' | null (general)
 }
 
 interface Counts {
   all: number;
   premiumPrompts: number;
-  artesClients: number;
+  artesEventosClients: number;
+  artesMusicosClients: number;
   artesExpired: number;
   pendingFirstAccess: number;
 }
@@ -31,6 +33,7 @@ interface Counts {
 interface Pack {
   slug: string;
   name: string;
+  platform: string;
 }
 
 interface PendingUser {
@@ -45,12 +48,14 @@ const RecipientSelector = ({
   packValue, 
   onPackChange,
   customEmail,
-  onCustomEmailChange
+  onCustomEmailChange,
+  platform
 }: RecipientSelectorProps) => {
   const [counts, setCounts] = useState<Counts>({
     all: 0,
     premiumPrompts: 0,
-    artesClients: 0,
+    artesEventosClients: 0,
+    artesMusicosClients: 0,
     artesExpired: 0,
     pendingFirstAccess: 0,
   });
@@ -61,7 +66,7 @@ const RecipientSelector = ({
   useEffect(() => {
     fetchCounts();
     fetchPacks();
-  }, []);
+  }, [platform]);
 
   useEffect(() => {
     if (value === "pending_first_access") {
@@ -117,9 +122,9 @@ const RecipientSelector = ({
       .not("email", "is", null)
       .or("password_changed.is.null,password_changed.eq.false");
 
-    // For artes clients, we need to fetch ALL records to count unique users
-    // Use pagination to get all data
-    let allArtesUserIds: string[] = [];
+    // Fetch all artes purchases with platform
+    let allArtesEventosUserIds: string[] = [];
+    let allArtesMusicosUserIds: string[] = [];
     let page = 0;
     const pageSize = 1000;
     let hasMore = true;
@@ -127,12 +132,19 @@ const RecipientSelector = ({
     while (hasMore) {
       const { data: artesData } = await supabase
         .from("user_pack_purchases")
-        .select("user_id, access_type, expires_at")
+        .select("user_id, platform, access_type, expires_at")
         .eq("is_active", true)
         .range(page * pageSize, (page + 1) * pageSize - 1);
       
       if (artesData && artesData.length > 0) {
-        allArtesUserIds = [...allArtesUserIds, ...artesData.map(p => p.user_id)];
+        artesData.forEach((p: any) => {
+          if (p.platform === 'musicos') {
+            allArtesMusicosUserIds.push(p.user_id);
+          } else {
+            // Default to eventos
+            allArtesEventosUserIds.push(p.user_id);
+          }
+        });
         hasMore = artesData.length === pageSize;
         page++;
       } else {
@@ -140,9 +152,10 @@ const RecipientSelector = ({
       }
     }
 
-    const uniqueArtesUsers = new Set(allArtesUserIds);
+    const uniqueArtesEventosUsers = new Set(allArtesEventosUserIds);
+    const uniqueArtesMusicosUsers = new Set(allArtesMusicosUserIds);
 
-    // Fetch all purchases again to calculate expired
+    // Calculate expired count (for eventos by default)
     let allPurchases: any[] = [];
     page = 0;
     hasMore = true;
@@ -150,12 +163,12 @@ const RecipientSelector = ({
     while (hasMore) {
       const { data } = await supabase
         .from("user_pack_purchases")
-        .select("user_id, access_type, expires_at")
+        .select("user_id, access_type, expires_at, platform")
         .eq("is_active", true)
         .range(page * pageSize, (page + 1) * pageSize - 1);
       
       if (data && data.length > 0) {
-        allPurchases = [...allPurchases, ...data];
+        allPurchases.push(...data);
         hasMore = data.length === pageSize;
         page++;
       } else {
@@ -163,15 +176,20 @@ const RecipientSelector = ({
       }
     }
 
-    // Group by user and check if ALL packs are expired
+    // Group by user and check if ALL packs are expired (filter by platform if specified)
+    const purchasesToCheck = platform === 'artes-musicos' 
+      ? allPurchases.filter((p: any) => p.platform === 'musicos')
+      : platform === 'artes-eventos'
+      ? allPurchases.filter((p: any) => p.platform !== 'musicos')
+      : allPurchases;
+
     const userPacks: Record<string, { hasActive: boolean }> = {};
     const now = new Date();
     
-    allPurchases.forEach(purchase => {
+    purchasesToCheck.forEach((purchase: any) => {
       if (!userPacks[purchase.user_id]) {
         userPacks[purchase.user_id] = { hasActive: false };
       }
-      // Check if this pack is still active
       if (purchase.access_type === 'vitalicio' || 
           !purchase.expires_at || 
           new Date(purchase.expires_at) > now) {
@@ -184,21 +202,41 @@ const RecipientSelector = ({
     setCounts({
       all: allCount || 0,
       premiumPrompts: premiumPromptsCount || 0,
-      artesClients: uniqueArtesUsers.size,
+      artesEventosClients: uniqueArtesEventosUsers.size,
+      artesMusicosClients: uniqueArtesMusicosUsers.size,
       artesExpired: expiredCount,
       pendingFirstAccess: pendingFirstAccessCount || 0,
     });
   };
 
   const fetchPacks = async () => {
-    const { data } = await supabase
+    let query = supabase
       .from("artes_packs")
-      .select("slug, name")
+      .select("slug, name, platform")
       .eq("is_visible", true)
       .order("display_order");
     
-    setPacks(data || []);
+    const { data } = await query;
+    
+    // Filter packs by platform if specified
+    let filteredPacks = data || [];
+    if (platform === 'artes-eventos') {
+      filteredPacks = filteredPacks.filter((p: any) => p.platform !== 'musicos');
+    } else if (platform === 'artes-musicos') {
+      filteredPacks = filteredPacks.filter((p: any) => p.platform === 'musicos');
+    }
+    
+    setPacks(filteredPacks);
   };
+
+  // Determine which options to show based on platform
+  const showAllUsers = !platform; // Only in general hub
+  const showPremiumPrompts = !platform || platform === 'prompts';
+  const showArtesEventosClients = !platform || platform === 'artes-eventos';
+  const showArtesMusicosClients = !platform || platform === 'artes-musicos';
+  const showArtesExpired = !platform || platform === 'artes-eventos' || platform === 'artes-musicos';
+  const showSpecificPack = !platform || platform === 'artes-eventos' || platform === 'artes-musicos';
+  const showPendingFirstAccess = !platform; // Only in general hub
 
   return (
     <div className="space-y-3">
@@ -207,47 +245,68 @@ const RecipientSelector = ({
           <SelectValue placeholder="Selecione os destinatários" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <span>Todos os usuários</span>
-              <span className="text-muted-foreground">({counts.all})</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="pending_first_access">
-            <div className="flex items-center gap-2">
-              <KeyRound className="h-4 w-4 text-orange-500" />
-              <span>Pendentes 1º acesso (senha não redefinida)</span>
-              <span className="text-muted-foreground">({counts.pendingFirstAccess})</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="artes_clients">
-            <div className="flex items-center gap-2">
-              <Palette className="h-4 w-4 text-amber-500" />
-              <span>Clientes Artes (qualquer pack)</span>
-              <span className="text-muted-foreground">({counts.artesClients})</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="artes_expired">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-              <span>Clientes com packs vencidos</span>
-              <span className="text-muted-foreground">({counts.artesExpired})</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="premium_prompts">
-            <div className="flex items-center gap-2">
-              <Crown className="h-4 w-4 text-yellow-500" />
-              <span>Premium Prompts</span>
-              <span className="text-muted-foreground">({counts.premiumPrompts})</span>
-            </div>
-          </SelectItem>
-          <SelectItem value="specific_pack">
-            <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-green-500" />
-              <span>Pack específico</span>
-            </div>
-          </SelectItem>
+          {showAllUsers && (
+            <SelectItem value="all">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span>Todos os usuários</span>
+                <span className="text-muted-foreground">({counts.all})</span>
+              </div>
+            </SelectItem>
+          )}
+          {showPendingFirstAccess && (
+            <SelectItem value="pending_first_access">
+              <div className="flex items-center gap-2">
+                <KeyRound className="h-4 w-4 text-orange-500" />
+                <span>Pendentes 1º acesso (senha não redefinida)</span>
+                <span className="text-muted-foreground">({counts.pendingFirstAccess})</span>
+              </div>
+            </SelectItem>
+          )}
+          {showArtesEventosClients && (
+            <SelectItem value="artes_eventos_clients">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-amber-500" />
+                <span>Clientes Artes Eventos</span>
+                <span className="text-muted-foreground">({counts.artesEventosClients})</span>
+              </div>
+            </SelectItem>
+          )}
+          {showArtesMusicosClients && (
+            <SelectItem value="artes_musicos_clients">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-violet-500" />
+                <span>Clientes Artes Músicos</span>
+                <span className="text-muted-foreground">({counts.artesMusicosClients})</span>
+              </div>
+            </SelectItem>
+          )}
+          {showArtesExpired && (
+            <SelectItem value="artes_expired">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <span>Clientes com packs vencidos</span>
+                <span className="text-muted-foreground">({counts.artesExpired})</span>
+              </div>
+            </SelectItem>
+          )}
+          {showPremiumPrompts && (
+            <SelectItem value="premium_prompts">
+              <div className="flex items-center gap-2">
+                <Crown className="h-4 w-4 text-yellow-500" />
+                <span>Premium Prompts</span>
+                <span className="text-muted-foreground">({counts.premiumPrompts})</span>
+              </div>
+            </SelectItem>
+          )}
+          {showSpecificPack && (
+            <SelectItem value="specific_pack">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-green-500" />
+                <span>Pack específico</span>
+              </div>
+            </SelectItem>
+          )}
           <SelectItem value="custom_email">
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-blue-500" />

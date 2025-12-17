@@ -449,9 +449,10 @@ async function processPackPurchase(
   accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio',
   hasBonusAccess: boolean,
   contractId: string | undefined,
-  productName: string
+  productName: string,
+  platform: string = 'eventos'
 ): Promise<void> {
-  console.log(`📦 Processing pack purchase: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
+  console.log(`📦 Processing pack purchase: ${packSlug} (${accessType}, bonus: ${hasBonusAccess}, platform: ${platform})`)
   
   const expiresAt = calculateExpirationDate(accessType)
   
@@ -502,6 +503,7 @@ async function processPackPurchase(
           expires_at: newExpiresAt ? newExpiresAt.toISOString() : null,
           greenn_contract_id: contractId,
           product_name: productName,
+          platform: platform,
           updated_at: new Date().toISOString()
         })
         .eq('id', existingPurchase.id)
@@ -526,7 +528,8 @@ async function processPackPurchase(
         has_bonus_access: hasBonusAccess,
         expires_at: expiresAt ? expiresAt.toISOString() : null,
         greenn_contract_id: contractId,
-        product_name: productName
+        product_name: productName,
+        platform: platform
       })
 
     if (insertError) {

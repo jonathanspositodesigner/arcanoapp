@@ -125,7 +125,7 @@ const ArtesEventosMarketing = () => {
         )}>
           <Card 
             className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative" 
-            onClick={() => !isReordering && navigate('/admin-email-marketing')}
+            onClick={() => !isReordering && navigate('/admin-email-marketing?platform=artes-eventos')}
             {...getDragProps("email-marketing")}
           >
             {isReordering && (
