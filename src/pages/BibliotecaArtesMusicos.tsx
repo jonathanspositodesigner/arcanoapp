@@ -132,8 +132,8 @@ const BibliotecaArtesMusicos = () => {
                   size="sm"
                 >
                   <UserPlus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Cadastrar Grátis</span>
-                  <span className="sm:hidden">Cadastrar</span>
+                  <span className="hidden sm:inline">Torne-se Membro</span>
+                  <span className="sm:hidden">Membro</span>
                 </Button>
                 <Button
                   variant="outline"
