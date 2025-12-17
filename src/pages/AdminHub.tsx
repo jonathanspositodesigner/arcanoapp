@@ -14,7 +14,7 @@ const AdminHub = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeView, setActiveView] = useState<"home" | "dashboard">("home");
+  const [activeView, setActiveView] = useState<"home" | "dashboard" | "marketing">("home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ const AdminHub = () => {
     navigate('/');
   };
 
-  const handleViewChange = (view: "home" | "dashboard") => {
+  const handleViewChange = (view: "home" | "dashboard" | "marketing") => {
     setActiveView(view);
     setIsMobileMenuOpen(false);
   };
@@ -166,8 +166,16 @@ const AdminHub = () => {
               <AdminGoalsCard />
             </div>
           </div>
-        ) : (
+        ) : activeView === "dashboard" ? (
           <AdminGeneralDashboard />
+        ) : (
+          <div className="max-w-6xl mx-auto">
+            <iframe 
+              src="/admin-email-marketing" 
+              className="w-full h-[calc(100vh-8rem)] border-0 rounded-lg"
+              title="Marketing Geral"
+            />
+          </div>
         )}
       </main>
     </div>

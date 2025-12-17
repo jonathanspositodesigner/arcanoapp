@@ -1,11 +1,11 @@
-import { Home, BarChart3, LogOut, ArrowLeft } from "lucide-react";
+import { Home, BarChart3, LogOut, ArrowLeft, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 interface AdminHubSidebarProps {
-  activeView: "home" | "dashboard";
-  onViewChange: (view: "home" | "dashboard") => void;
+  activeView: "home" | "dashboard" | "marketing";
+  onViewChange: (view: "home" | "dashboard" | "marketing") => void;
   onLogout: () => void;
 }
 
@@ -24,6 +24,12 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       label: "DASHBOARD GERAL",
       icon: BarChart3,
       description: "Métricas consolidadas"
+    },
+    {
+      id: "marketing" as const,
+      label: "MARKETING GERAL",
+      icon: Mail,
+      description: "Campanhas para todos"
     }
   ];
 

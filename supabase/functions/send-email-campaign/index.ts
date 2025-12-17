@@ -463,6 +463,7 @@ serve(async (req) => {
     // ========== NORMAL MODE ==========
     let recipients: string[] = [];
     const filter = campaign.recipient_filter;
+    const campaignPlatform = campaign.platform; // 'prompts' | 'artes-eventos' | 'artes-musicos' | null
 
     if (filter === "all") {
       const allProfiles = await fetchAllRecords(supabaseClient, "profiles", "email", {});
@@ -484,15 +485,38 @@ serve(async (req) => {
         }
         recipients = allProfiles.map((p) => p.email).filter(Boolean);
       }
-    } else if (filter === "artes_clients") {
-      const allPurchases = await fetchAllRecords(supabaseClient, "user_pack_purchases", "user_id", { is_active: true });
-      const userIds = [...new Set(allPurchases.map((p) => p.user_id))];
+    } else if (filter === "artes_eventos_clients" || filter === "artes_clients") {
+      // Artes Eventos clients (platform = eventos or null/empty)
+      const allPurchases = await fetchAllRecords(supabaseClient, "user_pack_purchases", "user_id, platform", { is_active: true });
+      const eventosUserIds = [...new Set(allPurchases
+        .filter((p: any) => !p.platform || p.platform === 'eventos')
+        .map((p: any) => p.user_id))];
       
-      console.log(`Found ${userIds.length} unique artes clients`);
+      console.log(`Found ${eventosUserIds.length} unique artes eventos clients`);
       
       const allProfiles: any[] = [];
-      for (let i = 0; i < userIds.length; i += 100) {
-        const batch = userIds.slice(i, i + 100);
+      for (let i = 0; i < eventosUserIds.length; i += 100) {
+        const batch = eventosUserIds.slice(i, i + 100);
+        const { data: profiles } = await supabaseClient
+          .from("profiles")
+          .select("email")
+          .in("id", batch)
+          .not("email", "is", null);
+        if (profiles) allProfiles.push(...profiles);
+      }
+      recipients = allProfiles.map((p) => p.email).filter(Boolean);
+    } else if (filter === "artes_musicos_clients") {
+      // Artes Músicos clients (platform = musicos)
+      const allPurchases = await fetchAllRecords(supabaseClient, "user_pack_purchases", "user_id, platform", { is_active: true });
+      const musicosUserIds = [...new Set(allPurchases
+        .filter((p: any) => p.platform === 'musicos')
+        .map((p: any) => p.user_id))];
+      
+      console.log(`Found ${musicosUserIds.length} unique artes musicos clients`);
+      
+      const allProfiles: any[] = [];
+      for (let i = 0; i < musicosUserIds.length; i += 100) {
+        const batch = musicosUserIds.slice(i, i + 100);
         const { data: profiles } = await supabaseClient
           .from("profiles")
           .select("email")
@@ -502,12 +526,20 @@ serve(async (req) => {
       }
       recipients = allProfiles.map((p) => p.email).filter(Boolean);
     } else if (filter === "artes_expired") {
-      const allPurchases = await fetchAllRecords(supabaseClient, "user_pack_purchases", "user_id, access_type, expires_at", { is_active: true });
+      const allPurchases = await fetchAllRecords(supabaseClient, "user_pack_purchases", "user_id, access_type, expires_at, platform", { is_active: true });
+      
+      // Filter by platform if campaign has a platform
+      let filteredPurchases = allPurchases;
+      if (campaignPlatform === 'artes-eventos') {
+        filteredPurchases = allPurchases.filter((p: any) => !p.platform || p.platform === 'eventos');
+      } else if (campaignPlatform === 'artes-musicos') {
+        filteredPurchases = allPurchases.filter((p: any) => p.platform === 'musicos');
+      }
       
       const now = new Date();
       const userPacks: Record<string, { hasActive: boolean }> = {};
       
-      allPurchases.forEach((purchase: any) => {
+      filteredPurchases.forEach((purchase: any) => {
         if (!userPacks[purchase.user_id]) {
           userPacks[purchase.user_id] = { hasActive: false };
         }

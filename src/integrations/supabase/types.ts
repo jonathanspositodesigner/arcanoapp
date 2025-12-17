@@ -510,6 +510,7 @@ export type Database = {
           name: string
           notification_discount_enabled: boolean | null
           notification_discount_percent: number | null
+          platform: string | null
           price_1_ano: number | null
           price_6_meses: number | null
           price_vitalicio: number | null
@@ -547,6 +548,7 @@ export type Database = {
           name: string
           notification_discount_enabled?: boolean | null
           notification_discount_percent?: number | null
+          platform?: string | null
           price_1_ano?: number | null
           price_6_meses?: number | null
           price_vitalicio?: number | null
@@ -584,6 +586,7 @@ export type Database = {
           name?: string
           notification_discount_enabled?: boolean | null
           notification_discount_percent?: number | null
+          platform?: string | null
           price_1_ano?: number | null
           price_6_meses?: number | null
           price_vitalicio?: number | null
@@ -935,6 +938,7 @@ export type Database = {
           last_scheduled_send_at: string | null
           next_send_at: string | null
           opened_count: number | null
+          platform: string | null
           recipient_filter: string
           recipients_count: number | null
           schedule_type: string | null
@@ -966,6 +970,7 @@ export type Database = {
           last_scheduled_send_at?: string | null
           next_send_at?: string | null
           opened_count?: number | null
+          platform?: string | null
           recipient_filter?: string
           recipients_count?: number | null
           schedule_type?: string | null
@@ -997,6 +1002,7 @@ export type Database = {
           last_scheduled_send_at?: string | null
           next_send_at?: string | null
           opened_count?: number | null
+          platform?: string | null
           recipient_filter?: string
           recipients_count?: number | null
           schedule_type?: string | null
@@ -1768,6 +1774,7 @@ export type Database = {
           import_source: string | null
           is_active: boolean
           pack_slug: string
+          platform: string | null
           product_name: string | null
           purchased_at: string
           updated_at: string
@@ -1783,6 +1790,7 @@ export type Database = {
           import_source?: string | null
           is_active?: boolean
           pack_slug: string
+          platform?: string | null
           product_name?: string | null
           purchased_at?: string
           updated_at?: string
@@ -1798,6 +1806,7 @@ export type Database = {
           import_source?: string | null
           is_active?: boolean
           pack_slug?: string
+          platform?: string | null
           product_name?: string | null
           purchased_at?: string
           updated_at?: string

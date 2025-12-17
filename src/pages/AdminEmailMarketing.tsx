@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,7 @@ interface Campaign {
   scheduled_time?: string;
   scheduled_day_of_week?: number;
   scheduled_day_of_month?: number;
+  platform?: string;
 }
 
 interface EmailTemplate {
@@ -72,17 +74,29 @@ interface EmailTemplate {
 }
 
 const AdminEmailMarketing = () => {
+  const [searchParams] = useSearchParams();
+  const platform = searchParams.get('platform'); // 'prompts' | 'artes-eventos' | 'artes-musicos' | null
+  
+  // Set default recipient filter based on platform
+  const getDefaultRecipientFilter = () => {
+    if (platform === 'prompts') return 'premium_prompts';
+    if (platform === 'artes-eventos') return 'artes_eventos_clients';
+    if (platform === 'artes-musicos') return 'artes_musicos_clients';
+    return 'all';
+  };
+
   const [campaign, setCampaign] = useState<Campaign>({
     title: "",
     subject: "",
     content: "<p>Escreva seu email aqui...</p>",
     sender_name: "Vox Visual",
     sender_email: "contato@voxvisual.com.br",
-    recipient_filter: "all",
+    recipient_filter: getDefaultRecipientFilter(),
     filter_value: "",
     is_scheduled: false,
     schedule_type: "once",
     scheduled_time: "09:00",
+    platform: platform || undefined,
   });
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
@@ -512,11 +526,12 @@ const AdminEmailMarketing = () => {
       content: "<p>Escreva seu email aqui...</p>",
       sender_name: "ArcanoApp",
       sender_email: "contato@seudominio.com",
-      recipient_filter: "all",
+      recipient_filter: getDefaultRecipientFilter(),
       filter_value: "",
       is_scheduled: false,
       schedule_type: "once",
       scheduled_time: "09:00",
+      platform: platform || undefined,
     });
     setScheduledDate("");
   };
@@ -733,6 +748,7 @@ const AdminEmailMarketing = () => {
                       onPackChange={(value) => setCampaign({ ...campaign, filter_value: value })}
                       customEmail={campaign.recipient_filter === "custom_email" ? campaign.filter_value : ""}
                       onCustomEmailChange={(value) => setCampaign({ ...campaign, filter_value: value })}
+                      platform={platform}
                     />
                     {campaign.recipient_filter === "custom_email" && campaign.filter_value && (
                       <p className="text-xs text-green-600 mt-1">
