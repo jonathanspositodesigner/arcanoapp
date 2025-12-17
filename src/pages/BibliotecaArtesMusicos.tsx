@@ -101,17 +101,7 @@ const BibliotecaArtesMusicos = () => {
             <span className="hidden md:inline text-violet-300 font-medium">Músicos & Artistas</span>
           </div>
 
-          {/* Center - Cadastrar Grátis */}
-          <Button
-            onClick={() => navigate("/planos-artes-musicos")}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span className="hidden sm:inline">Cadastrar Grátis</span>
-            <span className="sm:hidden">Cadastrar</span>
-          </Button>
-
-          {/* Right - Auth */}
+          {/* Right - Auth buttons */}
           <div className="flex items-center gap-2">
             {user ? (
               <>
@@ -135,15 +125,26 @@ const BibliotecaArtesMusicos = () => {
                 </Button>
               </>
             ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/login-artes")}
-                className="text-violet-300 hover:text-violet-100 hover:bg-violet-500/20"
-              >
-                <LogIn className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Entrar</span>
-              </Button>
+              <>
+                <Button
+                  onClick={() => navigate("/planos-artes-musicos")}
+                  className="bg-violet-600 hover:bg-violet-500 text-white gap-2"
+                  size="sm"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Cadastrar Grátis</span>
+                  <span className="sm:hidden">Cadastrar</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/login-artes")}
+                  className="border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100"
+                >
+                  <LogIn className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Entrar</span>
+                </Button>
+              </>
             )}
           </div>
         </div>
