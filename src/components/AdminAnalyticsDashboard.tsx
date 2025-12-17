@@ -1442,7 +1442,8 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
               </GridCard>
             )}
 
-            {/* First Access Stats Card */}
+            {/* First Access Stats Card - Hidden for prompts platform */}
+            {platform !== 'prompts' && (
             <GridCard key="first-access" isEditing={isEditing} className="cursor-pointer hover:bg-muted/50 transition-colors">
               <div className="p-6 h-full flex flex-col" onClick={() => setShowFirstAccessModal(true)}>
                 <div className="flex items-center gap-3 mb-4">
@@ -1470,6 +1471,7 @@ const AdminAnalyticsDashboard = ({ platform }: AdminAnalyticsDashboardProps = {}
                 </div>
               </div>
             </GridCard>
+            )}
 
             {/* Top Purchased Plans/Packs Card */}
             <GridCard key="top-purchased" isEditing={isEditing}>
