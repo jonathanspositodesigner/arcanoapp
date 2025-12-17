@@ -44,7 +44,7 @@ const BibliotecaArtesHub = () => {
           
           {/* Description */}
           <p className="relative z-10 text-sm sm:text-base text-amber-200/70 mb-4">
-            Artes editáveis para festas, baladas, eventos e comemorações
+            Artes Editáveis para festas, bares, adegas, eventos e etc...
           </p>
           
           {/* Button */}
