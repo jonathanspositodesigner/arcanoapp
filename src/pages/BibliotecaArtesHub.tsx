@@ -1,18 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { Music, Sparkles } from "lucide-react";
 import baaLogo from "@/assets/BAA.png";
-
 const BibliotecaArtesHub = () => {
   const navigate = useNavigate();
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e] flex flex-col items-center justify-center px-4 py-8">
+  return <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e] flex flex-col items-center justify-center px-4 py-8">
       {/* Logo BAA */}
-      <img 
-        src={baaLogo} 
-        alt="Biblioteca de Artes Arcanas" 
-        className="h-20 sm:h-24 mb-6 drop-shadow-2xl"
-      />
+      <img src={baaLogo} alt="Biblioteca de Artes Arcanas" className="h-20 sm:h-24 mb-6 drop-shadow-2xl" />
       
       {/* Título */}
       <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 text-center">
@@ -25,10 +18,7 @@ const BibliotecaArtesHub = () => {
       {/* Cards de Seleção */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl">
         {/* Card - Eventos & Festas */}
-        <div 
-          onClick={() => navigate("/biblioteca-artes")}
-          className="group cursor-pointer relative overflow-hidden rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-gradient-to-br from-amber-950/40 to-yellow-900/20 border-2 border-amber-500/30 hover:border-amber-400/70"
-        >
+        <div onClick={() => navigate("/biblioteca-artes")} className="group cursor-pointer relative overflow-hidden rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-gradient-to-br from-amber-950/40 to-yellow-900/20 border-2 border-amber-500/30 hover:border-amber-400/70">
           {/* Glow Effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
@@ -54,10 +44,7 @@ const BibliotecaArtesHub = () => {
         </div>
 
         {/* Card - Músicos & Artistas */}
-        <div 
-          onClick={() => navigate("/biblioteca-artes-musicos")}
-          className="group cursor-pointer relative overflow-hidden rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-gradient-to-br from-violet-950/40 to-purple-900/20 border-2 border-violet-500/30 hover:border-violet-400/70"
-        >
+        <div onClick={() => navigate("/biblioteca-artes-musicos")} className="group cursor-pointer relative overflow-hidden rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-gradient-to-br from-violet-950/40 to-purple-900/20 border-2 border-violet-500/30 hover:border-violet-400/70">
           {/* Glow Effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
@@ -73,7 +60,7 @@ const BibliotecaArtesHub = () => {
           
           {/* Description */}
           <p className="relative z-10 text-sm sm:text-base text-violet-200/70 mb-4">
-            Artes, telão de LED, presskits, lançamento de música e tudo que você como artista ou músico precisa pra alavancar sua carreira
+            Agendas, Telão de LED, Presskits, Lançamento de Música e tudo que você como precisa pra alavancar sua carreira!
           </p>
           
           {/* Button */}
@@ -84,14 +71,9 @@ const BibliotecaArtesHub = () => {
       </div>
 
       {/* Link para voltar */}
-      <button 
-        onClick={() => navigate("/")}
-        className="mt-8 text-sm text-muted-foreground hover:text-white transition-colors underline"
-      >
+      <button onClick={() => navigate("/")} className="mt-8 text-sm text-muted-foreground hover:text-white transition-colors underline">
         Voltar para Home
       </button>
-    </div>
-  );
+    </div>;
 };
-
 export default BibliotecaArtesHub;
