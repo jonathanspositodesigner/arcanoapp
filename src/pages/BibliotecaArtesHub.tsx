@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { PartyPopper, Music } from "lucide-react";
+import { Disc3, Music } from "lucide-react";
 import baaLogo from "@/assets/BAA.png";
 
 const BibliotecaArtesHub = () => {
@@ -34,7 +34,7 @@ const BibliotecaArtesHub = () => {
           
           {/* Icon */}
           <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 shadow-lg shadow-amber-500/30 group-hover:shadow-amber-400/50 transition-all">
-            <PartyPopper className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+            <Disc3 className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
           
           {/* Title */}
@@ -44,7 +44,7 @@ const BibliotecaArtesHub = () => {
           
           {/* Description */}
           <p className="relative z-10 text-sm sm:text-base text-amber-200/70 mb-4">
-            Artes editáveis para festas, eventos, formaturas e comemorações
+            Artes editáveis para festas, baladas, eventos e comemorações
           </p>
           
           {/* Button */}
