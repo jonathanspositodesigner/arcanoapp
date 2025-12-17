@@ -201,15 +201,15 @@ const AdminPackPurchases = () => {
     setPurchases(purchasesWithUsers);
   };
 
-  const calculateExpiresAt = (accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio'): string | null => {
-    const now = new Date();
+  const calculateExpiresAt = (accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio', baseDate?: Date): string | null => {
+    const startDate = baseDate || new Date();
     switch (accessType) {
       case '3_meses':
-        return addMonths(now, 3).toISOString();
+        return addMonths(startDate, 3).toISOString();
       case '6_meses':
-        return addMonths(now, 6).toISOString();
+        return addMonths(startDate, 6).toISOString();
       case '1_ano':
-        return addYears(now, 1).toISOString();
+        return addYears(startDate, 1).toISOString();
       case 'vitalicio':
         return null;
     }
@@ -278,10 +278,26 @@ const AdminPackPurchases = () => {
         // Update or insert purchases
         for (const access of formData.packAccesses) {
           const hasBonus = access.access_type === '1_ano' || access.access_type === 'vitalicio';
-          const expiresAt = calculateExpiresAt(access.access_type);
 
           if (access.id) {
-            // Update existing
+            // Update existing - find original purchase to compare
+            const originalPurchase = editingClient.purchases.find(p => p.id === access.id);
+            
+            let expiresAt;
+            if (originalPurchase) {
+              if (originalPurchase.access_type === access.access_type) {
+                // Access type NOT changed - keep original expires_at
+                expiresAt = originalPurchase.expires_at;
+              } else {
+                // Access type CHANGED - recalculate from ORIGINAL PURCHASE DATE
+                const purchaseDate = new Date(originalPurchase.purchased_at);
+                expiresAt = calculateExpiresAt(access.access_type, purchaseDate);
+              }
+            } else {
+              // Fallback if original not found (shouldn't happen)
+              expiresAt = calculateExpiresAt(access.access_type);
+            }
+
             await supabase.from('user_pack_purchases').update({
               pack_slug: access.pack_slug,
               access_type: access.access_type,
@@ -290,7 +306,8 @@ const AdminPackPurchases = () => {
               expires_at: expiresAt
             }).eq('id', access.id);
           } else {
-            // Insert new
+            // Insert new - use today's date
+            const expiresAt = calculateExpiresAt(access.access_type);
             await supabase.from('user_pack_purchases').insert({
               user_id: userId,
               pack_slug: access.pack_slug,
