@@ -73,7 +73,7 @@ const BibliotecaArtesHub = () => {
           
           {/* Description */}
           <p className="relative z-10 text-sm sm:text-base text-violet-200/70 mb-4">
-            Artes editáveis para músicos, bandas, DJs e artistas independentes
+            Artes, telão de LED, presskits, lançamento de música e tudo que você como artista ou músico precisa pra alavancar sua carreira
           </p>
           
           {/* Button */}
