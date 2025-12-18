@@ -33,6 +33,7 @@ import AdminCommunityReview from "./pages/AdminCommunityReview";
 import AdminArtesReview from "./pages/AdminArtesReview";
 import AdminManageImages from "./pages/AdminManageImages";
 import AdminManageArtes from "./pages/AdminManageArtes";
+import AdminManageArtesMusicos from "./pages/AdminManageArtesMusicos";
 import AdminCollections from "./pages/AdminCollections";
 import UserLogin from "./pages/UserLogin";
 import ChangePassword from "./pages/ChangePassword";
@@ -139,6 +140,7 @@ const AppContent = () => {
         <Route path="/admin-artes-review" element={<AdminArtesReview />} />
         <Route path="/admin-manage-images" element={<AdminManageImages />} />
         <Route path="/admin-manage-artes" element={<AdminManageArtes />} />
+        <Route path="/admin-manage-artes-musicos" element={<AdminManageArtesMusicos />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
