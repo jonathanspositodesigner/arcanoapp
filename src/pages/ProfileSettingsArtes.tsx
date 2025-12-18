@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,8 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 const ProfileSettingsArtes = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromMusicos = location.state?.from === 'musicos';
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState({
@@ -179,10 +181,10 @@ const ProfileSettingsArtes = () => {
         <Button
           variant="ghost"
           className="text-white/70 hover:text-white mb-6"
-          onClick={() => navigate("/biblioteca-artes")}
+          onClick={() => navigate(fromMusicos ? "/biblioteca-artes-musicos" : "/biblioteca-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar para Biblioteca
+          {fromMusicos ? "Voltar para Biblioteca de Músicos" : "Voltar para Biblioteca"}
         </Button>
 
         <Card className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30">

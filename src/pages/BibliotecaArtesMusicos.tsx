@@ -183,7 +183,7 @@ const BibliotecaArtesMusicos = () => {
           variant="ghost"
           className="w-full justify-start gap-3 text-gray-300 hover:text-white hover:bg-white/10"
           onClick={() => {
-            navigate("/perfil-artes");
+            navigate("/perfil-artes", { state: { from: 'musicos' } });
             onClose?.();
           }}
         >
@@ -318,7 +318,7 @@ const BibliotecaArtesMusicos = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate("/perfil-artes")}
+                    onClick={() => navigate("/perfil-artes", { state: { from: 'musicos' } })}
                     className="text-gray-400 hover:text-white hover:bg-white/10"
                   >
                     <Settings className="w-4 h-4 mr-1" />
