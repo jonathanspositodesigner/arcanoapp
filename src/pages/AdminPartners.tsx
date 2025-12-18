@@ -234,7 +234,7 @@ const AdminPartners = () => {
       <div className="container max-w-6xl mx-auto py-8 px-4">
         <Button
           variant="ghost"
-          onClick={() => navigate("/admin-dashboard")}
+          onClick={() => navigate("/admin-prompts/ferramentas")}
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

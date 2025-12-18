@@ -693,7 +693,7 @@ const AdminPackPurchases = () => {
         {/* Header - Mobile friendly */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="flex items-center gap-2 sm:gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/admin-dashboard')} className="px-2 sm:px-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/admin-artes-eventos/ferramentas')} className="px-2 sm:px-4">
               <ArrowLeft className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Voltar</span>
             </Button>

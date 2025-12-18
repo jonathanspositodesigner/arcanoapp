@@ -429,7 +429,7 @@ const AdminCollections = () => {
     <div className="min-h-screen bg-background">
       <div className="container max-w-6xl mx-auto py-8 px-4">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" onClick={() => navigate('/admin-dashboard')}>
+          <Button variant="ghost" onClick={() => navigate('/admin-prompts/ferramentas')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>

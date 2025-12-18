@@ -1,5 +1,5 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { Wrench, BarChart3, Megaphone, LogOut, Home } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Wrench, BarChart3, Megaphone, LogOut, Home, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +9,7 @@ interface AdminSidebarProps {
 
 const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const menuItems = [
     {
@@ -72,6 +73,14 @@ const AdminSidebar = ({ onLogout }: AdminSidebarProps) => {
 
       {/* Footer Actions */}
       <div className="p-4 border-t border-border space-y-2">
+        <Button 
+          variant="outline" 
+          className="w-full justify-start gap-2"
+          onClick={() => navigate('/admin-hub')}
+        >
+          <ArrowLeftRight className="h-4 w-4" />
+          Trocar Plataforma
+        </Button>
         <NavLink to="/">
           <Button variant="outline" className="w-full justify-start gap-2">
             <Home className="h-4 w-4" />

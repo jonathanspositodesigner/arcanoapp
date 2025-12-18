@@ -155,7 +155,7 @@ const AdminManageBlacklist = () => {
     <div className="min-h-screen bg-background">
       <div className="container max-w-4xl mx-auto py-8 px-4">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="outline" size="icon" onClick={() => navigate('/admin-dashboard')}>
+          <Button variant="outline" size="icon" onClick={() => navigate('/admin-artes-eventos/ferramentas')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
