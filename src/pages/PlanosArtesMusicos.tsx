@@ -27,10 +27,11 @@ const PlanosArtesMusicos = () => {
       perMonth: true,
       paymentUrl: "#", // Placeholder - user will configure
       features: [{
-        text: "Acesso as artes editáveis",
-        included: true
-      }, {
         text: "5 downloads por dia",
+        included: true,
+        bold: true
+      }, {
+        text: "Acesso as artes editáveis",
         included: true
       }, {
         text: "Atualizações semanais",
@@ -54,10 +55,11 @@ const PlanosArtesMusicos = () => {
       perMonth: true,
       paymentUrl: "#", // Placeholder
       features: [{
-        text: "Acesso as artes editáveis",
-        included: true
-      }, {
         text: "10 downloads por dia",
+        included: true,
+        bold: true
+      }, {
+        text: "Acesso as artes editáveis",
         included: true
       }, {
         text: "Atualizações semanais",
@@ -82,10 +84,11 @@ const PlanosArtesMusicos = () => {
       perMonth: true,
       paymentUrl: "#", // Placeholder
       features: [{
-        text: "Acesso as artes editáveis",
-        included: true
-      }, {
         text: "Downloads ilimitados",
+        included: true,
+        bold: true
+      }, {
+        text: "Acesso as artes editáveis",
         included: true
       }, {
         text: "Atualizações semanais",
@@ -111,10 +114,11 @@ const PlanosArtesMusicos = () => {
       yearlyTotal: "178,80",
       paymentUrl: "#", // Placeholder
       features: [{
-        text: "Acesso as artes editáveis",
-        included: true
-      }, {
         text: "5 downloads por dia",
+        included: true,
+        bold: true
+      }, {
+        text: "Acesso as artes editáveis",
         included: true
       }, {
         text: "Atualizações semanais",
@@ -139,10 +143,11 @@ const PlanosArtesMusicos = () => {
       yearlyTotal: "274,80",
       paymentUrl: "#", // Placeholder
       features: [{
-        text: "Acesso as artes editáveis",
-        included: true
-      }, {
         text: "10 downloads por dia",
+        included: true,
+        bold: true
+      }, {
+        text: "Acesso as artes editáveis",
         included: true
       }, {
         text: "Atualizações semanais",
@@ -168,10 +173,11 @@ const PlanosArtesMusicos = () => {
       yearlyTotal: "358,80",
       paymentUrl: "#", // Placeholder
       features: [{
-        text: "Acesso as artes editáveis",
-        included: true
-      }, {
         text: "Downloads ilimitados",
+        included: true,
+        bold: true
+      }, {
+        text: "Acesso as artes editáveis",
         included: true
       }, {
         text: "Atualizações semanais",
@@ -332,7 +338,7 @@ const PlanosArtesMusicos = () => {
                     ) : (
                       <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                     )}
-                    <span className={feature.included ? "text-violet-100" : "text-orange-500"}>
+                    <span className={`${feature.included ? "text-violet-100" : "text-orange-500"} ${(feature as any).bold ? "font-bold" : ""}`}>
                       {feature.text}
                     </span>
                   </li>
