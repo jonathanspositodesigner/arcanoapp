@@ -5,6 +5,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Mapeamento de Product ID para tipo de plano (PromptClub)
+const PRODUCT_ID_TO_PLAN: Record<number, 'arcano_basico' | 'arcano_pro' | 'arcano_unlimited'> = {
+  148926: 'arcano_basico',
+  148936: 'arcano_pro',
+  148937: 'arcano_unlimited'
+}
+
 interface GreennWebhookPayload {
   type?: string
   event?: string
@@ -274,6 +281,24 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
   }
 }
 
+// Função para detectar plano pelo Product ID da Greenn
+function detectPlanFromProductId(productId: number | undefined): 'arcano_basico' | 'arcano_pro' | 'arcano_unlimited' {
+  if (!productId) {
+    console.warn(`⚠️ Product ID não fornecido, usando 'arcano_basico' como padrão`)
+    return 'arcano_basico'
+  }
+  
+  const planType = PRODUCT_ID_TO_PLAN[productId]
+  
+  if (!planType) {
+    console.warn(`⚠️ Product ID ${productId} não mapeado, usando 'arcano_basico' como padrão`)
+    return 'arcano_basico'
+  }
+  
+  console.log(`📋 Product ID detection: productId=${productId} -> planType=${planType}`)
+  return planType
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -373,23 +398,12 @@ Deno.serve(async (req) => {
     console.log(`Processing webhook for email: ${email}, name: ${clientName}, phone: ${clientPhone}, status: ${status}`)
     console.log(`Product: ${productName}, Offer: ${offerName}, Period: ${productPeriod} days`)
 
-    // Determine plan type
-    let planType = 'arcano_basico'
-    const productLower = productName.toLowerCase()
-    const offerLower = offerName.toLowerCase()
-    
-    if (productLower.includes('unlimited') || productLower.includes('ilimitado') || 
-        offerLower.includes('unlimited') || offerLower.includes('ilimitado')) {
-      planType = 'arcano_unlimited'
-    } else if (productLower.includes('pro') || offerLower.includes('pro')) {
-      planType = 'arcano_pro'
-    }
-    
-    console.log(`Detected plan type: ${planType}`)
+    // Determine plan type pelo Product ID
+    const planType = detectPlanFromProductId(productId)
 
-    // Determine billing period
+    // Determine billing period baseado no period do produto
     let billingPeriod = 'monthly'
-    if (offerLower.includes('anual') || productPeriod >= 365) {
+    if (offerName.toLowerCase().includes('anual') || productPeriod >= 365) {
       billingPeriod = 'yearly'
     }
     
