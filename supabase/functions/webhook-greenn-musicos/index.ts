@@ -5,27 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Interface para mapeamento de produtos por ID
-interface ProductMapping {
-  planType: 'basico' | 'pro' | 'unlimited'
-  billingPeriod: 'mensal' | 'anual'
-  expirationDays: number
-}
-
-// Mapeamento de Product ID para plano
-// Configure aqui os IDs dos produtos da Greenn
-const PRODUCT_ID_MAPPING: Record<number, ProductMapping> = {
-  // Plano Básico Mensal (Acesso Básico - BAA - Músicos & Artistas)
-  150707: { planType: 'basico', billingPeriod: 'mensal', expirationDays: 30 },
-  
-  // Plano Pro - adicionar IDs quando disponíveis
-  // XXXXX: { planType: 'pro', billingPeriod: 'mensal', expirationDays: 30 },
-  // YYYYY: { planType: 'pro', billingPeriod: 'anual', expirationDays: 365 },
-  
-  // Plano Unlimited - adicionar IDs quando disponíveis
-  // XXXXX: { planType: 'unlimited', billingPeriod: 'mensal', expirationDays: 30 },
-  // YYYYY: { planType: 'unlimited', billingPeriod: 'anual', expirationDays: 365 },
-}
+// O webhook agora usa product.period da Greenn para determinar a duração automaticamente
+// Não precisa mais de mapeamento manual de Product ID → dias
 
 interface GreennMusicosWebhookPayload {
   type?: string
@@ -306,14 +287,12 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
 }
 
 // Função para detectar plano pelo nome do produto
-function detectPlanFromName(productName: string, offerName: string): ProductMapping | null {
+function detectPlanFromName(productName: string, offerName: string): { planType: 'basico' | 'pro' | 'unlimited' } {
   const nameLower = (productName + ' ' + offerName).toLowerCase()
   
   let planType: 'basico' | 'pro' | 'unlimited' = 'basico'
-  let billingPeriod: 'mensal' | 'anual' = 'mensal'
-  let expirationDays = 30
   
-  // Detectar tipo de plano
+  // Detectar tipo de plano pelo nome
   if (nameLower.includes('unlimited') || nameLower.includes('ilimitado')) {
     planType = 'unlimited'
   } else if (nameLower.includes('pro') || nameLower.includes('profissional')) {
@@ -322,17 +301,17 @@ function detectPlanFromName(productName: string, offerName: string): ProductMapp
     planType = 'basico'
   }
   
-  // Detectar período de cobrança
-  if (nameLower.includes('anual') || nameLower.includes('1 ano') || nameLower.includes('12 meses')) {
-    billingPeriod = 'anual'
-    expirationDays = 365
-  } else if (nameLower.includes('mensal') || nameLower.includes('1 mês') || nameLower.includes('1 mes') || nameLower.includes('30 dias')) {
-    billingPeriod = 'mensal'
-    expirationDays = 30
-  }
-  
-  console.log(`📋 Name detection: planType=${planType}, billingPeriod=${billingPeriod}`)
-  return { planType, billingPeriod, expirationDays }
+  console.log(`📋 Name detection: planType=${planType}`)
+  return { planType }
+}
+
+// Função para determinar o billing period baseado nos dias
+function getBillingPeriodFromDays(days: number): 'mensal' | 'trimestral' | 'semestral' | 'anual' | 'vitalicio' {
+  if (days <= 35) return 'mensal'
+  if (days <= 100) return 'trimestral'
+  if (days <= 200) return 'semestral'
+  if (days <= 400) return 'anual'
+  return 'vitalicio'
 }
 
 // Função para calcular data de expiração
@@ -361,7 +340,7 @@ Deno.serve(async (req) => {
   let email: string | undefined
   let status: string | undefined
   let productId: number | undefined
-  let mappingType: 'product_id' | 'name_detection' | 'none' = 'none'
+  let mappingType: 'product_period' | 'name_detection' | 'none' = 'none'
 
   try {
     payload = await req.json()
@@ -475,37 +454,20 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Buscar mapeamento do produto
-    let planMapping: ProductMapping | null = null
-
-    if (productId && PRODUCT_ID_MAPPING[productId]) {
-      planMapping = PRODUCT_ID_MAPPING[productId]
-      mappingType = 'product_id'
-      console.log(`✅ Found product mapping: ${planMapping.planType} (${planMapping.billingPeriod})`)
-    } else {
-      // Fallback: detectar pelo nome
-      planMapping = detectPlanFromName(productName, offerName)
-      mappingType = 'name_detection'
-      console.log(`⚠️ Product ID ${productId} not in mapping, using name detection`)
-    }
-
-    if (!planMapping) {
-      console.error(`❌ Could not determine plan from productId=${productId}, product=${productName}`)
-      await logWebhook(supabase, payload, status, productId, email, 'error', mappingType, 'Could not determine plan')
-      return new Response(
-        JSON.stringify({ 
-          error: 'Could not determine plan from product',
-          productId,
-          productName,
-          offerName,
-          hint: 'Configure o Product ID no mapeamento do webhook'
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    console.log(`Final detection type: ${mappingType}`)
-    console.log(`Plan: ${planMapping.planType}, Period: ${planMapping.billingPeriod}, Days: ${planMapping.expirationDays}`)
+    // Usar product.period da Greenn para determinar duração dinamicamente
+    const productPeriod = payload.product?.period
+    
+    // Detectar tipo de plano pelo nome do produto
+    const { planType } = detectPlanFromName(productName, offerName)
+    
+    // Usar period da Greenn diretamente (padrão: 30 dias se não vier)
+    const expirationDays = productPeriod && productPeriod > 0 ? productPeriod : 30
+    const billingPeriod = getBillingPeriodFromDays(expirationDays)
+    
+    mappingType = productPeriod ? 'product_period' : 'name_detection'
+    
+    console.log(`✅ Using product.period from Greenn: ${productPeriod} days`)
+    console.log(`Plan: ${planType}, Period: ${billingPeriod}, Days: ${expirationDays}`)
 
     // Handle paid status - activate subscription
     if (status === 'paid' || status === 'approved') {
@@ -618,7 +580,7 @@ Deno.serve(async (req) => {
       }
 
       // Calcular expiração
-      const expiresAt = calculateExpirationDate(planMapping.expirationDays)
+      const expiresAt = calculateExpirationDate(expirationDays)
 
       // Verificar assinatura existente
       const { data: existingSubscription } = await supabase
@@ -639,7 +601,7 @@ Deno.serve(async (req) => {
           
           if (currentExpires > now) {
             newExpiresAt = new Date(currentExpires)
-            newExpiresAt.setDate(newExpiresAt.getDate() + planMapping.expirationDays)
+            newExpiresAt.setDate(newExpiresAt.getDate() + expirationDays)
             console.log(`Extending expiration from ${currentExpires.toISOString()} to ${newExpiresAt.toISOString()}`)
           }
         }
@@ -647,8 +609,8 @@ Deno.serve(async (req) => {
         const { error: updateError } = await supabase
           .from('premium_musicos_users')
           .update({
-            plan_type: planMapping.planType,
-            billing_period: planMapping.billingPeriod,
+            plan_type: planType,
+            billing_period: billingPeriod,
             expires_at: newExpiresAt.toISOString(),
             greenn_contract_id: contractId,
             greenn_product_id: productId,
@@ -661,15 +623,15 @@ Deno.serve(async (req) => {
           throw updateError
         }
         
-        console.log(`✅ Updated subscription: ${planMapping.planType} (${planMapping.billingPeriod})`)
+        console.log(`✅ Updated subscription: ${planType} (${billingPeriod})`)
       } else {
         // Criar nova assinatura
         const { error: insertError } = await supabase
           .from('premium_musicos_users')
           .insert({
             user_id: userId,
-            plan_type: planMapping.planType,
-            billing_period: planMapping.billingPeriod,
+            plan_type: planType,
+            billing_period: billingPeriod,
             is_active: true,
             expires_at: expiresAt.toISOString(),
             greenn_contract_id: contractId,
@@ -682,11 +644,11 @@ Deno.serve(async (req) => {
           throw insertError
         }
         
-        console.log(`✅ Created new subscription: ${planMapping.planType} (${planMapping.billingPeriod})`)
+        console.log(`✅ Created new subscription: ${planType} (${billingPeriod})`)
       }
 
       // Enviar email de boas-vindas
-      await sendWelcomeEmail(supabase, email, clientName, `Plano ${planMapping.planType.toUpperCase()} (${planMapping.billingPeriod})`)
+      await sendWelcomeEmail(supabase, email, clientName, `Plano ${planType.toUpperCase()} (${billingPeriod})`)
 
       await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
 
@@ -694,8 +656,8 @@ Deno.serve(async (req) => {
         JSON.stringify({ 
           success: true, 
           message: `Subscription activated for ${email}`,
-          plan_type: planMapping.planType,
-          billing_period: planMapping.billingPeriod,
+          plan_type: planType,
+          billing_period: billingPeriod,
           expires_at: expiresAt.toISOString(),
           mapped_by: mappingType
         }),
