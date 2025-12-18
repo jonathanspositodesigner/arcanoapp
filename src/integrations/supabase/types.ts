@@ -872,6 +872,30 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_musicos_downloads: {
+        Row: {
+          arte_id: string
+          download_date: string
+          downloaded_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          arte_id: string
+          download_date?: string
+          downloaded_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          arte_id?: string
+          download_date?: string
+          downloaded_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_prompt_copies: {
         Row: {
           copied_at: string
@@ -2093,6 +2117,10 @@ export type Database = {
       cleanup_old_logs: { Args: never; Returns: undefined }
       get_daily_arte_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_copy_count: { Args: { _user_id: string }; Returns: number }
+      get_daily_musicos_download_count: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       get_user_expired_packs: {
         Args: { _user_id: string }
         Returns: {

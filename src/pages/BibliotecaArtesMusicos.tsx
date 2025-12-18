@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumMusicosStatus } from "@/hooks/usePremiumMusicosStatus";
-import { ArrowLeft, LogIn, Settings, LogOut, Loader2, Lock, Play, UserPlus, ExternalLink } from "lucide-react";
+import { useDailyMusicosLimit } from "@/hooks/useDailyMusicosLimit";
+import { ArrowLeft, LogIn, Settings, LogOut, Loader2, Lock, Play, UserPlus, ExternalLink, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -29,6 +30,7 @@ interface Arte {
 const BibliotecaArtesMusicos = () => {
   const navigate = useNavigate();
   const { user, isPremium, isLoading: authLoading, logout } = usePremiumMusicosStatus();
+  const { downloadCount, dailyLimit, canDownload, recordDownload } = useDailyMusicosLimit();
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [artes, setArtes] = useState<Arte[]>([]);
   const [loadingArtes, setLoadingArtes] = useState(true);
@@ -124,9 +126,15 @@ const BibliotecaArtesMusicos = () => {
             {user ? (
               <>
                 {isPremium && (
-                  <span className="hidden sm:inline text-xs bg-violet-600 text-white px-2 py-1 rounded-full">
-                    Premium
-                  </span>
+                  <div className="hidden sm:flex items-center gap-2">
+                    <span className="text-xs bg-violet-600 text-white px-2 py-1 rounded-full">
+                      Premium
+                    </span>
+                    <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded-full flex items-center gap-1">
+                      <Download className="w-3 h-3" />
+                      {dailyLimit === Infinity ? '∞' : `${downloadCount}/${dailyLimit}`}
+                    </span>
+                  </div>
                 )}
                 <Button
                   variant="ghost"
@@ -378,12 +386,25 @@ const BibliotecaArtesMusicos = () => {
                 </div>
               )}
 
+              {/* Download Counter */}
+              {isPremium && dailyLimit !== Infinity && (
+                <div className="text-center text-sm text-violet-300 bg-violet-500/10 rounded-lg py-2 px-3">
+                  Downloads hoje: <span className="font-bold">{downloadCount}/{dailyLimit}</span>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex gap-2">
                 {selectedArte.canva_link && (
                   <Button
                     className="flex-1 bg-[#00C4CC] hover:bg-[#00b3b8] text-white"
-                    onClick={() => window.open(selectedArte.canva_link!, '_blank')}
+                    disabled={!canDownload && dailyLimit !== Infinity}
+                    onClick={async () => {
+                      const success = await recordDownload(selectedArte.id);
+                      if (success) {
+                        window.open(selectedArte.canva_link!, '_blank');
+                      }
+                    }}
                   >
                     Abrir no Canva
                   </Button>
@@ -391,7 +412,13 @@ const BibliotecaArtesMusicos = () => {
                 {selectedArte.drive_link && (
                   <Button
                     className="flex-1 bg-[#31A8FF] hover:bg-[#2997e6] text-white"
-                    onClick={() => window.open(selectedArte.drive_link!, '_blank')}
+                    disabled={!canDownload && dailyLimit !== Infinity}
+                    onClick={async () => {
+                      const success = await recordDownload(selectedArte.id);
+                      if (success) {
+                        window.open(selectedArte.drive_link!, '_blank');
+                      }
+                    }}
                   >
                     Baixar PSD
                   </Button>
