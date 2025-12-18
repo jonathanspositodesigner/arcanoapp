@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, ArrowLeft, X, Star, Video, Sparkles, Plus } from "lucide-react";
+import { Upload, ArrowLeft, X, Star, Video, Sparkles, Plus, Image } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -397,6 +397,10 @@ const AdminUploadArtesMusicos = () => {
                         className="w-full h-32 object-cover rounded-lg hover:ring-2 hover:ring-violet-500 transition-all" 
                       />
                     )}
+                    <div className={`absolute top-2 left-2 text-[10px] px-1.5 py-0.5 rounded ${media.isVideo ? 'bg-violet-500' : 'bg-blue-500'} text-white flex items-center gap-1`}>
+                      {media.isVideo ? <Video className="h-3 w-3" /> : <Image className="h-3 w-3" />}
+                      {media.isVideo ? 'Vídeo' : 'Img'}
+                    </div>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
