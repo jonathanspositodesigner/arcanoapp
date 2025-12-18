@@ -717,7 +717,7 @@ const AdminManagePacks = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/admin-dashboard")}>
+            <Button variant="ghost" onClick={() => navigate("/admin-artes-eventos/ferramentas")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>

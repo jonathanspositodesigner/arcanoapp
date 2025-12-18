@@ -157,7 +157,7 @@ const AdminCategoriesArtes = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-2xl mx-auto py-8 px-4">
-        <Button variant="ghost" onClick={() => navigate("/admin-dashboard")} className="mb-6">
+        <Button variant="ghost" onClick={() => navigate("/admin-artes-eventos/ferramentas")} className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar ao Painel
         </Button>

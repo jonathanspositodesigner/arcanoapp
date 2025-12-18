@@ -125,7 +125,7 @@ const AdminManagePremium = () => {
         <div className="flex items-center gap-4 mb-8">
           <Button
             variant="outline"
-            onClick={() => navigate('/admin-dashboard')}
+            onClick={() => navigate('/admin-prompts/ferramentas')}
             size="icon"
           >
             <ArrowLeft className="h-4 w-4" />

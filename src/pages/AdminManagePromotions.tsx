@@ -333,7 +333,7 @@ export default function AdminManagePromotions() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/admin-dashboard')}>
+            <Button variant="ghost" onClick={() => navigate('/admin-artes-eventos/ferramentas')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>

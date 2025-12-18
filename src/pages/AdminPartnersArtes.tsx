@@ -223,7 +223,7 @@ const AdminPartnersArtes = () => {
           <Button
             variant="ghost"
             className="text-white/70 hover:text-white"
-            onClick={() => navigate("/admin-dashboard")}
+            onClick={() => navigate("/admin-artes-eventos/ferramentas")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar

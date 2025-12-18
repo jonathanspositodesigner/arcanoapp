@@ -545,7 +545,7 @@ const AdminFerramentas = () => {
                 )}
               </Card>
 
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative" onClick={() => navigate('/admin-dashboard')}>
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative" onClick={() => navigate('/admin-hub')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-red-600 to-orange-500 rounded-full">
                     <ReceiptText className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
