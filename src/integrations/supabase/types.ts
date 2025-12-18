@@ -1472,6 +1472,45 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_musicos_users: {
+        Row: {
+          billing_period: string | null
+          created_at: string | null
+          expires_at: string | null
+          greenn_contract_id: string | null
+          greenn_product_id: number | null
+          id: string
+          is_active: boolean
+          plan_type: string | null
+          subscribed_at: string | null
+          user_id: string
+        }
+        Insert: {
+          billing_period?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          greenn_contract_id?: string | null
+          greenn_product_id?: number | null
+          id?: string
+          is_active?: boolean
+          plan_type?: string | null
+          subscribed_at?: string | null
+          user_id: string
+        }
+        Update: {
+          billing_period?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          greenn_contract_id?: string | null
+          greenn_product_id?: number | null
+          id?: string
+          is_active?: boolean
+          plan_type?: string | null
+          subscribed_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       premium_users: {
         Row: {
           billing_period: string | null
@@ -2086,6 +2125,7 @@ export type Database = {
       }
       is_premium: { Args: never; Returns: boolean }
       is_premium_artes: { Args: never; Returns: boolean }
+      is_premium_musicos: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "partner"

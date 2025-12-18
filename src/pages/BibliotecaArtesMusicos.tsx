@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, LogIn, Settings, LogOut, Loader2, Lock, Play, UserPlus } from "lucide-react";
+import { usePremiumMusicosStatus } from "@/hooks/usePremiumMusicosStatus";
+import { ArrowLeft, LogIn, Settings, LogOut, Loader2, Lock, Play, UserPlus, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import baaLogo from "@/assets/BAA.png";
 
@@ -26,27 +28,12 @@ interface Arte {
 
 const BibliotecaArtesMusicos = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isPremium, isLoading: authLoading, logout } = usePremiumMusicosStatus();
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [artes, setArtes] = useState<Arte[]>([]);
   const [loadingArtes, setLoadingArtes] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setIsLoading(false);
-    };
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const [selectedArte, setSelectedArte] = useState<Arte | null>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -64,7 +51,7 @@ const BibliotecaArtesMusicos = () => {
       setLoadingArtes(true);
       const { data, error } = await supabase
         .from('admin_artes')
-        .select('id, title, image_url, category, is_premium, canva_link, drive_link')
+        .select('id, title, image_url, category, is_premium, canva_link, drive_link, is_ai_generated, ai_prompt')
         .eq('platform', 'musicos')
         .order('created_at', { ascending: false });
       
@@ -80,8 +67,18 @@ const BibliotecaArtesMusicos = () => {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await logout();
     toast.success("Logout realizado com sucesso!");
+  };
+
+  const handleArteClick = (arte: Arte) => {
+    // If user is premium or arte is free, show modal with links
+    if (isPremium || !arte.is_premium) {
+      setSelectedArte(arte);
+    } else {
+      // Non-premium user trying to access premium content
+      navigate("/planos-artes-musicos");
+    }
   };
 
   const filteredArtes = selectedCategory === "todos" 
@@ -95,7 +92,7 @@ const BibliotecaArtesMusicos = () => {
     return url?.includes('.mp4') || url?.includes('.webm') || url?.includes('.mov');
   };
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
@@ -126,6 +123,11 @@ const BibliotecaArtesMusicos = () => {
           <div className="flex items-center gap-2">
             {user ? (
               <>
+                {isPremium && (
+                  <span className="hidden sm:inline text-xs bg-violet-600 text-white px-2 py-1 rounded-full">
+                    Premium
+                  </span>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -219,70 +221,87 @@ const BibliotecaArtesMusicos = () => {
           </div>
         ) : filteredArtes.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredArtes.map((arte) => (
-              <div
-                key={arte.id}
-                className="group relative bg-[#1a1a2e] rounded-xl overflow-hidden border border-violet-500/20 hover:border-violet-500/50 transition-all duration-300"
-              >
-                {/* Premium Badge */}
-                {arte.is_premium && (
-                  <div className="absolute top-2 left-2 z-10 bg-violet-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                    <Lock className="w-3 h-3" />
-                    Premium
-                  </div>
-                )}
+            {filteredArtes.map((arte) => {
+              const canAccess = isPremium || !arte.is_premium;
+              return (
+                <div
+                  key={arte.id}
+                  className="group relative bg-[#1a1a2e] rounded-xl overflow-hidden border border-violet-500/20 hover:border-violet-500/50 transition-all duration-300"
+                >
+                  {/* Premium Badge */}
+                  {arte.is_premium && (
+                    <div className="absolute top-2 left-2 z-10 bg-violet-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                      <Lock className="w-3 h-3" />
+                      Premium
+                    </div>
+                  )}
 
-                {/* Media Preview */}
-                <div className="aspect-square relative overflow-hidden">
-                  {isVideo(arte.image_url) ? (
-                    <div className="relative w-full h-full">
-                      <video
-                        src={arte.image_url}
-                        className="w-full h-full object-cover"
-                        muted
-                        loop
-                        autoPlay
-                        playsInline
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                          <Play className="w-6 h-6 text-white fill-white" />
+                  {/* Media Preview */}
+                  <div className="aspect-square relative overflow-hidden">
+                    {isVideo(arte.image_url) ? (
+                      <div className="relative w-full h-full">
+                        <video
+                          src={arte.image_url}
+                          className="w-full h-full object-cover"
+                          muted
+                          loop
+                          autoPlay
+                          playsInline
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                            <Play className="w-6 h-6 text-white fill-white" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <img
-                      src={arte.image_url}
-                      alt={arte.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  )}
-                </div>
-
-                {/* Card Info */}
-                <div className="p-3">
-                  {/* Category Badge */}
-                  <div className="mb-2">
-                    <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded">
-                      {categories.find(c => c.slug === arte.category)?.name || arte.category}
-                    </span>
+                    ) : (
+                      <img
+                        src={arte.image_url}
+                        alt={arte.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
                   </div>
-                  
-                  <h3 className="text-white font-medium text-sm truncate mb-3">
-                    {arte.title}
-                  </h3>
 
-                  {/* Action Button */}
-                  <Button
-                    className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm"
-                    size="sm"
-                  >
-                    <Lock className="w-3 h-3 mr-1" />
-                    Liberar Modelo
-                  </Button>
+                  {/* Card Info */}
+                  <div className="p-3">
+                    {/* Category Badge */}
+                    <div className="mb-2">
+                      <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded">
+                        {categories.find(c => c.slug === arte.category)?.name || arte.category}
+                      </span>
+                    </div>
+                    
+                    <h3 className="text-white font-medium text-sm truncate mb-3">
+                      {arte.title}
+                    </h3>
+
+                    {/* Action Button */}
+                    <Button
+                      className={`w-full text-sm ${
+                        canAccess 
+                          ? "bg-violet-600 hover:bg-violet-500 text-white" 
+                          : "bg-violet-900/50 hover:bg-violet-800/50 text-violet-300"
+                      }`}
+                      size="sm"
+                      onClick={() => handleArteClick(arte)}
+                    >
+                      {canAccess ? (
+                        <>
+                          <ExternalLink className="w-3 h-3 mr-1" />
+                          Liberar Modelo
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-3 h-3 mr-1" />
+                          Liberar Modelo
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           /* Empty State */
@@ -310,6 +329,84 @@ const BibliotecaArtesMusicos = () => {
           </div>
         )}
       </main>
+
+      {/* Arte Detail Modal */}
+      <Dialog open={!!selectedArte} onOpenChange={() => setSelectedArte(null)}>
+        <DialogContent className="max-w-md bg-[#1a1a2e] border-violet-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-white">{selectedArte?.title}</DialogTitle>
+          </DialogHeader>
+          
+          {selectedArte && (
+            <div className="space-y-4">
+              {/* Preview */}
+              <div className="aspect-square rounded-lg overflow-hidden">
+                {isVideo(selectedArte.image_url) ? (
+                  <video
+                    src={selectedArte.image_url}
+                    className="w-full h-full object-cover"
+                    controls
+                    autoPlay
+                    muted
+                  />
+                ) : (
+                  <img
+                    src={selectedArte.image_url}
+                    alt={selectedArte.title}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+
+              {/* Category */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded">
+                  {categories.find(c => c.slug === selectedArte.category)?.name || selectedArte.category}
+                </span>
+                {selectedArte.is_ai_generated && (
+                  <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded">
+                    IA
+                  </span>
+                )}
+              </div>
+
+              {/* AI Prompt */}
+              {selectedArte.is_ai_generated && selectedArte.ai_prompt && (
+                <div className="p-3 bg-violet-900/30 rounded-lg">
+                  <p className="text-xs text-violet-400 mb-1">Prompt utilizado:</p>
+                  <p className="text-sm text-violet-200">{selectedArte.ai_prompt}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                {selectedArte.canva_link && (
+                  <Button
+                    className="flex-1 bg-[#00C4CC] hover:bg-[#00b3b8] text-white"
+                    onClick={() => window.open(selectedArte.canva_link!, '_blank')}
+                  >
+                    Abrir no Canva
+                  </Button>
+                )}
+                {selectedArte.drive_link && (
+                  <Button
+                    className="flex-1 bg-[#31A8FF] hover:bg-[#2997e6] text-white"
+                    onClick={() => window.open(selectedArte.drive_link!, '_blank')}
+                  >
+                    Baixar PSD
+                  </Button>
+                )}
+              </div>
+
+              {!selectedArte.canva_link && !selectedArte.drive_link && (
+                <p className="text-center text-violet-400 text-sm">
+                  Nenhum link de edição disponível
+                </p>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
