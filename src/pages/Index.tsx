@@ -83,8 +83,8 @@ const Index = () => {
         <button onClick={() => navigate("/admin-login")} className="text-sm text-muted-foreground hover:text-primary transition-colors underline">
           Acesso Administrador
         </button>
-        <button onClick={() => navigate("/parceiro-login-artes")} className="text-sm text-muted-foreground hover:text-primary transition-colors underline lg:hidden">
-          Área do Colaborador
+        <button onClick={() => navigate("/parceiro-login")} className="text-sm text-muted-foreground hover:text-primary transition-colors underline">
+          Acesso Colaborador
         </button>
       </div>
     </div>;

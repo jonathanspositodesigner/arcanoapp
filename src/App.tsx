@@ -72,6 +72,10 @@ import ProfileSettingsArtes from "./pages/ProfileSettingsArtes";
 import PartnerLoginArtes from "./pages/PartnerLoginArtes";
 import PartnerDashboardArtes from "./pages/PartnerDashboardArtes";
 import PartnerUploadArtes from "./pages/PartnerUploadArtes";
+import PartnerLoginUnified from "./pages/PartnerLoginUnified";
+import PartnerPlatformSelect from "./pages/PartnerPlatformSelect";
+import PartnerDashboardMusicos from "./pages/PartnerDashboardMusicos";
+import PartnerUploadMusicos from "./pages/PartnerUploadMusicos";
 import AdminPartnersArtes from "./pages/AdminPartnersArtes";
 import AdminCategoriesArtes from "./pages/AdminCategoriesArtes";
 import AdminCategoriesMusicos from "./pages/AdminCategoriesMusicos";
@@ -186,6 +190,10 @@ const AppContent = () => {
         <Route path="/parceiro-login-artes" element={<PartnerLoginArtes />} />
         <Route path="/parceiro-dashboard-artes" element={<PartnerDashboardArtes />} />
         <Route path="/parceiro-upload-artes" element={<PartnerUploadArtes />} />
+        <Route path="/parceiro-login-unificado" element={<PartnerLoginUnified />} />
+        <Route path="/parceiro-plataformas" element={<PartnerPlatformSelect />} />
+        <Route path="/parceiro-dashboard-musicos" element={<PartnerDashboardMusicos />} />
+        <Route path="/parceiro-upload-musicos" element={<PartnerUploadMusicos />} />
         <Route path="/admin-parceiros-artes" element={<AdminPartnersArtes />} />
         <Route path="/admin-categories-artes" element={<AdminCategoriesArtes />} />
         <Route path="/admin-categories-musicos" element={<AdminCategoriesMusicos />} />
