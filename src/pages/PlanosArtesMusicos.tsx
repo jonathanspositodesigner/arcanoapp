@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, UserPlus } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, UserPlus, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -331,18 +331,29 @@ const PlanosArtesMusicos = () => {
 
               {/* Features */}
               <ul className="space-y-3 flex-1">
-                {plan.features.map((feature, fIndex) => (
-                  <li key={fIndex} className="flex items-start gap-2 text-sm">
-                    {feature.included ? (
-                      <Check className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" />
-                    ) : (
-                      <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
-                    )}
-                    <span className={`${feature.included ? "text-violet-100" : "text-orange-500"} ${(feature as any).bold ? "font-bold" : ""}`}>
-                      {feature.text}
-                    </span>
-                  </li>
-                ))}
+                {plan.features.map((feature, fIndex) => {
+                  const isLedFeature = feature.text.includes("Telões de LED");
+                  return (
+                    <li key={fIndex} className="flex items-start gap-2 text-sm">
+                      {feature.included ? (
+                        <Check className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" />
+                      ) : (
+                        <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                      )}
+                      <span className={`${feature.included ? "text-violet-100" : "text-orange-500"} ${(feature as any).bold ? "font-bold" : ""}`}>
+                        {feature.text}
+                      </span>
+                      {isLedFeature && !feature.included && (
+                        <Badge className="ml-1 bg-amber-600 text-white text-[10px] px-1.5 py-0 h-4 border-0">
+                          Pro+
+                        </Badge>
+                      )}
+                      {isLedFeature && feature.included && (
+                        <Monitor className="w-3 h-3 text-amber-400 shrink-0 ml-1" />
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
 
               {/* Extra Benefits for Unlimited */}
@@ -354,8 +365,29 @@ const PlanosArtesMusicos = () => {
                   <div className="flex items-center gap-2 text-sm">
                     <Sparkles className="w-4 h-4 text-violet-400" />
                     <span className="text-violet-100">Todos os recursos liberados</span>
-                  </div>
-                </div>
+        </div>
+
+        {/* LED Feature Callout */}
+        <div className="max-w-5xl mx-auto mt-8">
+          <div className="bg-gradient-to-r from-amber-600/20 to-violet-600/20 border border-amber-500/30 rounded-xl p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+              <Monitor className="w-6 h-6 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                Modelos de Telões de LED
+                <Badge className="bg-amber-600 text-white text-[10px] px-1.5 py-0 h-4 border-0">
+                  Exclusivo Pro+
+                </Badge>
+              </h3>
+              <p className="text-violet-200/70 text-sm mt-1">
+                Acesse nossa biblioteca de modelos para telões de LED exclusivos para shows e eventos. 
+                Disponível apenas nos planos Pro e Unlimited.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
               )}
             </Card>
           ))}
