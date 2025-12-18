@@ -215,10 +215,10 @@ const PartnerDashboardArtes = () => {
             <Button
               variant="ghost"
               className="text-white/70 hover:text-white"
-              onClick={() => navigate("/biblioteca-artes")}
+              onClick={() => navigate("/parceiro-plataformas")}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Biblioteca
+              Voltar
             </Button>
             <h1 className="text-xl md:text-2xl font-bold text-white">
               Olá, {partner?.name}!

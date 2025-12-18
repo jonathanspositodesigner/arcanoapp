@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { LogOut, Upload, FileCheck, Clock, Trash2, Home, Copy, Pencil, XCircle } from "lucide-react";
+import { LogOut, Upload, FileCheck, Clock, Trash2, ArrowLeft, Copy, Pencil, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
@@ -270,9 +270,9 @@ const PartnerDashboard = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/')} className="gap-2">
-              <Home className="h-4 w-4" />
-              Home
+            <Button variant="outline" onClick={() => navigate('/parceiro-plataformas')} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
             </Button>
             <Button variant="outline" onClick={handleLogout} className="gap-2">
               <LogOut className="h-4 w-4" />
