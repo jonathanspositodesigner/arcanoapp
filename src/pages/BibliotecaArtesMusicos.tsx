@@ -86,7 +86,10 @@ const BibliotecaArtesMusicos = () => {
 
   const filteredArtes = selectedCategory === "todos" 
     ? artes 
-    : artes.filter(a => a.category === selectedCategory);
+    : artes.filter(a => {
+        const cat = categories.find(c => c.slug === selectedCategory);
+        return cat ? (a.category === cat.name || a.category === cat.slug) : a.category === selectedCategory;
+      });
 
   const isVideo = (url: string) => {
     return url?.includes('.mp4') || url?.includes('.webm') || url?.includes('.mov');
