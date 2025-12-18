@@ -396,15 +396,15 @@ const BibliotecaArtesMusicos = () => {
           </div>
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 mb-8 px-2 sm:px-0">
             <Button
               variant={selectedCategory === "todos" ? "default" : "outline"}
               onClick={() => setSelectedCategory("todos")}
-              className={
+              className={`w-full sm:w-auto text-sm sm:text-base py-2.5 ${
                 selectedCategory === "todos"
                   ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0"
                   : "border-white/20 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/30 bg-transparent"
-              }
+              }`}
             >
               Todos
             </Button>
@@ -415,7 +415,7 @@ const BibliotecaArtesMusicos = () => {
                   key={cat.id}
                   variant={selectedCategory === cat.slug ? "default" : "outline"}
                   onClick={() => setSelectedCategory(cat.slug)}
-                  className={`gap-1.5 ${
+                  className={`w-full sm:w-auto text-sm sm:text-base py-2.5 gap-1.5 ${
                     selectedCategory === cat.slug
                       ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0"
                       : "border-white/20 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/30 bg-transparent"
