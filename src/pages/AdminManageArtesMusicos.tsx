@@ -142,6 +142,11 @@ const AdminManageArtesMusicos = () => {
     return (clickCounts[arte.id] || 0) + (arte.bonus_clicks || 0);
   };
 
+  const isVideoUrl = (url: string) => {
+    const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+  };
+
   const filteredAndSortedArtes = artes
     .filter(a => {
       const matchesSearch = a.title.toLowerCase().includes(searchTerm.toLowerCase());
@@ -268,11 +273,6 @@ const AdminManageArtesMusicos = () => {
       console.error("Error deleting arte:", error);
       toast.error("Erro ao deletar arte");
     }
-  };
-
-  const isVideoUrl = (url: string) => {
-    const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
-    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
   };
 
   if (isLoading) {
