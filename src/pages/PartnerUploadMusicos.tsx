@@ -32,8 +32,9 @@ const PartnerUploadMusicos = () => {
   const [driveLink, setDriveLink] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { uploadImage, isUploading } = useCloudinaryUpload();
+  const { uploadToCloudinary } = useCloudinaryUpload();
 
   useEffect(() => {
     checkPartnerAccess();
@@ -141,13 +142,17 @@ const PartnerUploadMusicos = () => {
 
     try {
       // Upload image to Cloudinary
-      const imageUrl = await uploadImage(selectedFile, 'partner-artes-musicos');
+      setIsUploading(true);
+      const uploadResult = await uploadToCloudinary(selectedFile, 'partner-artes-musicos');
+      setIsUploading(false);
       
-      if (!imageUrl) {
+      if (!uploadResult.success || !uploadResult.url) {
         toast.error("Erro ao fazer upload da imagem");
         setIsSubmitting(false);
         return;
       }
+      
+      const imageUrl = uploadResult.url;
 
       // Insert into partner_artes_musicos
       const { error } = await supabase
