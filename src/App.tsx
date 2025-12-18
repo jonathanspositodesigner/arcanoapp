@@ -12,6 +12,7 @@ import BibliotecaArtesMusicos from "./pages/BibliotecaArtesMusicos";
 import ContributePrompts from "./pages/ContributePrompts";
 import AdminUpload from "./pages/AdminUpload";
 import AdminUploadArtes from "./pages/AdminUploadArtes";
+import AdminUploadArtesMusicos from "./pages/AdminUploadArtesMusicos";
 import AdminLogin from "./pages/AdminLogin";
 import AdminHub from "./pages/AdminHub";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -133,6 +134,7 @@ const AppContent = () => {
         <Route path="/admin-email-marketing" element={<AdminEmailMarketing />} />
         <Route path="/admin-upload" element={<AdminUpload />} />
         <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
+        <Route path="/admin-upload-artes-musicos" element={<AdminUploadArtesMusicos />} />
         <Route path="/admin-community-review" element={<AdminCommunityReview />} />
         <Route path="/admin-artes-review" element={<AdminArtesReview />} />
         <Route path="/admin-manage-images" element={<AdminManageImages />} />

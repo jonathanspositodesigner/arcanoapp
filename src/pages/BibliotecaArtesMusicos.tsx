@@ -6,13 +6,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import baaLogo from "@/assets/BAA.png";
 
-const CATEGORIES = [
-  { slug: "todos", name: "Todos" },
-  { slug: "agendas", name: "Agendas" },
-  { slug: "lancamento-musica", name: "Lançamento de Música" },
-  { slug: "telao-led", name: "Telão de LED" },
-  { slug: "presskit-digital", name: "Presskit Digital" },
-];
+interface Category {
+  id: string;
+  slug: string;
+  name: string;
+}
 
 interface Arte {
   id: string;
@@ -20,8 +18,10 @@ interface Arte {
   image_url: string;
   category: string;
   is_premium: boolean;
-  canva_link?: string;
-  drive_link?: string;
+  canva_link: string | null;
+  drive_link: string | null;
+  is_ai_generated: boolean | null;
+  ai_prompt: string | null;
 }
 
 const BibliotecaArtesMusicos = () => {
@@ -31,6 +31,7 @@ const BibliotecaArtesMusicos = () => {
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [artes, setArtes] = useState<Arte[]>([]);
   const [loadingArtes, setLoadingArtes] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -48,14 +49,31 @@ const BibliotecaArtesMusicos = () => {
   }, []);
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      const { data } = await supabase
+        .from('artes_categories_musicos')
+        .select('id, name, slug')
+        .order('display_order', { ascending: true });
+      setCategories(data || []);
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     const fetchArtes = async () => {
       setLoadingArtes(true);
-      // For now, we'll use placeholder data since there's no specific musicos table yet
-      // This can be connected to a real table later
-      const mockArtes: Arte[] = [
-        // Placeholder items - these will be replaced with real data
-      ];
-      setArtes(mockArtes);
+      const { data, error } = await supabase
+        .from('admin_artes')
+        .select('id, title, image_url, category, is_premium, canva_link, drive_link')
+        .eq('platform', 'musicos')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching artes:', error);
+        setArtes([]);
+      } else {
+        setArtes((data || []) as Arte[]);
+      }
       setLoadingArtes(false);
     };
     fetchArtes();
@@ -164,9 +182,20 @@ const BibliotecaArtesMusicos = () => {
 
         {/* Category Tabs */}
         <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {CATEGORIES.map((cat) => (
+          <Button
+            variant={selectedCategory === "todos" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("todos")}
+            className={
+              selectedCategory === "todos"
+                ? "bg-violet-600 hover:bg-violet-500 text-white border-violet-600"
+                : "border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100"
+            }
+          >
+            Todos
+          </Button>
+          {categories.map((cat) => (
             <Button
-              key={cat.slug}
+              key={cat.id}
               variant={selectedCategory === cat.slug ? "default" : "outline"}
               onClick={() => setSelectedCategory(cat.slug)}
               className={
@@ -232,7 +261,7 @@ const BibliotecaArtesMusicos = () => {
                   {/* Category Badge */}
                   <div className="mb-2">
                     <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded">
-                      {CATEGORIES.find(c => c.slug === arte.category)?.name || arte.category}
+                      {categories.find(c => c.slug === arte.category)?.name || arte.category}
                     </span>
                   </div>
                   
@@ -266,9 +295,9 @@ const BibliotecaArtesMusicos = () => {
               Em breve você terá acesso a modelos incríveis para:
             </p>
             <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
-              {CATEGORIES.filter(c => c.slug !== "todos").map((cat) => (
+              {categories.map((cat) => (
                 <span
-                  key={cat.slug}
+                  key={cat.id}
                   className="bg-violet-500/20 text-violet-300 px-3 py-1.5 rounded-full text-sm"
                 >
                   {cat.name}
