@@ -413,7 +413,7 @@ const BibliotecaArtesMusicos = () => {
               <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
             </div>
           ) : filteredArtes.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredArtes.map((arte) => {
                 const isLed = isLedArte(arte);
                 const ledRestricted = isLed && !hasLedAccess;
@@ -480,13 +480,13 @@ const BibliotecaArtesMusicos = () => {
                         )}
                       </div>
                       
-                      <h3 className="text-white font-medium text-sm truncate mb-3">
+                      <h3 className="text-white font-medium text-sm line-clamp-2 mb-3 min-h-[2.5rem]">
                         {arte.title}
                       </h3>
 
                       {/* Action Button */}
                       <Button
-                        className={`w-full text-sm ${
+                        className={`w-full text-xs sm:text-sm whitespace-nowrap ${
                           canAccess 
                             ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" 
                             : ledRestricted
@@ -498,18 +498,18 @@ const BibliotecaArtesMusicos = () => {
                       >
                         {canAccess ? (
                           <>
-                            <ExternalLink className="w-3 h-3 mr-1" />
-                            Editar este Modelo
+                            <ExternalLink className="w-3 h-3 mr-1 flex-shrink-0" />
+                            <span>Editar Modelo</span>
                           </>
                         ) : ledRestricted ? (
                           <>
-                            <Lock className="w-3 h-3 mr-1" />
-                            Plano Pro+
+                            <Lock className="w-3 h-3 mr-1 flex-shrink-0" />
+                            <span>Pro+</span>
                           </>
                         ) : (
                           <>
-                            <Lock className="w-3 h-3 mr-1" />
-                            Liberar Modelo
+                            <Lock className="w-3 h-3 mr-1 flex-shrink-0" />
+                            <span>Liberar</span>
                           </>
                         )}
                       </Button>
