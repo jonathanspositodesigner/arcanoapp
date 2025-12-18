@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.webhook-greenn-artes]
 verify_jwt = false
 
+[functions.webhook-greenn-musicos]
+verify_jwt = false
+
 [functions.get-signed-url]
 verify_jwt = false
 
@@ -19,6 +22,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.create-premium-user-artes]
+verify_jwt = false
+
+[functions.create-premium-user-musicos]
 verify_jwt = false
 
 [functions.delete-auth-user-artes]
