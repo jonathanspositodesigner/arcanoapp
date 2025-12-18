@@ -27,10 +27,10 @@ const PlanosArtesMusicos = () => {
       perMonth: true,
       paymentUrl: "#", // Placeholder - user will configure
       features: [{
-        text: "Acesso a todos os modelos",
+        text: "Acesso as artes editáveis",
         included: true
       }, {
-        text: "Downloads ilimitados",
+        text: "5 downloads por dia",
         included: true
       }, {
         text: "Atualizações semanais",
@@ -39,10 +39,10 @@ const PlanosArtesMusicos = () => {
         text: "Suporte via WhatsApp",
         included: true
       }, {
-        text: "Modelos exclusivos",
+        text: "Modelos de Telões de LED",
         included: false
       }, {
-        text: "Prioridade em lançamentos",
+        text: "Ferramentas de IA",
         included: false
       }],
       popular: false,
@@ -54,10 +54,10 @@ const PlanosArtesMusicos = () => {
       perMonth: true,
       paymentUrl: "#", // Placeholder
       features: [{
-        text: "Acesso a todos os modelos",
+        text: "Acesso as artes editáveis",
         included: true
       }, {
-        text: "Downloads ilimitados",
+        text: "10 downloads por dia",
         included: true
       }, {
         text: "Atualizações semanais",
@@ -66,10 +66,10 @@ const PlanosArtesMusicos = () => {
         text: "Suporte via WhatsApp",
         included: true
       }, {
-        text: "Modelos exclusivos",
+        text: "Modelos de Telões de LED",
         included: true
       }, {
-        text: "Prioridade em lançamentos",
+        text: "Ferramentas de IA",
         included: false
       }],
       popular: true,
@@ -82,7 +82,7 @@ const PlanosArtesMusicos = () => {
       perMonth: true,
       paymentUrl: "#", // Placeholder
       features: [{
-        text: "Acesso a todos os modelos",
+        text: "Acesso as artes editáveis",
         included: true
       }, {
         text: "Downloads ilimitados",
@@ -94,10 +94,10 @@ const PlanosArtesMusicos = () => {
         text: "Suporte via WhatsApp",
         included: true
       }, {
-        text: "Modelos exclusivos",
+        text: "Modelos de Telões de LED",
         included: true
       }, {
-        text: "Prioridade em lançamentos",
+        text: "Ferramentas de IA",
         included: true
       }],
       popular: false,
@@ -111,10 +111,10 @@ const PlanosArtesMusicos = () => {
       yearlyTotal: "178,80",
       paymentUrl: "#", // Placeholder
       features: [{
-        text: "Acesso a todos os modelos",
+        text: "Acesso as artes editáveis",
         included: true
       }, {
-        text: "Downloads ilimitados",
+        text: "5 downloads por dia",
         included: true
       }, {
         text: "Atualizações semanais",
@@ -123,10 +123,10 @@ const PlanosArtesMusicos = () => {
         text: "Suporte via WhatsApp",
         included: true
       }, {
-        text: "Modelos exclusivos",
+        text: "Modelos de Telões de LED",
         included: false
       }, {
-        text: "Prioridade em lançamentos",
+        text: "Ferramentas de IA",
         included: false
       }],
       popular: false,
@@ -139,10 +139,10 @@ const PlanosArtesMusicos = () => {
       yearlyTotal: "274,80",
       paymentUrl: "#", // Placeholder
       features: [{
-        text: "Acesso a todos os modelos",
+        text: "Acesso as artes editáveis",
         included: true
       }, {
-        text: "Downloads ilimitados",
+        text: "10 downloads por dia",
         included: true
       }, {
         text: "Atualizações semanais",
@@ -151,10 +151,10 @@ const PlanosArtesMusicos = () => {
         text: "Suporte via WhatsApp",
         included: true
       }, {
-        text: "Modelos exclusivos",
+        text: "Modelos de Telões de LED",
         included: true
       }, {
-        text: "Prioridade em lançamentos",
+        text: "Ferramentas de IA",
         included: false
       }],
       popular: true,
@@ -168,7 +168,7 @@ const PlanosArtesMusicos = () => {
       yearlyTotal: "358,80",
       paymentUrl: "#", // Placeholder
       features: [{
-        text: "Acesso a todos os modelos",
+        text: "Acesso as artes editáveis",
         included: true
       }, {
         text: "Downloads ilimitados",
@@ -180,10 +180,10 @@ const PlanosArtesMusicos = () => {
         text: "Suporte via WhatsApp",
         included: true
       }, {
-        text: "Modelos exclusivos",
+        text: "Modelos de Telões de LED",
         included: true
       }, {
-        text: "Prioridade em lançamentos",
+        text: "Ferramentas de IA",
         included: true
       }],
       popular: false,
