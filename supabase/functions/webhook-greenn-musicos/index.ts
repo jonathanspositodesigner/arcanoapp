@@ -15,15 +15,14 @@ interface ProductMapping {
 // Mapeamento de Product ID para plano
 // Configure aqui os IDs dos produtos da Greenn
 const PRODUCT_ID_MAPPING: Record<number, ProductMapping> = {
-  // Plano Básico
-  // XXXXX: { planType: 'basico', billingPeriod: 'mensal', expirationDays: 30 },
-  // YYYYY: { planType: 'basico', billingPeriod: 'anual', expirationDays: 365 },
+  // Plano Básico Mensal (Acesso Básico - BAA - Músicos & Artistas)
+  150707: { planType: 'basico', billingPeriod: 'mensal', expirationDays: 30 },
   
-  // Plano Pro
+  // Plano Pro - adicionar IDs quando disponíveis
   // XXXXX: { planType: 'pro', billingPeriod: 'mensal', expirationDays: 30 },
   // YYYYY: { planType: 'pro', billingPeriod: 'anual', expirationDays: 365 },
   
-  // Plano Unlimited
+  // Plano Unlimited - adicionar IDs quando disponíveis
   // XXXXX: { planType: 'unlimited', billingPeriod: 'mensal', expirationDays: 30 },
   // YYYYY: { planType: 'unlimited', billingPeriod: 'anual', expirationDays: 365 },
 }
