@@ -5,9 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// O webhook agora usa product.period da Greenn para determinar a duração automaticamente
-// Não precisa mais de mapeamento manual de Product ID → dias
-
 // Mapeamento de Product ID para tipo de plano
 const PRODUCT_ID_TO_PLAN: Record<number, 'basico' | 'pro' | 'unlimited'> = {
   150707: 'basico',
@@ -92,7 +89,7 @@ async function isEmailBlacklisted(supabase: any, email: string): Promise<boolean
 }
 
 // Função para adicionar email à lista negra
-async function addToBlacklist(supabase: any, email: string, reason: string): Promise<void> {
+async function addToBlacklist(supabase: any, email: string, reason: string, requestId: string): Promise<void> {
   try {
     await supabase.from('blacklisted_emails').upsert({
       email: email.toLowerCase(),
@@ -100,23 +97,26 @@ async function addToBlacklist(supabase: any, email: string, reason: string): Pro
       auto_blocked: true,
       blocked_at: new Date().toISOString()
     }, { onConflict: 'email' })
-    console.log(`⚠️ Email added to blacklist: ${email} (${reason})`)
+    console.log(`   ├─ [${requestId}] 🚫 Email adicionado à blacklist: ${email} (${reason})`)
   } catch (e) {
-    console.error('Failed to add to blacklist:', e)
+    console.error(`   ├─ [${requestId}] ❌ Erro ao adicionar à blacklist:`, e)
   }
 }
 
 // Função para enviar email de boas-vindas
-async function sendWelcomeEmail(supabase: any, email: string, name: string, planInfo: string): Promise<void> {
+async function sendWelcomeEmail(supabase: any, email: string, name: string, planInfo: string, requestId: string): Promise<void> {
+  console.log(`\n📧 [${requestId}] EMAIL DE BOAS-VINDAS:`)
+  console.log(`   ├─ Destinatário: ${email}`)
+  console.log(`   ├─ Nome: ${name || 'N/A'}`)
+  console.log(`   ├─ Plano: ${planInfo}`)
+  
   try {
-    console.log(`📧 Sending welcome email to: ${email}`)
-    
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
     const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
     const supabaseUrl = Deno.env.get("SUPABASE_URL")
     
     if (!clientId || !clientSecret) {
-      console.error("SendPulse credentials not configured, skipping welcome email")
+      console.log(`   └─ ⚠️ SendPulse não configurado, email não enviado`)
       return
     }
 
@@ -128,9 +128,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       .eq('is_active', true)
       .maybeSingle()
 
-    if (!template) {
-      console.log('No active template found for musicos, using default')
-    }
+    console.log(`   ├─ Template: ${template?.id || 'default'}`)
 
     // Parse template content
     let templateContent = {
@@ -144,7 +142,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       try {
         templateContent = JSON.parse(template.content)
       } catch (e) {
-        console.log('Error parsing template content, using default')
+        console.log(`   ├─ ⚠️ Erro parsing template, usando default`)
       }
     }
 
@@ -154,6 +152,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
 
     // Generate unique tracking ID
     const trackingId = crypto.randomUUID()
+    console.log(`   ├─ Tracking ID: ${trackingId}`)
 
     // Build tracking URLs
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
@@ -173,7 +172,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
     })
 
     if (!tokenResponse.ok) {
-      console.error("Failed to get SendPulse token for welcome email")
+      console.log(`   └─ ❌ Falha ao obter token SendPulse`)
       return
     }
 
@@ -284,30 +283,30 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
     })
     
     if (result.result === true) {
-      console.log(`✅ Welcome email sent successfully to ${email} (tracking: ${trackingId})`)
+      console.log(`   └─ ✅ Email enviado com sucesso`)
     } else {
-      console.error(`❌ Failed to send welcome email: ${JSON.stringify(result)}`)
+      console.log(`   └─ ❌ Falha no envio: ${JSON.stringify(result)}`)
     }
   } catch (error) {
-    console.error('Error sending welcome email:', error)
+    console.log(`   └─ ❌ Erro ao enviar email: ${error}`)
   }
 }
 
 // Função para detectar plano pelo Product ID da Greenn
-function detectPlanFromProductId(productId: number | undefined): 'basico' | 'pro' | 'unlimited' {
+function detectPlanFromProductId(productId: number | undefined, requestId: string): 'basico' | 'pro' | 'unlimited' {
   if (!productId) {
-    console.warn(`⚠️ Product ID não fornecido, usando 'basico' como padrão`)
+    console.log(`   ├─ [${requestId}] ⚠️ Product ID não fornecido, usando 'basico'`)
     return 'basico'
   }
   
   const planType = PRODUCT_ID_TO_PLAN[productId]
   
   if (!planType) {
-    console.warn(`⚠️ Product ID ${productId} não mapeado, usando 'basico' como padrão`)
+    console.log(`   ├─ [${requestId}] ⚠️ Product ID ${productId} não mapeado, usando 'basico'`)
     return 'basico'
   }
   
-  console.log(`📋 Product ID detection: productId=${productId} -> planType=${planType}`)
+  console.log(`   ├─ [${requestId}] ✅ Product ID ${productId} → ${planType}`)
   return planType
 }
 
@@ -328,9 +327,17 @@ function calculateExpirationDate(expirationDays: number): Date {
 }
 
 Deno.serve(async (req) => {
+  const startTime = Date.now()
+  const requestId = crypto.randomUUID().slice(0, 8)
+  const timestamp = new Date().toISOString()
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  console.log(`\n${'='.repeat(70)}`)
+  console.log(`🚀 [${requestId}] WEBHOOK MÚSICOS RECEBIDO - ${timestamp}`)
+  console.log(`${'='.repeat(70)}`)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -347,12 +354,10 @@ Deno.serve(async (req) => {
   let status: string | undefined
   let productId: number | undefined
   let mappingType: 'product_period' | 'name_detection' | 'none' = 'none'
+  let currentStep = 'parsing_payload'
 
   try {
     payload = await req.json()
-    
-    console.log('=== GREENN MÚSICOS WEBHOOK RECEIVED ===')
-    console.log('Payload:', JSON.stringify(payload, null, 2))
 
     // Detectar evento de checkout abandonado
     const eventType = payload.event
@@ -370,8 +375,14 @@ Deno.serve(async (req) => {
       const offerHash = payload.offer?.hash || ''
       const amount = payload.offer?.amount || payload.product?.amount || 0
 
-      console.log(`📋 Checkout abandoned by: ${leadEmail} at step ${checkoutStep}`)
-      console.log(`Product: ${productName} (ID: ${productId}), Amount: ${amount}`)
+      console.log(`\n📋 [${requestId}] CHECKOUT ABANDONADO:`)
+      console.log(`   ├─ Email: ${leadEmail || 'N/A'}`)
+      console.log(`   ├─ Nome: ${leadName || 'N/A'}`)
+      console.log(`   ├─ Telefone: ${leadPhone || 'N/A'}`)
+      console.log(`   ├─ Step: ${checkoutStep}`)
+      console.log(`   ├─ Product ID: ${productId}`)
+      console.log(`   ├─ Product: ${productName}`)
+      console.log(`   └─ Amount: R$ ${amount}`)
       
       if (leadEmail) {
         // Verificar se o lead já existe nas últimas 24h
@@ -401,16 +412,20 @@ Deno.serve(async (req) => {
           })
 
           if (insertError) {
-            console.error('Error saving abandoned checkout:', insertError)
+            console.log(`\n❌ [${requestId}] Erro salvando lead: ${insertError.message}`)
           } else {
-            console.log(`✅ Lead saved for remarketing: ${leadEmail}`)
+            console.log(`\n✅ [${requestId}] Lead salvo para remarketing`)
           }
         } else {
-          console.log(`⏭️ Lead already registered recently: ${leadEmail}`)
+          console.log(`\n⏭️ [${requestId}] Lead já registrado recentemente`)
         }
       }
 
       await logWebhook(supabase, payload, 'abandoned', productId, leadEmail, 'success', 'lead')
+      
+      const duration = Date.now() - startTime
+      console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
       
       return new Response(
         JSON.stringify({ success: true, message: 'Lead captured for remarketing' }),
@@ -429,26 +444,47 @@ Deno.serve(async (req) => {
     status = payload.currentStatus
     const contractId = payload.contract?.id || payload.sale?.id
     const saleAmount = payload.sale?.amount
+
+    console.log(`\n📋 [${requestId}] DADOS DO PAYLOAD:`)
+    console.log(`   ├─ Email: ${email || 'NÃO FORNECIDO'}`)
+    console.log(`   ├─ Nome: ${clientName || 'N/A'}`)
+    console.log(`   ├─ Telefone: ${clientPhone || 'N/A'}`)
+    console.log(`   ├─ Status: ${status}`)
+    console.log(`   ├─ Product ID: ${productId}`)
+    console.log(`   ├─ Product Name: ${productName}`)
+    console.log(`   ├─ Offer Name: ${offerName}`)
+    console.log(`   ├─ Offer Hash: ${offerHash}`)
+    console.log(`   ├─ Sale Amount: R$ ${saleAmount || 'N/A'}`)
+    console.log(`   └─ Contract ID: ${contractId || 'N/A'}`)
     
     if (!email) {
-      console.error('No email provided in webhook payload')
+      console.log(`\n❌ [${requestId}] ERRO: Email não fornecido`)
       await logWebhook(supabase, payload, status, productId, email, 'error', 'unknown', 'Email is required')
+      
+      const duration = Date.now() - startTime
+      console.log(`⏱️ [${requestId}] Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
+      
       return new Response(
         JSON.stringify({ error: 'Email is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`Processing webhook for email: ${email}, name: ${clientName}, status: ${status}`)
-    console.log(`Product ID: ${productId}, Product: ${productName}, Offer: ${offerName}, Offer Hash: ${offerHash}`)
-    console.log(`Sale Amount: ${saleAmount}`)
-
     // Verificar lista negra para compras
     if (status === 'paid' || status === 'approved') {
+      currentStep = 'checking_blacklist'
+      console.log(`\n🔒 [${requestId}] VERIFICANDO BLACKLIST...`)
+      
       const isBlacklisted = await isEmailBlacklisted(supabase, email)
       if (isBlacklisted) {
-        console.log(`🚫 Email ${email} is BLACKLISTED - blocking purchase`)
+        console.log(`   └─ 🚫 Email BLOQUEADO`)
         await logWebhook(supabase, payload, status, productId, email, 'blacklisted', 'blocked', 'Email is blacklisted')
+        
+        const duration = Date.now() - startTime
+        console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
+        console.log(`${'='.repeat(70)}\n`)
+        
         return new Response(
           JSON.stringify({ 
             success: false, 
@@ -458,13 +494,17 @@ Deno.serve(async (req) => {
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
+      console.log(`   └─ ✅ Email liberado`)
     }
 
+    currentStep = 'detecting_plan'
+    console.log(`\n🔍 [${requestId}] DETECÇÃO DE PLANO:`)
+    
     // Usar product.period da Greenn para determinar duração dinamicamente
     const productPeriod = payload.product?.period
     
-    // Detectar tipo de plano pelo nome do produto
-    const planType = detectPlanFromProductId(productId)
+    // Detectar tipo de plano pelo Product ID
+    const planType = detectPlanFromProductId(productId, requestId)
     
     // Usar period da Greenn diretamente (padrão: 30 dias se não vier)
     const expirationDays = productPeriod && productPeriod > 0 ? productPeriod : 30
@@ -472,12 +512,16 @@ Deno.serve(async (req) => {
     
     mappingType = productPeriod ? 'product_period' : 'name_detection'
     
-    console.log(`✅ Using product.period from Greenn: ${productPeriod} days`)
-    console.log(`Plan: ${planType}, Period: ${billingPeriod}, Days: ${expirationDays}`)
+    console.log(`   ├─ Product Period (Greenn): ${productPeriod || 'N/A'} dias`)
+    console.log(`   ├─ Plano: ${planType}`)
+    console.log(`   ├─ Billing Period: ${billingPeriod}`)
+    console.log(`   └─ Dias até expiração: ${expirationDays}`)
 
     // Handle paid status - activate subscription
     if (status === 'paid' || status === 'approved') {
-      console.log('Processing PAID status - activating subscription')
+      currentStep = 'processing_activation'
+      console.log(`\n💳 [${requestId}] PROCESSANDO PAGAMENTO:`)
+      console.log(`   ├─ Ação: Ativar Assinatura`)
       
       // Verificar abandoned_checkout
       if (productId) {
@@ -496,21 +540,22 @@ Deno.serve(async (req) => {
           
           if (minutesSinceAbandonment < 15) {
             await supabase.from('abandoned_checkouts').delete().eq('id', abandonedCheckout.id)
-            console.log(`🗑️ Deleted quick checkout - not a real abandonment: ${email}`)
+            console.log(`   ├─ 🗑️ Checkout rápido deletado (${minutesSinceAbandonment.toFixed(1)} min)`)
           } else {
             await supabase.from('abandoned_checkouts').update({ 
               remarketing_status: 'converted',
               updated_at: new Date().toISOString()
             }).eq('id', abandonedCheckout.id)
-            console.log(`✅ Abandoned checkout marked as CONVERTED for ${email}`)
+            console.log(`   ├─ ✅ Abandoned checkout convertido (${minutesSinceAbandonment.toFixed(1)} min)`)
           }
         }
       }
       
       let userId: string | null = null
 
-      // Criar ou buscar usuário
-      console.log(`Attempting to create user with email: ${email}`)
+      console.log(`\n👤 [${requestId}] PROCESSAMENTO DE USUÁRIO:`)
+      console.log(`   ├─ Criando/buscando usuário...`)
+      
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email: email,
         password: email,
@@ -519,7 +564,7 @@ Deno.serve(async (req) => {
 
       if (createError) {
         if (createError.message?.includes('email') || createError.code === 'email_exists') {
-          console.log(`User already exists, fetching from profiles table...`)
+          console.log(`   ├─ Usuário já existe, buscando...`)
           
           const { data: profile } = await supabase
             .from('profiles')
@@ -529,7 +574,7 @@ Deno.serve(async (req) => {
           
           if (profile) {
             userId = profile.id
-            console.log(`Found user via profiles table with ID: ${userId}`)
+            console.log(`   ├─ ✅ Encontrado via profiles: ${userId}`)
           } else {
             // Fallback: buscar via listUsers
             let foundUser = null
@@ -549,7 +594,7 @@ Deno.serve(async (req) => {
               
               if (foundUser) {
                 userId = foundUser.id
-                console.log(`Found existing user via listUsers with ID: ${userId}`)
+                console.log(`   ├─ ✅ Encontrado via listUsers (página ${page}): ${userId}`)
               } else if (usersData.users.length < perPage) {
                 break
               } else {
@@ -566,9 +611,13 @@ Deno.serve(async (req) => {
         }
       } else {
         userId = newUser.user.id
-        console.log(`New user created with ID: ${userId}`)
+        console.log(`   ├─ ✅ Novo usuário criado: ${userId}`)
       }
 
+      currentStep = 'upserting_profile'
+      console.log(`\n💾 [${requestId}] OPERAÇÕES NO BANCO:`)
+      console.log(`   ├─ Atualizando profile...`)
+      
       // Upsert profile
       const { error: profileError } = await supabase
         .from('profiles')
@@ -582,9 +631,13 @@ Deno.serve(async (req) => {
         }, { onConflict: 'id' })
 
       if (profileError) {
-        console.error('Error upserting profile:', profileError)
+        console.log(`   ├─ ⚠️ Erro no profile: ${profileError.message}`)
+      } else {
+        console.log(`   ├─ ✅ Profile atualizado`)
       }
 
+      currentStep = 'updating_subscription'
+      
       // Calcular expiração
       const expiresAt = calculateExpirationDate(expirationDays)
 
@@ -597,7 +650,7 @@ Deno.serve(async (req) => {
         .maybeSingle()
 
       if (existingSubscription) {
-        console.log(`User already has subscription, updating...`)
+        console.log(`   ├─ Assinatura existente, atualizando...`)
         
         // Se ainda tiver tempo, adicionar ao tempo existente
         let newExpiresAt = expiresAt
@@ -608,7 +661,7 @@ Deno.serve(async (req) => {
           if (currentExpires > now) {
             newExpiresAt = new Date(currentExpires)
             newExpiresAt.setDate(newExpiresAt.getDate() + expirationDays)
-            console.log(`Extending expiration from ${currentExpires.toISOString()} to ${newExpiresAt.toISOString()}`)
+            console.log(`   ├─ Estendendo: ${currentExpires.toISOString()} → ${newExpiresAt.toISOString()}`)
           }
         }
 
@@ -625,13 +678,14 @@ Deno.serve(async (req) => {
           .eq('id', existingSubscription.id)
 
         if (updateError) {
-          console.error('Error updating subscription:', updateError)
+          console.log(`   ├─ ❌ Erro atualizando: ${updateError.message}`)
           throw updateError
         }
         
-        console.log(`✅ Updated subscription: ${planType} (${billingPeriod})`)
+        console.log(`   ├─ ✅ Assinatura ATUALIZADA`)
       } else {
-        // Criar nova assinatura
+        console.log(`   ├─ Criando nova assinatura...`)
+        
         const { error: insertError } = await supabase
           .from('premium_musicos_users')
           .insert({
@@ -646,17 +700,29 @@ Deno.serve(async (req) => {
           })
 
         if (insertError) {
-          console.error('Error inserting subscription:', insertError)
+          console.log(`   ├─ ❌ Erro inserindo: ${insertError.message}`)
           throw insertError
         }
         
-        console.log(`✅ Created new subscription: ${planType} (${billingPeriod})`)
+        console.log(`   ├─ ✅ Assinatura CRIADA`)
       }
 
+      console.log(`   └─ Premium: plan=${planType}, period=${billingPeriod}, expires=${expiresAt.toISOString()}`)
+
       // Enviar email de boas-vindas
-      await sendWelcomeEmail(supabase, email, clientName, `Plano ${planType.toUpperCase()} (${billingPeriod})`)
+      currentStep = 'sending_email'
+      await sendWelcomeEmail(supabase, email, clientName, `Plano ${planType.toUpperCase()} (${billingPeriod})`, requestId)
 
       await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+
+      const duration = Date.now() - startTime
+      console.log(`\n✅ [${requestId}] WEBHOOK PROCESSADO COM SUCESSO`)
+      console.log(`   ├─ Email: ${email}`)
+      console.log(`   ├─ Ação: Assinatura Ativada`)
+      console.log(`   ├─ Plano: ${planType} (${billingPeriod})`)
+      console.log(`   ├─ Expira: ${expiresAt.toISOString()}`)
+      console.log(`   └─ Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
 
       return new Response(
         JSON.stringify({ 
@@ -673,10 +739,12 @@ Deno.serve(async (req) => {
 
     // Handle refunded/chargeback - deactivate subscription
     if (status === 'refunded' || status === 'chargeback') {
-      console.log(`Processing ${status} status - deactivating subscription`)
+      currentStep = 'processing_deactivation'
+      console.log(`\n🚫 [${requestId}] PROCESSANDO ${status.toUpperCase()}:`)
+      console.log(`   ├─ Ação: Desativar Assinatura`)
       
       if (status === 'chargeback') {
-        await addToBlacklist(supabase, email, 'chargeback')
+        await addToBlacklist(supabase, email, 'chargeback', requestId)
       }
       
       const { data: profile } = await supabase
@@ -692,15 +760,23 @@ Deno.serve(async (req) => {
           .eq('user_id', profile.id)
 
         if (updateError) {
-          console.error('Error deactivating subscription:', updateError)
+          console.log(`   ├─ ❌ Erro desativando: ${updateError.message}`)
         } else {
-          console.log(`🚫 Subscription deactivated for ${email}`)
+          console.log(`   ├─ ✅ Assinatura DESATIVADA`)
         }
       } else {
-        console.log(`User not found for email: ${email}`)
+        console.log(`   ├─ ⚠️ Usuário não encontrado`)
       }
 
       await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+
+      const duration = Date.now() - startTime
+      console.log(`\n✅ [${requestId}] WEBHOOK PROCESSADO COM SUCESSO`)
+      console.log(`   ├─ Email: ${email}`)
+      console.log(`   ├─ Ação: Assinatura Desativada`)
+      console.log(`   ├─ Motivo: ${status}`)
+      console.log(`   └─ Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
 
       return new Response(
         JSON.stringify({ success: true, message: `Subscription deactivated for ${email}` }),
@@ -710,7 +786,8 @@ Deno.serve(async (req) => {
 
     // Handle waiting_payment
     if (status === 'waiting_payment') {
-      console.log(`💳 Received waiting_payment - saving as abandoned checkout`)
+      console.log(`\n💳 [${requestId}] AGUARDANDO PAGAMENTO:`)
+      console.log(`   ├─ Salvando como abandoned checkout...`)
       
       const { data: existingAbandoned } = await supabase
         .from('abandoned_checkouts')
@@ -735,10 +812,16 @@ Deno.serve(async (req) => {
           remarketing_status: 'pending',
           platform: 'musicos'
         })
-        console.log(`✅ Abandoned checkout saved from waiting_payment: ${email}`)
+        console.log(`   └─ ✅ Lead salvo`)
+      } else {
+        console.log(`   └─ ⏭️ Lead já existe`)
       }
 
       await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+      
+      const duration = Date.now() - startTime
+      console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
       
       return new Response(
         JSON.stringify({ success: true, message: 'Waiting payment captured as abandoned checkout' }),
@@ -748,8 +831,12 @@ Deno.serve(async (req) => {
 
     // Handle other statuses
     if (status === 'canceled' || status === 'unpaid' || status === 'expired') {
-      console.log(`📋 Received ${status} status - logged but no immediate action`)
+      console.log(`\n📋 [${requestId}] STATUS ${status.toUpperCase()}: Apenas logado`)
       await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+      
+      const duration = Date.now() - startTime
+      console.log(`   └─ Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
       
       return new Response(
         JSON.stringify({ success: true, message: `Webhook received with status: ${status}` }),
@@ -758,8 +845,12 @@ Deno.serve(async (req) => {
     }
 
     // For other statuses
-    console.log(`Received status ${status} - no action taken`)
+    console.log(`\n📋 [${requestId}] STATUS NÃO TRATADO: ${status}`)
     await logWebhook(supabase, payload, status, productId, email, 'skipped', mappingType)
+    
+    const duration = Date.now() - startTime
+    console.log(`   └─ Tempo: ${duration}ms`)
+    console.log(`${'='.repeat(70)}\n`)
     
     return new Response(
       JSON.stringify({ success: true, message: `Webhook received with status: ${status}` }),
@@ -768,8 +859,22 @@ Deno.serve(async (req) => {
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Internal server error'
-    console.error('Webhook processing error:', error)
-    await logWebhook(supabase, payload, status, productId, email, 'error', mappingType, errorMessage)
+    const errorStack = error instanceof Error ? error.stack : ''
+    
+    console.log(`\n❌ [${requestId}] ERRO NO WEBHOOK:`)
+    console.log(`   ├─ Etapa: ${currentStep}`)
+    console.log(`   ├─ Email: ${email || 'N/A'}`)
+    console.log(`   ├─ Product ID: ${productId || 'N/A'}`)
+    console.log(`   ├─ Status: ${status || 'N/A'}`)
+    console.log(`   ├─ Erro: ${errorMessage}`)
+    console.log(`   └─ Stack: ${errorStack?.split('\n')[0] || 'N/A'}`)
+    
+    await logWebhook(supabase, payload, status, productId, email, 'error', mappingType, `[${currentStep}] ${errorMessage}`)
+    
+    const duration = Date.now() - startTime
+    console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
+    console.log(`${'='.repeat(70)}\n`)
+    
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
