@@ -8,6 +8,13 @@ const corsHeaders = {
 // O webhook agora usa product.period da Greenn para determinar a duração automaticamente
 // Não precisa mais de mapeamento manual de Product ID → dias
 
+// Mapeamento de Product ID para tipo de plano
+const PRODUCT_ID_TO_PLAN: Record<number, 'basico' | 'pro' | 'unlimited'> = {
+  150707: 'basico',
+  150732: 'pro',
+  150739: 'unlimited'
+}
+
 interface GreennMusicosWebhookPayload {
   type?: string
   event?: string
@@ -286,23 +293,22 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
   }
 }
 
-// Função para detectar plano pelo nome do produto
-function detectPlanFromName(productName: string, offerName: string): { planType: 'basico' | 'pro' | 'unlimited' } {
-  const nameLower = (productName + ' ' + offerName).toLowerCase()
-  
-  let planType: 'basico' | 'pro' | 'unlimited' = 'basico'
-  
-  // Detectar tipo de plano pelo nome
-  if (nameLower.includes('unlimited') || nameLower.includes('ilimitado')) {
-    planType = 'unlimited'
-  } else if (nameLower.includes('pro') || nameLower.includes('profissional')) {
-    planType = 'pro'
-  } else if (nameLower.includes('basic') || nameLower.includes('básico') || nameLower.includes('basico')) {
-    planType = 'basico'
+// Função para detectar plano pelo Product ID da Greenn
+function detectPlanFromProductId(productId: number | undefined): 'basico' | 'pro' | 'unlimited' {
+  if (!productId) {
+    console.warn(`⚠️ Product ID não fornecido, usando 'basico' como padrão`)
+    return 'basico'
   }
   
-  console.log(`📋 Name detection: planType=${planType}`)
-  return { planType }
+  const planType = PRODUCT_ID_TO_PLAN[productId]
+  
+  if (!planType) {
+    console.warn(`⚠️ Product ID ${productId} não mapeado, usando 'basico' como padrão`)
+    return 'basico'
+  }
+  
+  console.log(`📋 Product ID detection: productId=${productId} -> planType=${planType}`)
+  return planType
 }
 
 // Função para determinar o billing period baseado nos dias
@@ -458,7 +464,7 @@ Deno.serve(async (req) => {
     const productPeriod = payload.product?.period
     
     // Detectar tipo de plano pelo nome do produto
-    const { planType } = detectPlanFromName(productName, offerName)
+    const planType = detectPlanFromProductId(productId)
     
     // Usar period da Greenn diretamente (padrão: 30 dias se não vier)
     const expirationDays = productPeriod && productPeriod > 0 ? productPeriod : 30
