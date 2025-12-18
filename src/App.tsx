@@ -58,6 +58,7 @@ import NotFound from "./pages/NotFound";
 
 // Artes system pages
 import UserLoginArtes from "./pages/UserLoginArtes";
+import UserLoginArtesMusicos from "./pages/UserLoginArtesMusicos";
 import PlanosArtes from "./pages/PlanosArtes";
 import PlanosArtesMembro from "./pages/PlanosArtesMembro";
 import PlanosArtesMusicos from "./pages/PlanosArtesMusicos";
@@ -166,6 +167,7 @@ const AppContent = () => {
         
         {/* Artes system routes */}
         <Route path="/login-artes" element={<UserLoginArtes />} />
+        <Route path="/login-artes-musicos" element={<UserLoginArtesMusicos />} />
         <Route path="/planos-artes" element={<PlanosArtes />} />
         <Route path="/planos-artes-membro" element={<PlanosArtesMembro />} />
         <Route path="/planos-artes-musicos" element={<PlanosArtesMusicos />} />
