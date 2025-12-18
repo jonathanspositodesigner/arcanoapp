@@ -301,10 +301,15 @@ const BibliotecaArtesMusicos = () => {
                   {/* Card Info */}
                   <div className="p-3">
                     {/* Category Badge */}
-                    <div className="mb-2">
+                    <div className="mb-2 flex items-center gap-1.5">
                       <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded">
                         {categories.find(c => c.slug === arte.category)?.name || arte.category}
                       </span>
+                      {isLed && (
+                        <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-medium">
+                          Pro+
+                        </span>
+                      )}
                     </div>
                     
                     <h3 className="text-white font-medium text-sm truncate mb-3">
