@@ -70,6 +70,7 @@ import PartnerDashboardArtes from "./pages/PartnerDashboardArtes";
 import PartnerUploadArtes from "./pages/PartnerUploadArtes";
 import AdminPartnersArtes from "./pages/AdminPartnersArtes";
 import AdminCategoriesArtes from "./pages/AdminCategoriesArtes";
+import AdminCategoriesMusicos from "./pages/AdminCategoriesMusicos";
 import AdminCategoriesPrompts from "./pages/AdminCategoriesPrompts";
 import AdminManagePacks from "./pages/AdminManagePacks";
 import AdminManageBanners from "./pages/AdminManageBanners";
@@ -176,6 +177,7 @@ const AppContent = () => {
         <Route path="/parceiro-upload-artes" element={<PartnerUploadArtes />} />
         <Route path="/admin-parceiros-artes" element={<AdminPartnersArtes />} />
         <Route path="/admin-categories-artes" element={<AdminCategoriesArtes />} />
+        <Route path="/admin-categories-musicos" element={<AdminCategoriesMusicos />} />
         <Route path="/admin-categories-prompts" element={<AdminCategoriesPrompts />} />
         <Route path="/admin-manage-packs" element={<AdminManagePacks />} />
         <Route path="/admin-manage-banners" element={<AdminManageBanners />} />
