@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Upload, CheckCircle, Settings, Users, Crown, LayoutDashboard, 
-  FolderOpen, Inbox, Handshake, Palette, FileText, Tag, Package, 
+  FolderOpen, Inbox, Palette, FileText, Tag, Package, 
   Image, ShoppingCart, ShieldCheck, Gift, ShieldBan, FileSearch, UserX,
   GripVertical, LayoutGrid, RotateCcw, ReceiptText, UserPlus
 } from "lucide-react";
@@ -276,8 +276,8 @@ const AdminFerramentas = () => {
 
               <Card 
                 className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
-                onClick={() => !promptsOrder.isReordering && navigate('/admin-partners')}
-                {...promptsOrder.getDragProps("gerenciar-parceiros")}
+                onClick={() => !promptsOrder.isReordering && navigate('/admin-categories-prompts')}
+                {...promptsOrder.getDragProps("categorias")}
               >
                 {promptsOrder.isReordering && (
                   <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
@@ -285,11 +285,11 @@ const AdminFerramentas = () => {
                   </div>
                 )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                  <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
-                    <Handshake className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                  <div className="p-2 sm:p-4 bg-indigo-500 rounded-full">
+                    <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Parceiros</h2>
-                  <p className="text-muted-foreground hidden sm:block">Cadastre e gerencie contribuidores</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
+                  <p className="text-muted-foreground hidden sm:block">Gerencie as categorias de prompts</p>
                 </div>
               </Card>
 
@@ -435,13 +435,13 @@ const AdminFerramentas = () => {
                 </div>
               </Card>
 
-              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-parceiros-artes')}>
+              <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-packs')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                  <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
-                    <Handshake className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full">
+                    <Package className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
-                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Parceiros</h2>
-                  <p className="text-muted-foreground hidden sm:block">Gerencie colaboradores de artes</p>
+                  <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Packs</h2>
+                  <p className="text-muted-foreground hidden sm:block">Cadastre e edite os packs de artes</p>
                 </div>
               </Card>
 

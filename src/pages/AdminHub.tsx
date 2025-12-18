@@ -12,6 +12,7 @@ import AdminGeneralDashboard from "@/components/AdminGeneralDashboard";
 import HubGeneralMarketing from "@/components/HubGeneralMarketing";
 import EmailMarketingContent from "@/components/EmailMarketingContent";
 import PushNotificationsContent from "@/components/PushNotificationsContent";
+import PartnersManagementContent from "@/components/PartnersManagementContent";
 
 const AdminHub = () => {
   const navigate = useNavigate();
@@ -149,6 +150,8 @@ const AdminHub = () => {
         return <EmailMarketingContent />;
       case "push-notifications":
         return <PushNotificationsContent />;
+      case "partners":
+        return <PartnersManagementContent />;
       default:
         return null;
     }
