@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search, Copy, CalendarDays, Sparkles } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Copy, CalendarDays, Sparkles, Image, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
@@ -37,6 +37,7 @@ interface Arte {
 }
 
 type SortOption = 'date' | 'downloads';
+type MediaTypeFilter = 'all' | 'image' | 'video';
 
 const formatTitle = (title: string): string => {
   const trimmed = title.trim();
@@ -70,6 +71,7 @@ const AdminManageArtesMusicos = () => {
   const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<MediaTypeFilter>('all');
 
   useEffect(() => {
     fetchCategories();
@@ -144,7 +146,11 @@ const AdminManageArtesMusicos = () => {
     .filter(a => {
       const matchesSearch = a.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = categoryFilter === 'all' || a.category === categoryFilter;
-      return matchesSearch && matchesCategory;
+      const isVideo = isVideoUrl(a.image_url);
+      const matchesMediaType = mediaTypeFilter === 'all' || 
+        (mediaTypeFilter === 'video' && isVideo) || 
+        (mediaTypeFilter === 'image' && !isVideo);
+      return matchesSearch && matchesCategory && matchesMediaType;
     })
     .sort((a, b) => {
       if (sortBy === 'downloads') {
@@ -294,6 +300,34 @@ const AdminManageArtesMusicos = () => {
           </p>
           
           <div className="flex flex-wrap gap-2 mb-4">
+            <span className="text-sm text-muted-foreground self-center mr-2">Tipo:</span>
+            <Button 
+              variant={mediaTypeFilter === 'all' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setMediaTypeFilter('all')}
+            >
+              Todos
+            </Button>
+            <Button 
+              variant={mediaTypeFilter === 'image' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setMediaTypeFilter('image')}
+              className={mediaTypeFilter === 'image' ? 'bg-blue-500 hover:bg-blue-600' : ''}
+            >
+              <Image className="h-4 w-4 mr-1" />Imagens
+            </Button>
+            <Button 
+              variant={mediaTypeFilter === 'video' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setMediaTypeFilter('video')}
+              className={mediaTypeFilter === 'video' ? 'bg-violet-500 hover:bg-violet-600' : ''}
+            >
+              <Video className="h-4 w-4 mr-1" />Vídeos
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="text-sm text-muted-foreground self-center mr-2">Categoria:</span>
             <Button variant={categoryFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setCategoryFilter('all')}>
               Todas
             </Button>
@@ -343,9 +377,15 @@ const AdminManageArtesMusicos = () => {
                   ) : (
                     <SecureImage src={arte.image_url} alt={arte.title} className="w-full h-48 object-cover" isPremium={arte.is_premium || false} />
                   )}
+                  <div className="absolute top-2 left-2">
+                    <Badge className={isVideo ? "bg-violet-500 text-white border-0" : "bg-blue-500 text-white border-0"}>
+                      {isVideo ? <Video className="h-3 w-3 mr-1" /> : <Image className="h-3 w-3 mr-1" />}
+                      {isVideo ? 'Vídeo' : 'Imagem'}
+                    </Badge>
+                  </div>
                   <div className="absolute top-2 right-2 flex gap-1">
                     {arte.is_ai_generated && (
-                      <Badge className="bg-violet-500 text-white border-0">
+                      <Badge className="bg-purple-500 text-white border-0">
                         <Sparkles className="h-3 w-3 mr-1" />IA
                       </Badge>
                     )}
