@@ -129,11 +129,11 @@ const PartnerLoginUnified = () => {
             navigate('/parceiro-dashboard-musicos');
             break;
           default:
-            navigate('/parceiro-selecionar-plataforma');
+            navigate('/parceiro-plataformas');
         }
       } else {
         // Multiple platforms - show selection
-        navigate('/parceiro-selecionar-plataforma');
+        navigate('/parceiro-plataformas');
       }
     } catch (error) {
       console.error("Login error:", error);
