@@ -97,7 +97,7 @@ const PartnerUploadMusicos = () => {
 
       if (!platformData) {
         toast.error("Você não tem acesso a esta plataforma");
-        navigate("/parceiro-selecionar-plataforma");
+        navigate("/parceiro-plataformas");
         return;
       }
 

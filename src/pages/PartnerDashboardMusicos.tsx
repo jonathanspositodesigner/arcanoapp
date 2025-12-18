@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft, LogOut, Upload, Pencil, Trash2, Copy, Check, X, Clock, AlertTriangle, Grid } from "lucide-react";
+import { ArrowLeft, LogOut, Upload, Pencil, Trash2, Copy, Check, X, Clock, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SecureImage } from "@/components/SecureMedia";
 
@@ -108,7 +108,7 @@ const PartnerDashboardMusicos = () => {
 
       if (!platformData) {
         toast.error("Você não tem acesso a esta plataforma");
-        navigate("/parceiro-selecionar-plataforma");
+        navigate("/parceiro-plataformas");
         return;
       }
 
@@ -241,18 +241,10 @@ const PartnerDashboardMusicos = () => {
             <Button
               variant="ghost"
               className="text-white/70 hover:text-white"
-              onClick={() => navigate("/parceiro-selecionar-plataforma")}
-            >
-              <Grid className="h-4 w-4 mr-2" />
-              Plataformas
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-white/70 hover:text-white"
-              onClick={() => navigate("/biblioteca-artes-musicos")}
+              onClick={() => navigate("/parceiro-plataformas")}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Biblioteca
+              Voltar
             </Button>
             <h1 className="text-xl md:text-2xl font-bold text-white">
               Olá, {partner?.name}!
