@@ -54,7 +54,7 @@ const Index = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl">
         {/* Card - Biblioteca de Artes Arcanas */}
-        <div onClick={() => navigate("/biblioteca-artes-hub")} className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50">
+        <div onClick={() => navigate("/biblioteca-artes")} className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50">
           <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
             <img alt="Biblioteca de Artes Arcanas" className="w-full h-full object-contain" src="/lovable-uploads/0b5816a1-fee5-45f1-906e-9f7952d9b4e3.png" />
           </div>
