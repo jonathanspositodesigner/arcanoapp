@@ -23,6 +23,7 @@ const AdminCategoriesMusicos = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [name, setName] = useState("");
+  const [draggedItem, setDraggedItem] = useState<Category | null>(null);
 
   useEffect(() => {
     checkAdminAndFetch();
@@ -146,6 +147,56 @@ const AdminCategoriesMusicos = () => {
     }
   };
 
+  const handleDragStart = (e: React.DragEvent, category: Category) => {
+    setDraggedItem(category);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetCategory: Category) => {
+    e.preventDefault();
+    if (!draggedItem || draggedItem.id === targetCategory.id) {
+      setDraggedItem(null);
+      return;
+    }
+
+    const oldIndex = categories.findIndex(c => c.id === draggedItem.id);
+    const newIndex = categories.findIndex(c => c.id === targetCategory.id);
+
+    const reordered = [...categories];
+    const [removed] = reordered.splice(oldIndex, 1);
+    reordered.splice(newIndex, 0, removed);
+
+    // Update local state immediately for smooth UX
+    setCategories(reordered);
+    setDraggedItem(null);
+
+    // Update database
+    try {
+      const updates = reordered.map((cat, index) => 
+        supabase
+          .from('artes_categories_musicos')
+          .update({ display_order: index })
+          .eq('id', cat.id)
+      );
+      
+      await Promise.all(updates);
+      toast.success("Ordem atualizada!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao salvar ordem");
+      fetchCategories(); // Revert on error
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -165,7 +216,7 @@ const AdminCategoriesMusicos = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Categorias de Músicos</h1>
-            <p className="text-muted-foreground">Gerencie as categorias da Biblioteca de Artes - Músicos</p>
+            <p className="text-muted-foreground">Arraste para reordenar as categorias</p>
           </div>
           <Button onClick={handleOpenAdd} className="bg-gradient-primary">
             <Plus className="h-4 w-4 mr-2" />
@@ -175,7 +226,17 @@ const AdminCategoriesMusicos = () => {
 
         <div className="space-y-2">
           {categories.map((category) => (
-            <Card key={category.id} className="p-4 flex items-center justify-between">
+            <Card 
+              key={category.id} 
+              className={`p-4 flex items-center justify-between cursor-grab active:cursor-grabbing transition-all ${
+                draggedItem?.id === category.id ? 'opacity-50 scale-95' : ''
+              }`}
+              draggable
+              onDragStart={(e) => handleDragStart(e, category)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, category)}
+              onDragEnd={handleDragEnd}
+            >
               <div className="flex items-center gap-3">
                 <GripVertical className="h-5 w-5 text-muted-foreground" />
                 <span className="font-medium text-foreground">{category.name}</span>
