@@ -89,6 +89,8 @@ import AdminAbandonedCheckouts from "./pages/AdminAbandonedCheckouts";
 import AdminLeads from "./pages/AdminLeads";
 import AdminCloudinaryMigration from "./pages/AdminCloudinaryMigration";
 import AdminPremiumMusicos from "./pages/AdminPremiumMusicos";
+import SucessoArtesMusicos from "./pages/SucessoArtesMusicos";
+import AguardandoPagamentoMusicos from "./pages/AguardandoPagamentoMusicos";
 import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
@@ -198,6 +200,8 @@ const AppContent = () => {
         <Route path="/admin-leads" element={<AdminLeads />} />
         <Route path="/admin-cloudinary-migration" element={<AdminCloudinaryMigration />} />
         <Route path="/admin-premium-musicos" element={<AdminPremiumMusicos />} />
+        <Route path="/sucesso-artes-musicos" element={<SucessoArtesMusicos />} />
+        <Route path="/aguardando-pagamento-musicos" element={<AguardandoPagamentoMusicos />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
