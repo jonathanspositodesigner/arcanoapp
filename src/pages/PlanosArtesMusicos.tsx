@@ -317,7 +317,10 @@ const PlanosArtesMusicos = () => {
                   if ((plan as any).paymentUrl === "#") {
                     setShowComingSoonModal(true);
                   } else {
-                    window.open((plan as any).paymentUrl, '_blank');
+                    // Redirect to waiting page with checkout URL
+                    const checkoutUrl = encodeURIComponent((plan as any).paymentUrl);
+                    const planName = encodeURIComponent(`${plan.name} ${billingPeriod === 'anual' ? 'Anual' : 'Mensal'}`);
+                    navigate(`/aguardando-pagamento-musicos?checkout=${checkoutUrl}&plan=${planName}`);
                   }
                 }}
                 className={`w-full mb-6 ${
