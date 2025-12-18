@@ -302,17 +302,19 @@ const BibliotecaArtesMusicos = () => {
             <div className="flex items-center gap-2">
               {user ? (
                 <>
-                  {isPremium && (
-                    <div className="hidden sm:flex items-center gap-2">
-                      <span className="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white px-3 py-1 rounded-full font-medium">
+                  {/* Status badges - visible on all devices */}
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    {isPremium ? (
+                      <span className="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white px-2 sm:px-3 py-1 rounded-full font-medium">
                         Premium
                       </span>
-                      <span className="text-xs bg-white/10 text-gray-300 px-2 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm">
+                    ) : (
+                      <span className="text-xs bg-white/10 text-gray-300 px-2 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm border border-white/10">
                         <Download className="w-3 h-3" />
-                        {dailyLimit === Infinity ? '∞' : `${downloadCount}/${dailyLimit}`}
+                        <span className="font-medium">{downloadCount}/{dailyLimit}</span>
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
