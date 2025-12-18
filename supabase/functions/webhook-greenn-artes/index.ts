@@ -24,7 +24,6 @@ interface PromotionMapping {
 }
 
 // Mapeamento LEGADO de Product ID para pack e tipo de acesso
-// Novos mapeamentos devem ser feitos via interface admin em artes_packs
 const LEGACY_PRODUCT_ID_MAPPING: Record<number, ProductMapping> = {
   // Pack Arcano Vol.1
   89608: { packSlug: 'pack-arcano-vol-1', accessType: '6_meses', hasBonusAccess: false },
@@ -113,10 +112,6 @@ async function logWebhook(
       from_app: fromApp,
       platform
     })
-    
-    if (fromApp) {
-      console.log(`📱 Sale from APP detected (utm_source: ${utmSource})`)
-    }
   } catch (e) {
     console.error('Failed to log webhook:', e)
   }
@@ -134,7 +129,7 @@ async function isEmailBlacklisted(supabase: any, email: string): Promise<boolean
 }
 
 // Função para adicionar email à lista negra
-async function addToBlacklist(supabase: any, email: string, reason: string): Promise<void> {
+async function addToBlacklist(supabase: any, email: string, reason: string, requestId: string): Promise<void> {
   try {
     await supabase.from('blacklisted_emails').upsert({
       email: email.toLowerCase(),
@@ -142,23 +137,26 @@ async function addToBlacklist(supabase: any, email: string, reason: string): Pro
       auto_blocked: true,
       blocked_at: new Date().toISOString()
     }, { onConflict: 'email' })
-    console.log(`⚠️ Email added to blacklist: ${email} (${reason})`)
+    console.log(`   ├─ [${requestId}] 🚫 Email adicionado à blacklist: ${email} (${reason})`)
   } catch (e) {
-    console.error('Failed to add to blacklist:', e)
+    console.error(`   ├─ [${requestId}] ❌ Erro ao adicionar à blacklist:`, e)
   }
 }
 
 // Send welcome email to new pack purchasers via SendPulse with tracking
-async function sendWelcomeEmail(supabase: any, email: string, name: string, packInfo: string): Promise<void> {
+async function sendWelcomeEmail(supabase: any, email: string, name: string, packInfo: string, requestId: string): Promise<void> {
+  console.log(`\n📧 [${requestId}] EMAIL DE BOAS-VINDAS:`)
+  console.log(`   ├─ Destinatário: ${email}`)
+  console.log(`   ├─ Nome: ${name || 'N/A'}`)
+  console.log(`   ├─ Pack: ${packInfo}`)
+  
   try {
-    console.log(`📧 Sending welcome email to: ${email}`)
-    
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
     const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
     const supabaseUrl = Deno.env.get("SUPABASE_URL")
     
     if (!clientId || !clientSecret) {
-      console.error("SendPulse credentials not configured, skipping welcome email")
+      console.log(`   └─ ⚠️ SendPulse não configurado, email não enviado`)
       return
     }
 
@@ -170,9 +168,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
       .eq('is_active', true)
       .maybeSingle()
 
-    if (!template) {
-      console.log('No active template found for artes, using default')
-    }
+    console.log(`   ├─ Template: ${template?.id || 'default'}`)
 
     // Parse template content
     let templateContent = {
@@ -186,7 +182,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
       try {
         templateContent = JSON.parse(template.content)
       } catch (e) {
-        console.log('Error parsing template content, using default')
+        console.log(`   ├─ ⚠️ Erro parsing template, usando default`)
       }
     }
 
@@ -196,6 +192,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
 
     // Generate unique tracking ID
     const trackingId = crypto.randomUUID()
+    console.log(`   ├─ Tracking ID: ${trackingId}`)
 
     // Build tracking URLs
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
@@ -215,7 +212,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     })
 
     if (!tokenResponse.ok) {
-      console.error("Failed to get SendPulse token for welcome email")
+      console.log(`   └─ ❌ Falha ao obter token SendPulse`)
       return
     }
 
@@ -326,18 +323,18 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     })
     
     if (result.result === true) {
-      console.log(`✅ Welcome email sent successfully to ${email} (tracking: ${trackingId})`)
+      console.log(`   └─ ✅ Email enviado com sucesso`)
     } else {
-      console.error(`❌ Failed to send welcome email: ${JSON.stringify(result)}`)
+      console.log(`   └─ ❌ Falha no envio: ${JSON.stringify(result)}`)
     }
   } catch (error) {
-    console.error('Error sending welcome email:', error)
+    console.log(`   └─ ❌ Erro ao enviar email: ${error}`)
   }
 }
 
 // Função para buscar promoção no banco de dados
-async function findPromotionMappingInDatabase(supabase: any, productId: number): Promise<PromotionMapping | null> {
-  console.log(`🔍 Searching PROMOTIONS for product ID: ${productId}`)
+async function findPromotionMappingInDatabase(supabase: any, productId: number, requestId: string): Promise<PromotionMapping | null> {
+  console.log(`   ├─ [${requestId}] 🔍 Buscando promoção para Product ID: ${productId}`)
   
   const { data: promotion, error } = await supabase
     .from('artes_promotions')
@@ -347,16 +344,16 @@ async function findPromotionMappingInDatabase(supabase: any, productId: number):
     .maybeSingle()
   
   if (error) {
-    console.error('Error fetching promotion:', error)
+    console.error(`   ├─ [${requestId}] ❌ Erro buscando promoção:`, error)
     return null
   }
 
   if (!promotion) {
-    console.log(`❌ Product ID ${productId} not found in promotions`)
+    console.log(`   ├─ [${requestId}] ⚠️ Não encontrado em promoções`)
     return null
   }
 
-  console.log(`✅ Found PROMOTION: ${promotion.slug} (ID: ${promotion.id})`)
+  console.log(`   ├─ [${requestId}] ✅ PROMOÇÃO encontrada: ${promotion.slug}`)
 
   const { data: items, error: itemsError } = await supabase
     .from('artes_promotion_items')
@@ -364,16 +361,16 @@ async function findPromotionMappingInDatabase(supabase: any, productId: number):
     .eq('promotion_id', promotion.id)
 
   if (itemsError) {
-    console.error('Error fetching promotion items:', itemsError)
+    console.error(`   ├─ [${requestId}] ❌ Erro buscando itens:`, itemsError)
     return null
   }
 
   if (!items || items.length === 0) {
-    console.error(`⚠️ Promotion ${promotion.slug} has no items configured!`)
+    console.error(`   ├─ [${requestId}] ⚠️ Promoção sem itens configurados`)
     return null
   }
 
-  console.log(`📦 Promotion includes ${items.length} packs:`, items.map((i: { pack_slug: string; access_type: string }) => `${i.pack_slug} (${i.access_type})`).join(', '))
+  console.log(`   ├─ [${requestId}] 📦 ${items.length} packs na promoção`)
 
   return {
     promotionId: promotion.id,
@@ -387,38 +384,38 @@ async function findPromotionMappingInDatabase(supabase: any, productId: number):
 }
 
 // Função para buscar mapeamento de pack individual no banco de dados
-async function findProductMappingInDatabase(supabase: any, productId: number): Promise<ProductMapping | null> {
-  console.log(`🔍 Searching PACKS for product ID: ${productId}`)
+async function findProductMappingInDatabase(supabase: any, productId: number, requestId: string): Promise<ProductMapping | null> {
+  console.log(`   ├─ [${requestId}] 🔍 Buscando pack para Product ID: ${productId}`)
   
   const { data: packs, error } = await supabase
     .from('artes_packs')
     .select('slug, greenn_product_id_6_meses, greenn_product_id_1_ano, greenn_product_id_order_bump, greenn_product_id_vitalicio')
   
   if (error) {
-    console.error('Error fetching packs:', error)
+    console.error(`   ├─ [${requestId}] ❌ Erro buscando packs:`, error)
     return null
   }
 
   for (const pack of packs || []) {
     if (pack.greenn_product_id_6_meses === productId) {
-      console.log(`✅ Found in DB: ${pack.slug} (6_meses)`)
+      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (6_meses)`)
       return { packSlug: pack.slug, accessType: '6_meses', hasBonusAccess: false }
     }
     if (pack.greenn_product_id_1_ano === productId) {
-      console.log(`✅ Found in DB: ${pack.slug} (1_ano)`)
+      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (1_ano)`)
       return { packSlug: pack.slug, accessType: '1_ano', hasBonusAccess: true }
     }
     if (pack.greenn_product_id_order_bump === productId) {
-      console.log(`✅ Found in DB: ${pack.slug} (order_bump -> vitalicio)`)
+      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (order_bump → vitalicio)`)
       return { packSlug: pack.slug, accessType: 'vitalicio', hasBonusAccess: true }
     }
     if (pack.greenn_product_id_vitalicio === productId) {
-      console.log(`✅ Found in DB: ${pack.slug} (vitalicio standalone)`)
+      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (vitalicio)`)
       return { packSlug: pack.slug, accessType: 'vitalicio', hasBonusAccess: true }
     }
   }
 
-  console.log(`❌ Product ID ${productId} not found in packs database`)
+  console.log(`   ├─ [${requestId}] ⚠️ Não encontrado em packs`)
   return null
 }
 
@@ -450,9 +447,10 @@ async function processPackPurchase(
   hasBonusAccess: boolean,
   contractId: string | undefined,
   productName: string,
-  platform: string = 'eventos'
+  platform: string,
+  requestId: string
 ): Promise<void> {
-  console.log(`📦 Processing pack purchase: ${packSlug} (${accessType}, bonus: ${hasBonusAccess}, platform: ${platform})`)
+  console.log(`   ├─ [${requestId}] 📦 Processando: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
   
   const expiresAt = calculateExpirationDate(accessType)
   
@@ -465,13 +463,11 @@ async function processPackPurchase(
     .maybeSingle()
 
   if (checkError) {
-    console.error('Error checking existing purchase:', checkError)
+    console.error(`   ├─ [${requestId}] ❌ Erro verificando compra:`, checkError)
     throw checkError
   }
 
   if (existingPurchase) {
-    console.log(`User already has ${packSlug}, checking for upgrade`)
-    
     const accessPriority: Record<string, number> = { '3_meses': 1, '6_meses': 2, '1_ano': 3, 'vitalicio': 4 }
     const currentPriority = accessPriority[existingPurchase.access_type] || 0
     const newPriority = accessPriority[accessType] || 0
@@ -509,16 +505,15 @@ async function processPackPurchase(
         .eq('id', existingPurchase.id)
 
       if (updateError) {
-        console.error('Error updating purchase:', updateError)
+        console.error(`   ├─ [${requestId}] ❌ Erro atualizando:`, updateError)
         throw updateError
       }
       
-      console.log(`✅ Updated pack purchase: ${packSlug} (${accessType})`)
+      console.log(`   ├─ [${requestId}] ✅ Pack ATUALIZADO: ${packSlug}`)
     } else {
-      console.log(`⏭️ Skipping update - current access (${existingPurchase.access_type}) is higher than new (${accessType})`)
+      console.log(`   ├─ [${requestId}] ⏭️ Skipping: acesso atual (${existingPurchase.access_type}) > novo (${accessType})`)
     }
   } else {
-    console.log(`Creating new pack purchase for ${packSlug}`)
     const { error: insertError } = await supabase
       .from('user_pack_purchases')
       .insert({
@@ -533,18 +528,26 @@ async function processPackPurchase(
       })
 
     if (insertError) {
-      console.error('Error inserting purchase:', insertError)
+      console.error(`   ├─ [${requestId}] ❌ Erro inserindo:`, insertError)
       throw insertError
     }
     
-    console.log(`✅ Created new pack purchase: ${packSlug} (${accessType})`)
+    console.log(`   ├─ [${requestId}] ✅ Pack CRIADO: ${packSlug}`)
   }
 }
 
 Deno.serve(async (req) => {
+  const startTime = Date.now()
+  const requestId = crypto.randomUUID().slice(0, 8)
+  const timestamp = new Date().toISOString()
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  console.log(`\n${'='.repeat(70)}`)
+  console.log(`🚀 [${requestId}] WEBHOOK ARTES RECEBIDO - ${timestamp}`)
+  console.log(`${'='.repeat(70)}`)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -561,15 +564,15 @@ Deno.serve(async (req) => {
   let status: string | undefined
   let productId: number | undefined
   let mappingType: 'promotion' | 'pack' | 'legacy' | 'name_detection' | 'none' = 'none'
+  let currentStep = 'parsing_payload'
 
   try {
     payload = await req.json()
-    
-    console.log('=== GREENN ARTES WEBHOOK RECEIVED ===')
-    console.log('Payload:', JSON.stringify(payload, null, 2))
 
-    // Detectar evento de checkout abandonado ANTES de processar como venda
+    // Detectar evento de checkout abandonado
     const eventType = payload.event
+    const utmSource = extractUtmSource(payload)
+    const fromApp = isFromApp(payload)
     
     if (eventType === 'checkoutAbandoned') {
       const leadEmail = payload.lead?.email?.toLowerCase().trim()
@@ -584,11 +587,17 @@ Deno.serve(async (req) => {
       const offerHash = payload.offer?.hash || ''
       const amount = payload.offer?.amount || payload.product?.amount || 0
 
-      console.log(`📋 Checkout abandoned by: ${leadEmail} at step ${checkoutStep}`)
-      console.log(`Product: ${productName} (ID: ${productId}), Amount: ${amount}`)
+      console.log(`\n📋 [${requestId}] CHECKOUT ABANDONADO:`)
+      console.log(`   ├─ Email: ${leadEmail || 'N/A'}`)
+      console.log(`   ├─ Nome: ${leadName || 'N/A'}`)
+      console.log(`   ├─ Telefone: ${leadPhone || 'N/A'}`)
+      console.log(`   ├─ Step: ${checkoutStep}`)
+      console.log(`   ├─ Product ID: ${productId}`)
+      console.log(`   ├─ Product: ${productName}`)
+      console.log(`   ├─ UTM Source: ${utmSource || 'N/A'}`)
+      console.log(`   └─ Amount: R$ ${amount}`)
       
       if (leadEmail) {
-        // Verificar se o lead já existe para este produto nas últimas 24h (evitar duplicatas)
         const { data: existingLead } = await supabase
           .from('abandoned_checkouts')
           .select('id')
@@ -598,7 +607,6 @@ Deno.serve(async (req) => {
           .maybeSingle()
 
         if (!existingLead) {
-          // Salvar lead para remarketing
           const { error: insertError } = await supabase.from('abandoned_checkouts').insert({
             email: leadEmail,
             name: leadName,
@@ -616,16 +624,20 @@ Deno.serve(async (req) => {
           })
 
           if (insertError) {
-            console.error('Error saving abandoned checkout:', insertError)
+            console.log(`\n❌ [${requestId}] Erro salvando lead: ${insertError.message}`)
           } else {
-            console.log(`✅ Lead saved for remarketing: ${leadEmail}`)
+            console.log(`\n✅ [${requestId}] Lead salvo para remarketing`)
           }
         } else {
-          console.log(`⏭️ Lead already registered recently: ${leadEmail}`)
+          console.log(`\n⏭️ [${requestId}] Lead já registrado recentemente`)
         }
       }
 
       await logWebhook(supabase, payload, 'abandoned', productId, leadEmail, 'success', 'lead', undefined)
+      
+      const duration = Date.now() - startTime
+      console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
       
       return new Response(
         JSON.stringify({ success: true, message: 'Lead captured for remarketing' }),
@@ -644,26 +656,49 @@ Deno.serve(async (req) => {
     status = payload.currentStatus
     const contractId = payload.contract?.id || payload.sale?.id
     const saleAmount = payload.sale?.amount
+
+    console.log(`\n📋 [${requestId}] DADOS DO PAYLOAD:`)
+    console.log(`   ├─ Email: ${email || 'NÃO FORNECIDO'}`)
+    console.log(`   ├─ Nome: ${clientName || 'N/A'}`)
+    console.log(`   ├─ Telefone: ${clientPhone || 'N/A'}`)
+    console.log(`   ├─ Status: ${status}`)
+    console.log(`   ├─ Product ID: ${productId}`)
+    console.log(`   ├─ Product Name: ${productName}`)
+    console.log(`   ├─ Offer Name: ${offerName}`)
+    console.log(`   ├─ Offer Hash: ${offerHash}`)
+    console.log(`   ├─ Sale Amount: R$ ${saleAmount || 'N/A'}`)
+    console.log(`   ├─ Contract ID: ${contractId || 'N/A'}`)
+    console.log(`   ├─ UTM Source: ${utmSource || 'N/A'}`)
+    console.log(`   └─ From App: ${fromApp ? 'SIM 📱' : 'NÃO'}`)
     
     if (!email) {
-      console.error('No email provided in webhook payload')
+      console.log(`\n❌ [${requestId}] ERRO: Email não fornecido`)
       await logWebhook(supabase, payload, status, productId, email, 'error', 'unknown', 'Email is required')
+      
+      const duration = Date.now() - startTime
+      console.log(`⏱️ [${requestId}] Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
+      
       return new Response(
         JSON.stringify({ error: 'Email is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`Processing webhook for email: ${email}, name: ${clientName}, status: ${status}`)
-    console.log(`Product ID: ${productId}, Product: ${productName}, Offer: ${offerName}, Offer Hash: ${offerHash}`)
-    console.log(`Sale Amount: ${saleAmount}`)
-
     // Verificar lista negra para compras
     if (status === 'paid' || status === 'approved') {
+      currentStep = 'checking_blacklist'
+      console.log(`\n🔒 [${requestId}] VERIFICANDO BLACKLIST...`)
+      
       const isBlacklisted = await isEmailBlacklisted(supabase, email)
       if (isBlacklisted) {
-        console.log(`🚫 Email ${email} is BLACKLISTED - blocking purchase`)
+        console.log(`   └─ 🚫 Email BLOQUEADO`)
         await logWebhook(supabase, payload, status, productId, email, 'blacklisted', 'blocked', 'Email is blacklisted')
+        
+        const duration = Date.now() - startTime
+        console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
+        console.log(`${'='.repeat(70)}\n`)
+        
         return new Response(
           JSON.stringify({ 
             success: false, 
@@ -673,39 +708,41 @@ Deno.serve(async (req) => {
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
+      console.log(`   └─ ✅ Email liberado`)
     }
 
     // Variáveis para armazenar o tipo de mapeamento encontrado
     let promotionMapping: PromotionMapping | null = null
     let packMapping: ProductMapping | null = null
 
+    currentStep = 'detecting_mapping'
+    console.log(`\n🔍 [${requestId}] DETECÇÃO DE MAPEAMENTO:`)
+
     if (productId) {
       // PRIMEIRO: Tentar buscar em PROMOÇÕES (combos)
-      promotionMapping = await findPromotionMappingInDatabase(supabase, productId)
+      promotionMapping = await findPromotionMappingInDatabase(supabase, productId, requestId)
       
       if (promotionMapping) {
         mappingType = 'promotion'
-        console.log(`🎁 Product ID ${productId} is a PROMOTION: ${promotionMapping.promotionSlug}`)
       } else {
-        // SEGUNDO: Tentar buscar em PACKS individuais (configurado via admin interface)
-        packMapping = await findProductMappingInDatabase(supabase, productId)
+        // SEGUNDO: Tentar buscar em PACKS individuais
+        packMapping = await findProductMappingInDatabase(supabase, productId, requestId)
         
         if (packMapping) {
           mappingType = 'pack'
-          console.log(`📦 Product ID ${productId} is a PACK: ${packMapping.packSlug}`)
         }
-        // TERCEIRO: Fallback para mapeamento legado (hardcoded)
+        // TERCEIRO: Fallback para mapeamento legado
         else if (LEGACY_PRODUCT_ID_MAPPING[productId]) {
           packMapping = LEGACY_PRODUCT_ID_MAPPING[productId]
           mappingType = 'legacy'
-          console.log(`📜 Product ID ${productId} found in LEGACY mapping: ${packMapping.packSlug}`)
+          console.log(`   ├─ [${requestId}] 📜 LEGACY encontrado: ${packMapping.packSlug}`)
         }
       }
     }
     
-    // QUARTO: Fallback para detecção por nome (para produtos ainda não mapeados)
+    // QUARTO: Fallback para detecção por nome
     if (mappingType === 'none') {
-      console.log(`⚠️ Product ID ${productId} NOT in any mapping, falling back to name detection`)
+      console.log(`   ├─ [${requestId}] ⚠️ Product ID não mapeado, usando detecção por nome`)
       mappingType = 'name_detection'
       
       const nameLower = (productName + ' ' + offerName).toLowerCase()
@@ -752,14 +789,21 @@ Deno.serve(async (req) => {
 
       if (packSlug) {
         packMapping = { packSlug, accessType, hasBonusAccess }
-        console.log(`Name detection result: ${packSlug} (${accessType}, bonus: ${hasBonusAccess})`)
+        console.log(`   ├─ [${requestId}] Detecção por nome: ${packSlug} (${accessType})`)
       }
     }
 
+    console.log(`   └─ [${requestId}] Tipo de mapeamento: ${mappingType}`)
+
     // Se não encontrou nenhum mapeamento, retornar erro
     if (mappingType !== 'promotion' && !packMapping) {
-      console.error(`❌ Could not determine pack/promotion from productId=${productId}, product=${productName}, offer=${offerName}`)
+      console.log(`\n❌ [${requestId}] ERRO: Não foi possível determinar pack/promoção`)
       await logWebhook(supabase, payload, status, productId, email, 'error', mappingType, 'Could not determine pack/promotion from product')
+      
+      const duration = Date.now() - startTime
+      console.log(`⏱️ [${requestId}] Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
+      
       return new Response(
         JSON.stringify({ 
           error: 'Could not determine pack/promotion from product',
@@ -772,15 +816,13 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log(`Final detection type: ${mappingType}`)
-
     // Handle paid status - activate pack access
     if (status === 'paid' || status === 'approved') {
-      console.log('Processing PAID status - activating pack access')
+      currentStep = 'processing_activation'
+      console.log(`\n💳 [${requestId}] PROCESSANDO PAGAMENTO:`)
+      console.log(`   ├─ Ação: Ativar Acesso ao Pack`)
       
-      // PRIMEIRO: Verificar se existe abandoned_checkout para este email+produto
-      // Se foi abandonado há menos de 15 minutos, DELETAR (não é abandono real, pessoa pagou rápido)
-      // Se foi abandonado há mais de 15 minutos, marcar como CONVERTED
+      // Verificar abandoned_checkout
       if (productId) {
         const { data: abandonedCheckout, error: abandonedError } = await supabase
           .from('abandoned_checkouts')
@@ -790,48 +832,29 @@ Deno.serve(async (req) => {
           .neq('remarketing_status', 'converted')
           .maybeSingle()
 
-        if (abandonedError) {
-          console.error('Error checking abandoned checkout:', abandonedError)
-        } else if (abandonedCheckout) {
+        if (!abandonedError && abandonedCheckout) {
           const abandonedAt = new Date(abandonedCheckout.abandoned_at)
           const now = new Date()
           const minutesSinceAbandonment = (now.getTime() - abandonedAt.getTime()) / (1000 * 60)
           
           if (minutesSinceAbandonment < 15) {
-            // Menos de 15 minutos - não foi abandono real, pessoa pagou rápido, DELETAR registro
-            const { error: deleteError } = await supabase
-              .from('abandoned_checkouts')
-              .delete()
-              .eq('id', abandonedCheckout.id)
-
-            if (deleteError) {
-              console.error('Error deleting quick-converted checkout:', deleteError)
-            } else {
-              console.log(`🗑️ Deleted quick checkout (${minutesSinceAbandonment.toFixed(1)} min) - not a real abandonment: ${email}`)
-            }
+            await supabase.from('abandoned_checkouts').delete().eq('id', abandonedCheckout.id)
+            console.log(`   ├─ 🗑️ Checkout rápido deletado (${minutesSinceAbandonment.toFixed(1)} min)`)
           } else {
-            // Mais de 15 minutos - foi abandono real que depois converteu
-            const { error: updateError } = await supabase
-              .from('abandoned_checkouts')
-              .update({ 
-                remarketing_status: 'converted',
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', abandonedCheckout.id)
-
-            if (updateError) {
-              console.error('Error marking abandoned checkout as converted:', updateError)
-            } else {
-              console.log(`✅ Abandoned checkout marked as CONVERTED (after ${minutesSinceAbandonment.toFixed(1)} min) for ${email} + product ${productId}`)
-            }
+            await supabase.from('abandoned_checkouts').update({ 
+              remarketing_status: 'converted',
+              updated_at: new Date().toISOString()
+            }).eq('id', abandonedCheckout.id)
+            console.log(`   ├─ ✅ Abandoned checkout convertido (${minutesSinceAbandonment.toFixed(1)} min)`)
           }
         }
       }
       
       let userId: string | null = null
 
-      // PRIMEIRO: Tentar criar o usuário diretamente
-      console.log(`Attempting to create user with email: ${email}`)
+      console.log(`\n👤 [${requestId}] PROCESSAMENTO DE USUÁRIO:`)
+      console.log(`   ├─ Criando/buscando usuário...`)
+      
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email: email,
         password: email,
@@ -840,53 +863,38 @@ Deno.serve(async (req) => {
 
       if (createError) {
         if (createError.message?.includes('email') || createError.code === 'email_exists') {
-          console.log(`User already exists, fetching from profiles table...`)
+          console.log(`   ├─ Usuário já existe, buscando...`)
           
-          const { data: profile, error: profileFetchError } = await supabase
+          const { data: profile } = await supabase
             .from('profiles')
             .select('id')
             .eq('email', email)
             .maybeSingle()
           
-          if (profileFetchError) {
-            console.error('Error fetching profile:', profileFetchError)
-          }
-          
           if (profile) {
             userId = profile.id
-            console.log(`Found user via profiles table with ID: ${userId}`)
+            console.log(`   ├─ ✅ Encontrado via profiles: ${userId}`)
           } else {
-            // Fallback: buscar via listUsers COM PAGINAÇÃO COMPLETA
-            console.log('Profile not found, trying listUsers with full pagination...')
-            
+            // Fallback: buscar via listUsers
             let foundUser = null
             let page = 1
             const perPage = 1000
             
             while (!foundUser) {
-              console.log(`Searching page ${page}...`)
               const { data: usersData, error: fetchError } = await supabase.auth.admin.listUsers({
                 page: page,
                 perPage: perPage
               })
               
-              if (fetchError) {
-                console.error('Error listing users:', fetchError)
-                throw fetchError
-              }
-
-              if (!usersData?.users || usersData.users.length === 0) {
-                console.log('No more users to search')
-                break
-              }
+              if (fetchError) throw fetchError
+              if (!usersData?.users || usersData.users.length === 0) break
 
               foundUser = usersData.users.find(u => u.email?.toLowerCase() === email)
               
               if (foundUser) {
                 userId = foundUser.id
-                console.log(`Found existing user via listUsers (page ${page}) with ID: ${userId}`)
+                console.log(`   ├─ ✅ Encontrado via listUsers (página ${page}): ${userId}`)
               } else if (usersData.users.length < perPage) {
-                console.log('Reached last page, user not found')
                 break
               } else {
                 page++
@@ -894,19 +902,21 @@ Deno.serve(async (req) => {
             }
             
             if (!userId) {
-              console.error('Could not find existing user despite email_exists error')
               throw new Error(`User with email ${email} exists but could not be found`)
             }
           }
         } else {
-          console.error('Error creating user:', createError)
           throw createError
         }
       } else {
         userId = newUser.user.id
-        console.log(`New user created with ID: ${userId}`)
+        console.log(`   ├─ ✅ Novo usuário criado: ${userId}`)
       }
 
+      currentStep = 'upserting_profile'
+      console.log(`\n💾 [${requestId}] OPERAÇÕES NO BANCO:`)
+      console.log(`   ├─ Atualizando profile...`)
+      
       // Upsert profile with name and phone
       const { error: profileError } = await supabase
         .from('profiles')
@@ -920,14 +930,20 @@ Deno.serve(async (req) => {
         }, { onConflict: 'id' })
 
       if (profileError) {
-        console.error('Error upserting profile:', profileError)
+        console.log(`   ├─ ⚠️ Erro no profile: ${profileError.message}`)
+      } else {
+        console.log(`   ├─ ✅ Profile atualizado`)
       }
 
+      currentStep = 'processing_packs'
+      
       // Processar com base no tipo de mapeamento
       let processedPacks: string[] = []
+      const platform = fromApp ? 'app' : 'eventos'
       
       if (mappingType === 'promotion' && promotionMapping) {
-        console.log(`🎁 Processing PROMOTION with ${promotionMapping.items.length} packs`)
+        console.log(`\n🎁 [${requestId}] PROCESSANDO PROMOÇÃO: ${promotionMapping.promotionSlug}`)
+        console.log(`   ├─ ${promotionMapping.items.length} packs incluídos`)
         
         for (const item of promotionMapping.items) {
           await processPackPurchase(
@@ -937,32 +953,15 @@ Deno.serve(async (req) => {
             item.accessType,
             promotionMapping.hasBonusAccess,
             contractId,
-            `${productName} (Promoção: ${promotionMapping.promotionSlug})`
+            productName,
+            platform,
+            requestId
           )
-          processedPacks.push(`${item.packSlug} (${item.accessType})`)
+          processedPacks.push(item.packSlug)
         }
-        
-        console.log(`✅ PROMOTION activated for ${email}: ${promotionMapping.promotionSlug}`)
-        console.log(`   Packs granted: ${processedPacks.join(', ')}`)
-        
-        // Send welcome email
-        await sendWelcomeEmail(supabase, email, clientName, `Promoção: ${promotionMapping.promotionSlug}`)
-        
-        await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
-        
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: `Promotion activated for ${email}`,
-            type: 'promotion',
-            promotion: promotionMapping.promotionSlug,
-            packs_granted: processedPacks,
-            has_bonus_access: promotionMapping.hasBonusAccess,
-            mapped_by: mappingType
-          }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
       } else if (packMapping) {
+        console.log(`\n📦 [${requestId}] PROCESSANDO PACK: ${packMapping.packSlug}`)
+        
         await processPackPurchase(
           supabase,
           userId!,
@@ -970,45 +969,56 @@ Deno.serve(async (req) => {
           packMapping.accessType,
           packMapping.hasBonusAccess,
           contractId,
-          productName || offerName
+          productName,
+          platform,
+          requestId
         )
-        
-        const expiresAt = calculateExpirationDate(packMapping.accessType)
-        
-        console.log(`✅ Pack access activated for ${email}: ${packMapping.packSlug} (${packMapping.accessType})`)
-        
-        // Send welcome email
-        await sendWelcomeEmail(supabase, email, clientName, `${packMapping.packSlug} (${packMapping.accessType})`)
-        
-        await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
-        
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: `Pack access activated for ${email}`,
-            type: 'pack',
-            pack: packMapping.packSlug,
-            access_type: packMapping.accessType,
-            has_bonus_access: packMapping.hasBonusAccess,
-            expires_at: expiresAt ? expiresAt.toISOString() : null,
-            mapped_by: mappingType
-          }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        processedPacks.push(packMapping.packSlug)
       }
+
+      console.log(`   └─ Packs processados: ${processedPacks.join(', ')}`)
+
+      // Enviar email de boas-vindas
+      currentStep = 'sending_email'
+      const packInfo = processedPacks.length > 1 
+        ? `${processedPacks.length} Packs (Promoção)` 
+        : packMapping?.packSlug || 'Pack Arcano'
+      
+      await sendWelcomeEmail(supabase, email, clientName, packInfo, requestId)
+
+      await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+
+      const duration = Date.now() - startTime
+      console.log(`\n✅ [${requestId}] WEBHOOK PROCESSADO COM SUCESSO`)
+      console.log(`   ├─ Email: ${email}`)
+      console.log(`   ├─ Ação: Acesso Ativado`)
+      console.log(`   ├─ Mapeamento: ${mappingType}`)
+      console.log(`   ├─ Packs: ${processedPacks.join(', ')}`)
+      console.log(`   ├─ Platform: ${platform}`)
+      console.log(`   └─ Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: `Pack access activated for ${email}`,
+          packs: processedPacks,
+          mapping_type: mappingType,
+          platform
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    // Handle refunded/chargeback - deactivate specific pack(s) and blacklist on chargeback
+    // Handle refunded/chargeback - deactivate pack access
     if (status === 'refunded' || status === 'chargeback') {
-      console.log(`Processing ${status} status - deactivating pack access for product ID: ${productId}`)
+      currentStep = 'processing_deactivation'
+      console.log(`\n🚫 [${requestId}] PROCESSANDO ${status.toUpperCase()}:`)
+      console.log(`   ├─ Ação: Desativar Acesso`)
       
-      // Adicionar à lista negra automaticamente em caso de chargeback
       if (status === 'chargeback') {
-        await addToBlacklist(supabase, email, 'chargeback')
+        await addToBlacklist(supabase, email, 'chargeback', requestId)
       }
-      
-      // Buscar usuário com paginação completa
-      let userId: string | null = null
       
       const { data: profile } = await supabase
         .from('profiles')
@@ -1017,66 +1027,54 @@ Deno.serve(async (req) => {
         .maybeSingle()
       
       if (profile) {
-        userId = profile.id
-        console.log(`Found user via profiles: ${userId}`)
-      } else {
-        let page = 1
-        const perPage = 1000
+        // Desativar todos os packs do usuário com este product_id (se tiver)
+        const { data: purchases, error: fetchError } = await supabase
+          .from('user_pack_purchases')
+          .select('id, pack_slug')
+          .eq('user_id', profile.id)
+          .eq('is_active', true)
         
-        while (!userId) {
-          const { data: usersData } = await supabase.auth.admin.listUsers({
-            page: page,
-            perPage: perPage
-          })
-          
-          if (!usersData?.users || usersData.users.length === 0) break
-          
-          const foundUser = usersData.users.find(u => u.email?.toLowerCase() === email)
-          if (foundUser) {
-            userId = foundUser.id
-            console.log(`Found user via listUsers (page ${page}): ${userId}`)
-          } else if (usersData.users.length < perPage) {
-            break
-          } else {
-            page++
-          }
-        }
-      }
-
-      if (userId) {
-        if (mappingType === 'promotion' && promotionMapping) {
-          for (const item of promotionMapping.items) {
+        if (!fetchError && purchases && purchases.length > 0) {
+          // Desativar compras relacionadas a este produto
+          if (packMapping) {
             const { error: updateError } = await supabase
               .from('user_pack_purchases')
               .update({ is_active: false, updated_at: new Date().toISOString() })
-              .eq('user_id', userId)
-              .eq('pack_slug', item.packSlug)
+              .eq('user_id', profile.id)
+              .eq('pack_slug', packMapping.packSlug)
 
             if (updateError) {
-              console.error(`Error deactivating pack ${item.packSlug}:`, updateError)
+              console.log(`   ├─ ❌ Erro desativando: ${updateError.message}`)
             } else {
-              console.log(`✅ Pack ${item.packSlug} deactivated for ${email}`)
+              console.log(`   ├─ ✅ Pack desativado: ${packMapping.packSlug}`)
+            }
+          } else if (promotionMapping) {
+            for (const item of promotionMapping.items) {
+              const { error: updateError } = await supabase
+                .from('user_pack_purchases')
+                .update({ is_active: false, updated_at: new Date().toISOString() })
+                .eq('user_id', profile.id)
+                .eq('pack_slug', item.packSlug)
+
+              if (!updateError) {
+                console.log(`   ├─ ✅ Pack desativado: ${item.packSlug}`)
+              }
             }
           }
-          console.log(`🚫 Promotion packs deactivated for ${email}: ${promotionMapping.promotionSlug}`)
-        } else if (packMapping) {
-          const { error: updateError } = await supabase
-            .from('user_pack_purchases')
-            .update({ is_active: false, updated_at: new Date().toISOString() })
-            .eq('user_id', userId)
-            .eq('pack_slug', packMapping.packSlug)
-
-          if (updateError) {
-            console.error('Error deactivating pack:', updateError)
-            throw updateError
-          }
-          console.log(`🚫 Pack access deactivated for ${email}: ${packMapping.packSlug}`)
         }
       } else {
-        console.log(`User not found for email: ${email}, cannot deactivate pack`)
+        console.log(`   ├─ ⚠️ Usuário não encontrado`)
       }
 
       await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+
+      const duration = Date.now() - startTime
+      console.log(`\n✅ [${requestId}] WEBHOOK PROCESSADO COM SUCESSO`)
+      console.log(`   ├─ Email: ${email}`)
+      console.log(`   ├─ Ação: Acesso Desativado`)
+      console.log(`   ├─ Motivo: ${status}`)
+      console.log(`   └─ Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
 
       return new Response(
         JSON.stringify({ success: true, message: `Pack access deactivated for ${email}` }),
@@ -1084,19 +1082,11 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Handle waiting_payment - save as abandoned checkout for remarketing
+    // Handle waiting_payment
     if (status === 'waiting_payment') {
-      console.log(`💳 Received waiting_payment - saving as abandoned checkout for remarketing`)
+      console.log(`\n💳 [${requestId}] AGUARDANDO PAGAMENTO:`)
+      console.log(`   ├─ Salvando como abandoned checkout...`)
       
-      const clientName = payload.client?.name || ''
-      const clientPhone = payload.client?.phone?.replace(/\D/g, '') || ''
-      const productName = payload.product?.name || ''
-      const offerName = payload.offer?.name || ''
-      const offerHash = payload.offer?.hash || ''
-      const saleAmount = payload.sale?.amount || 0
-      const checkoutLink = payload.link_checkout || ''
-      
-      // Verificar se já existe abandoned checkout para este email+produto nas últimas 24h
       const { data: existingAbandoned } = await supabase
         .from('abandoned_checkouts')
         .select('id')
@@ -1106,7 +1096,7 @@ Deno.serve(async (req) => {
         .maybeSingle()
 
       if (!existingAbandoned) {
-        const { error: insertError } = await supabase.from('abandoned_checkouts').insert({
+        await supabase.from('abandoned_checkouts').insert({
           email: email,
           name: clientName,
           phone: clientPhone,
@@ -1115,49 +1105,50 @@ Deno.serve(async (req) => {
           offer_name: offerName,
           offer_hash: offerHash,
           amount: saleAmount,
-          checkout_link: checkoutLink,
-          checkout_step: 0, // waiting_payment não tem step específico
+          checkout_link: payload.link_checkout || '',
+          checkout_step: 0,
           remarketing_status: 'pending',
           platform: 'artes-eventos'
         })
-
-        if (insertError) {
-          console.error('Error saving abandoned checkout from waiting_payment:', insertError)
-        } else {
-          console.log(`✅ Abandoned checkout saved from waiting_payment: ${email}`)
-        }
+        console.log(`   └─ ✅ Lead salvo`)
       } else {
-        console.log(`⏭️ Abandoned checkout already exists for ${email} + product ${productId}`)
+        console.log(`   └─ ⏭️ Lead já existe`)
       }
 
       await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
       
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: `Waiting payment captured as abandoned checkout for remarketing`
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Handle canceled/unpaid/expired - just log, no access change (keep until expires_at)
-    if (status === 'canceled' || status === 'unpaid' || status === 'expired') {
-      console.log(`📋 Received ${status} status - logged but no immediate action (access maintained until expires_at)`)
-      await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+      const duration = Date.now() - startTime
+      console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
       
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: `Webhook received with status: ${status}. Access maintained until expiration date.`
-        }),
+        JSON.stringify({ success: true, message: 'Waiting payment captured as abandoned checkout' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // For other statuses, just log and acknowledge
-    console.log(`Received status ${status} - no action taken`)
+    // Handle other statuses
+    if (status === 'canceled' || status === 'unpaid' || status === 'expired') {
+      console.log(`\n📋 [${requestId}] STATUS ${status.toUpperCase()}: Apenas logado`)
+      await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
+      
+      const duration = Date.now() - startTime
+      console.log(`   └─ Tempo: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
+      
+      return new Response(
+        JSON.stringify({ success: true, message: `Webhook received with status: ${status}` }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // For other statuses
+    console.log(`\n📋 [${requestId}] STATUS NÃO TRATADO: ${status}`)
     await logWebhook(supabase, payload, status, productId, email, 'skipped', mappingType)
+    
+    const duration = Date.now() - startTime
+    console.log(`   └─ Tempo: ${duration}ms`)
+    console.log(`${'='.repeat(70)}\n`)
     
     return new Response(
       JSON.stringify({ success: true, message: `Webhook received with status: ${status}` }),
@@ -1166,8 +1157,22 @@ Deno.serve(async (req) => {
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Internal server error'
-    console.error('Webhook processing error:', error)
-    await logWebhook(supabase, payload, status, productId, email, 'error', mappingType, errorMessage)
+    const errorStack = error instanceof Error ? error.stack : ''
+    
+    console.log(`\n❌ [${requestId}] ERRO NO WEBHOOK:`)
+    console.log(`   ├─ Etapa: ${currentStep}`)
+    console.log(`   ├─ Email: ${email || 'N/A'}`)
+    console.log(`   ├─ Product ID: ${productId || 'N/A'}`)
+    console.log(`   ├─ Status: ${status || 'N/A'}`)
+    console.log(`   ├─ Erro: ${errorMessage}`)
+    console.log(`   └─ Stack: ${errorStack?.split('\n')[0] || 'N/A'}`)
+    
+    await logWebhook(supabase, payload, status, productId, email, 'error', mappingType, `[${currentStep}] ${errorMessage}`)
+    
+    const duration = Date.now() - startTime
+    console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
+    console.log(`${'='.repeat(70)}\n`)
+    
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
