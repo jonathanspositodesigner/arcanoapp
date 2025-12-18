@@ -65,6 +65,9 @@ import PlanosArtesMusicos from "./pages/PlanosArtesMusicos";
 import ChangePasswordArtes from "./pages/ChangePasswordArtes";
 import ForgotPasswordArtes from "./pages/ForgotPasswordArtes";
 import ResetPasswordArtes from "./pages/ResetPasswordArtes";
+import ChangePasswordArtesMusicos from "./pages/ChangePasswordArtesMusicos";
+import ForgotPasswordArtesMusicos from "./pages/ForgotPasswordArtesMusicos";
+import ResetPasswordArtesMusicos from "./pages/ResetPasswordArtesMusicos";
 import ProfileSettingsArtes from "./pages/ProfileSettingsArtes";
 import PartnerLoginArtes from "./pages/PartnerLoginArtes";
 import PartnerDashboardArtes from "./pages/PartnerDashboardArtes";
@@ -176,6 +179,9 @@ const AppContent = () => {
         <Route path="/change-password-artes" element={<ChangePasswordArtes />} />
         <Route path="/forgot-password-artes" element={<ForgotPasswordArtes />} />
         <Route path="/reset-password-artes" element={<ResetPasswordArtes />} />
+        <Route path="/change-password-artes-musicos" element={<ChangePasswordArtesMusicos />} />
+        <Route path="/forgot-password-artes-musicos" element={<ForgotPasswordArtesMusicos />} />
+        <Route path="/reset-password-artes-musicos" element={<ResetPasswordArtesMusicos />} />
         <Route path="/perfil-artes" element={<ProfileSettingsArtes />} />
         <Route path="/parceiro-login-artes" element={<PartnerLoginArtes />} />
         <Route path="/parceiro-dashboard-artes" element={<PartnerDashboardArtes />} />

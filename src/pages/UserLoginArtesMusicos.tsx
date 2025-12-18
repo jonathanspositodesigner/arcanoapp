@@ -100,7 +100,7 @@ const UserLoginArtesMusicos = () => {
             }, { onConflict: 'id' });
           }
           toast.success("Primeiro acesso! Por favor, altere sua senha.");
-          navigate("/change-password-artes");
+          navigate("/change-password-artes-musicos");
           return;
         }
 
@@ -410,7 +410,7 @@ const UserLoginArtesMusicos = () => {
             <div className="text-right">
               <button
                 type="button"
-                onClick={() => navigate("/forgot-password-artes")}
+                onClick={() => navigate("/forgot-password-artes-musicos")}
                 className="text-sm text-violet-400 hover:text-violet-300 underline"
               >
                 Esqueci minha senha
