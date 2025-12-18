@@ -161,7 +161,7 @@ const BibliotecaArtesMusicos = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate("/login-artes")}
+                  onClick={() => navigate("/login-artes-musicos")}
                   className="border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100"
                 >
                   <LogIn className="w-4 h-4 mr-1" />
