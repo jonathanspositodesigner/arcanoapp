@@ -642,7 +642,8 @@ const BibliotecaArtes = () => {
       <div className="flex-1 lg:pl-64">
         {/* Top Bar - Desktop */}
         <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between sticky top-0 z-10">
-          <Button 
+          {/* Botão "Trocar Biblioteca" temporariamente oculto - reativar junto com /biblioteca-artes-hub */}
+          {/* <Button 
             onClick={() => navigate("/biblioteca-artes-hub")} 
             variant="outline" 
             size="sm"
@@ -650,7 +651,7 @@ const BibliotecaArtes = () => {
           >
             <ArrowLeftRight className="h-4 w-4 mr-2" />
             Trocar Biblioteca
-          </Button>
+          </Button> */}
           <div className="flex items-center gap-3">
             {!user && (
               <>
@@ -710,14 +711,15 @@ const BibliotecaArtes = () => {
               <Menu className="h-5 w-5" />
             </Button>
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
-            <Button 
+            {/* Botão "Trocar Biblioteca" temporariamente oculto - reativar junto com /biblioteca-artes-hub */}
+            {/* <Button 
               onClick={() => navigate("/biblioteca-artes-hub")} 
               variant="ghost" 
               size="sm"
               className="text-amber-300 hover:bg-amber-500/20"
             >
               <ArrowLeftRight className="h-4 w-4" />
-            </Button>
+            </Button> */}
           </div>
           <div className="flex items-center gap-2">
             {!user && (
@@ -766,14 +768,15 @@ const BibliotecaArtes = () => {
               <Menu className="h-5 w-5" />
             </Button>
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-8" />
-            <Button 
+            {/* Botão "Trocar Biblioteca" temporariamente oculto - reativar junto com /biblioteca-artes-hub */}
+            {/* <Button 
               onClick={() => navigate("/biblioteca-artes-hub")} 
               variant="ghost" 
               size="sm"
               className="text-amber-300 hover:bg-amber-500/20 p-1.5"
             >
               <ArrowLeftRight className="h-4 w-4" />
-            </Button>
+            </Button> */}
           </div>
           <div className="flex items-center gap-2">
             {!user && (
