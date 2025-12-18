@@ -113,16 +113,23 @@ const BibliotecaArtesMusicos = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
+      <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#0d1117] to-[#161b22] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e]">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#0d1117] to-[#161b22] relative overflow-hidden">
+      {/* Gradient Orbs Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-gradient-to-br from-cyan-500/15 to-blue-500/15 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-gradient-to-br from-fuchsia-500/10 to-pink-500/10 rounded-full blur-3xl" />
+      </div>
+
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0f0f0f]/80 backdrop-blur-md border-b border-violet-500/20">
+      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           {/* Left - Back + Logo */}
           <div className="flex items-center gap-3">
@@ -130,12 +137,12 @@ const BibliotecaArtesMusicos = () => {
               variant="ghost"
               size="icon"
               onClick={() => navigate("/biblioteca-artes-hub")}
-              className="text-violet-300 hover:text-violet-100 hover:bg-violet-500/20"
+              className="text-gray-400 hover:text-white hover:bg-white/10"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <img src={baaLogo} alt="BAA" className="h-8" />
-            <span className="hidden md:inline text-violet-300 font-medium">Músicos & Artistas</span>
+            <span className="hidden md:inline text-gray-300 font-medium">Músicos & Artistas</span>
           </div>
 
           {/* Right - Auth buttons */}
@@ -144,10 +151,10 @@ const BibliotecaArtesMusicos = () => {
               <>
                 {isPremium && (
                   <div className="hidden sm:flex items-center gap-2">
-                    <span className="text-xs bg-violet-600 text-white px-2 py-1 rounded-full">
+                    <span className="text-xs bg-gradient-to-r from-pink-500 to-purple-500 text-white px-3 py-1 rounded-full font-medium">
                       Premium
                     </span>
-                    <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded-full flex items-center gap-1">
+                    <span className="text-xs bg-white/10 text-gray-300 px-2 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm">
                       <Download className="w-3 h-3" />
                       {dailyLimit === Infinity ? '∞' : `${downloadCount}/${dailyLimit}`}
                     </span>
@@ -157,7 +164,7 @@ const BibliotecaArtesMusicos = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate("/perfil-artes")}
-                  className="text-violet-300 hover:text-violet-100 hover:bg-violet-500/20"
+                  className="text-gray-400 hover:text-white hover:bg-white/10"
                 >
                   <Settings className="w-4 h-4 mr-1" />
                   <span className="hidden sm:inline">Perfil</span>
@@ -166,7 +173,7 @@ const BibliotecaArtesMusicos = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleLogout}
-                  className="text-violet-300 hover:text-violet-100 hover:bg-violet-500/20"
+                  className="text-gray-400 hover:text-white hover:bg-white/10"
                 >
                   <LogOut className="w-4 h-4 mr-1" />
                   <span className="hidden sm:inline">Sair</span>
@@ -176,7 +183,7 @@ const BibliotecaArtesMusicos = () => {
               <>
                 <Button
                   onClick={() => navigate("/planos-artes-musicos")}
-                  className="bg-violet-600 hover:bg-violet-500 text-white gap-2"
+                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white gap-2 border-0"
                   size="sm"
                 >
                   <UserPlus className="w-4 h-4" />
@@ -187,7 +194,7 @@ const BibliotecaArtesMusicos = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate("/login-artes-musicos")}
-                  className="border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100"
+                  className="border-white/20 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/30"
                 >
                   <LogIn className="w-4 h-4 mr-1" />
                   <span className="hidden sm:inline">Entrar</span>
@@ -199,13 +206,13 @@ const BibliotecaArtesMusicos = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-6 relative z-10">
         {/* Title Section */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent mb-2">
             Modelos
           </h1>
-          <p className="text-violet-200/70">
+          <p className="text-gray-400">
             Encontre o visual perfeito para sua carreira
           </p>
         </div>
@@ -217,8 +224,8 @@ const BibliotecaArtesMusicos = () => {
             onClick={() => setSelectedCategory("todos")}
             className={
               selectedCategory === "todos"
-                ? "bg-violet-600 hover:bg-violet-500 text-white border-violet-600"
-                : "border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100"
+                ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0"
+                : "border-white/20 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/30 bg-transparent"
             }
           >
             Todos
@@ -232,13 +239,13 @@ const BibliotecaArtesMusicos = () => {
                 onClick={() => setSelectedCategory(cat.slug)}
                 className={`gap-1.5 ${
                   selectedCategory === cat.slug
-                    ? "bg-violet-600 hover:bg-violet-500 text-white border-violet-600"
-                    : "border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0"
+                    : "border-white/20 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/30 bg-transparent"
                 }`}
               >
                 {cat.name}
                 {isLedCategory && (
-                  <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-medium">
+                  <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-medium">
                     Pro+
                   </span>
                 )}
@@ -250,7 +257,7 @@ const BibliotecaArtesMusicos = () => {
         {/* Content Grid */}
         {loadingArtes ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
+            <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
           </div>
         ) : filteredArtes.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -261,11 +268,11 @@ const BibliotecaArtesMusicos = () => {
               return (
                 <div
                   key={arte.id}
-                  className="group relative bg-[#1a1a2e] rounded-xl overflow-hidden border border-violet-500/20 hover:border-violet-500/50 transition-all duration-300"
+                  className="group relative bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
                 >
                   {/* Premium Badge */}
                   {arte.is_premium && !ledRestricted && (
-                    <div className="absolute top-2 left-2 z-10 bg-violet-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                    <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                       <Lock className="w-3 h-3" />
                       Premium
                     </div>
@@ -273,7 +280,7 @@ const BibliotecaArtesMusicos = () => {
                   
                   {/* LED Restricted Badge */}
                   {ledRestricted && (
-                    <div className="absolute top-2 left-2 z-10 bg-amber-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                    <div className="absolute top-2 left-2 z-10 bg-amber-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                       <Lock className="w-3 h-3" />
                       Pro+
                     </div>
@@ -310,11 +317,11 @@ const BibliotecaArtesMusicos = () => {
                   <div className="p-3">
                     {/* Category Badge */}
                     <div className="mb-2 flex items-center gap-1.5">
-                      <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded">
+                      <span className="text-xs bg-white/10 text-gray-300 px-2 py-1 rounded">
                         {categories.find(c => c.slug === arte.category)?.name || arte.category}
                       </span>
                       {isLed && (
-                        <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-medium">
+                        <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-medium">
                           Pro+
                         </span>
                       )}
@@ -328,10 +335,10 @@ const BibliotecaArtesMusicos = () => {
                     <Button
                       className={`w-full text-sm ${
                         canAccess 
-                          ? "bg-violet-600 hover:bg-violet-500 text-white" 
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" 
                           : ledRestricted
-                            ? "bg-amber-900/50 hover:bg-amber-800/50 text-amber-300"
-                            : "bg-violet-900/50 hover:bg-violet-800/50 text-violet-300"
+                            ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30"
+                            : "bg-white/10 hover:bg-white/20 text-gray-300 border border-white/10"
                       }`}
                       size="sm"
                       onClick={() => handleArteClick(arte)}
@@ -361,13 +368,13 @@ const BibliotecaArtesMusicos = () => {
         ) : (
           /* Empty State */
           <div className="text-center py-16">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-violet-500/20 flex items-center justify-center">
-              <Loader2 className="w-10 h-10 text-violet-400" />
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
+              <Loader2 className="w-10 h-10 text-cyan-400" />
             </div>
-            <h2 className="text-2xl font-bold text-violet-100 mb-2">
+            <h2 className="text-2xl font-bold text-white mb-2">
               Em Breve!
             </h2>
-            <p className="text-violet-200/70 max-w-md mx-auto mb-6">
+            <p className="text-gray-400 max-w-md mx-auto mb-6">
               Estamos preparando uma biblioteca incrível de artes para músicos e artistas.
               Em breve você terá acesso a modelos incríveis para:
             </p>
@@ -375,7 +382,7 @@ const BibliotecaArtesMusicos = () => {
               {categories.map((cat) => (
                 <span
                   key={cat.id}
-                  className="bg-violet-500/20 text-violet-300 px-3 py-1.5 rounded-full text-sm"
+                  className="bg-white/10 text-gray-300 px-3 py-1.5 rounded-full text-sm"
                 >
                   {cat.name}
                 </span>
@@ -387,7 +394,7 @@ const BibliotecaArtesMusicos = () => {
 
       {/* Arte Detail Modal */}
       <Dialog open={!!selectedArte} onOpenChange={() => setSelectedArte(null)}>
-        <DialogContent className="max-w-md bg-[#1a1a2e] border-violet-500/30">
+        <DialogContent className="max-w-md bg-[#161b22] border-white/10">
           <DialogHeader>
             <DialogTitle className="text-white">{selectedArte?.title}</DialogTitle>
           </DialogHeader>
@@ -415,7 +422,7 @@ const BibliotecaArtesMusicos = () => {
 
               {/* Category */}
               <div className="flex items-center gap-2">
-                <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-1 rounded">
+                <span className="text-xs bg-white/10 text-gray-300 px-2 py-1 rounded">
                   {categories.find(c => c.slug === selectedArte.category)?.name || selectedArte.category}
                 </span>
                 {selectedArte.is_ai_generated && (
@@ -427,15 +434,15 @@ const BibliotecaArtesMusicos = () => {
 
               {/* AI Prompt */}
               {selectedArte.is_ai_generated && selectedArte.ai_prompt && (
-                <div className="p-3 bg-violet-900/30 rounded-lg">
-                  <p className="text-xs text-violet-400 mb-1">Prompt utilizado:</p>
-                  <p className="text-sm text-violet-200">{selectedArte.ai_prompt}</p>
+                <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-xs text-gray-400 mb-1">Prompt utilizado:</p>
+                  <p className="text-sm text-gray-200">{selectedArte.ai_prompt}</p>
                 </div>
               )}
 
               {/* Download Counter */}
               {isPremium && dailyLimit !== Infinity && (
-                <div className="text-center text-sm text-violet-300 bg-violet-500/10 rounded-lg py-2 px-3">
+                <div className="text-center text-sm text-gray-300 bg-white/5 rounded-lg py-2 px-3 border border-white/10">
                   Downloads hoje: <span className="font-bold">{downloadCount}/{dailyLimit}</span>
                 </div>
               )}
@@ -473,7 +480,7 @@ const BibliotecaArtesMusicos = () => {
               </div>
 
               {!selectedArte.canva_link && !selectedArte.drive_link && (
-                <p className="text-center text-violet-400 text-sm">
+                <p className="text-center text-gray-400 text-sm">
                   Nenhum link de edição disponível
                 </p>
               )}
