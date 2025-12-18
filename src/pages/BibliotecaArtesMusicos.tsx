@@ -223,20 +223,28 @@ const BibliotecaArtesMusicos = () => {
           >
             Todos
           </Button>
-          {categories.map((cat) => (
-            <Button
-              key={cat.id}
-              variant={selectedCategory === cat.slug ? "default" : "outline"}
-              onClick={() => setSelectedCategory(cat.slug)}
-              className={
-                selectedCategory === cat.slug
-                  ? "bg-violet-600 hover:bg-violet-500 text-white border-violet-600"
-                  : "border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100"
-              }
-            >
-              {cat.name}
-            </Button>
-          ))}
+          {categories.map((cat) => {
+            const isLedCategory = cat.slug === 'telao-led';
+            return (
+              <Button
+                key={cat.id}
+                variant={selectedCategory === cat.slug ? "default" : "outline"}
+                onClick={() => setSelectedCategory(cat.slug)}
+                className={`gap-1.5 ${
+                  selectedCategory === cat.slug
+                    ? "bg-violet-600 hover:bg-violet-500 text-white border-violet-600"
+                    : "border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100"
+                }`}
+              >
+                {cat.name}
+                {isLedCategory && (
+                  <span className="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-medium">
+                    Pro+
+                  </span>
+                )}
+              </Button>
+            );
+          })}
         </div>
 
         {/* Content Grid */}
