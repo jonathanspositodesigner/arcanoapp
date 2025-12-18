@@ -360,6 +360,29 @@ const BibliotecaArtesMusicos = () => {
 
         {/* Main Content */}
         <main className="container mx-auto px-4 py-6 relative z-10">
+          {/* CTA Button - Install App or Enable Notifications */}
+          {(!isAppInstalled || (isAppInstalled && isSupported && !isSubscribed)) && (
+            <div className="text-center mb-6">
+              {!isAppInstalled ? (
+                <Button
+                  onClick={() => navigate('/install')}
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 py-3 text-base font-semibold shadow-lg shadow-amber-500/25 animate-pulse"
+                >
+                  <Smartphone className="w-5 h-5 mr-2" />
+                  Instale o App
+                </Button>
+              ) : isSupported && !isSubscribed ? (
+                <Button
+                  onClick={subscribe}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 text-base font-semibold shadow-lg shadow-purple-500/25 animate-pulse"
+                >
+                  <Bell className="w-5 h-5 mr-2" />
+                  Ative as Notificações
+                </Button>
+              ) : null}
+            </div>
+          )}
+
           {/* Title Section */}
           <div className="text-center mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent mb-2">
