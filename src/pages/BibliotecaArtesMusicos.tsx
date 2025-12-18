@@ -29,13 +29,21 @@ interface Arte {
 
 const BibliotecaArtesMusicos = () => {
   const navigate = useNavigate();
-  const { user, isPremium, isLoading: authLoading, logout } = usePremiumMusicosStatus();
+  const { user, isPremium, planType, isLoading: authLoading, logout } = usePremiumMusicosStatus();
   const { downloadCount, dailyLimit, canDownload, recordDownload } = useDailyMusicosLimit();
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [artes, setArtes] = useState<Arte[]>([]);
   const [loadingArtes, setLoadingArtes] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedArte, setSelectedArte] = useState<Arte | null>(null);
+
+  // Check if user has access to LED screen content (only Pro and Unlimited plans)
+  const hasLedAccess = isPremium && planType !== 'basico';
+  
+  // Check if arte is a LED screen arte
+  const isLedArte = (arte: Arte) => {
+    return arte.category === 'telao-led' || arte.category === 'Telão de LED';
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -74,6 +82,15 @@ const BibliotecaArtesMusicos = () => {
   };
 
   const handleArteClick = (arte: Arte) => {
+    // Check LED access restriction for basic plan
+    if (isLedArte(arte) && !hasLedAccess) {
+      toast.error("Telões de LED são exclusivos para planos Pro e Unlimited", {
+        description: "Faça upgrade do seu plano para acessar este conteúdo"
+      });
+      navigate("/planos-artes-musicos");
+      return;
+    }
+    
     // If user is premium or arte is free, show modal with links
     if (isPremium || !arte.is_premium) {
       setSelectedArte(arte);
@@ -230,17 +247,27 @@ const BibliotecaArtesMusicos = () => {
         ) : filteredArtes.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredArtes.map((arte) => {
-              const canAccess = isPremium || !arte.is_premium;
+              const isLed = isLedArte(arte);
+              const ledRestricted = isLed && !hasLedAccess;
+              const canAccess = (isPremium || !arte.is_premium) && !ledRestricted;
               return (
                 <div
                   key={arte.id}
                   className="group relative bg-[#1a1a2e] rounded-xl overflow-hidden border border-violet-500/20 hover:border-violet-500/50 transition-all duration-300"
                 >
                   {/* Premium Badge */}
-                  {arte.is_premium && (
+                  {arte.is_premium && !ledRestricted && (
                     <div className="absolute top-2 left-2 z-10 bg-violet-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                       <Lock className="w-3 h-3" />
                       Premium
+                    </div>
+                  )}
+                  
+                  {/* LED Restricted Badge */}
+                  {ledRestricted && (
+                    <div className="absolute top-2 left-2 z-10 bg-amber-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                      <Lock className="w-3 h-3" />
+                      Pro+
                     </div>
                   )}
 
@@ -289,7 +316,9 @@ const BibliotecaArtesMusicos = () => {
                       className={`w-full text-sm ${
                         canAccess 
                           ? "bg-violet-600 hover:bg-violet-500 text-white" 
-                          : "bg-violet-900/50 hover:bg-violet-800/50 text-violet-300"
+                          : ledRestricted
+                            ? "bg-amber-900/50 hover:bg-amber-800/50 text-amber-300"
+                            : "bg-violet-900/50 hover:bg-violet-800/50 text-violet-300"
                       }`}
                       size="sm"
                       onClick={() => handleArteClick(arte)}
@@ -298,6 +327,11 @@ const BibliotecaArtesMusicos = () => {
                         <>
                           <ExternalLink className="w-3 h-3 mr-1" />
                           Liberar Modelo
+                        </>
+                      ) : ledRestricted ? (
+                        <>
+                          <Lock className="w-3 h-3 mr-1" />
+                          Plano Pro+
                         </>
                       ) : (
                         <>
