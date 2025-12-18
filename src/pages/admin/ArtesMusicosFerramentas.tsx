@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import AdminLayoutPlatform from "@/components/AdminLayoutPlatform";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,8 @@ import {
 } from "lucide-react";
 
 const ArtesMusicosFerramentas = () => {
+  const navigate = useNavigate();
+
   return (
     <AdminLayoutPlatform platform="artes-musicos">
       <div>
@@ -22,7 +25,7 @@ const ArtesMusicosFerramentas = () => {
           <div className="flex items-center gap-3">
             <Clock className="h-5 w-5 text-violet-500" />
             <p className="text-sm text-violet-600 font-medium">
-              As ferramentas específicas para Músicos estão em desenvolvimento. Em breve você poderá configurar tudo por aqui!
+              As demais ferramentas estão em desenvolvimento. Em breve você poderá configurar tudo por aqui!
             </p>
           </div>
         </div>
@@ -50,12 +53,13 @@ const ArtesMusicosFerramentas = () => {
           </Card>
         </div>
 
-        {/* Action Cards - All Disabled */}
+        {/* Action Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          <Card className="p-3 sm:p-8 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-violet-500/20 text-violet-600 border-violet-500/30 text-[10px] sm:text-xs">
-              Em breve
-            </Badge>
+          {/* Upload - ENABLED */}
+          <Card 
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-violet-500/50"
+            onClick={() => navigate("/admin-upload-artes-musicos")}
+          >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full">
                 <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />

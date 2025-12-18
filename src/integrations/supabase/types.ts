@@ -144,6 +144,7 @@ export type Database = {
       }
       admin_artes: {
         Row: {
+          ai_prompt: string | null
           bonus_clicks: number
           canva_link: string | null
           category: string
@@ -153,13 +154,16 @@ export type Database = {
           drive_link: string | null
           id: string
           image_url: string
+          is_ai_generated: boolean | null
           is_premium: boolean
           pack: string | null
+          platform: string | null
           title: string
           tutorial_url: string | null
           updated_at: string | null
         }
         Insert: {
+          ai_prompt?: string | null
           bonus_clicks?: number
           canva_link?: string | null
           category: string
@@ -169,13 +173,16 @@ export type Database = {
           drive_link?: string | null
           id?: string
           image_url: string
+          is_ai_generated?: boolean | null
           is_premium?: boolean
           pack?: string | null
+          platform?: string | null
           title: string
           tutorial_url?: string | null
           updated_at?: string | null
         }
         Update: {
+          ai_prompt?: string | null
           bonus_clicks?: number
           canva_link?: string | null
           category?: string
@@ -185,8 +192,10 @@ export type Database = {
           drive_link?: string | null
           id?: string
           image_url?: string
+          is_ai_generated?: boolean | null
           is_premium?: boolean
           pack?: string | null
+          platform?: string | null
           title?: string
           tutorial_url?: string | null
           updated_at?: string | null
@@ -477,6 +486,33 @@ export type Database = {
           name?: string
           slug?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      artes_categories_musicos: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          name: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
