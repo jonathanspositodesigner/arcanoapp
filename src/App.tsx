@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Promptverso from "./pages/Promptverso";
 import BibliotecaPrompts from "./pages/BibliotecaPrompts";
@@ -47,7 +47,6 @@ import AdminInstallStats from "./pages/AdminInstallStats";
 import AdminManagePremium from "./pages/AdminManagePremium";
 import AdminPremiumDashboard from "./pages/AdminPremiumDashboard";
 import AdminPartners from "./pages/AdminPartners";
-import PartnerLogin from "./pages/PartnerLogin";
 import PartnerDashboard from "./pages/PartnerDashboard";
 import PartnerUpload from "./pages/PartnerUpload";
 import UpscalerArcano from "./pages/UpscalerArcano";
@@ -166,7 +165,11 @@ const AppContent = () => {
         <Route path="/admin-premium-dashboard" element={<AdminPremiumDashboard />} />
         <Route path="/admin-collections" element={<AdminCollections />} />
         <Route path="/admin-partners" element={<AdminPartners />} />
-        <Route path="/parceiro-login" element={<PartnerLogin />} />
+
+        {/* Colaborador (login unificado) */}
+        <Route path="/parceiro-login" element={<Navigate to="/parceiro-login-unificado" replace />} />
+        <Route path="/parceiro-selecionar-plataforma" element={<Navigate to="/parceiro-plataformas" replace />} />
+
         <Route path="/parceiro-dashboard" element={<PartnerDashboard />} />
         <Route path="/parceiro-upload" element={<PartnerUpload />} />
         <Route path="/upscaler-arcano" element={<UpscalerArcano />} />
