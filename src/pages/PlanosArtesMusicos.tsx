@@ -74,7 +74,7 @@ const PlanosArtesMusicos = () => {
         text: "Ferramentas de IA",
         included: false
       }],
-      popular: true,
+      popular: false,
       promo: false,
       hasTrial: false
     }, {
@@ -162,7 +162,7 @@ const PlanosArtesMusicos = () => {
         text: "Ferramentas de IA",
         included: false
       }],
-      popular: true,
+      popular: false,
       promo: false,
       hasTrial: true
     }, {
@@ -365,18 +365,23 @@ const PlanosArtesMusicos = () => {
                   <div className="flex items-center gap-2 text-sm">
                     <Sparkles className="w-4 h-4 text-violet-400" />
                     <span className="text-violet-100">Todos os recursos liberados</span>
+                  </div>
+                </div>
+              )}
+            </Card>
+          ))}
         </div>
 
         {/* LED Feature Callout */}
         <div className="max-w-5xl mx-auto mt-8">
-          <div className="bg-gradient-to-r from-amber-600/20 to-violet-600/20 border border-amber-500/30 rounded-xl p-4 flex items-center gap-4">
+          <div className="bg-gradient-to-r from-amber-600/20 to-violet-600/20 border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
               <Monitor className="w-6 h-6 text-amber-400" />
             </div>
-            <div>
-              <h3 className="text-white font-semibold flex items-center gap-2">
+            <div className="flex-1">
+              <h3 className="text-white font-semibold flex flex-wrap items-center gap-2">
                 Modelos de Telões de LED
-                <Badge className="bg-amber-600 text-white text-[10px] px-1.5 py-0 h-4 border-0">
+                <Badge className="bg-amber-600 text-white text-[10px] px-1.5 py-0.5 border-0">
                   Exclusivo Pro+
                 </Badge>
               </h3>
@@ -386,11 +391,6 @@ const PlanosArtesMusicos = () => {
               </p>
             </div>
           </div>
-        </div>
-      </div>
-              )}
-            </Card>
-          ))}
         </div>
       </div>
 
