@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Mail, Bell, Eye, Send, CheckCircle, MousePointer, AlertTriangle, RefreshCw, Trophy, ShieldX } from "lucide-react";
+import { Mail, Bell, Eye, Send, CheckCircle, MousePointer, AlertTriangle, RefreshCw, Trophy, ShieldX, ShoppingCart } from "lucide-react";
 import { fetchPushNotificationStats, PushNotificationStats } from "@/hooks/usePushNotificationAnalytics";
 import { useEmailMarketingStats, fetchTopEmailCampaigns, fetchPushCampaignStats, TopEmailCampaign, PushCampaignStats } from "@/hooks/useEmailMarketingAnalytics";
 import { format } from "date-fns";
@@ -90,7 +90,7 @@ const HubGeneralMarketing = ({ onNavigate }: HubGeneralMarketingProps) => {
       <p className="text-muted-foreground mb-6">Visão consolidada de todas as plataformas</p>
 
       {/* Active Tools */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-8">
         <Card 
           className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" 
           onClick={() => handleCardClick("email-marketing")}
@@ -114,6 +114,19 @@ const HubGeneralMarketing = ({ onNavigate }: HubGeneralMarketingProps) => {
             </div>
             <h2 className="text-xs sm:text-2xl font-bold text-foreground">Notificações Push</h2>
             <p className="text-muted-foreground hidden sm:block">Envie notificações para o app</p>
+          </div>
+        </Card>
+
+        <Card 
+          className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" 
+          onClick={() => handleCardClick("abandoned-checkouts")}
+        >
+          <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+            <div className="p-2 sm:p-4 bg-gradient-to-r from-red-500 to-orange-600 rounded-full">
+              <ShoppingCart className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+            </div>
+            <h2 className="text-xs sm:text-2xl font-bold text-foreground">Checkouts Abandonados</h2>
+            <p className="text-muted-foreground hidden sm:block">Remarketing de carrinhos</p>
           </div>
         </Card>
       </div>
