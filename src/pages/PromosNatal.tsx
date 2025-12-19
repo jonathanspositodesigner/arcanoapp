@@ -288,7 +288,7 @@ const PromosNatal = () => {
             {packItems.length > 0 && (
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Packs de Artes</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {packItems.map((pack) => (
                     <Card
                       key={pack.id}
@@ -321,7 +321,7 @@ const PromosNatal = () => {
             {cursoItems.length > 0 && (
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Cursos</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
