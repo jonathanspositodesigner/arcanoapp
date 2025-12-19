@@ -632,9 +632,9 @@ const BibliotecaArtes = () => {
       {/* Promo Natal Banner - Fixed at top */}
       <PromoNatalBanner />
       
-      <div className={`min-h-screen bg-background flex ${isPromoActive ? 'pt-12 sm:pt-10' : ''}`}>
+      <div className={`min-h-screen bg-background flex ${isPromoActive ? 'pt-11' : ''}`}>
       {/* Desktop Sidebar */}
-      <aside className={`hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-card border-r border-border ${isPromoActive ? 'top-10' : ''}`}>
+      <aside className={`hidden lg:flex lg:w-64 lg:flex-col lg:fixed bg-card border-r border-border ${isPromoActive ? 'top-11 bottom-0' : 'inset-y-0'}`}>
         <SidebarContent />
       </aside>
 
@@ -648,7 +648,7 @@ const BibliotecaArtes = () => {
       {/* Main Content Area */}
       <div className="flex-1 lg:pl-64">
         {/* Top Bar - Desktop */}
-        <header className={`hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between sticky z-10 ${isPromoActive ? 'top-10' : 'top-0'}`}>
+        <header className={`hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between sticky z-10 ${isPromoActive ? 'top-11' : 'top-0'}`}>
           {/* Botão "Trocar Biblioteca" temporariamente oculto - reativar junto com /biblioteca-artes-hub */}
           {/* <Button 
             onClick={() => navigate("/biblioteca-artes-hub")} 
@@ -712,7 +712,7 @@ const BibliotecaArtes = () => {
         </header>
 
         {/* Top Bar - Tablet */}
-        <header className={`hidden md:flex lg:hidden bg-primary px-4 py-3 items-center justify-between shadow-lg sticky z-10 ${isPromoActive ? 'top-10' : 'top-0'}`}>
+        <header className={`hidden md:flex lg:hidden bg-primary px-4 py-3 items-center justify-between shadow-lg sticky z-10 ${isPromoActive ? 'top-11' : 'top-0'}`}>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
@@ -769,7 +769,7 @@ const BibliotecaArtes = () => {
         </header>
 
         {/* Top Bar - Mobile */}
-        <header className={`md:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg sticky z-10 ${isPromoActive ? 'top-10' : 'top-0'}`}>
+        <header className={`md:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg sticky z-10 ${isPromoActive ? 'top-11' : 'top-0'}`}>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
