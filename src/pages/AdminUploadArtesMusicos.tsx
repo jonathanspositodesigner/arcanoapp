@@ -17,6 +17,13 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
+const TUTORIAL_TEMPLATES = [
+  {
+    name: "Tutorial de criar movie pra telão",
+    url: '<iframe width="1250" height="703" src="https://www.youtube.com/embed/jbc00r7nX1U" title="COMO FAZER MOVIE PARA TELÃO" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
+  },
+];
+
 const validateFile = (file: File): string | null => {
   if (file.size > MAX_FILE_SIZE) {
     return `Arquivo "${file.name}" muito grande. Máximo 100MB.`;
@@ -606,11 +613,28 @@ const AdminUploadArtesMusicos = () => {
                   />
                 </div>
                 {currentMedia.hasTutorial && (
-                  <Input
-                    value={currentMedia.tutorialUrl}
-                    onChange={(e) => updateMediaData('tutorialUrl', e.target.value)}
-                    placeholder="URL do tutorial (YouTube, Vimeo, etc.)"
-                  />
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      <p className="text-sm text-muted-foreground w-full">Sugestões:</p>
+                      {TUTORIAL_TEMPLATES.map((template) => (
+                        <Button
+                          key={template.name}
+                          type="button"
+                          variant={currentMedia.tutorialUrl === template.url ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => updateMediaData('tutorialUrl', template.url)}
+                          className="text-xs"
+                        >
+                          {template.name}
+                        </Button>
+                      ))}
+                    </div>
+                    <Input
+                      value={currentMedia.tutorialUrl}
+                      onChange={(e) => updateMediaData('tutorialUrl', e.target.value)}
+                      placeholder="Ou cole a URL do tutorial manualmente..."
+                    />
+                  </div>
                 )}
               </div>
 
