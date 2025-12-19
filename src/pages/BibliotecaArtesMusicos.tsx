@@ -7,7 +7,7 @@ import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { 
   ArrowLeft, LogIn, Settings, LogOut, Loader2, Lock, Play, UserPlus, ExternalLink, Download,
-  Smartphone, Bell, User, Sparkles, Video, ChevronDown, MessageCircle, Menu, X
+  Smartphone, Bell, User, Sparkles, Video, ChevronDown, MessageCircle, Menu, X, Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -613,11 +613,26 @@ const BibliotecaArtesMusicos = () => {
                   )}
                 </div>
 
-                {/* AI Prompt */}
+                {/* AI Prompt with Copy Button */}
                 {selectedArte.is_ai_generated && selectedArte.ai_prompt && (
                   <div className="p-3 bg-white/5 rounded-lg border border-white/10">
                     <p className="text-xs text-gray-400 mb-1">Prompt utilizado:</p>
-                    <p className="text-sm text-gray-200">{selectedArte.ai_prompt}</p>
+                    <p className="text-sm text-gray-200 mb-3">{selectedArte.ai_prompt}</p>
+                    <Button
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                      size="sm"
+                      disabled={!canDownload && dailyLimit !== Infinity}
+                      onClick={async () => {
+                        const success = await recordDownload(selectedArte.id);
+                        if (success) {
+                          navigator.clipboard.writeText(selectedArte.ai_prompt!);
+                          toast.success("Prompt copiado!");
+                        }
+                      }}
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copiar Prompt
+                    </Button>
                   </div>
                 )}
 
@@ -631,9 +646,15 @@ const BibliotecaArtesMusicos = () => {
                       className="w-full max-h-40 object-contain rounded-lg mb-2 bg-black/20" 
                     />
                     <Button
-                      onClick={() => window.open(selectedArte.ai_reference_image_url!, '_blank')}
                       className="w-full bg-purple-500 hover:bg-purple-600 text-white"
                       size="sm"
+                      disabled={!canDownload && dailyLimit !== Infinity}
+                      onClick={async () => {
+                        const success = await recordDownload(selectedArte.id);
+                        if (success) {
+                          window.open(selectedArte.ai_reference_image_url!, '_blank');
+                        }
+                      }}
                     >
                       <Download className="w-4 h-4 mr-2" />
                       Baixar Imagem de Referência

@@ -58,13 +58,6 @@ export const useDailyMusicosLimit = (): DailyMusicosLimitResult => {
   }, []);
 
   const recordDownload = useCallback(async (arteId: string): Promise<boolean> => {
-    if (!canDownload && dailyLimit !== Infinity) {
-      toast.error(`Limite de ${dailyLimit} downloads por dia atingido!`, {
-        description: 'Faça upgrade do seu plano para mais downloads.'
-      });
-      return false;
-    }
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -72,6 +65,30 @@ export const useDailyMusicosLimit = (): DailyMusicosLimitResult => {
         return false;
       }
 
+      // Check if already recorded for this arte today (unique constraint handles this)
+      const today = new Date().toISOString().split('T')[0];
+      const { data: existing } = await supabase
+        .from('daily_musicos_downloads')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('arte_id', arteId)
+        .eq('download_date', today)
+        .maybeSingle();
+
+      // If already exists for this arte today, allow action without counting again
+      if (existing) {
+        return true;
+      }
+
+      // Check limit before inserting
+      if (!canDownload && dailyLimit !== Infinity) {
+        toast.error(`Limite de ${dailyLimit} downloads por dia atingido!`, {
+          description: 'Faça upgrade do seu plano para mais downloads.'
+        });
+        return false;
+      }
+
+      // Insert new record
       const { error } = await supabase
         .from('daily_musicos_downloads')
         .insert({
@@ -79,7 +96,13 @@ export const useDailyMusicosLimit = (): DailyMusicosLimitResult => {
           arte_id: arteId
         });
 
-      if (error) throw error;
+      if (error) {
+        // If unique constraint violation, it means record already exists (race condition)
+        if (error.code === '23505') {
+          return true;
+        }
+        throw error;
+      }
 
       setDownloadCount(prev => prev + 1);
       
