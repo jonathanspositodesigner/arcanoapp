@@ -252,10 +252,17 @@ const PromosNatal = () => {
 
         {/* Promo Banner */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-6 py-3 rounded-full text-lg font-bold mb-4 shadow-lg shadow-red-200">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-6 py-3 rounded-full text-lg font-bold mb-6 shadow-lg shadow-red-200">
             <Sparkles className="h-5 w-5" />
             {promoName}
             <Sparkles className="h-5 w-5" />
+          </div>
+
+          <div className="mb-6">
+            <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-xl px-6 py-2 shadow-lg">
+              <Percent className="h-5 w-5 mr-2" />
+              {discountPercent}% OFF EM TODOS OS PACKS!
+            </Badge>
           </div>
 
           {/* Countdown Timer */}
@@ -274,11 +281,6 @@ const PromosNatal = () => {
               ))}
             </div>
           )}
-
-          <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-xl px-6 py-2 mb-4 shadow-lg">
-            <Percent className="h-5 w-5 mr-2" />
-            {discountPercent}% OFF EM TODOS OS PACKS!
-          </Badge>
 
           {isRenewal && (
             <Badge className="bg-gradient-to-r from-red-700 to-red-600 text-white text-lg px-4 py-2 ml-2">
