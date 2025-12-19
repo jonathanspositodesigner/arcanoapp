@@ -34,6 +34,7 @@ interface Arte {
   drive_link?: string;
   is_ai_generated?: boolean;
   ai_prompt?: string;
+  ai_reference_image_url?: string;
 }
 
 type SortOption = 'date' | 'downloads';
@@ -64,6 +65,9 @@ const AdminManageArtesMusicos = () => {
   const [editDriveLink, setEditDriveLink] = useState("");
   const [editIsAiGenerated, setEditIsAiGenerated] = useState(false);
   const [editAiPrompt, setEditAiPrompt] = useState("");
+  const [editAiReferenceImageUrl, setEditAiReferenceImageUrl] = useState("");
+  const [newAiReferenceImage, setNewAiReferenceImage] = useState<File | null>(null);
+  const [newAiReferencePreview, setNewAiReferencePreview] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
@@ -177,6 +181,9 @@ const AdminManageArtesMusicos = () => {
     setEditDriveLink(arte.drive_link || "");
     setEditIsAiGenerated(arte.is_ai_generated || false);
     setEditAiPrompt(arte.ai_prompt || "");
+    setEditAiReferenceImageUrl(arte.ai_reference_image_url || "");
+    setNewAiReferenceImage(null);
+    setNewAiReferencePreview("");
     setNewMediaFile(null);
     setNewMediaPreview("");
   };
@@ -185,6 +192,22 @@ const AdminManageArtesMusicos = () => {
     setEditingArte(null);
     setNewMediaFile(null);
     setNewMediaPreview("");
+    setNewAiReferenceImage(null);
+    setNewAiReferencePreview("");
+  };
+
+  const handleNewAiReferenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error("Apenas imagens são permitidas para referência");
+        return;
+      }
+      setNewAiReferenceImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setNewAiReferencePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleNewMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,6 +251,16 @@ const AdminManageArtesMusicos = () => {
         newImageUrl = await uploadToCloudinary(newMediaFile);
       }
 
+      // Handle AI reference image upload
+      let aiReferenceImageUrl = editAiReferenceImageUrl;
+      if (newAiReferenceImage) {
+        aiReferenceImageUrl = await uploadToCloudinary(newAiReferenceImage);
+      }
+      // Clear reference image if AI is disabled
+      if (!editIsAiGenerated) {
+        aiReferenceImageUrl = null;
+      }
+
       const { error } = await supabase
         .from('admin_artes')
         .update({
@@ -241,7 +274,8 @@ const AdminManageArtesMusicos = () => {
           canva_link: editCanvaLink || null,
           drive_link: editDriveLink || null,
           is_ai_generated: editIsAiGenerated,
-          ai_prompt: editIsAiGenerated ? editAiPrompt : null
+          ai_prompt: editIsAiGenerated ? editAiPrompt : null,
+          ai_reference_image_url: aiReferenceImageUrl
         })
         .eq('id', editingArte.id);
 
@@ -488,14 +522,48 @@ const AdminManageArtesMusicos = () => {
               </div>
 
               {editIsAiGenerated && (
-                <div>
-                  <Label>Prompt utilizado</Label>
-                  <Textarea 
-                    value={editAiPrompt} 
-                    onChange={(e) => setEditAiPrompt(e.target.value)} 
-                    className="mt-1"
-                    placeholder="Descreva o prompt utilizado para gerar esta arte..."
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <Label>Prompt utilizado</Label>
+                    <Textarea 
+                      value={editAiPrompt} 
+                      onChange={(e) => setEditAiPrompt(e.target.value)} 
+                      className="mt-1"
+                      placeholder="Descreva o prompt utilizado para gerar esta arte..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label>Imagem de Referência</Label>
+                    {(newAiReferencePreview || editAiReferenceImageUrl) && (
+                      <div className="relative mt-2 mb-2">
+                        <img 
+                          src={newAiReferencePreview || editAiReferenceImageUrl} 
+                          alt="Referência IA" 
+                          className="w-full max-h-32 object-contain rounded-lg bg-muted/50"
+                        />
+                        <button
+                          onClick={() => {
+                            setNewAiReferenceImage(null);
+                            setNewAiReferencePreview("");
+                            setEditAiReferenceImageUrl("");
+                          }}
+                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleNewAiReferenceChange}
+                      className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500 file:text-white hover:file:bg-purple-400 mt-1" 
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Imagem para o usuário baixar e usar junto com o prompt
+                    </p>
+                  </div>
                 </div>
               )}
 
