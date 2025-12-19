@@ -13,6 +13,7 @@ import HubGeneralMarketing from "@/components/HubGeneralMarketing";
 import EmailMarketingContent from "@/components/EmailMarketingContent";
 import PushNotificationsContent from "@/components/PushNotificationsContent";
 import PartnersManagementContent from "@/components/PartnersManagementContent";
+import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
 
 const AdminHub = () => {
   const navigate = useNavigate();
@@ -152,6 +153,8 @@ const AdminHub = () => {
         return <PushNotificationsContent />;
       case "partners":
         return <PartnersManagementContent />;
+      case "abandoned-checkouts":
+        return <AbandonedCheckoutsContent />;
       default:
         return null;
     }
