@@ -45,7 +45,7 @@ const PromoNatalBanner = () => {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-red-700 via-red-600 to-red-700 text-white py-1.5 md:py-2 px-8 md:px-4 shadow-lg overflow-hidden">
+    <div className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-red-700 via-red-600 to-red-700 text-white py-1.5 md:py-2 px-2 sm:px-4 shadow-lg overflow-hidden">
       {/* Shimmer effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_infinite]" />
       
@@ -91,9 +91,9 @@ const PromoNatalBanner = () => {
       </div>
 
       {/* Mobile/Tablet layout - two lines */}
-      <div className="relative flex md:hidden flex-col items-center gap-0.5">
+      <div className="relative flex md:hidden flex-col items-center gap-0.5 pr-6">
         <span className="font-bold text-[11px] sm:text-xs text-center leading-tight">
-          🎄🔥 Promoção de Fim de Ano: {discountPercent}% OFF! 🔥🎄
+          🎄 Fim de Ano: {discountPercent}% OFF! 🎄
         </span>
         
         {/* Countdown */}
@@ -124,7 +124,7 @@ const PromoNatalBanner = () => {
         {/* Close button */}
         <button 
           onClick={() => setDismissed(true)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
+          className="absolute right-1 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
           aria-label="Fechar banner"
         >
           <X className="h-3 w-3" />
