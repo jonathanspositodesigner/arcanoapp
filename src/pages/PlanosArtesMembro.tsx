@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Star, ArrowLeft, Gift, Clock, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 
 interface Pack {
   id: string;
@@ -34,6 +35,18 @@ const PlanosArtesMembro = () => {
   const [packs, setPacks] = useState<Pack[]>([]);
   const [loading, setLoading] = useState(true);
   const { user, isPremium, userPacks, isLoading: authLoading } = usePremiumArtesStatus();
+  
+  const { isActive: isPromoActive, loading: promoLoading } = useYearEndPromo();
+
+  // Redirect to promo page if year-end promo is active
+  useEffect(() => {
+    if (!promoLoading && isPromoActive) {
+      const redirectUrl = packSlug 
+        ? `/promos-natal?pack=${packSlug}`
+        : '/promos-natal';
+      navigate(redirectUrl, { replace: true });
+    }
+  }, [promoLoading, isPromoActive, packSlug, navigate]);
 
   // Member discount configuration
   const MEMBER_DISCOUNT = 0.20; // 20% discount

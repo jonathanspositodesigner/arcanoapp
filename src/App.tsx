@@ -60,6 +60,7 @@ import UserLoginArtes from "./pages/UserLoginArtes";
 import UserLoginArtesMusicos from "./pages/UserLoginArtesMusicos";
 import PlanosArtes from "./pages/PlanosArtes";
 import PlanosArtesMembro from "./pages/PlanosArtesMembro";
+import PromosNatal from "./pages/PromosNatal";
 import PlanosArtesMusicos from "./pages/PlanosArtesMusicos";
 import ChangePasswordArtes from "./pages/ChangePasswordArtes";
 import ForgotPasswordArtes from "./pages/ForgotPasswordArtes";
@@ -182,6 +183,7 @@ const AppContent = () => {
         <Route path="/login-artes-musicos" element={<UserLoginArtesMusicos />} />
         <Route path="/planos-artes" element={<PlanosArtes />} />
         <Route path="/planos-artes-membro" element={<PlanosArtesMembro />} />
+        <Route path="/promos-natal" element={<PromosNatal />} />
         <Route path="/planos-artes-musicos" element={<PlanosArtesMusicos />} />
         <Route path="/change-password-artes" element={<ChangePasswordArtes />} />
         <Route path="/forgot-password-artes" element={<ForgotPasswordArtes />} />

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Star, ArrowLeft, Gift, Clock, Percent, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 
 interface Pack {
   id: string;
@@ -46,6 +47,18 @@ const PlanosArtes = () => {
   const [packs, setPacks] = useState<Pack[]>([]);
   const [loading, setLoading] = useState(true);
   const [isNotificationEligible, setIsNotificationEligible] = useState(false);
+  
+  const { isActive: isPromoActive, loading: promoLoading } = useYearEndPromo();
+
+  // Redirect to promo page if year-end promo is active
+  useEffect(() => {
+    if (!promoLoading && isPromoActive) {
+      const redirectUrl = packSlug 
+        ? `/promos-natal?pack=${packSlug}${isRenewal ? '&renovacao=true' : ''}`
+        : '/promos-natal';
+      navigate(redirectUrl, { replace: true });
+    }
+  }, [promoLoading, isPromoActive, packSlug, isRenewal, navigate]);
 
   // Discount configuration for renewals
   const RENEWAL_DISCOUNT = 0.30; // 30% discount
