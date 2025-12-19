@@ -17,9 +17,9 @@ const PromoNatalBanner = () => {
   if (loading || !isActive || dismissed) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-red-600 via-green-600 to-red-600 text-white py-2 px-4 shadow-lg overflow-hidden">
+    <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-red-700 via-red-600 to-red-700 text-white py-2.5 px-4 shadow-lg overflow-hidden">
       {/* Shimmer effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_3s_infinite]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_infinite]" />
       
       <div className="relative flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
         <div className="flex items-center gap-2">
