@@ -497,13 +497,13 @@ const PartnerDashboard = () => {
 
       {/* Edit Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Arquivo</DialogTitle>
           </DialogHeader>
           
           {editingPrompt && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex justify-center">
                 {editingPrompt.image_url.includes('.mp4') || editingPrompt.image_url.includes('.webm') || editingPrompt.image_url.includes('.mov') ? (
                   <SecureVideo
@@ -565,11 +565,11 @@ const PartnerDashboard = () => {
             </div>
           )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setEditModalOpen(false)} className="w-full sm:w-auto">
               Cancelar
             </Button>
-            <Button onClick={handleSaveEdit} disabled={isSubmitting}>
+            <Button onClick={handleSaveEdit} disabled={isSubmitting} className="w-full sm:w-auto">
               {isSubmitting ? "Salvando..." : "Salvar e Enviar para Aprovação"}
             </Button>
           </DialogFooter>

@@ -181,12 +181,12 @@ const ContributePrompts = () => {
           Voltar
         </Button>
 
-        <Card className="p-8 shadow-hover">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-2">
+        <Card className="p-4 sm:p-8 shadow-hover">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">
               Contribua com a Comunidade Arcana
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-base sm:text-lg">
               Compartilhe seus prompts e ajude outros criadores
             </p>
           </div>
@@ -250,7 +250,7 @@ const ContributePrompts = () => {
                   htmlFor="media"
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
+                  className="flex flex-col items-center justify-center w-full h-32 sm:h-48 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
                 >
                   {mediaPreview ? (
                     isVideo ? (

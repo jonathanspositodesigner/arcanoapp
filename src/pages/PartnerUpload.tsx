@@ -406,7 +406,7 @@ const PartnerUpload = () => {
       </div>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               Informações {currentIndex + 1} de {mediaFiles.length}
@@ -414,12 +414,12 @@ const PartnerUpload = () => {
           </DialogHeader>
 
           {currentMedia && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="flex justify-center">
                 {currentMedia.isVideo ? (
                   <video
                     src={currentMedia.preview}
-                    className="max-h-64 object-contain rounded-lg"
+                    className="max-h-40 sm:max-h-64 object-contain rounded-lg"
                     controls
                     muted
                     autoPlay
@@ -429,7 +429,7 @@ const PartnerUpload = () => {
                   <img
                     src={currentMedia.preview}
                     alt="Preview"
-                    className="max-h-64 object-contain rounded-lg"
+                    className="max-h-40 sm:max-h-64 object-contain rounded-lg"
                   />
                 )}
               </div>
@@ -532,7 +532,7 @@ const PartnerUpload = () => {
                 />
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
                   onClick={goToPrevious}
