@@ -360,6 +360,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          id: string
+          updated_at: string | null
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          id: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       arte_clicks: {
         Row: {
           arte_id: string
@@ -529,6 +550,9 @@ export type Database = {
           checkout_link_notif_1_ano: string | null
           checkout_link_notif_6_meses: string | null
           checkout_link_notif_vitalicio: string | null
+          checkout_link_promo_1_ano: string | null
+          checkout_link_promo_6_meses: string | null
+          checkout_link_promo_vitalicio: string | null
           checkout_link_renovacao_1_ano: string | null
           checkout_link_renovacao_6_meses: string | null
           checkout_link_renovacao_vitalicio: string | null
@@ -567,6 +591,9 @@ export type Database = {
           checkout_link_notif_1_ano?: string | null
           checkout_link_notif_6_meses?: string | null
           checkout_link_notif_vitalicio?: string | null
+          checkout_link_promo_1_ano?: string | null
+          checkout_link_promo_6_meses?: string | null
+          checkout_link_promo_vitalicio?: string | null
           checkout_link_renovacao_1_ano?: string | null
           checkout_link_renovacao_6_meses?: string | null
           checkout_link_renovacao_vitalicio?: string | null
@@ -605,6 +632,9 @@ export type Database = {
           checkout_link_notif_1_ano?: string | null
           checkout_link_notif_6_meses?: string | null
           checkout_link_notif_vitalicio?: string | null
+          checkout_link_promo_1_ano?: string | null
+          checkout_link_promo_6_meses?: string | null
+          checkout_link_promo_vitalicio?: string | null
           checkout_link_renovacao_1_ano?: string | null
           checkout_link_renovacao_6_meses?: string | null
           checkout_link_renovacao_vitalicio?: string | null
