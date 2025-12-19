@@ -20,9 +20,9 @@ interface Pack {
   enabled_6_meses: boolean;
   enabled_1_ano: boolean;
   enabled_vitalicio: boolean;
-  checkout_link_promo_6_meses: string | null;
-  checkout_link_promo_1_ano: string | null;
-  checkout_link_promo_vitalicio: string | null;
+  checkout_link_membro_6_meses: string | null;
+  checkout_link_membro_1_ano: string | null;
+  checkout_link_membro_vitalicio: string | null;
   checkout_link_renovacao_6_meses: string | null;
   checkout_link_renovacao_1_ano: string | null;
   checkout_link_renovacao_vitalicio: string | null;
@@ -96,7 +96,7 @@ const PromosNatal = () => {
         id, name, slug, cover_url, type, is_visible,
         price_6_meses, price_1_ano, price_vitalicio,
         enabled_6_meses, enabled_1_ano, enabled_vitalicio,
-        checkout_link_promo_6_meses, checkout_link_promo_1_ano, checkout_link_promo_vitalicio,
+        checkout_link_membro_6_meses, checkout_link_membro_1_ano, checkout_link_membro_vitalicio,
         checkout_link_renovacao_6_meses, checkout_link_renovacao_1_ano, checkout_link_renovacao_vitalicio
       `)
       .in("type", ["pack", "curso"])
@@ -206,11 +206,11 @@ const PromosNatal = () => {
         case "vitalicio": checkoutLink = selectedPack.checkout_link_renovacao_vitalicio; break;
       }
     } else {
-      // Use promo links
+      // Use member links (with promo discount applied via coupon)
       switch (accessType) {
-        case "6_meses": checkoutLink = selectedPack.checkout_link_promo_6_meses; break;
-        case "1_ano": checkoutLink = selectedPack.checkout_link_promo_1_ano; break;
-        case "vitalicio": checkoutLink = selectedPack.checkout_link_promo_vitalicio; break;
+        case "6_meses": checkoutLink = selectedPack.checkout_link_membro_6_meses; break;
+        case "1_ano": checkoutLink = selectedPack.checkout_link_membro_1_ano; break;
+        case "vitalicio": checkoutLink = selectedPack.checkout_link_membro_vitalicio; break;
       }
     }
     
