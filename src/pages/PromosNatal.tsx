@@ -252,41 +252,24 @@ const PromosNatal = () => {
 
         {/* Promo Banner */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-6 py-3 rounded-full text-lg font-bold mb-6 shadow-lg shadow-red-200">
-            <Sparkles className="h-5 w-5" />
-            {promoName}
-            <Sparkles className="h-5 w-5" />
-          </div>
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-6 py-3 rounded-full text-lg font-bold shadow-lg shadow-red-200 whitespace-nowrap">
+              <Sparkles className="h-5 w-5" />
+              {promoName}
+              <Sparkles className="h-5 w-5" />
+            </div>
 
-          <div className="mb-6">
-            <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-xl px-6 py-2 shadow-lg">
+            <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-xl px-6 py-2 shadow-lg whitespace-nowrap">
               <Percent className="h-5 w-5 mr-2" />
               {discountPercent}% OFF EM TODOS OS PACKS!
             </Badge>
+
+            {isRenewal && (
+              <Badge className="bg-gradient-to-r from-red-700 to-red-600 text-white text-lg px-4 py-2 shadow-lg whitespace-nowrap">
+                + 30% OFF Renovação
+              </Badge>
+            )}
           </div>
-
-          {/* Countdown Timer */}
-          {(countdown.days > 0 || countdown.hours > 0 || countdown.minutes > 0) && (
-            <div className="flex justify-center gap-3 mb-6">
-              {[
-                { value: countdown.days, label: 'DIAS' },
-                { value: countdown.hours, label: 'HORAS' },
-                { value: countdown.minutes, label: 'MIN' },
-                { value: countdown.seconds, label: 'SEG' }
-              ].map((item, i) => (
-                <div key={i} className="bg-white border-2 border-red-200 rounded-lg px-4 py-2 min-w-[70px] shadow-sm">
-                  <div className="text-2xl font-bold text-red-700">{String(item.value).padStart(2, '0')}</div>
-                  <div className="text-[10px] text-red-500 font-semibold">{item.label}</div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {isRenewal && (
-            <Badge className="bg-gradient-to-r from-red-700 to-red-600 text-white text-lg px-4 py-2 ml-2">
-              + 30% OFF Renovação
-            </Badge>
-          )}
 
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 mt-4">
             {selectedPack 
