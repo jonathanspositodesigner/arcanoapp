@@ -344,7 +344,7 @@ const AdminLeads = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/admin-ferramentas')}>
+          <Button variant="ghost" onClick={() => navigate('/admin-hub')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
