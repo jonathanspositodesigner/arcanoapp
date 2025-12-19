@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, ArrowLeft, Gift, Clock, Percent, TreePine, Sparkles } from "lucide-react";
+import { Check, Star, ArrowLeft, Gift, Clock, Percent, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 
@@ -431,7 +431,7 @@ const PromosNatal = () => {
                       <ul className="space-y-2">
                         {option.features.map((feature, i) => (
                           <li key={i} className="flex items-start gap-2 text-white/80 text-sm">
-                            <Check className="h-4 w-4 text-green-400 mt-0.5 shrink-0" />
+                            <Check className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
                             {feature}
                           </li>
                         ))}
@@ -439,7 +439,7 @@ const PromosNatal = () => {
                       <Button
                         className={`w-full ${
                           option.highlighted
-                            ? "bg-gradient-to-r from-red-500 to-green-500 hover:from-red-600 hover:to-green-600"
+                            ? "bg-gradient-to-r from-red-700 via-red-600 to-red-700 hover:from-red-600 hover:to-red-500"
                             : "bg-red-500 hover:bg-red-600"
                         } text-white`}
                         onClick={() => handleSelectOption(option.type)}
