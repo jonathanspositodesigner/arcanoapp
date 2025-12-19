@@ -130,9 +130,9 @@ const AppContent = () => {
         <Route path="/contribuir" element={<ContributePrompts />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin-hub" element={<AdminHub />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/admin-ferramentas" element={<AdminFerramentas />} />
-        <Route path="/admin-marketing" element={<AdminMarketing />} />
+        <Route path="/admin-dashboard" element={<Navigate to="/admin-hub" replace />} />
+        <Route path="/admin-ferramentas" element={<Navigate to="/admin-hub" replace />} />
+        <Route path="/admin-marketing" element={<Navigate to="/admin-hub" replace />} />
         {/* Platform-specific admin routes */}
         <Route path="/admin-artes-eventos" element={<ArtesEventosDashboard />} />
         <Route path="/admin-artes-eventos/ferramentas" element={<ArtesEventosFerramentas />} />
