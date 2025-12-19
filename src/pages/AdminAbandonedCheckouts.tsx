@@ -12,6 +12,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import EmailEditor from "@/components/email-marketing/EmailEditor";
 import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
@@ -687,13 +688,10 @@ const AdminAbandonedCheckouts = () => {
 
               {/* Content */}
               <div className="space-y-2">
-                <Label>Conteúdo (HTML) *</Label>
-                <Textarea
+                <Label>Conteúdo do email</Label>
+                <EmailEditor
                   value={emailContent}
-                  onChange={(e) => setEmailContent(e.target.value)}
-                  placeholder="Conteúdo do email em HTML..."
-                  rows={12}
-                  className="font-mono text-sm"
+                  onChange={setEmailContent}
                 />
               </div>
 
