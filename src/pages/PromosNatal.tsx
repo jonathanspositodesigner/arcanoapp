@@ -294,7 +294,7 @@ const PromosNatal = () => {
                       className="bg-white border-2 border-red-100 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
-                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-3 py-1 rounded-full z-10 font-bold shadow-lg">
+                      <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
                         -{discountPercent}%
                       </div>
                       <CardContent className="p-4">
@@ -327,7 +327,7 @@ const PromosNatal = () => {
                       className="bg-white border-2 border-red-100 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
-                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-3 py-1 rounded-full z-10 font-bold shadow-lg">
+                      <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
                         -{discountPercent}%
                       </div>
                       <CardContent className="p-4">
