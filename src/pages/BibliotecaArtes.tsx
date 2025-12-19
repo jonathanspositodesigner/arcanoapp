@@ -675,12 +675,12 @@ const BibliotecaArtes = () => {
                   Login
                 </Button>
                 <Button
-                  onClick={() => navigate("/planos-artes")}
+                  onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")}
                   size="sm"
-                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+                  className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"}
                 >
                   <Star className="h-3 w-3 mr-2" fill="currentColor" />
-                  Comprar Pack
+                  {isPromoActive ? "Comprar com 50% OFF" : "Comprar Pack"}
                 </Button>
               </>
             )}
@@ -743,9 +743,9 @@ const BibliotecaArtes = () => {
                   <LogIn className="h-4 w-4 mr-1" />
                   Login
                 </Button>
-                <Button onClick={() => navigate("/planos-artes")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-sm">
+                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-sm animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-sm"}>
                   <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                  Comprar
+                  {isPromoActive ? "50% OFF" : "Comprar"}
                 </Button>
               </>
             )}
@@ -792,9 +792,9 @@ const BibliotecaArtes = () => {
                   <LogIn className="h-4 w-4 mr-1" />
                   Login
                 </Button>
-                <Button onClick={() => navigate("/planos-artes")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
+                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"}>
                   <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                  Comprar
+                  {isPromoActive ? "50% OFF" : "Comprar"}
                 </Button>
               </>
             )}
@@ -912,6 +912,15 @@ const BibliotecaArtes = () => {
                         {pack.cover_url ? <img src={pack.cover_url} alt={pack.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
                             {activeSection === 'bonus' ? <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" /> : <Package className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />}
                           </div>}
+                        
+                        {/* Promo 50% OFF Tag - show on packs when promo is active and user doesn't have access */}
+                        {isPromoActive && !hasPackAccess && !isBonusType && !isToolType && (
+                          <div className="absolute top-2 left-2 z-10">
+                            <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white border-0 text-[10px] sm:text-xs font-bold shadow-lg animate-pulse">
+                              🔥 50% OFF
+                            </Badge>
+                          </div>
+                        )}
                         
                         {/* Access Tag - Priority: Active > Expired > None */}
                         {hasPackAccess && !isBonusType && <div className="absolute top-2 right-2 z-10">
@@ -1164,6 +1173,12 @@ const BibliotecaArtes = () => {
                     }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               20% OFF Membro
+                            </Button> : isPromoActive ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" onClick={e => {
+                      e.stopPropagation();
+                      navigate(`/promos-natal?pack=${packSlug}`);
+                    }}>
+                              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                              Comprar com 50% OFF
                             </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
                       e.stopPropagation();
                       navigate(`/planos-artes?pack=${packSlug}`);
@@ -1346,6 +1361,12 @@ const BibliotecaArtes = () => {
                     }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               20% OFF Membro
+                            </Button> : isPromoActive ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" onClick={e => {
+                      e.stopPropagation();
+                      navigate(`/promos-natal?pack=${packSlug}`);
+                    }}>
+                              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                              Comprar com 50% OFF
                             </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
                       e.stopPropagation();
                       navigate(`/planos-artes?pack=${packSlug}`);
@@ -1453,10 +1474,17 @@ const BibliotecaArtes = () => {
                         <LogIn className="h-4 w-4 mr-2" />
                         Fazer Login
                       </Button>}
-                    <Button onClick={() => navigate(`/planos-artes?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white">
-                      <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                      Comprar Pack
-                    </Button>
+                    {isPromoActive ? (
+                      <Button onClick={() => navigate(`/promos-natal?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse">
+                        <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                        Comprar com 50% OFF
+                      </Button>
+                    ) : (
+                      <Button onClick={() => navigate(`/planos-artes?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white">
+                        <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                        Comprar Pack
+                      </Button>
+                    )}
                     <Button onClick={() => handleCloseModal()} variant="outline" className="w-full">
                       <ChevronLeft className="h-4 w-4 mr-2" />
                       Voltar
@@ -1491,13 +1519,23 @@ const BibliotecaArtes = () => {
                   <LogIn className="h-4 w-4 mr-2" />
                   Fazer Login
                 </Button>
-                <Button onClick={() => {
-              const packSlug = toPackSlug(premiumModalItem.pack);
-              navigate(`/planos-artes${packSlug ? `?pack=${packSlug}` : ''}`);
-            }} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
-                  <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                  Comprar Pack
-                </Button>
+                {isPromoActive ? (
+                  <Button onClick={() => {
+                    const packSlug = toPackSlug(premiumModalItem.pack);
+                    navigate(`/promos-natal${packSlug ? `?pack=${packSlug}` : ''}`);
+                  }} className="bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse">
+                    <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                    Comprar com 50% OFF
+                  </Button>
+                ) : (
+                  <Button onClick={() => {
+                    const packSlug = toPackSlug(premiumModalItem.pack);
+                    navigate(`/planos-artes${packSlug ? `?pack=${packSlug}` : ''}`);
+                  }} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                    <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                    Comprar Pack
+                  </Button>
+                )}
                 <Button onClick={() => handleClosePremiumModal(false)} variant="outline">
                   <ChevronLeft className="h-4 w-4 mr-2" />
                   Voltar
