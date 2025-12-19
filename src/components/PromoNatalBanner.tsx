@@ -50,18 +50,10 @@ const PromoNatalBanner = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_infinite]" />
       
       <div className="relative flex items-center justify-center gap-2 md:gap-4">
-        {/* Left icons - hidden on very small screens */}
-        <div className="hidden sm:flex items-center gap-1">
-          <span className="text-base md:text-lg">🎄</span>
-          <Gift className="h-4 w-4 animate-pulse" />
-        </div>
-        
         {/* Main content */}
         <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
-          <span className="font-bold text-xs md:text-sm whitespace-nowrap">
-            <span className="hidden sm:inline">🎁 </span>
-            {discountPercent}% OFF
-            <span className="hidden md:inline"> EM TODOS OS PACKS</span>
+          <span className="font-bold text-[10px] sm:text-xs md:text-sm whitespace-nowrap">
+            🎄🔥 Promoção de Fim de Ano: {discountPercent}% OFF em todos os packs! 🔥🎄
           </span>
           
           {/* Countdown */}
@@ -89,9 +81,6 @@ const PromoNatalBanner = () => {
             </div>
           </div>
         </div>
-        
-        {/* Right icon - hidden on very small screens */}
-        <span className="hidden sm:inline text-base md:text-lg">🎁</span>
         
         {/* Close button */}
         <button 
