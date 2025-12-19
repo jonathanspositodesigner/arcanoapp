@@ -252,12 +252,10 @@ const PromosNatal = () => {
 
         {/* Promo Banner */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 via-green-600 to-red-600 text-white px-6 py-3 rounded-full text-lg font-bold mb-4 animate-pulse shadow-lg shadow-red-500/30">
-            <TreePine className="h-6 w-6" />
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-700 via-red-600 to-red-700 text-white px-6 py-3 rounded-full text-lg font-bold mb-4 animate-pulse shadow-lg shadow-red-500/30">
             <Sparkles className="h-5 w-5" />
             {promoName}
             <Sparkles className="h-5 w-5" />
-            <TreePine className="h-6 w-6" />
           </div>
 
           {/* Countdown Timer */}
