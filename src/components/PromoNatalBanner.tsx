@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { X, Gift } from "lucide-react";
+import { X } from "lucide-react";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 
 const PromoNatalBanner = () => {
@@ -45,39 +45,37 @@ const PromoNatalBanner = () => {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-red-700 via-red-600 to-red-700 text-white py-2 px-3 shadow-lg overflow-hidden">
+    <div className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-red-700 via-red-600 to-red-700 text-white py-1.5 md:py-2 px-8 md:px-4 shadow-lg overflow-hidden">
       {/* Shimmer effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_infinite]" />
       
-      <div className="relative flex items-center justify-center gap-2 md:gap-4">
-        {/* Main content */}
-        <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
-          <span className="font-bold text-[10px] sm:text-xs md:text-sm whitespace-nowrap">
-            🎄🔥 Promoção de Fim de Ano: {discountPercent}% OFF em todos os packs! 🔥🎄
-          </span>
-          
-          {/* Countdown */}
+      {/* Desktop layout - single line */}
+      <div className="relative hidden md:flex items-center justify-center gap-4">
+        <span className="font-bold text-sm whitespace-nowrap">
+          🎄🔥 Promoção de Fim de Ano: {discountPercent}% OFF em todos os packs! 🔥🎄
+        </span>
+        
+        {/* Countdown */}
+        <div className="flex items-center gap-1">
+          <span className="text-xs opacity-80">Termina em:</span>
           <div className="flex items-center gap-1">
-            <span className="text-[10px] md:text-xs opacity-80 hidden sm:inline">Termina em:</span>
-            <div className="flex items-center gap-0.5 md:gap-1">
-              {countdown.days > 0 && (
-                <div className="bg-white/20 rounded px-1.5 py-0.5 md:px-2 md:py-1">
-                  <span className="font-mono font-bold text-xs md:text-sm">{pad(countdown.days)}</span>
-                  <span className="text-[8px] md:text-[10px] ml-0.5 opacity-80">d</span>
-                </div>
-              )}
-              <div className="bg-white/20 rounded px-1.5 py-0.5 md:px-2 md:py-1">
-                <span className="font-mono font-bold text-xs md:text-sm">{pad(countdown.hours)}</span>
-                <span className="text-[8px] md:text-[10px] ml-0.5 opacity-80">h</span>
+            {countdown.days > 0 && (
+              <div className="bg-white/20 rounded px-2 py-1">
+                <span className="font-mono font-bold text-sm">{pad(countdown.days)}</span>
+                <span className="text-[10px] ml-0.5 opacity-80">d</span>
               </div>
-              <div className="bg-white/20 rounded px-1.5 py-0.5 md:px-2 md:py-1">
-                <span className="font-mono font-bold text-xs md:text-sm">{pad(countdown.minutes)}</span>
-                <span className="text-[8px] md:text-[10px] ml-0.5 opacity-80">m</span>
-              </div>
-              <div className="bg-white/20 rounded px-1.5 py-0.5 md:px-2 md:py-1">
-                <span className="font-mono font-bold text-xs md:text-sm">{pad(countdown.seconds)}</span>
-                <span className="text-[8px] md:text-[10px] ml-0.5 opacity-80">s</span>
-              </div>
+            )}
+            <div className="bg-white/20 rounded px-2 py-1">
+              <span className="font-mono font-bold text-sm">{pad(countdown.hours)}</span>
+              <span className="text-[10px] ml-0.5 opacity-80">h</span>
+            </div>
+            <div className="bg-white/20 rounded px-2 py-1">
+              <span className="font-mono font-bold text-sm">{pad(countdown.minutes)}</span>
+              <span className="text-[10px] ml-0.5 opacity-80">m</span>
+            </div>
+            <div className="bg-white/20 rounded px-2 py-1">
+              <span className="font-mono font-bold text-sm">{pad(countdown.seconds)}</span>
+              <span className="text-[10px] ml-0.5 opacity-80">s</span>
             </div>
           </div>
         </div>
@@ -85,10 +83,51 @@ const PromoNatalBanner = () => {
         {/* Close button */}
         <button 
           onClick={() => setDismissed(true)}
-          className="absolute right-1 md:right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
           aria-label="Fechar banner"
         >
-          <X className="h-3 w-3 md:h-4 md:w-4" />
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Mobile/Tablet layout - two lines */}
+      <div className="relative flex md:hidden flex-col items-center gap-0.5">
+        <span className="font-bold text-[11px] sm:text-xs text-center leading-tight">
+          🎄🔥 Promoção de Fim de Ano: {discountPercent}% OFF! 🔥🎄
+        </span>
+        
+        {/* Countdown */}
+        <div className="flex items-center gap-0.5">
+          <span className="text-[9px] opacity-80">Termina em:</span>
+          <div className="flex items-center gap-0.5">
+            {countdown.days > 0 && (
+              <div className="bg-white/20 rounded px-1 py-0.5">
+                <span className="font-mono font-bold text-[10px]">{pad(countdown.days)}</span>
+                <span className="text-[7px] ml-0.5 opacity-80">d</span>
+              </div>
+            )}
+            <div className="bg-white/20 rounded px-1 py-0.5">
+              <span className="font-mono font-bold text-[10px]">{pad(countdown.hours)}</span>
+              <span className="text-[7px] ml-0.5 opacity-80">h</span>
+            </div>
+            <div className="bg-white/20 rounded px-1 py-0.5">
+              <span className="font-mono font-bold text-[10px]">{pad(countdown.minutes)}</span>
+              <span className="text-[7px] ml-0.5 opacity-80">m</span>
+            </div>
+            <div className="bg-white/20 rounded px-1 py-0.5">
+              <span className="font-mono font-bold text-[10px]">{pad(countdown.seconds)}</span>
+              <span className="text-[7px] ml-0.5 opacity-80">s</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Close button */}
+        <button 
+          onClick={() => setDismissed(true)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
+          aria-label="Fechar banner"
+        >
+          <X className="h-3 w-3" />
         </button>
       </div>
     </div>
