@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   Upload, CheckCircle, Settings, Users, 
-  Handshake, Tag, Package, Image, Inbox, Clock
+  Tag, Package, Image, Inbox, Clock
 } from "lucide-react";
 
 const ArtesMusicosFerramentas = () => {
@@ -69,10 +69,10 @@ const ArtesMusicosFerramentas = () => {
             </div>
           </Card>
 
-          <Card className="p-3 sm:p-8 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-violet-500/20 text-violet-600 border-violet-500/30 text-[10px] sm:text-xs">
-              Em breve
-            </Badge>
+          <Card 
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-violet-500/50"
+            onClick={() => navigate("/admin-artes-musicos/review")}
+          >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-green-500 rounded-full">
                 <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
@@ -118,19 +118,6 @@ const ArtesMusicosFerramentas = () => {
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Clientes</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie clientes e acessos</p>
-            </div>
-          </Card>
-
-          <Card className="p-3 sm:p-8 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-violet-500/20 text-violet-600 border-violet-500/30 text-[10px] sm:text-xs">
-              Em breve
-            </Badge>
-            <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-              <div className="p-2 sm:p-4 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full">
-                <Handshake className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
-              </div>
-              <h2 className="text-xs sm:text-2xl font-bold text-foreground">Parceiros</h2>
-              <p className="text-muted-foreground hidden sm:block">Cadastre e gerencie parceiros</p>
             </div>
           </Card>
 
