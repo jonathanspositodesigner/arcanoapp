@@ -232,18 +232,18 @@ const PromosNatal = () => {
   const accessOptions = getAccessOptions();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-red-50 p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-white p-4 relative overflow-hidden">
       {/* Animated background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-red-200/40 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-40 h-40 bg-rose-200/40 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-40 left-1/4 w-36 h-36 bg-red-100/50 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-20 left-10 w-32 h-32 bg-red-300/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-40 h-40 bg-rose-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-40 left-1/4 w-36 h-36 bg-red-200/40 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
         <Button
           variant="ghost"
-          className="text-gray-600 hover:text-gray-900 mb-6"
+          className="text-gray-700 hover:text-gray-900 hover:bg-white/50 mb-6"
           onClick={() => navigate("/biblioteca-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -267,15 +267,15 @@ const PromosNatal = () => {
                 { value: countdown.minutes, label: 'MIN' },
                 { value: countdown.seconds, label: 'SEG' }
               ].map((item, i) => (
-                <div key={i} className="bg-white/80 border border-red-200 rounded-lg px-4 py-2 min-w-[70px] shadow-sm">
-                  <div className="text-2xl font-bold text-red-600">{String(item.value).padStart(2, '0')}</div>
-                  <div className="text-[10px] text-red-400 font-medium">{item.label}</div>
+                <div key={i} className="bg-white border-2 border-red-200 rounded-lg px-4 py-2 min-w-[70px] shadow-sm">
+                  <div className="text-2xl font-bold text-red-700">{String(item.value).padStart(2, '0')}</div>
+                  <div className="text-[10px] text-red-500 font-semibold">{item.label}</div>
                 </div>
               ))}
             </div>
           )}
 
-          <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-xl px-6 py-2 mb-4 shadow-md">
+          <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-xl px-6 py-2 mb-4 shadow-lg">
             <Percent className="h-5 w-5 mr-2" />
             {discountPercent}% OFF EM TODOS OS PACKS!
           </Badge>
@@ -286,13 +286,13 @@ const PromosNatal = () => {
             </Badge>
           )}
 
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 mt-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 mt-4">
             {selectedPack 
               ? `${discountPercent}% OFF no ${selectedPack.name}` 
               : "Escolha seu Pack com 50% OFF"
             }
           </h1>
-          <p className="text-gray-500 max-w-2xl mx-auto">
+          <p className="text-gray-600 max-w-2xl mx-auto">
             Aproveite esta oferta especial de fim de ano! Preços exclusivos por tempo limitado.
           </p>
         </div>
@@ -301,15 +301,15 @@ const PromosNatal = () => {
           <div className="space-y-8">
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Packs de Artes</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Packs de Artes</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {packItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-white/80 border-red-100 cursor-pointer hover:ring-2 hover:ring-red-400 hover:shadow-lg transition-all relative overflow-hidden group shadow-sm"
+                      className="bg-white border-2 border-red-100 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
-                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-3 py-1 rounded-full z-10 font-bold shadow-md">
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-3 py-1 rounded-full z-10 font-bold shadow-lg">
                         -{discountPercent}%
                       </div>
                       <CardContent className="p-4">
@@ -320,11 +320,11 @@ const PromosNatal = () => {
                             className="w-full aspect-square object-cover rounded-lg mb-3 group-hover:scale-105 transition-transform"
                           />
                         ) : (
-                          <div className="w-full aspect-square bg-red-50 rounded-lg mb-3 flex items-center justify-center">
-                            <Gift className="h-8 w-8 text-red-400" />
+                          <div className="w-full aspect-square bg-red-100 rounded-lg mb-3 flex items-center justify-center">
+                            <Gift className="h-8 w-8 text-red-500" />
                           </div>
                         )}
-                        <h3 className="text-gray-800 font-medium text-center">{pack.name}</h3>
+                        <h3 className="text-gray-900 font-semibold text-center">{pack.name}</h3>
                       </CardContent>
                     </Card>
                   ))}
@@ -334,15 +334,15 @@ const PromosNatal = () => {
 
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Cursos</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Cursos</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-white/80 border-red-100 cursor-pointer hover:ring-2 hover:ring-red-400 hover:shadow-lg transition-all relative overflow-hidden group shadow-sm"
+                      className="bg-white border-2 border-red-100 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
-                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-3 py-1 rounded-full z-10 font-bold shadow-md">
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-3 py-1 rounded-full z-10 font-bold shadow-lg">
                         -{discountPercent}%
                       </div>
                       <CardContent className="p-4">
@@ -353,11 +353,11 @@ const PromosNatal = () => {
                             className="w-full aspect-square object-cover rounded-lg mb-3 group-hover:scale-105 transition-transform"
                           />
                         ) : (
-                          <div className="w-full aspect-square bg-red-50 rounded-lg mb-3 flex items-center justify-center">
-                            <Star className="h-8 w-8 text-red-400" />
+                          <div className="w-full aspect-square bg-red-100 rounded-lg mb-3 flex items-center justify-center">
+                            <Star className="h-8 w-8 text-red-500" />
                           </div>
                         )}
-                        <h3 className="text-gray-800 font-medium text-center">{pack.name}</h3>
+                        <h3 className="text-gray-900 font-semibold text-center">{pack.name}</h3>
                       </CardContent>
                     </Card>
                   ))}
@@ -393,36 +393,36 @@ const PromosNatal = () => {
                 return (
                   <Card
                     key={option.type}
-                    className={`relative bg-white/90 border-red-100 shadow-sm ${
-                      option.highlighted ? "ring-2 ring-red-400 scale-105 shadow-lg" : ""
+                    className={`relative bg-white border-2 border-red-100 shadow-md ${
+                      option.highlighted ? "ring-2 ring-red-500 scale-105 shadow-xl border-red-300" : ""
                     }`}
                   >
                     {option.highlighted && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap shadow-md">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap shadow-lg">
                         🔥 Melhor Oferta!
                       </div>
                     )}
                     {option.hasBonus && (
-                      <div className="absolute top-3 right-3 bg-amber-100 text-amber-600 px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1">
+                      <div className="absolute top-3 right-3 bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 border border-amber-200">
                         <Gift className="h-3 w-3" />
                         + Bônus
                       </div>
                     )}
                     <CardHeader className="text-center pt-8">
-                      <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3">
-                        <IconComponent className="h-6 w-6 text-red-500" />
+                      <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3 border border-red-200">
+                        <IconComponent className="h-6 w-6 text-red-600" />
                       </div>
-                      <CardTitle className="text-lg text-gray-800">{option.label}</CardTitle>
+                      <CardTitle className="text-lg text-gray-900 font-bold">{option.label}</CardTitle>
                       <div className="mt-4">
                         <div className="flex items-center justify-center gap-2 mb-1">
-                          <span className="text-gray-400 line-through text-lg">
+                          <span className="text-gray-500 line-through text-lg">
                             {formatOriginalPrice(option.type)}
                           </span>
-                          <Badge className="bg-red-500 text-white text-xs">
+                          <Badge className="bg-red-600 text-white text-xs font-bold">
                             -{isRenewal ? '30' : discountPercent}%
                           </Badge>
                         </div>
-                        <span className="text-3xl font-bold text-red-600">
+                        <span className="text-3xl font-bold text-green-600">
                           {formatPrice(calculatePrice(option.type))}
                         </span>
                       </div>
@@ -430,8 +430,8 @@ const PromosNatal = () => {
                     <CardContent className="space-y-4">
                       <ul className="space-y-2">
                         {option.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
-                            <Check className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                          <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
+                            <Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                             {feature}
                           </li>
                         ))}
