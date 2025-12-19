@@ -49,6 +49,13 @@ const formatTitle = (title: string): string => {
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/webm", "video/quicktime"];
 
+const TUTORIAL_TEMPLATES = [
+  {
+    name: "Tutorial de criar movie pra telão",
+    url: '<iframe width="1250" height="703" src="https://www.youtube.com/embed/jbc00r7nX1U" title="COMO FAZER MOVIE PARA TELÃO" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
+  },
+];
+
 const AdminManageArtesMusicos = () => {
   const navigate = useNavigate();
   const [artes, setArtes] = useState<Arte[]>([]);
@@ -573,9 +580,24 @@ const AdminManageArtesMusicos = () => {
               </div>
 
               {editHasTutorial && (
-                <div>
+                <div className="space-y-3">
                   <Label>URL do Tutorial (YouTube)</Label>
-                  <Input value={editTutorialUrl} onChange={(e) => setEditTutorialUrl(e.target.value)} className="mt-1" placeholder="https://youtube.com/..." />
+                  <div className="flex flex-wrap gap-2">
+                    <p className="text-sm text-muted-foreground w-full">Sugestões:</p>
+                    {TUTORIAL_TEMPLATES.map((template) => (
+                      <Button
+                        key={template.name}
+                        type="button"
+                        variant={editTutorialUrl === template.url ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setEditTutorialUrl(template.url)}
+                        className="text-xs"
+                      >
+                        {template.name}
+                      </Button>
+                    ))}
+                  </div>
+                  <Input value={editTutorialUrl} onChange={(e) => setEditTutorialUrl(e.target.value)} className="mt-1" placeholder="Ou cole a URL do tutorial manualmente..." />
                 </div>
               )}
 
