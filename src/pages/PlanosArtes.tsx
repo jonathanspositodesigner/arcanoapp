@@ -349,7 +349,7 @@ const PlanosArtes = () => {
                       onClick={() => setSelectedPack(pack)}
                     >
                       {pack.notification_discount_enabled && isNotificationEligible && (
-                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
+                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
                           <Bell className="h-3 w-3" />
                           {pack.notification_discount_percent || 20}% OFF
                         </div>
@@ -386,7 +386,7 @@ const PlanosArtes = () => {
                       onClick={() => setSelectedPack(pack)}
                     >
                       {pack.notification_discount_enabled && isNotificationEligible && (
-                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
+                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
                           <Bell className="h-3 w-3" />
                           {pack.notification_discount_percent || 20}% OFF
                         </div>

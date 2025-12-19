@@ -232,7 +232,7 @@ const PromosNatal = () => {
   const accessOptions = getAccessOptions();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-white p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-white p-2 sm:p-4 relative overflow-hidden">
       {/* Animated background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 bg-red-300/30 rounded-full blur-3xl animate-pulse"></div>
@@ -251,27 +251,28 @@ const PromosNatal = () => {
         </Button>
 
         {/* Promo Banner */}
-        <div className="text-center mb-8">
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-6 py-3 rounded-full text-lg font-bold shadow-lg shadow-red-200 whitespace-nowrap">
-              <Sparkles className="h-5 w-5" />
-              {promoName}
-              <Sparkles className="h-5 w-5" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+            <div className="inline-flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-lg font-bold shadow-lg shadow-red-200">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="hidden sm:inline">{promoName}</span>
+              <span className="sm:hidden">Promoção de Fim de Ano!</span>
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
 
-            <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-xl px-6 py-2 shadow-lg whitespace-nowrap">
-              <Percent className="h-5 w-5 mr-2" />
-              {discountPercent}% OFF EM TODOS OS PACKS!
+            <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-base sm:text-xl px-3 sm:px-6 py-1.5 sm:py-2 shadow-lg">
+              <Percent className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+              {discountPercent}% OFF<span className="hidden sm:inline"> EM TODOS OS PACKS!</span>
             </Badge>
 
             {isRenewal && (
-              <Badge className="bg-gradient-to-r from-red-700 to-red-600 text-white text-lg px-4 py-2 shadow-lg whitespace-nowrap">
+              <Badge className="bg-gradient-to-r from-red-700 to-red-600 text-white text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 shadow-lg">
                 + 30% OFF Renovação
               </Badge>
             )}
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 mt-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 mt-2 sm:mt-4 px-2">
             {selectedPack 
               ? `${discountPercent}% OFF no ${selectedPack.name}` 
               : "Escolha seu Pack com 50% OFF"
@@ -286,8 +287,8 @@ const PromosNatal = () => {
           <div className="space-y-8">
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Packs de Artes</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Packs de Artes</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
                   {packItems.map((pack) => (
                     <Card
                       key={pack.id}
@@ -319,8 +320,8 @@ const PromosNatal = () => {
 
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Cursos</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Cursos</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
