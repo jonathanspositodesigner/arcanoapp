@@ -236,8 +236,8 @@ const PromosNatal = () => {
       {/* Animated background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-40 h-40 bg-green-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-40 left-1/4 w-36 h-36 bg-yellow-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-40 right-20 w-40 h-40 bg-red-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-40 left-1/4 w-36 h-36 bg-red-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
@@ -275,13 +275,13 @@ const PromosNatal = () => {
             </div>
           )}
 
-          <Badge className="bg-gradient-to-r from-red-500 to-green-500 text-white text-xl px-6 py-2 mb-4">
+          <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-xl px-6 py-2 mb-4">
             <Percent className="h-5 w-5 mr-2" />
             {discountPercent}% OFF EM TODOS OS PACKS!
           </Badge>
 
           {isRenewal && (
-            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg px-4 py-2 ml-2">
+            <Badge className="bg-gradient-to-r from-red-700 to-red-600 text-white text-lg px-4 py-2 ml-2">
               + 30% OFF Renovação
             </Badge>
           )}
@@ -309,7 +309,7 @@ const PromosNatal = () => {
                       className="bg-black/40 border-red-500/30 cursor-pointer hover:ring-2 hover:ring-red-500 transition-all relative overflow-hidden group"
                       onClick={() => setSelectedPack(pack)}
                     >
-                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-green-500 text-white text-xs px-3 py-1 rounded-full z-10 font-bold">
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-3 py-1 rounded-full z-10 font-bold">
                         -{discountPercent}%
                       </div>
                       <CardContent className="p-4">
@@ -339,10 +339,10 @@ const PromosNatal = () => {
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-black/40 border-green-500/30 cursor-pointer hover:ring-2 hover:ring-green-500 transition-all relative overflow-hidden group"
+                      className="bg-black/40 border-red-500/30 cursor-pointer hover:ring-2 hover:ring-red-500 transition-all relative overflow-hidden group"
                       onClick={() => setSelectedPack(pack)}
                     >
-                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-3 py-1 rounded-full z-10 font-bold">
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-3 py-1 rounded-full z-10 font-bold">
                         -{discountPercent}%
                       </div>
                       <CardContent className="p-4">
@@ -353,8 +353,8 @@ const PromosNatal = () => {
                             className="w-full aspect-square object-cover rounded-lg mb-3 group-hover:scale-105 transition-transform"
                           />
                         ) : (
-                          <div className="w-full aspect-square bg-green-500/20 rounded-lg mb-3 flex items-center justify-center">
-                            <Star className="h-8 w-8 text-green-500" />
+                          <div className="w-full aspect-square bg-red-500/20 rounded-lg mb-3 flex items-center justify-center">
+                            <Star className="h-8 w-8 text-red-500" />
                           </div>
                         )}
                         <h3 className="text-white font-medium text-center">{pack.name}</h3>
@@ -398,8 +398,8 @@ const PromosNatal = () => {
                     }`}
                   >
                     {option.highlighted && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-500 to-green-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
-                        🎄 Melhor Oferta!
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+                        🔥 Melhor Oferta!
                       </div>
                     )}
                     {option.hasBonus && (
@@ -422,7 +422,7 @@ const PromosNatal = () => {
                             -{isRenewal ? '30' : discountPercent}%
                           </Badge>
                         </div>
-                        <span className="text-3xl font-bold text-green-400">
+                        <span className="text-3xl font-bold text-red-400">
                           {formatPrice(calculatePrice(option.type))}
                         </span>
                       </div>
