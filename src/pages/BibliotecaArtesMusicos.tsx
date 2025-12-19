@@ -32,6 +32,7 @@ interface Arte {
   drive_link: string | null;
   is_ai_generated: boolean | null;
   ai_prompt: string | null;
+  ai_reference_image_url: string | null;
 }
 
 const aiTools = [
@@ -81,7 +82,7 @@ const BibliotecaArtesMusicos = () => {
       setLoadingArtes(true);
       const { data, error } = await supabase
         .from('admin_artes')
-        .select('id, title, image_url, category, is_premium, canva_link, drive_link, is_ai_generated, ai_prompt')
+        .select('id, title, image_url, category, is_premium, canva_link, drive_link, is_ai_generated, ai_prompt, ai_reference_image_url')
         .eq('platform', 'musicos')
         .order('created_at', { ascending: false });
       
@@ -617,6 +618,26 @@ const BibliotecaArtesMusicos = () => {
                   <div className="p-3 bg-white/5 rounded-lg border border-white/10">
                     <p className="text-xs text-gray-400 mb-1">Prompt utilizado:</p>
                     <p className="text-sm text-gray-200">{selectedArte.ai_prompt}</p>
+                  </div>
+                )}
+
+                {/* AI Reference Image */}
+                {selectedArte.is_ai_generated && selectedArte.ai_reference_image_url && (
+                  <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                    <p className="text-xs text-purple-300 mb-2">Imagem de Referência:</p>
+                    <img 
+                      src={selectedArte.ai_reference_image_url} 
+                      alt="Referência para IA"
+                      className="w-full max-h-40 object-contain rounded-lg mb-2 bg-black/20" 
+                    />
+                    <Button
+                      onClick={() => window.open(selectedArte.ai_reference_image_url!, '_blank')}
+                      className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                      size="sm"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Baixar Imagem de Referência
+                    </Button>
                   </div>
                 )}
 

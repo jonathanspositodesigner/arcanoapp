@@ -145,6 +145,7 @@ export type Database = {
       admin_artes: {
         Row: {
           ai_prompt: string | null
+          ai_reference_image_url: string | null
           bonus_clicks: number
           canva_link: string | null
           category: string
@@ -164,6 +165,7 @@ export type Database = {
         }
         Insert: {
           ai_prompt?: string | null
+          ai_reference_image_url?: string | null
           bonus_clicks?: number
           canva_link?: string | null
           category: string
@@ -183,6 +185,7 @@ export type Database = {
         }
         Update: {
           ai_prompt?: string | null
+          ai_reference_image_url?: string | null
           bonus_clicks?: number
           canva_link?: string | null
           category?: string

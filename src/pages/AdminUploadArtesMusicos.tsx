@@ -39,6 +39,8 @@ interface MediaData {
   tutorialUrl: string;
   isAiGenerated: boolean;
   aiPrompt: string;
+  aiReferenceImage: File | null;
+  aiReferenceImagePreview: string;
   canvaLink: string;
   driveLink: string;
 }
@@ -155,6 +157,8 @@ const AdminUploadArtesMusicos = () => {
           tutorialUrl: "",
           isAiGenerated: false,
           aiPrompt: "",
+          aiReferenceImage: null,
+          aiReferenceImagePreview: "",
           canvaLink: "",
           driveLink: ""
         });
@@ -172,10 +176,24 @@ const AdminUploadArtesMusicos = () => {
     setMediaFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateMediaData = (field: keyof MediaData, value: string | boolean) => {
+  const updateMediaData = (field: keyof MediaData, value: string | boolean | File | null) => {
     setMediaFiles(prev => prev.map((media, idx) => 
       idx === currentIndex ? { ...media, [field]: value } : media
     ));
+  };
+
+  const handleAiReferenceImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        toast.error("Apenas imagens são permitidas para referência");
+        return;
+      }
+      updateMediaData('aiReferenceImage', file);
+      const reader = new FileReader();
+      reader.onloadend = () => updateMediaData('aiReferenceImagePreview', reader.result as string);
+      reader.readAsDataURL(file);
+    }
   };
 
   const goToNext = () => {
@@ -228,6 +246,15 @@ const AdminUploadArtesMusicos = () => {
       
       const publicUrl = uploadResult.url;
 
+      // Upload AI reference image if exists
+      let aiReferenceImageUrl = null;
+      if (media.isAiGenerated && media.aiReferenceImage) {
+        const refUploadResult = await uploadToCloudinary(media.aiReferenceImage, 'ai-reference-images-musicos');
+        if (refUploadResult.success && refUploadResult.url) {
+          aiReferenceImageUrl = refUploadResult.url;
+        }
+      }
+
       const { error: insertError } = await supabase.from('admin_artes').insert({
         title: media.title.charAt(0).toUpperCase() + media.title.slice(1).toLowerCase(),
         description: media.description || null,
@@ -241,7 +268,8 @@ const AdminUploadArtesMusicos = () => {
         drive_link: media.driveLink || null,
         platform: 'musicos',
         is_ai_generated: media.isAiGenerated,
-        ai_prompt: media.isAiGenerated ? media.aiPrompt : null
+        ai_prompt: media.isAiGenerated ? media.aiPrompt : null,
+        ai_reference_image_url: aiReferenceImageUrl
       });
       
       if (insertError) throw insertError;
@@ -288,6 +316,15 @@ const AdminUploadArtesMusicos = () => {
         
         const publicUrl = uploadResult.url;
 
+        // Upload AI reference image if exists
+        let aiReferenceImageUrl = null;
+        if (media.isAiGenerated && media.aiReferenceImage) {
+          const refUploadResult = await uploadToCloudinary(media.aiReferenceImage, 'ai-reference-images-musicos');
+          if (refUploadResult.success && refUploadResult.url) {
+            aiReferenceImageUrl = refUploadResult.url;
+          }
+        }
+
         const { error: insertError } = await supabase.from('admin_artes').insert({
           title: media.title.charAt(0).toUpperCase() + media.title.slice(1).toLowerCase(),
           description: media.description || null,
@@ -301,7 +338,8 @@ const AdminUploadArtesMusicos = () => {
           drive_link: media.driveLink || null,
           platform: 'musicos',
           is_ai_generated: media.isAiGenerated,
-          ai_prompt: media.isAiGenerated ? media.aiPrompt : null
+          ai_prompt: media.isAiGenerated ? media.aiPrompt : null,
+          ai_reference_image_url: aiReferenceImageUrl
         });
         
         if (insertError) throw insertError;
@@ -592,15 +630,48 @@ const AdminUploadArtesMusicos = () => {
                   />
                 </div>
                 {currentMedia.isAiGenerated && (
-                  <div className="space-y-2">
-                    <Label htmlFor="aiPrompt">Prompt utilizado *</Label>
-                    <Textarea
-                      id="aiPrompt"
-                      value={currentMedia.aiPrompt}
-                      onChange={(e) => updateMediaData('aiPrompt', e.target.value)}
-                      placeholder="Digite o prompt usado para gerar esta arte..."
-                      rows={3}
-                    />
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="aiPrompt">Prompt utilizado *</Label>
+                      <Textarea
+                        id="aiPrompt"
+                        value={currentMedia.aiPrompt}
+                        onChange={(e) => updateMediaData('aiPrompt', e.target.value)}
+                        placeholder="Digite o prompt usado para gerar esta arte..."
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Imagem de Referência (para o usuário baixar)</Label>
+                      {currentMedia.aiReferenceImagePreview && (
+                        <div className="relative">
+                          <img 
+                            src={currentMedia.aiReferenceImagePreview} 
+                            alt="Referência" 
+                            className="w-full max-h-32 object-contain rounded-lg bg-muted/50"
+                          />
+                          <button
+                            onClick={() => {
+                              updateMediaData('aiReferenceImage', null);
+                              updateMediaData('aiReferenceImagePreview', '');
+                            }}
+                            className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAiReferenceImageChange}
+                        className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-500 file:text-white hover:file:bg-violet-400"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Esta imagem será disponibilizada para os usuários baixarem junto com o prompt
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
