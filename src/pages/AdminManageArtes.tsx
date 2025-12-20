@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search, Upload, Copy, CalendarDays, Plus } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Upload, Copy, CalendarDays, Plus, AlertTriangle, RefreshCw, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
@@ -77,6 +77,11 @@ const AdminManageArtes = () => {
   const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
   const [categories, setCategories] = useState<Category[]>([]);
   const [packs, setPacks] = useState<Pack[]>([]);
+  
+  // Broken artes filter state
+  const [brokenFilter, setBrokenFilter] = useState(false);
+  const [brokenIds, setBrokenIds] = useState<Set<string>>(new Set());
+  const [isCheckingBroken, setIsCheckingBroken] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -155,15 +160,80 @@ const AdminManageArtes = () => {
     }
   };
 
+  const extractFileNameFromUrl = (url: string): { bucket: string; path: string } | null => {
+    try {
+      // Handle URLs like: https://xxx.supabase.co/storage/v1/object/public/bucket-name/folder/file.ext
+      const match = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
+      if (match) {
+        return { bucket: match[1], path: match[2] };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const checkBrokenArtes = async () => {
+    setIsCheckingBroken(true);
+    try {
+      const brokenSet = new Set<string>();
+      
+      // Get all files from admin-artes bucket
+      const { data: adminFiles } = await supabase.storage.from('admin-artes').list('', { limit: 10000 });
+      const adminFileNames = new Set((adminFiles || []).map(f => f.name));
+      
+      // Get all files from artes-cloudinary bucket (admin_artes folder)
+      const { data: cloudinaryFiles } = await supabase.storage.from('artes-cloudinary').list('admin_artes', { limit: 10000 });
+      const cloudinaryFileNames = new Set((cloudinaryFiles || []).map(f => `admin_artes/${f.name}`));
+      
+      // Get all files from partner-artes bucket
+      const { data: partnerFiles } = await supabase.storage.from('partner-artes').list('', { limit: 10000 });
+      const partnerFileNames = new Set((partnerFiles || []).map(f => f.name));
+      
+      // Check each arte
+      for (const arte of artes) {
+        const fileInfo = extractFileNameFromUrl(arte.image_url);
+        if (!fileInfo) {
+          brokenSet.add(arte.id);
+          continue;
+        }
+        
+        let exists = false;
+        if (fileInfo.bucket === 'admin-artes') {
+          exists = adminFileNames.has(fileInfo.path);
+        } else if (fileInfo.bucket === 'artes-cloudinary') {
+          exists = cloudinaryFileNames.has(fileInfo.path);
+        } else if (fileInfo.bucket === 'partner-artes') {
+          exists = partnerFileNames.has(fileInfo.path);
+        }
+        
+        if (!exists) {
+          brokenSet.add(arte.id);
+        }
+      }
+      
+      setBrokenIds(brokenSet);
+      toast.success(`Verificação concluída: ${brokenSet.size} arte(s) quebrada(s) encontrada(s)`);
+    } catch (error) {
+      console.error("Error checking broken artes:", error);
+      toast.error("Erro ao verificar artes quebradas");
+    } finally {
+      setIsCheckingBroken(false);
+    }
+  };
+
   const getClickCount = (arte: Arte) => {
     return (clickCounts[arte.id] || 0) + (arte.bonus_clicks || 0);
   };
+
+  const isArteBroken = (arteId: string) => brokenIds.has(arteId);
 
   const filteredAndSortedArtes = artes
     .filter(a => {
       const matchesSearch = a.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = typeFilter === 'all' || a.type === typeFilter;
-      return matchesSearch && matchesType;
+      const matchesBroken = !brokenFilter || brokenIds.has(a.id);
+      return matchesSearch && matchesType && matchesBroken;
     })
     .sort((a, b) => {
       if (sortBy === 'downloads') {
@@ -337,16 +407,30 @@ const AdminManageArtes = () => {
           </p>
           
           <div className="flex flex-wrap gap-2 mb-4">
-            <Button variant={typeFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setTypeFilter('all')}>
+            <Button variant={typeFilter === 'all' && !brokenFilter ? 'default' : 'outline'} size="sm" onClick={() => { setTypeFilter('all'); setBrokenFilter(false); }}>
               Todos
             </Button>
-            <Button variant={typeFilter === 'admin' ? 'default' : 'outline'} size="sm" onClick={() => setTypeFilter('admin')}
-              className={typeFilter === 'admin' ? 'bg-gradient-primary' : ''}>
+            <Button variant={typeFilter === 'admin' && !brokenFilter ? 'default' : 'outline'} size="sm" onClick={() => { setTypeFilter('admin'); setBrokenFilter(false); }}
+              className={typeFilter === 'admin' && !brokenFilter ? 'bg-gradient-primary' : ''}>
               Envios de Administradores
             </Button>
-            <Button variant={typeFilter === 'partner' ? 'default' : 'outline'} size="sm" onClick={() => setTypeFilter('partner')}
-              className={typeFilter === 'partner' ? 'bg-green-500 hover:bg-green-600' : ''}>
+            <Button variant={typeFilter === 'partner' && !brokenFilter ? 'default' : 'outline'} size="sm" onClick={() => { setTypeFilter('partner'); setBrokenFilter(false); }}
+              className={typeFilter === 'partner' && !brokenFilter ? 'bg-green-500 hover:bg-green-600' : ''}>
               Envios de Colaboradores
+            </Button>
+            <Button 
+              variant={brokenFilter ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => { setBrokenFilter(!brokenFilter); setTypeFilter('all'); }}
+              className={brokenFilter ? 'bg-destructive hover:bg-destructive/90' : 'border-destructive text-destructive hover:bg-destructive/10'}
+            >
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              Artes Quebradas
+              {brokenIds.size > 0 && (
+                <Badge variant="secondary" className="ml-2 bg-white text-destructive font-bold">
+                  {brokenIds.size}
+                </Badge>
+              )}
             </Button>
           </div>
 
@@ -359,6 +443,16 @@ const AdminManageArtes = () => {
             <Button variant={sortBy === 'downloads' ? 'default' : 'outline'} size="sm" onClick={() => setSortBy('downloads')}
               className={sortBy === 'downloads' ? 'bg-primary' : ''}>
               <Copy className="h-4 w-4 mr-1" />Mais baixados
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={checkBrokenArtes}
+              disabled={isCheckingBroken}
+              className="ml-auto border-orange-500 text-orange-500 hover:bg-orange-500/10"
+            >
+              <RefreshCw className={`h-4 w-4 mr-1 ${isCheckingBroken ? 'animate-spin' : ''}`} />
+              {isCheckingBroken ? 'Verificando...' : 'Verificar Artes Quebradas'}
             </Button>
           </div>
           
@@ -376,15 +470,26 @@ const AdminManageArtes = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAndSortedArtes.map((arte) => {
             const isVideo = isVideoUrl(arte.image_url);
+            const isBroken = isArteBroken(arte.id);
             return (
-              <Card key={`${arte.type}-${arte.id}`} className="overflow-hidden">
+              <Card key={`${arte.type}-${arte.id}`} className={`overflow-hidden ${isBroken ? 'ring-2 ring-destructive ring-offset-2' : ''}`}>
                 <div className="relative">
-                  {isVideo ? (
+                  {isBroken ? (
+                    <div className="w-full h-48 bg-destructive/10 flex flex-col items-center justify-center gap-2">
+                      <AlertTriangle className="h-12 w-12 text-destructive" />
+                      <span className="text-sm text-destructive font-medium">Imagem não encontrada</span>
+                    </div>
+                  ) : isVideo ? (
                     <SecureVideo src={arte.image_url} className="w-full h-48 object-cover" isPremium={arte.is_premium || false} autoPlay muted loop />
                   ) : (
                     <SecureImage src={arte.image_url} alt={arte.title} className="w-full h-48 object-cover" isPremium={arte.is_premium || false} />
                   )}
                   <div className="absolute top-2 right-2 flex gap-1">
+                    {isBroken && (
+                      <Badge className="bg-destructive text-white border-0">
+                        <AlertTriangle className="h-3 w-3 mr-1" />Quebrada
+                      </Badge>
+                    )}
                     {arte.is_premium && (
                       <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
                         <Star className="h-3 w-3 mr-1" fill="currentColor" />Premium
@@ -407,8 +512,9 @@ const AdminManageArtes = () => {
                   </div>
                   {arte.description && <p className="text-sm text-muted-foreground line-clamp-2">{arte.description}</p>}
                   <div className="flex gap-2 pt-2">
-                    <Button onClick={() => handleEdit(arte)} variant="outline" className="flex-1">
-                      <Pencil className="h-4 w-4 mr-2" />Editar
+                    <Button onClick={() => handleEdit(arte)} variant={isBroken ? "default" : "outline"} className={`flex-1 ${isBroken ? 'bg-orange-500 hover:bg-orange-600' : ''}`}>
+                      {isBroken ? <Upload className="h-4 w-4 mr-2" /> : <Pencil className="h-4 w-4 mr-2" />}
+                      {isBroken ? 'Fazer Upload' : 'Editar'}
                     </Button>
                     <Button onClick={() => handleDelete(arte)} variant="destructive" className="flex-1">
                       <Trash2 className="h-4 w-4 mr-2" />Excluir
@@ -436,9 +542,44 @@ const AdminManageArtes = () => {
           </DialogHeader>
           {editingArte && (
             <div className="space-y-4">
+              {isArteBroken(editingArte.id) && (
+                <div className="p-4 bg-destructive/10 border border-destructive rounded-lg">
+                  <div className="flex items-center gap-2 text-destructive font-medium mb-2">
+                    <AlertTriangle className="h-5 w-5" />
+                    Imagem não encontrada no storage
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Faça upload de uma nova imagem para corrigir esta arte.
+                  </p>
+                  {(editingArte.canva_link || editingArte.drive_link) && (
+                    <div className="flex flex-wrap gap-2">
+                      {editingArte.canva_link && (
+                        <a href={editingArte.canva_link} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" size="sm" className="border-blue-500 text-blue-500">
+                            <ExternalLink className="h-4 w-4 mr-1" />Abrir no Canva
+                          </Button>
+                        </a>
+                      )}
+                      {editingArte.drive_link && (
+                        <a href={editingArte.drive_link} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" size="sm" className="border-green-500 text-green-500">
+                            <ExternalLink className="h-4 w-4 mr-1" />Abrir no Drive
+                          </Button>
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <div className="flex justify-center">
                 {newMediaPreview ? (
                   <img src={newMediaPreview} alt="Preview" className="max-h-48 object-contain rounded-lg" />
+                ) : isArteBroken(editingArte.id) ? (
+                  <div className="w-full h-48 bg-muted rounded-lg flex flex-col items-center justify-center gap-2">
+                    <Upload className="h-12 w-12 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Faça upload de uma nova imagem</span>
+                  </div>
                 ) : isVideoUrl(editingArte.image_url) ? (
                   <SecureVideo src={editingArte.image_url} className="max-h-48 object-contain rounded-lg" isPremium={editingArte.is_premium || false} controls />
                 ) : (
@@ -446,10 +587,12 @@ const AdminManageArtes = () => {
                 )}
               </div>
               
-              <div>
-                <Label>Substituir Mídia</Label>
+              <div className={isArteBroken(editingArte.id) ? 'p-3 bg-orange-500/10 border-2 border-dashed border-orange-500 rounded-lg' : ''}>
+                <Label className={isArteBroken(editingArte.id) ? 'text-orange-500 font-medium' : ''}>
+                  {isArteBroken(editingArte.id) ? '⚠️ Upload Nova Imagem (Obrigatório)' : 'Substituir Mídia'}
+                </Label>
                 <input type="file" accept="image/*,video/*" onChange={handleNewMediaChange}
-                  className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80" />
+                  className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80 mt-2" />
               </div>
 
               <div>
