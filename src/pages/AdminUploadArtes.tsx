@@ -15,6 +15,7 @@ import { z } from "zod";
 import { AnnouncementConfigModal } from "@/components/AnnouncementConfigModal";
 import { AnnouncementPreviewModal } from "@/components/AnnouncementPreviewModal";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
+import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -151,7 +152,7 @@ const AdminUploadArtes = () => {
     }
     processFiles(files);
   };
-  const processFiles = (files: File[]) => {
+  const processFiles = async (files: File[]) => {
     const validFiles: File[] = [];
     for (const file of files) {
       const validationError = validateFile(file);
@@ -162,35 +163,45 @@ const AdminUploadArtes = () => {
       validFiles.push(file);
     }
     if (validFiles.length === 0) return;
+    
     const newMedia: MediaData[] = [];
-    validFiles.forEach(file => {
+    for (const file of validFiles) {
       const isVideo = file.type.startsWith('video/');
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newMedia.push({
-          file,
-          preview: reader.result as string,
-          title: "",
-          description: "",
-          category: "",
-          pack: "",
-          isVideo,
-          isPremium: false,
-          hasTutorial: false,
-          tutorialUrl: "",
-          downloadFile: null,
-          downloadPreview: "",
-          canvaLink: "",
-          driveLink: ""
-        });
-        if (newMedia.length === validFiles.length) {
-          setMediaFiles(prev => [...prev, ...newMedia]);
-          setShowModal(true);
-          setCurrentIndex(0);
+      
+      // Optimize images before adding
+      let processedFile = file;
+      if (isImageFile(file)) {
+        const result = await optimizeImage(file);
+        processedFile = result.file;
+        if (result.savingsPercent > 0) {
+          console.log(`Optimized ${file.name}: ${formatBytes(result.originalSize)} → ${formatBytes(result.optimizedSize)} (${result.savingsPercent}% saved)`);
         }
-      };
-      reader.readAsDataURL(file);
-    });
+      }
+      
+      newMedia.push({
+        file: processedFile,
+        preview: URL.createObjectURL(processedFile),
+        title: "",
+        description: "",
+        category: "",
+        pack: "",
+        isVideo,
+        isPremium: false,
+        hasTutorial: false,
+        tutorialUrl: "",
+        downloadFile: null,
+        downloadPreview: "",
+        canvaLink: "",
+        driveLink: ""
+      });
+    }
+    
+    if (newMedia.length > 0) {
+      toast.success(`${newMedia.length} arquivo(s) otimizado(s) e adicionado(s)`);
+      setMediaFiles(prev => [...prev, ...newMedia]);
+      setShowModal(true);
+      setCurrentIndex(0);
+    }
   };
   const handleDownloadFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

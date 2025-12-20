@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
 
 // Format title: first letter uppercase, rest lowercase
 const formatTitle = (title: string): string => {
@@ -65,7 +66,7 @@ const ContributePrompts = () => {
     fetchCategories();
   }, []);
 
-  const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const validationError = validateFile(file);
@@ -73,13 +74,27 @@ const ContributePrompts = () => {
         toast.error(validationError);
         return;
       }
-      setMediaFile(file);
-      setIsVideo(file.type.startsWith('video/'));
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setMediaPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      
+      const isVideoFile = file.type.startsWith('video/');
+      setIsVideo(isVideoFile);
+      
+      // Optimize images before setting
+      if (isImageFile(file)) {
+        toast.info("Otimizando imagem...");
+        const result = await optimizeImage(file);
+        setMediaFile(result.file);
+        setMediaPreview(URL.createObjectURL(result.file));
+        if (result.savingsPercent > 0) {
+          toast.success(`Imagem otimizada: ${formatBytes(result.originalSize)} → ${formatBytes(result.optimizedSize)} (${result.savingsPercent}% economizado)`);
+        }
+      } else {
+        setMediaFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setMediaPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
