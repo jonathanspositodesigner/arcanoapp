@@ -33,10 +33,11 @@ const isVideoUrl = (url: string) => {
   return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
 
+// IMPORTANT: Do NOT use dynamic transformations on Supabase Storage!
+// They cost $5 per 1000 transformations. Images should already be optimized at upload time.
 const getThumbnailUrl = (url: string) => {
-  if (!url || isVideoUrl(url)) return url;
-  const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}width=400&height=400&resize=cover&format=webp`;
+  // Return URL as-is - no transformations to avoid costs
+  return url;
 };
 
 const AdminCollections = () => {

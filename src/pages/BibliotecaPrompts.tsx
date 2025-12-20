@@ -36,13 +36,10 @@ const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
   return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
-const getThumbnailUrl = (url: string, width: number = 400) => {
-  if (isVideoUrl(url)) return url;
-
-  // Convert Supabase storage URL to render URL for image transformation
-  if (url.includes('supabase.co/storage/v1/object/public/')) {
-    return url.replace('/storage/v1/object/public/', `/storage/v1/render/image/public/`) + `?width=${width}&height=${width}&resize=cover`;
-  }
+// IMPORTANT: Do NOT use dynamic transformations on Supabase Storage!
+// They cost $5 per 1000 transformations. Images should already be optimized at upload time.
+const getThumbnailUrl = (url: string, _width: number = 400) => {
+  // Return URL as-is - no transformations to avoid costs
   return url;
 };
 const ITEMS_PER_PAGE = 16;
