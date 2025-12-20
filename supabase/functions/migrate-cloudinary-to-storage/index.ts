@@ -18,6 +18,7 @@ interface TableConfig {
   bucket: string;
   imageColumn: string;
   downloadColumn?: string;
+  arrayColumn?: string; // For fields like reference_images that are arrays of URLs
 }
 
 Deno.serve(async (req) => {
@@ -43,15 +44,16 @@ Deno.serve(async (req) => {
 
     // Determine bucket and column based on table
     const config: Record<string, TableConfig> = {
-      'admin_prompts': { bucket: 'prompts-cloudinary', imageColumn: 'image_url' },
+      'admin_prompts': { bucket: 'prompts-cloudinary', imageColumn: 'image_url', arrayColumn: 'reference_images' },
       'admin_artes': { bucket: 'artes-cloudinary', imageColumn: 'image_url', downloadColumn: 'download_url' },
       'community_prompts': { bucket: 'prompts-cloudinary', imageColumn: 'image_url' },
       'community_artes': { bucket: 'artes-cloudinary', imageColumn: 'image_url', downloadColumn: 'download_url' },
-      'partner_prompts': { bucket: 'prompts-cloudinary', imageColumn: 'image_url' },
+      'partner_prompts': { bucket: 'prompts-cloudinary', imageColumn: 'image_url', arrayColumn: 'reference_images' },
       'partner_artes': { bucket: 'artes-cloudinary', imageColumn: 'image_url', downloadColumn: 'download_url' },
       'partner_artes_musicos': { bucket: 'artes-cloudinary', imageColumn: 'image_url', downloadColumn: 'download_url' },
       'artes_packs': { bucket: 'artes-cloudinary', imageColumn: 'cover_url' },
       'artes_banners': { bucket: 'artes-cloudinary', imageColumn: 'image_url' },
+      'admin_prompts_reference_images': { bucket: 'prompts-cloudinary', imageColumn: 'reference_images', isArrayOnly: true } as any,
     };
 
     const tableConfig = config[table];
@@ -62,22 +64,53 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Special handling for reference_images migration
+    const isReferenceImagesMigration = table === 'admin_prompts_reference_images';
+    const actualTable = isReferenceImagesMigration ? 'admin_prompts' : table;
+
     // Build select columns
-    const selectColumns = tableConfig.downloadColumn 
+    let selectColumns = tableConfig.downloadColumn 
       ? `id, ${tableConfig.imageColumn}, ${tableConfig.downloadColumn}`
       : `id, ${tableConfig.imageColumn}`;
+    
+    if (tableConfig.arrayColumn) {
+      selectColumns += `, ${tableConfig.arrayColumn}`;
+    }
 
-    // Build filter for Cloudinary URLs - usar domínio específico para não pegar URLs do Supabase Storage
-    const filterCondition = tableConfig.downloadColumn
-      ? `${tableConfig.imageColumn}.ilike.%res.cloudinary.com%,${tableConfig.downloadColumn}.ilike.%res.cloudinary.com%`
-      : `${tableConfig.imageColumn}.ilike.%res.cloudinary.com%`;
+    // Fetch items - for reference_images we need a different approach
+    let items: any[] = [];
+    let fetchError: any = null;
 
-    // Fetch items with Cloudinary URLs
-    const { data: items, error: fetchError } = await supabase
-      .from(table)
-      .select(selectColumns)
-      .or(filterCondition)
-      .limit(batchSize);
+    if (isReferenceImagesMigration) {
+      // Fetch all items with reference_images that contain cloudinary URLs
+      const { data, error } = await supabase
+        .from(actualTable)
+        .select('id, reference_images')
+        .not('reference_images', 'is', null)
+        .limit(100);
+      
+      fetchError = error;
+      // Filter items that have at least one cloudinary URL in the array
+      items = (data || []).filter((item: any) => {
+        if (!item.reference_images || !Array.isArray(item.reference_images)) return false;
+        return item.reference_images.some((url: string) => url && url.includes('res.cloudinary.com'));
+      }).slice(0, batchSize);
+    } else {
+      // Build filter for Cloudinary URLs - usar domínio específico para não pegar URLs do Supabase Storage
+      const filterCondition = tableConfig.downloadColumn
+        ? `${tableConfig.imageColumn}.ilike.%res.cloudinary.com%,${tableConfig.downloadColumn}.ilike.%res.cloudinary.com%`
+        : `${tableConfig.imageColumn}.ilike.%res.cloudinary.com%`;
+
+      // Fetch items with Cloudinary URLs
+      const { data, error } = await supabase
+        .from(actualTable)
+        .select(selectColumns)
+        .or(filterCondition)
+        .limit(batchSize);
+      
+      items = data || [];
+      fetchError = error;
+    }
 
     if (fetchError) {
       console.error('Fetch error:', fetchError);
@@ -104,46 +137,86 @@ Deno.serve(async (req) => {
 
     for (const item of items as any[]) {
       processed++;
-      const updates: Record<string, string> = {};
+      const updates: Record<string, any> = {};
       const itemId = item.id as string;
 
-      // Process image_url
-      const imageUrl = item[tableConfig.imageColumn] as string | undefined;
-      if (imageUrl && imageUrl.includes('cloudinary.com')) {
-        try {
-          if (dryRun) {
-            console.log(`[DRY RUN] Would migrate image: ${imageUrl}`);
-            results.push({ success: true, table, id: itemId, oldUrl: imageUrl, newUrl: '[DRY RUN]' });
-          } else {
-            const newUrl = await migrateImage(supabase, imageUrl, tableConfig.bucket, `${table}/${itemId}`);
-            if (newUrl) {
-              updates[tableConfig.imageColumn] = newUrl;
-              results.push({ success: true, table, id: itemId, oldUrl: imageUrl, newUrl });
+      // Handle reference_images migration (array of URLs)
+      if (isReferenceImagesMigration) {
+        const referenceImages = item.reference_images as string[] | undefined;
+        if (referenceImages && Array.isArray(referenceImages)) {
+          const newReferenceImages: string[] = [];
+          let hasChanges = false;
+
+          for (let i = 0; i < referenceImages.length; i++) {
+            const url = referenceImages[i];
+            if (url && url.includes('res.cloudinary.com')) {
+              try {
+                if (dryRun) {
+                  console.log(`[DRY RUN] Would migrate reference image: ${url}`);
+                  newReferenceImages.push(url);
+                } else {
+                  const newUrl = await migrateImage(supabase, url, tableConfig.bucket, `admin_prompts/${itemId}-ref-${i}`);
+                  if (newUrl) {
+                    newReferenceImages.push(newUrl);
+                    hasChanges = true;
+                    results.push({ success: true, table: 'admin_prompts', id: itemId, oldUrl: url, newUrl });
+                  } else {
+                    newReferenceImages.push(url);
+                  }
+                }
+              } catch (err) {
+                console.error(`Error migrating reference image ${i} for ${itemId}:`, err);
+                newReferenceImages.push(url); // Keep original on error
+                errors++;
+              }
+            } else {
+              newReferenceImages.push(url);
             }
           }
-        } catch (err) {
-          console.error(`Error migrating image for ${itemId}:`, err);
-          results.push({ success: false, table, id: itemId, oldUrl: imageUrl, error: String(err) });
-          errors++;
-        }
-      }
 
-      // Process download_url if exists
-      if (tableConfig.downloadColumn) {
-        const downloadUrl = item[tableConfig.downloadColumn] as string | undefined;
-        if (downloadUrl && downloadUrl.includes('cloudinary.com')) {
+          if (hasChanges && !dryRun) {
+            updates['reference_images'] = newReferenceImages;
+          }
+        }
+      } else {
+        // Process image_url (original logic)
+        const imageUrl = item[tableConfig.imageColumn] as string | undefined;
+        if (imageUrl && imageUrl.includes('cloudinary.com')) {
           try {
             if (dryRun) {
-              console.log(`[DRY RUN] Would migrate download: ${downloadUrl}`);
+              console.log(`[DRY RUN] Would migrate image: ${imageUrl}`);
+              results.push({ success: true, table, id: itemId, oldUrl: imageUrl, newUrl: '[DRY RUN]' });
             } else {
-              const newUrl = await migrateImage(supabase, downloadUrl, tableConfig.bucket, `${table}/${itemId}-download`);
+              const newUrl = await migrateImage(supabase, imageUrl, tableConfig.bucket, `${actualTable}/${itemId}`);
               if (newUrl) {
-                updates[tableConfig.downloadColumn] = newUrl;
+                updates[tableConfig.imageColumn] = newUrl;
+                results.push({ success: true, table, id: itemId, oldUrl: imageUrl, newUrl });
               }
             }
           } catch (err) {
-            console.error(`Error migrating download for ${itemId}:`, err);
+            console.error(`Error migrating image for ${itemId}:`, err);
+            results.push({ success: false, table, id: itemId, oldUrl: imageUrl, error: String(err) });
             errors++;
+          }
+        }
+
+        // Process download_url if exists
+        if (tableConfig.downloadColumn) {
+          const downloadUrl = item[tableConfig.downloadColumn] as string | undefined;
+          if (downloadUrl && downloadUrl.includes('cloudinary.com')) {
+            try {
+              if (dryRun) {
+                console.log(`[DRY RUN] Would migrate download: ${downloadUrl}`);
+              } else {
+                const newUrl = await migrateImage(supabase, downloadUrl, tableConfig.bucket, `${actualTable}/${itemId}-download`);
+                if (newUrl) {
+                  updates[tableConfig.downloadColumn] = newUrl;
+                }
+              }
+            } catch (err) {
+              console.error(`Error migrating download for ${itemId}:`, err);
+              errors++;
+            }
           }
         }
       }
@@ -151,7 +224,7 @@ Deno.serve(async (req) => {
       // Update database if we have changes
       if (!dryRun && Object.keys(updates).length > 0) {
         const { error: updateError } = await supabase
-          .from(table)
+          .from(actualTable)
           .update(updates)
           .eq('id', itemId);
 

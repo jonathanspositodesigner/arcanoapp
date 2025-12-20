@@ -23,6 +23,7 @@ interface MigrationStatus {
 const TABLES_TO_MIGRATE: TableConfig[] = [
   { table: 'admin_artes', label: 'Admin Artes' },
   { table: 'admin_prompts', label: 'Admin Prompts' },
+  { table: 'admin_prompts_reference_images', label: 'Prompts - Imagens de Referência' },
   { table: 'artes_packs', label: 'Packs (Covers)' },
   { table: 'artes_banners', label: 'Banners' },
   { table: 'partner_artes', label: 'Partner Artes' },
@@ -59,30 +60,61 @@ export default function AdminCloudinaryMigration() {
 
     for (const config of TABLES_TO_MIGRATE) {
       const key = getKey(config);
-      const column = getColumnForTable(config.table);
       
       try {
-        const tableName = config.table as ValidTable;
-        
-        // Count total with cloudinary URLs (ainda não migrado) - usar domínio específico
-        const { count: remaining } = await supabase
-          .from(tableName)
-          .select('id', { count: 'exact', head: true })
-          .like(column as 'image_url', '%res.cloudinary.com%');
+        // Special handling for reference_images
+        if (config.table === 'admin_prompts_reference_images') {
+          const { data } = await supabase
+            .from('admin_prompts')
+            .select('id, reference_images')
+            .not('reference_images', 'is', null);
+          
+          let remaining = 0;
+          let migrated = 0;
+          
+          (data || []).forEach((item: any) => {
+            if (item.reference_images && Array.isArray(item.reference_images)) {
+              item.reference_images.forEach((url: string) => {
+                if (url && url.includes('res.cloudinary.com')) {
+                  remaining++;
+                } else if (url && url.includes('supabase')) {
+                  migrated++;
+                }
+              });
+            }
+          });
 
-        // Count total with supabase URLs (já migrado pro Lovable Cloud)
-        const { count: migrated } = await supabase
-          .from(tableName)
-          .select('id', { count: 'exact', head: true })
-          .like(column as 'image_url', '%supabase%');
+          newStatuses[key] = {
+            total: remaining + migrated,
+            migrated,
+            remaining,
+            isRunning: false,
+            errors: [],
+          };
+        } else {
+          const column = getColumnForTable(config.table);
+          const tableName = config.table as ValidTable;
+          
+          // Count total with cloudinary URLs (ainda não migrado) - usar domínio específico
+          const { count: remaining } = await supabase
+            .from(tableName)
+            .select('id', { count: 'exact', head: true })
+            .like(column as 'image_url', '%res.cloudinary.com%');
 
-        newStatuses[key] = {
-          total: (remaining || 0) + (migrated || 0),
-          migrated: migrated || 0,
-          remaining: remaining || 0,
-          isRunning: false,
-          errors: [],
-        };
+          // Count total with supabase URLs (já migrado pro Lovable Cloud)
+          const { count: migrated } = await supabase
+            .from(tableName)
+            .select('id', { count: 'exact', head: true })
+            .like(column as 'image_url', '%supabase%');
+
+          newStatuses[key] = {
+            total: (remaining || 0) + (migrated || 0),
+            migrated: migrated || 0,
+            remaining: remaining || 0,
+            isRunning: false,
+            errors: [],
+          };
+        }
       } catch (error) {
         console.error(`Error loading status for ${key}:`, error);
         newStatuses[key] = {
