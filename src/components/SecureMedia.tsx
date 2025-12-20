@@ -32,27 +32,9 @@ const isCloudinaryUrl = (url: string): boolean => {
   return url.includes('cloudinary.com') || url.includes('res.cloudinary.com');
 };
 
-// Get optimized Cloudinary URL with auto quality, format, and optional resize
-const getOptimizedCloudinaryUrl = (url: string, size: ImageSize = 'full'): string => {
-  if (!isCloudinaryUrl(url)) return url;
-  
-  // Define width based on size
-  const widthMap: Record<ImageSize, number | null> = {
-    thumbnail: 400,  // Grid cards
-    preview: 800,    // Modal previews
-    full: null       // Original size for downloads
-  };
-  
-  const width = widthMap[size];
-  const transforms = width 
-    ? `q_auto,f_auto,w_${width}` 
-    : 'q_auto,f_auto';
-  
-  // Insert transforms after /upload/
-  if (url.includes('/upload/')) {
-    return url.replace('/upload/', `/upload/${transforms}/`);
-  }
-  
+// Cloudinary URLs are already optimized at upload time.
+// IMPORTANT: do NOT apply dynamic Cloudinary transformations on view, to avoid credit/bandwidth surprises.
+const getOptimizedCloudinaryUrl = (url: string, _size: ImageSize = 'full'): string => {
   return url;
 };
 
