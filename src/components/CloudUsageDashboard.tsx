@@ -10,10 +10,22 @@ import {
   RefreshCw,
   AlertTriangle,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  DollarSign,
+  TrendingUp
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+// Pricing based on Supabase public pricing
+const PRICING = {
+  storage: 0.021,        // $0.021 per GB/month
+  database: 0.00573,     // ~$0.00573 per GB/month  
+  edgeFunctions: 2.00,   // $2 per million invocations
+  bandwidth: 0.09,       // $0.09 per GB (estimated usage)
+};
+
+const MONTHLY_CREDIT = 25; // $25/month free credit
 
 interface BucketUsage {
   name: string;
@@ -36,6 +48,16 @@ interface UsageMetrics {
     invocations: number;
     limit: number;
   };
+}
+
+interface CostMetrics {
+  storage: number;
+  database: number;
+  edgeFunctions: number;
+  bandwidth: number;
+  total: number;
+  remaining: number;
+  percentUsed: number;
 }
 
 const formatBytes = (bytes: number): string => {
@@ -62,6 +84,35 @@ const getStatusText = (percentage: number): string => {
   if (percentage >= 80) return "Crítico";
   if (percentage >= 50) return "Atenção";
   return "Saudável";
+};
+
+const calculateCosts = (metrics: UsageMetrics): CostMetrics => {
+  const storageGB = metrics.storage.used / (1024 * 1024 * 1024);
+  const databaseGB = metrics.database.size / (1024 * 1024 * 1024);
+  const invocationsMillions = metrics.edgeFunctions.invocations / 1000000;
+  
+  const storageCost = storageGB * PRICING.storage;
+  const databaseCost = databaseGB * PRICING.database;
+  const edgeFunctionsCost = invocationsMillions * PRICING.edgeFunctions;
+  const bandwidthCost = 2.99; // Estimated monthly bandwidth
+  
+  const total = storageCost + databaseCost + edgeFunctionsCost + bandwidthCost;
+  
+  return {
+    storage: storageCost,
+    database: databaseCost,
+    edgeFunctions: edgeFunctionsCost,
+    bandwidth: bandwidthCost,
+    total,
+    remaining: Math.max(0, MONTHLY_CREDIT - total),
+    percentUsed: (total / MONTHLY_CREDIT) * 100
+  };
+};
+
+const getCostProgressColor = (percentage: number): string => {
+  if (percentage >= 80) return "bg-destructive";
+  if (percentage >= 50) return "bg-yellow-500";
+  return "bg-emerald-500";
 };
 
 const CloudUsageDashboard = () => {
@@ -233,9 +284,136 @@ const CloudUsageDashboard = () => {
   const storagePercentage = (metrics.storage.used / metrics.storage.limit) * 100;
   const databasePercentage = (metrics.database.size / metrics.database.limit) * 100;
   const edgeFunctionsPercentage = (metrics.edgeFunctions.invocations / metrics.edgeFunctions.limit) * 100;
+  
+  const costs = calculateCosts(metrics);
 
   return (
     <div className="space-y-6">
+      {/* Monthly Credit Cost Card */}
+      <Card className={`border-2 ${costs.percentUsed >= 80 ? 'border-destructive/50' : costs.percentUsed >= 50 ? 'border-yellow-500/50' : 'border-emerald-500/50'} bg-gradient-to-br from-background to-muted/30`}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-500/10 rounded-lg">
+                <DollarSign className="h-6 w-6 text-emerald-500" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Crédito Mensal</CardTitle>
+                <p className="text-sm text-muted-foreground">Estimativa de gastos vs $25/mês grátis</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center gap-2">
+                {costs.percentUsed >= 80 ? (
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                ) : costs.percentUsed >= 50 ? (
+                  <AlertCircle className="h-5 w-5 text-yellow-500" />
+                ) : (
+                  <CheckCircle className="h-5 w-5 text-emerald-500" />
+                )}
+                <span className={`text-sm font-medium ${costs.percentUsed >= 80 ? 'text-destructive' : costs.percentUsed >= 50 ? 'text-yellow-500' : 'text-emerald-500'}`}>
+                  {costs.percentUsed >= 80 ? 'Crítico' : costs.percentUsed >= 50 ? 'Atenção' : 'Saudável'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {/* Main Progress */}
+          <div className="space-y-2">
+            <div className="flex items-end justify-between">
+              <div>
+                <span className="text-3xl font-bold text-foreground">${costs.total.toFixed(2)}</span>
+                <span className="text-lg text-muted-foreground ml-1">/ $25.00</span>
+              </div>
+              <span className={`text-2xl font-bold ${costs.percentUsed >= 80 ? 'text-destructive' : costs.percentUsed >= 50 ? 'text-yellow-500' : 'text-emerald-500'}`}>
+                {costs.percentUsed.toFixed(1)}%
+              </span>
+            </div>
+            <div className="relative h-4 rounded-full bg-muted overflow-hidden">
+              <div 
+                className={`absolute left-0 top-0 h-full transition-all duration-500 ${getCostProgressColor(costs.percentUsed)}`}
+                style={{ width: `${Math.min(costs.percentUsed, 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Usado este mês</span>
+              <span className="font-medium text-emerald-500">Restante: ${costs.remaining.toFixed(2)}</span>
+            </div>
+          </div>
+
+          {/* Cost Breakdown */}
+          <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+            <h4 className="font-semibold text-sm text-foreground flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Detalhamento de Custos
+            </h4>
+            <div className="grid gap-2">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <HardDrive className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Storage</span>
+                </div>
+                <span className="font-medium text-foreground">
+                  ${costs.storage.toFixed(2)}/mês 
+                  <span className="text-muted-foreground text-xs ml-1">
+                    ({formatBytes(metrics.storage.used)} × $0.021/GB)
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Database</span>
+                </div>
+                <span className="font-medium text-foreground">
+                  ${costs.database.toFixed(2)}/mês
+                  <span className="text-muted-foreground text-xs ml-1">
+                    ({formatBytes(metrics.database.size)} × $0.00573/GB)
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Edge Functions</span>
+                </div>
+                <span className="font-medium text-foreground">
+                  ${costs.edgeFunctions.toFixed(2)}/mês
+                  <span className="text-muted-foreground text-xs ml-1">
+                    ({(metrics.edgeFunctions.invocations / 1000).toFixed(1)}K × $2/milhão)
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <Cloud className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Bandwidth</span>
+                </div>
+                <span className="font-medium text-foreground">
+                  ~${costs.bandwidth.toFixed(2)}/mês
+                  <span className="text-muted-foreground text-xs ml-1">(estimado)</span>
+                </span>
+              </div>
+              <div className="border-t border-border pt-2 mt-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-foreground">Total Estimado</span>
+                  <span className="font-bold text-lg text-foreground">${costs.total.toFixed(2)}/mês</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Warning Note */}
+          <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>
+              <strong>Nota:</strong> Valores são estimativas baseadas nos preços públicos do Supabase. 
+              O valor real pode variar. Para ver o consumo exato, acesse as configurações do Lovable.
+            </span>
+          </div>
+        </CardContent>
+      </Card>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
