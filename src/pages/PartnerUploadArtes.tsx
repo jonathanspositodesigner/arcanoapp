@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, X, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
-import { uploadToCloudinary } from "@/hooks/useCloudinaryUpload";
+import { uploadToStorage } from "@/hooks/useStorageUpload";
 
 interface MediaData {
   file: File;
@@ -208,7 +208,7 @@ const PartnerUploadArtes = () => {
     try {
       for (const media of mediaFiles) {
         // Upload image to Cloudinary
-        const uploadResult = await uploadToCloudinary(media.file, 'partner-artes');
+        const uploadResult = await uploadToStorage(media.file, 'artes-cloudinary');
         
         if (!uploadResult.success || !uploadResult.url) {
           toast.error(`Erro ao fazer upload: ${media.title}`);

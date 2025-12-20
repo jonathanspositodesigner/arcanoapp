@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { AnnouncementConfigModal } from "@/components/AnnouncementConfigModal";
 import { AnnouncementPreviewModal } from "@/components/AnnouncementPreviewModal";
-import { uploadToCloudinary } from "@/hooks/useCloudinaryUpload";
+import { uploadToStorage } from "@/hooks/useStorageUpload";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -258,7 +258,7 @@ const AdminUploadArtes = () => {
     setIsSubmitting(true);
     try {
       // Upload preview image/video to Cloudinary
-      const uploadResult = await uploadToCloudinary(media.file, 'admin-artes');
+      const uploadResult = await uploadToStorage(media.file, 'artes-cloudinary');
       
       if (!uploadResult.success || !uploadResult.url) {
         throw new Error(uploadResult.error || 'Failed to upload media');
@@ -269,7 +269,7 @@ const AdminUploadArtes = () => {
       // Upload download file if exists
       let downloadUrl = null;
       if (media.downloadFile) {
-        const dlUploadResult = await uploadToCloudinary(media.downloadFile, 'admin-artes/downloads');
+        const dlUploadResult = await uploadToStorage(media.downloadFile, 'artes-cloudinary/downloads');
         
         if (!dlUploadResult.success || !dlUploadResult.url) {
           throw new Error(dlUploadResult.error || 'Failed to upload download file');
@@ -336,7 +336,7 @@ const AdminUploadArtes = () => {
     try {
       for (const media of mediaFiles) {
         // Upload preview image/video to Cloudinary
-        const uploadResult = await uploadToCloudinary(media.file, 'admin-artes');
+        const uploadResult = await uploadToStorage(media.file, 'artes-cloudinary');
         
         if (!uploadResult.success || !uploadResult.url) {
           throw new Error(uploadResult.error || 'Failed to upload media');
@@ -347,7 +347,7 @@ const AdminUploadArtes = () => {
         // Upload download file if exists
         let downloadUrl = null;
         if (media.downloadFile) {
-          const dlUploadResult = await uploadToCloudinary(media.downloadFile, 'admin-artes/downloads');
+          const dlUploadResult = await uploadToStorage(media.downloadFile, 'artes-cloudinary/downloads');
           
           if (!dlUploadResult.success || !dlUploadResult.url) {
             throw new Error(dlUploadResult.error || 'Failed to upload download file');

@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { uploadToCloudinary } from "@/hooks/useCloudinaryUpload";
+import { uploadToStorage } from "@/hooks/useStorageUpload";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -245,7 +245,7 @@ const AdminUploadArtesMusicos = () => {
 
     setIsSubmitting(true);
     try {
-      const uploadResult = await uploadToCloudinary(media.file, 'admin-artes-musicos');
+      const uploadResult = await uploadToStorage(media.file, 'artes-cloudinary');
       
       if (!uploadResult.success || !uploadResult.url) {
         throw new Error(uploadResult.error || 'Failed to upload media');
@@ -256,7 +256,7 @@ const AdminUploadArtesMusicos = () => {
       // Upload AI reference image if exists
       let aiReferenceImageUrl = null;
       if (media.isAiGenerated && media.aiReferenceImage) {
-        const refUploadResult = await uploadToCloudinary(media.aiReferenceImage, 'ai-reference-images-musicos');
+        const refUploadResult = await uploadToStorage(media.aiReferenceImage, 'artes-cloudinary');
         if (refUploadResult.success && refUploadResult.url) {
           aiReferenceImageUrl = refUploadResult.url;
         }
@@ -315,7 +315,7 @@ const AdminUploadArtesMusicos = () => {
     setIsSubmitting(true);
     try {
       for (const media of mediaFiles) {
-        const uploadResult = await uploadToCloudinary(media.file, 'admin-artes-musicos');
+        const uploadResult = await uploadToStorage(media.file, 'artes-cloudinary');
         
         if (!uploadResult.success || !uploadResult.url) {
           throw new Error(uploadResult.error || 'Failed to upload media');
@@ -326,7 +326,7 @@ const AdminUploadArtesMusicos = () => {
         // Upload AI reference image if exists
         let aiReferenceImageUrl = null;
         if (media.isAiGenerated && media.aiReferenceImage) {
-          const refUploadResult = await uploadToCloudinary(media.aiReferenceImage, 'ai-reference-images-musicos');
+          const refUploadResult = await uploadToStorage(media.aiReferenceImage, 'artes-cloudinary');
           if (refUploadResult.success && refUploadResult.url) {
             aiReferenceImageUrl = refUploadResult.url;
           }

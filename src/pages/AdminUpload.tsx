@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
-import { uploadToCloudinary } from "@/hooks/useCloudinaryUpload";
+import { uploadToStorage } from "@/hooks/useStorageUpload";
 
 // Validation schema - category validated dynamically
 const promptSchema = z.object({
@@ -215,7 +215,7 @@ const AdminUpload = () => {
     try {
       for (const media of mediaFiles) {
         // Upload media to Cloudinary
-        const uploadResult = await uploadToCloudinary(media.file, 'admin-prompts');
+        const uploadResult = await uploadToStorage(media.file, 'prompts-cloudinary');
         
         if (!uploadResult.success || !uploadResult.url) {
           throw new Error(uploadResult.error || 'Failed to upload media');
@@ -227,7 +227,7 @@ const AdminUpload = () => {
         let referenceImageUrls: string[] = [];
         if (media.isVideo && media.referenceImages.length > 0) {
           for (const refImg of media.referenceImages) {
-            const refUploadResult = await uploadToCloudinary(refImg.file, 'admin-prompts/references');
+            const refUploadResult = await uploadToStorage(refImg.file, 'prompts-cloudinary/references');
             
             if (!refUploadResult.success || !refUploadResult.url) {
               throw new Error(refUploadResult.error || 'Failed to upload reference image');

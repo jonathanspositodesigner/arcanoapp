@@ -50,6 +50,8 @@ Deno.serve(async (req) => {
       'partner_prompts': { bucket: 'prompts-cloudinary', imageColumn: 'image_url' },
       'partner_artes': { bucket: 'artes-cloudinary', imageColumn: 'image_url', downloadColumn: 'download_url' },
       'partner_artes_musicos': { bucket: 'artes-cloudinary', imageColumn: 'image_url', downloadColumn: 'download_url' },
+      'artes_packs': { bucket: 'artes-cloudinary', imageColumn: 'cover_url' },
+      'artes_banners': { bucket: 'artes-cloudinary', imageColumn: 'image_url' },
     };
 
     const tableConfig = config[table];
