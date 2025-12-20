@@ -67,10 +67,10 @@ Deno.serve(async (req) => {
       ? `id, ${tableConfig.imageColumn}, ${tableConfig.downloadColumn}`
       : `id, ${tableConfig.imageColumn}`;
 
-    // Build filter for Cloudinary URLs
+    // Build filter for Cloudinary URLs - usar domínio específico para não pegar URLs do Supabase Storage
     const filterCondition = tableConfig.downloadColumn
-      ? `${tableConfig.imageColumn}.ilike.%cloudinary.com%,${tableConfig.downloadColumn}.ilike.%cloudinary.com%`
-      : `${tableConfig.imageColumn}.ilike.%cloudinary.com%`;
+      ? `${tableConfig.imageColumn}.ilike.%res.cloudinary.com%,${tableConfig.downloadColumn}.ilike.%res.cloudinary.com%`
+      : `${tableConfig.imageColumn}.ilike.%res.cloudinary.com%`;
 
     // Fetch items with Cloudinary URLs
     const { data: items, error: fetchError } = await supabase

@@ -64,11 +64,11 @@ export default function AdminCloudinaryMigration() {
       try {
         const tableName = config.table as ValidTable;
         
-        // Count total with cloudinary URLs (ainda não migrado)
+        // Count total with cloudinary URLs (ainda não migrado) - usar domínio específico
         const { count: remaining } = await supabase
           .from(tableName)
           .select('id', { count: 'exact', head: true })
-          .like(column as 'image_url', '%cloudinary%');
+          .like(column as 'image_url', '%res.cloudinary.com%');
 
         // Count total with supabase URLs (já migrado pro Lovable Cloud)
         const { count: migrated } = await supabase
