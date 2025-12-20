@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, X, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
+import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
 
 interface MediaData {
   file: File;
@@ -112,22 +113,33 @@ const PartnerUploadArtes = () => {
     return null;
   };
 
-  const processFiles = (files: FileList | null) => {
+  const processFiles = async (files: FileList | null) => {
     if (!files) return;
 
     const newMediaFiles: MediaData[] = [];
 
-    Array.from(files).forEach((file) => {
+    for (const file of Array.from(files)) {
       const error = validateFile(file);
       if (error) {
         toast.error(error);
-        return;
+        continue;
       }
 
       const isVideo = file.type.startsWith('video/');
+      
+      // Optimize images before adding
+      let processedFile = file;
+      if (isImageFile(file)) {
+        const result = await optimizeImage(file);
+        processedFile = result.file;
+        if (result.savingsPercent > 0) {
+          console.log(`Optimized ${file.name}: ${formatBytes(result.originalSize)} → ${formatBytes(result.optimizedSize)} (${result.savingsPercent}% saved)`);
+        }
+      }
+      
       newMediaFiles.push({
-        file,
-        preview: URL.createObjectURL(file),
+        file: processedFile,
+        preview: URL.createObjectURL(processedFile),
         title: "",
         category: "",
         pack: "",
@@ -136,9 +148,10 @@ const PartnerUploadArtes = () => {
         driveLink: "",
         isVideo,
       });
-    });
+    }
 
     if (newMediaFiles.length > 0) {
+      toast.success(`${newMediaFiles.length} arquivo(s) otimizado(s) e adicionado(s)`);
       setMediaFiles((prev) => [...prev, ...newMediaFiles]);
       setCurrentIndex(mediaFiles.length);
       setShowModal(true);

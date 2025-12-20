@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, Loader2, Image as ImageIcon } from "lucide-react";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
+import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
 
 interface Category {
   id: string;
@@ -125,15 +126,27 @@ const PartnerUploadMusicos = () => {
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
         toast.error("Por favor, selecione uma imagem");
         return;
       }
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      
+      // Optimize image before setting
+      if (isImageFile(file)) {
+        toast.info("Otimizando imagem...");
+        const result = await optimizeImage(file);
+        setSelectedFile(result.file);
+        setPreviewUrl(URL.createObjectURL(result.file));
+        if (result.savingsPercent > 0) {
+          toast.success(`Imagem otimizada: ${formatBytes(result.originalSize)} → ${formatBytes(result.optimizedSize)} (${result.savingsPercent}% economizado)`);
+        }
+      } else {
+        setSelectedFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+      }
     }
   };
 

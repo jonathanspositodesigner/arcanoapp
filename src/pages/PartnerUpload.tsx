@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
+import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
 
 const promptSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
@@ -126,7 +127,7 @@ const PartnerUpload = () => {
     processFiles(files);
   };
 
-  const processFiles = (files: File[]) => {
+  const processFiles = async (files: File[]) => {
     const validFiles: File[] = [];
     
     for (const file of files) {
@@ -142,30 +143,38 @@ const PartnerUpload = () => {
     
     const newMedia: MediaData[] = [];
     
-    validFiles.forEach(file => {
+    for (const file of validFiles) {
       const isVideo = file.type.startsWith('video/');
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newMedia.push({
-          file,
-          preview: reader.result as string,
-          title: "",
-          prompt: "",
-          category: "",
-          isVideo,
-          referenceImages: [],
-          hasTutorial: false,
-          tutorialUrl: ""
-        });
-        
-        if (newMedia.length === validFiles.length) {
-          setMediaFiles(prev => [...prev, ...newMedia]);
-          setShowModal(true);
-          setCurrentIndex(0);
+      
+      // Optimize images before adding
+      let processedFile = file;
+      if (isImageFile(file)) {
+        const result = await optimizeImage(file);
+        processedFile = result.file;
+        if (result.savingsPercent > 0) {
+          console.log(`Optimized ${file.name}: ${formatBytes(result.originalSize)} → ${formatBytes(result.optimizedSize)} (${result.savingsPercent}% saved)`);
         }
-      };
-      reader.readAsDataURL(file);
-    });
+      }
+      
+      newMedia.push({
+        file: processedFile,
+        preview: URL.createObjectURL(processedFile),
+        title: "",
+        prompt: "",
+        category: "",
+        isVideo,
+        referenceImages: [],
+        hasTutorial: false,
+        tutorialUrl: ""
+      });
+    }
+    
+    if (newMedia.length > 0) {
+      toast.success(`${newMedia.length} arquivo(s) otimizado(s) e adicionado(s)`);
+      setMediaFiles(prev => [...prev, ...newMedia]);
+      setShowModal(true);
+      setCurrentIndex(0);
+    }
   };
 
   const handleReferenceImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
