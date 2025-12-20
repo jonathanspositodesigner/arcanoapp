@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
-import { uploadToCloudinary } from "@/hooks/useCloudinaryUpload";
+import { uploadToStorage } from "@/hooks/useStorageUpload";
 
 const promptSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
@@ -248,7 +248,7 @@ const PartnerUpload = () => {
     try {
       for (const media of mediaFiles) {
         // Upload to Cloudinary
-        const uploadResult = await uploadToCloudinary(media.file, 'partner-prompts');
+        const uploadResult = await uploadToStorage(media.file, 'prompts-cloudinary');
         
         if (!uploadResult.success || !uploadResult.url) {
           throw new Error(uploadResult.error || 'Failed to upload media');
@@ -260,7 +260,7 @@ const PartnerUpload = () => {
         let referenceImageUrls: string[] = [];
         if (media.isVideo && media.referenceImages.length > 0) {
           for (const refImg of media.referenceImages) {
-            const refUploadResult = await uploadToCloudinary(refImg.file, 'partner-prompts/references');
+            const refUploadResult = await uploadToStorage(refImg.file, 'prompts-cloudinary/references');
             
             if (!refUploadResult.success || !refUploadResult.url) {
               throw new Error(refUploadResult.error || 'Failed to upload reference image');

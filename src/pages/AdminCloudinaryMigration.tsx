@@ -4,12 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Cloud, CheckCircle, XCircle, Loader2, Play, Square } from "lucide-react";
+import { ArrowLeft, Cloud, CheckCircle, XCircle, Loader2, Play, Square, Database } from "lucide-react";
 import { toast } from "sonner";
 
 interface TableConfig {
   table: string;
-  column: string;
   label: string;
 }
 
@@ -22,19 +21,18 @@ interface MigrationStatus {
 }
 
 const TABLES_TO_MIGRATE: TableConfig[] = [
-  { table: 'admin_artes', column: 'image_url', label: 'Admin Artes - Imagens' },
-  { table: 'admin_artes', column: 'download_url', label: 'Admin Artes - Downloads' },
-  { table: 'admin_prompts', column: 'image_url', label: 'Admin Prompts - Imagens' },
-  { table: 'artes_packs', column: 'cover_url', label: 'Packs - Covers' },
-  { table: 'artes_banners', column: 'image_url', label: 'Banners - Desktop' },
-  { table: 'artes_banners', column: 'mobile_image_url', label: 'Banners - Mobile' },
-  { table: 'partner_artes', column: 'image_url', label: 'Partner Artes - Imagens' },
-  { table: 'partner_prompts', column: 'image_url', label: 'Partner Prompts - Imagens' },
-  { table: 'community_artes', column: 'image_url', label: 'Community Artes' },
-  { table: 'community_prompts', column: 'image_url', label: 'Community Prompts' },
+  { table: 'admin_artes', label: 'Admin Artes' },
+  { table: 'admin_prompts', label: 'Admin Prompts' },
+  { table: 'artes_packs', label: 'Packs (Covers)' },
+  { table: 'artes_banners', label: 'Banners' },
+  { table: 'partner_artes', label: 'Partner Artes' },
+  { table: 'partner_prompts', label: 'Partner Prompts' },
+  { table: 'partner_artes_musicos', label: 'Partner Artes Músicos' },
+  { table: 'community_artes', label: 'Community Artes' },
+  { table: 'community_prompts', label: 'Community Prompts' },
 ];
 
-type ValidTable = 'admin_artes' | 'admin_prompts' | 'artes_packs' | 'artes_banners' | 'partner_artes' | 'partner_prompts' | 'community_artes' | 'community_prompts';
+type ValidTable = 'admin_artes' | 'admin_prompts' | 'artes_packs' | 'artes_banners' | 'partner_artes' | 'partner_prompts' | 'partner_artes_musicos' | 'community_artes' | 'community_prompts';
 
 export default function AdminCloudinaryMigration() {
   const navigate = useNavigate();
@@ -48,7 +46,12 @@ export default function AdminCloudinaryMigration() {
     loadStatuses();
   }, []);
 
-  const getKey = (config: TableConfig) => `${config.table}.${config.column}`;
+  const getKey = (config: TableConfig) => config.table;
+
+  const getColumnForTable = (table: string): string => {
+    if (table === 'artes_packs') return 'cover_url';
+    return 'image_url';
+  };
 
   const loadStatuses = async () => {
     setIsLoading(true);
@@ -56,20 +59,22 @@ export default function AdminCloudinaryMigration() {
 
     for (const config of TABLES_TO_MIGRATE) {
       const key = getKey(config);
+      const column = getColumnForTable(config.table);
+      
       try {
         const tableName = config.table as ValidTable;
         
-        // Count total with supabase URLs
+        // Count total with cloudinary URLs (ainda não migrado)
         const { count: remaining } = await supabase
           .from(tableName)
           .select('id', { count: 'exact', head: true })
-          .like(config.column as 'image_url', '%supabase%');
+          .like(column as 'image_url', '%cloudinary%');
 
-        // Count total with cloudinary URLs
+        // Count total with supabase URLs (já migrado pro Lovable Cloud)
         const { count: migrated } = await supabase
           .from(tableName)
           .select('id', { count: 'exact', head: true })
-          .like(config.column as 'image_url', '%cloudinary%');
+          .like(column as 'image_url', '%supabase%');
 
         newStatuses[key] = {
           total: (remaining || 0) + (migrated || 0),
@@ -105,7 +110,7 @@ export default function AdminCloudinaryMigration() {
       [key]: { ...prev[key], isRunning: true, errors: [] }
     }));
 
-    const batchSize = 1; // Reduzido de 5 para 1 para evitar estouro de memória
+    const batchSize = 5;
     let hasMore = true;
     let wasStopped = false;
     let retryCount = 0;
@@ -113,12 +118,11 @@ export default function AdminCloudinaryMigration() {
 
     while (hasMore && !shouldStopRef.current) {
       try {
-        const { data, error } = await supabase.functions.invoke('migrate-to-cloudinary', {
+        const { data, error } = await supabase.functions.invoke('migrate-cloudinary-to-storage', {
           body: {
             table: config.table,
-            column: config.column,
-            limit: batchSize,
-            offset: 0,
+            batchSize,
+            dryRun: false,
           }
         });
 
@@ -144,12 +148,12 @@ export default function AdminCloudinaryMigration() {
           }));
         }
 
-        if (data.errors && data.errors.length > 0) {
+        if (data.errors && data.errors > 0) {
           setStatuses(prev => ({
             ...prev,
             [key]: {
               ...prev[key],
-              errors: [...prev[key].errors, ...data.errors],
+              errors: [...prev[key].errors, `${data.errors} erros no batch`],
             }
           }));
         }
@@ -160,21 +164,21 @@ export default function AdminCloudinaryMigration() {
           toast.success(`Migração de ${config.label} concluída!`);
         }
 
-        // Delay maior entre batches para dar tempo da memória ser liberada
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Delay entre batches
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
       } catch (error) {
         const errorMessage = (error as Error).message;
         console.error(`Migration error for ${key}:`, error);
         
-        // Retry com exponential backoff para erros de memória
+        // Retry com exponential backoff
         if (errorMessage.includes('WORKER_LIMIT') || errorMessage.includes('Memory') || errorMessage.includes('limit')) {
           retryCount++;
           if (retryCount <= maxRetries) {
-            const backoffDelay = Math.pow(2, retryCount) * 1000; // 2s, 4s, 8s
+            const backoffDelay = Math.pow(2, retryCount) * 1000;
             toast.warning(`Erro de memória. Tentativa ${retryCount}/${maxRetries} em ${backoffDelay/1000}s...`);
             await new Promise(resolve => setTimeout(resolve, backoffDelay));
-            continue; // Retry
+            continue;
           }
         }
         
@@ -238,17 +242,20 @@ export default function AdminCloudinaryMigration() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <Cloud className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">Migração para Cloudinary</h1>
+            <Database className="h-6 w-6 text-primary" />
+            <h1 className="text-2xl font-bold">Migração Cloudinary → Lovable Cloud</h1>
           </div>
         </div>
 
-        <Card>
+        <Card className="bg-gradient-to-r from-orange-500/10 to-blue-500/10 border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Progresso Geral</span>
+              <div className="flex items-center gap-2">
+                <Cloud className="h-5 w-5 text-primary" />
+                <span>Progresso Geral</span>
+              </div>
               <span className="text-sm font-normal text-muted-foreground">
-                {totalStats.migrated} / {totalStats.total} arquivos
+                {totalStats.migrated} / {totalStats.total} imagens
               </span>
             </CardTitle>
           </CardHeader>
@@ -257,10 +264,10 @@ export default function AdminCloudinaryMigration() {
             <div className="flex justify-between text-sm">
               <span className="text-green-500 flex items-center gap-1">
                 <CheckCircle className="h-4 w-4" />
-                {totalStats.migrated} migrados
+                {totalStats.migrated} no Lovable Cloud
               </span>
-              <span className="text-muted-foreground">
-                {totalStats.remaining} restantes
+              <span className="text-orange-500">
+                {totalStats.remaining} ainda no Cloudinary
               </span>
             </div>
             <div className="flex gap-2">
@@ -277,7 +284,7 @@ export default function AdminCloudinaryMigration() {
                 ) : (
                   <>
                     <Play className="h-4 w-4 mr-2" />
-                    Migrar Todos ({totalStats.remaining} arquivos)
+                    Migrar Todos ({totalStats.remaining} imagens)
                   </>
                 )}
               </Button>
@@ -322,7 +329,7 @@ export default function AdminCloudinaryMigration() {
                         ) : isRunning ? (
                           <Loader2 className="h-5 w-5 animate-spin text-primary" />
                         ) : (
-                          <Cloud className="h-5 w-5 text-muted-foreground" />
+                          <Cloud className="h-5 w-5 text-orange-500" />
                         )}
                         <span className="font-medium">{config.label}</span>
                       </div>
@@ -363,6 +370,18 @@ export default function AdminCloudinaryMigration() {
             })
           )}
         </div>
+
+        <Card className="border-dashed">
+          <CardContent className="p-4 text-sm text-muted-foreground">
+            <p className="font-medium mb-2">Sobre esta migração:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Migra imagens do Cloudinary para Lovable Cloud Storage</li>
+              <li>Imagens já otimizadas são baixadas e re-enviadas</li>
+              <li>URLs no banco de dados são atualizadas automaticamente</li>
+              <li>Custo zero após migração (armazenamento incluído no plano)</li>
+            </ul>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
