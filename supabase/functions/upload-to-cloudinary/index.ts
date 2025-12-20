@@ -36,9 +36,11 @@ serve(async (req) => {
       timestamp: timestamp.toString(),
     };
 
-    // Add transformation for images (auto quality and format)
+    // Optimize images ONCE at upload time (avoid dynamic transformations on view)
+    // - q_auto,f_auto reduces bytes via automatic quality + next-gen format
+    // - c_limit,w_1600 prevents gigantic uploads from exploding bandwidth
     if (resourceType === 'image' || resourceType === 'auto') {
-      params.transformation = 'q_auto,f_auto';
+      params.transformation = 'q_auto,f_auto,c_limit,w_1600';
     }
 
     // Create signature string
