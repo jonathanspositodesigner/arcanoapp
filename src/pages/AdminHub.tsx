@@ -14,6 +14,7 @@ import EmailMarketingContent from "@/components/EmailMarketingContent";
 import PushNotificationsContent from "@/components/PushNotificationsContent";
 import PartnersManagementContent from "@/components/PartnersManagementContent";
 import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
+import CloudUsageDashboard from "@/components/CloudUsageDashboard";
 
 const AdminHub = () => {
   const navigate = useNavigate();
@@ -155,6 +156,8 @@ const AdminHub = () => {
         return <PartnersManagementContent />;
       case "abandoned-checkouts":
         return <AbandonedCheckoutsContent />;
+      case "cloud-usage":
+        return <CloudUsageDashboard />;
       default:
         return null;
     }
