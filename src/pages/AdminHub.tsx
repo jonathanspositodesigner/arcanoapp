@@ -15,6 +15,7 @@ import PushNotificationsContent from "@/components/PushNotificationsContent";
 import PartnersManagementContent from "@/components/PartnersManagementContent";
 import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
 import CloudUsageDashboard from "@/components/CloudUsageDashboard";
+import AdminsManagementContent from "@/components/AdminsManagementContent";
 
 const AdminHub = () => {
   const navigate = useNavigate();
@@ -158,6 +159,8 @@ const AdminHub = () => {
         return <AbandonedCheckoutsContent />;
       case "cloud-usage":
         return <CloudUsageDashboard />;
+      case "admins":
+        return <AdminsManagementContent />;
       default:
         return null;
     }
