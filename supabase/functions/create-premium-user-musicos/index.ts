@@ -87,13 +87,25 @@ Deno.serve(async (req) => {
       userId = existingUser.id;
       console.log(`[create-premium-user-musicos] User exists: ${userId}`);
       
-      // Update password to match email
-      const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
-        password: email,
-      });
+      // Check if user is admin before updating password
+      const { data: isAdmin } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
 
-      if (updateError) {
-        console.error(`[create-premium-user-musicos] Error updating password:`, updateError);
+      if (!isAdmin) {
+        // Update password to match email (only if NOT admin)
+        const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+          password: email,
+        });
+
+        if (updateError) {
+          console.error(`[create-premium-user-musicos] Error updating password:`, updateError);
+        }
+      } else {
+        console.log(`[create-premium-user-musicos] User is admin, skipping password change`);
       }
     } else {
       // Create new user with email as password

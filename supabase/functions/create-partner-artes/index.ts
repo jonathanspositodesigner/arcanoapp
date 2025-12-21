@@ -94,14 +94,25 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Update user password
-      await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
-        password: password
-      });
-
       userId = existingUser.id;
 
-      console.log('Using existing user for artes partner:', userId);
+      // Check if user is admin before updating password
+      const { data: isAdmin } = await supabaseAdmin
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (!isAdmin) {
+        // Update user password (only if NOT admin)
+        await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+          password: password
+        });
+        console.log('Using existing user for artes partner:', userId);
+      } else {
+        console.log('User is admin, skipping password change for artes partner:', userId);
+      }
     } else {
       // Create new user
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
