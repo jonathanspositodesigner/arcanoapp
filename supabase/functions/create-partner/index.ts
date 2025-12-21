@@ -132,12 +132,24 @@ Deno.serve(async (req) => {
         isExistingUser = true;
         console.log(`Converting existing user ${userId} to partner`);
 
-        // Update password for existing user
-        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-          password
-        });
-        if (updateError) {
-          console.error('Error updating password:', updateError);
+        // Check if user is admin before updating password
+        const { data: isAdmin } = await supabaseAdmin
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .eq('role', 'admin')
+          .maybeSingle();
+
+        if (!isAdmin) {
+          // Update password for existing user (only if NOT admin)
+          const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+            password
+          });
+          if (updateError) {
+            console.error('Error updating password:', updateError);
+          }
+        } else {
+          console.log('User is admin, skipping password change');
         }
       } else if (authError.message.includes('invalid email')) {
         return new Response(
