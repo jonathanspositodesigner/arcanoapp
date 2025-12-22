@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { trackInvocation } from './useCloudCostTracker';
 
 interface SignedUrlCache {
   [key: string]: {
@@ -121,6 +122,10 @@ export const useSignedUrl = () => {
 
     try {
       signedUrlInvokeCount += 1;
+      
+      // Track invocation for cost monitoring
+      trackInvocation('get-signed-url', 500);
+      
       if (import.meta.env.DEV) {
         console.debug(`[get-signed-url] invoke #${signedUrlInvokeCount}`, {
           bucket: parsed.bucket,
@@ -207,6 +212,10 @@ export const getSignedMediaUrl = async (originalUrl: string): Promise<string> =>
 
   try {
     signedUrlInvokeCount += 1;
+    
+    // Track invocation for cost monitoring
+    trackInvocation('get-signed-url', 500);
+    
     if (import.meta.env.DEV) {
       console.debug(`[get-signed-url] invoke #${signedUrlInvokeCount}`, {
         bucket: parsed.bucket,
