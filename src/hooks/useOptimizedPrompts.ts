@@ -6,6 +6,7 @@ export interface PromptItem {
   title: string;
   prompt: string;
   imageUrl: string;
+  thumbnailUrl?: string;
   category?: string;
   isCommunity?: boolean;
   isExclusive?: boolean;
@@ -73,12 +74,12 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         
         supabase
           .from('admin_prompts')
-          .select('id, title, prompt, image_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks')
+          .select('id, title, prompt, image_url, thumbnail_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks')
           .order('created_at', { ascending: false }),
         
         supabase
           .from('partner_prompts')
-          .select('id, title, prompt, image_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks')
+          .select('id, title, prompt, image_url, thumbnail_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks')
           .eq('approved', true)
           .order('created_at', { ascending: false }),
         
@@ -120,6 +121,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         title: item.title,
         prompt: item.prompt,
         imageUrl: item.image_url,
+        thumbnailUrl: item.thumbnail_url || undefined,
         category: item.category,
         isExclusive: true,
         isPremium: item.is_premium || false,
@@ -137,6 +139,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         title: item.title,
         prompt: item.prompt,
         imageUrl: item.image_url,
+        thumbnailUrl: item.thumbnail_url || undefined,
         category: item.category,
         isExclusive: true,
         isPremium: item.is_premium || false,

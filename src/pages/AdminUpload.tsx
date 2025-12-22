@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
+import { generateAndUploadThumbnail } from "@/hooks/useVideoThumbnail";
 
 // Validation schema - category validated dynamically
 const promptSchema = z.object({
@@ -234,15 +235,28 @@ const AdminUpload = () => {
 
         // Upload reference images if it's a video
         let referenceImageUrls: string[] = [];
-        if (media.isVideo && media.referenceImages.length > 0) {
-          for (const refImg of media.referenceImages) {
-            const refUploadResult = await uploadToStorage(refImg.file, 'prompts-cloudinary/references');
-            
-            if (!refUploadResult.success || !refUploadResult.url) {
-              throw new Error(refUploadResult.error || 'Failed to upload reference image');
-            }
+        let thumbnailUrl: string | null = null;
+        
+        if (media.isVideo) {
+          // Generate thumbnail from first frame
+          thumbnailUrl = await generateAndUploadThumbnail(media.file, 'prompts-cloudinary');
+          if (thumbnailUrl) {
+            console.log('Thumbnail generated:', thumbnailUrl);
+          } else {
+            console.warn('Failed to generate thumbnail for video');
+          }
+          
+          // Upload reference images
+          if (media.referenceImages.length > 0) {
+            for (const refImg of media.referenceImages) {
+              const refUploadResult = await uploadToStorage(refImg.file, 'prompts-cloudinary/references');
+              
+              if (!refUploadResult.success || !refUploadResult.url) {
+                throw new Error(refUploadResult.error || 'Failed to upload reference image');
+              }
 
-            referenceImageUrls.push(refUploadResult.url);
+              referenceImageUrls.push(refUploadResult.url);
+            }
           }
         }
 
@@ -257,6 +271,7 @@ const AdminUpload = () => {
             is_premium: media.isPremium,
             reference_images: referenceImageUrls.length > 0 ? referenceImageUrls : null,
             tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
+            thumbnail_url: thumbnailUrl,
           });
 
         if (insertError) throw insertError;

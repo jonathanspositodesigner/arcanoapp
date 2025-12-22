@@ -1,22 +1,26 @@
 import { memo } from 'react';
 import { Play } from 'lucide-react';
+import { SecureImage } from '@/components/SecureMedia';
 
 interface VideoThumbnailProps {
   src: string;
   alt: string;
+  thumbnailUrl?: string;
   className?: string;
   onClick?: () => void;
 }
 
 /**
- * VideoThumbnail - Ultra-lightweight static placeholder for videos
+ * VideoThumbnail - Lightweight video placeholder for grids
  * 
- * Shows a gradient with play icon. Video only loads when clicked (in modal).
- * Zero network requests, zero states, zero loading animations.
+ * If thumbnailUrl is provided, shows the real thumbnail (first frame).
+ * Otherwise shows a static gradient placeholder.
+ * Video only loads when clicked (in modal).
  */
 export const VideoThumbnail = memo(({
   src,
   alt,
+  thumbnailUrl,
   className = '',
   onClick
 }: VideoThumbnailProps) => {
@@ -25,8 +29,19 @@ export const VideoThumbnail = memo(({
       className={`${className} relative overflow-hidden cursor-pointer group`}
       onClick={onClick}
     >
-      {/* Static gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-secondary/20 to-primary/20" />
+      {thumbnailUrl ? (
+        // Real thumbnail from first frame
+        <SecureImage
+          src={thumbnailUrl}
+          alt={alt}
+          isPremium={false}
+          loading="lazy"
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        // Static gradient fallback
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-secondary/20 to-primary/20" />
+      )}
       
       {/* Centered play button */}
       <div className="absolute inset-0 flex items-center justify-center">
