@@ -1,4 +1,5 @@
 import { uploadToStorage } from '@/hooks/useStorageUpload';
+import { getSignedMediaUrl } from '@/hooks/useSignedUrl';
 
 const THUMBNAIL_TIMEOUT_MS = 15000; // 15 seconds timeout
 
@@ -14,16 +15,23 @@ export async function generateVideoThumbnail(
   videoSource: File | string,
   targetWidth: number = 512
 ): Promise<Blob> {
+  const resolvedSource =
+    typeof videoSource === 'string'
+      ? await getSignedMediaUrl(videoSource).catch(() => videoSource)
+      : videoSource;
+
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
     video.crossOrigin = 'anonymous';
     video.muted = true;
     video.playsInline = true;
     video.preload = 'metadata';
-    
+
     let timeoutId: NodeJS.Timeout | null = null;
     let isResolved = false;
-    
+
+    const objectUrl = typeof resolvedSource === 'string' ? null : URL.createObjectURL(resolvedSource);
+
     // Handle cleanup
     const cleanup = () => {
       if (timeoutId) {
@@ -31,11 +39,9 @@ export async function generateVideoThumbnail(
         timeoutId = null;
       }
       video.pause();
-      video.src = '';
+      video.removeAttribute('src');
       video.load();
-      if (typeof videoSource !== 'string') {
-        URL.revokeObjectURL(video.src);
-      }
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
 
     const handleError = (message: string) => {
@@ -70,11 +76,11 @@ export async function generateVideoThumbnail(
 
     video.onseeked = () => {
       if (isResolved) return;
-      
+
       try {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        
+
         if (!ctx) {
           handleError('Falha ao obter contexto do canvas');
           return;
@@ -97,7 +103,7 @@ export async function generateVideoThumbnail(
             if (isResolved) return;
             isResolved = true;
             cleanup();
-            
+
             if (blob) {
               resolve(blob);
             } else {
@@ -113,10 +119,10 @@ export async function generateVideoThumbnail(
     };
 
     // Set source
-    if (typeof videoSource === 'string') {
-      video.src = videoSource;
+    if (typeof resolvedSource === 'string') {
+      video.src = resolvedSource;
     } else {
-      video.src = URL.createObjectURL(videoSource);
+      video.src = objectUrl!;
     }
 
     video.load();
@@ -289,7 +295,13 @@ export async function optimizeAndUploadThumbnail(
       resolve(null);
     };
 
-    img.src = imageUrl;
+    (async () => {
+      try {
+        img.src = await getSignedMediaUrl(imageUrl);
+      } catch {
+        img.src = imageUrl;
+      }
+    })();
   });
 }
 

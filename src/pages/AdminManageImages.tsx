@@ -692,10 +692,11 @@ const AdminManageImages = () => {
                     // Para vídeos: mostra thumbnail, reference_images[0], ou placeholder
                     displayThumbnail ? (
                       <div className="relative">
-                        <img
+                        <SecureImage
                           src={displayThumbnail}
                           alt={prompt.title}
                           className="w-full h-48 object-cover"
+                          isPremium={prompt.is_premium || false}
                         />
                         {/* Badge indicando se é thumbnail provisória (reference_images) */}
                         {hasRefButNoThumb && (
