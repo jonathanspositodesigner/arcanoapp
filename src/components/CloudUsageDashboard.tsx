@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Cloud, 
   Database, 
@@ -12,10 +13,12 @@ import {
   CheckCircle,
   AlertCircle,
   DollarSign,
-  TrendingUp
+  TrendingUp,
+  Activity
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import CloudCostRealtime from "./CloudCostRealtime";
 
 // Pricing based on Supabase public pricing
 const PRICING = {
@@ -288,8 +291,26 @@ const CloudUsageDashboard = () => {
   const costs = calculateCosts(metrics);
 
   return (
+    <Tabs defaultValue="realtime" className="space-y-6">
+      <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsTrigger value="realtime" className="gap-2">
+          <Activity className="h-4 w-4" />
+          Tempo Real
+        </TabsTrigger>
+        <TabsTrigger value="overview" className="gap-2">
+          <Cloud className="h-4 w-4" />
+          Visão Geral
+        </TabsTrigger>
+      </TabsList>
+
+      {/* Real-time monitoring tab */}
+      <TabsContent value="realtime">
+        <CloudCostRealtime />
+      </TabsContent>
+
+      {/* Overview tab - existing content */}
+      <TabsContent value="overview">
     <div className="space-y-6">
-      {/* Monthly Credit Cost Card */}
       <Card className={`border-2 ${costs.percentUsed >= 80 ? 'border-destructive/50' : costs.percentUsed >= 50 ? 'border-yellow-500/50' : 'border-emerald-500/50'} bg-gradient-to-br from-background to-muted/30`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -605,6 +626,8 @@ const CloudUsageDashboard = () => {
         </CardContent>
       </Card>
     </div>
+      </TabsContent>
+    </Tabs>
   );
 };
 
