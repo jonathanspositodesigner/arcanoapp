@@ -13,7 +13,7 @@ import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Copy, CalendarD
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage } from "@/components/SecureMedia";
-import { generateThumbnailFromUrl } from "@/hooks/useVideoThumbnail";
+import { generateThumbnailFromUrl, optimizeAndUploadThumbnail } from '@/hooks/useVideoThumbnail';
 
 // Format title: first letter uppercase, rest lowercase
 const formatTitle = (title: string): string => {
@@ -338,7 +338,7 @@ const AdminManageImages = () => {
            prompt.reference_images.length > 0;
   };
 
-  // Use reference image as thumbnail (instant, no video processing)
+  // Optimize reference image and use as thumbnail (resizes to 512px, ~30KB)
   const handleUseReferenceAsThumbnail = async (prompt: Prompt) => {
     if (!prompt.reference_images || prompt.reference_images.length === 0) return;
     
@@ -346,20 +346,27 @@ const AdminManageImages = () => {
     setGeneratingThumbnails(prev => new Set(prev).add(key));
     
     try {
+      // Optimize the reference image (resize to 512px, convert to WebP)
+      const optimizedUrl = await optimizeAndUploadThumbnail(prompt.reference_images[0]);
+      
+      if (!optimizedUrl) {
+        throw new Error('Falha ao otimizar imagem de referência');
+      }
+
       const { table } = getTableAndBucket(prompt.type);
       
       const { error } = await supabase
         .from(table as 'admin_prompts')
-        .update({ thumbnail_url: prompt.reference_images[0] })
+        .update({ thumbnail_url: optimizedUrl })
         .eq('id', prompt.id);
 
       if (error) throw error;
 
-      toast.success("Thumbnail definida com sucesso!");
+      toast.success("Thumbnail otimizada e salva!");
       fetchPrompts();
     } catch (error) {
-      console.error("Error setting thumbnail:", error);
-      toast.error("Erro ao definir thumbnail");
+      console.error("Error optimizing thumbnail:", error);
+      toast.error(error instanceof Error ? error.message : "Erro ao otimizar thumbnail");
     } finally {
       setGeneratingThumbnails(prev => {
         const next = new Set(prev);
@@ -452,14 +459,19 @@ const AdminManageImages = () => {
       });
 
       try {
-        // If has reference image, use it instantly
+        // If has reference image, optimize and use it
         if (hasReferenceButNoThumbnail(prompt)) {
-          const { table } = getTableAndBucket(prompt.type);
-          await supabase
-            .from(table as 'admin_prompts')
-            .update({ thumbnail_url: prompt.reference_images![0] })
-            .eq('id', prompt.id);
-          successCount++;
+          const optimizedUrl = await optimizeAndUploadThumbnail(prompt.reference_images![0]);
+          if (optimizedUrl) {
+            const { table } = getTableAndBucket(prompt.type);
+            await supabase
+              .from(table as 'admin_prompts')
+              .update({ thumbnail_url: optimizedUrl })
+              .eq('id', prompt.id);
+            successCount++;
+          } else {
+            throw new Error('Falha ao otimizar referência');
+          }
         } else {
           // Generate from video (with timeout)
           const thumbnailUrl = await generateThumbnailFromUrl(prompt.image_url);

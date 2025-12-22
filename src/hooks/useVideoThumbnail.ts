@@ -201,6 +201,98 @@ export async function generateThumbnailFromUrl(
   }
 }
 
+/**
+ * Optimizes an image from URL and uploads as thumbnail (512px, WebP, ~30KB)
+ * Used to convert large reference images into lightweight thumbnails
+ * 
+ * @param imageUrl - URL of the source image
+ * @param targetWidth - Target width for thumbnail (default 512)
+ * @returns The public URL of the optimized thumbnail, or null on failure
+ */
+export async function optimizeAndUploadThumbnail(
+  imageUrl: string,
+  targetWidth: number = 512
+): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    const timeoutId = setTimeout(() => {
+      console.error('Timeout loading image for optimization');
+      resolve(null);
+    }, 15000);
+
+    img.onload = async () => {
+      clearTimeout(timeoutId);
+      
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          console.error('Failed to get canvas context');
+          resolve(null);
+          return;
+        }
+
+        // Calculate dimensions maintaining aspect ratio
+        const aspectRatio = img.width / img.height;
+        const width = targetWidth;
+        const height = Math.round(width / aspectRatio);
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw the image
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to WebP blob (quality 0.8 for good balance ~30KB)
+        canvas.toBlob(
+          async (blob) => {
+            if (!blob) {
+              console.error('Failed to create blob from canvas');
+              resolve(null);
+              return;
+            }
+
+            // Create a File object from the blob
+            const timestamp = Date.now();
+            const randomId = Math.random().toString(36).substring(2, 8);
+            const thumbnailFile = new File(
+              [blob], 
+              `thumb_${timestamp}_${randomId}.webp`,
+              { type: 'image/webp' }
+            );
+
+            // Upload to storage
+            const uploadResult = await uploadToStorage(thumbnailFile, 'thumbnails');
+            
+            if (uploadResult.success && uploadResult.url) {
+              resolve(uploadResult.url);
+            } else {
+              console.error('Thumbnail upload failed:', uploadResult.error);
+              resolve(null);
+            }
+          },
+          'image/webp',
+          0.8
+        );
+      } catch (error) {
+        console.error('Error optimizing image:', error);
+        resolve(null);
+      }
+    };
+
+    img.onerror = () => {
+      clearTimeout(timeoutId);
+      console.error('Failed to load image for optimization');
+      resolve(null);
+    };
+
+    img.src = imageUrl;
+  });
+}
+
 // Helper to check if a URL is a video
 export function isVideoUrl(url: string): boolean {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
