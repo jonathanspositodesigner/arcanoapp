@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,10 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Copy, ArrowUpDown, CalendarDays, ImageIcon, Play, Loader2 } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Copy, CalendarDays, ImageIcon, Play, Loader2, StopCircle, AlertTriangle, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { SecureImage, SecureVideo } from "@/components/SecureMedia";
+import { SecureImage } from "@/components/SecureMedia";
 import { generateThumbnailFromUrl } from "@/hooks/useVideoThumbnail";
 
 // Format title: first letter uppercase, rest lowercase
@@ -52,9 +52,15 @@ interface Prompt {
   partner_id?: string;
   bonus_clicks?: number;
   thumbnail_url?: string;
+  reference_images?: string[];
 }
 
 type SortOption = 'date' | 'downloads';
+
+interface FailedThumbnail {
+  title: string;
+  error: string;
+}
 
 const AdminManageImages = () => {
   const navigate = useNavigate();
@@ -77,7 +83,9 @@ const AdminManageImages = () => {
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
   const [generatingThumbnails, setGeneratingThumbnails] = useState<Set<string>>(new Set());
   const [bulkGenerating, setBulkGenerating] = useState(false);
-  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0, currentTitle: '' });
+  const [failedThumbnails, setFailedThumbnails] = useState<FailedThumbnail[]>([]);
+  const stopBulkRef = useRef(false);
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
@@ -119,9 +127,9 @@ const AdminManageImages = () => {
   const fetchPrompts = async () => {
     try {
       const [adminData, communityData, partnerData] = await Promise.all([
-        supabase.from('admin_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, bonus_clicks, thumbnail_url').order('created_at', { ascending: false }),
+        supabase.from('admin_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, bonus_clicks, thumbnail_url, reference_images').order('created_at', { ascending: false }),
         supabase.from('community_prompts').select('id, title, prompt, category, image_url, created_at, bonus_clicks, thumbnail_url').eq('approved', true).order('created_at', { ascending: false }),
-        supabase.from('partner_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, partner_id, bonus_clicks, thumbnail_url').eq('approved', true).order('created_at', { ascending: false })
+        supabase.from('partner_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, partner_id, bonus_clicks, thumbnail_url, reference_images').eq('approved', true).order('created_at', { ascending: false })
       ]);
 
       const allPrompts: Prompt[] = [
@@ -314,7 +322,55 @@ const AdminManageImages = () => {
     return videoExtensions.some(ext => url.toLowerCase().includes(ext));
   };
 
-  const handleGenerateThumbnail = async (prompt: Prompt) => {
+  // Get display thumbnail: thumbnail_url > reference_images[0] > null
+  const getDisplayThumbnail = (prompt: Prompt): string | null => {
+    if (prompt.thumbnail_url) return prompt.thumbnail_url;
+    if (prompt.reference_images && prompt.reference_images.length > 0) {
+      return prompt.reference_images[0];
+    }
+    return null;
+  };
+
+  // Check if has reference image but no thumbnail
+  const hasReferenceButNoThumbnail = (prompt: Prompt): boolean => {
+    return !prompt.thumbnail_url && 
+           !!prompt.reference_images && 
+           prompt.reference_images.length > 0;
+  };
+
+  // Use reference image as thumbnail (instant, no video processing)
+  const handleUseReferenceAsThumbnail = async (prompt: Prompt) => {
+    if (!prompt.reference_images || prompt.reference_images.length === 0) return;
+    
+    const key = `${prompt.type}-${prompt.id}`;
+    setGeneratingThumbnails(prev => new Set(prev).add(key));
+    
+    try {
+      const { table } = getTableAndBucket(prompt.type);
+      
+      const { error } = await supabase
+        .from(table as 'admin_prompts')
+        .update({ thumbnail_url: prompt.reference_images[0] })
+        .eq('id', prompt.id);
+
+      if (error) throw error;
+
+      toast.success("Thumbnail definida com sucesso!");
+      fetchPrompts();
+    } catch (error) {
+      console.error("Error setting thumbnail:", error);
+      toast.error("Erro ao definir thumbnail");
+    } finally {
+      setGeneratingThumbnails(prev => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
+    }
+  };
+
+  // Generate thumbnail from video (may timeout)
+  const handleGenerateThumbnailFromVideo = async (prompt: Prompt) => {
     const key = `${prompt.type}-${prompt.id}`;
     setGeneratingThumbnails(prev => new Set(prev).add(key));
     
@@ -338,7 +394,7 @@ const AdminManageImages = () => {
       fetchPrompts();
     } catch (error) {
       console.error("Error generating thumbnail:", error);
-      toast.error("Erro ao gerar thumbnail. Tente novamente.");
+      toast.error(error instanceof Error ? error.message : "Erro ao gerar thumbnail");
     } finally {
       setGeneratingThumbnails(prev => {
         const next = new Set(prev);
@@ -346,6 +402,20 @@ const AdminManageImages = () => {
         return next;
       });
     }
+  };
+
+  // Smart thumbnail handler - uses reference if available, otherwise generates from video
+  const handleGenerateThumbnail = async (prompt: Prompt) => {
+    if (hasReferenceButNoThumbnail(prompt)) {
+      await handleUseReferenceAsThumbnail(prompt);
+    } else {
+      await handleGenerateThumbnailFromVideo(prompt);
+    }
+  };
+
+  const handleStopBulkGeneration = () => {
+    stopBulkRef.current = true;
+    toast.info("Parando geração em lote...");
   };
 
   const handleGenerateAllThumbnails = async () => {
@@ -358,42 +428,73 @@ const AdminManageImages = () => {
       return;
     }
 
+    stopBulkRef.current = false;
     setBulkGenerating(true);
-    setBulkProgress({ current: 0, total: videosWithoutThumbnails.length });
+    setBulkProgress({ current: 0, total: videosWithoutThumbnails.length, currentTitle: '' });
+    setFailedThumbnails([]);
 
     let successCount = 0;
     let failCount = 0;
+    const failed: FailedThumbnail[] = [];
 
     for (let i = 0; i < videosWithoutThumbnails.length; i++) {
+      // Check if stopped
+      if (stopBulkRef.current) {
+        toast.info(`Geração interrompida. ${successCount} geradas, ${failCount} falharam, ${videosWithoutThumbnails.length - i} restantes.`);
+        break;
+      }
+
       const prompt = videosWithoutThumbnails[i];
-      setBulkProgress({ current: i + 1, total: videosWithoutThumbnails.length });
+      setBulkProgress({ 
+        current: i + 1, 
+        total: videosWithoutThumbnails.length, 
+        currentTitle: prompt.title 
+      });
 
       try {
-        const thumbnailUrl = await generateThumbnailFromUrl(prompt.image_url);
-        
-        if (thumbnailUrl) {
+        // If has reference image, use it instantly
+        if (hasReferenceButNoThumbnail(prompt)) {
           const { table } = getTableAndBucket(prompt.type);
           await supabase
             .from(table as 'admin_prompts')
-            .update({ thumbnail_url: thumbnailUrl })
+            .update({ thumbnail_url: prompt.reference_images![0] })
             .eq('id', prompt.id);
           successCount++;
         } else {
-          failCount++;
+          // Generate from video (with timeout)
+          const thumbnailUrl = await generateThumbnailFromUrl(prompt.image_url);
+          
+          if (thumbnailUrl) {
+            const { table } = getTableAndBucket(prompt.type);
+            await supabase
+              .from(table as 'admin_prompts')
+              .update({ thumbnail_url: thumbnailUrl })
+              .eq('id', prompt.id);
+            successCount++;
+          } else {
+            throw new Error('Falha ao processar vídeo');
+          }
         }
       } catch (error) {
         console.error(`Error generating thumbnail for ${prompt.id}:`, error);
         failCount++;
+        failed.push({
+          title: prompt.title,
+          error: error instanceof Error ? error.message : 'Erro desconhecido'
+        });
       }
     }
 
     setBulkGenerating(false);
+    setFailedThumbnails(failed);
     fetchPrompts();
     
-    if (failCount === 0) {
-      toast.success(`${successCount} thumbnails geradas com sucesso!`);
-    } else {
-      toast.warning(`${successCount} geradas, ${failCount} falharam`);
+    if (!stopBulkRef.current) {
+      if (failCount === 0) {
+        toast.success(`${successCount} thumbnails geradas com sucesso!`);
+      } else {
+        toast.warning(`${successCount} geradas, ${failCount} falharam`);
+      }
     }
   };
 
@@ -499,25 +600,69 @@ const AdminManageImages = () => {
             </div>
             
             {videosWithoutThumbnails > 0 && (
-              <Button
-                onClick={handleGenerateAllThumbnails}
-                disabled={bulkGenerating}
-                className="bg-gradient-primary"
-              >
-                {bulkGenerating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Gerando {bulkProgress.current}/{bulkProgress.total}
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="h-4 w-4 mr-2" />
-                    Gerar Todas Thumbnails ({videosWithoutThumbnails})
-                  </>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleGenerateAllThumbnails}
+                  disabled={bulkGenerating}
+                  className="bg-gradient-primary"
+                >
+                  {bulkGenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {bulkProgress.current}/{bulkProgress.total}
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Gerar Todas ({videosWithoutThumbnails})
+                    </>
+                  )}
+                </Button>
+                
+                {bulkGenerating && (
+                  <Button
+                    onClick={handleStopBulkGeneration}
+                    variant="destructive"
+                    size="icon"
+                  >
+                    <StopCircle className="h-4 w-4" />
+                  </Button>
                 )}
-              </Button>
+              </div>
             )}
           </div>
+          
+          {/* Bulk progress details */}
+          {bulkGenerating && bulkProgress.currentTitle && (
+            <div className="mt-3 p-3 rounded-lg bg-secondary/50 border border-border">
+              <p className="text-sm text-muted-foreground">
+                Processando: <span className="text-foreground font-medium">{bulkProgress.currentTitle}</span>
+              </p>
+              <div className="mt-2 h-2 bg-secondary rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary transition-all duration-300"
+                  style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Failed thumbnails list */}
+          {failedThumbnails.length > 0 && !bulkGenerating && (
+            <div className="mt-3 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+              <div className="flex items-center gap-2 text-destructive mb-2">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="font-medium">Falhas na geração ({failedThumbnails.length})</span>
+              </div>
+              <ul className="text-sm space-y-1 max-h-32 overflow-y-auto">
+                {failedThumbnails.map((f, i) => (
+                  <li key={i} className="text-muted-foreground">
+                    • {f.title}: <span className="text-destructive">{f.error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -525,18 +670,30 @@ const AdminManageImages = () => {
             const isVideo = isVideoUrl(prompt.image_url);
             const promptKey = `${prompt.type}-${prompt.id}`;
             const isGenerating = generatingThumbnails.has(promptKey);
+            const displayThumbnail = getDisplayThumbnail(prompt);
+            const hasRefButNoThumb = hasReferenceButNoThumbnail(prompt);
             
             return (
               <Card key={promptKey} className="overflow-hidden">
                 <div className="relative">
                   {isVideo ? (
-                    // Para vídeos: mostra thumbnail ou placeholder estático
-                    prompt.thumbnail_url ? (
-                      <img
-                        src={prompt.thumbnail_url}
-                        alt={prompt.title}
-                        className="w-full h-48 object-cover"
-                      />
+                    // Para vídeos: mostra thumbnail, reference_images[0], ou placeholder
+                    displayThumbnail ? (
+                      <div className="relative">
+                        <img
+                          src={displayThumbnail}
+                          alt={prompt.title}
+                          className="w-full h-48 object-cover"
+                        />
+                        {/* Badge indicando se é thumbnail provisória (reference_images) */}
+                        {hasRefButNoThumb && (
+                          <div className="absolute top-2 left-2">
+                            <Badge className="bg-yellow-500/90 text-white text-xs">
+                              Imagem de referência
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <div className="w-full h-48 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                         <div className="text-center">
@@ -601,27 +758,61 @@ const AdminManageImages = () => {
                     {prompt.prompt}
                   </p>
                   
-                  {/* Botão para gerar thumbnail de vídeo */}
+                  {/* Botões para gerar thumbnail de vídeo */}
                   {isVideo && (
-                    <Button
-                      onClick={() => handleGenerateThumbnail(prompt)}
-                      variant="secondary"
-                      size="sm"
-                      disabled={isGenerating}
-                      className="w-full"
-                    >
-                      {isGenerating ? (
+                    <div className="flex gap-2">
+                      {hasRefButNoThumb ? (
+                        // Se tem reference_images mas não tem thumbnail, mostra opção rápida
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Gerando...
+                          <Button
+                            onClick={() => handleUseReferenceAsThumbnail(prompt)}
+                            variant="secondary"
+                            size="sm"
+                            disabled={isGenerating}
+                            className="flex-1"
+                          >
+                            {isGenerating ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <Zap className="h-4 w-4 mr-1" />
+                                Usar Referência
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={() => handleGenerateThumbnailFromVideo(prompt)}
+                            variant="outline"
+                            size="sm"
+                            disabled={isGenerating}
+                            title="Gerar do 1º frame do vídeo (pode demorar)"
+                          >
+                            <Video className="h-4 w-4" />
+                          </Button>
                         </>
                       ) : (
-                        <>
-                          <ImageIcon className="h-4 w-4 mr-2" />
-                          {prompt.thumbnail_url ? 'Regerar Thumbnail' : 'Gerar Thumbnail'}
-                        </>
+                        // Sem reference_images, gera do vídeo ou regenera
+                        <Button
+                          onClick={() => handleGenerateThumbnailFromVideo(prompt)}
+                          variant="secondary"
+                          size="sm"
+                          disabled={isGenerating}
+                          className="w-full"
+                        >
+                          {isGenerating ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Gerando...
+                            </>
+                          ) : (
+                            <>
+                              <ImageIcon className="h-4 w-4 mr-2" />
+                              {prompt.thumbnail_url ? 'Regerar Thumbnail' : 'Gerar Thumbnail'}
+                            </>
+                          )}
+                        </Button>
                       )}
-                    </Button>
+                    </div>
                   )}
                   
                   <div className="flex gap-2 pt-2">

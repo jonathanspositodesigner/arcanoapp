@@ -1,7 +1,10 @@
 import { uploadToStorage } from '@/hooks/useStorageUpload';
 
+const THUMBNAIL_TIMEOUT_MS = 15000; // 15 seconds timeout
+
 /**
  * Generates a lightweight WebP thumbnail from video's first frame
+ * With timeout protection to prevent infinite hanging
  * 
  * @param videoSource - Either a File object or a URL string
  * @param targetWidth - Target width for thumbnail (default 512)
@@ -16,9 +19,17 @@ export async function generateVideoThumbnail(
     video.crossOrigin = 'anonymous';
     video.muted = true;
     video.playsInline = true;
+    video.preload = 'metadata';
+    
+    let timeoutId: NodeJS.Timeout | null = null;
+    let isResolved = false;
     
     // Handle cleanup
     const cleanup = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
       video.pause();
       video.src = '';
       video.load();
@@ -27,9 +38,29 @@ export async function generateVideoThumbnail(
       }
     };
 
-    video.onerror = (e) => {
+    const handleError = (message: string) => {
+      if (isResolved) return;
+      isResolved = true;
       cleanup();
-      reject(new Error('Failed to load video for thumbnail generation'));
+      reject(new Error(message));
+    };
+
+    // Setup timeout to prevent infinite hanging
+    timeoutId = setTimeout(() => {
+      handleError(`Timeout: vídeo não carregou em ${THUMBNAIL_TIMEOUT_MS / 1000}s`);
+    }, THUMBNAIL_TIMEOUT_MS);
+
+    video.onerror = () => {
+      handleError('Falha ao carregar vídeo para gerar thumbnail');
+    };
+
+    video.onstalled = () => {
+      // Video stalled - might recover, but log it
+      console.warn('Video loading stalled, waiting...');
+    };
+
+    video.onabort = () => {
+      handleError('Carregamento do vídeo foi abortado');
     };
 
     video.onloadeddata = () => {
@@ -38,13 +69,14 @@ export async function generateVideoThumbnail(
     };
 
     video.onseeked = () => {
+      if (isResolved) return;
+      
       try {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
         if (!ctx) {
-          cleanup();
-          reject(new Error('Failed to get canvas context'));
+          handleError('Falha ao obter contexto do canvas');
           return;
         }
 
@@ -62,19 +94,21 @@ export async function generateVideoThumbnail(
         // Convert to WebP blob (quality 0.8 for good balance)
         canvas.toBlob(
           (blob) => {
+            if (isResolved) return;
+            isResolved = true;
             cleanup();
+            
             if (blob) {
               resolve(blob);
             } else {
-              reject(new Error('Failed to generate thumbnail blob'));
+              reject(new Error('Falha ao gerar blob da thumbnail'));
             }
           },
           'image/webp',
           0.8
         );
       } catch (err) {
-        cleanup();
-        reject(err);
+        handleError(err instanceof Error ? err.message : 'Erro desconhecido');
       }
     };
 
@@ -113,8 +147,8 @@ export async function generateAndUploadThumbnail(
       { type: 'image/webp' }
     );
 
-    // Upload to storage in thumbnails subfolder
-    const uploadResult = await uploadToStorage(thumbnailFile, `${bucket}/thumbnails`);
+    // Upload to storage - use 'thumbnails' folder directly, bucket handles the rest
+    const uploadResult = await uploadToStorage(thumbnailFile, 'thumbnails');
     
     if (uploadResult.success && uploadResult.url) {
       return uploadResult.url;
@@ -152,8 +186,8 @@ export async function generateThumbnailFromUrl(
       { type: 'image/webp' }
     );
 
-    // Upload to storage in thumbnails subfolder
-    const uploadResult = await uploadToStorage(thumbnailFile, `${bucket}/thumbnails`);
+    // Upload to storage - use 'thumbnails' folder directly
+    const uploadResult = await uploadToStorage(thumbnailFile, 'thumbnails');
     
     if (uploadResult.success && uploadResult.url) {
       return uploadResult.url;
