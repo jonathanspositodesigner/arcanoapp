@@ -32,8 +32,21 @@ const isCloudinaryUrl = (url: string): boolean => {
   return url.includes('cloudinary.com') || url.includes('res.cloudinary.com');
 };
 
+// Public buckets that DON'T need signed URLs - avoids edge function calls = saves money
+const PUBLIC_BUCKETS = new Set<string>([
+  'prompts-cloudinary',
+  'artes-cloudinary',
+  'pack-covers',
+  'email-assets'
+]);
+
+// Check if URL is from a public Supabase bucket
+const isPublicBucketUrl = (url: string): boolean => {
+  const parsed = parseStorageUrl(url);
+  return parsed !== null && PUBLIC_BUCKETS.has(parsed.bucket);
+};
+
 // Cloudinary URLs are already optimized at upload time.
-// IMPORTANT: do NOT apply dynamic Cloudinary transformations on view, to avoid credit/bandwidth surprises.
 const getOptimizedCloudinaryUrl = (url: string, _size: ImageSize = 'full'): string => {
   return url;
 };
@@ -62,9 +75,16 @@ export const SecureImage = memo(({
     setImageLoaded(false);
     
     const loadImage = async () => {
-      // Check if URL is from Cloudinary - use optimized URL directly
+      // Check if URL is from Cloudinary - use directly (no signing needed)
       if (isCloudinaryUrl(src)) {
         setSignedUrl(getOptimizedCloudinaryUrl(src, size));
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if URL is from a public bucket - use directly (no signing needed = no edge function call)
+      if (isPublicBucketUrl(src)) {
+        setSignedUrl(src);
         setIsLoading(false);
         return;
       }
@@ -190,9 +210,16 @@ export const SecureVideo = memo(({
     setVideoLoaded(false);
     
     const loadVideo = async () => {
-      // Check if URL is from Cloudinary - use optimized URL
+      // Check if URL is from Cloudinary - use directly (no signing needed)
       if (isCloudinaryUrl(src)) {
         setSignedUrl(getOptimizedCloudinaryUrl(src, 'preview'));
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if URL is from a public bucket - use directly (no signing needed = no edge function call)
+      if (isPublicBucketUrl(src)) {
+        setSignedUrl(src);
         setIsLoading(false);
         return;
       }

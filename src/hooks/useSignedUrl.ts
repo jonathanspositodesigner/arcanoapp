@@ -12,7 +12,13 @@ interface SignedUrlCache {
 const urlCache: SignedUrlCache = {};
 
 // Buckets that are already public (no need to generate signed URLs)
-const PUBLIC_BUCKETS = new Set<string>(['prompts-cloudinary', 'artes-cloudinary']);
+// CRITICAL: Adding all public buckets here STOPS edge function calls = STOPS spending money
+const PUBLIC_BUCKETS = new Set<string>([
+  'prompts-cloudinary',
+  'artes-cloudinary', 
+  'pack-covers',
+  'email-assets'
+]);
 
 // Extract bucket and file path from Supabase storage URL
 export const parseStorageUrl = (url: string): { bucket: string; filePath: string } | null => {
