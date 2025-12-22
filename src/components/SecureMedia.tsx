@@ -32,7 +32,8 @@ const isCloudinaryUrl = (url: string): boolean => {
   return url.includes('cloudinary.com') || url.includes('res.cloudinary.com');
 };
 
-// Public buckets that DON'T need signed URLs - avoids edge function calls = saves money
+// ALL PUBLIC BUCKETS - avoids edge function calls = saves money
+// CRITICAL: Must match the list in useSignedUrl.ts!
 const PUBLIC_BUCKETS = new Set<string>([
   'prompts-cloudinary',
   'artes-cloudinary',

@@ -7,6 +7,19 @@ export const preloadCache = new Map<string, string>();
 // Track which URLs are currently being preloaded
 const preloadingUrls = new Set<string>();
 
+// PUBLIC BUCKETS - must match useSignedUrl.ts!
+const PUBLIC_BUCKETS = new Set<string>([
+  'prompts-cloudinary',
+  'artes-cloudinary',
+  'pack-covers',
+  'email-assets'
+]);
+
+// Check if URL is from Cloudinary
+const isCloudinaryUrl = (url: string): boolean => {
+  return url.includes('cloudinary.com') || url.includes('res.cloudinary.com');
+};
+
 // Preload a single image URL
 export const preloadImage = async (src: string): Promise<void> => {
   // Skip if already cached or currently preloading
@@ -14,15 +27,33 @@ export const preloadImage = async (src: string): Promise<void> => {
     return;
   }
 
-  const parsed = parseStorageUrl(src);
-  if (!parsed) {
-    // Not a storage URL, preload directly
+  // Cloudinary URLs - use directly, no signed URL needed
+  if (isCloudinaryUrl(src)) {
     preloadCache.set(src, src);
     const img = new Image();
     img.src = src;
     return;
   }
 
+  const parsed = parseStorageUrl(src);
+  
+  // Not a storage URL - use directly
+  if (!parsed) {
+    preloadCache.set(src, src);
+    const img = new Image();
+    img.src = src;
+    return;
+  }
+
+  // PUBLIC BUCKET - use directly, NO edge function call = NO COST!
+  if (PUBLIC_BUCKETS.has(parsed.bucket)) {
+    preloadCache.set(src, src);
+    const img = new Image();
+    img.src = src;
+    return;
+  }
+
+  // Private bucket - need signed URL
   preloadingUrls.add(src);
 
   try {
