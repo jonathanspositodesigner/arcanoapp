@@ -9,10 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Copy, ArrowUpDown, CalendarDays } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Copy, ArrowUpDown, CalendarDays, ImageIcon, Play, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
+import { generateThumbnailFromUrl } from "@/hooks/useVideoThumbnail";
 
 // Format title: first letter uppercase, rest lowercase
 const formatTitle = (title: string): string => {
@@ -50,6 +51,7 @@ interface Prompt {
   tutorial_url?: string;
   partner_id?: string;
   bonus_clicks?: number;
+  thumbnail_url?: string;
 }
 
 type SortOption = 'date' | 'downloads';
@@ -73,6 +75,9 @@ const AdminManageImages = () => {
   const [sortBy, setSortBy] = useState<SortOption>('date');
   const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [generatingThumbnails, setGeneratingThumbnails] = useState<Set<string>>(new Set());
+  const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
@@ -114,9 +119,9 @@ const AdminManageImages = () => {
   const fetchPrompts = async () => {
     try {
       const [adminData, communityData, partnerData] = await Promise.all([
-        supabase.from('admin_prompts').select('*').order('created_at', { ascending: false }),
-        supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', { ascending: false }),
-        supabase.from('partner_prompts').select('*').eq('approved', true).order('created_at', { ascending: false })
+        supabase.from('admin_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, bonus_clicks, thumbnail_url').order('created_at', { ascending: false }),
+        supabase.from('community_prompts').select('id, title, prompt, category, image_url, created_at, bonus_clicks, thumbnail_url').eq('approved', true).order('created_at', { ascending: false }),
+        supabase.from('partner_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, partner_id, bonus_clicks, thumbnail_url').eq('approved', true).order('created_at', { ascending: false })
       ]);
 
       const allPrompts: Prompt[] = [
@@ -309,6 +314,93 @@ const AdminManageImages = () => {
     return videoExtensions.some(ext => url.toLowerCase().includes(ext));
   };
 
+  const handleGenerateThumbnail = async (prompt: Prompt) => {
+    const key = `${prompt.type}-${prompt.id}`;
+    setGeneratingThumbnails(prev => new Set(prev).add(key));
+    
+    try {
+      const thumbnailUrl = await generateThumbnailFromUrl(prompt.image_url);
+      
+      if (!thumbnailUrl) {
+        throw new Error('Falha ao gerar thumbnail');
+      }
+
+      const { table } = getTableAndBucket(prompt.type);
+      
+      const { error } = await supabase
+        .from(table as 'admin_prompts')
+        .update({ thumbnail_url: thumbnailUrl })
+        .eq('id', prompt.id);
+
+      if (error) throw error;
+
+      toast.success("Thumbnail gerada com sucesso!");
+      fetchPrompts();
+    } catch (error) {
+      console.error("Error generating thumbnail:", error);
+      toast.error("Erro ao gerar thumbnail. Tente novamente.");
+    } finally {
+      setGeneratingThumbnails(prev => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
+    }
+  };
+
+  const handleGenerateAllThumbnails = async () => {
+    const videosWithoutThumbnails = filteredAndSortedPrompts.filter(
+      p => isVideoUrl(p.image_url) && !p.thumbnail_url
+    );
+
+    if (videosWithoutThumbnails.length === 0) {
+      toast.info("Todos os vídeos já possuem thumbnails!");
+      return;
+    }
+
+    setBulkGenerating(true);
+    setBulkProgress({ current: 0, total: videosWithoutThumbnails.length });
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < videosWithoutThumbnails.length; i++) {
+      const prompt = videosWithoutThumbnails[i];
+      setBulkProgress({ current: i + 1, total: videosWithoutThumbnails.length });
+
+      try {
+        const thumbnailUrl = await generateThumbnailFromUrl(prompt.image_url);
+        
+        if (thumbnailUrl) {
+          const { table } = getTableAndBucket(prompt.type);
+          await supabase
+            .from(table as 'admin_prompts')
+            .update({ thumbnail_url: thumbnailUrl })
+            .eq('id', prompt.id);
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch (error) {
+        console.error(`Error generating thumbnail for ${prompt.id}:`, error);
+        failCount++;
+      }
+    }
+
+    setBulkGenerating(false);
+    fetchPrompts();
+    
+    if (failCount === 0) {
+      toast.success(`${successCount} thumbnails geradas com sucesso!`);
+    } else {
+      toast.warning(`${successCount} geradas, ${failCount} falharam`);
+    }
+  };
+
+  const videosWithoutThumbnails = prompts.filter(
+    p => isVideoUrl(p.image_url) && !p.thumbnail_url
+  ).length;
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -395,32 +487,64 @@ const AdminManageImages = () => {
             </Button>
           </div>
           
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            {videosWithoutThumbnails > 0 && (
+              <Button
+                onClick={handleGenerateAllThumbnails}
+                disabled={bulkGenerating}
+                className="bg-gradient-primary"
+              >
+                {bulkGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Gerando {bulkProgress.current}/{bulkProgress.total}
+                  </>
+                ) : (
+                  <>
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    Gerar Todas Thumbnails ({videosWithoutThumbnails})
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAndSortedPrompts.map((prompt) => {
             const isVideo = isVideoUrl(prompt.image_url);
+            const promptKey = `${prompt.type}-${prompt.id}`;
+            const isGenerating = generatingThumbnails.has(promptKey);
+            
             return (
-              <Card key={`${prompt.type}-${prompt.id}`} className="overflow-hidden">
+              <Card key={promptKey} className="overflow-hidden">
                 <div className="relative">
                   {isVideo ? (
-                    <SecureVideo
-                      src={prompt.image_url}
-                      className="w-full h-48 object-cover"
-                      isPremium={prompt.is_premium || false}
-                      autoPlay
-                      muted
-                      loop
-                    />
+                    // Para vídeos: mostra thumbnail ou placeholder estático
+                    prompt.thumbnail_url ? (
+                      <img
+                        src={prompt.thumbnail_url}
+                        alt={prompt.title}
+                        className="w-full h-48 object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                        <div className="text-center">
+                          <Video className="h-12 w-12 text-primary/50 mx-auto mb-2" />
+                          <span className="text-xs text-muted-foreground">Sem thumbnail</span>
+                        </div>
+                      </div>
+                    )
                   ) : (
                     <SecureImage
                       src={prompt.image_url}
@@ -429,6 +553,17 @@ const AdminManageImages = () => {
                       isPremium={prompt.is_premium || false}
                     />
                   )}
+                  
+                  {/* Badge de vídeo */}
+                  {isVideo && (
+                    <div className="absolute bottom-2 left-2">
+                      <Badge className="bg-black/70 text-white">
+                        <Play className="h-3 w-3 mr-1" fill="currentColor" />
+                        Vídeo
+                      </Badge>
+                    </div>
+                  )}
+                  
                   <div className="absolute top-2 right-2 flex gap-1">
                     {prompt.is_premium && (
                       <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
@@ -465,6 +600,30 @@ const AdminManageImages = () => {
                   <p className="text-sm text-muted-foreground line-clamp-2">
                     {prompt.prompt}
                   </p>
+                  
+                  {/* Botão para gerar thumbnail de vídeo */}
+                  {isVideo && (
+                    <Button
+                      onClick={() => handleGenerateThumbnail(prompt)}
+                      variant="secondary"
+                      size="sm"
+                      disabled={isGenerating}
+                      className="w-full"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Gerando...
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="h-4 w-4 mr-2" />
+                          {prompt.thumbnail_url ? 'Regerar Thumbnail' : 'Gerar Thumbnail'}
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  
                   <div className="flex gap-2 pt-2">
                     <Button
                       onClick={() => handleEdit(prompt)}
