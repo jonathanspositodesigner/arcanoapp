@@ -124,122 +124,11 @@ const BibliotecaPrompts = () => {
     // Preserve other params like 'item' and 'colecao'
     setSearchParams(newParams, { replace: true });
   };
-  const fetchCommunityPrompts = async () => {
-    const [communityResult, adminResult, partnerResult, clicksResult] = await Promise.all([supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', {
-      ascending: false
-    }), supabase.from('admin_prompts').select('*').order('created_at', {
-      ascending: false
-    }), supabase.from('partner_prompts').select('*').eq('approved', true).order('created_at', {
-      ascending: false
-    }), supabase.from('prompt_clicks').select('prompt_id')]);
-    if (communityResult.error) {
-      console.error("Error fetching community prompts:", communityResult.error);
-    }
-    if (adminResult.error) {
-      console.error("Error fetching admin prompts:", adminResult.error);
-    }
-    if (partnerResult.error) {
-      console.error("Error fetching partner prompts:", partnerResult.error);
-    }
+  // Use memoized filtered prompts from the optimized hook
+  const filteredPrompts = useMemo(() => {
+    return getFilteredPrompts(contentType, selectedCategory);
+  }, [contentType, selectedCategory, getFilteredPrompts]);
 
-    // Count clicks per prompt
-    const clickCounts: Record<string, number> = {};
-    (clicksResult.data || []).forEach(d => {
-      clickCounts[d.prompt_id] = (clickCounts[d.prompt_id] || 0) + 1;
-    });
-    const communityPrompts: PromptItem[] = (communityResult.data || []).map(item => ({
-      id: item.id,
-      title: item.title,
-      prompt: item.prompt,
-      imageUrl: item.image_url,
-      category: item.category,
-      isCommunity: true,
-      isPremium: false,
-      createdAt: item.created_at || undefined,
-      promptType: 'community' as const,
-      clickCount: clickCounts[item.id] || 0,
-      bonusClicks: (item as any).bonus_clicks || 0
-    }));
-    const adminPrompts: PromptItem[] = (adminResult.data || []).map(item => ({
-      id: item.id,
-      title: item.title,
-      prompt: item.prompt,
-      imageUrl: item.image_url,
-      category: item.category,
-      isExclusive: true,
-      isPremium: (item as any).is_premium || false,
-      referenceImages: (item as any).reference_images || [],
-      tutorialUrl: (item as any).tutorial_url || null,
-      createdAt: item.created_at || undefined,
-      promptType: 'admin' as const,
-      clickCount: clickCounts[item.id] || 0,
-      bonusClicks: (item as any).bonus_clicks || 0
-    }));
-
-    // Partner prompts are shown as exclusive content (no partner badge)
-    const partnerPrompts: PromptItem[] = (partnerResult.data || []).map(item => ({
-      id: item.id,
-      title: item.title,
-      prompt: item.prompt,
-      imageUrl: item.image_url,
-      category: item.category,
-      isExclusive: true,
-      isPremium: (item as any).is_premium || false,
-      referenceImages: (item as any).reference_images || [],
-      tutorialUrl: (item as any).tutorial_url || null,
-      createdAt: item.created_at || undefined,
-      promptType: 'partner' as const,
-      clickCount: clickCounts[item.id] || 0,
-      bonusClicks: (item as any).bonus_clicks || 0
-    }));
-
-    // Combine all prompts and sort by created_at descending
-    const allCombined = [...adminPrompts, ...partnerPrompts, ...communityPrompts].sort((a, b) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateB - dateA; // Most recent first
-    });
-    setAllPrompts(allCombined);
-  };
-  // Filter by content type first
-  const contentTypePrompts = contentType === "exclusive" ? allPrompts.filter(p => p.isExclusive) : allPrompts.filter(p => p.isCommunity);
-
-  // Shuffled items for "Ver Tudo" based on content type
-  const shuffledContentType = contentType === "exclusive" ? shuffledVerTudo.filter(p => p.isExclusive) : shuffledVerTudo.filter(p => p.isCommunity);
-
-  // Sort function - by total clicks (real + bonus)
-  const sortByClicks = (a: PromptItem, b: PromptItem) => {
-    const clicksA = (a.clickCount || 0) + (a.bonusClicks || 0);
-    const clicksB = (b.clickCount || 0) + (b.bonusClicks || 0);
-    return clicksB - clicksA;
-  };
-
-  // For "Ver Tudo" we use shuffled array, for other categories we sort by created_at (most recent first)
-  const getFilteredAndSortedPrompts = () => {
-    if (selectedCategory === "Ver Tudo") {
-      return shuffledContentType;
-    }
-
-    // Sort function - most recent first
-    const sortByDate = (a: PromptItem, b: PromptItem) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateB - dateA;
-    };
-    if (selectedCategory === "Populares") {
-      return contentTypePrompts.filter(p => p.category !== "Controles de Câmera").sort(sortByClicks);
-    }
-    if (selectedCategory === "Novos") {
-      return contentTypePrompts.filter(p => p.category !== "Controles de Câmera").sort(sortByDate).slice(0, 16);
-    }
-    if (selectedCategory === "Grátis") {
-      return contentTypePrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera").sort(sortByDate);
-    }
-
-    // For specific categories - filter and sort by date
-    return contentTypePrompts.filter(p => p.category === selectedCategory).sort(sortByDate);
-  };
-  const filteredPrompts = getFilteredAndSortedPrompts();
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -625,19 +514,30 @@ const BibliotecaPrompts = () => {
             const isVideo = isVideoUrl(item.imageUrl);
             const canAccess = !item.isPremium || isPremium;
             return <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
-                  {/* Media Preview - always load without premium check for preview, access control is on copy/download */}
+                  {/* Media Preview - Videos use lightweight thumbnail, actual video loads in modal */}
                   <div className="aspect-square overflow-hidden bg-secondary relative">
-                    {isVideo ? <>
-                        <SecureVideo src={item.imageUrl} isPremium={false} className="w-full h-full object-cover cursor-pointer" preload="metadata" playsInline onClick={() => handleItemClick(item)} />
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="bg-black/50 rounded-full p-3">
-                            <Play className="h-8 w-8 text-white" fill="white" />
-                          </div>
-                        </div>
-                      </> : <SecureImage src={item.imageUrl} alt={item.title} isPremium={false} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onClick={() => handleItemClick(item)} />}
-                    {item.isPremium && !isPremium && <div className="absolute top-2 right-2 bg-black/60 rounded-full p-2">
+                    {isVideo ? (
+                      <VideoThumbnail 
+                        src={item.imageUrl} 
+                        alt={item.title} 
+                        className="w-full h-full" 
+                        onClick={() => handleItemClick(item)} 
+                      />
+                    ) : (
+                      <SecureImage 
+                        src={item.imageUrl} 
+                        alt={item.title} 
+                        isPremium={false} 
+                        loading="lazy" 
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" 
+                        onClick={() => handleItemClick(item)} 
+                      />
+                    )}
+                    {item.isPremium && !isPremium && (
+                      <div className="absolute top-2 right-2 bg-black/60 rounded-full p-2">
                         <Lock className="h-5 w-5 text-white" />
-                      </div>}
+                      </div>
+                    )}
                   </div>
 
                   {/* Card Content */}
