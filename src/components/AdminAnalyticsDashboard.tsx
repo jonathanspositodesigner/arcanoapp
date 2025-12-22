@@ -43,63 +43,11 @@ interface PurchaseHourStats {
 
 const COLORS = ['#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#3b82f6'];
 
-// Helper component to load signed URLs for ranking item images
+import { SecureImage, SecureVideo } from "@/components/SecureMedia";
+
+// Helper component to load images for ranking items - uses SecureImage to avoid edge function costs
 const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: string; type: 'prompt' | 'arte' }) => {
-  const [finalUrl, setFinalUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const fetchSignedUrl = async () => {
-      if (!imageUrl) {
-        setLoading(false);
-        return;
-      }
-      
-      setLoading(true);
-      setError(false);
-      
-      // Parse URL: https://xxx.supabase.co/storage/v1/object/public/bucket-name/filename.ext
-      // Extract bucket and filePath using regex
-      const match = imageUrl.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)/);
-      
-      if (!match) {
-        setFinalUrl(imageUrl);
-        setLoading(false);
-        return;
-      }
-      
-      const bucket = match[1];
-      const filePath = match[2];
-
-      try {
-        const { data, error: fnError } = await supabase.functions.invoke('get-signed-url', {
-          body: { bucket, filePath }
-        });
-        
-        if (fnError || !data?.signedUrl) {
-          setFinalUrl(imageUrl);
-        } else {
-          setFinalUrl(data.signedUrl);
-        }
-      } catch {
-        setFinalUrl(imageUrl);
-      }
-      setLoading(false);
-    };
-
-    fetchSignedUrl();
-  }, [imageUrl]);
-
-  if (loading) {
-    return (
-      <div className="w-full h-40 rounded-lg bg-muted animate-pulse flex items-center justify-center">
-        <span className="text-xs text-muted-foreground">Carregando...</span>
-      </div>
-    );
-  }
-
-  if (error || !finalUrl) {
+  if (!imageUrl) {
     return (
       <div className="w-full h-40 rounded-lg bg-muted flex items-center justify-center">
         <span className="text-xs text-muted-foreground">Imagem não disponível</span>
@@ -107,26 +55,25 @@ const RankingItemImage = ({ imageUrl, title, type }: { imageUrl: string; title: 
     );
   }
 
-  const isVideo = finalUrl.includes('.mp4') || finalUrl.includes('.webm') || finalUrl.includes('.mov');
+  const isVideo = imageUrl.includes('.mp4') || imageUrl.includes('.webm') || imageUrl.includes('.mov');
 
   return (
     <div className="relative w-full h-40 rounded-lg overflow-hidden bg-muted">
       {isVideo ? (
-        <video 
-          src={finalUrl} 
+        <SecureVideo 
+          src={imageUrl} 
           className="w-full h-full object-contain"
           autoPlay
           muted
           loop
           playsInline
-          onError={() => setError(true)}
         />
       ) : (
-        <img 
-          src={finalUrl} 
+        <SecureImage 
+          src={imageUrl} 
           alt={title}
           className="w-full h-full object-contain"
-          onError={() => setError(true)}
+          size="full"
         />
       )}
     </div>

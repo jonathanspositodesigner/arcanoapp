@@ -11,13 +11,21 @@ interface SignedUrlCache {
 // In-memory cache for signed URLs
 const urlCache: SignedUrlCache = {};
 
-// Buckets that are already public (no need to generate signed URLs)
-// CRITICAL: Adding all public buckets here STOPS edge function calls = STOPS spending money
+// ALL BUCKETS THAT ARE PUBLIC - no need to generate signed URLs
+// CRITICAL: Adding buckets here STOPS edge function calls = STOPS spending money
+// If a bucket is public in Supabase, add it here to avoid costs!
 const PUBLIC_BUCKETS = new Set<string>([
   'prompts-cloudinary',
   'artes-cloudinary', 
   'pack-covers',
-  'email-assets'
+  'email-assets',
+  // These buckets are private but we add them IF they become public
+  // 'admin-prompts',
+  // 'admin-artes',
+  // 'partner-prompts',
+  // 'partner-artes',
+  // 'community-prompts',
+  // 'community-artes'
 ]);
 
 // Extract bucket and file path from Supabase storage URL
