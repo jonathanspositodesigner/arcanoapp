@@ -47,14 +47,26 @@ serve(async (req) => {
 
     if (error) {
       console.error('Error creating signed URL:', error);
-      // Return 404 for "Object not found" errors, 500 for others
+      // Return 200 for not found (so supabase-js doesn't throw a FunctionsHttpError)
+      // and 500 for other errors.
       const errorMessage = error.message || '';
       const isNotFound = errorMessage.toLowerCase().includes('not found');
+
+      if (isNotFound) {
+        return new Response(
+          JSON.stringify({ signedUrl: null, notFound: true }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
       return new Response(
-        JSON.stringify({ error: isNotFound ? 'File not found' : 'Failed to generate signed URL' }),
-        { 
-          status: isNotFound ? 404 : 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: 'Failed to generate signed URL' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
