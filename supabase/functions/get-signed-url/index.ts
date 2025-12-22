@@ -47,10 +47,13 @@ serve(async (req) => {
 
     if (error) {
       console.error('Error creating signed URL:', error);
+      // Return 404 for "Object not found" errors, 500 for others
+      const errorMessage = error.message || '';
+      const isNotFound = errorMessage.toLowerCase().includes('not found');
       return new Response(
-        JSON.stringify({ error: 'Failed to generate signed URL' }),
+        JSON.stringify({ error: isNotFound ? 'File not found' : 'Failed to generate signed URL' }),
         { 
-          status: 500, 
+          status: isNotFound ? 404 : 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
