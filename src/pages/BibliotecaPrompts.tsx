@@ -1,57 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, User, LogOut, Settings } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, LogOut, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
-import { trackPromptClick, hasClickedInSession } from "@/hooks/usePromptClickTracker";
-import logoHorizontal from "@/assets/logo_horizontal.png";
+import { trackPromptClick } from "@/hooks/usePromptClickTracker";
 import promptclubLogo from "@/assets/promptclub_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
+import VideoThumbnail from "@/components/VideoThumbnail";
 import ArcaneAIStudioModal from "@/components/ArcaneAIStudioModal";
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
-interface PromptItem {
-  id: string | number;
-  title: string;
-  prompt: string;
-  imageUrl: string;
-  category?: string;
-  isCommunity?: boolean;
-  isExclusive?: boolean;
-  isPremium?: boolean;
-  referenceImages?: string[];
-  tutorialUrl?: string;
-  createdAt?: string;
-  promptType?: 'admin' | 'community' | 'partner';
-  clickCount?: number;
-  bonusClicks?: number;
-}
+import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
   return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
-// IMPORTANT: Do NOT use dynamic transformations on Supabase Storage!
-// They cost $5 per 1000 transformations. Images should already be optimized at upload time.
-const getThumbnailUrl = (url: string, _width: number = 400) => {
-  // Return URL as-is - no transformations to avoid costs
-  return url;
-};
+
 const ITEMS_PER_PAGE = 16;
-// Fisher-Yates shuffle function
-const shuffleArray = <T,>(array: T[]): T[] => {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-};
 
 // Category slug conversion functions
 const categoryToSlug = (category: string): string => {
@@ -86,8 +56,6 @@ const BibliotecaPrompts = () => {
   } = useDailyPromptLimit(user, planType);
   const [contentType, setContentType] = useState<"exclusive" | "community">("exclusive");
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
-  const [allPrompts, setAllPrompts] = useState<PromptItem[]>([]);
-  const [shuffledVerTudo, setShuffledVerTudo] = useState<PromptItem[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
@@ -102,9 +70,8 @@ const BibliotecaPrompts = () => {
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
   const [showArcaneStudioModal, setShowArcaneStudioModal] = useState(false);
 
-  useEffect(() => {
-    fetchCommunityPrompts();
-  }, []);
+  // Use optimized hook for fetching prompts
+  const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
 
   // Open modal from URL parameter
   useEffect(() => {
@@ -122,11 +89,6 @@ const BibliotecaPrompts = () => {
     }
   }, [searchParams, allPrompts, isPremium]);
 
-  // Shuffle "Ver Tudo" items when allPrompts changes
-  useEffect(() => {
-    const verTudoItems = allPrompts.filter(p => p.category !== "Controles de Câmera");
-    setShuffledVerTudo(shuffleArray(verTudoItems));
-  }, [allPrompts]);
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory, contentType]);
