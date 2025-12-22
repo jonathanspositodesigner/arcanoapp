@@ -1,5 +1,5 @@
-import { memo } from 'react';
-import { Play } from 'lucide-react';
+import { memo, useState } from 'react';
+import { Play, Video } from 'lucide-react';
 import { SecureImage } from '@/components/SecureMedia';
 
 interface VideoThumbnailProps {
@@ -24,23 +24,32 @@ export const VideoThumbnail = memo(({
   className = '',
   onClick
 }: VideoThumbnailProps) => {
+  const [thumbnailError, setThumbnailError] = useState(false);
+
+  // If thumbnail failed to load, show video placeholder instead of error
+  const showPlaceholder = !thumbnailUrl || thumbnailError;
+
   return (
     <div 
       className={`${className} relative overflow-hidden cursor-pointer group`}
       onClick={onClick}
     >
-      {thumbnailUrl ? (
-        // Real thumbnail from first frame
-        <SecureImage
-          src={thumbnailUrl}
-          alt={alt}
-          isPremium={false}
-          loading="lazy"
-          className="w-full h-full object-cover"
-        />
+      {showPlaceholder ? (
+        // Static gradient fallback with video icon
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-secondary/20 to-primary/20 flex items-center justify-center">
+          <Video className="h-10 w-10 text-primary/40" />
+        </div>
       ) : (
-        // Static gradient fallback
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-secondary/20 to-primary/20" />
+        // Real thumbnail - with error handling
+        <div className="w-full h-full" onError={() => setThumbnailError(true)}>
+          <SecureImage
+            src={thumbnailUrl}
+            alt={alt}
+            isPremium={false}
+            loading="lazy"
+            className="w-full h-full object-cover"
+          />
+        </div>
       )}
       
       {/* Centered play button */}
