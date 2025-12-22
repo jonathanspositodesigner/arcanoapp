@@ -589,8 +589,7 @@ const BibliotecaArtesMusicos = () => {
                       src={selectedArte.image_url}
                       className="w-full h-full object-cover"
                       controls
-                      autoPlay
-                      muted
+                      preload="metadata"
                     />
                   ) : (
                     <img

@@ -24,6 +24,7 @@ interface SecureVideoProps {
   loop?: boolean;
   playsInline?: boolean;
   controls?: boolean;
+  preload?: 'none' | 'metadata' | 'auto';
   onClick?: () => void;
 }
 
@@ -198,6 +199,7 @@ export const SecureVideo = memo(({
   loop = false,
   playsInline = false,
   controls = false,
+  preload = 'metadata',
   onClick
 }: SecureVideoProps) => {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
@@ -305,6 +307,7 @@ export const SecureVideo = memo(({
           className={`w-full h-full object-cover transition-all duration-500 ${
             videoLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
           }`}
+          preload={preload}
           autoPlay={autoPlay}
           muted={muted}
           loop={loop}

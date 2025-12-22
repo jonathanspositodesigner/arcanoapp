@@ -1136,7 +1136,7 @@ const BibliotecaArtes = () => {
                 const hasAccess = isTutorialType || !arte.isPremium || hasAccessToPack(packSlug);
                 return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-                          {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} autoPlay muted loop playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
+                          {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} preload="metadata" playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
                           
                           {!hasAccess && <div className="absolute top-2 right-2">
                               <Lock className="h-5 w-5 text-white drop-shadow-lg" />
@@ -1235,7 +1235,7 @@ const BibliotecaArtes = () => {
                 const hasAccess = true;
                 return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-                          {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={false} autoPlay muted loop playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={false} />}
+                          {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={false} preload="metadata" playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={false} />}
                           
                           <div className="absolute bottom-2 left-2 right-2">
                             <Badge variant="secondary" className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
@@ -1324,7 +1324,7 @@ const BibliotecaArtes = () => {
                 const hasAccess = isTutorialType || !arte.isPremium || (isBonusOrUpdatesSection ? isPremium : hasAccessToPack(packSlug));
                 return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-                          {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} autoPlay muted loop playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
+                          {isVideo ? <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} preload="metadata" playsInline /> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
                           
                           {!hasAccess && <div className="absolute top-2 right-2">
                               <Lock className="h-5 w-5 text-white drop-shadow-lg" />
