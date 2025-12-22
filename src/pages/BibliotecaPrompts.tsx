@@ -52,6 +52,19 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   }
   return shuffled;
 };
+
+// Category slug conversion functions
+const categoryToSlug = (category: string): string => {
+  return category
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .replace(/\s+/g, '-'); // Spaces to hyphens
+};
+
+const slugToCategory = (slug: string, categories: string[]): string | null => {
+  return categories.find(cat => categoryToSlug(cat) === slug) || null;
+};
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -77,6 +90,7 @@ const BibliotecaPrompts = () => {
   const [shuffledVerTudo, setShuffledVerTudo] = useState<PromptItem[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   const [premiumModalItem, setPremiumModalItem] = useState<PromptItem | null>(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
@@ -116,6 +130,38 @@ const BibliotecaPrompts = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory, contentType]);
+
+  // Categories - Controles de Câmera only for exclusive, Populares comes first before Ver Tudo
+  const categories = contentType === "exclusive" 
+    ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera"] 
+    : ["Populares", "Ver Tudo", "Novos", "Selos 3D", "Fotos", "Cenários"];
+
+  // Read category from URL on mount and when searchParams change
+  useEffect(() => {
+    const categoriaUrl = searchParams.get('categoria');
+    if (categoriaUrl) {
+      const categoryFound = slugToCategory(categoriaUrl, categories);
+      if (categoryFound && categoryFound !== selectedCategory) {
+        setSelectedCategory(categoryFound);
+      }
+    }
+    setCategoriesLoaded(true);
+  }, [searchParams, contentType]);
+
+  // Handle category selection and update URL
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    const newParams = new URLSearchParams(searchParams);
+    
+    if (category === 'Ver Tudo') {
+      newParams.delete('categoria');
+    } else {
+      newParams.set('categoria', categoryToSlug(category));
+    }
+    
+    // Preserve other params like 'item' and 'colecao'
+    setSearchParams(newParams, { replace: true });
+  };
   const fetchCommunityPrompts = async () => {
     const [communityResult, adminResult, partnerResult, clicksResult] = await Promise.all([supabase.from('community_prompts').select('*').eq('approved', true).order('created_at', {
       ascending: false
@@ -236,8 +282,6 @@ const BibliotecaPrompts = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPrompts = filteredPrompts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  // Categories - Controles de Câmera only for exclusive, Populares comes first before Ver Tudo
-  const categories = contentType === "exclusive" ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera"] : ["Populares", "Ver Tudo", "Novos", "Selos 3D", "Fotos", "Cenários"];
 
   // Helper function to get category icon
   const getCategoryIcon = (category: string) => {
@@ -590,14 +634,14 @@ const BibliotecaPrompts = () => {
             <div className="flex flex-wrap gap-2 mb-4">
               <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => {
               setContentType("exclusive");
-              setSelectedCategory("Ver Tudo");
+              handleCategorySelect("Ver Tudo");
             }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "exclusive" ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary border-border"}`}>
                 <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Arquivos Exclusivos
               </Button>
               <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => {
               setContentType("community");
-              setSelectedCategory("Ver Tudo");
+              handleCategorySelect("Ver Tudo");
             }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "community" ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary border-border"}`}>
                 <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Comunidade
@@ -606,7 +650,7 @@ const BibliotecaPrompts = () => {
 
             {/* Category Filters */}
             <div className="flex gap-1.5 sm:gap-2 flex-wrap">
-              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => setSelectedCategory(cat)} size="sm" className={`text-[11px] sm:text-xs px-2 sm:px-3 ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}>
+              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => handleCategorySelect(cat)} size="sm" className={`text-[11px] sm:text-xs px-2 sm:px-3 ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}>
                   {getCategoryIcon(cat)}
                   {cat}
                 </Button>)}
