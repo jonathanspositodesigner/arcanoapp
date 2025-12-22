@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Copy, CalendarDays, ImageIcon, Play, Loader2, StopCircle, AlertTriangle, Zap } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Copy, CalendarDays, ImageIcon, Play, Loader2, StopCircle, AlertTriangle, Zap, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage } from "@/components/SecureMedia";
@@ -526,8 +526,89 @@ const AdminManageImages = () => {
     }
   };
 
+  // Fix broken references - for items where reference_images file doesn't exist
+  const handleFixBrokenReferences = async () => {
+    // Find videos with reference_images that point to broken files (no thumbnail yet)
+    const itemsWithBrokenRefs = filteredAndSortedPrompts.filter(
+      p => isVideoUrl(p.image_url) && !p.thumbnail_url && hasReferenceButNoThumbnail(p)
+    );
+
+    if (itemsWithBrokenRefs.length === 0) {
+      toast.info("Nenhum item com referência quebrada encontrado!");
+      return;
+    }
+
+    stopBulkRef.current = false;
+    setBulkGenerating(true);
+    setBulkProgress({ current: 0, total: itemsWithBrokenRefs.length, currentTitle: '' });
+    setFailedThumbnails([]);
+
+    let successCount = 0;
+    let failCount = 0;
+    const failed: FailedThumbnail[] = [];
+
+    for (let i = 0; i < itemsWithBrokenRefs.length; i++) {
+      if (stopBulkRef.current) {
+        toast.info(`Correção interrompida. ${successCount} corrigidas, ${failCount} falharam.`);
+        break;
+      }
+
+      const prompt = itemsWithBrokenRefs[i];
+      setBulkProgress({ 
+        current: i + 1, 
+        total: itemsWithBrokenRefs.length, 
+        currentTitle: prompt.title 
+      });
+
+      try {
+        // First, try to use the reference image
+        let thumbnailUrl = await optimizeAndUploadThumbnail(prompt.reference_images![0]);
+        
+        // If reference failed (file doesn't exist), generate from video
+        if (!thumbnailUrl) {
+          console.log(`Ref broken for ${prompt.id}, generating from video...`);
+          thumbnailUrl = await generateThumbnailFromUrl(prompt.image_url);
+        }
+        
+        if (thumbnailUrl) {
+          const { table } = getTableAndBucket(prompt.type);
+          await supabase
+            .from(table as 'admin_prompts')
+            .update({ thumbnail_url: thumbnailUrl })
+            .eq('id', prompt.id);
+          successCount++;
+        } else {
+          throw new Error('Falha ao gerar thumbnail do vídeo');
+        }
+      } catch (error) {
+        console.error(`Error fixing ${prompt.id}:`, error);
+        failCount++;
+        failed.push({
+          title: prompt.title,
+          error: error instanceof Error ? error.message : 'Erro desconhecido'
+        });
+      }
+    }
+
+    setBulkGenerating(false);
+    setFailedThumbnails(failed);
+    fetchPrompts();
+    
+    if (!stopBulkRef.current) {
+      if (failCount === 0) {
+        toast.success(`${successCount} itens corrigidos com sucesso!`);
+      } else {
+        toast.warning(`${successCount} corrigidos, ${failCount} falharam`);
+      }
+    }
+  };
+
   const videosWithoutThumbnails = prompts.filter(
     p => isVideoUrl(p.image_url) && !p.thumbnail_url
+  ).length;
+
+  const itemsWithBrokenRefs = prompts.filter(
+    p => isVideoUrl(p.image_url) && !p.thumbnail_url && hasReferenceButNoThumbnail(p)
   ).length;
 
   if (isLoading) {
@@ -627,25 +708,38 @@ const AdminManageImages = () => {
               />
             </div>
             
-            {videosWithoutThumbnails > 0 && (
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleGenerateAllThumbnails}
-                  disabled={bulkGenerating}
-                  className="bg-gradient-primary"
-                >
-                  {bulkGenerating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {bulkProgress.current}/{bulkProgress.total}
-                    </>
-                  ) : (
-                    <>
-                      <ImageIcon className="h-4 w-4 mr-2" />
-                      Gerar Todas ({videosWithoutThumbnails})
-                    </>
-                  )}
-                </Button>
+            {(videosWithoutThumbnails > 0 || itemsWithBrokenRefs > 0) && (
+              <div className="flex flex-wrap gap-2">
+                {videosWithoutThumbnails > 0 && (
+                  <Button
+                    onClick={handleGenerateAllThumbnails}
+                    disabled={bulkGenerating}
+                    className="bg-gradient-primary"
+                  >
+                    {bulkGenerating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {bulkProgress.current}/{bulkProgress.total}
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon className="h-4 w-4 mr-2" />
+                        Gerar Todas ({videosWithoutThumbnails})
+                      </>
+                    )}
+                  </Button>
+                )}
+                
+                {itemsWithBrokenRefs > 0 && !bulkGenerating && (
+                  <Button
+                    onClick={handleFixBrokenReferences}
+                    variant="outline"
+                    className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+                  >
+                    <Wrench className="h-4 w-4 mr-2" />
+                    Corrigir Referências ({itemsWithBrokenRefs})
+                  </Button>
+                )}
                 
                 {bulkGenerating && (
                   <Button

@@ -155,8 +155,8 @@ export const SecureImage = memo(({
 
   if (error) {
     return (
-      <div className={`${className} bg-muted flex items-center justify-center`}>
-        <span className="text-muted-foreground text-xs">Erro ao carregar</span>
+      <div className={`${className} bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center`}>
+        <span className="text-muted-foreground text-xs text-center px-2">Arquivo não encontrado</span>
       </div>
     );
   }
@@ -288,8 +288,8 @@ export const SecureVideo = memo(({
 
   if (error) {
     return (
-      <div className={`${className} bg-muted flex items-center justify-center`}>
-        <span className="text-muted-foreground text-xs">Erro ao carregar</span>
+      <div className={`${className} bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center`}>
+        <span className="text-muted-foreground text-xs text-center px-2">Arquivo não encontrado</span>
       </div>
     );
   }
