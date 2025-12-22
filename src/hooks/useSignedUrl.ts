@@ -8,8 +8,57 @@ interface SignedUrlCache {
   };
 }
 
-// In-memory cache for signed URLs
-const urlCache: SignedUrlCache = {};
+const PERSIST_KEY = 'signedUrlCache:v1';
+const MAX_PERSIST_ENTRIES = 500;
+
+const canUseLocalStorage = (): boolean => {
+  try {
+    return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+  } catch {
+    return false;
+  }
+};
+
+const sanitizeCache = (cache: SignedUrlCache): SignedUrlCache => {
+  const now = Date.now();
+  const entries = Object.entries(cache)
+    .filter(([, v]) => !!v && typeof v.url === 'string' && typeof v.expiresAt === 'number' && v.expiresAt > now)
+    .sort((a, b) => b[1].expiresAt - a[1].expiresAt)
+    .slice(0, MAX_PERSIST_ENTRIES);
+
+  return Object.fromEntries(entries);
+};
+
+// In-memory cache for signed URLs (bootstrapped from localStorage to avoid re-signing on refresh)
+const urlCache: SignedUrlCache = (() => {
+  const initial: SignedUrlCache = {};
+  if (!canUseLocalStorage()) return initial;
+
+  try {
+    const raw = window.localStorage.getItem(PERSIST_KEY);
+    if (!raw) return initial;
+    const parsed = JSON.parse(raw) as SignedUrlCache;
+    return sanitizeCache(parsed);
+  } catch {
+    return initial;
+  }
+})();
+
+let persistTimer: number | undefined;
+let signedUrlInvokeCount = 0;
+
+const schedulePersist = () => {
+  if (!canUseLocalStorage()) return;
+
+  if (persistTimer) window.clearTimeout(persistTimer);
+  persistTimer = window.setTimeout(() => {
+    try {
+      window.localStorage.setItem(PERSIST_KEY, JSON.stringify(sanitizeCache(urlCache)));
+    } catch {
+      // ignore
+    }
+  }, 250);
+};
 
 // ALL BUCKETS THAT ARE PUBLIC - no need to generate signed URLs
 // CRITICAL: Adding buckets here STOPS edge function calls = STOPS spending money
@@ -63,10 +112,22 @@ export const useSignedUrl = () => {
     if (cached && cached.expiresAt > Date.now() + 5 * 60 * 1000) {
       return cached.url;
     }
+    if (cached) {
+      delete urlCache[cacheKey];
+      schedulePersist();
+    }
 
     setLoading(true);
 
     try {
+      signedUrlInvokeCount += 1;
+      if (import.meta.env.DEV) {
+        console.debug(`[get-signed-url] invoke #${signedUrlInvokeCount}`, {
+          bucket: parsed.bucket,
+          filePath: parsed.filePath,
+        });
+      }
+
       const response = await supabase.functions.invoke('get-signed-url', {
         body: {
           filePath: parsed.filePath,
@@ -86,6 +147,7 @@ export const useSignedUrl = () => {
         url: signedUrl,
         expiresAt: Date.now() + 55 * 60 * 1000
       };
+      schedulePersist();
 
       return signedUrl;
     } catch (error) {
@@ -138,8 +200,20 @@ export const getSignedMediaUrl = async (originalUrl: string): Promise<string> =>
   if (cached && cached.expiresAt > Date.now() + 5 * 60 * 1000) {
     return cached.url;
   }
+  if (cached) {
+    delete urlCache[cacheKey];
+    schedulePersist();
+  }
 
   try {
+    signedUrlInvokeCount += 1;
+    if (import.meta.env.DEV) {
+      console.debug(`[get-signed-url] invoke #${signedUrlInvokeCount}`, {
+        bucket: parsed.bucket,
+        filePath: parsed.filePath,
+      });
+    }
+
     const response = await supabase.functions.invoke('get-signed-url', {
       body: {
         filePath: parsed.filePath,
@@ -159,6 +233,7 @@ export const getSignedMediaUrl = async (originalUrl: string): Promise<string> =>
       url: signedUrl,
       expiresAt: Date.now() + 55 * 60 * 1000
     };
+    schedulePersist();
 
     return signedUrl;
   } catch (error) {

@@ -666,7 +666,7 @@ const BibliotecaPrompts = () => {
                   {/* Media Preview - always load without premium check for preview, access control is on copy/download */}
                   <div className="aspect-square overflow-hidden bg-secondary relative">
                     {isVideo ? <>
-                        <SecureVideo src={item.imageUrl} isPremium={false} className="w-full h-full object-cover cursor-pointer" muted loop autoPlay playsInline onClick={() => handleItemClick(item)} />
+                        <SecureVideo src={item.imageUrl} isPremium={false} className="w-full h-full object-cover cursor-pointer" preload="metadata" playsInline onClick={() => handleItemClick(item)} />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="bg-black/50 rounded-full p-3">
                             <Play className="h-8 w-8 text-white" fill="white" />
@@ -759,7 +759,7 @@ const BibliotecaPrompts = () => {
               </button>
               {selectedPrompt && <div className="flex flex-col max-h-[90vh]">
                   <div className="flex-shrink-0">
-                    {isVideoUrl(selectedPrompt.imageUrl) ? <SecureVideo src={selectedPrompt.imageUrl} isPremium={false} className="w-full h-auto max-h-[50vh] object-contain bg-black" controls autoPlay playsInline /> : <SecureImage src={selectedPrompt.imageUrl} alt={selectedPrompt.title} isPremium={false} className="w-full h-auto max-h-[50vh] object-contain bg-black" />}
+                    {isVideoUrl(selectedPrompt.imageUrl) ? <SecureVideo src={selectedPrompt.imageUrl} isPremium={false} className="w-full h-auto max-h-[50vh] object-contain bg-black" controls preload="metadata" playsInline /> : <SecureImage src={selectedPrompt.imageUrl} alt={selectedPrompt.title} isPremium={false} className="w-full h-auto max-h-[50vh] object-contain bg-black" />}
                   </div>
                   <div className="p-4 space-y-3 flex-shrink-0">
                     <h3 className="font-bold text-lg text-foreground">{selectedPrompt.title}</h3>
