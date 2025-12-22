@@ -182,14 +182,14 @@ export const subscribeToMetrics = (callback: () => void): (() => void) => {
   return () => listeners.delete(callback);
 };
 
-/**
- * Calculate estimated costs from metrics
- */
-export const calculateEstimatedCosts = (metricsData: CloudCostMetrics) => {
-  // Supabase pricing
-  const EDGE_FUNCTION_COST_PER_MILLION = 2.00; // $2 per million invocations
-  const BANDWIDTH_COST_PER_GB = 0.09; // $0.09 per GB
+// Supabase pricing constants
+const EDGE_FUNCTION_COST_PER_MILLION = 2.00; // $2 per million invocations
+const BANDWIDTH_COST_PER_GB = 0.09; // $0.09 per GB
 
+/**
+ * Calculate session costs (without projection to avoid recursion)
+ */
+const calculateSessionCosts = (metricsData: CloudCostMetrics) => {
   const invocationCost = (metricsData.totalInvocations / 1_000_000) * EDGE_FUNCTION_COST_PER_MILLION;
   const bandwidthGB = metricsData.totalBandwidth / (1024 * 1024 * 1024);
   const bandwidthCost = bandwidthGB * BANDWIDTH_COST_PER_GB;
@@ -197,23 +197,29 @@ export const calculateEstimatedCosts = (metricsData: CloudCostMetrics) => {
   return {
     invocationCost,
     bandwidthCost,
-    totalCost: invocationCost + bandwidthCost,
-    projectedMonthlyCost: projectMonthlyCost(metricsData)
+    totalCost: invocationCost + bandwidthCost
   };
 };
 
 /**
- * Project monthly cost based on current session usage
+ * Calculate estimated costs from metrics
  */
-const projectMonthlyCost = (metricsData: CloudCostMetrics): number => {
+export const calculateEstimatedCosts = (metricsData: CloudCostMetrics) => {
+  const sessionCosts = calculateSessionCosts(metricsData);
+  
+  // Project monthly cost
   const sessionDurationMs = Date.now() - metricsData.sessionStart;
   const sessionDurationHours = sessionDurationMs / (1000 * 60 * 60);
   
-  if (sessionDurationHours < 0.1) return 0; // Not enough data
-  
-  const hoursInMonth = 24 * 30;
-  const multiplier = hoursInMonth / sessionDurationHours;
-  
-  const costs = calculateEstimatedCosts(metricsData);
-  return costs.totalCost * multiplier;
+  let projectedMonthlyCost = 0;
+  if (sessionDurationHours >= 0.1) {
+    const hoursInMonth = 24 * 30;
+    const multiplier = hoursInMonth / sessionDurationHours;
+    projectedMonthlyCost = sessionCosts.totalCost * multiplier;
+  }
+
+  return {
+    ...sessionCosts,
+    projectedMonthlyCost
+  };
 };
