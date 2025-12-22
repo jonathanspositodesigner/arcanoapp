@@ -114,6 +114,12 @@ export const SecureImage = memo(({
       try {
         const url = await getSignedMediaUrl(src);
         if (isMounted) {
+          // Empty string means file doesn't exist - show error immediately
+          if (url === '') {
+            setError(true);
+            setIsLoading(false);
+            return;
+          }
           signedUrlCache.set(cacheKey, url);
           setSignedUrl(url);
           setIsLoading(false);
@@ -121,8 +127,7 @@ export const SecureImage = memo(({
       } catch (err) {
         console.error('Failed to get signed URL:', err);
         if (isMounted) {
-          // Use original URL as fallback
-          setSignedUrl(src);
+          setError(true);
           setIsLoading(false);
         }
       }
@@ -249,6 +254,12 @@ export const SecureVideo = memo(({
       try {
         const url = await getSignedMediaUrl(src);
         if (isMounted) {
+          // Empty string means file doesn't exist - show error immediately
+          if (url === '') {
+            setError(true);
+            setIsLoading(false);
+            return;
+          }
           signedUrlCache.set(cacheKey, url);
           setSignedUrl(url);
           setIsLoading(false);
@@ -256,7 +267,7 @@ export const SecureVideo = memo(({
       } catch (err) {
         console.error('Failed to get signed URL:', err);
         if (isMounted) {
-          setSignedUrl(src);
+          setError(true);
           setIsLoading(false);
         }
       }

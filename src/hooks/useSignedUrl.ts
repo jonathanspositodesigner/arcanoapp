@@ -140,8 +140,19 @@ export const useSignedUrl = () => {
         }
       });
 
-      if (response.error || !response.data?.signedUrl) {
+      // Check if file was not found (404) - return empty string to signal failure
+      if (response.error) {
+        const errorData = response.data as { error?: string } | undefined;
+        if (errorData?.error === 'File not found') {
+          console.warn(`File not found in storage: ${parsed.bucket}/${parsed.filePath}`);
+          return ''; // Return empty string to signal file doesn't exist
+        }
         console.error('Error getting signed URL:', response.error);
+        return originalUrl;
+      }
+
+      if (!response.data?.signedUrl) {
+        console.error('No signed URL in response');
         return originalUrl;
       }
 
@@ -230,8 +241,19 @@ export const getSignedMediaUrl = async (originalUrl: string): Promise<string> =>
       }
     });
 
-    if (response.error || !response.data?.signedUrl) {
+    // Check if file was not found (404) - return empty string to signal failure
+    if (response.error) {
+      const errorData = response.data as { error?: string } | undefined;
+      if (errorData?.error === 'File not found') {
+        console.warn(`File not found in storage: ${parsed.bucket}/${parsed.filePath}`);
+        return ''; // Return empty string to signal file doesn't exist
+      }
       console.error('Error getting signed URL:', response.error);
+      return originalUrl;
+    }
+
+    if (!response.data?.signedUrl) {
+      console.error('No signed URL in response');
       return originalUrl;
     }
 
