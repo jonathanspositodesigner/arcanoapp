@@ -520,6 +520,7 @@ const BibliotecaPrompts = () => {
                       <VideoThumbnail 
                         src={item.imageUrl} 
                         alt={item.title} 
+                        thumbnailUrl={item.thumbnailUrl}
                         className="w-full h-full" 
                         onClick={() => handleItemClick(item)} 
                       />

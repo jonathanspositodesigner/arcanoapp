@@ -307,6 +307,7 @@ export type Database = {
           is_premium: boolean
           prompt: string
           reference_images: string[] | null
+          thumbnail_url: string | null
           title: string
           tutorial_url: string | null
           updated_at: string | null
@@ -320,6 +321,7 @@ export type Database = {
           is_premium?: boolean
           prompt: string
           reference_images?: string[] | null
+          thumbnail_url?: string | null
           title: string
           tutorial_url?: string | null
           updated_at?: string | null
@@ -333,6 +335,7 @@ export type Database = {
           is_premium?: boolean
           prompt?: string
           reference_images?: string[] | null
+          thumbnail_url?: string | null
           title?: string
           tutorial_url?: string | null
           updated_at?: string | null
@@ -848,6 +851,7 @@ export type Database = {
           id: string
           image_url: string
           prompt: string
+          thumbnail_url: string | null
           title: string
           updated_at: string | null
         }
@@ -862,6 +866,7 @@ export type Database = {
           id?: string
           image_url: string
           prompt: string
+          thumbnail_url?: string | null
           title: string
           updated_at?: string | null
         }
@@ -876,6 +881,7 @@ export type Database = {
           id?: string
           image_url?: string
           prompt?: string
+          thumbnail_url?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -1481,6 +1487,7 @@ export type Database = {
           rejected: boolean | null
           rejected_at: string | null
           rejected_by: string | null
+          thumbnail_url: string | null
           title: string
           tutorial_url: string | null
           updated_at: string | null
@@ -1503,6 +1510,7 @@ export type Database = {
           rejected?: boolean | null
           rejected_at?: string | null
           rejected_by?: string | null
+          thumbnail_url?: string | null
           title: string
           tutorial_url?: string | null
           updated_at?: string | null
@@ -1525,6 +1533,7 @@ export type Database = {
           rejected?: boolean | null
           rejected_at?: string | null
           rejected_by?: string | null
+          thumbnail_url?: string | null
           title?: string
           tutorial_url?: string | null
           updated_at?: string | null
