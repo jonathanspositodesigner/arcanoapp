@@ -11,6 +11,9 @@ interface SignedUrlCache {
 // In-memory cache for signed URLs
 const urlCache: SignedUrlCache = {};
 
+// Buckets that are already public (no need to generate signed URLs)
+const PUBLIC_BUCKETS = new Set<string>(['prompts-cloudinary', 'artes-cloudinary']);
+
 // Extract bucket and file path from Supabase storage URL
 export const parseStorageUrl = (url: string): { bucket: string; filePath: string } | null => {
   // Match pattern: .../storage/v1/object/public/bucket-name/path/to/file
@@ -29,8 +32,13 @@ export const useSignedUrl = () => {
 
   const getSignedUrl = useCallback(async (originalUrl: string): Promise<string> => {
     const parsed = parseStorageUrl(originalUrl);
-    
+
     if (!parsed) {
+      return originalUrl;
+    }
+
+    // If the bucket is public, just use the public URL (avoids unnecessary backend calls)
+    if (PUBLIC_BUCKETS.has(parsed.bucket)) {
       return originalUrl;
     }
 
@@ -99,8 +107,13 @@ export const useSignedUrl = () => {
 // Helper function to get signed URL without hook
 export const getSignedMediaUrl = async (originalUrl: string): Promise<string> => {
   const parsed = parseStorageUrl(originalUrl);
-  
+
   if (!parsed) {
+    return originalUrl;
+  }
+
+  // If the bucket is public, just use the public URL (avoids unnecessary backend calls)
+  if (PUBLIC_BUCKETS.has(parsed.bucket)) {
     return originalUrl;
   }
 
