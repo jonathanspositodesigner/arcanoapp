@@ -58,8 +58,15 @@ export const preloadImage = async (src: string): Promise<void> => {
 
   try {
     const signedUrl = await getSignedMediaUrl(src);
+
+    // Empty string means file doesn't exist - cache negative result and stop
+    if (signedUrl === '') {
+      preloadCache.set(src, '');
+      return;
+    }
+
     preloadCache.set(src, signedUrl);
-    
+
     // Actually preload the image into browser cache
     const img = new Image();
     img.src = signedUrl;

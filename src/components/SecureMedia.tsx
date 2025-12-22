@@ -105,7 +105,13 @@ export const SecureImage = memo(({
       const cacheKey = src;
       if (signedUrlCache.has(cacheKey)) {
         if (isMounted) {
-          setSignedUrl(signedUrlCache.get(cacheKey)!);
+          const cachedUrl = signedUrlCache.get(cacheKey) ?? '';
+          if (cachedUrl === '') {
+            setError(true);
+            setIsLoading(false);
+            return;
+          }
+          setSignedUrl(cachedUrl);
           setIsLoading(false);
         }
         return;
@@ -245,7 +251,13 @@ export const SecureVideo = memo(({
       const cacheKey = src;
       if (signedUrlCache.has(cacheKey)) {
         if (isMounted) {
-          setSignedUrl(signedUrlCache.get(cacheKey)!);
+          const cachedUrl = signedUrlCache.get(cacheKey) ?? '';
+          if (cachedUrl === '') {
+            setError(true);
+            setIsLoading(false);
+            return;
+          }
+          setSignedUrl(cachedUrl);
           setIsLoading(false);
         }
         return;
