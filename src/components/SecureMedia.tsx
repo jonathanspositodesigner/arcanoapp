@@ -140,14 +140,16 @@ export const SecureImage = memo(({
   };
 
   const handleImageError = () => {
-    if (retryCount < 2) {
-      // Clear cache and retry
+    // Only retry once (not 3 times) to avoid long waits for missing files
+    if (retryCount < 1) {
       signedUrlCache.delete(src);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
-      }, 1000);
+      }, 500);
     } else {
+      // File doesn't exist or can't load - show error state immediately
       setError(true);
+      setIsLoading(false);
     }
   };
 
@@ -272,13 +274,15 @@ export const SecureVideo = memo(({
   };
 
   const handleVideoError = () => {
-    if (retryCount < 2) {
+    // Only retry once to avoid long waits for missing files
+    if (retryCount < 1) {
       signedUrlCache.delete(src);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
-      }, 1000);
+      }, 500);
     } else {
       setError(true);
+      setIsLoading(false);
     }
   };
 

@@ -339,6 +339,7 @@ const AdminManageImages = () => {
   };
 
   // Optimize reference image and use as thumbnail (resizes to 512px, ~30KB)
+  // FALLBACK: if reference fails, tries to generate from video
   const handleUseReferenceAsThumbnail = async (prompt: Prompt) => {
     if (!prompt.reference_images || prompt.reference_images.length === 0) return;
     
@@ -346,11 +347,28 @@ const AdminManageImages = () => {
     setGeneratingThumbnails(prev => new Set(prev).add(key));
     
     try {
-      // Optimize the reference image (resize to 512px, convert to WebP)
+      // Try to optimize the reference image
       const optimizedUrl = await optimizeAndUploadThumbnail(prompt.reference_images[0]);
       
       if (!optimizedUrl) {
-        throw new Error('Falha ao otimizar imagem de referência');
+        // FALLBACK: Reference image doesn't exist, try generating from video
+        console.log(`Reference image failed for ${prompt.id}, trying video fallback...`);
+        
+        if (isVideoUrl(prompt.image_url)) {
+          const videoThumbnailUrl = await generateThumbnailFromUrl(prompt.image_url);
+          if (videoThumbnailUrl) {
+            const { table } = getTableAndBucket(prompt.type);
+            const { error } = await supabase
+              .from(table as 'admin_prompts')
+              .update({ thumbnail_url: videoThumbnailUrl })
+              .eq('id', prompt.id);
+            if (error) throw error;
+            toast.success("Thumbnail gerada do vídeo (referência não encontrada)!");
+            fetchPrompts();
+            return;
+          }
+        }
+        throw new Error('Falha ao otimizar imagem de referência e ao gerar do vídeo');
       }
 
       const { table } = getTableAndBucket(prompt.type);
@@ -459,33 +477,31 @@ const AdminManageImages = () => {
       });
 
       try {
-        // If has reference image, optimize and use it
+        let thumbnailUrl: string | null = null;
+        
+        // If has reference image, try to optimize and use it
         if (hasReferenceButNoThumbnail(prompt)) {
-          const optimizedUrl = await optimizeAndUploadThumbnail(prompt.reference_images![0]);
-          if (optimizedUrl) {
-            const { table } = getTableAndBucket(prompt.type);
-            await supabase
-              .from(table as 'admin_prompts')
-              .update({ thumbnail_url: optimizedUrl })
-              .eq('id', prompt.id);
-            successCount++;
-          } else {
-            throw new Error('Falha ao otimizar referência');
+          thumbnailUrl = await optimizeAndUploadThumbnail(prompt.reference_images![0]);
+          
+          // FALLBACK: if reference failed (file doesn't exist), try generating from video
+          if (!thumbnailUrl) {
+            console.log(`Reference failed for ${prompt.id}, falling back to video...`);
+            thumbnailUrl = await generateThumbnailFromUrl(prompt.image_url);
           }
         } else {
-          // Generate from video (with timeout)
-          const thumbnailUrl = await generateThumbnailFromUrl(prompt.image_url);
-          
-          if (thumbnailUrl) {
-            const { table } = getTableAndBucket(prompt.type);
-            await supabase
-              .from(table as 'admin_prompts')
-              .update({ thumbnail_url: thumbnailUrl })
-              .eq('id', prompt.id);
-            successCount++;
-          } else {
-            throw new Error('Falha ao processar vídeo');
-          }
+          // Generate from video directly
+          thumbnailUrl = await generateThumbnailFromUrl(prompt.image_url);
+        }
+        
+        if (thumbnailUrl) {
+          const { table } = getTableAndBucket(prompt.type);
+          await supabase
+            .from(table as 'admin_prompts')
+            .update({ thumbnail_url: thumbnailUrl })
+            .eq('id', prompt.id);
+          successCount++;
+        } else {
+          throw new Error('Falha ao gerar thumbnail');
         }
       } catch (error) {
         console.error(`Error generating thumbnail for ${prompt.id}:`, error);
