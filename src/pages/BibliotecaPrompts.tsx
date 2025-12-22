@@ -787,6 +787,20 @@ const BibliotecaPrompts = () => {
                           <Youtube className="h-4 w-4 mr-2" />
                           Tutorial
                         </Button>}
+                      {selectedPrompt.category === "Movies para Telão" && (
+                        <Button 
+                          onClick={() => {
+                            handleCloseModal();
+                            handleCategorySelect("Movies para Telão");
+                          }} 
+                          variant="outline" 
+                          className="w-full border-primary text-primary hover:bg-primary/10" 
+                          size="sm"
+                        >
+                          <Video className="h-4 w-4 mr-2" />
+                          Ver mais modelos
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>}
