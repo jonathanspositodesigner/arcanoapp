@@ -2275,6 +2275,13 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      get_prompt_click_counts: {
+        Args: never
+        Returns: {
+          click_count: number
+          prompt_id: string
+        }[]
+      }
       get_user_expired_packs: {
         Args: { _user_id: string }
         Returns: {
