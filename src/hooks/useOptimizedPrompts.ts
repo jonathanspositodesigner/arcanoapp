@@ -204,8 +204,12 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
       return dateB - dateA;
     };
 
-    // For "Ver Tudo" use memoized shuffle
+    // For "Ver Tudo" use memoized shuffle, but fallback to contentTypePrompts if ref is empty
     if (category === "Ver Tudo") {
+      // If shuffled ref is empty (initial load), use contentTypePrompts directly
+      if (shuffledPromptsRef.current.length === 0) {
+        return contentTypePrompts.filter(p => p.category !== "Controles de Câmera");
+      }
       return contentType === 'exclusive'
         ? shuffledPromptsRef.current.filter(p => p.isExclusive)
         : shuffledPromptsRef.current.filter(p => p.isCommunity);
