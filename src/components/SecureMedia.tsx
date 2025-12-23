@@ -220,6 +220,7 @@ export const SecureVideo = memo(({
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -292,6 +293,16 @@ export const SecureVideo = memo(({
     };
   }, [src, retryCount]);
 
+  // Check if video is already loaded (from cache) when signedUrl changes
+  useEffect(() => {
+    if (signedUrl && videoRef.current && !videoLoaded) {
+      // readyState >= 1 means HAVE_METADATA (enough to show video)
+      if (videoRef.current.readyState >= 1) {
+        setVideoLoaded(true);
+      }
+    }
+  }, [signedUrl, videoLoaded]);
+
   const handleVideoLoad = () => {
     setVideoLoaded(true);
   };
@@ -330,6 +341,7 @@ export const SecureVideo = memo(({
       {/* Actual video with blur transition */}
       {signedUrl && (
         <video
+          ref={videoRef}
           src={signedUrl}
           className={`w-full h-full object-cover transition-all duration-500 ${
             videoLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
@@ -342,6 +354,8 @@ export const SecureVideo = memo(({
           controls={controls}
           onClick={onClick}
           onLoadedData={handleVideoLoad}
+          onLoadedMetadata={handleVideoLoad}
+          onCanPlay={handleVideoLoad}
           onError={handleVideoError}
         />
       )}
