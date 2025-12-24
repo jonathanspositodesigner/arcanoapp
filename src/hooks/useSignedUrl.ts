@@ -63,19 +63,19 @@ const schedulePersist = () => {
 
 // ALL BUCKETS THAT ARE PUBLIC - no need to generate signed URLs
 // CRITICAL: Adding buckets here STOPS edge function calls = STOPS spending money
-// If a bucket is public in Supabase, add it here to avoid costs!
+// ALL MEDIA BUCKETS ARE NOW PUBLIC (Dec 24, 2025) - ELIMINATES 95%+ COSTS
 const PUBLIC_BUCKETS = new Set<string>([
   'prompts-cloudinary',
   'artes-cloudinary', 
   'pack-covers',
   'email-assets',
-  // These buckets are private but we add them IF they become public
-  // 'admin-prompts',
-  // 'admin-artes',
-  // 'partner-prompts',
-  // 'partner-artes',
-  // 'community-prompts',
-  // 'community-artes'
+  // These buckets were made public on Dec 24, 2025 to reduce cloud costs
+  'admin-prompts',
+  'admin-artes',
+  'partner-prompts',
+  'partner-artes',
+  'community-prompts',
+  'community-artes'
 ]);
 
 // Extract bucket and file path from Supabase storage URL
@@ -163,10 +163,10 @@ export const useSignedUrl = () => {
 
       const signedUrl = response.data.signedUrl;
       
-      // Cache the URL with 55 minute expiration
+      // Cache the URL with 24 hour expiration (was 55 min - increased for cost savings)
       urlCache[cacheKey] = {
         url: signedUrl,
-        expiresAt: Date.now() + 55 * 60 * 1000
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000
       };
       schedulePersist();
 
@@ -269,10 +269,10 @@ export const getSignedMediaUrl = async (originalUrl: string): Promise<string> =>
 
     const signedUrl = response.data.signedUrl;
     
-    // Cache the URL
+    // Cache the URL with 24 hour expiration (increased for cost savings)
     urlCache[cacheKey] = {
       url: signedUrl,
-      expiresAt: Date.now() + 55 * 60 * 1000
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000
     };
     schedulePersist();
 

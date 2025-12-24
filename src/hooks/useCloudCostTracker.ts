@@ -14,6 +14,14 @@ export interface CloudCostMetrics {
   sessionStart: number;
 }
 
+// Cost alert thresholds
+const DAILY_INVOCATION_LIMIT = 10000; // Alert if more than 10k invocations per day
+const HOURLY_INVOCATION_LIMIT = 1000; // Alert if more than 1k invocations per hour
+
+// Track when we last showed an alert
+let lastAlertTime = 0;
+const ALERT_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour cooldown between alerts
+
 const STORAGE_KEY = 'cloudCostMetrics:v1';
 
 // Global metrics object (singleton)
@@ -79,6 +87,42 @@ const saveMetrics = () => {
 metrics = loadMetrics();
 
 /**
+ * Check if we should show a cost alert
+ */
+const checkCostAlert = () => {
+  const now = Date.now();
+  
+  // Respect alert cooldown
+  if (now - lastAlertTime < ALERT_COOLDOWN_MS) return;
+  
+  const sessionDurationHours = (now - metrics.sessionStart) / (1000 * 60 * 60);
+  
+  // Calculate invocation rate per hour
+  const invocationsPerHour = sessionDurationHours > 0 
+    ? metrics.totalInvocations / sessionDurationHours 
+    : 0;
+  
+  // Check if we're over limits
+  if (invocationsPerHour > HOURLY_INVOCATION_LIMIT) {
+    lastAlertTime = now;
+    console.warn(`⚠️ [CloudCost] HIGH COST ALERT: ${Math.round(invocationsPerHour)} edge function invocations/hour (limit: ${HOURLY_INVOCATION_LIMIT})`);
+    console.warn(`⚠️ [CloudCost] Session total: ${metrics.totalInvocations} invocations in ${sessionDurationHours.toFixed(1)} hours`);
+    console.warn(`⚠️ [CloudCost] Top routes:`, Object.entries(metrics.byRoute)
+      .sort((a, b) => b[1].invocations - a[1].invocations)
+      .slice(0, 3)
+      .map(([route, data]) => `${route}: ${data.invocations}`)
+    );
+  }
+  
+  // Check daily projection
+  const dailyProjection = invocationsPerHour * 24;
+  if (dailyProjection > DAILY_INVOCATION_LIMIT) {
+    lastAlertTime = now;
+    console.warn(`⚠️ [CloudCost] DAILY LIMIT PROJECTION: ${Math.round(dailyProjection)} invocations/day projected (limit: ${DAILY_INVOCATION_LIMIT})`);
+  }
+};
+
+/**
  * Track an edge function invocation
  * @param functionName - Name of the edge function called
  * @param estimatedBytes - Estimated response size in bytes
@@ -111,6 +155,9 @@ export const trackInvocation = (
       sessionTotal: metrics.totalInvocations
     });
   }
+
+  // Check for cost alerts
+  checkCostAlert();
 
   saveMetrics();
   notifyListeners();

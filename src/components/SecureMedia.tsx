@@ -35,11 +35,19 @@ const isCloudinaryUrl = (url: string): boolean => {
 
 // ALL PUBLIC BUCKETS - avoids edge function calls = saves money
 // CRITICAL: Must match the list in useSignedUrl.ts!
+// ALL MEDIA BUCKETS ARE NOW PUBLIC (Dec 24, 2025) - ELIMINATES 95%+ COSTS
 const PUBLIC_BUCKETS = new Set<string>([
   'prompts-cloudinary',
   'artes-cloudinary',
   'pack-covers',
-  'email-assets'
+  'email-assets',
+  // These buckets were made public on Dec 24, 2025 to reduce cloud costs
+  'admin-prompts',
+  'admin-artes',
+  'partner-prompts',
+  'partner-artes',
+  'community-prompts',
+  'community-artes'
 ]);
 
 // Check if URL is from a public Supabase bucket
