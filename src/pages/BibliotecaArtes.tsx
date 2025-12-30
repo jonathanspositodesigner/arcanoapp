@@ -64,6 +64,29 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 type SidebarSection = 'packs' | 'bonus' | 'cursos' | 'updates' | 'free-sample' | 'all-artes' | 'tutorial' | 'ferramentas_ia';
+
+// Mapeamento de seções para slugs de URL
+const sectionToSlug: Record<SidebarSection, string> = {
+  'packs': 'packs',
+  'bonus': 'bonus',
+  'cursos': 'cursos',
+  'updates': 'atualizacoes',
+  'free-sample': 'amostras-gratis',
+  'all-artes': 'todas-as-artes',
+  'tutorial': 'tutoriais',
+  'ferramentas_ia': 'ferramentas-ia'
+};
+
+const slugToSection: Record<string, SidebarSection> = {
+  'packs': 'packs',
+  'bonus': 'bonus',
+  'cursos': 'cursos',
+  'atualizacoes': 'updates',
+  'amostras-gratis': 'free-sample',
+  'todas-as-artes': 'all-artes',
+  'tutoriais': 'tutorial',
+  'ferramentas-ia': 'ferramentas_ia'
+};
 const BibliotecaArtes = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -108,7 +131,29 @@ const BibliotecaArtes = () => {
   const [dbCategories, setDbCategories] = useState<string[]>([]);
   const [selectedPack, setSelectedPack] = useState<string | null>(null);
   const [dbPacks, setDbPacks] = useState<PackItem[]>([]);
-  const [activeSection, setActiveSection] = useState<SidebarSection>('packs');
+  // Inicializa seção a partir da URL se existir
+  const getInitialSection = (): SidebarSection => {
+    const secaoParam = searchParams.get('secao');
+    if (secaoParam && slugToSection[secaoParam]) {
+      return slugToSection[secaoParam];
+    }
+    return 'packs';
+  };
+  const [activeSection, setActiveSection] = useState<SidebarSection>(getInitialSection);
+
+  // Função para mudar de seção e atualizar URL
+  const changeSection = (section: SidebarSection) => {
+    setActiveSection(section);
+    setSelectedPack(null);
+    if (section === 'all-artes') {
+      setSelectedCategory("Todos");
+    }
+    // Atualiza URL com o slug da seção
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('secao', sectionToSlug[section]);
+    newParams.delete('item'); // Remove item param quando muda de seção
+    setSearchParams(newParams);
+  };
   const [showCursoModal, setShowCursoModal] = useState(false);
   const [selectedCurso, setSelectedCurso] = useState<PackItem | null>(null);
   const isAppInstalled = useIsAppInstalled();
@@ -462,8 +507,7 @@ const BibliotecaArtes = () => {
         )}
 
         <button onClick={() => {
-        setActiveSection('tutorial');
-        setSelectedPack(null);
+        changeSection('tutorial');
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'tutorial' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <BookOpen className="h-5 w-5" />
@@ -474,8 +518,7 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
-        setActiveSection('packs');
-        setSelectedPack(null);
+        changeSection('packs');
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'packs' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <Package className="h-5 w-5" />
@@ -486,8 +529,7 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
-        setActiveSection('updates');
-        setSelectedPack(null);
+        changeSection('updates');
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'updates' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <RefreshCw className="h-5 w-5" />
@@ -498,8 +540,7 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
-        setActiveSection('bonus');
-        setSelectedPack(null);
+        changeSection('bonus');
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'bonus' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <Gift className="h-5 w-5" />
@@ -510,8 +551,7 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
-        setActiveSection('cursos');
-        setSelectedPack(null);
+        changeSection('cursos');
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'cursos' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <GraduationCap className="h-5 w-5" />
@@ -522,8 +562,7 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
-        setActiveSection('free-sample');
-        setSelectedPack(null);
+        changeSection('free-sample');
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'free-sample' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <Sparkles className="h-5 w-5" />
@@ -534,8 +573,7 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
-        setActiveSection('ferramentas_ia');
-        setSelectedPack(null);
+        changeSection('ferramentas_ia');
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'ferramentas_ia' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <Cpu className="h-5 w-5" />
@@ -546,9 +584,7 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
-        setActiveSection('all-artes');
-        setSelectedPack(null);
-        setSelectedCategory("Todos");
+        changeSection('all-artes');
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'all-artes' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <LayoutGrid className="h-5 w-5" />
