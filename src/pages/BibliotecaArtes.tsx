@@ -222,7 +222,7 @@ const BibliotecaArtes = () => {
     setCurrentPage(1);
   }, [selectedCategory, selectedPack]);
   const fetchArtes = async () => {
-    const [adminResult, partnerResult, clicksResult] = await Promise.all([supabase.from('admin_artes').select('*').order('created_at', {
+    const [adminResult, partnerResult, clicksResult] = await Promise.all([supabase.from('admin_artes').select('*').or('platform.is.null,platform.eq.eventos').order('created_at', {
       ascending: false
     }), supabase.from('partner_artes').select('*').eq('approved', true).order('created_at', {
       ascending: false
