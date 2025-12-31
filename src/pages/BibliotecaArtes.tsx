@@ -918,12 +918,17 @@ const BibliotecaArtes = () => {
               };
               
               return <Card key={pack.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => {
-                // For ferramentas_ia type: navigate to video lessons page
+                // For ferramentas_ia type: navigate to video lessons page or specific tool page
                 if (isToolType) {
                   if (isPremium) {
                     navigate(`/ferramenta-ia-artes/${pack.slug}`);
                   } else {
-                    navigate('/planos-artes');
+                    // Navigate to specific tool page if it's upscaller-arcano
+                    if (pack.slug === 'upscaller-arcano') {
+                      navigate('/planos-upscaler-arcano');
+                    } else {
+                      navigate('/planos-artes');
+                    }
                   }
                   return;
                 }
@@ -1036,7 +1041,12 @@ const BibliotecaArtes = () => {
                                 className="mt-2 text-xs bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate('/planos-artes');
+                                  // Navigate to specific tool page if it's upscaller-arcano
+                                  if (pack.slug === 'upscaller-arcano') {
+                                    navigate('/planos-upscaler-arcano');
+                                  } else {
+                                    navigate('/planos-artes');
+                                  }
                                 }}
                               >
                                 <ShoppingCart className="h-3 w-3 mr-1" />
