@@ -178,12 +178,14 @@ const PlanosUpscalerArcano = () => {
     {
       before: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=30&blur=10",
       after: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=95",
-      label: "Foto de pessoa melhorada"
+      label: "Foto melhorada em 4K",
+      badge: "FOTO"
     },
     {
       before: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=30&blur=10",
       after: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=95",
-      label: "Render 3D em alta qualidade"
+      label: "Selo 3D em alta definição",
+      badge: "3D"
     }
   ];
 
@@ -353,20 +355,33 @@ const PlanosUpscalerArcano = () => {
           <section className="px-4 py-16">
             <div className="max-w-4xl mx-auto">
               <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-4">
-                Veja a transformação
+                Melhore <span className="text-amber-400">Fotos</span> e <span className="text-amber-400">Selos 3D</span>
               </h2>
               <p className="text-white/60 text-center mb-10">
-                Arraste para comparar antes e depois
+                Funciona também para logos, mockups, artes de IA e muito mais
               </p>
               
               <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
                 {beforeAfterExamples.map((example, index) => (
-                  <BeforeAfterSlider
-                    key={index}
-                    beforeImage={example.before}
-                    afterImage={example.after}
-                    label={example.label}
-                  />
+                  <div key={index} className="relative">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-amber-500 text-white border-0">
+                      {example.badge}
+                    </Badge>
+                    <BeforeAfterSlider
+                      beforeImage={example.before}
+                      afterImage={example.after}
+                      label={example.label}
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              {/* Lista de outros usos */}
+              <div className="flex flex-wrap justify-center gap-3 mt-8">
+                {["Logos", "Mockups", "Artes de IA", "Capturas de tela", "Fotos antigas"].map((item) => (
+                  <span key={item} className="bg-white/10 text-white/70 text-sm px-4 py-2 rounded-full border border-white/10">
+                    {item}
+                  </span>
                 ))}
               </div>
             </div>
