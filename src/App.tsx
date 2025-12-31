@@ -97,6 +97,7 @@ import AdminLeads from "./pages/AdminLeads";
 import AdminCloudinaryMigration from "./pages/AdminCloudinaryMigration";
 import AdminPremiumMusicos from "./pages/AdminPremiumMusicos";
 import SucessoArtesMusicos from "./pages/SucessoArtesMusicos";
+import PlanosUpscalerArcano from "./pages/PlanosUpscalerArcano";
 import AguardandoPagamentoMusicos from "./pages/AguardandoPagamentoMusicos";
 import GlobalImportProgress from "./components/GlobalImportProgress";
 
@@ -221,6 +222,7 @@ const AppContent = () => {
         <Route path="/admin-premium-musicos" element={<AdminPremiumMusicos />} />
         <Route path="/sucesso-artes-musicos" element={<SucessoArtesMusicos />} />
         <Route path="/aguardando-pagamento-musicos" element={<AguardandoPagamentoMusicos />} />
+        <Route path="/planos-upscaler-arcano" element={<PlanosUpscalerArcano />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
