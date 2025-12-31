@@ -129,18 +129,18 @@ const CTAButton = ({ onClick, isPremium }: { onClick: () => void; isPremium: boo
 
 // Trust Badges Component
 const TrustBadges = () => (
-  <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-6">
-    <span className="flex items-center gap-2 bg-white/5 text-white/70 text-sm px-4 py-2 rounded-full border border-white/10">
-      <Shield className="h-4 w-4 text-green-400" />
-      Pagamento Seguro
+  <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
+      <Shield className="h-3 w-3 text-green-400" />
+      Seguro
     </span>
-    <span className="flex items-center gap-2 bg-white/5 text-white/70 text-sm px-4 py-2 rounded-full border border-white/10">
-      <Zap className="h-4 w-4 text-yellow-400" />
-      Acesso Imediato
+    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
+      <Zap className="h-3 w-3 text-yellow-400" />
+      Imediato
     </span>
-    <span className="flex items-center gap-2 bg-white/5 text-white/70 text-sm px-4 py-2 rounded-full border border-white/10">
-      <Infinity className="h-4 w-4 text-fuchsia-400" />
-      Acesso Vitalício
+    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
+      <Infinity className="h-3 w-3 text-fuchsia-400" />
+      Vitalício
     </span>
   </div>
 );
@@ -172,7 +172,7 @@ const InfiniteCarousel = () => (
           key={i} 
           src={img} 
           alt={`Exemplo ${i + 1}`}
-          className="h-40 md:h-48 w-auto rounded-xl object-cover flex-shrink-0 border border-white/10"
+          className="h-52 md:h-48 w-auto rounded-xl object-cover flex-shrink-0 border border-white/10"
         />
       ))}
     </div>
@@ -384,23 +384,23 @@ const PlanosUpscalerArcano = () => {
       ) : (
         <>
           {/* HERO SECTION - Assimétrico */}
-          <section className="px-4 py-12 md:py-20 max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-              {/* Texto à esquerda */}
-              <div className="text-center md:text-left order-2 md:order-1">
-                <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 mb-6 rounded-full px-4 py-2">
+          <section className="px-3 md:px-4 py-10 md:py-20 max-w-6xl mx-auto">
+            <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+              {/* Texto - sempre primeiro em mobile */}
+              <div className="text-center md:text-left">
+                <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 mb-4 md:mb-6 rounded-full px-4 py-2">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Ferramenta de IA
                 </Badge>
                 
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight">
                   Melhore suas <span className="text-fuchsia-400">fotos</span> com{" "}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                     Inteligência Artificial
                   </span>
                 </h1>
                 
-                <p className="text-lg md:text-xl text-white/70 mb-8">
+                <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8">
                   Transforme fotos de celular, imagens de clientes ou artes geradas por IA em imagens <span className="text-fuchsia-400 font-semibold">nítidas e profissionais</span>
                 </p>
 
@@ -410,8 +410,8 @@ const PlanosUpscalerArcano = () => {
                 </div>
               </div>
 
-              {/* Imagem à direita */}
-              <div className="order-1 md:order-2">
+              {/* Slider - depois do texto em mobile */}
+              <div className="w-full mt-4 md:mt-0">
                 <BeforeAfterSlider
                   beforeImage={beforeAfterExamples[0].before}
                   afterImage={beforeAfterExamples[0].after}
@@ -423,9 +423,9 @@ const PlanosUpscalerArcano = () => {
           </section>
 
           {/* SEÇÃO DA DOR */}
-          <section className="px-4 py-20 bg-black/30">
+          <section className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white text-center mb-8 md:mb-12">
                 Você já passou por isso?
               </h2>
               
@@ -464,12 +464,12 @@ const PlanosUpscalerArcano = () => {
           </section>
 
           {/* SEÇÃO ANTES/DEPOIS */}
-          <section className="px-4 py-20">
+          <section className="px-3 md:px-4 py-16 md:py-20">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white text-center mb-3 md:mb-4">
                 Melhore <span className="text-fuchsia-400">Fotos</span> e <span className="text-fuchsia-400">Selos 3D</span>
               </h2>
-              <p className="text-white/60 text-center text-lg mb-12">
+              <p className="text-white/60 text-center text-sm md:text-lg mb-8 md:mb-12">
                 Funciona também para logos, mockups, artes de IA e muito mais
               </p>
               
@@ -613,62 +613,64 @@ const PlanosUpscalerArcano = () => {
           </section>
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
-          <section className="px-4 py-20 bg-black/30">
+          <section className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-lg mx-auto">
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
-                <CardContent className="p-8 text-center">
+                <CardContent className="p-5 md:p-8 text-center">
                   {/* Badge de desconto */}
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-6 py-2 text-lg font-bold mb-6">
-                    🔥 69% OFF - PROMOÇÃO
+                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
+                    🔥 69% OFF
                   </Badge>
 
                   {isPremium && (
-                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm px-4 py-2 rounded-full mb-6">
-                      <Crown className="h-4 w-4" />
-                      Desconto Exclusivo de Membro
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6">
+                      <Crown className="h-3 w-3 md:h-4 md:w-4" />
+                      Desconto de Membro
                     </div>
                   )}
 
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
+                  <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-4 md:mb-6">
                     Garanta seu acesso <span className="text-fuchsia-400">vitalício</span>
                   </h2>
 
                   {/* Preços */}
-                  <div className="mb-6">
-                    <span className="text-white/40 text-xl line-through block mb-1">{formatPrice(originalPrice)}</span>
-                    <div className="text-5xl md:text-6xl font-bold text-white mb-2">
+                  <div className="mb-5 md:mb-6">
+                    <span className="text-white/40 text-lg md:text-xl line-through block mb-1">{formatPrice(originalPrice)}</span>
+                    <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">
                       {formatPrice(price)}
                     </div>
-                    <p className="text-white/60 text-lg">
+                    <p className="text-white/60 text-base md:text-lg">
                       ou <span className="text-fuchsia-400 font-semibold">3x de {formatPrice(installmentPrice)}</span>
                     </p>
-                    <p className="text-white/40 text-sm mt-2">pagamento único • acesso vitalício</p>
+                    <p className="text-white/40 text-xs md:text-sm mt-2">pagamento único • acesso vitalício</p>
                   </div>
 
                   {/* Features checklist */}
-                  <div className="grid gap-3 mb-6 text-left">
+                  <div className="grid gap-2 md:gap-3 mb-5 md:mb-6 text-left">
                     {features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-3 text-white/80">
-                        <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-4 w-4 text-green-400" />
+                      <div key={index} className="flex items-center gap-2 md:gap-3 text-white/80">
+                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                          <Check className="h-3 w-3 md:h-4 md:w-4 text-green-400" />
                         </div>
-                        <span className="text-sm">{feature.text}</span>
+                        <span className="text-xs md:text-sm">{feature.text}</span>
                       </div>
                     ))}
                   </div>
 
                   {/* Alerta de urgência */}
-                  <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-2xl p-3 mb-6">
-                    <div className="flex items-center justify-center gap-2 text-fuchsia-300 text-sm">
-                      <Clock className="h-4 w-4" />
+                  <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
+                    <div className="flex items-center justify-center gap-2 text-fuchsia-300 text-xs md:text-sm">
+                      <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
                       <span className="font-medium">Oferta por tempo limitado</span>
                     </div>
                   </div>
 
-                  <CTAButton onClick={handlePurchase} isPremium={isPremium} />
+                  <div className="px-0 md:px-2">
+                    <CTAButton onClick={handlePurchase} isPremium={isPremium} />
+                  </div>
 
                   {/* Badges de pagamento */}
-                  <div className="flex flex-wrap justify-center gap-4 mt-6 text-white/50 text-xs">
+                  <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-5 md:mt-6 text-white/50 text-xs">
                     <span className="flex items-center gap-1">
                       <CreditCard className="h-3 w-3" />
                       Cartão
