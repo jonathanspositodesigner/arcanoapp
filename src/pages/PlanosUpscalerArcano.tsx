@@ -448,19 +448,19 @@ const PlanosUpscalerArcano = () => {
                 Como funciona
               </h2>
               
-              <div className="grid md:grid-cols-3 gap-8 max-w-3xl mx-auto">
+              <div className="flex flex-col md:flex-row md:justify-center gap-10 md:gap-8 max-w-3xl mx-auto">
                 {steps.map((step, index) => {
                   const IconComponent = step.icon;
                   return (
-                    <div key={index} className="text-center relative">
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-fuchsia-500/25">
-                        <IconComponent className="h-8 w-8 text-white" />
-                      </div>
-                      <div className="absolute -top-2 -right-2 md:right-auto md:left-1/2 md:translate-x-8 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white font-bold text-sm">
+                    <div key={index} className="text-center flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/50 flex items-center justify-center text-fuchsia-400 font-bold text-sm mb-3">
                         {index + 1}
                       </div>
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center mb-4 shadow-lg shadow-fuchsia-500/25">
+                        <IconComponent className="h-8 w-8 text-white" />
+                      </div>
                       <h3 className="text-lg font-semibold text-white mb-2">{step.title}</h3>
-                      <p className="text-white/60 text-sm">{step.description}</p>
+                      <p className="text-white/60 text-sm max-w-[200px]">{step.description}</p>
                     </div>
                   );
                 })}
@@ -494,16 +494,16 @@ const PlanosUpscalerArcano = () => {
           {/* SEÇÃO DE PREÇO E CTA - MELHORADA COM GATILHOS */}
           <section className="px-4 py-16 bg-gradient-to-t from-fuchsia-500/10 to-transparent">
             <div className="max-w-lg mx-auto">
-              <Card className="relative bg-[#1a0f25]/90 border-2 border-fuchsia-500/50 ring-2 ring-fuchsia-500/20 overflow-hidden">
-                {/* Banner de urgência pulsante */}
-                <div className="bg-gradient-to-r from-fuchsia-600 via-purple-600 to-fuchsia-600 text-white text-center py-3 animate-pulse">
+              <Card className="relative bg-[#1a0f25]/90 border-2 border-fuchsia-500/50 ring-2 ring-fuchsia-500/20 overflow-hidden mx-2">
+                {/* Banner de urgência */}
+                <div className="bg-gradient-to-r from-fuchsia-600 via-purple-600 to-fuchsia-600 text-white text-center py-3">
                   <span className="font-bold text-sm">🔥 PROMOÇÃO DE LANÇAMENTO 🔥</span>
                 </div>
 
                 <div className="absolute top-12 left-0 right-0 h-1 bg-gradient-to-r from-fuchsia-500 to-purple-600" />
 
                 {isPremium && (
-                  <div className="absolute top-16 right-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                  <div className="mt-4 mx-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-3 py-1.5 rounded-full flex items-center justify-center gap-1 w-fit">
                     <Crown className="h-3 w-3" />
                     Desconto de Membro
                   </div>
@@ -530,7 +530,7 @@ const PlanosUpscalerArcano = () => {
                         69% OFF
                       </Badge>
                     </div>
-                    <div className="text-5xl font-bold text-white mb-1">
+                    <div className="text-4xl md:text-5xl font-bold text-white mb-1">
                       {formatPrice(price)}
                     </div>
                     <p className="text-white/50 text-sm">pagamento único</p>
@@ -559,7 +559,7 @@ const PlanosUpscalerArcano = () => {
 
                   <Button
                     onClick={handlePurchase}
-                    className="w-full py-7 text-lg font-bold bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-lg shadow-fuchsia-500/25 transition-all duration-300 hover:scale-[1.02] animate-pulse"
+                    className="w-full py-6 md:py-7 text-base md:text-lg font-bold bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-lg shadow-fuchsia-500/25 transition-all duration-300 hover:scale-[1.02]"
                   >
                     QUERO MEU ACESSO AGORA
                     <ArrowRight className="h-5 w-5 ml-2" />
