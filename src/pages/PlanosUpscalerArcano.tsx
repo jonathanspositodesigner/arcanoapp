@@ -385,7 +385,7 @@ const PlanosUpscalerArcano = () => {
       ) : (
         <>
           {/* HERO SECTION - Vertical no mobile */}
-          <section className="px-3 md:px-4 py-10 md:py-20 max-w-4xl mx-auto">
+          <section className="px-3 md:px-4 py-10 md:py-20 w-full">
             <div className="flex flex-col items-center text-center">
               <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 mb-4 md:mb-6 rounded-full px-4 py-2">
                 <Sparkles className="h-4 w-4 mr-2" />
@@ -400,7 +400,7 @@ const PlanosUpscalerArcano = () => {
               </h1>
 
               {/* Slider - logo abaixo do título */}
-              <div className="w-full max-w-md mb-6 md:mb-8">
+              <div className="w-full max-w-md md:max-w-[90vw] lg:max-w-[85vw] mb-6 md:mb-8">
                 <BeforeAfterSlider
                   beforeImage={beforeAfterExamples[0].before}
                   afterImage={beforeAfterExamples[0].after}
