@@ -129,7 +129,7 @@ const CTAButton = ({ onClick, isPremium }: { onClick: () => void; isPremium: boo
 
 // Trust Badges Component
 const TrustBadges = () => (
-  <div className="flex flex-wrap justify-center gap-3 mt-6">
+  <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-6">
     <span className="flex items-center gap-2 bg-white/5 text-white/70 text-sm px-4 py-2 rounded-full border border-white/10">
       <Shield className="h-4 w-4 text-green-400" />
       Pagamento Seguro
@@ -142,6 +142,46 @@ const TrustBadges = () => (
       <Infinity className="h-4 w-4 text-fuchsia-400" />
       Acesso Vitalício
     </span>
+  </div>
+);
+
+// Infinite Carousel Component
+const carouselImages = [
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=95",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=95",
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=95",
+  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=95",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&q=95",
+  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&q=95",
+  "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400&q=95",
+  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=95",
+];
+
+const InfiniteCarousel = () => (
+  <div className="w-full overflow-hidden py-8">
+    <div 
+      className="flex gap-4"
+      style={{
+        animation: 'scroll 25s linear infinite',
+        width: 'fit-content'
+      }}
+    >
+      {/* Duplicate images for seamless loop */}
+      {[...carouselImages, ...carouselImages].map((img, i) => (
+        <img 
+          key={i} 
+          src={img} 
+          alt={`Exemplo ${i + 1}`}
+          className="h-40 md:h-48 w-auto rounded-xl object-cover flex-shrink-0 border border-white/10"
+        />
+      ))}
+    </div>
+    <style>{`
+      @keyframes scroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+    `}</style>
   </div>
 );
 
@@ -456,6 +496,11 @@ const PlanosUpscalerArcano = () => {
                   </span>
                 ))}
               </div>
+
+              {/* Carrossel infinito de imagens */}
+              <div className="mt-12 -mx-4 md:-mx-8">
+                <InfiniteCarousel />
+              </div>
             </div>
           </section>
 
@@ -490,7 +535,7 @@ const PlanosUpscalerArcano = () => {
           <section className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-                O que você <span className="text-fuchsia-400">ganha</span>
+                O que o <span className="text-fuchsia-400">Upscaler faz</span>?
               </h2>
               
               <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
@@ -508,11 +553,6 @@ const PlanosUpscalerArcano = () => {
                     </div>
                   );
                 })}
-              </div>
-
-              {/* CTA intermediário */}
-              <div className="flex justify-center mt-12">
-                <CTAButton onClick={handlePurchase} isPremium={isPremium} />
               </div>
             </div>
           </section>
@@ -572,8 +612,83 @@ const PlanosUpscalerArcano = () => {
             </div>
           </section>
 
-          {/* FAQ SECTION */}
+          {/* SEÇÃO DE PREÇO E CTA - Com Card */}
           <section className="px-4 py-20 bg-black/30">
+            <div className="max-w-lg mx-auto">
+              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
+                <CardContent className="p-8 text-center">
+                  {/* Badge de desconto */}
+                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-6 py-2 text-lg font-bold mb-6">
+                    🔥 69% OFF - PROMOÇÃO
+                  </Badge>
+
+                  {isPremium && (
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm px-4 py-2 rounded-full mb-6">
+                      <Crown className="h-4 w-4" />
+                      Desconto Exclusivo de Membro
+                    </div>
+                  )}
+
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
+                    Garanta seu acesso <span className="text-fuchsia-400">vitalício</span>
+                  </h2>
+
+                  {/* Preços */}
+                  <div className="mb-6">
+                    <span className="text-white/40 text-xl line-through block mb-1">{formatPrice(originalPrice)}</span>
+                    <div className="text-5xl md:text-6xl font-bold text-white mb-2">
+                      {formatPrice(price)}
+                    </div>
+                    <p className="text-white/60 text-lg">
+                      ou <span className="text-fuchsia-400 font-semibold">3x de {formatPrice(installmentPrice)}</span>
+                    </p>
+                    <p className="text-white/40 text-sm mt-2">pagamento único • acesso vitalício</p>
+                  </div>
+
+                  {/* Features checklist */}
+                  <div className="grid gap-3 mb-6 text-left">
+                    {features.map((feature, index) => (
+                      <div key={index} className="flex items-center gap-3 text-white/80">
+                        <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                          <Check className="h-4 w-4 text-green-400" />
+                        </div>
+                        <span className="text-sm">{feature.text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Alerta de urgência */}
+                  <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-2xl p-3 mb-6">
+                    <div className="flex items-center justify-center gap-2 text-fuchsia-300 text-sm">
+                      <Clock className="h-4 w-4" />
+                      <span className="font-medium">Oferta por tempo limitado</span>
+                    </div>
+                  </div>
+
+                  <CTAButton onClick={handlePurchase} isPremium={isPremium} />
+
+                  {/* Badges de pagamento */}
+                  <div className="flex flex-wrap justify-center gap-4 mt-6 text-white/50 text-xs">
+                    <span className="flex items-center gap-1">
+                      <CreditCard className="h-3 w-3" />
+                      Cartão
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-sm">💵</span>
+                      PIX
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Shield className="h-3 w-3" />
+                      Seguro
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          {/* FAQ SECTION - Depois do preço */}
+          <section className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
                 Perguntas <span className="text-fuchsia-400">Frequentes</span>
@@ -595,77 +710,6 @@ const PlanosUpscalerArcano = () => {
                   </AccordionItem>
                 ))}
               </Accordion>
-            </div>
-          </section>
-
-          {/* SEÇÃO DE PREÇO E CTA - Layout aberto */}
-          <section className="px-4 py-20">
-            <div className="max-w-lg mx-auto text-center">
-              {/* Badge de desconto */}
-              <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-6 py-2 text-lg font-bold mb-6">
-                🔥 69% OFF - PROMOÇÃO DE LANÇAMENTO
-              </Badge>
-
-              {isPremium && (
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm px-4 py-2 rounded-full mb-6">
-                  <Crown className="h-4 w-4" />
-                  Desconto Exclusivo de Membro
-                </div>
-              )}
-
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
-                Garanta seu acesso <span className="text-fuchsia-400">vitalício</span>
-              </h2>
-
-              {/* Preços */}
-              <div className="mb-8">
-                <span className="text-white/40 text-2xl line-through block mb-2">{formatPrice(originalPrice)}</span>
-                <div className="text-6xl md:text-7xl font-bold text-white mb-2">
-                  {formatPrice(price)}
-                </div>
-                <p className="text-white/60 text-lg">
-                  ou <span className="text-fuchsia-400 font-semibold">3x de {formatPrice(installmentPrice)}</span>
-                </p>
-                <p className="text-white/40 text-sm mt-2">pagamento único • acesso vitalício</p>
-              </div>
-
-              {/* Features checklist */}
-              <div className="grid gap-3 mb-8 text-left max-w-sm mx-auto">
-                {features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3 text-white/80">
-                    <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                      <Check className="h-4 w-4 text-green-400" />
-                    </div>
-                    <span>{feature.text}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Alerta de urgência */}
-              <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-2xl p-4 mb-8">
-                <div className="flex items-center justify-center gap-2 text-fuchsia-300">
-                  <Clock className="h-5 w-5" />
-                  <span className="font-medium">Essa oferta pode acabar a qualquer momento</span>
-                </div>
-              </div>
-
-              <CTAButton onClick={handlePurchase} isPremium={isPremium} />
-
-              {/* Badges de pagamento */}
-              <div className="flex flex-wrap justify-center gap-4 mt-8 text-white/50 text-sm">
-                <span className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  Cartão de Crédito
-                </span>
-                <span className="flex items-center gap-2">
-                  <span className="text-lg">💵</span>
-                  PIX
-                </span>
-                <span className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Compra Segura
-                </span>
-              </div>
             </div>
           </section>
 
