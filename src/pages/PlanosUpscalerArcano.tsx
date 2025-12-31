@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2 } from "lucide-react";
+import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 
@@ -104,7 +104,7 @@ const BeforeAfterSlider = ({
         <div className="absolute top-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
           Antes
         </div>
-        <div className="absolute top-3 right-3 bg-amber-500 text-white text-xs px-2 py-1 rounded-full">
+        <div className="absolute top-3 right-3 bg-fuchsia-500 text-white text-xs px-2 py-1 rounded-full">
           Depois
         </div>
       </div>
@@ -165,13 +165,14 @@ const PlanosUpscalerArcano = () => {
 
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500"></div>
       </div>
     );
   }
 
   const price = tool?.price_vitalicio || 2990;
+  const originalPrice = 9700; // R$ 97,00 original
 
   // Imagens placeholder - substitua pelos seus exemplos reais
   const beforeAfterExamples = [
@@ -251,7 +252,7 @@ const PlanosUpscalerArcano = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a]">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]">
       {/* Header */}
       <div className="p-4">
         <Button
@@ -267,7 +268,7 @@ const PlanosUpscalerArcano = () => {
       {/* Se já tem acesso */}
       {hasAccess ? (
         <div className="max-w-lg mx-auto px-4 py-12">
-          <Card className="bg-[#1a1a2e]/80 border-green-500/50">
+          <Card className="bg-[#1a0f25]/80 border-green-500/50">
             <CardContent className="p-6 text-center">
               <Badge className="bg-green-500 text-white text-lg px-4 py-2 mb-4">
                 <Check className="h-5 w-5 mr-2" />
@@ -278,7 +279,7 @@ const PlanosUpscalerArcano = () => {
               </p>
               <Button
                 onClick={() => navigate("/biblioteca-artes")}
-                className="bg-gradient-to-r from-[#2d4a5e] to-[#3d5a6e]"
+                className="bg-gradient-to-r from-fuchsia-600 to-purple-600"
               >
                 Ir para Biblioteca
               </Button>
@@ -289,14 +290,14 @@ const PlanosUpscalerArcano = () => {
         <>
           {/* HERO SECTION */}
           <section className="px-4 py-12 text-center max-w-4xl mx-auto">
-            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 mb-6">
+            <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 mb-6">
               <Sparkles className="h-3 w-3 mr-1" />
               Ferramenta de IA
             </Badge>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Melhore a qualidade das suas{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                 fotos com IA
               </span>
             </h1>
@@ -326,27 +327,27 @@ const PlanosUpscalerArcano = () => {
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
                   <div className="text-4xl mb-4">📱</div>
                   <p className="text-white/80">
-                    Tirou foto com celular e ficou <span className="text-amber-400 font-semibold">ruim</span>?
+                    Tirou foto com celular e ficou <span className="text-fuchsia-400 font-semibold">ruim</span>?
                   </p>
                 </div>
                 
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
                   <div className="text-4xl mb-4">😤</div>
                   <p className="text-white/80">
-                    Recebeu foto de cliente em <span className="text-amber-400 font-semibold">baixa qualidade</span>?
+                    Recebeu foto de cliente em <span className="text-fuchsia-400 font-semibold">baixa qualidade</span>?
                   </p>
                 </div>
                 
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
                   <div className="text-4xl mb-4">🤖</div>
                   <p className="text-white/80">
-                    Gerou imagem com IA mas a qualidade <span className="text-amber-400 font-semibold">não ficou boa</span>?
+                    Gerou imagem com IA mas a qualidade <span className="text-fuchsia-400 font-semibold">não ficou boa</span>?
                   </p>
                 </div>
               </div>
               
               <p className="text-center text-xl text-white mt-10">
-                O <span className="text-amber-400 font-bold">Upscaler Arcano</span> resolve isso em segundos.
+                O <span className="text-fuchsia-400 font-bold">Upscaler Arcano</span> resolve isso em segundos.
               </p>
             </div>
           </section>
@@ -355,7 +356,7 @@ const PlanosUpscalerArcano = () => {
           <section className="px-4 py-16">
             <div className="max-w-4xl mx-auto">
               <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-4">
-                Melhore <span className="text-amber-400">Fotos</span> e <span className="text-amber-400">Selos 3D</span>
+                Melhore <span className="text-fuchsia-400">Fotos</span> e <span className="text-fuchsia-400">Selos 3D</span>
               </h2>
               <p className="text-white/60 text-center mb-10">
                 Funciona também para logos, mockups, artes de IA e muito mais
@@ -364,7 +365,7 @@ const PlanosUpscalerArcano = () => {
               <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
                 {beforeAfterExamples.map((example, index) => (
                   <div key={index} className="relative">
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-amber-500 text-white border-0">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-fuchsia-500 text-white border-0">
                       {example.badge}
                     </Badge>
                     <BeforeAfterSlider
@@ -400,10 +401,10 @@ const PlanosUpscalerArcano = () => {
                   return (
                     <div 
                       key={index}
-                      className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-amber-500/50 transition-all duration-300"
+                      className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-fuchsia-500/50 transition-all duration-300"
                     >
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center mx-auto mb-4">
-                        <IconComponent className="h-7 w-7 text-amber-400" />
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                        <IconComponent className="h-7 w-7 text-fuchsia-400" />
                       </div>
                       <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
                       <p className="text-white/60 text-sm">{item.description}</p>
@@ -429,8 +430,8 @@ const PlanosUpscalerArcano = () => {
                       key={index}
                       className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-4"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="h-5 w-5 text-amber-400" />
+                      <div className="w-10 h-10 rounded-lg bg-fuchsia-500/20 flex items-center justify-center flex-shrink-0">
+                        <IconComponent className="h-5 w-5 text-fuchsia-400" />
                       </div>
                       <span className="text-white/90">{feature.text}</span>
                     </div>
@@ -452,7 +453,7 @@ const PlanosUpscalerArcano = () => {
                   const IconComponent = step.icon;
                   return (
                     <div key={index} className="text-center relative">
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/25">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-fuchsia-500/25">
                         <IconComponent className="h-8 w-8 text-white" />
                       </div>
                       <div className="absolute -top-2 -right-2 md:right-auto md:left-1/2 md:translate-x-8 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white font-bold text-sm">
@@ -490,27 +491,28 @@ const PlanosUpscalerArcano = () => {
             </div>
           </section>
 
-          {/* SEÇÃO DE PREÇO E CTA */}
-          <section className="px-4 py-16 bg-gradient-to-t from-amber-500/10 to-transparent">
+          {/* SEÇÃO DE PREÇO E CTA - MELHORADA COM GATILHOS */}
+          <section className="px-4 py-16 bg-gradient-to-t from-fuchsia-500/10 to-transparent">
             <div className="max-w-lg mx-auto">
-              <Card className="relative bg-[#1a1a2e]/80 border-2 border-amber-500/50 ring-2 ring-amber-500/20 overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-                
-                <div className="absolute -top-0 left-1/2 -translate-x-1/2 translate-y-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                  Acesso Vitalício
+              <Card className="relative bg-[#1a0f25]/90 border-2 border-fuchsia-500/50 ring-2 ring-fuchsia-500/20 overflow-hidden">
+                {/* Banner de urgência pulsante */}
+                <div className="bg-gradient-to-r from-fuchsia-600 via-purple-600 to-fuchsia-600 text-white text-center py-3 animate-pulse">
+                  <span className="font-bold text-sm">🔥 PROMOÇÃO DE LANÇAMENTO 🔥</span>
                 </div>
 
+                <div className="absolute top-12 left-0 right-0 h-1 bg-gradient-to-r from-fuchsia-500 to-purple-600" />
+
                 {isPremium && (
-                  <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                  <div className="absolute top-16 right-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                     <Crown className="h-3 w-3" />
                     Desconto de Membro
                   </div>
                 )}
 
-                <CardHeader className="text-center pt-10">
+                <CardHeader className="text-center pt-8">
                   <div className="flex justify-center mb-4">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/30">
-                      <Sparkles className="h-10 w-10 text-amber-400" />
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center border border-fuchsia-500/30">
+                      <Sparkles className="h-10 w-10 text-fuchsia-400" />
                     </div>
                   </div>
                   <CardTitle className="text-white text-2xl">Upscaler Arcano</CardTitle>
@@ -520,7 +522,14 @@ const PlanosUpscalerArcano = () => {
                 </CardHeader>
 
                 <CardContent className="space-y-6">
+                  {/* Preço com desconto visual */}
                   <div className="text-center">
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                      <span className="text-white/40 text-xl line-through">{formatPrice(originalPrice)}</span>
+                      <Badge className="bg-green-500 text-white border-0 text-sm font-bold">
+                        69% OFF
+                      </Badge>
+                    </div>
                     <div className="text-5xl font-bold text-white mb-1">
                       {formatPrice(price)}
                     </div>
@@ -529,7 +538,6 @@ const PlanosUpscalerArcano = () => {
 
                   <div className="space-y-3">
                     {features.map((feature, index) => {
-                      const IconComponent = feature.icon;
                       return (
                         <div key={index} className="flex items-center gap-3 text-white/80">
                           <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
@@ -541,20 +549,29 @@ const PlanosUpscalerArcano = () => {
                     })}
                   </div>
 
+                  {/* Alerta de urgência */}
+                  <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-xl p-3 text-center">
+                    <div className="flex items-center justify-center gap-2 text-fuchsia-300">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm font-medium">Essa oferta pode acabar a qualquer momento</span>
+                    </div>
+                  </div>
+
                   <Button
                     onClick={handlePurchase}
-                    className="w-full py-7 text-lg font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/25 transition-all duration-300 hover:scale-[1.02]"
+                    className="w-full py-7 text-lg font-bold bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-lg shadow-fuchsia-500/25 transition-all duration-300 hover:scale-[1.02] animate-pulse"
                   >
-                    Garantir Meu Acesso Agora
+                    QUERO MEU ACESSO AGORA
+                    <ArrowRight className="h-5 w-5 ml-2" />
                   </Button>
 
-                  <div className="flex items-center justify-center gap-4 text-white/40 text-xs">
+                  <div className="flex items-center justify-center gap-4 text-white/50 text-xs">
                     <span className="flex items-center gap-1">
-                      <Check className="h-3 w-3" />
-                      Pagamento seguro
+                      <Shield className="h-3.5 w-3.5" />
+                      Pagamento 100% seguro
                     </span>
                     <span className="flex items-center gap-1">
-                      <Check className="h-3 w-3" />
+                      <Zap className="h-3.5 w-3.5" />
                       Acesso imediato
                     </span>
                   </div>
