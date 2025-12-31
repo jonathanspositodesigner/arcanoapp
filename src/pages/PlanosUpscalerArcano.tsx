@@ -398,6 +398,16 @@ const PlanosUpscalerArcano = () => {
                   Inteligência Artificial
                 </span>
               </h1>
+
+              {/* Slider - logo abaixo do título */}
+              <div className="w-full max-w-md mb-6 md:mb-8">
+                <BeforeAfterSlider
+                  beforeImage={beforeAfterExamples[0].before}
+                  afterImage={beforeAfterExamples[0].after}
+                  label="Arraste para ver a diferença"
+                  size="large"
+                />
+              </div>
               
               <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8 max-w-2xl">
                 Transforme fotos de celular, imagens de clientes ou artes geradas por IA em imagens <span className="text-fuchsia-400 font-semibold">nítidas e profissionais</span>
@@ -406,16 +416,6 @@ const PlanosUpscalerArcano = () => {
               <div className="flex flex-col items-center">
                 <CTAButton onClick={handlePurchase} isPremium={isPremium} />
                 <TrustBadges />
-              </div>
-
-              {/* Slider - abaixo de tudo */}
-              <div className="w-full max-w-md mt-10 md:mt-12">
-                <BeforeAfterSlider
-                  beforeImage={beforeAfterExamples[0].before}
-                  afterImage={beforeAfterExamples[0].after}
-                  label="Arraste para ver a diferença"
-                  size="large"
-                />
               </div>
             </div>
           </section>
