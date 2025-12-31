@@ -923,9 +923,11 @@ const BibliotecaArtes = () => {
                   if (isPremium) {
                     navigate(`/ferramenta-ia-artes/${pack.slug}`);
                   } else {
-                    // Navigate to specific tool page if it's upscaller-arcano
+                    // Navigate to specific tool page based on slug
                     if (pack.slug === 'upscaller-arcano') {
                       navigate('/planos-upscaler-arcano');
+                    } else if (pack.slug === 'forja-selos-3d') {
+                      navigate('/planos-forja-selos-3d');
                     } else {
                       navigate('/planos-artes');
                     }
@@ -1041,9 +1043,11 @@ const BibliotecaArtes = () => {
                                 className="mt-2 text-xs bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // Navigate to specific tool page if it's upscaller-arcano
+                                  // Navigate to specific tool page based on slug
                                   if (pack.slug === 'upscaller-arcano') {
                                     navigate('/planos-upscaler-arcano');
+                                  } else if (pack.slug === 'forja-selos-3d') {
+                                    navigate('/planos-forja-selos-3d');
                                   } else {
                                     navigate('/planos-artes');
                                   }
