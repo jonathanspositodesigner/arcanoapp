@@ -7,6 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 
 interface ToolData {
   id: string;
@@ -423,13 +424,15 @@ const PlanosUpscalerArcano = () => {
           </section>
 
           {/* SEÇÃO DA DOR */}
-          <section className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
+          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white text-center mb-8 md:mb-12">
-                Você já passou por isso?
-              </h2>
+              <AnimatedSection as="div" className="text-center" delay={100}>
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white text-center mb-8 md:mb-12">
+                  Você já passou por isso?
+                </h2>
+              </AnimatedSection>
               
-              <div className="grid md:grid-cols-3 gap-6">
+              <StaggeredAnimation className="grid md:grid-cols-3 gap-6" staggerDelay={150}>
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300">
                   <div className="text-5xl mb-6">📱</div>
                   <p className="text-white/80 text-lg">
@@ -450,18 +453,20 @@ const PlanosUpscalerArcano = () => {
                     Gerou imagem com IA mas <span className="text-fuchsia-400 font-semibold">não ficou boa</span>?
                   </p>
                 </div>
-              </div>
+              </StaggeredAnimation>
               
-              <p className="text-center text-2xl text-white mt-12">
-                O <span className="text-fuchsia-400 font-bold">Upscaler Arcano</span> resolve isso em segundos.
-              </p>
+              <AnimatedSection as="div" delay={400}>
+                <p className="text-center text-2xl text-white mt-12">
+                  O <span className="text-fuchsia-400 font-bold">Upscaler Arcano</span> resolve isso em segundos.
+                </p>
 
-              {/* CTA intermediário */}
-              <div className="flex justify-center mt-10">
-                <CTAButton onClick={handlePurchase} isPremium={isPremium} />
-              </div>
+                {/* CTA intermediário */}
+                <div className="flex justify-center mt-10">
+                  <CTAButton onClick={handlePurchase} isPremium={isPremium} />
+                </div>
+              </AnimatedSection>
             </div>
-          </section>
+          </AnimatedSection>
 
           {/* SEÇÃO ANTES/DEPOIS */}
           <section className="px-3 md:px-4 py-16 md:py-20">
@@ -505,13 +510,15 @@ const PlanosUpscalerArcano = () => {
           </section>
 
           {/* PARA QUEM É */}
-          <section className="px-4 py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-                Para quem é o <span className="text-fuchsia-400">Upscaler Arcano</span>?
-              </h2>
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+                  Para quem é o <span className="text-fuchsia-400">Upscaler Arcano</span>?
+                </h2>
+              </AnimatedSection>
               
-              <div className="grid md:grid-cols-3 gap-6">
+              <StaggeredAnimation className="grid md:grid-cols-3 gap-6" staggerDelay={150}>
                 {targetAudience.map((item, index) => {
                   const IconComponent = item.icon;
                   return (
@@ -527,18 +534,20 @@ const PlanosUpscalerArcano = () => {
                     </div>
                   );
                 })}
-              </div>
+              </StaggeredAnimation>
             </div>
-          </section>
+          </AnimatedSection>
 
           {/* BENEFÍCIOS */}
-          <section className="px-4 py-20">
+          <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-                O que o <span className="text-fuchsia-400">Upscaler faz</span>?
-              </h2>
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+                  O que o <span className="text-fuchsia-400">Upscaler faz</span>?
+                </h2>
+              </AnimatedSection>
               
-              <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+              <StaggeredAnimation className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto" staggerDelay={100}>
                 {features.map((feature, index) => {
                   const IconComponent = feature.icon;
                   return (
@@ -553,18 +562,20 @@ const PlanosUpscalerArcano = () => {
                     </div>
                   );
                 })}
-              </div>
+              </StaggeredAnimation>
             </div>
-          </section>
+          </AnimatedSection>
 
           {/* COMO FUNCIONA */}
-          <section className="px-4 py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-                Como <span className="text-fuchsia-400">funciona</span>
-              </h2>
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+                  Como <span className="text-fuchsia-400">funciona</span>
+                </h2>
+              </AnimatedSection>
               
-              <div className="flex flex-col md:flex-row md:justify-center gap-8 md:gap-12 max-w-3xl mx-auto">
+              <StaggeredAnimation className="flex flex-col md:flex-row md:justify-center gap-8 md:gap-12 max-w-3xl mx-auto" staggerDelay={200}>
                 {steps.map((step, index) => {
                   const IconComponent = step.icon;
                   return (
@@ -585,21 +596,23 @@ const PlanosUpscalerArcano = () => {
                     </div>
                   );
                 })}
-              </div>
+              </StaggeredAnimation>
             </div>
-          </section>
+          </AnimatedSection>
 
           {/* PROVA SOCIAL - Resultados de usuários */}
-          <section className="px-4 py-20">
+          <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
-                Veja o <span className="text-fuchsia-400">resultado</span> de alguns usuários
-              </h2>
-              <p className="text-white/60 text-center text-lg mb-12">
-                Pessoas reais usando o Upscaler Arcano
-              </p>
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
+                  Veja o <span className="text-fuchsia-400">resultado</span> de alguns usuários
+                </h2>
+                <p className="text-white/60 text-center text-lg mb-12">
+                  Pessoas reais usando o Upscaler Arcano
+                </p>
+              </AnimatedSection>
               
-              <div className="grid md:grid-cols-3 gap-6">
+              <StaggeredAnimation className="grid md:grid-cols-3 gap-6" staggerDelay={150}>
                 {userResults.map((result, index) => (
                   <BeforeAfterSlider
                     key={index}
@@ -608,12 +621,12 @@ const PlanosUpscalerArcano = () => {
                     label={result.label}
                   />
                 ))}
-              </div>
+              </StaggeredAnimation>
             </div>
-          </section>
+          </AnimatedSection>
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
-          <section className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
+          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
             <div className="max-w-lg mx-auto">
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
                 <CardContent className="p-5 md:p-8 text-center">
@@ -687,33 +700,37 @@ const PlanosUpscalerArcano = () => {
                 </CardContent>
               </Card>
             </div>
-          </section>
+          </AnimatedSection>
 
           {/* FAQ SECTION - Depois do preço */}
-          <section className="px-4 py-20">
+          <AnimatedSection className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-                Perguntas <span className="text-fuchsia-400">Frequentes</span>
-              </h2>
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+                  Perguntas <span className="text-fuchsia-400">Frequentes</span>
+                </h2>
+              </AnimatedSection>
               
-              <Accordion type="single" collapsible className="space-y-4">
-                {faqItems.map((item, index) => (
-                  <AccordionItem 
-                    key={index} 
-                    value={`item-${index}`}
-                    className="bg-white/5 border border-white/10 rounded-2xl px-6 data-[state=open]:border-fuchsia-500/30"
-                  >
-                    <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
-                      {item.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-white/70 pb-5">
-                      {item.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+              <AnimatedSection as="div" delay={200}>
+                <Accordion type="single" collapsible className="space-y-4">
+                  {faqItems.map((item, index) => (
+                    <AccordionItem 
+                      key={index} 
+                      value={`item-${index}`}
+                      className="bg-white/5 border border-white/10 rounded-2xl px-6 data-[state=open]:border-fuchsia-500/30"
+                    >
+                      <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
+                        {item.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-white/70 pb-5">
+                        {item.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </AnimatedSection>
             </div>
-          </section>
+          </AnimatedSection>
 
           {/* FOOTER */}
           <section className="px-4 py-10 text-center border-t border-white/5">
