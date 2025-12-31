@@ -384,35 +384,32 @@ const PlanosUpscalerArcano = () => {
         </div>
       ) : (
         <>
-          {/* HERO SECTION - Assimétrico */}
-          <section className="px-3 md:px-4 py-10 md:py-20 max-w-6xl mx-auto">
-            <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-              {/* Texto - sempre primeiro em mobile */}
-              <div className="text-center md:text-left">
-                <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 mb-4 md:mb-6 rounded-full px-4 py-2">
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Ferramenta de IA
-                </Badge>
-                
-                <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight">
-                  Melhore suas <span className="text-fuchsia-400">fotos</span> com{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
-                    Inteligência Artificial
-                  </span>
-                </h1>
-                
-                <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8">
-                  Transforme fotos de celular, imagens de clientes ou artes geradas por IA em imagens <span className="text-fuchsia-400 font-semibold">nítidas e profissionais</span>
-                </p>
+          {/* HERO SECTION - Vertical no mobile */}
+          <section className="px-3 md:px-4 py-10 md:py-20 max-w-4xl mx-auto">
+            <div className="flex flex-col items-center text-center">
+              <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 mb-4 md:mb-6 rounded-full px-4 py-2">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Ferramenta de IA
+              </Badge>
+              
+              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight">
+                Melhore suas <span className="text-fuchsia-400">fotos</span> com{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+                  Inteligência Artificial
+                </span>
+              </h1>
+              
+              <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8 max-w-2xl">
+                Transforme fotos de celular, imagens de clientes ou artes geradas por IA em imagens <span className="text-fuchsia-400 font-semibold">nítidas e profissionais</span>
+              </p>
 
-                <div className="flex flex-col items-center md:items-start">
-                  <CTAButton onClick={handlePurchase} isPremium={isPremium} />
-                  <TrustBadges />
-                </div>
+              <div className="flex flex-col items-center">
+                <CTAButton onClick={handlePurchase} isPremium={isPremium} />
+                <TrustBadges />
               </div>
 
-              {/* Slider - depois do texto em mobile */}
-              <div className="w-full mt-4 md:mt-0">
+              {/* Slider - abaixo de tudo */}
+              <div className="w-full max-w-md mt-10 md:mt-12">
                 <BeforeAfterSlider
                   beforeImage={beforeAfterExamples[0].before}
                   afterImage={beforeAfterExamples[0].after}
