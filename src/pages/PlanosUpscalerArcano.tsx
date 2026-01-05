@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle } from "lucide-react";
+import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
@@ -31,17 +31,140 @@ interface ToolData {
   cover_url: string | null;
 }
 
+// Modal fullscreen para visualização ampliada
+const FullscreenModal = ({ 
+  isOpen, 
+  onClose, 
+  beforeImage, 
+  afterImage 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  beforeImage: string; 
+  afterImage: string; 
+}) => {
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+
+  const handleMove = (clientX: number) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setSliderPosition(percentage);
+  };
+
+  const handleMouseDown = () => {
+    isDragging.current = true;
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging.current) {
+      handleMove(e.clientX);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    handleMove(e.touches[0].clientX);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <button 
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+      >
+        <X className="h-6 w-6 text-white" />
+      </button>
+      
+      <div 
+        ref={containerRef}
+        className="relative w-full max-w-4xl aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden cursor-ew-resize select-none"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        onTouchMove={handleTouchMove}
+      >
+        {/* Imagem "Depois" (background) */}
+        <img 
+          src={afterImage} 
+          alt="Depois" 
+          className="absolute inset-0 w-full h-full object-contain bg-black"
+        />
+        
+        {/* Imagem "Antes" (clipped) */}
+        <div 
+          className="absolute inset-0 overflow-hidden"
+          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+        >
+          <img 
+            src={beforeImage} 
+            alt="Antes" 
+            className="absolute inset-0 w-full h-full object-contain bg-black"
+          />
+        </div>
+
+        {/* Slider line */}
+        <div 
+          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
+          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
+        >
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center">
+            <div className="flex gap-0.5">
+              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
+              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Labels */}
+        <div className="absolute top-4 left-4 bg-black/80 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+          ANTES
+        </div>
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+          DEPOIS
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Componente de slider antes/depois
 const BeforeAfterSlider = ({ 
   beforeImage, 
   afterImage, 
   label,
-  size = "default"
+  size = "default",
+  onZoomClick
 }: { 
   beforeImage: string; 
   afterImage: string; 
   label?: string;
   size?: "default" | "large";
+  onZoomClick?: () => void;
 }) => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -123,6 +246,19 @@ const BeforeAfterSlider = ({
         <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
           DEPOIS
         </div>
+
+        {/* Botão de zoom */}
+        {onZoomClick && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onZoomClick();
+            }}
+            className="absolute bottom-4 right-4 p-3 bg-black/70 hover:bg-black/90 rounded-full transition-all duration-300 hover:scale-110 border border-white/20"
+          >
+            <ZoomIn className="h-5 w-5 text-white" />
+          </button>
+        )}
       </div>
       {label && <p className="text-center text-white/60 text-sm">{label}</p>}
     </div>
@@ -203,6 +339,18 @@ const PlanosUpscalerArcano = () => {
   const { user, isPremium, hasAccessToPack, isLoading: authLoading } = usePremiumArtesStatus();
   const [tool, setTool] = useState<ToolData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
+
+  const openModal = (before: string, after: string) => {
+    setModalImages({ before, after });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalImages(null);
+  };
 
   const TOOL_SLUG = "upscaller-arcano";
 
@@ -527,6 +675,7 @@ const PlanosUpscalerArcano = () => {
                           beforeImage={example.before}
                           afterImage={example.after}
                           label={example.label}
+                          onZoomClick={() => openModal(example.before, example.after)}
                         />
                       </div>
                     </div>
@@ -551,6 +700,7 @@ const PlanosUpscalerArcano = () => {
                           beforeImage={example.before}
                           afterImage={example.after}
                           label={example.label}
+                          onZoomClick={() => openModal(example.before, example.after)}
                         />
                       </div>
                     </div>
@@ -675,6 +825,7 @@ const PlanosUpscalerArcano = () => {
                     beforeImage={result.before}
                     afterImage={result.after}
                     label={result.label}
+                    onZoomClick={() => openModal(result.before, result.after)}
                   />
                 ))}
               </StaggeredAnimation>
@@ -800,6 +951,16 @@ const PlanosUpscalerArcano = () => {
             </Button>
           </section>
         </>
+      )}
+
+      {/* Modal Fullscreen */}
+      {modalImages && (
+        <FullscreenModal
+          isOpen={modalOpen}
+          onClose={closeModal}
+          beforeImage={modalImages.before}
+          afterImage={modalImages.after}
+        />
       )}
     </div>
   );
