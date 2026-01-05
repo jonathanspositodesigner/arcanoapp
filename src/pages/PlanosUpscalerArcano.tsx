@@ -14,6 +14,8 @@ import upscalerHeroAntes from "@/assets/upscaler-hero-antes.jpg";
 import upscalerHeroDepois from "@/assets/upscaler-hero-depois.jpg";
 import upscalerSeloAntes from "@/assets/upscaler-selo-antes.jpg";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
+import upscalerLogoAntes from "@/assets/upscaler-logo-antes.jpg";
+import upscalerLogoDepois from "@/assets/upscaler-logo-depois.jpg";
 
 interface ToolData {
   id: string;
@@ -270,8 +272,8 @@ const PlanosUpscalerArcano = () => {
       badgeColor: "from-purple-500 to-violet-600"
     },
     {
-      before: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=400&q=30&blur=10",
-      after: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=95",
+      before: upscalerLogoAntes,
+      after: upscalerLogoDepois,
       label: "Logo em alta resolução",
       badge: "Logo",
       badgeColor: "from-blue-500 to-cyan-500"
