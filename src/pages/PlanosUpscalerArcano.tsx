@@ -12,6 +12,8 @@ import upscalerAntes1 from "@/assets/upscaler-antes-1.jpg";
 import upscalerDepois1 from "@/assets/upscaler-depois-1.jpg";
 import upscalerHeroAntes from "@/assets/upscaler-hero-antes.jpg";
 import upscalerHeroDepois from "@/assets/upscaler-hero-depois.jpg";
+import upscalerSeloAntes from "@/assets/upscaler-selo-antes.jpg";
+import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
 
 interface ToolData {
   id: string;
@@ -260,10 +262,10 @@ const PlanosUpscalerArcano = () => {
       badge: "FOTO"
     },
     {
-      before: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=30&blur=10",
-      after: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=95",
+      before: upscalerSeloAntes,
+      after: upscalerSeloDepois,
       label: "Selo 3D em alta definição",
-      badge: "3D"
+      badge: "Selos 3D"
     }
   ];
 
