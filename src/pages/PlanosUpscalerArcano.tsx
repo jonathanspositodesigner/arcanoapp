@@ -810,3 +810,4 @@ const PlanosUpscalerArcano = () => {
 };
 
 export default PlanosUpscalerArcano;
+
