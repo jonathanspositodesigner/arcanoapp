@@ -259,13 +259,36 @@ const PlanosUpscalerArcano = () => {
       before: upscalerAntes1,
       after: upscalerDepois1,
       label: "Foto melhorada em 4K",
-      badge: "FOTO"
+      badge: "FOTO",
+      badgeColor: "from-fuchsia-500 to-pink-500"
     },
     {
       before: upscalerSeloAntes,
       after: upscalerSeloDepois,
       label: "Selo 3D em alta definição",
-      badge: "Selos 3D"
+      badge: "Selos 3D",
+      badgeColor: "from-purple-500 to-violet-600"
+    },
+    {
+      before: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=400&q=30&blur=10",
+      after: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=95",
+      label: "Logo em alta resolução",
+      badge: "Logo",
+      badgeColor: "from-blue-500 to-cyan-500"
+    },
+    {
+      before: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&q=30&blur=10",
+      after: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&q=95",
+      label: "Mockup nítido e profissional",
+      badge: "Mockup",
+      badgeColor: "from-emerald-500 to-green-500"
+    },
+    {
+      before: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&q=30&blur=10&sat=-100",
+      after: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800&q=95",
+      label: "Foto antiga restaurada",
+      badge: "Foto Antiga",
+      badgeColor: "from-amber-500 to-orange-500"
     }
   ];
 
@@ -472,41 +495,69 @@ const PlanosUpscalerArcano = () => {
           </AnimatedSection>
 
           {/* SEÇÃO ANTES/DEPOIS */}
-          <section className="px-3 md:px-4 py-16 md:py-20">
-            <div className="max-w-4xl mx-auto">
+          <section className="px-3 md:px-4 py-16 md:py-20 relative overflow-hidden">
+            {/* Background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 via-purple-500/5 to-transparent pointer-events-none" />
+            
+            <div className="max-w-6xl mx-auto relative">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white text-center mb-3 md:mb-4">
-                Melhore <span className="text-fuchsia-400">Fotos</span> e <span className="text-fuchsia-400">Selos 3D</span>
+                Melhore <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">Qualquer Imagem</span>
               </h2>
-              <p className="text-white/60 text-center text-sm md:text-lg mb-8 md:mb-12">
-                Funciona também para logos, mockups, artes de IA e muito mais
+              <p className="text-white/60 text-center text-sm md:text-lg mb-10 md:mb-14 max-w-2xl mx-auto">
+                Fotos, logos, mockups, selos 3D, fotos antigas e muito mais — tudo em alta qualidade
               </p>
               
-              <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-                {beforeAfterExamples.map((example, index) => (
-                  <div key={index} className="relative">
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white border-0 rounded-full px-4 py-1">
-                      {example.badge}
-                    </Badge>
-                    <BeforeAfterSlider
-                      beforeImage={example.before}
-                      afterImage={example.after}
-                      label={example.label}
-                    />
+              {/* Grid dinâmico: 3 colunas desktop, 1 mobile */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                {/* Primeiros 3 cards */}
+                {beforeAfterExamples.slice(0, 3).map((example, index) => (
+                  <div 
+                    key={index} 
+                    className="relative group"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative bg-white/5 border border-white/10 rounded-3xl p-4 hover:border-fuchsia-500/30 transition-all duration-300 hover:transform hover:scale-[1.02]">
+                      <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r ${example.badgeColor} text-white border-0 rounded-full px-4 py-1 font-semibold shadow-lg`}>
+                        {example.badge}
+                      </Badge>
+                      <div className="pt-2">
+                        <BeforeAfterSlider
+                          beforeImage={example.before}
+                          afterImage={example.after}
+                          label={example.label}
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
               
-              {/* Lista de outros usos */}
-              <div className="flex flex-wrap justify-center gap-3 mt-10">
-                {["Logos", "Mockups", "Artes de IA", "Capturas de tela", "Fotos antigas"].map((item) => (
-                  <span key={item} className="bg-fuchsia-500/10 text-fuchsia-300 text-sm px-5 py-2.5 rounded-full border border-fuchsia-500/20">
-                    {item}
-                  </span>
+              {/* Últimos 2 cards centralizados */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-6 md:mt-8 max-w-2xl mx-auto">
+                {beforeAfterExamples.slice(3).map((example, index) => (
+                  <div 
+                    key={index + 3} 
+                    className="relative group"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative bg-white/5 border border-white/10 rounded-3xl p-4 hover:border-fuchsia-500/30 transition-all duration-300 hover:transform hover:scale-[1.02]">
+                      <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r ${example.badgeColor} text-white border-0 rounded-full px-4 py-1 font-semibold shadow-lg`}>
+                        {example.badge}
+                      </Badge>
+                      <div className="pt-2">
+                        <BeforeAfterSlider
+                          beforeImage={example.before}
+                          afterImage={example.after}
+                          label={example.label}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
 
               {/* Carrossel infinito de imagens */}
-              <div className="mt-12 -mx-4 md:-mx-8">
+              <div className="mt-14 -mx-4 md:-mx-8">
                 <InfiniteCarousel />
               </div>
             </div>
