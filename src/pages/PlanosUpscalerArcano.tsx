@@ -587,15 +587,13 @@ const PlanosUpscalerArcano = () => {
               </FadeIn>
 
               {/* Slider - logo abaixo do título */}
-              <FadeIn delay={200} duration={700}>
-                <div className="w-full max-w-[95vw] md:max-w-[90vw] lg:max-w-[85vw] mb-6 md:mb-8">
-                  <BeforeAfterSlider
-                    beforeImage={upscalerHeroAntes}
-                    afterImage={upscalerHeroDepois}
-                    label="Arraste para ver a diferença"
-                    size="large"
-                  />
-                </div>
+              <FadeIn delay={200} duration={700} className="w-full max-w-[95vw] md:max-w-[90vw] lg:max-w-[85vw] mb-6 md:mb-8">
+                <BeforeAfterSlider
+                  beforeImage={upscalerHeroAntes}
+                  afterImage={upscalerHeroDepois}
+                  label="Arraste para ver a diferença"
+                  size="large"
+                />
               </FadeIn>
               
               <FadeIn delay={400} duration={700}>
