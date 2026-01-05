@@ -427,7 +427,7 @@ const PlanosUpscalerArcano = () => {
                 Ferramenta de IA
               </Badge>
               
-              <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight">
+              <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
                 Melhore suas <span className="text-fuchsia-400">fotos</span> com{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                   Inteligência Artificial
@@ -459,7 +459,7 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white text-center mb-8 md:mb-12">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-8 md:mb-12 tracking-wide">
                   Você já passou por isso?
                 </h2>
               </AnimatedSection>
@@ -506,7 +506,7 @@ const PlanosUpscalerArcano = () => {
             <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 via-purple-500/5 to-transparent pointer-events-none" />
             
             <div className="max-w-6xl mx-auto relative">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white text-center mb-3 md:mb-4">
+              <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-3 md:mb-4 tracking-wide">
                 Melhore <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">Qualquer Imagem</span>
               </h2>
               <p className="text-white/60 text-center text-sm md:text-lg mb-10 md:mb-14 max-w-2xl mx-auto">
@@ -573,7 +573,7 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
                   Para quem é o <span className="text-fuchsia-400">Upscaler Arcano</span>?
                 </h2>
               </AnimatedSection>
@@ -602,7 +602,7 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
                   O que o <span className="text-fuchsia-400">Upscaler faz</span>?
                 </h2>
               </AnimatedSection>
@@ -630,7 +630,7 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
                   Como <span className="text-fuchsia-400">funciona</span>
                 </h2>
               </AnimatedSection>
@@ -664,7 +664,7 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-4 tracking-wide">
                   Veja o <span className="text-fuchsia-400">resultado</span> de alguns usuários
                 </h2>
                 <p className="text-white/60 text-center text-lg mb-12">
@@ -702,7 +702,7 @@ const PlanosUpscalerArcano = () => {
                     </div>
                   )}
 
-                  <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-4 md:mb-6">
+                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
                     Garanta seu acesso <span className="text-fuchsia-400">vitalício</span>
                   </h2>
 
@@ -766,7 +766,7 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
                   Perguntas <span className="text-fuchsia-400">Frequentes</span>
                 </h2>
               </AnimatedSection>
