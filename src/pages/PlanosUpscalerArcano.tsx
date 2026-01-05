@@ -326,7 +326,7 @@ const PlanosUpscalerArcano = () => {
   const targetAudience = [
     {
       icon: Music,
-      title: "DJs e Produtores",
+      title: "Músicos e Produtores",
       description: "Melhore suas fotos de eventos e material promocional"
     },
     {
