@@ -8,6 +8,8 @@ import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Pa
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
+import upscalerAntes1 from "@/assets/upscaler-antes-1.jpg";
+import upscalerDepois1 from "@/assets/upscaler-depois-1.jpg";
 
 interface ToolData {
   id: string;
@@ -250,8 +252,8 @@ const PlanosUpscalerArcano = () => {
 
   const beforeAfterExamples = [
     {
-      before: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=30&blur=10",
-      after: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=95",
+      before: upscalerAntes1,
+      after: upscalerDepois1,
       label: "Foto melhorada em 4K",
       badge: "FOTO"
     },
