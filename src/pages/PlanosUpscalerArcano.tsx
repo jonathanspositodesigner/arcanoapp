@@ -16,6 +16,8 @@ import upscalerSeloAntes from "@/assets/upscaler-selo-antes.jpg";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
 import upscalerLogoAntes from "@/assets/upscaler-logo-antes.jpg";
 import upscalerLogoDepois from "@/assets/upscaler-logo-depois.jpg";
+import upscalerAntigaAntes from "@/assets/upscaler-antiga-antes.webp";
+import upscalerAntigaDepois from "@/assets/upscaler-antiga-depois.jpg";
 
 interface ToolData {
   id: string;
@@ -286,8 +288,8 @@ const PlanosUpscalerArcano = () => {
       badgeColor: "from-emerald-500 to-green-500"
     },
     {
-      before: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&q=30&blur=10&sat=-100",
-      after: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800&q=95",
+      before: upscalerAntigaAntes,
+      after: upscalerAntigaDepois,
       label: "Foto antiga restaurada",
       badge: "Foto Antiga",
       badgeColor: "from-amber-500 to-orange-500"
