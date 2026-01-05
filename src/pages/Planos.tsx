@@ -12,11 +12,13 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { AnimatedSection, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 
 const Planos = () => {
   const navigate = useNavigate();
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
+  
   const plans = {
     mensal: [{
       name: "Starter",
@@ -24,37 +26,18 @@ const Planos = () => {
       originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
-      features: [{
-        text: "10 prompts premium por dia",
-        included: true
-      }, {
-        text: "Acesso a todo conteúdo premium",
-        included: true
-      }, {
-        text: "Arcano Academy - Mini curso de IA",
-        included: true
-      }, {
-        text: "Atualizações diárias",
-        included: true
-      }, {
-        text: "Liberação imediata",
-        included: true
-      }, {
-        text: "Suporte exclusivo via WhatsApp",
-        included: true
-      }, {
-        text: "IA que muda a roupa",
-        included: false
-      }, {
-        text: "IA que muda pose",
-        included: false
-      }, {
-        text: "Upscale Arcano",
-        included: false
-      }, {
-        text: "Forja de Selos 3D",
-        included: false
-      }],
+      features: [
+        { text: "10 prompts premium por dia", included: true },
+        { text: "Acesso a todo conteúdo premium", included: true },
+        { text: "Arcano Academy - Mini curso de IA", included: true },
+        { text: "Atualizações diárias", included: true },
+        { text: "Liberação imediata", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "IA que muda a roupa", included: false },
+        { text: "IA que muda pose", included: false },
+        { text: "Upscale Arcano", included: false },
+        { text: "Forja de Selos 3D", included: false }
+      ],
       popular: false,
       promo: false
     }, {
@@ -63,37 +46,18 @@ const Planos = () => {
       originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/kbgwmH",
-      features: [{
-        text: "24 prompts premium por dia",
-        included: true
-      }, {
-        text: "Acesso a todo conteúdo premium",
-        included: true
-      }, {
-        text: "Arcano Academy - Mini curso de IA",
-        included: true
-      }, {
-        text: "Atualizações diárias",
-        included: true
-      }, {
-        text: "Liberação imediata",
-        included: true
-      }, {
-        text: "Suporte exclusivo via WhatsApp",
-        included: true
-      }, {
-        text: "IA que muda a roupa",
-        included: true
-      }, {
-        text: "IA que muda pose",
-        included: true
-      }, {
-        text: "Upscale Arcano",
-        included: false
-      }, {
-        text: "Forja de Selos 3D",
-        included: false
-      }],
+      features: [
+        { text: "24 prompts premium por dia", included: true },
+        { text: "Acesso a todo conteúdo premium", included: true },
+        { text: "Arcano Academy - Mini curso de IA", included: true },
+        { text: "Atualizações diárias", included: true },
+        { text: "Liberação imediata", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "IA que muda a roupa", included: true },
+        { text: "IA que muda pose", included: true },
+        { text: "Upscale Arcano", included: false },
+        { text: "Forja de Selos 3D", included: false }
+      ],
       popular: true,
       promo: false,
       hasTrial: false
@@ -103,37 +67,18 @@ const Planos = () => {
       originalPrice: "29,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/CiCenB",
-      features: [{
-        text: "Prompts premium ilimitados",
-        included: true
-      }, {
-        text: "Acesso a todo conteúdo premium",
-        included: true
-      }, {
-        text: "Arcano Academy - Mini curso de IA",
-        included: true
-      }, {
-        text: "Atualizações diárias",
-        included: true
-      }, {
-        text: "Liberação imediata",
-        included: true
-      }, {
-        text: "Suporte exclusivo via WhatsApp",
-        included: true
-      }, {
-        text: "IA que muda a roupa",
-        included: true
-      }, {
-        text: "IA que muda pose",
-        included: true
-      }, {
-        text: "Upscale Arcano",
-        included: true
-      }, {
-        text: "Forja de Selos 3D",
-        included: true
-      }],
+      features: [
+        { text: "Prompts premium ilimitados", included: true },
+        { text: "Acesso a todo conteúdo premium", included: true },
+        { text: "Arcano Academy - Mini curso de IA", included: true },
+        { text: "Atualizações diárias", included: true },
+        { text: "Liberação imediata", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "IA que muda a roupa", included: true },
+        { text: "IA que muda pose", included: true },
+        { text: "Upscale Arcano", included: true },
+        { text: "Forja de Selos 3D", included: true }
+      ],
       popular: false,
       promo: true
     }],
@@ -144,37 +89,18 @@ const Planos = () => {
       perMonth: true,
       yearlyTotal: "118,80",
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/RaLcc5",
-      features: [{
-        text: "10 prompts premium por dia",
-        included: true
-      }, {
-        text: "Acesso a todo conteúdo premium",
-        included: true
-      }, {
-        text: "Arcano Academy - Mini curso de IA",
-        included: true
-      }, {
-        text: "Atualizações diárias",
-        included: true
-      }, {
-        text: "Liberação imediata",
-        included: true
-      }, {
-        text: "Suporte exclusivo via WhatsApp",
-        included: true
-      }, {
-        text: "IA que muda a roupa",
-        included: false
-      }, {
-        text: "IA que muda pose",
-        included: false
-      }, {
-        text: "Upscale Arcano",
-        included: false
-      }, {
-        text: "Forja de Selos 3D",
-        included: false
-      }],
+      features: [
+        { text: "10 prompts premium por dia", included: true },
+        { text: "Acesso a todo conteúdo premium", included: true },
+        { text: "Arcano Academy - Mini curso de IA", included: true },
+        { text: "Atualizações diárias", included: true },
+        { text: "Liberação imediata", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "IA que muda a roupa", included: false },
+        { text: "IA que muda pose", included: false },
+        { text: "Upscale Arcano", included: false },
+        { text: "Forja de Selos 3D", included: false }
+      ],
       popular: false,
       promo: false
     }, {
@@ -184,37 +110,18 @@ const Planos = () => {
       perMonth: true,
       yearlyTotal: "178,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
-      features: [{
-        text: "24 prompts premium por dia",
-        included: true
-      }, {
-        text: "Acesso a todo conteúdo premium",
-        included: true
-      }, {
-        text: "Arcano Academy - Mini curso de IA",
-        included: true
-      }, {
-        text: "Atualizações diárias",
-        included: true
-      }, {
-        text: "Liberação imediata",
-        included: true
-      }, {
-        text: "Suporte exclusivo via WhatsApp",
-        included: true
-      }, {
-        text: "IA que muda a roupa",
-        included: true
-      }, {
-        text: "IA que muda pose",
-        included: true
-      }, {
-        text: "Upscale Arcano",
-        included: false
-      }, {
-        text: "Forja de Selos 3D",
-        included: false
-      }],
+      features: [
+        { text: "24 prompts premium por dia", included: true },
+        { text: "Acesso a todo conteúdo premium", included: true },
+        { text: "Arcano Academy - Mini curso de IA", included: true },
+        { text: "Atualizações diárias", included: true },
+        { text: "Liberação imediata", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "IA que muda a roupa", included: true },
+        { text: "IA que muda pose", included: true },
+        { text: "Upscale Arcano", included: false },
+        { text: "Forja de Selos 3D", included: false }
+      ],
       popular: true,
       promo: false,
       hasTrial: true
@@ -225,43 +132,27 @@ const Planos = () => {
       perMonth: true,
       yearlyTotal: "238,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
-      features: [{
-        text: "Prompts premium ilimitados",
-        included: true
-      }, {
-        text: "Acesso a todo conteúdo premium",
-        included: true
-      }, {
-        text: "Arcano Academy - Mini curso de IA",
-        included: true
-      }, {
-        text: "Atualizações diárias",
-        included: true
-      }, {
-        text: "Liberação imediata",
-        included: true
-      }, {
-        text: "Suporte exclusivo via WhatsApp",
-        included: true
-      }, {
-        text: "IA que muda a roupa",
-        included: true
-      }, {
-        text: "IA que muda pose",
-        included: true
-      }, {
-        text: "Upscale Arcano",
-        included: true
-      }, {
-        text: "Forja de Selos 3D",
-        included: true
-      }],
+      features: [
+        { text: "Prompts premium ilimitados", included: true },
+        { text: "Acesso a todo conteúdo premium", included: true },
+        { text: "Arcano Academy - Mini curso de IA", included: true },
+        { text: "Atualizações diárias", included: true },
+        { text: "Liberação imediata", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "IA que muda a roupa", included: true },
+        { text: "IA que muda pose", included: true },
+        { text: "Upscale Arcano", included: true },
+        { text: "Forja de Selos 3D", included: true }
+      ],
       popular: false,
       promo: true
     }]
   };
+
   const currentPlans = plans[billingPeriod];
-  return <div className="min-h-screen bg-background">
+  
+  return (
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
         <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-muted-foreground hover:text-foreground">
@@ -276,7 +167,7 @@ const Planos = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 pb-16">
-        <div className="text-center mb-10">
+        <AnimatedSection animation="fade-up" className="text-center mb-10" as="div">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
             ESCOLHA O MELHOR PLANO PARA VOCÊ
           </h1>
@@ -295,69 +186,75 @@ const Planos = () => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-        </div>
+        </AnimatedSection>
 
         {/* Discount Banner */}
-        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]">
+        <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-primary to-primary/80 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]" as="div">
           <span className="text-primary-foreground font-semibold tracking-wide">
             ATÉ {billingPeriod === "anual" ? "33" : "25"}% DE DESCONTO
           </span>
-        </div>
+        </AnimatedSection>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-0 max-w-5xl mx-auto">
-          {currentPlans.map((plan, index) => <Card key={plan.name} className={`relative bg-card border-border p-6 flex flex-col rounded-xl lg:rounded-none ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${plan.popular ? "border-2 border-primary" : ""}`}>
-              {/* Badge above card - Promo or Popular */}
-              {(plan.promo || plan.popular) && <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-emerald-500 text-white"}`}>
+        <StaggeredAnimation 
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-0 max-w-5xl mx-auto"
+          staggerDelay={150}
+          animation="fade-up"
+        >
+          {currentPlans.map((plan, index) => (
+            <Card key={plan.name} className={`relative bg-card border-border p-6 flex flex-col rounded-xl lg:rounded-none ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${plan.popular ? "border-2 border-primary" : ""}`}>
+              {(plan.promo || plan.popular) && (
+                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-emerald-500 text-white"}`}>
                   {plan.promo ? "PROMOÇÃO DE LANÇAMENTO" : "Popular"}
-                </Badge>}
+                </Badge>
+              )}
 
-              {/* Plan Name */}
               <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
                 <h2 className="text-xl font-bold text-foreground">{plan.name}</h2>
               </div>
 
-              {/* Price */}
               <div className="text-center mb-6 min-h-[80px]">
-                {plan.originalPrice && <p className="text-muted-foreground line-through text-sm">
+                {plan.originalPrice && (
+                  <p className="text-muted-foreground line-through text-sm">
                     R${plan.originalPrice}/mês
-                  </p>}
+                  </p>
+                )}
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-muted-foreground text-lg">R$</span>
-                  <span className="text-4xl font-bold text-foreground">
-                    {plan.price}
-                  </span>
+                  <span className="text-4xl font-bold text-foreground">{plan.price}</span>
                   <span className="text-muted-foreground">/mês</span>
                 </div>
-                {billingPeriod === "anual" && (plan as any).yearlyTotal && <p className="text-primary text-sm mt-1">
+                {billingPeriod === "anual" && (plan as any).yearlyTotal && (
+                  <p className="text-primary text-sm mt-1">
                     R${(plan as any).yearlyTotal}/ano
-                  </p>}
+                  </p>
+                )}
               </div>
 
-              {/* CTA Button */}
               <Button 
                 onClick={() => window.open((plan as any).paymentUrl, '_blank')}
-                className={`w-full mb-6 ${
-                  plan.popular 
-                    ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
-                    : "bg-muted hover:bg-muted/80 text-foreground"
-                }`}
+                className={`w-full mb-6 ${plan.popular ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-muted hover:bg-muted/80 text-foreground"}`}
               >
                 {(plan as any).hasTrial ? "Teste grátis por 7 dias" : "Assinar"}
               </Button>
 
-              {/* Features */}
               <ul className="space-y-3 flex-1">
-                {plan.features.map((feature, fIndex) => <li key={fIndex} className="flex items-start gap-2 text-sm">
-                    {feature.included ? <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />}
+                {plan.features.map((feature, fIndex) => (
+                  <li key={fIndex} className="flex items-start gap-2 text-sm">
+                    {feature.included ? (
+                      <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    ) : (
+                      <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                    )}
                     <span className={feature.included ? "text-foreground" : "text-orange-500"}>
                       {feature.text}
                     </span>
-                  </li>)}
+                  </li>
+                ))}
               </ul>
 
-              {/* Extra Benefits for Unlimited */}
-              {plan.name === "IA Unlimited" && <div className="mt-6 pt-4 border-t border-border">
+              {plan.name === "IA Unlimited" && (
+                <div className="mt-6 pt-4 border-t border-border">
                   <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">
                     Benefícios extras do plano:
                   </p>
@@ -365,9 +262,11 @@ const Planos = () => {
                     <Sparkles className="w-4 h-4 text-primary" />
                     <span className="text-foreground">Todos os recursos de IA</span>
                   </div>
-                </div>}
-            </Card>)}
-        </div>
+                </div>
+              )}
+            </Card>
+          ))}
+        </StaggeredAnimation>
       </div>
 
       {/* Coming Soon Modal */}
@@ -387,6 +286,8 @@ const Planos = () => {
           </Button>
         </DialogContent>
       </Dialog>
-    </div>;
+    </div>
+  );
 };
+
 export default Planos;

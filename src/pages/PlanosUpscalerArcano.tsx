@@ -7,7 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
-import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
+import { AnimatedSection, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import upscalerAntes1 from "@/assets/upscaler-antes-1.jpg";
 import upscalerDepois1 from "@/assets/upscaler-depois-1.jpg";
 import upscalerHeroAntes from "@/assets/upscaler-hero-antes.jpg";
@@ -576,32 +576,45 @@ const PlanosUpscalerArcano = () => {
           {/* HERO SECTION - Vertical no mobile */}
           <section className="px-3 md:px-4 py-10 md:py-20 w-full">
             <div className="flex flex-col items-center text-center">
-              <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
-                Melhore suas <span className="text-fuchsia-400">fotos</span>
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
-                  com Inteligência Artificial
-                </span>
-              </h1>
+              <FadeIn delay={0} duration={700}>
+                <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
+                  Melhore suas <span className="text-fuchsia-400">fotos</span>
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+                    com Inteligência Artificial
+                  </span>
+                </h1>
+              </FadeIn>
 
               {/* Slider - logo abaixo do título */}
-              <div className="w-full max-w-md md:max-w-[90vw] lg:max-w-[85vw] mb-6 md:mb-8">
-                <BeforeAfterSlider
-                  beforeImage={upscalerHeroAntes}
-                  afterImage={upscalerHeroDepois}
-                  label="Arraste para ver a diferença"
-                  size="large"
-                />
-              </div>
+              <FadeIn delay={200} duration={700}>
+                <div className="w-full max-w-md md:max-w-[90vw] lg:max-w-[85vw] mb-6 md:mb-8">
+                  <BeforeAfterSlider
+                    beforeImage={upscalerHeroAntes}
+                    afterImage={upscalerHeroDepois}
+                    label="Arraste para ver a diferença"
+                    size="large"
+                  />
+                </div>
+              </FadeIn>
               
-              <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8 max-w-2xl">
-                Transforme fotos de celular, imagens de clientes ou artes geradas por IA em imagens <span className="text-fuchsia-400 font-semibold">nítidas e profissionais</span>
-              </p>
+              <FadeIn delay={400} duration={700}>
+                <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8 max-w-2xl">
+                  Transforme fotos de celular, imagens de clientes ou artes geradas por IA em imagens <span className="text-fuchsia-400 font-semibold">nítidas e profissionais</span>
+                </p>
+              </FadeIn>
 
-              <div className="flex flex-col items-center">
-                <CTAButton onClick={handlePurchase} isPremium={isPremium} />
-                <TrustBadges />
-              </div>
+              <FadeIn delay={600} duration={700}>
+                <div className="flex flex-col items-center">
+                  <CTAButton onClick={handlePurchase} isPremium={isPremium} />
+                  <TrustBadges />
+                </div>
+              </FadeIn>
+
+              {/* Scroll Indicator */}
+              <FadeIn delay={800} duration={700}>
+                <ScrollIndicator className="mt-12 hidden md:flex" text="Role para ver mais" />
+              </FadeIn>
             </div>
           </section>
 

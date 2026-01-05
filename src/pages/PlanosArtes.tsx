@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Star, ArrowLeft, Gift, Clock, Percent, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
+import { AnimatedSection, StaggeredAnimation, FadeIn, AnimatedGrid } from "@/hooks/useScrollAnimation";
 
 interface Pack {
   id: string;
@@ -290,16 +291,18 @@ const PlanosArtes = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] p-4">
       <div className="max-w-6xl mx-auto">
-        <Button
-          variant="ghost"
-          className="text-white/70 hover:text-white mb-6"
-          onClick={() => navigate("/biblioteca-artes")}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar para Biblioteca
-        </Button>
+        <FadeIn delay={0}>
+          <Button
+            variant="ghost"
+            className="text-white/70 hover:text-white mb-6"
+            onClick={() => navigate("/biblioteca-artes")}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para Biblioteca
+          </Button>
+        </FadeIn>
 
-        <div className="text-center mb-8">
+        <AnimatedSection animation="fade-up" className="text-center mb-8" as="div">
           {isRenewal && (
             <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg px-4 py-2 mb-4">
               <Percent className="h-5 w-5 mr-2" />
@@ -332,7 +335,7 @@ const PlanosArtes = () => {
                   : "Selecione um pack para ver as opções de compra"
             }
           </p>
-        </div>
+        </AnimatedSection>
 
         {!selectedPack && !isRenewal ? (
           // Show pack selection only for normal pricing (not renewal)
