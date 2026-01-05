@@ -6,15 +6,15 @@ import { Check, Smartphone, Bell } from "lucide-react";
 import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import promptclubLogo from "@/assets/promptclub_logo.png";
+import { FadeIn, AnimatedElement, StaggeredAnimation } from "@/hooks/useScrollAnimation";
+
 const Index = () => {
   const navigate = useNavigate();
   const isAppInstalled = useIsAppInstalled();
-  const {
-    subscribe
-  } = usePushNotifications();
+  const { subscribe } = usePushNotifications();
 
-  // LÓGICA SIMPLES: Mostra botão se browser suporta E permissão não foi concedida
   const showNotificationButton = typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted';
+  
   const handleActivateNotifications = async () => {
     const success = await subscribe();
     if (success) {
@@ -25,47 +25,75 @@ const Index = () => {
       toast.error("Não foi possível ativar as notificações");
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
       {/* Logo */}
-      <img alt="ArcanoApp" className="h-7 sm:h-8 mb-4" src={logoHorizontal} />
+      <FadeIn delay={0} duration={600}>
+        <img alt="ArcanoApp" className="h-7 sm:h-8 mb-4" src={logoHorizontal} />
+      </FadeIn>
       
       {/* Título */}
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-6 sm:mb-8 text-center">
-        A plataforma dos criadores do futuro!
-      </h1>
+      <FadeIn delay={150} duration={600}>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-6 sm:mb-8 text-center">
+          A plataforma dos criadores do futuro!
+        </h1>
+      </FadeIn>
 
       {/* Botões de ação */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 mb-6 sm:mb-8">
-        {/* Botão Instalar App ou Badge App Instalado */}
-        {isAppInstalled ? <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600">
-            <Check className="h-4 w-4" />
-            <span className="text-sm font-medium">App Instalado</span>
-          </div> : <button onClick={() => navigate("/install-app")} className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-md hover:shadow-lg">
-            <Smartphone className="h-5 w-5" />
-            Instalar Aplicativo
-          </button>}
+      <FadeIn delay={300} duration={600}>
+        <div className="flex flex-col sm:flex-row items-center gap-3 mb-6 sm:mb-8">
+          {isAppInstalled ? (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600">
+              <Check className="h-4 w-4" />
+              <span className="text-sm font-medium">App Instalado</span>
+            </div>
+          ) : (
+            <button 
+              onClick={() => navigate("/install-app")} 
+              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-md hover:shadow-lg hover-lift"
+            >
+              <Smartphone className="h-5 w-5" />
+              Instalar Aplicativo
+            </button>
+          )}
 
-        {/* Botão Ativar Notificações - mostra se não está ativada */}
-        {showNotificationButton && <button onClick={handleActivateNotifications} className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg">
-            <Bell className="h-5 w-5" />
-            Ativar Notificações
-          </button>}
-      </div>
+          {showNotificationButton && (
+            <button 
+              onClick={handleActivateNotifications} 
+              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg hover-lift"
+            >
+              <Bell className="h-5 w-5" />
+              Ativar Notificações
+            </button>
+          )}
+        </div>
+      </FadeIn>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl">
+      <StaggeredAnimation 
+        className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl"
+        staggerDelay={150}
+        animation="fade-up"
+      >
         {/* Card - Biblioteca de Artes Arcanas */}
-        <div onClick={() => navigate("/biblioteca-artes")} className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50">
+        <div 
+          onClick={() => navigate("/biblioteca-artes")} 
+          className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50"
+        >
           <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
             <img alt="Biblioteca de Artes Arcanas" className="w-full h-full object-contain" src="/lovable-uploads/0b5816a1-fee5-45f1-906e-9f7952d9b4e3.png" />
           </div>
           <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             Biblioteca de Artes Arcanas
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Artes para Eventos editáveis PSD e Canva </p>
+          <p className="text-sm sm:text-base text-muted-foreground">Artes para Eventos editáveis PSD e Canva </p>
         </div>
 
         {/* Card - Biblioteca de Prompts IA */}
-        <div onClick={() => navigate("/biblioteca-prompts")} className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50">
+        <div 
+          onClick={() => navigate("/biblioteca-prompts")} 
+          className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50"
+        >
           <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
             <img alt="Biblioteca de Prompts IA" className="w-full h-full object-contain" src={promptclubLogo} />
           </div>
@@ -76,17 +104,27 @@ const Index = () => {
             Prompts prontos para criar selos, imagens, logos e muito mais com IA
           </p>
         </div>
-      </div>
+      </StaggeredAnimation>
 
       {/* Links de acesso */}
-      <div className="mt-8 flex flex-col items-center gap-2">
-        <button onClick={() => navigate("/admin-login")} className="text-sm text-muted-foreground hover:text-primary transition-colors underline">
-          Acesso Administrador
-        </button>
-        <button onClick={() => navigate("/parceiro-login-unificado")} className="text-sm text-muted-foreground hover:text-primary transition-colors underline">
-          Acesso Colaborador
-        </button>
-      </div>
-    </div>;
+      <FadeIn delay={600} duration={600}>
+        <div className="mt-8 flex flex-col items-center gap-2">
+          <button 
+            onClick={() => navigate("/admin-login")} 
+            className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
+          >
+            Acesso Administrador
+          </button>
+          <button 
+            onClick={() => navigate("/parceiro-login-unificado")} 
+            className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
+          >
+            Acesso Colaborador
+          </button>
+        </div>
+      </FadeIn>
+    </div>
+  );
 };
+
 export default Index;

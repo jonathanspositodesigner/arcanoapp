@@ -289,3 +289,85 @@ All colors MUST be HSL.
 .animate-slide-down {
   animation: slide-down 0.2s ease-out forwards;
 }
+
+/* Hover Effects Utilities */
+.hover-lift {
+  @apply transition-all duration-300 ease-out;
+}
+.hover-lift:hover {
+  @apply -translate-y-1 shadow-lg;
+}
+
+.hover-glow {
+  @apply transition-all duration-300 ease-out;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.3);
+}
+
+.hover-scale {
+  @apply transition-transform duration-300 ease-out;
+}
+.hover-scale:hover {
+  @apply scale-105;
+}
+
+.hover-tilt {
+  @apply transition-transform duration-300 ease-out;
+}
+.hover-tilt:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(2deg);
+}
+
+/* Scroll Animation Delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Smooth entrance animations */
+@keyframes enter-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes enter-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes enter-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-enter-bottom {
+  animation: enter-from-bottom 0.6s ease-out forwards;
+}
+
+.animate-enter-left {
+  animation: enter-from-left 0.6s ease-out forwards;
+}
+
+.animate-enter-right {
+  animation: enter-from-right 0.6s ease-out forwards;
+}
