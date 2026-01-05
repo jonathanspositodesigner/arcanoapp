@@ -20,6 +20,8 @@ import upscalerAntigaAntes from "@/assets/upscaler-antiga-antes.webp";
 import upscalerAntigaDepois from "@/assets/upscaler-antiga-depois.jpg";
 import upscalerMockupAntes from "@/assets/upscaler-mockup-antes.jpg";
 import upscalerMockupDepois from "@/assets/upscaler-mockup-depois.jpg";
+import upscalerUser1Antes from "@/assets/upscaler-user1-antes.jpg";
+import upscalerUser1Depois from "@/assets/upscaler-user1-depois.jpg";
 
 interface ToolData {
   id: string;
@@ -448,8 +450,8 @@ const PlanosUpscalerArcano = () => {
 
   const userResults = [
     {
-      before: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=30&blur=10",
-      after: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=95",
+      before: upscalerUser1Antes,
+      after: upscalerUser1Depois,
       label: "Resultado de usuário"
     },
     {
