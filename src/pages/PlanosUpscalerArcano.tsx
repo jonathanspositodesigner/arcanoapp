@@ -18,6 +18,8 @@ import upscalerLogoAntes from "@/assets/upscaler-logo-antes.jpg";
 import upscalerLogoDepois from "@/assets/upscaler-logo-depois.jpg";
 import upscalerAntigaAntes from "@/assets/upscaler-antiga-antes.webp";
 import upscalerAntigaDepois from "@/assets/upscaler-antiga-depois.jpg";
+import upscalerMockupAntes from "@/assets/upscaler-mockup-antes.jpg";
+import upscalerMockupDepois from "@/assets/upscaler-mockup-depois.jpg";
 
 interface ToolData {
   id: string;
@@ -281,8 +283,8 @@ const PlanosUpscalerArcano = () => {
       badgeColor: "from-blue-500 to-cyan-500"
     },
     {
-      before: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&q=30&blur=10",
-      after: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&q=95",
+      before: upscalerMockupAntes,
+      after: upscalerMockupDepois,
       label: "Mockup nítido e profissional",
       badge: "Mockup",
       badgeColor: "from-emerald-500 to-green-500"
