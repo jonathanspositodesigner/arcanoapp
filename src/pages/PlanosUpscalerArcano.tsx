@@ -10,6 +10,8 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import upscalerAntes1 from "@/assets/upscaler-antes-1.jpg";
 import upscalerDepois1 from "@/assets/upscaler-depois-1.jpg";
+import upscalerHeroAntes from "@/assets/upscaler-hero-antes.jpg";
+import upscalerHeroDepois from "@/assets/upscaler-hero-depois.jpg";
 
 interface ToolData {
   id: string;
@@ -404,8 +406,8 @@ const PlanosUpscalerArcano = () => {
               {/* Slider - logo abaixo do título */}
               <div className="w-full max-w-md md:max-w-[90vw] lg:max-w-[85vw] mb-6 md:mb-8">
                 <BeforeAfterSlider
-                  beforeImage={beforeAfterExamples[0].before}
-                  afterImage={beforeAfterExamples[0].after}
+                  beforeImage={upscalerHeroAntes}
+                  afterImage={upscalerHeroDepois}
                   label="Arraste para ver a diferença"
                   size="large"
                 />
