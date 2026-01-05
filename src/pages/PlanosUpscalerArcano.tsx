@@ -422,15 +422,11 @@ const PlanosUpscalerArcano = () => {
           {/* HERO SECTION - Vertical no mobile */}
           <section className="px-3 md:px-4 py-10 md:py-20 w-full">
             <div className="flex flex-col items-center text-center">
-              <Badge className="bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30 mb-4 md:mb-6 rounded-full px-4 py-2">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Ferramenta de IA
-              </Badge>
-              
               <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
-                Melhore suas <span className="text-fuchsia-400">fotos</span> com{" "}
+                Melhore suas <span className="text-fuchsia-400">fotos</span>
+                <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
-                  Inteligência Artificial
+                  com Inteligência Artificial
                 </span>
               </h1>
 
