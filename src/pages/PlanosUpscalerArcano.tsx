@@ -15,7 +15,7 @@ import upscalerHeroDepois from "@/assets/upscaler-hero-depois.jpg";
 import upscalerSeloAntes from "@/assets/upscaler-selo-antes.jpg";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
 import upscalerLogoAntes from "@/assets/upscaler-logo-antes.jpg";
-import upscalerLogoDepois from "@/assets/upscaler-logo-depois.jpg";
+import upscalerLogoDepois from "@/assets/upscaler-logo-depois.png";
 import upscalerAntigaAntes from "@/assets/upscaler-antiga-antes.webp";
 import upscalerAntigaDepois from "@/assets/upscaler-antiga-depois.jpg";
 import upscalerMockupAntes from "@/assets/upscaler-mockup-antes.jpg";
