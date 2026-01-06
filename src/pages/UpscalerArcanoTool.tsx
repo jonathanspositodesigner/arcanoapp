@@ -114,7 +114,15 @@ const UpscalerArcanoTool: React.FC = () => {
         throw new Error(uploadResponse.error.message || 'Erro ao fazer upload');
       }
 
+      // Check for API error in response data
+      if (uploadResponse.data?.error) {
+        throw new Error(uploadResponse.data.error);
+      }
+
       const { fileName } = uploadResponse.data;
+      if (!fileName) {
+        throw new Error('Upload não retornou nome do arquivo');
+      }
       console.log('Upload successful, fileName:', fileName);
       setProgress(25);
 
@@ -374,13 +382,13 @@ const UpscalerArcanoTool: React.FC = () => {
                 {/* Before Image (clipped) */}
                 <div 
                   className="absolute inset-0 overflow-hidden"
-                  style={{ width: `${sliderPosition}%` }}
+                  style={{ width: `${Math.max(sliderPosition, 1)}%` }}
                 >
                   <img 
                     src={inputImage} 
                     alt="Antes" 
                     className="absolute inset-0 w-full h-full object-contain bg-black"
-                    style={{ width: `${100 / (sliderPosition / 100)}%` }}
+                    style={{ width: `${100 / Math.max(sliderPosition / 100, 0.01)}%` }}
                     draggable={false}
                   />
                 </div>
@@ -457,6 +465,18 @@ const UpscalerArcanoTool: React.FC = () => {
                     />
                   </div>
                   <p className="text-sm text-purple-300">{Math.round(progress)}%</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (pollingRef.current) clearInterval(pollingRef.current);
+                      setStatus('idle');
+                      setProgress(0);
+                    }}
+                    className="text-purple-300 hover:text-white hover:bg-purple-500/20 mt-2"
+                  >
+                    Cancelar
+                  </Button>
                 </div>
               )}
             </div>
