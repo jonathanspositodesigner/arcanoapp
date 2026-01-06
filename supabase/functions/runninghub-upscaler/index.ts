@@ -6,7 +6,7 @@ const RUNNINGHUB_API_KEY = (
   Deno.env.get('RUNNINGHUB_APIKEY') ||
   ''
 ).trim();
-const WEBAPP_ID = "2008664033892769794";
+const WORKFLOW_ID = "2008664033892769794";
 
 if (!RUNNINGHUB_API_KEY) {
   console.error('[RunningHub] Missing RUNNINGHUB_API_KEY secret (check backend secrets)');
@@ -180,13 +180,14 @@ async function handleRun(req: Request) {
 
   const requestBody = {
     apiKey: RUNNINGHUB_API_KEY,
-    webappId: WEBAPP_ID,
+    workflowId: WORKFLOW_ID,
     nodeInfoList: nodeInfoList,
   };
 
+  console.log('[RunningHub] Running workflow with workflowId:', WORKFLOW_ID);
   console.log('[RunningHub] Request body:', JSON.stringify(requestBody, null, 2));
 
-  const response = await fetch('https://www.runninghub.ai/task/openapi/ai-app/run', {
+  const response = await fetch('https://www.runninghub.ai/task/openapi/workflow/run', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
