@@ -12,7 +12,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
-
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import BannerCarousel from "@/components/BannerCarousel";
 import { toPackSlug } from "@/lib/utils";
@@ -21,8 +20,6 @@ import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 import PromoNatalBanner from "@/components/PromoNatalBanner";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
-
-
 interface ArteItem {
   id: string | number;
   title: string;
@@ -77,7 +74,6 @@ const sectionToSlug: Record<SidebarSection, string> = {
   'tutorial': 'tutoriais',
   'ferramentas_ia': 'ferramentas-ia'
 };
-
 const slugToSection: Record<string, SidebarSection> = {
   'packs': 'packs',
   'bonus': 'bonus',
@@ -158,8 +154,10 @@ const BibliotecaArtes = () => {
   const [showCursoModal, setShowCursoModal] = useState(false);
   const [selectedCurso, setSelectedCurso] = useState<PackItem | null>(null);
   const isAppInstalled = useIsAppInstalled();
-  const { isActive: isPromoActive } = useYearEndPromo();
-  
+  const {
+    isActive: isPromoActive
+  } = useYearEndPromo();
+
   // First access modal states
   const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
   const [firstAccessEmail, setFirstAccessEmail] = useState("");
@@ -185,36 +183,36 @@ const BibliotecaArtes = () => {
       toast.error("Digite seu email");
       return;
     }
-
     setFirstAccessLoading(true);
     try {
-      const { data: profileCheck, error: rpcError } = await supabase
-        .rpc('check_profile_exists', { check_email: firstAccessEmail.trim() });
-
+      const {
+        data: profileCheck,
+        error: rpcError
+      } = await supabase.rpc('check_profile_exists', {
+        check_email: firstAccessEmail.trim()
+      });
       if (rpcError) {
         console.error('Erro ao verificar perfil:', rpcError);
         toast.error("Erro ao verificar cadastro. Tente novamente.");
         setFirstAccessLoading(false);
         return;
       }
-
       const profileExists = profileCheck?.[0]?.exists_in_db || false;
       const passwordChanged = profileCheck?.[0]?.password_changed || false;
-
       if (!profileExists) {
         // Email não existe - mostrar modal de erro
         setShowFirstAccessModal(false);
         setShowEmailNotFoundModal(true);
         return;
       }
-
       if (profileExists && !passwordChanged) {
         // PRIMEIRO ACESSO: fazer login com email/email e ir para change-password
-        const { error } = await supabase.auth.signInWithPassword({
+        const {
+          error
+        } = await supabase.auth.signInWithPassword({
           email: firstAccessEmail.trim(),
           password: firstAccessEmail.trim()
         });
-
         if (!error) {
           setShowFirstAccessModal(false);
           setFirstAccessEmail("");
@@ -227,7 +225,6 @@ const BibliotecaArtes = () => {
         }
         return;
       }
-
       if (profileExists && passwordChanged) {
         // Já mudou senha - ir para tela de login normal
         toast.info("Você já definiu sua senha. Faça login normalmente.");
@@ -242,7 +239,6 @@ const BibliotecaArtes = () => {
       setFirstAccessLoading(false);
     }
   };
-
   const fetchCategories = async () => {
     const {
       data
@@ -495,17 +491,15 @@ const BibliotecaArtes = () => {
       </div>
       
       <nav className="flex-1 px-2 space-y-1">
-        {!isAppInstalled && (
-          <div className="mb-6">
+        {!isAppInstalled && <div className="mb-6">
             <button onClick={() => {
-              navigate('/install-app');
-              setSidebarOpen(false);
-            }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700 shadow-md">
+          navigate('/install-app');
+          setSidebarOpen(false);
+        }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700 shadow-md">
               <Smartphone className="h-5 w-5" />
               <span className="font-medium">Instalar App</span>
             </button>
-          </div>
-        )}
+          </div>}
 
         <button onClick={() => {
         changeSection('tutorial');
@@ -692,18 +686,13 @@ const BibliotecaArtes = () => {
             variant="outline" 
             size="sm"
             className="text-amber-600 border-amber-500/50 hover:bg-amber-500/10"
-          >
+           >
             <ArrowLeftRight className="h-4 w-4 mr-2" />
             Trocar Biblioteca
-          </Button> */}
+           </Button> */}
           <div className="flex items-center gap-3">
-            {!user && (
-              <>
-                <Button 
-                  onClick={() => setShowFirstAccessModal(true)}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white animate-pulse"
-                  size="sm"
-                >
+            {!user && <>
+                <Button onClick={() => setShowFirstAccessModal(true)} className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white animate-pulse" size="sm">
                   <UserCheck className="h-4 w-4 mr-2" />
                   Já é cliente? Primeiro acesso aqui!
                 </Button>
@@ -711,30 +700,20 @@ const BibliotecaArtes = () => {
                   <LogIn className="h-4 w-4 mr-2" />
                   Login
                 </Button>
-                <Button
-                  onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")}
-                  size="sm"
-                  className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"}
-                >
+                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"}>
                   <Star className="h-3 w-3 mr-2" fill="currentColor" />
                   {isPromoActive ? "Comprar com 50% OFF" : "Comprar Pack"}
                 </Button>
-              </>
-            )}
-            {user && (
-              <>
-                {userPacks.length > 0 && (
-                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+              </>}
+            {user && <>
+                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
                     <Star className="h-3 w-3 mr-1" fill="currentColor" />
                     {userPacks.length} {userPacks.length === 1 ? 'Pack' : 'Packs'}
-                  </Badge>
-                )}
-                {hasBonusAccess && (
-                  <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
+                  </Badge>}
+                {hasBonusAccess && <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
                     <Gift className="h-3 w-3 mr-1" />
                     Bônus
-                  </Badge>
-                )}
+                  </Badge>}
                 <Button onClick={() => navigate("/perfil-artes")} variant="ghost" size="sm">
                   <Settings className="h-4 w-4 mr-2" />
                   Meu Perfil
@@ -743,8 +722,7 @@ const BibliotecaArtes = () => {
                   <LogOut className="h-4 w-4 mr-2" />
                   Sair
                 </Button>
-              </>
-            )}
+              </>}
           </div>
         </header>
 
@@ -761,18 +739,13 @@ const BibliotecaArtes = () => {
               variant="ghost" 
               size="sm"
               className="text-amber-300 hover:bg-amber-500/20"
-            >
+             >
               <ArrowLeftRight className="h-4 w-4" />
-            </Button> */}
+             </Button> */}
           </div>
           <div className="flex items-center gap-2">
-            {!user && (
-              <>
-                <Button 
-                  onClick={() => setShowFirstAccessModal(true)}
-                  size="sm" 
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-sm animate-pulse"
-                >
+            {!user && <>
+                <Button onClick={() => setShowFirstAccessModal(true)} size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-sm animate-pulse">
                   <UserCheck className="h-4 w-4 mr-2" />
                   Já é cliente? Primeiro acesso aqui!
                 </Button>
@@ -784,24 +757,19 @@ const BibliotecaArtes = () => {
                   <Star className="h-3 w-3 mr-1" fill="currentColor" />
                   {isPromoActive ? "50% OFF" : "Comprar"}
                 </Button>
-              </>
-            )}
-            {user && (
-              <>
-                {userPacks.length > 0 && (
-                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm">
+              </>}
+            {user && <>
+                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm">
                     <Star className="h-3 w-3 mr-1" fill="currentColor" />
                     {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
-                  </Badge>
-                )}
+                  </Badge>}
                 <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
                   <Settings className="h-4 w-4" />
                 </Button>
                 <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
                   <LogOut className="h-4 w-4" />
                 </Button>
-              </>
-            )}
+              </>}
           </div>
         </header>
 
@@ -818,13 +786,12 @@ const BibliotecaArtes = () => {
               variant="ghost" 
               size="sm"
               className="text-amber-300 hover:bg-amber-500/20 p-1.5"
-            >
+             >
               <ArrowLeftRight className="h-4 w-4" />
-            </Button> */}
+             </Button> */}
           </div>
           <div className="flex items-center gap-2">
-            {!user && (
-              <>
+            {!user && <>
                 <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
                   <LogIn className="h-4 w-4 mr-1" />
                   Login
@@ -833,39 +800,29 @@ const BibliotecaArtes = () => {
                   <Star className="h-3 w-3 mr-1" fill="currentColor" />
                   {isPromoActive ? "50% OFF" : "Comprar"}
                 </Button>
-              </>
-            )}
-            {user && (
-              <>
-                {userPacks.length > 0 && (
-                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
+              </>}
+            {user && <>
+                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
                     <Star className="h-3 w-3 mr-1" fill="currentColor" />
                     {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
-                  </Badge>
-                )}
+                  </Badge>}
                 <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
                   <Settings className="h-4 w-4" />
                 </Button>
                 <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
                   <LogOut className="h-4 w-4" />
                 </Button>
-              </>
-            )}
+              </>}
           </div>
         </header>
 
         {/* First Access Button - Mobile Only (below header, above title) */}
-        {!user && (
-          <div className="md:hidden px-4 pt-4">
-            <Button 
-              onClick={() => setShowFirstAccessModal(true)}
-              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white animate-pulse"
-            >
+        {!user && <div className="md:hidden px-4 pt-4">
+            <Button onClick={() => setShowFirstAccessModal(true)} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white animate-pulse">
               <UserCheck className="h-4 w-4 mr-2" />
               Já é cliente? Primeiro acesso aqui!
             </Button>
-          </div>
-        )}
+          </div>}
 
         {/* Main Content */}
         <div className="p-4 lg:p-6">
@@ -882,100 +839,81 @@ const BibliotecaArtes = () => {
             {/* Banner Carousel - Only show when no pack is selected */}
             {!selectedPack && <BannerCarousel />}
 
-            {/* AI Tools Access Button - Below Banner */}
-            {!selectedPack && (
-              <button 
-                onClick={() => navigate('/ferramentas-ia')}
-                className="w-full my-4 bg-gradient-to-r from-purple-600 via-violet-600 to-purple-600 hover:from-purple-700 hover:via-violet-700 hover:to-purple-700 text-white py-3 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 font-medium text-base transition-all hover:shadow-xl"
-              >
-                <Cpu className="h-5 w-5" />
-                <span>Se você comprou uma Ferramenta de IA - Acesse aqui</span>
-              </button>
-            )}
-
             {/* Install App Button - Below Banner, Mobile Only */}
-            {!selectedPack && !isAppInstalled && (
-              <button 
-                onClick={() => navigate('/install-app')}
-                className="lg:hidden w-full my-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_100%] animate-pulse text-white py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 font-semibold text-lg hover:shadow-xl transition-shadow"
-              >
+            {!selectedPack && !isAppInstalled && <button onClick={() => navigate('/install-app')} className="lg:hidden w-full my-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_100%] animate-pulse text-white py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 font-semibold text-lg hover:shadow-xl transition-shadow">
                 <Smartphone className="h-6 w-6" />
-                <span>Instalar App no Celular</span>
-              </button>
-            )}
+                <span>Se você já comprou uma Ferramenta de IA - Acesse aqui</span>
+              </button>}
 
             {/* Pack/Bonus Selection View - excludes tutorial, cursos, all-artes, and free-sample sections */}
             {!selectedPack && activeSection !== 'cursos' && activeSection !== 'tutorial' && activeSection !== 'all-artes' && activeSection !== 'free-sample' && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getCurrentItems().map(pack => {
-              const arteCount = getPackArteCount(pack.name);
-              const packSlug = toPackSlug(pack.name);
-              // For bonus/updates/ferramentas_ia: any active pack = access. For regular packs: need specific pack
-              const isBonusOrUpdatesOrToolType = pack.type === 'bonus' || pack.type === 'updates' || pack.type === 'ferramentas_ia' || pack.type === 'ferramenta';
-              const isToolType = pack.type === 'ferramentas_ia' || pack.type === 'ferramenta';
-              const isBonusType = pack.type === 'bonus';
-              const hasPackAccess = isBonusOrUpdatesOrToolType ? isPremium : hasAccessToPack(packSlug);
-              const isExpired = !isBonusOrUpdatesOrToolType && hasExpiredPack(packSlug);
-              const expiredInfo = isExpired ? getExpiredPackInfo(packSlug) : null;
-              const showToolAvailableBadge = isToolType && isPremium;
-              
-              // For bonus: show download button if has access, otherwise show buy pack button
-              const handleBonusAction = (e: React.MouseEvent) => {
-                e.stopPropagation();
-                if (isPremium && pack.download_url) {
-                  window.open(pack.download_url, '_blank');
-                } else {
-                  navigate('/planos-artes');
-                }
-              };
-              
-              return <Card key={pack.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => {
-                // For ferramentas_ia type: navigate to video lessons page or specific tool page
-                if (isToolType) {
-                  if (isPremium) {
-                    navigate(`/ferramenta-ia-artes/${pack.slug}`);
-                  } else {
-                    // Navigate to specific tool page based on slug
-                    if (pack.slug === 'upscaller-arcano') {
-                      navigate('/planos-upscaler-arcano');
-                    } else if (pack.slug === 'forja-selos-3d') {
-                      navigate('/planos-forja-selos-3d');
-                    } else {
-                      navigate('/planos-artes');
-                    }
-                  }
-                  return;
-                }
-                // For bonus type: don't navigate to pack view, handle action directly
-                if (isBonusType) {
+                const arteCount = getPackArteCount(pack.name);
+                const packSlug = toPackSlug(pack.name);
+                // For bonus/updates/ferramentas_ia: any active pack = access. For regular packs: need specific pack
+                const isBonusOrUpdatesOrToolType = pack.type === 'bonus' || pack.type === 'updates' || pack.type === 'ferramentas_ia' || pack.type === 'ferramenta';
+                const isToolType = pack.type === 'ferramentas_ia' || pack.type === 'ferramenta';
+                const isBonusType = pack.type === 'bonus';
+                const hasPackAccess = isBonusOrUpdatesOrToolType ? isPremium : hasAccessToPack(packSlug);
+                const isExpired = !isBonusOrUpdatesOrToolType && hasExpiredPack(packSlug);
+                const expiredInfo = isExpired ? getExpiredPackInfo(packSlug) : null;
+                const showToolAvailableBadge = isToolType && isPremium;
+
+                // For bonus: show download button if has access, otherwise show buy pack button
+                const handleBonusAction = (e: React.MouseEvent) => {
+                  e.stopPropagation();
                   if (isPremium && pack.download_url) {
                     window.open(pack.download_url, '_blank');
-                  } else if (!isPremium) {
-                    navigate('/planos-artes');
                   } else {
-                    // Has access but no download URL - go to pack view
+                    navigate('/planos-artes');
+                  }
+                };
+                return <Card key={pack.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => {
+                  // For ferramentas_ia type: navigate to video lessons page or specific tool page
+                  if (isToolType) {
+                    if (isPremium) {
+                      navigate(`/ferramenta-ia-artes/${pack.slug}`);
+                    } else {
+                      // Navigate to specific tool page based on slug
+                      if (pack.slug === 'upscaller-arcano') {
+                        navigate('/planos-upscaler-arcano');
+                      } else if (pack.slug === 'forja-selos-3d') {
+                        navigate('/planos-forja-selos-3d');
+                      } else {
+                        navigate('/planos-artes');
+                      }
+                    }
+                    return;
+                  }
+                  // For bonus type: don't navigate to pack view, handle action directly
+                  if (isBonusType) {
+                    if (isPremium && pack.download_url) {
+                      window.open(pack.download_url, '_blank');
+                    } else if (!isPremium) {
+                      navigate('/planos-artes');
+                    } else {
+                      // Has access but no download URL - go to pack view
+                      setSelectedPack(pack.name);
+                      setSelectedCategory("Todos");
+                      setCurrentPage(1);
+                    }
+                  } else {
                     setSelectedPack(pack.name);
                     setSelectedCategory("Todos");
                     setCurrentPage(1);
                   }
-                } else {
-                  setSelectedPack(pack.name);
-                  setSelectedCategory("Todos");
-                  setCurrentPage(1);
-                }
-              }}>
+                }}>
                       <div className="aspect-[3/4] relative overflow-hidden">
                         {pack.cover_url ? <img src={pack.cover_url} alt={pack.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
                             {activeSection === 'bonus' ? <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" /> : <Package className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />}
                           </div>}
                         
                         {/* Promo 50% OFF Tag - show on packs when promo is active and user doesn't have access */}
-                        {isPromoActive && !hasPackAccess && !isBonusType && !isToolType && (
-                          <div className="absolute top-2 left-2 z-10">
+                        {isPromoActive && !hasPackAccess && !isBonusType && !isToolType && <div className="absolute top-2 left-2 z-10">
                             <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white border-0 text-[10px] sm:text-xs font-bold shadow-lg animate-pulse">
                               🔥 50% OFF
                             </Badge>
-                          </div>
-                        )}
+                          </div>}
                         
                         {/* Access Tag - Priority: Active > Expired > None */}
                         {hasPackAccess && !isBonusType && <div className="absolute top-2 right-2 z-10">
@@ -1021,92 +959,65 @@ const BibliotecaArtes = () => {
                           </h3>
                           
                           {/* For bonus type: show action button instead of arte count */}
-                          {isBonusType ? (
-                            <Button 
-                              size="sm" 
-                              className={`mt-2 text-xs ${isPremium ? 'bg-green-500 hover:bg-green-600' : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90'} text-white`}
-                              onClick={handleBonusAction}
-                            >
-                              {isPremium ? (
-                                <>
+                          {isBonusType ? <Button size="sm" className={`mt-2 text-xs ${isPremium ? 'bg-green-500 hover:bg-green-600' : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90'} text-white`} onClick={handleBonusAction}>
+                              {isPremium ? <>
                                   <Download className="h-3 w-3 mr-1" />
                                   Baixar Bônus
-                                </>
-                              ) : (
-                                <div className="flex flex-col items-center gap-1">
+                                </> : <div className="flex flex-col items-center gap-1">
                                   <span className="text-[10px] text-white/80 text-center">Compre qualquer pack para desbloquear</span>
                                   <span className="flex items-center">
                                     <Package className="h-3 w-3 mr-1" />
                                     Ver packs
                                   </span>
-                                </div>
-                              )}
-                            </Button>
-                          ) : isToolType ? (
-                            isPremium ? (
-                              <Badge className="mt-2 bg-green-500/80 text-white border-0 text-xs self-center backdrop-blur-sm">
+                                </div>}
+                            </Button> : isToolType ? isPremium ? <Badge className="mt-2 bg-green-500/80 text-white border-0 text-xs self-center backdrop-blur-sm">
                                 <Play className="h-3 w-3 mr-1" />
                                 Vídeo Aulas
-                              </Badge>
-                            ) : (
-                              <Button 
-                                size="sm" 
-                                className="mt-2 text-xs bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // Navigate to specific tool page based on slug
-                                  if (pack.slug === 'upscaller-arcano') {
-                                    navigate('/planos-upscaler-arcano');
-                                  } else if (pack.slug === 'forja-selos-3d') {
-                                    navigate('/planos-forja-selos-3d');
-                                  } else {
-                                    navigate('/planos-artes');
-                                  }
-                                }}
-                              >
+                              </Badge> : <Button size="sm" className="mt-2 text-xs bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white" onClick={e => {
+                        e.stopPropagation();
+                        // Navigate to specific tool page based on slug
+                        if (pack.slug === 'upscaller-arcano') {
+                          navigate('/planos-upscaler-arcano');
+                        } else if (pack.slug === 'forja-selos-3d') {
+                          navigate('/planos-forja-selos-3d');
+                        } else {
+                          navigate('/planos-artes');
+                        }
+                      }}>
                                 <ShoppingCart className="h-3 w-3 mr-1" />
                                 Comprar Ferramenta
-                              </Button>
-                            )
-                          ) : (
-                            <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
+                              </Button> : <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
                               {arteCount} {arteCount === 1 ? 'arte' : 'artes'}
-                            </Badge>
-                          )}
+                            </Badge>}
                           
                           {/* Renewal Button for expired packs */}
                           {!hasPackAccess && isExpired && !isBonusType && <Button size="sm" className="mt-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
-                      e.stopPropagation();
-                      navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
-                    }}>
+                        e.stopPropagation();
+                        navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
+                      }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
                               Renovar com Desconto
                             </Button>}
                         </div>
                       </div>
                     </Card>;
-            })}
+              })}
                 {getCurrentItems().length === 0 && <div className="col-span-full text-center py-12">
                     <p className="text-muted-foreground">Nenhum {activeSection === 'bonus' ? 'bônus' : 'pack'} disponível</p>
                   </div>}
               </div>}
 
             {/* Mobile Button to open sidebar for Bonus and Updates - Only show in packs section */}
-            {!selectedPack && activeSection === 'packs' && (
-              <Button 
-                className="lg:hidden w-full mt-6 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white py-6 text-base font-semibold"
-                onClick={() => setSidebarOpen(true)}
-              >
+            {!selectedPack && activeSection === 'packs' && <Button className="lg:hidden w-full mt-6 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white py-6 text-base font-semibold" onClick={() => setSidebarOpen(true)}>
                 <Gift className="h-5 w-5 mr-2" />
                 Bônus e Atualizações
-              </Button>
-            )}
+              </Button>}
 
             {/* Tutoriais View - Free for everyone, navigates to lesson page */}
             {activeSection === 'tutorial' && !selectedPack && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getPacksByType('tutorial').map(tutorial => {
-              // Use the actual slug from database
-              return <Card key={tutorial.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => navigate(`/tutorial-artes/${tutorial.slug}`)}>
+                // Use the actual slug from database
+                return <Card key={tutorial.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => navigate(`/tutorial-artes/${tutorial.slug}`)}>
                       <div className="aspect-[3/4] relative overflow-hidden">
                         {tutorial.cover_url ? <img src={tutorial.cover_url} alt={tutorial.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-emerald-500/60 to-emerald-600 flex items-center justify-center">
                             <BookOpen className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
@@ -1131,7 +1042,7 @@ const BibliotecaArtes = () => {
                         </div>
                       </div>
                     </Card>;
-            })}
+              })}
                 {getPacksByType('tutorial').length === 0 && <div className="col-span-full text-center py-12">
                     <p className="text-muted-foreground">Nenhum tutorial disponível</p>
                   </div>}
@@ -1140,10 +1051,10 @@ const BibliotecaArtes = () => {
             {/* Cursos View */}
             {activeSection === 'cursos' && !selectedPack && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {getPacksByType('curso').map(curso => {
-              const cursoSlug = toPackSlug(curso.name);
-              // For cursos: user must purchase the specific course (not just any pack)
-              const hasCursoAccess = hasAccessToPack(cursoSlug);
-              return <Card key={curso.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleCursoClick(curso)}>
+                const cursoSlug = toPackSlug(curso.name);
+                // For cursos: user must purchase the specific course (not just any pack)
+                const hasCursoAccess = hasAccessToPack(cursoSlug);
+                return <Card key={curso.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleCursoClick(curso)}>
                       <div className="aspect-[3/4] relative overflow-hidden">
                         {curso.cover_url ? <img src={curso.cover_url} alt={curso.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
                             <GraduationCap className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
@@ -1164,7 +1075,7 @@ const BibliotecaArtes = () => {
                         </div>
                       </div>
                     </Card>;
-            })}
+              })}
                 {getPacksByType('curso').length === 0 && <div className="col-span-full text-center py-12">
                     <p className="text-muted-foreground">Nenhum curso disponível</p>
                   </div>}
@@ -1176,9 +1087,9 @@ const BibliotecaArtes = () => {
                 <div className="mb-6">
                   <div className="flex flex-wrap gap-2">
                     {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
-                  setSelectedCategory(category);
-                  setCurrentPage(1);
-                }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
+                    setSelectedCategory(category);
+                    setCurrentPage(1);
+                  }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
                         {category}
                       </Button>)}
                   </div>
@@ -1187,19 +1098,18 @@ const BibliotecaArtes = () => {
                 {/* Artes Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {paginatedArtes.map(arte => {
-                const isVideo = isVideoUrl(arte.imageUrl);
-                const arteId = String(arte.id);
-                const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
-                const isAnimating = animatingClicks.has(arteId);
-                const packSlug = toPackSlug(arte.pack);
-                // Check if arte belongs to a tutorial pack - tutorials are free for everyone
-                const artePackInfo = dbPacks.find(p => p.name === arte.pack);
-                const isTutorialType = artePackInfo?.type === 'tutorial';
-                const hasAccess = isTutorialType || !arte.isPremium || hasAccessToPack(packSlug);
-                return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
+                  const isVideo = isVideoUrl(arte.imageUrl);
+                  const arteId = String(arte.id);
+                  const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
+                  const isAnimating = animatingClicks.has(arteId);
+                  const packSlug = toPackSlug(arte.pack);
+                  // Check if arte belongs to a tutorial pack - tutorials are free for everyone
+                  const artePackInfo = dbPacks.find(p => p.name === arte.pack);
+                  const isTutorialType = artePackInfo?.type === 'tutorial';
+                  const hasAccess = isTutorialType || !arte.isPremium || hasAccessToPack(packSlug);
+                  return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-{isVideo ? (
-                            <>
+                      {isVideo ? <>
                               <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} preload="metadata" playsInline />
                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <div className="bg-black/60 rounded-full p-3">
@@ -1210,8 +1120,7 @@ const BibliotecaArtes = () => {
                                 <Play className="h-3 w-3" fill="white" />
                                 Vídeo
                               </div>
-                            </>
-                          ) : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
+                            </> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
                           
                           {!hasAccess && <div className="absolute top-2 right-2">
                               <Lock className="h-5 w-5 text-white drop-shadow-lg" />
@@ -1232,38 +1141,38 @@ const BibliotecaArtes = () => {
                             {getBadgeContent(arte)}
                           </div>
                           {hasAccess ? <Button size="sm" variant="outline" className="w-full mt-2 text-xs" onClick={e => {
-                      e.stopPropagation();
-                      handleItemClick(arte);
-                    }}>
+                        e.stopPropagation();
+                        handleItemClick(arte);
+                      }}>
                               Ver detalhes
                             </Button> : hasExpiredPack(packSlug) ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white text-xs" onClick={e => {
-                      e.stopPropagation();
-                      navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
-                    }}>
+                        e.stopPropagation();
+                        navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
+                      }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
                               Renovar com Desconto
                             </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-purple-500 to-violet-500 hover:opacity-90 text-white text-xs" onClick={e => {
-                      e.stopPropagation();
-                      navigate(`/planos-artes-membro?pack=${packSlug}`);
-                    }}>
+                        e.stopPropagation();
+                        navigate(`/planos-artes-membro?pack=${packSlug}`);
+                      }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               20% OFF Membro
                             </Button> : isPromoActive ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" onClick={e => {
-                      e.stopPropagation();
-                      navigate(`/promos-natal?pack=${packSlug}`);
-                    }}>
+                        e.stopPropagation();
+                        navigate(`/promos-natal?pack=${packSlug}`);
+                      }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               Comprar com 50% OFF
                             </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
-                      e.stopPropagation();
-                      navigate(`/planos-artes?pack=${packSlug}`);
-                    }}>
+                        e.stopPropagation();
+                        navigate(`/planos-artes?pack=${packSlug}`);
+                      }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               Comprar Pack
                             </Button>}
                         </div>
                       </Card>;
-              })}
+                })}
                 </div>
 
                 {/* Empty state */}
@@ -1291,9 +1200,9 @@ const BibliotecaArtes = () => {
                 <div className="mb-6">
                   <div className="flex flex-wrap gap-2">
                     {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
-                  setSelectedCategory(category);
-                  setCurrentPage(1);
-                }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
+                    setSelectedCategory(category);
+                    setCurrentPage(1);
+                  }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
                         {category}
                       </Button>)}
                   </div>
@@ -1302,16 +1211,15 @@ const BibliotecaArtes = () => {
                 {/* Artes Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {paginatedArtes.map(arte => {
-                const isVideo = isVideoUrl(arte.imageUrl);
-                const arteId = String(arte.id);
-                const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
-                const isAnimating = animatingClicks.has(arteId);
-                // Free sample artes are always accessible
-                const hasAccess = true;
-                return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
+                  const isVideo = isVideoUrl(arte.imageUrl);
+                  const arteId = String(arte.id);
+                  const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
+                  const isAnimating = animatingClicks.has(arteId);
+                  // Free sample artes are always accessible
+                  const hasAccess = true;
+                  return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-{isVideo ? (
-                            <>
+                      {isVideo ? <>
                               <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={false} preload="metadata" playsInline />
                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <div className="bg-black/60 rounded-full p-3">
@@ -1322,8 +1230,7 @@ const BibliotecaArtes = () => {
                                 <Play className="h-3 w-3" fill="white" />
                                 Vídeo
                               </div>
-                            </>
-                          ) : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={false} />}
+                            </> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={false} />}
                           
                           <div className="absolute bottom-2 left-2 right-2">
                             <Badge variant="secondary" className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
@@ -1340,14 +1247,14 @@ const BibliotecaArtes = () => {
                             {getBadgeContent(arte)}
                           </div>
                           <Button size="sm" variant="outline" className="w-full mt-2 text-xs" onClick={e => {
-                      e.stopPropagation();
-                      handleItemClick(arte);
-                    }}>
+                        e.stopPropagation();
+                        handleItemClick(arte);
+                      }}>
                               Editar Agora 
                             </Button>
                         </div>
                       </Card>;
-              })}
+                })}
                 </div>
 
                 {/* Empty state */}
@@ -1374,9 +1281,9 @@ const BibliotecaArtes = () => {
                 {/* Back button and Pack title */}
                 <div className="mb-4 flex items-center gap-3">
                   <Button variant="outline" size="sm" onClick={() => {
-                setSelectedPack(null);
-                setCurrentPage(1);
-              }}>
+                  setSelectedPack(null);
+                  setCurrentPage(1);
+                }}>
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Voltar
                   </Button>
@@ -1386,9 +1293,9 @@ const BibliotecaArtes = () => {
                 {activeSection === 'packs' && <div className="mb-6">
                     <div className="flex flex-wrap gap-2">
                       {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
-                  setSelectedCategory(category);
-                  setCurrentPage(1);
-                }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
+                    setSelectedCategory(category);
+                    setCurrentPage(1);
+                  }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
                           {category}
                         </Button>)}
                     </div>
@@ -1397,23 +1304,22 @@ const BibliotecaArtes = () => {
                 {/* Artes Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {paginatedArtes.map(arte => {
-                const isVideo = isVideoUrl(arte.imageUrl);
-                const arteId = String(arte.id);
-                const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
-                const isAnimating = animatingClicks.has(arteId);
-                const packSlug = toPackSlug(arte.pack);
-                // Check if arte belongs to a tutorial pack - tutorials are free for everyone
-                const artePackInfo = dbPacks.find(p => p.name === arte.pack);
-                const isTutorialType = artePackInfo?.type === 'tutorial';
-                // For tutorials: always free for everyone
-                // For bonus/updates: any active pack grants access
-                // For regular packs: need specific pack access
-                const isBonusOrUpdatesSection = activeSection === 'bonus' || activeSection === 'updates';
-                const hasAccess = isTutorialType || !arte.isPremium || (isBonusOrUpdatesSection ? isPremium : hasAccessToPack(packSlug));
-                return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
+                  const isVideo = isVideoUrl(arte.imageUrl);
+                  const arteId = String(arte.id);
+                  const totalClicks = (arte.clickCount || 0) + (arte.bonusClicks || 0) + (clickIncrements[arteId] || 0);
+                  const isAnimating = animatingClicks.has(arteId);
+                  const packSlug = toPackSlug(arte.pack);
+                  // Check if arte belongs to a tutorial pack - tutorials are free for everyone
+                  const artePackInfo = dbPacks.find(p => p.name === arte.pack);
+                  const isTutorialType = artePackInfo?.type === 'tutorial';
+                  // For tutorials: always free for everyone
+                  // For bonus/updates: any active pack grants access
+                  // For regular packs: need specific pack access
+                  const isBonusOrUpdatesSection = activeSection === 'bonus' || activeSection === 'updates';
+                  const hasAccess = isTutorialType || !arte.isPremium || (isBonusOrUpdatesSection ? isPremium : hasAccessToPack(packSlug));
+                  return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-{isVideo ? (
-                            <>
+                      {isVideo ? <>
                               <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} preload="metadata" playsInline />
                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <div className="bg-black/60 rounded-full p-3">
@@ -1424,8 +1330,7 @@ const BibliotecaArtes = () => {
                                 <Play className="h-3 w-3" fill="white" />
                                 Vídeo
                               </div>
-                            </>
-                          ) : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
+                            </> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
                           
                           {!hasAccess && <div className="absolute top-2 right-2">
                               <Lock className="h-5 w-5 text-white drop-shadow-lg" />
@@ -1446,38 +1351,38 @@ const BibliotecaArtes = () => {
                             {getBadgeContent(arte)}
                           </div>
                           {hasAccess ? <Button size="sm" variant="outline" className="w-full mt-2 text-xs" onClick={e => {
-                      e.stopPropagation();
-                      handleItemClick(arte);
-                    }}>
+                        e.stopPropagation();
+                        handleItemClick(arte);
+                      }}>
                               Editar Agora 
                             </Button> : hasExpiredPack(packSlug) ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white text-xs" onClick={e => {
-                      e.stopPropagation();
-                      navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
-                    }}>
+                        e.stopPropagation();
+                        navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
+                      }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
                               Renovar com Desconto
                             </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-purple-500 to-violet-500 hover:opacity-90 text-white text-xs" onClick={e => {
-                      e.stopPropagation();
-                      navigate(`/planos-artes-membro?pack=${packSlug}`);
-                    }}>
+                        e.stopPropagation();
+                        navigate(`/planos-artes-membro?pack=${packSlug}`);
+                      }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               20% OFF Membro
                             </Button> : isPromoActive ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" onClick={e => {
-                      e.stopPropagation();
-                      navigate(`/promos-natal?pack=${packSlug}`);
-                    }}>
+                        e.stopPropagation();
+                        navigate(`/promos-natal?pack=${packSlug}`);
+                      }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               Comprar com 50% OFF
                             </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
-                      e.stopPropagation();
-                      navigate(`/planos-artes?pack=${packSlug}`);
-                    }}>
+                        e.stopPropagation();
+                        navigate(`/planos-artes?pack=${packSlug}`);
+                      }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               Comprar Pack
                             </Button>}
                         </div>
                       </Card>;
-              })}
+                })}
                 </div>
 
                 {/* Empty state */}
@@ -1506,16 +1411,16 @@ const BibliotecaArtes = () => {
       <Dialog open={!!selectedArte} onOpenChange={() => handleCloseModal()}>
         <DialogContent className="max-w-[95vw] sm:max-w-fit max-h-[95vh] overflow-y-auto">
           {selectedArte && (() => {
-          const packSlug = toPackSlug(selectedArte.pack);
-          // Check if arte belongs to bonus, updates, or tutorial pack type
-          const selectedPackInfo = dbPacks.find(p => p.name === selectedArte.pack);
-          const isBonusOrUpdatesType = selectedPackInfo?.type === 'bonus' || selectedPackInfo?.type === 'updates';
-          const isTutorialType = selectedPackInfo?.type === 'tutorial';
-          // For tutorials: always free for everyone (logged in or not)
-          // For bonus/updates: any active pack grants access
-          // For regular packs: need specific pack access
-          const hasAccess = isTutorialType || !selectedArte.isPremium || (isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug));
-          return <div className="space-y-4">
+            const packSlug = toPackSlug(selectedArte.pack);
+            // Check if arte belongs to bonus, updates, or tutorial pack type
+            const selectedPackInfo = dbPacks.find(p => p.name === selectedArte.pack);
+            const isBonusOrUpdatesType = selectedPackInfo?.type === 'bonus' || selectedPackInfo?.type === 'updates';
+            const isTutorialType = selectedPackInfo?.type === 'tutorial';
+            // For tutorials: always free for everyone (logged in or not)
+            // For bonus/updates: any active pack grants access
+            // For regular packs: need specific pack access
+            const hasAccess = isTutorialType || !selectedArte.isPremium || (isBonusOrUpdatesType ? isPremium : hasAccessToPack(packSlug));
+            return <div className="space-y-4">
                 <div className="flex justify-center">
                   {isVideoUrl(selectedArte.imageUrl) ? <SecureVideo src={selectedArte.imageUrl} className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} controls /> : <SecureImage src={selectedArte.imageUrl} alt={selectedArte.title} className="max-w-full max-h-[70vh] w-auto h-auto rounded-lg" isPremium={selectedArte.isPremium || false} />}
                 </div>
@@ -1533,16 +1438,16 @@ const BibliotecaArtes = () => {
 
                 {hasAccess ? <div className="flex flex-col gap-2">
                     {selectedArte.canvaLink && <Button onClick={async () => {
-                        await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive, 'canva');
-                        window.open(selectedArte.canvaLink, '_blank');
-                      }} className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white">
+                  await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive, 'canva');
+                  window.open(selectedArte.canvaLink, '_blank');
+                }} className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white">
                         <Download className="h-4 w-4 mr-2" />
                         Abrir no Canva
                       </Button>}
                     {selectedArte.driveLink && <Button onClick={async () => {
-                        await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive, 'psd');
-                        window.open(selectedArte.driveLink, '_blank');
-                      }} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
+                  await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive, 'psd');
+                  window.open(selectedArte.driveLink, '_blank');
+                }} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
                         <Download className="h-4 w-4 mr-2" />
                         Baixar PSD
                       </Button>}
@@ -1556,10 +1461,10 @@ const BibliotecaArtes = () => {
                       </Button>}
                     {/* Ver mais Artes button - only for free arts */}
                     {!selectedArte.isPremium && <Button onClick={() => {
-                        handleCloseModal();
-                        setSelectedPack(null);
-                        setActiveSection('all-artes');
-                      }} variant="outline" className="w-full border-primary text-primary hover:bg-primary/10">
+                  handleCloseModal();
+                  setSelectedPack(null);
+                  setActiveSection('all-artes');
+                }} variant="outline" className="w-full border-primary text-primary hover:bg-primary/10">
                         <Eye className="h-4 w-4 mr-2" />
                         Ver mais Artes
                       </Button>}
@@ -1575,24 +1480,20 @@ const BibliotecaArtes = () => {
                         <LogIn className="h-4 w-4 mr-2" />
                         Fazer Login
                       </Button>}
-                    {isPromoActive ? (
-                      <Button onClick={() => navigate(`/promos-natal?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse">
+                    {isPromoActive ? <Button onClick={() => navigate(`/promos-natal?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse">
                         <Star className="h-4 w-4 mr-2" fill="currentColor" />
                         Comprar com 50% OFF
-                      </Button>
-                    ) : (
-                      <Button onClick={() => navigate(`/planos-artes?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white">
+                      </Button> : <Button onClick={() => navigate(`/planos-artes?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white">
                         <Star className="h-4 w-4 mr-2" fill="currentColor" />
                         Comprar Pack
-                      </Button>
-                    )}
+                      </Button>}
                     <Button onClick={() => handleCloseModal()} variant="outline" className="w-full">
                       <ChevronLeft className="h-4 w-4 mr-2" />
                       Voltar
                     </Button>
                   </div>}
               </div>;
-        })()}
+          })()}
         </DialogContent>
       </Dialog>
 
@@ -1607,12 +1508,12 @@ const BibliotecaArtes = () => {
               <div>
                 <h2 className="text-xl font-bold text-foreground">{premiumModalItem.title}</h2>
                 {(() => {
-              const packInfo = dbPacks.find(p => p.name === premiumModalItem.pack);
-              const isBonusOrUpdates = packInfo?.type === 'bonus' || packInfo?.type === 'updates';
-              return <p className="text-muted-foreground mt-2">
+                const packInfo = dbPacks.find(p => p.name === premiumModalItem.pack);
+                const isBonusOrUpdates = packInfo?.type === 'bonus' || packInfo?.type === 'updates';
+                return <p className="text-muted-foreground mt-2">
                       {isBonusOrUpdates ? "Este conteúdo é exclusivo para membros. Adquira qualquer pack para ter acesso a todos os bônus e atualizações." : premiumModalItem.pack ? `Esta arte faz parte do pack "${premiumModalItem.pack}". Adquira o pack para ter acesso completo.` : "Esta arte é exclusiva. Adquira um pack para ter acesso."}
                     </p>;
-            })()}
+              })()}
               </div>
 
               <div className="flex flex-col gap-2">
@@ -1620,23 +1521,19 @@ const BibliotecaArtes = () => {
                   <LogIn className="h-4 w-4 mr-2" />
                   Fazer Login
                 </Button>
-                {isPromoActive ? (
-                  <Button onClick={() => {
-                    const packSlug = toPackSlug(premiumModalItem.pack);
-                    navigate(`/promos-natal${packSlug ? `?pack=${packSlug}` : ''}`);
-                  }} className="bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse">
+                {isPromoActive ? <Button onClick={() => {
+                const packSlug = toPackSlug(premiumModalItem.pack);
+                navigate(`/promos-natal${packSlug ? `?pack=${packSlug}` : ''}`);
+              }} className="bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse">
                     <Star className="h-4 w-4 mr-2" fill="currentColor" />
                     Comprar com 50% OFF
-                  </Button>
-                ) : (
-                  <Button onClick={() => {
-                    const packSlug = toPackSlug(premiumModalItem.pack);
-                    navigate(`/planos-artes${packSlug ? `?pack=${packSlug}` : ''}`);
-                  }} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                  </Button> : <Button onClick={() => {
+                const packSlug = toPackSlug(premiumModalItem.pack);
+                navigate(`/planos-artes${packSlug ? `?pack=${packSlug}` : ''}`);
+              }} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                     <Star className="h-4 w-4 mr-2" fill="currentColor" />
                     Comprar Pack
-                  </Button>
-                )}
+                  </Button>}
                 <Button onClick={() => handleClosePremiumModal(false)} variant="outline">
                   <ChevronLeft className="h-4 w-4 mr-2" />
                   Voltar
@@ -1650,9 +1547,9 @@ const BibliotecaArtes = () => {
       <Dialog open={showCursoModal} onOpenChange={setShowCursoModal}>
         <DialogContent className="max-w-md">
           {selectedCurso && (() => {
-          const cursoSlug = toPackSlug(selectedCurso.name);
-          const hasCursoAccess = hasAccessToPack(cursoSlug);
-          return <div className="space-y-4 text-center">
+            const cursoSlug = toPackSlug(selectedCurso.name);
+            const hasCursoAccess = hasAccessToPack(cursoSlug);
+            return <div className="space-y-4 text-center">
                 <div className="relative">
                   {selectedCurso.cover_url ? <img src={selectedCurso.cover_url} alt={selectedCurso.name} className="w-full h-48 object-cover rounded-lg" /> : <div className="w-full h-48 bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center rounded-lg">
                       <GraduationCap className="h-16 w-16 text-white/80" />
@@ -1675,15 +1572,15 @@ const BibliotecaArtes = () => {
 
                 {hasCursoAccess ? <div className="flex flex-col gap-2">
                     <Button onClick={() => {
-                // Navegar para página do curso baseado no slug
-                if (cursoSlug === 'forja-selos-3d-ilimitada') {
-                  navigate('/forja-selos-3d-artes');
-                } else if (cursoSlug === 'eventoia-como-criar-selos-3d-animados') {
-                  window.open('https://blibliotecadeartesarcanas.greenn.club/home', '_blank');
-                } else {
-                  toast.info("Link será configurado em breve");
-                }
-              }} className="w-full">
+                  // Navegar para página do curso baseado no slug
+                  if (cursoSlug === 'forja-selos-3d-ilimitada') {
+                    navigate('/forja-selos-3d-artes');
+                  } else if (cursoSlug === 'eventoia-como-criar-selos-3d-animados') {
+                    window.open('https://blibliotecadeartesarcanas.greenn.club/home', '_blank');
+                  } else {
+                    toast.info("Link será configurado em breve");
+                  }
+                }} className="w-full">
                       <User className="h-4 w-4 mr-2" />
                       Acessar Curso
                     </Button>
@@ -1693,22 +1590,18 @@ const BibliotecaArtes = () => {
                     </Button>
                   </div> : <div className="flex flex-col gap-2">
                     <Button onClick={() => {
-                      // Se for membro (tem algum pack ativo), abre com desconto de membro
-                      // Se não for membro ou não estiver logado, abre preço normal
-                      if (isPremium) {
-                        navigate(`/planos-artes-membro?pack=${cursoSlug}`);
-                      } else {
-                        navigate(`/planos-artes?pack=${cursoSlug}`);
-                      }
-                    }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
+                  // Se for membro (tem algum pack ativo), abre com desconto de membro
+                  // Se não for membro ou não estiver logado, abre preço normal
+                  if (isPremium) {
+                    navigate(`/planos-artes-membro?pack=${cursoSlug}`);
+                  } else {
+                    navigate(`/planos-artes?pack=${cursoSlug}`);
+                  }
+                }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
                       Comprar Curso
                     </Button>
-                    <Button 
-                      onClick={() => window.open('https://voxvisual.com.br/eventoia3/?utm_source=aplicativo&utm_medium=aplicativo&utm_campaign=aplicativo&utm_id=aplicativo', '_blank')} 
-                      variant="outline" 
-                      className="w-full"
-                    >
+                    <Button onClick={() => window.open('https://voxvisual.com.br/eventoia3/?utm_source=aplicativo&utm_medium=aplicativo&utm_campaign=aplicativo&utm_id=aplicativo', '_blank')} variant="outline" className="w-full">
                       Saiba mais
                     </Button>
                     <Button onClick={() => setShowCursoModal(false)} variant="outline" className="w-full">
@@ -1717,7 +1610,7 @@ const BibliotecaArtes = () => {
                     </Button>
                   </div>}
               </div>;
-        })()}
+          })()}
         </DialogContent>
       </Dialog>
 
@@ -1739,34 +1632,22 @@ const BibliotecaArtes = () => {
               </p>
             </div>
             <div className="space-y-3">
-              <Input
-                type="email"
-                placeholder="Digite seu email de compra"
-                value={firstAccessEmail}
-                onChange={(e) => setFirstAccessEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleFirstAccessCheck()}
-                className="w-full"
-              />
-              <Button 
-                onClick={handleFirstAccessCheck}
-                disabled={firstAccessLoading}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-              >
-                {firstAccessLoading ? (
-                  <>
+              <Input type="email" placeholder="Digite seu email de compra" value={firstAccessEmail} onChange={e => setFirstAccessEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleFirstAccessCheck()} className="w-full" />
+              <Button onClick={handleFirstAccessCheck} disabled={firstAccessLoading} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600">
+                {firstAccessLoading ? <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Verificando...
-                  </>
-                ) : (
-                  <>
+                  </> : <>
                     <ChevronRight className="h-4 w-4 mr-2" />
                     Verificar Email
-                  </>
-                )}
+                  </>}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Não é cliente ainda? <button onClick={() => { setShowFirstAccessModal(false); navigate('/planos-artes'); }} className="text-primary underline">Veja nossos packs</button>
+              Não é cliente ainda? <button onClick={() => {
+                setShowFirstAccessModal(false);
+                navigate('/planos-artes');
+              }} className="text-primary underline">Veja nossos packs</button>
             </p>
           </div>
         </DialogContent>
@@ -1789,18 +1670,18 @@ const BibliotecaArtes = () => {
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <Button 
-                onClick={() => { setShowEmailNotFoundModal(false); setShowFirstAccessModal(true); }}
-                variant="outline"
-                className="w-full"
-              >
+              <Button onClick={() => {
+                setShowEmailNotFoundModal(false);
+                setShowFirstAccessModal(true);
+              }} variant="outline" className="w-full">
                 <ChevronLeft className="h-4 w-4 mr-2" />
                 Tentar outro email
               </Button>
-              <Button 
-                onClick={() => { setShowEmailNotFoundModal(false); setFirstAccessEmail(""); navigate('/login-artes'); }}
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
-              >
+              <Button onClick={() => {
+                setShowEmailNotFoundModal(false);
+                setFirstAccessEmail("");
+                navigate('/login-artes');
+              }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
                 <User className="h-4 w-4 mr-2" />
                 Criar Conta
               </Button>
@@ -1810,6 +1691,5 @@ const BibliotecaArtes = () => {
       </Dialog>
     </div>
   </>;
-
 };
 export default BibliotecaArtes;
