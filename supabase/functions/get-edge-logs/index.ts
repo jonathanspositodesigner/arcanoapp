@@ -37,7 +37,26 @@ serve(async (req) => {
     // Get project ref from URL
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const projectRef = supabaseUrl.replace('https://', '').replace('.supabase.co', '');
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const accessToken = Deno.env.get('SUPABASE_ACCESS_TOKEN');
+
+    if (!accessToken) {
+      return new Response(JSON.stringify({
+        success: true,
+        data: {
+          functions: [],
+          total_calls: 0,
+          total_success: 0,
+          total_errors: 0,
+          recent_logs: [],
+          source: 'missing_token',
+          note: 'SUPABASE_ACCESS_TOKEN não configurado. Configure o token de acesso pessoal do Supabase.',
+        },
+        timeFilter,
+        startTime: startTime.toISOString(),
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Query edge function logs via analytics API
     const analyticsQuery = `
@@ -67,7 +86,7 @@ serve(async (req) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${serviceKey}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           sql: analyticsQuery,
