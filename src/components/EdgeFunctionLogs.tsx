@@ -26,7 +26,8 @@ interface EdgeLogResponse {
       function_name: string;
       status: number | string;
       timestamp: string;
-      email?: string;
+      method?: string;
+      execution_time?: number;
     }>;
     source: string;
     note?: string;
@@ -233,13 +234,18 @@ const EdgeFunctionLogs = () => {
                           ? "default" 
                           : "destructive"
                       }
-                      className="text-xs"
+                      className="text-xs min-w-[50px] justify-center"
                     >
                       {log.status}
                     </Badge>
+                    {log.method && (
+                      <Badge variant="outline" className="text-xs">
+                        {log.method}
+                      </Badge>
+                    )}
                     <span className="text-sm font-medium">{log.function_name}</span>
-                    {log.email && (
-                      <span className="text-xs text-muted-foreground">{log.email}</span>
+                    {log.execution_time !== undefined && (
+                      <span className="text-xs text-muted-foreground">{log.execution_time}ms</span>
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground">
