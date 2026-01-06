@@ -12,10 +12,23 @@ serve(async (req) => {
   }
 
   try {
+    // Support both query param and body for timeFilter
     const url = new URL(req.url);
-    const timeFilter = url.searchParams.get('timeFilter') || '1day';
+    let timeFilter = url.searchParams.get('timeFilter') || '1day';
     
-    // Calculate time range in ISO format
+    // Also check body for POST requests
+    if (req.method === 'POST') {
+      try {
+        const body = await req.json();
+        if (body?.timeFilter) {
+          timeFilter = body.timeFilter;
+        }
+      } catch {
+        // Ignore body parse errors
+      }
+    }
+    
+    // Calculate time range
     const now = new Date();
     let hoursBack: number;
     
@@ -37,7 +50,15 @@ serve(async (req) => {
     // Get project ref from URL
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const projectRef = supabaseUrl.replace('https://', '').replace('.supabase.co', '');
-    const accessToken = Deno.env.get('SUPABASE_ACCESS_TOKEN');
+    
+    // Use the correct secret name (SUPABASE_ prefix is reserved, so we use MGMT_API_ACCESS_TOKEN)
+    const accessToken = (Deno.env.get('MGMT_API_ACCESS_TOKEN') ?? '').trim();
+
+    console.log('get-edge-logs: checking token...', { 
+      hasToken: !!accessToken, 
+      tokenLength: accessToken.length,
+      projectRef 
+    });
 
     if (!accessToken) {
       return new Response(JSON.stringify({
@@ -49,7 +70,7 @@ serve(async (req) => {
           total_errors: 0,
           recent_logs: [],
           source: 'missing_token',
-          note: 'SUPABASE_ACCESS_TOKEN não configurado. Configure o token de acesso pessoal do Supabase.',
+          note: 'MGMT_API_ACCESS_TOKEN não configurado. Configure o Personal Access Token do Supabase nas secrets.',
         },
         timeFilter,
         startTime: startTime.toISOString(),
@@ -58,7 +79,8 @@ serve(async (req) => {
       });
     }
 
-    // Query edge function logs via analytics API
+    // Query edge function logs via Management API
+    // Using the correct endpoint: GET /v1/projects/{ref}/analytics/endpoints/logs.all
     const analyticsQuery = `
       select 
         id,
@@ -75,24 +97,29 @@ serve(async (req) => {
         cross join unnest(m.request) as request
       where function_edge_logs.timestamp >= '${startTime.toISOString()}'
       order by timestamp desc
-      limit 1000
+      limit 500
     `;
 
-    console.log('Querying analytics with timeFilter:', timeFilter);
+    // Build URL with query params
+    const params = new URLSearchParams({
+      iso_timestamp_start: startTime.toISOString(),
+      iso_timestamp_end: now.toISOString(),
+      sql: analyticsQuery,
+    });
 
-    const analyticsResponse = await fetch(
-      `https://api.supabase.com/v1/projects/${projectRef}/analytics/endpoints/logs.all/query`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          sql: analyticsQuery,
-        }),
-      }
-    );
+    const apiUrl = `https://api.supabase.com/v1/projects/${projectRef}/analytics/endpoints/logs.all?${params.toString()}`;
+    
+    console.log('get-edge-logs: calling Management API...');
+
+    const analyticsResponse = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('get-edge-logs: API response status:', analyticsResponse.status);
 
     if (!analyticsResponse.ok) {
       const errorText = await analyticsResponse.text();
@@ -107,25 +134,30 @@ serve(async (req) => {
           total_success: 0,
           total_errors: 0,
           recent_logs: [],
-          source: 'analytics_unavailable',
-          note: `API de analytics não disponível (${analyticsResponse.status}). Verifique as permissões ou acesse o dashboard do Supabase para ver logs detalhados.`,
+          source: 'analytics_error',
+          note: `Erro na API de analytics (${analyticsResponse.status}). Verifique se o token tem permissão para acessar este projeto.`,
         },
         timeFilter,
         startTime: startTime.toISOString(),
+        debug: {
+          status: analyticsResponse.status,
+          error: errorText.substring(0, 200),
+        },
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const analyticsData = await analyticsResponse.json();
-    const logs = analyticsData.result || [];
+    const logs = analyticsData.result || analyticsData || [];
     
-    console.log(`Found ${logs.length} edge function logs`);
+    console.log(`get-edge-logs: Found ${Array.isArray(logs) ? logs.length : 0} edge function logs`);
 
     // Process and aggregate the logs
     const functionStats: Record<string, { total: number; success: number; errors: number }> = {};
+    const logsArray = Array.isArray(logs) ? logs : [];
     
-    logs.forEach((log: any) => {
+    logsArray.forEach((log: any) => {
       const funcId = log.function_id || 'unknown';
       if (!functionStats[funcId]) {
         functionStats[funcId] = { total: 0, success: 0, errors: 0 };
@@ -140,7 +172,7 @@ serve(async (req) => {
       }
     });
 
-    const totalCalls = logs.length;
+    const totalCalls = logsArray.length;
     const totalSuccess = Object.values(functionStats).reduce((acc, f) => acc + f.success, 0);
     const totalErrors = Object.values(functionStats).reduce((acc, f) => acc + f.errors, 0);
 
@@ -156,7 +188,7 @@ serve(async (req) => {
         total_calls: totalCalls,
         total_success: totalSuccess,
         total_errors: totalErrors,
-        recent_logs: logs.slice(0, 50).map((log: any) => ({
+        recent_logs: logsArray.slice(0, 50).map((log: any) => ({
           function_name: log.function_id || 'unknown',
           status: log.status_code || 0,
           method: log.method || 'GET',
