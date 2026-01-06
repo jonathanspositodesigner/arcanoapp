@@ -6,6 +6,39 @@ const corsHeaders = {
   'Cache-Control': 'no-cache, no-store, must-revalidate',
 };
 
+// Edge function names and their IDs (you can update this list as needed)
+const EDGE_FUNCTIONS = [
+  'create-pack-client',
+  'create-partner',
+  'create-partner-artes',
+  'create-premium-user',
+  'create-premium-user-artes',
+  'create-premium-user-musicos',
+  'delete-auth-user-artes',
+  'delete-auth-user-by-email',
+  'email-unsubscribe',
+  'get-edge-logs',
+  'import-pack-clients',
+  'manage-admin',
+  'migrate-cloudinary-to-storage',
+  'process-import-job',
+  'process-scheduled-emails',
+  'process-scheduled-notifications',
+  'process-sending-campaigns',
+  'reset-admin-password',
+  'send-announcement',
+  'send-email-campaign',
+  'send-push-notification',
+  'send-single-email',
+  'sendpulse-webhook',
+  'update-user-password-artes',
+  'upload-to-storage',
+  'webhook-greenn',
+  'webhook-greenn-artes',
+  'webhook-greenn-musicos',
+  'welcome-email-tracking',
+];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -34,7 +67,7 @@ serve(async (req) => {
     
     switch (timeFilter) {
       case '10min':
-        hoursBack = 1; // Minimum 1 hour for API
+        hoursBack = 1;
         break;
       case '3days':
         hoursBack = 72;
@@ -51,26 +84,33 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const projectRef = supabaseUrl.replace('https://', '').replace('.supabase.co', '');
     
-    // Use the correct secret name (SUPABASE_ prefix is reserved, so we use MGMT_API_ACCESS_TOKEN)
+    // Use MGMT_API_ACCESS_TOKEN (SUPABASE_ prefix is reserved)
     const accessToken = (Deno.env.get('MGMT_API_ACCESS_TOKEN') ?? '').trim();
 
     console.log('get-edge-logs: checking token...', { 
       hasToken: !!accessToken, 
       tokenLength: accessToken.length,
-      projectRef 
+      projectRef,
+      timeFilter
     });
 
     if (!accessToken) {
+      // Return a helpful response with function list even without logs
       return new Response(JSON.stringify({
         success: true,
         data: {
-          functions: [],
+          functions: EDGE_FUNCTIONS.map(name => ({
+            function_name: name,
+            total_calls: 0,
+            success_count: 0,
+            error_count: 0,
+          })),
           total_calls: 0,
           total_success: 0,
           total_errors: 0,
           recent_logs: [],
-          source: 'missing_token',
-          note: 'MGMT_API_ACCESS_TOKEN não configurado. Configure o Personal Access Token do Supabase nas secrets.',
+          source: 'function_list',
+          note: 'Para ver estatísticas detalhadas, configure o MGMT_API_ACCESS_TOKEN com um Personal Access Token de uma conta Owner da organização.',
         },
         timeFilter,
         startTime: startTime.toISOString(),
@@ -79,8 +119,7 @@ serve(async (req) => {
       });
     }
 
-    // Query edge function logs via Management API
-    // Using the correct endpoint: GET /v1/projects/{ref}/analytics/endpoints/logs.all
+    // Try to fetch from the logs.all endpoint
     const analyticsQuery = `
       select 
         id,
@@ -88,7 +127,6 @@ serve(async (req) => {
         event_message,
         m.function_id,
         m.execution_time_ms,
-        m.deployment_id,
         response.status_code,
         request.method
       from function_edge_logs
@@ -100,7 +138,7 @@ serve(async (req) => {
       limit 500
     `;
 
-    // Build URL with query params
+    // Build URL with query params for GET request
     const params = new URLSearchParams({
       iso_timestamp_start: startTime.toISOString(),
       iso_timestamp_end: now.toISOString(),
@@ -125,24 +163,50 @@ serve(async (req) => {
       const errorText = await analyticsResponse.text();
       console.error('Analytics API error:', analyticsResponse.status, errorText);
       
-      // Return empty data with explanation
+      // If 403, provide helpful guidance
+      if (analyticsResponse.status === 403) {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            functions: EDGE_FUNCTIONS.map(name => ({
+              function_name: name,
+              total_calls: 0,
+              success_count: 0,
+              error_count: 0,
+            })),
+            total_calls: 0,
+            total_success: 0,
+            total_errors: 0,
+            recent_logs: [],
+            source: 'permission_denied',
+            note: 'O token não tem permissão para acessar analytics. O PAT precisa ser de uma conta Owner da organização Supabase. Acesse os logs diretamente no Lovable Cloud.',
+          },
+          timeFilter,
+          startTime: startTime.toISOString(),
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      // Other errors
       return new Response(JSON.stringify({
         success: true,
         data: {
-          functions: [],
+          functions: EDGE_FUNCTIONS.map(name => ({
+            function_name: name,
+            total_calls: 0,
+            success_count: 0,
+            error_count: 0,
+          })),
           total_calls: 0,
           total_success: 0,
           total_errors: 0,
           recent_logs: [],
-          source: 'analytics_error',
-          note: `Erro na API de analytics (${analyticsResponse.status}). Verifique se o token tem permissão para acessar este projeto.`,
+          source: 'api_error',
+          note: `Erro na API (${analyticsResponse.status}). Tente novamente mais tarde.`,
         },
         timeFilter,
         startTime: startTime.toISOString(),
-        debug: {
-          status: analyticsResponse.status,
-          error: errorText.substring(0, 200),
-        },
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -219,7 +283,7 @@ serve(async (req) => {
         note: `Erro ao buscar logs: ${errorMessage}`,
       },
     }), {
-      status: 200, // Return 200 so UI can show the error message
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
