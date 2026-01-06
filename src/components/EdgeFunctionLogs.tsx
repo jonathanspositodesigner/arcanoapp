@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Zap, Clock, AlertCircle, CheckCircle } from "lucide-react";
+import { RefreshCw, Zap, Clock, AlertCircle, CheckCircle, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -10,78 +10,64 @@ import { ptBR } from "date-fns/locale";
 
 type TimeFilter = "10min" | "1day" | "3days";
 
-interface EdgeLog {
-  id: string;
-  timestamp: string;
-  function_id: string;
-  execution_time_ms: number;
-  status_code: number;
-  method: string;
+interface EdgeLogResponse {
+  success: boolean;
+  data: {
+    functions: Array<{
+      function_name: string;
+      total_calls: number;
+      success_count: number;
+      error_count: number;
+    }>;
+    total_calls: number;
+    total_success: number;
+    total_errors: number;
+    recent_logs: Array<{
+      function_name: string;
+      status: number | string;
+      timestamp: string;
+      email?: string;
+    }>;
+    source: string;
+    note?: string;
+  };
+  timeFilter: string;
+  startTime: string;
 }
 
 const EdgeFunctionLogs = () => {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("1day");
 
-  const getTimeRange = () => {
-    const now = new Date();
-    switch (timeFilter) {
-      case "10min":
-        return new Date(now.getTime() - 10 * 60 * 1000).toISOString();
-      case "1day":
-        return new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-      case "3days":
-        return new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString();
-    }
-  };
-
-  const { data: logs, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["edge-function-logs", timeFilter],
+  const { data: response, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["edge-logs", timeFilter],
     queryFn: async () => {
-      const startTime = getTimeRange();
-      
-      // Query the analytics endpoint for edge function logs
-      const { data, error } = await supabase.rpc('get_edge_function_stats' as any, {
-        start_time: startTime
+      const { data, error } = await supabase.functions.invoke<EdgeLogResponse>('get-edge-logs', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: null,
       });
       
-      if (error) {
-        // If the function doesn't exist, we'll return empty data
-        console.log("Edge function stats not available:", error.message);
-        return { logs: [], stats: { total: 0, success: 0, errors: 0, avgTime: 0 } };
+      // Build URL with query param since invoke doesn't support query params well
+      const projectUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      
+      const res = await fetch(`${projectUrl}/functions/v1/get-edge-logs?timeFilter=${timeFilter}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${anonKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!res.ok) {
+        throw new Error(`Failed to fetch edge logs: ${res.status}`);
       }
       
-      return data;
+      return await res.json() as EdgeLogResponse;
     },
     refetchInterval: false,
-  });
-
-  // Calculate stats from webhook_logs as a fallback for function invocation tracking
-  const { data: webhookStats } = useQuery({
-    queryKey: ["webhook-stats", timeFilter],
-    queryFn: async () => {
-      const startTime = getTimeRange();
-      
-      const { data, error } = await supabase
-        .from("webhook_logs")
-        .select("id, received_at, status, platform")
-        .gte("received_at", startTime)
-        .order("received_at", { ascending: false });
-      
-      if (error) throw error;
-      
-      const total = data?.length || 0;
-      const success = data?.filter(l => l.status === "success").length || 0;
-      const errors = data?.filter(l => l.status === "error").length || 0;
-      
-      // Group by platform/function
-      const byFunction: Record<string, number> = {};
-      data?.forEach(log => {
-        const fn = log.platform || "webhook";
-        byFunction[fn] = (byFunction[fn] || 0) + 1;
-      });
-      
-      return { total, success, errors, byFunction, logs: data || [] };
-    },
   });
 
   const timeFilters: { value: TimeFilter; label: string }[] = [
@@ -90,7 +76,14 @@ const EdgeFunctionLogs = () => {
     { value: "3days", label: "3 dias" },
   ];
 
-  const stats = webhookStats || { total: 0, success: 0, errors: 0, byFunction: {}, logs: [] };
+  const stats = response?.data || { 
+    functions: [], 
+    total_calls: 0, 
+    total_success: 0, 
+    total_errors: 0, 
+    recent_logs: [],
+    source: 'unknown'
+  };
 
   return (
     <div className="space-y-6">
@@ -123,6 +116,14 @@ const EdgeFunctionLogs = () => {
         </div>
       </div>
 
+      {/* Source Info */}
+      {response?.data?.note && (
+        <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <Info className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+          <p className="text-sm text-amber-700 dark:text-amber-300">{response.data.note}</p>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
@@ -133,7 +134,7 @@ const EdgeFunctionLogs = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total de Chamadas</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
+                <p className="text-2xl font-bold">{stats.total_calls}</p>
               </div>
             </div>
           </CardContent>
@@ -147,7 +148,7 @@ const EdgeFunctionLogs = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Sucesso</p>
-                <p className="text-2xl font-bold text-green-600">{stats.success}</p>
+                <p className="text-2xl font-bold text-green-600">{stats.total_success}</p>
               </div>
             </div>
           </CardContent>
@@ -161,7 +162,7 @@ const EdgeFunctionLogs = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Erros</p>
-                <p className="text-2xl font-bold text-red-600">{stats.errors}</p>
+                <p className="text-2xl font-bold text-red-600">{stats.total_errors}</p>
               </div>
             </div>
           </CardContent>
@@ -176,7 +177,7 @@ const EdgeFunctionLogs = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Taxa de Sucesso</p>
                 <p className="text-2xl font-bold">
-                  {stats.total > 0 ? Math.round((stats.success / stats.total) * 100) : 0}%
+                  {stats.total_calls > 0 ? Math.round((stats.total_success / stats.total_calls) * 100) : 0}%
                 </p>
               </div>
             </div>
@@ -185,16 +186,17 @@ const EdgeFunctionLogs = () => {
       </div>
 
       {/* By Function */}
-      {Object.keys(stats.byFunction || {}).length > 0 && (
+      {stats.functions.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Por Função/Plataforma</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {Object.entries(stats.byFunction).map(([fn, count]) => (
-                <Badge key={fn} variant="secondary" className="text-sm px-3 py-1">
-                  {fn}: {count as number}
+              {stats.functions.map((fn) => (
+                <Badge key={fn.function_name} variant="secondary" className="text-sm px-3 py-1">
+                  {fn.function_name}: {fn.total_calls} 
+                  {fn.error_count > 0 && <span className="text-red-500 ml-1">({fn.error_count} erros)</span>}
                 </Badge>
               ))}
             </div>
@@ -212,28 +214,36 @@ const EdgeFunctionLogs = () => {
             <div className="text-center py-8 text-muted-foreground">
               Carregando logs...
             </div>
-          ) : stats.logs.length === 0 ? (
+          ) : stats.recent_logs.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               Nenhum log encontrado no período selecionado
             </div>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {stats.logs.slice(0, 50).map((log: any) => (
+              {stats.recent_logs.map((log, index) => (
                 <div
-                  key={log.id}
+                  key={index}
                   className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
                     <Badge
-                      variant={log.status === "success" ? "default" : "destructive"}
+                      variant={
+                        (typeof log.status === 'number' && log.status >= 200 && log.status < 400) || 
+                        log.status === 'success' 
+                          ? "default" 
+                          : "destructive"
+                      }
                       className="text-xs"
                     >
-                      {log.status || "N/A"}
+                      {log.status}
                     </Badge>
-                    <span className="text-sm font-medium">{log.platform || "webhook"}</span>
+                    <span className="text-sm font-medium">{log.function_name}</span>
+                    {log.email && (
+                      <span className="text-xs text-muted-foreground">{log.email}</span>
+                    )}
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {log.received_at ? format(new Date(log.received_at), "dd/MM HH:mm:ss", { locale: ptBR }) : "N/A"}
+                    {log.timestamp ? format(new Date(log.timestamp), "dd/MM HH:mm:ss", { locale: ptBR }) : "N/A"}
                   </span>
                 </div>
               ))}
