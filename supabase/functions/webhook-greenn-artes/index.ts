@@ -10,6 +10,7 @@ interface ProductMapping {
   packSlug: string
   accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio'
   hasBonusAccess: boolean
+  isFerramentaIA?: boolean
 }
 
 // Interface para promoções
@@ -144,11 +145,12 @@ async function addToBlacklist(supabase: any, email: string, reason: string, requ
 }
 
 // Send welcome email to new pack purchasers via SendPulse with tracking
-async function sendWelcomeEmail(supabase: any, email: string, name: string, packInfo: string, requestId: string): Promise<void> {
+async function sendWelcomeEmail(supabase: any, email: string, name: string, packInfo: string, requestId: string, isFerramentaIA: boolean = false): Promise<void> {
   console.log(`\n📧 [${requestId}] EMAIL DE BOAS-VINDAS:`)
   console.log(`   ├─ Destinatário: ${email}`)
   console.log(`   ├─ Nome: ${name || 'N/A'}`)
   console.log(`   ├─ Pack: ${packInfo}`)
+  console.log(`   ├─ Tipo: ${isFerramentaIA ? 'Ferramenta IA' : 'Pack de Artes'}`)
   
   try {
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
@@ -160,23 +162,33 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
       return
     }
 
+    // Determinar plataforma do template com base no tipo de produto
+    const templatePlatform = isFerramentaIA ? 'ferramentas_ia' : 'artes'
+
     // Fetch template from database
     const { data: template } = await supabase
       .from('welcome_email_templates')
       .select('*')
-      .eq('platform', 'artes')
+      .eq('platform', templatePlatform)
       .eq('is_active', true)
       .maybeSingle()
 
-    console.log(`   ├─ Template: ${template?.id || 'default'}`)
+    console.log(`   ├─ Template: ${template?.id || 'default'} (platform: ${templatePlatform})`)
 
-    // Parse template content
-    let templateContent = {
-      heading: 'Bem-vindo à Biblioteca de Artes Arcanas!',
-      intro: 'Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de artes editáveis.',
-      button_text: 'Acessar Plataforma',
-      footer: 'Se tiver qualquer dúvida, responda este email que iremos te ajudar!'
-    }
+    // Parse template content com defaults baseados no tipo
+    let templateContent = isFerramentaIA 
+      ? {
+          heading: 'Sua Ferramenta de IA está Ativada!',
+          intro: 'Sua compra foi confirmada com sucesso! Agora você tem acesso ilimitado a esta poderosa ferramenta de Inteligência Artificial.',
+          button_text: 'Acessar Minha Ferramenta',
+          footer: 'Se tiver qualquer dúvida, responda este email que iremos te ajudar!'
+        }
+      : {
+          heading: 'Bem-vindo à Biblioteca de Artes Arcanas!',
+          intro: 'Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de artes editáveis.',
+          button_text: 'Acessar Plataforma',
+          footer: 'Se tiver qualquer dúvida, responda este email que iremos te ajudar!'
+        }
     
     if (template?.content) {
       try {
@@ -186,8 +198,13 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
       }
     }
 
-    const subject = template?.subject || '🎨 Bem-vindo à Biblioteca de Artes Arcanas - Seu acesso está pronto!'
-    const senderName = template?.sender_name || 'Biblioteca de Artes Arcanas'
+    const defaultSubject = isFerramentaIA 
+      ? '🤖 Bem-vindo! Sua Ferramenta de IA está pronta para uso!'
+      : '🎨 Bem-vindo à Biblioteca de Artes Arcanas - Seu acesso está pronto!'
+    const defaultSenderName = isFerramentaIA ? 'Ferramentas IA Arcanas' : 'Biblioteca de Artes Arcanas'
+    
+    const subject = template?.subject || defaultSubject
+    const senderName = template?.sender_name || defaultSenderName
     const senderEmail = template?.sender_email || 'contato@voxvisual.com.br'
 
     // Generate unique tracking ID
@@ -197,7 +214,10 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     // Build tracking URLs
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
     const openTrackingPixel = `${trackingBaseUrl}?id=${trackingId}&action=open`
-    const platformUrl = 'https://arcanolab.voxvisual.com.br/login-artes'
+    // TODO: Gatilho para link de ferramentas IA - alterar quando definido
+    const platformUrl = isFerramentaIA 
+      ? 'https://arcanolab.voxvisual.com.br/login-artes'  // Alterar para link específico da ferramenta
+      : 'https://arcanolab.voxvisual.com.br/login-artes'
     const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
 
     // Get SendPulse access token
@@ -246,7 +266,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
 <body>
   <div class="container">
     <div class="logo">
-      <h1>🎨 ${templateContent.heading}</h1>
+      <h1>${isFerramentaIA ? '🤖' : '🎨'} \${templateContent.heading}</h1>
     </div>
     
     <p>Olá${name ? ` <strong>${name}</strong>` : ''}!</p>
@@ -271,12 +291,14 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     </a>
     
     <p style="text-align: center; color: #666;">
-      Clique no botão acima para fazer seu primeiro login e começar a explorar artes editáveis em PSD e Canva!
+      ${isFerramentaIA 
+        ? 'Clique no botão acima para fazer seu primeiro login e começar a usar sua ferramenta de IA!'
+        : 'Clique no botão acima para fazer seu primeiro login e começar a explorar artes editáveis em PSD e Canva!'}
     </p>
     
     <div class="footer">
-      <p>${templateContent.footer}</p>
-      <p style="margin-top: 8px;">© Biblioteca de Artes Arcanas</p>
+      <p>\${templateContent.footer}</p>
+      <p style="margin-top: 8px;">© ${isFerramentaIA ? 'Ferramentas IA Arcanas' : 'Biblioteca de Artes Arcanas'}</p>
     </div>
   </div>
   <img src="${openTrackingPixel}" width="1" height="1" style="display:none" alt="" />
@@ -314,7 +336,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     await supabase.from('welcome_email_logs').insert({
       email,
       name,
-      platform: 'artes',
+      platform: isFerramentaIA ? 'ferramentas_ia' : 'artes',
       tracking_id: trackingId,
       template_used: template?.id || 'default',
       product_info: packInfo,
@@ -389,7 +411,7 @@ async function findProductMappingInDatabase(supabase: any, productId: number, re
   
   const { data: packs, error } = await supabase
     .from('artes_packs')
-    .select('slug, greenn_product_id_6_meses, greenn_product_id_1_ano, greenn_product_id_order_bump, greenn_product_id_vitalicio')
+    .select('slug, type, greenn_product_id_6_meses, greenn_product_id_1_ano, greenn_product_id_order_bump, greenn_product_id_vitalicio')
   
   if (error) {
     console.error(`   ├─ [${requestId}] ❌ Erro buscando packs:`, error)
@@ -397,21 +419,23 @@ async function findProductMappingInDatabase(supabase: any, productId: number, re
   }
 
   for (const pack of packs || []) {
+    const isFerramentaIA = pack.type === 'ferramentas_ia'
+    
     if (pack.greenn_product_id_6_meses === productId) {
-      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (6_meses)`)
-      return { packSlug: pack.slug, accessType: '6_meses', hasBonusAccess: false }
+      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (6_meses)${isFerramentaIA ? ' [Ferramenta IA]' : ''}`)
+      return { packSlug: pack.slug, accessType: '6_meses', hasBonusAccess: false, isFerramentaIA }
     }
     if (pack.greenn_product_id_1_ano === productId) {
-      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (1_ano)`)
-      return { packSlug: pack.slug, accessType: '1_ano', hasBonusAccess: true }
+      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (1_ano)${isFerramentaIA ? ' [Ferramenta IA]' : ''}`)
+      return { packSlug: pack.slug, accessType: '1_ano', hasBonusAccess: true, isFerramentaIA }
     }
     if (pack.greenn_product_id_order_bump === productId) {
-      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (order_bump → vitalicio)`)
-      return { packSlug: pack.slug, accessType: 'vitalicio', hasBonusAccess: true }
+      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (order_bump → vitalicio)${isFerramentaIA ? ' [Ferramenta IA]' : ''}`)
+      return { packSlug: pack.slug, accessType: 'vitalicio', hasBonusAccess: true, isFerramentaIA }
     }
     if (pack.greenn_product_id_vitalicio === productId) {
-      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (vitalicio)`)
-      return { packSlug: pack.slug, accessType: 'vitalicio', hasBonusAccess: true }
+      console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (vitalicio)${isFerramentaIA ? ' [Ferramenta IA]' : ''}`)
+      return { packSlug: pack.slug, accessType: 'vitalicio', hasBonusAccess: true, isFerramentaIA }
     }
   }
 
@@ -984,7 +1008,10 @@ Deno.serve(async (req) => {
         ? `${processedPacks.length} Packs (Promoção)` 
         : packMapping?.packSlug || 'Pack Arcano'
       
-      await sendWelcomeEmail(supabase, email, clientName, packInfo, requestId)
+      // Determinar se é ferramenta de IA
+      const isFerramentaIA = packMapping?.isFerramentaIA || false
+      
+      await sendWelcomeEmail(supabase, email, clientName, packInfo, requestId, isFerramentaIA)
 
       await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
 
