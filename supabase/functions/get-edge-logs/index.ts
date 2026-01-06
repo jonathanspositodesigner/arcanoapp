@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,93 +15,81 @@ serve(async (req) => {
     const url = new URL(req.url);
     const timeFilter = url.searchParams.get('timeFilter') || '1day';
     
-    // Calculate time range
+    // Calculate time range in ISO format
     const now = new Date();
-    let startTime: Date;
+    let hoursBack: number;
     
     switch (timeFilter) {
       case '10min':
-        startTime = new Date(now.getTime() - 10 * 60 * 1000);
+        hoursBack = 1; // Minimum 1 hour for API
         break;
       case '3days':
-        startTime = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+        hoursBack = 72;
         break;
       case '1day':
       default:
-        startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        hoursBack = 24;
         break;
     }
 
+    const startTime = new Date(now.getTime() - hoursBack * 60 * 60 * 1000);
+
+    // Get project ref from URL
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const projectRef = supabaseUrl.replace('https://', '').replace('.supabase.co', '');
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Query the analytics API for edge function logs
-    const { data: logs, error } = await supabase
-      .from('function_edge_logs' as any)
-      .select('*')
-      .gte('timestamp', startTime.toISOString())
-      .order('timestamp', { ascending: false })
-      .limit(1000);
+    // Query edge function logs via analytics API
+    const analyticsQuery = `
+      select 
+        id,
+        function_edge_logs.timestamp,
+        event_message,
+        m.function_id,
+        m.execution_time_ms,
+        m.deployment_id,
+        response.status_code,
+        request.method
+      from function_edge_logs
+        cross join unnest(metadata) as m
+        cross join unnest(m.response) as response
+        cross join unnest(m.request) as request
+      where function_edge_logs.timestamp >= '${startTime.toISOString()}'
+      order by timestamp desc
+      limit 1000
+    `;
 
-    if (error) {
-      console.log('Error querying function_edge_logs, trying analytics approach:', error.message);
-      
-      // Fallback: use the analytics query approach
-      const projectRef = supabaseUrl.replace('https://', '').replace('.supabase.co', '');
-      
-      // Since we can't query analytics directly from edge function,
-      // let's query webhook_logs as a proxy for now and return mock data structure
-      const { data: webhookLogs, error: webhookError } = await supabase
-        .from('webhook_logs')
-        .select('*')
-        .gte('received_at', startTime.toISOString())
-        .order('received_at', { ascending: false })
-        .limit(500);
+    console.log('Querying analytics with timeFilter:', timeFilter);
 
-      if (webhookError) {
-        throw webhookError;
+    const analyticsResponse = await fetch(
+      `https://api.supabase.com/v1/projects/${projectRef}/analytics/endpoints/logs.all/query`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify({
+          sql: analyticsQuery,
+        }),
       }
+    );
 
-      // Group by platform/function
-      const stats: Record<string, { total: number; success: number; errors: number }> = {};
+    if (!analyticsResponse.ok) {
+      const errorText = await analyticsResponse.text();
+      console.error('Analytics API error:', analyticsResponse.status, errorText);
       
-      webhookLogs?.forEach((log: any) => {
-        const key = log.platform || 'webhook';
-        if (!stats[key]) {
-          stats[key] = { total: 0, success: 0, errors: 0 };
-        }
-        stats[key].total++;
-        if (log.status === 'success') {
-          stats[key].success++;
-        } else if (log.status === 'error') {
-          stats[key].errors++;
-        }
-      });
-
-      const functionStats = Object.entries(stats).map(([name, data]) => ({
-        function_name: name,
-        total_calls: data.total,
-        success_count: data.success,
-        error_count: data.errors,
-      }));
-
+      // Return empty data with explanation
       return new Response(JSON.stringify({
         success: true,
         data: {
-          functions: functionStats,
-          total_calls: webhookLogs?.length || 0,
-          total_success: webhookLogs?.filter((l: any) => l.status === 'success').length || 0,
-          total_errors: webhookLogs?.filter((l: any) => l.status === 'error').length || 0,
-          recent_logs: webhookLogs?.slice(0, 20).map((log: any) => ({
-            function_name: log.platform || 'webhook',
-            status: log.status === 'success' ? 200 : 500,
-            timestamp: log.received_at,
-            email: log.email,
-          })) || [],
-          source: 'webhook_logs',
-          note: 'Dados baseados em webhook_logs. Para ver logs completos de edge functions, acesse o dashboard do Supabase.',
+          functions: [],
+          total_calls: 0,
+          total_success: 0,
+          total_errors: 0,
+          recent_logs: [],
+          source: 'analytics_unavailable',
+          note: `API de analytics não disponível (${analyticsResponse.status}). Verifique as permissões ou acesse o dashboard do Supabase para ver logs detalhados.`,
         },
         timeFilter,
         startTime: startTime.toISOString(),
@@ -111,21 +98,32 @@ serve(async (req) => {
       });
     }
 
-    // Process the logs if we got them directly
+    const analyticsData = await analyticsResponse.json();
+    const logs = analyticsData.result || [];
+    
+    console.log(`Found ${logs.length} edge function logs`);
+
+    // Process and aggregate the logs
     const functionStats: Record<string, { total: number; success: number; errors: number }> = {};
     
-    logs?.forEach((log: any) => {
-      const funcName = log.function_id || log.path || 'unknown';
-      if (!functionStats[funcName]) {
-        functionStats[funcName] = { total: 0, success: 0, errors: 0 };
+    logs.forEach((log: any) => {
+      const funcId = log.function_id || 'unknown';
+      if (!functionStats[funcId]) {
+        functionStats[funcId] = { total: 0, success: 0, errors: 0 };
       }
-      functionStats[funcName].total++;
-      if (log.status_code >= 200 && log.status_code < 400) {
-        functionStats[funcName].success++;
+      functionStats[funcId].total++;
+      
+      const statusCode = log.status_code || 0;
+      if (statusCode >= 200 && statusCode < 400) {
+        functionStats[funcId].success++;
       } else {
-        functionStats[funcName].errors++;
+        functionStats[funcId].errors++;
       }
     });
+
+    const totalCalls = logs.length;
+    const totalSuccess = Object.values(functionStats).reduce((acc, f) => acc + f.success, 0);
+    const totalErrors = Object.values(functionStats).reduce((acc, f) => acc + f.errors, 0);
 
     return new Response(JSON.stringify({
       success: true,
@@ -136,10 +134,16 @@ serve(async (req) => {
           success_count: data.success,
           error_count: data.errors,
         })),
-        total_calls: logs?.length || 0,
-        total_success: Object.values(functionStats).reduce((acc, f) => acc + f.success, 0),
-        total_errors: Object.values(functionStats).reduce((acc, f) => acc + f.errors, 0),
-        recent_logs: logs?.slice(0, 20) || [],
+        total_calls: totalCalls,
+        total_success: totalSuccess,
+        total_errors: totalErrors,
+        recent_logs: logs.slice(0, 50).map((log: any) => ({
+          function_name: log.function_id || 'unknown',
+          status: log.status_code || 0,
+          method: log.method || 'GET',
+          execution_time: log.execution_time_ms,
+          timestamp: log.timestamp,
+        })),
         source: 'function_edge_logs',
       },
       timeFilter,
@@ -154,8 +158,17 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: false,
       error: errorMessage,
+      data: {
+        functions: [],
+        total_calls: 0,
+        total_success: 0,
+        total_errors: 0,
+        recent_logs: [],
+        source: 'error',
+        note: `Erro ao buscar logs: ${errorMessage}`,
+      },
     }), {
-      status: 500,
+      status: 200, // Return 200 so UI can show the error message
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
