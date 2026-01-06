@@ -1,9 +1,16 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const RUNNINGHUB_API_KEY = Deno.env.get('RUNNINGHUB_API_KEY');
+const RUNNINGHUB_API_KEY = (
+  Deno.env.get('RUNNINGHUB_API_KEY') ||
+  Deno.env.get('RUNNINGHUB_APIKEY') ||
+  ''
+).trim();
 const WEBAPP_ID = "2008664033892769794";
 
+if (!RUNNINGHUB_API_KEY) {
+  console.error('[RunningHub] Missing RUNNINGHUB_API_KEY secret (check backend secrets)');
+}
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
