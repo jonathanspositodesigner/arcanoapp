@@ -154,11 +154,11 @@ async function handleRun(req: Request) {
   ];
 
   if (mode === 'upscale') {
-    // Resolution - Node 136 (Image Resize)
-    nodeInfoList.push(
-      { nodeId: "136", fieldName: "max_width", fieldValue: resolution || 4096 },
-      { nodeId: "136", fieldName: "max_height", fieldValue: resolution || 4096 },
-    );
+      // Resolution - Node 136:1 (ConstrainImage - controla tamanho final)
+      nodeInfoList.push(
+        { nodeId: "136:1", fieldName: "max_width", fieldValue: resolution || 4096 },
+        { nodeId: "136:1", fieldName: "max_height", fieldValue: resolution || 4096 },
+      );
     
     // Creativity denoise - Node 164 (Float for KSampler)
     if (creativityDenoise !== undefined) {
