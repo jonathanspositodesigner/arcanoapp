@@ -1,0 +1,270 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const RUNNINGHUB_API_KEY = Deno.env.get('RUNNINGHUB_API_KEY');
+const WEBAPP_ID = "2008664033892769794";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const url = new URL(req.url);
+    const path = url.pathname.split('/').pop();
+    
+    console.log(`[RunningHub] Endpoint called: ${path}`);
+
+    if (path === 'upload') {
+      return await handleUpload(req);
+    } else if (path === 'run') {
+      return await handleRun(req);
+    } else if (path === 'status') {
+      return await handleStatus(req);
+    } else if (path === 'outputs') {
+      return await handleOutputs(req);
+    } else {
+      return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[RunningHub] Error:', error);
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
+
+// Upload image to RunningHub
+async function handleUpload(req: Request) {
+  const { imageBase64, fileName } = await req.json();
+  
+  if (!imageBase64) {
+    return new Response(JSON.stringify({ error: 'imageBase64 is required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  console.log('[RunningHub] Uploading image...');
+
+  const response = await fetch('https://www.runninghub.ai/task/openapi/upload', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Host': 'www.runninghub.ai',
+    },
+    body: JSON.stringify({
+      apiKey: RUNNINGHUB_API_KEY,
+      fileType: "image",
+      fileName: fileName || "upload.png",
+      fileData: imageBase64,
+    }),
+  });
+
+  const data = await response.json();
+  console.log('[RunningHub] Upload response:', JSON.stringify(data));
+
+  if (data.code !== 0) {
+    return new Response(JSON.stringify({ error: data.msg || 'Upload failed' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  return new Response(JSON.stringify({ 
+    success: true, 
+    fileName: data.data.fileName 
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+// Run the workflow
+async function handleRun(req: Request) {
+  const { 
+    fileName, 
+    mode, // 'upscale' or 'rembg'
+    resolution, // 2048 or 4096
+    creativityDenoise, // 0-1
+    detailDenoise // 0-1
+  } = await req.json();
+  
+  if (!fileName) {
+    return new Response(JSON.stringify({ error: 'fileName is required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  console.log(`[RunningHub] Running workflow in mode: ${mode}`);
+  console.log(`[RunningHub] fileName: ${fileName}`);
+  console.log(`[RunningHub] resolution: ${resolution}, creativity: ${creativityDenoise}, detail: ${detailDenoise}`);
+
+  // Build nodeInfoList based on mode
+  const nodeInfoList: any[] = [
+    // Input image - Node 1 (LoadImage)
+    { nodeId: "1", fieldName: "image", fieldValue: fileName },
+  ];
+
+  if (mode === 'upscale') {
+    // Resolution - Node 136 (Image Resize)
+    nodeInfoList.push(
+      { nodeId: "136", fieldName: "max_width", fieldValue: resolution || 4096 },
+      { nodeId: "136", fieldName: "max_height", fieldValue: resolution || 4096 },
+    );
+    
+    // Creativity denoise - Node 164 (Float for KSampler)
+    if (creativityDenoise !== undefined) {
+      nodeInfoList.push(
+        { nodeId: "164", fieldName: "value", fieldValue: creativityDenoise }
+      );
+    }
+    
+    // Detail denoise - Node 165 (Float for Ultimate SD Upscaler)
+    if (detailDenoise !== undefined) {
+      nodeInfoList.push(
+        { nodeId: "165", fieldName: "value", fieldValue: detailDenoise }
+      );
+    }
+  }
+  
+  // For rembg mode, we just need the input image
+  // The workflow will process and output the image without background
+
+  const requestBody = {
+    apiKey: RUNNINGHUB_API_KEY,
+    webappId: WEBAPP_ID,
+    nodeInfoList: nodeInfoList,
+  };
+
+  console.log('[RunningHub] Request body:', JSON.stringify(requestBody, null, 2));
+
+  const response = await fetch('https://www.runninghub.ai/task/openapi/ai-app/run', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Host': 'www.runninghub.ai',
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  const data = await response.json();
+  console.log('[RunningHub] Run response:', JSON.stringify(data));
+
+  if (data.code !== 0) {
+    return new Response(JSON.stringify({ error: data.msg || 'Run failed' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  return new Response(JSON.stringify({ 
+    success: true, 
+    taskId: data.data.taskId 
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+// Check task status
+async function handleStatus(req: Request) {
+  const { taskId } = await req.json();
+  
+  if (!taskId) {
+    return new Response(JSON.stringify({ error: 'taskId is required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  console.log(`[RunningHub] Checking status for taskId: ${taskId}`);
+
+  const response = await fetch('https://www.runninghub.ai/task/openapi/status', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Host': 'www.runninghub.ai',
+    },
+    body: JSON.stringify({
+      apiKey: RUNNINGHUB_API_KEY,
+      taskId: taskId,
+    }),
+  });
+
+  const data = await response.json();
+  console.log('[RunningHub] Status response:', JSON.stringify(data));
+
+  if (data.code !== 0) {
+    return new Response(JSON.stringify({ error: data.msg || 'Status check failed' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  return new Response(JSON.stringify({ 
+    success: true, 
+    status: data.data.taskStatus // PENDING, RUNNING, SUCCESS, FAILED
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+// Get task outputs
+async function handleOutputs(req: Request) {
+  const { taskId } = await req.json();
+  
+  if (!taskId) {
+    return new Response(JSON.stringify({ error: 'taskId is required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  console.log(`[RunningHub] Getting outputs for taskId: ${taskId}`);
+
+  const response = await fetch('https://www.runninghub.ai/task/openapi/outputs', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Host': 'www.runninghub.ai',
+    },
+    body: JSON.stringify({
+      apiKey: RUNNINGHUB_API_KEY,
+      taskId: taskId,
+    }),
+  });
+
+  const data = await response.json();
+  console.log('[RunningHub] Outputs response:', JSON.stringify(data));
+
+  if (data.code !== 0) {
+    return new Response(JSON.stringify({ error: data.msg || 'Failed to get outputs' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Extract image URLs from outputs
+  const outputs = data.data || [];
+  const imageUrls = outputs
+    .filter((output: any) => output.fileType === 'image')
+    .map((output: any) => output.fileUrl);
+
+  return new Response(JSON.stringify({ 
+    success: true, 
+    outputs: imageUrls
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
