@@ -187,7 +187,7 @@ async function handleRun(req: Request) {
   console.log('[RunningHub] Running workflow with workflowId:', WORKFLOW_ID);
   console.log('[RunningHub] Request body:', JSON.stringify(requestBody, null, 2));
 
-  const response = await fetch('https://www.runninghub.ai/task/openapi/workflow/run', {
+  const response = await fetch('https://www.runninghub.ai/task/openapi/create', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
