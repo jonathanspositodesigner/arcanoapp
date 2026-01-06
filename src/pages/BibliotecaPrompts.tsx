@@ -206,23 +206,38 @@ const BibliotecaPrompts = () => {
       toast.error("Erro ao baixar arquivo");
     }
   };
-  const downloadMedia = async (mediaUrl: string, title: string, referenceImages?: string[], isPremiumContent: boolean = false) => {
+  const downloadMedia = async (mediaUrl: string, title: string, referenceImages?: string[], isPremiumContent: boolean = false, thumbnailUrl?: string) => {
     const isVideo = isVideoUrl(mediaUrl);
-    const extension = isVideo ? 'mp4' : 'jpg';
     const baseTitle = title.toLowerCase().replace(/\s+/g, "-");
 
-    // Download main media
-    await downloadFile(mediaUrl, `${baseTitle}.${extension}`, isPremiumContent);
-
-    // Download reference images if it's a video with references
-    if (isVideo && referenceImages && referenceImages.length > 0) {
-      for (let i = 0; i < referenceImages.length; i++) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        await downloadFile(referenceImages[i], `${baseTitle}-ref-${i + 1}.jpg`, isPremiumContent);
+    if (isVideo) {
+      // Para vídeos, baixar apenas imagens (thumbnail ou referências)
+      let imagesDownloaded = 0;
+      
+      // Primeiro, baixa o thumbnail se existir
+      if (thumbnailUrl) {
+        await downloadFile(thumbnailUrl, `${baseTitle}-thumbnail.jpg`, isPremiumContent);
+        imagesDownloaded++;
       }
-      toast.success(`Vídeo e ${referenceImages.length} imagem(ns) de referência baixados!`);
+      
+      // Depois, baixa as imagens de referência se existirem
+      if (referenceImages && referenceImages.length > 0) {
+        for (let i = 0; i < referenceImages.length; i++) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await downloadFile(referenceImages[i], `${baseTitle}-ref-${i + 1}.jpg`, isPremiumContent);
+          imagesDownloaded++;
+        }
+      }
+      
+      if (imagesDownloaded > 0) {
+        toast.success(`${imagesDownloaded} imagem(ns) de referência baixada(s)!`);
+      } else {
+        toast.error("Nenhuma imagem de referência disponível para este vídeo");
+      }
     } else {
-      toast.success(`${isVideo ? 'Vídeo' : 'Imagem'} "${title}" baixado!`);
+      // Para imagens, baixa normalmente
+      await downloadFile(mediaUrl, `${baseTitle}.jpg`, isPremiumContent);
+      toast.success(`Imagem "${title}" baixada!`);
     }
   };
   const handleItemClick = (item: PromptItem) => {
@@ -571,7 +586,7 @@ const BibliotecaPrompts = () => {
                               <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Copiar Prompt {item.isPremium && hasLimitPlan && `(${remainingCopies} restantes)`}
                             </Button>
-                            <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages, item.isPremium)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
+                            <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages, item.isPremium, item.thumbnailUrl)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
                               <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                               Baixar Referência
                             </Button>
@@ -641,9 +656,9 @@ const BibliotecaPrompts = () => {
                             <Copy className="h-4 w-4 mr-2" />
                             Copiar Prompt
                           </Button>
-                          <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
+                          <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
                             <Download className="h-4 w-4 mr-2" />
-                            Baixar {isVideoUrl(selectedPrompt.imageUrl) ? 'Vídeo' : 'Imagem'}
+                            Baixar Referência
                           </Button>
                         </>}
                       {selectedPrompt.tutorialUrl && <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} variant="outline" className="w-full border-red-500 text-red-500 hover:bg-red-500/10" size="sm">
