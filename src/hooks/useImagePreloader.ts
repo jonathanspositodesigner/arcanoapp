@@ -1,5 +1,4 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { getSignedMediaUrl, parseStorageUrl } from './useSignedUrl';
 
 // Global preload cache - shares with SecureMedia
 export const preloadCache = new Map<string, string>();
@@ -7,71 +6,20 @@ export const preloadCache = new Map<string, string>();
 // Track which URLs are currently being preloaded
 const preloadingUrls = new Set<string>();
 
-// PUBLIC BUCKETS - must match useSignedUrl.ts!
-const PUBLIC_BUCKETS = new Set<string>([
-  'prompts-cloudinary',
-  'artes-cloudinary',
-  'pack-covers',
-  'email-assets'
-]);
-
-// Check if URL is from Cloudinary
-const isCloudinaryUrl = (url: string): boolean => {
-  return url.includes('cloudinary.com') || url.includes('res.cloudinary.com');
-};
-
-// Preload a single image URL
+// Preload a single image URL - SIMPLIFIED: All URLs are public now
 export const preloadImage = async (src: string): Promise<void> => {
   // Skip if already cached or currently preloading
   if (preloadCache.has(src) || preloadingUrls.has(src)) {
     return;
   }
 
-  // Cloudinary URLs - use directly, no signed URL needed
-  if (isCloudinaryUrl(src)) {
-    preloadCache.set(src, src);
-    const img = new Image();
-    img.src = src;
-    return;
-  }
-
-  const parsed = parseStorageUrl(src);
-  
-  // Not a storage URL - use directly
-  if (!parsed) {
-    preloadCache.set(src, src);
-    const img = new Image();
-    img.src = src;
-    return;
-  }
-
-  // PUBLIC BUCKET - use directly, NO edge function call = NO COST!
-  if (PUBLIC_BUCKETS.has(parsed.bucket)) {
-    preloadCache.set(src, src);
-    const img = new Image();
-    img.src = src;
-    return;
-  }
-
-  // Private bucket - need signed URL
   preloadingUrls.add(src);
 
   try {
-    const signedUrl = await getSignedMediaUrl(src);
-
-    // Empty string means file doesn't exist - cache negative result and stop
-    if (signedUrl === '') {
-      preloadCache.set(src, '');
-      return;
-    }
-
-    preloadCache.set(src, signedUrl);
-
-    // Actually preload the image into browser cache
+    // All URLs are public - use directly, NO edge function call = NO COST!
+    preloadCache.set(src, src);
     const img = new Image();
-    img.src = signedUrl;
-  } catch (error) {
-    console.warn('Failed to preload:', src);
+    img.src = src;
   } finally {
     preloadingUrls.delete(src);
   }
@@ -88,9 +36,9 @@ export const preloadImages = async (urls: string[], concurrency = 4): Promise<vo
   }
 };
 
-// Get cached signed URL if available
+// Get cached URL if available (always returns the original URL now)
 export const getCachedSignedUrl = (src: string): string | null => {
-  return preloadCache.get(src) || null;
+  return preloadCache.get(src) || src;
 };
 
 // Hook for preloading next items in a grid
