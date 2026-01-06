@@ -52,8 +52,17 @@ serve(async (req) => {
   }
 });
 
-// Upload image to RunningHub
+// Upload image to RunningHub using multipart/form-data
 async function handleUpload(req: Request) {
+  // Check if API key is available
+  if (!RUNNINGHUB_API_KEY) {
+    console.error('[RunningHub] RUNNINGHUB_API_KEY is not set');
+    return new Response(JSON.stringify({ error: 'API key not configured. Please add RUNNINGHUB_API_KEY secret.' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   const { imageBase64, fileName } = await req.json();
   
   if (!imageBase64) {
@@ -63,38 +72,58 @@ async function handleUpload(req: Request) {
     });
   }
 
-  console.log('[RunningHub] Uploading image...');
+  console.log('[RunningHub] Uploading image with multipart/form-data...');
+  console.log('[RunningHub] API Key present:', !!RUNNINGHUB_API_KEY, 'length:', RUNNINGHUB_API_KEY.length);
 
-  const response = await fetch('https://www.runninghub.ai/task/openapi/upload', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Host': 'www.runninghub.ai',
-    },
-    body: JSON.stringify({
-      apiKey: RUNNINGHUB_API_KEY,
-      fileType: "image",
-      fileName: fileName || "upload.png",
-      fileData: imageBase64,
-    }),
-  });
+  try {
+    // Convert base64 to binary
+    const binaryString = atob(imageBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
 
-  const data = await response.json();
-  console.log('[RunningHub] Upload response:', JSON.stringify(data));
+    // Determine file extension and mime type
+    const ext = (fileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
+    const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 
+                     ext === 'webp' ? 'image/webp' : 'image/png';
 
-  if (data.code !== 0) {
-    return new Response(JSON.stringify({ error: data.msg || 'Upload failed' }), {
-      status: 400,
+    // Create FormData with file
+    const formData = new FormData();
+    formData.append('apiKey', RUNNINGHUB_API_KEY);
+    formData.append('fileType', 'image');
+    formData.append('file', new Blob([bytes], { type: mimeType }), fileName || 'upload.png');
+
+    const response = await fetch('https://www.runninghub.ai/task/openapi/upload', {
+      method: 'POST',
+      body: formData,
+      // Don't set Content-Type header - fetch will set it with correct boundary
+    });
+
+    const data = await response.json();
+    console.log('[RunningHub] Upload response:', JSON.stringify(data));
+
+    if (data.code !== 0) {
+      return new Response(JSON.stringify({ error: data.msg || 'Upload failed' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      fileName: data.data.fileName 
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
+    console.error('[RunningHub] Upload error:', error);
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-
-  return new Response(JSON.stringify({ 
-    success: true, 
-    fileName: data.data.fileName 
-  }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
 }
 
 // Run the workflow
@@ -161,7 +190,6 @@ async function handleRun(req: Request) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Host': 'www.runninghub.ai',
     },
     body: JSON.stringify(requestBody),
   });
@@ -201,7 +229,6 @@ async function handleStatus(req: Request) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Host': 'www.runninghub.ai',
     },
     body: JSON.stringify({
       apiKey: RUNNINGHUB_API_KEY,
@@ -244,7 +271,6 @@ async function handleOutputs(req: Request) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Host': 'www.runninghub.ai',
     },
     body: JSON.stringify({
       apiKey: RUNNINGHUB_API_KEY,
