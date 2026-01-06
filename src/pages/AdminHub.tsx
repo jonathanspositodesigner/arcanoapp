@@ -14,9 +14,7 @@ import EmailMarketingContent from "@/components/EmailMarketingContent";
 import PushNotificationsContent from "@/components/PushNotificationsContent";
 import PartnersManagementContent from "@/components/PartnersManagementContent";
 import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
-import CloudUsageDashboard from "@/components/CloudUsageDashboard";
 import AdminsManagementContent from "@/components/AdminsManagementContent";
-import EdgeFunctionLogs from "@/components/EdgeFunctionLogs";
 
 const AdminHub = () => {
   const navigate = useNavigate();
@@ -158,10 +156,6 @@ const AdminHub = () => {
         return <PartnersManagementContent />;
       case "abandoned-checkouts":
         return <AbandonedCheckoutsContent />;
-      case "cloud-usage":
-        return <CloudUsageDashboard />;
-      case "edge-functions":
-        return <EdgeFunctionLogs />;
       case "admins":
         return <AdminsManagementContent />;
       default:

@@ -83,6 +83,3 @@ verify_jwt = false
 
 [functions.migrate-cloudinary-to-storage]
 verify_jwt = false
-
-[functions.get-edge-logs]
-verify_jwt = false
