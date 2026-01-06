@@ -1,5 +1,4 @@
 import { uploadToStorage } from '@/hooks/useStorageUpload';
-import { getSignedMediaUrl } from '@/hooks/useSignedUrl';
 
 const THUMBNAIL_TIMEOUT_MS = 15000; // 15 seconds timeout
 
@@ -15,10 +14,8 @@ export async function generateVideoThumbnail(
   videoSource: File | string,
   targetWidth: number = 512
 ): Promise<Blob> {
-  const resolvedSource =
-    typeof videoSource === 'string'
-      ? await getSignedMediaUrl(videoSource).catch(() => videoSource)
-      : videoSource;
+  // All URLs are public now - use directly
+  const resolvedSource = videoSource;
 
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
@@ -180,7 +177,7 @@ export async function generateThumbnailFromUrl(
   bucket: string = 'prompts-cloudinary'
 ): Promise<string | null> {
   try {
-    // Generate thumbnail blob from video URL
+    // Generate thumbnail blob from video URL - use URL directly
     const thumbnailBlob = await generateVideoThumbnail(videoUrl);
     
     // Create a File object from the blob
@@ -295,13 +292,8 @@ export async function optimizeAndUploadThumbnail(
       resolve(null);
     };
 
-    (async () => {
-      try {
-        img.src = await getSignedMediaUrl(imageUrl);
-      } catch {
-        img.src = imageUrl;
-      }
-    })();
+    // Use URL directly - all URLs are public now
+    img.src = imageUrl;
   });
 }
 

@@ -1,6 +1,4 @@
 import { useState, useEffect, memo, useRef } from 'react';
-import { getSignedMediaUrl, parseStorageUrl } from '@/hooks/useSignedUrl';
-import { preloadCache, getCachedSignedUrl } from '@/hooks/useImagePreloader';
 import { Loader2 } from 'lucide-react';
 
 type ImageSize = 'thumbnail' | 'preview' | 'full';
@@ -28,42 +26,7 @@ interface SecureVideoProps {
   onClick?: () => void;
 }
 
-// Check if URL is from Cloudinary (doesn't need signed URLs)
-const isCloudinaryUrl = (url: string): boolean => {
-  return url.includes('cloudinary.com') || url.includes('res.cloudinary.com');
-};
-
-// ALL PUBLIC BUCKETS - avoids edge function calls = saves money
-// CRITICAL: Must match the list in useSignedUrl.ts!
-// ALL MEDIA BUCKETS ARE NOW PUBLIC (Dec 24, 2025) - ELIMINATES 95%+ COSTS
-const PUBLIC_BUCKETS = new Set<string>([
-  'prompts-cloudinary',
-  'artes-cloudinary',
-  'pack-covers',
-  'email-assets',
-  // These buckets were made public on Dec 24, 2025 to reduce cloud costs
-  'admin-prompts',
-  'admin-artes',
-  'partner-prompts',
-  'partner-artes',
-  'community-prompts',
-  'community-artes'
-]);
-
-// Check if URL is from a public Supabase bucket
-const isPublicBucketUrl = (url: string): boolean => {
-  const parsed = parseStorageUrl(url);
-  return parsed !== null && PUBLIC_BUCKETS.has(parsed.bucket);
-};
-
-// Cloudinary URLs are already optimized at upload time.
-const getOptimizedCloudinaryUrl = (url: string, _size: ImageSize = 'full'): string => {
-  return url;
-};
-
-// Use shared preload cache
-const signedUrlCache = preloadCache;
-
+// SIMPLIFIED: All URLs are public now - NO edge function calls = NO COSTS
 export const SecureImage = memo(({ 
   src, 
   alt, 
@@ -73,102 +36,30 @@ export const SecureImage = memo(({
   onClick,
   size = 'thumbnail'
 }: SecureImageProps) => {
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
 
+  // Reset state when src changes
   useEffect(() => {
-    let isMounted = true;
     setImageLoaded(false);
-    
-    const loadImage = async () => {
-      // Check if URL is from Cloudinary - use directly (no signing needed)
-      if (isCloudinaryUrl(src)) {
-        setSignedUrl(getOptimizedCloudinaryUrl(src, size));
-        setIsLoading(false);
-        return;
-      }
-
-      // Check if URL is from a public bucket - use directly (no signing needed = no edge function call)
-      if (isPublicBucketUrl(src)) {
-        setSignedUrl(src);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Check if URL needs signing (is a Supabase storage URL)
-      const parsed = parseStorageUrl(src);
-      
-      if (!parsed) {
-        // Not a Supabase storage URL, use directly
-        setSignedUrl(src);
-        setIsLoading(false);
-        return;
-      }
-
-      // Check cache first
-      const cacheKey = src;
-      if (signedUrlCache.has(cacheKey)) {
-        if (isMounted) {
-          const cachedUrl = signedUrlCache.get(cacheKey) ?? '';
-          if (cachedUrl === '') {
-            setError(true);
-            setIsLoading(false);
-            return;
-          }
-          setSignedUrl(cachedUrl);
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      try {
-        const url = await getSignedMediaUrl(src);
-        if (isMounted) {
-          // Empty string means file doesn't exist - show error immediately
-          if (url === '') {
-            setError(true);
-            setIsLoading(false);
-            return;
-          }
-          signedUrlCache.set(cacheKey, url);
-          setSignedUrl(url);
-          setIsLoading(false);
-        }
-      } catch (err) {
-        console.error('Failed to get signed URL:', err);
-        if (isMounted) {
-          setError(true);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadImage();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [src, retryCount]);
+    setError(false);
+    setRetryCount(0);
+  }, [src]);
 
   const handleImageLoad = () => {
     setImageLoaded(true);
   };
 
   const handleImageError = () => {
-    // Only retry once (not 3 times) to avoid long waits for missing files
+    // Only retry once to avoid long waits for missing files
     if (retryCount < 1) {
-      signedUrlCache.delete(src);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
       }, 500);
     } else {
-      // File doesn't exist or can't load - show error state immediately
       setError(true);
-      setIsLoading(false);
     }
   };
 
@@ -183,28 +74,27 @@ export const SecureImage = memo(({
   return (
     <div className={`${className} relative overflow-hidden`}>
       {/* Blur placeholder / loading state */}
-      {(!imageLoaded || isLoading) && (
+      {!imageLoaded && (
         <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center z-10">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" />
           <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
         </div>
       )}
       
-      {/* Actual image with blur transition */}
-      {signedUrl && (
-        <img
-          ref={imgRef}
-          src={signedUrl}
-          alt={alt}
-          className={`w-full h-full object-cover transition-all duration-500 ${
-            imageLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
-          }`}
-          loading={loading}
-          onClick={onClick}
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-        />
-      )}
+      {/* Actual image - use src directly, no signed URL needed */}
+      <img
+        ref={imgRef}
+        key={`${src}-${retryCount}`}
+        src={src}
+        alt={alt}
+        className={`w-full h-full object-cover transition-all duration-500 ${
+          imageLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
+        }`}
+        loading={loading}
+        onClick={onClick}
+        onLoad={handleImageLoad}
+        onError={handleImageError}
+      />
     </div>
   );
 });
@@ -223,93 +113,26 @@ export const SecureVideo = memo(({
   preload = 'metadata',
   onClick
 }: SecureVideoProps) => {
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Reset state when src changes
   useEffect(() => {
-    let isMounted = true;
     setVideoLoaded(false);
-    
-    const loadVideo = async () => {
-      // Check if URL is from Cloudinary - use directly (no signing needed)
-      if (isCloudinaryUrl(src)) {
-        setSignedUrl(getOptimizedCloudinaryUrl(src, 'preview'));
-        setIsLoading(false);
-        return;
-      }
+    setError(false);
+    setRetryCount(0);
+  }, [src]);
 
-      // Check if URL is from a public bucket - use directly (no signing needed = no edge function call)
-      if (isPublicBucketUrl(src)) {
-        setSignedUrl(src);
-        setIsLoading(false);
-        return;
-      }
-      
-      const parsed = parseStorageUrl(src);
-      
-      if (!parsed) {
-        setSignedUrl(src);
-        setIsLoading(false);
-        return;
-      }
-
-      const cacheKey = src;
-      if (signedUrlCache.has(cacheKey)) {
-        if (isMounted) {
-          const cachedUrl = signedUrlCache.get(cacheKey) ?? '';
-          if (cachedUrl === '') {
-            setError(true);
-            setIsLoading(false);
-            return;
-          }
-          setSignedUrl(cachedUrl);
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      try {
-        const url = await getSignedMediaUrl(src);
-        if (isMounted) {
-          // Empty string means file doesn't exist - show error immediately
-          if (url === '') {
-            setError(true);
-            setIsLoading(false);
-            return;
-          }
-          signedUrlCache.set(cacheKey, url);
-          setSignedUrl(url);
-          setIsLoading(false);
-        }
-      } catch (err) {
-        console.error('Failed to get signed URL:', err);
-        if (isMounted) {
-          setError(true);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadVideo();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [src, retryCount]);
-
-  // Check if video is already loaded (from cache) when signedUrl changes
+  // Check if video is already loaded from cache
   useEffect(() => {
-    if (signedUrl && videoRef.current && !videoLoaded) {
-      // readyState >= 1 means HAVE_METADATA (enough to show video)
+    if (videoRef.current && !videoLoaded) {
       if (videoRef.current.readyState >= 1) {
         setVideoLoaded(true);
       }
     }
-  }, [signedUrl, videoLoaded]);
+  }, [videoLoaded]);
 
   const handleVideoLoad = () => {
     setVideoLoaded(true);
@@ -318,13 +141,11 @@ export const SecureVideo = memo(({
   const handleVideoError = () => {
     // Only retry once to avoid long waits for missing files
     if (retryCount < 1) {
-      signedUrlCache.delete(src);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
       }, 500);
     } else {
       setError(true);
-      setIsLoading(false);
     }
   };
 
@@ -339,41 +160,40 @@ export const SecureVideo = memo(({
   return (
     <div className={`${className} relative overflow-hidden`}>
       {/* Blur placeholder / loading state */}
-      {(!videoLoaded || isLoading) && (
+      {!videoLoaded && (
         <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center z-10">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" />
           <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
         </div>
       )}
       
-      {/* Actual video with blur transition */}
-      {signedUrl && (
-        <video
-          ref={videoRef}
-          src={signedUrl}
-          className={`w-full h-full object-cover transition-all duration-500 ${
-            videoLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
-          }`}
-          preload={preload}
-          autoPlay={autoPlay}
-          muted={muted}
-          loop={loop}
-          playsInline={playsInline}
-          controls={controls}
-          onClick={onClick}
-          onLoadedData={handleVideoLoad}
-          onLoadedMetadata={handleVideoLoad}
-          onCanPlay={handleVideoLoad}
-          onError={handleVideoError}
-        />
-      )}
+      {/* Actual video - use src directly, no signed URL needed */}
+      <video
+        ref={videoRef}
+        key={`${src}-${retryCount}`}
+        src={src}
+        className={`w-full h-full object-cover transition-all duration-500 ${
+          videoLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
+        }`}
+        preload={preload}
+        autoPlay={autoPlay}
+        muted={muted}
+        loop={loop}
+        playsInline={playsInline}
+        controls={controls}
+        onClick={onClick}
+        onLoadedData={handleVideoLoad}
+        onLoadedMetadata={handleVideoLoad}
+        onCanPlay={handleVideoLoad}
+        onError={handleVideoError}
+      />
     </div>
   );
 });
 
 SecureVideo.displayName = 'SecureVideo';
 
-// Helper function to get signed URL for downloads
+// Helper function to get URL for downloads - just return the original URL
 export const getSecureDownloadUrl = async (url: string): Promise<string> => {
-  return getSignedMediaUrl(url);
+  return url;
 };
