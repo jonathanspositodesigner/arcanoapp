@@ -1,9 +1,9 @@
-import { Home, BarChart3, LogOut, ArrowLeft, Megaphone, Users, Cloud, ShieldCheck, Zap } from "lucide-react";
+import { Home, BarChart3, LogOut, ArrowLeft, Megaphone, Users, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-export type HubViewType = "home" | "dashboard" | "marketing" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "cloud-usage" | "admins" | "edge-functions";
+export type HubViewType = "home" | "dashboard" | "marketing" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "admins";
 
 interface AdminHubSidebarProps {
   activeView: HubViewType;
@@ -38,18 +38,6 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       label: "GERENCIAR PARCEIROS",
       icon: Users,
       description: "Cadastrar e gerenciar colaboradores"
-    },
-    {
-      id: "cloud-usage" as const,
-      label: "USO DO CLOUD",
-      icon: Cloud,
-      description: "Consumo de storage e recursos"
-    },
-    {
-      id: "edge-functions" as const,
-      label: "EDGE FUNCTIONS",
-      icon: Zap,
-      description: "Monitorar chamadas às funções"
     },
     {
       id: "admins" as const,
