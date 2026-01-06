@@ -882,6 +882,17 @@ const BibliotecaArtes = () => {
             {/* Banner Carousel - Only show when no pack is selected */}
             {!selectedPack && <BannerCarousel />}
 
+            {/* AI Tools Access Button - Below Banner */}
+            {!selectedPack && (
+              <button 
+                onClick={() => navigate('/ferramentas-ia')}
+                className="w-full my-4 bg-gradient-to-r from-purple-600 via-violet-600 to-purple-600 hover:from-purple-700 hover:via-violet-700 hover:to-purple-700 text-white py-3 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 font-medium text-base transition-all hover:shadow-xl"
+              >
+                <Cpu className="h-5 w-5" />
+                <span>Se você comprou uma Ferramenta de IA - Acesse aqui</span>
+              </button>
+            )}
+
             {/* Install App Button - Below Banner, Mobile Only */}
             {!selectedPack && !isAppInstalled && (
               <button 
