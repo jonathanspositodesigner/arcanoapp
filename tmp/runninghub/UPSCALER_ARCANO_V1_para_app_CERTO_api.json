@@ -1,0 +1,530 @@
+{
+  "1": {
+    "inputs": {
+      "image": "a66c62b64e0863b843e08d3e0239a09c1a9a3d7ccca115833b234ff3866a1ea6.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "17": {
+    "inputs": {
+      "text": "Got it, I need to describe the image in detail to preserve exactly the same thing. Let's start by looking at the main elements.\n\nFirst, the subject is a person with a dark background. The person has short, dark hair styled upwards. The face is split into two colors: left side (from the viewer's perspective) is orange, right side is green. The orange is on the left cheek and part of the jawline, while the green covers the right cheek, nose, and part of the jaw. The skin texture on the colored areas looks like a textured paste or mask, not smooth. The person has a mustache and some stubble on the chin. The eyes are brown, looking directly at the camera. The background is solid black, which makes the colors stand out. The person is wearing a black top, visible at the neck. Let's check each detail: hair color (dark brown/black), style (updo), face split (left orange, right green), texture of the colors (textured, not smooth), facial hair (mustache, stubble), eye color (brown), background (black), clothing (black top). Need to make sure all these elements are included without adding or omitting anything.\n</think>\n\nA imagem apresenta um retrato de um indivíduo com fundo preto sólido, destacando os detalhes faciais. O cabelo é curto, de cor escura (castanho-escuro ou preto), com um corte moderno e styling para cima, criando volume na parte superior da cabeça. A face do indivíduo está dividida em duas metades distintas por cor: **à esquerda** (do ponto de vista do observador), há uma área de cor **laranja** aplicada na bochecha esquerda e parte do queixo, com textura granulada, como se fosse uma máscara ou pasta aplicada; **à direita**, uma área de cor **verde** cobre a bochecha direita, o nariz e parte do queixo, também com textura granulada, contrastando com a pele natural da face. O indivíduo possui um **bigode preto** bem definido e **barba rala** no queixo e mandíbula, com alguns pelos mais longos na região do queixo. Os olhos são castanhos, com pupilas claras, e",
+      "anything": [
+        "285",
+        0
+      ]
+    },
+    "class_type": "easy showAnything",
+    "_meta": {
+      "title": "Preview prompt"
+    }
+  },
+  "23": {
+    "inputs": {
+      "ckpt_name": "STOIQONewrealityFLUXSD_F1DAlpha.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "24": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "25": {
+    "inputs": {
+      "clip_name1": "t5xxl_fp8_e4m3fn.safetensors",
+      "clip_name2": "ViT-L-14-BEST-smooth-GmP-TE-only-HF-format.safetensors",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "DualCLIPLoader"
+    }
+  },
+  "29": {
+    "inputs": {
+      "text": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Clip"
+    }
+  },
+  "30": {
+    "inputs": {
+      "CONDITIONING": [
+        "29",
+        0
+      ]
+    },
+    "class_type": "Anything Everywhere",
+    "_meta": {
+      "title": "Wifi"
+    }
+  },
+  "36": {
+    "inputs": {
+      "UPSCALE_MODEL": [
+        "37",
+        0
+      ]
+    },
+    "class_type": "Anything Everywhere",
+    "_meta": {
+      "title": "Wifi"
+    }
+  },
+  "37": {
+    "inputs": {
+      "model_name": "4xRealWebPhoto_v4_dat2.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "Load Upscale Model"
+    }
+  },
+  "40": {
+    "inputs": {
+      "control_net_name": "Flux.1-dev-Controlnet-Upscaler-jasperai.safetensors"
+    },
+    "class_type": "ControlNetLoader",
+    "_meta": {
+      "title": "Load ControlNet Model"
+    }
+  },
+  "41": {
+    "inputs": {
+      "CONTROL_NET": [
+        "40",
+        0
+      ]
+    },
+    "class_type": "Anything Everywhere",
+    "_meta": {
+      "title": "Wifi"
+    }
+  },
+  "66": {
+    "inputs": {
+      "lora_name": "flux_turbo_v1_1.safetensors",
+      "strength_model": 1
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoraLoaderModelOnly"
+    }
+  },
+  "99": {
+    "inputs": {
+      "IMAGE": [
+        "72:1",
+        0
+      ]
+    },
+    "class_type": "Anything Everywhere",
+    "_meta": {
+      "title": "Wifi"
+    }
+  },
+  "132": {
+    "inputs": {
+      "rgthree_comparer": {
+        "images": [
+          {
+            "name": "A",
+            "selected": true,
+            "url": "/view?filename=rgthree.compare._temp_bebzf_00001_topvl_1767742467.jpg&type=temp&subfolder=&rand=0.42134462419934626&Rh-Comfy-Auth=eyJ1c2VySWQiOiJlYzFjZmNkMDQwOTcyNzE3NTBiMGFhYWVhNGUxMTczOSIsInNpZ25FeHBpcmUiOjE3NjgzNDY0OTczMDYsInRzIjoxNzY3NzQxNjk3MzA2LCJzaWduIjoiZTU1YWRhZjBlNGQ2NzliMDJhMjI2ODVkOTQyNzMzMTEifQ==&Rh-Identify=ec1cfcd04097271750b0aaaea4e11739"
+          },
+          {
+            "name": "B",
+            "selected": true,
+            "url": "/view?filename=rgthree.compare._temp_bebzf_00002_qkopv_1767742470.jpg&type=temp&subfolder=&rand=0.2714053437593986&Rh-Comfy-Auth=eyJ1c2VySWQiOiJlYzFjZmNkMDQwOTcyNzE3NTBiMGFhYWVhNGUxMTczOSIsInNpZ25FeHBpcmUiOjE3NjgzNDY0OTczMDYsInRzIjoxNzY3NzQxNjk3MzA2LCJzaWduIjoiZTU1YWRhZjBlNGQ2NzliMDJhMjI2ODVkOTQyNzMzMTEifQ==&Rh-Identify=ec1cfcd04097271750b0aaaea4e11739"
+          }
+        ]
+      },
+      "image_a": [
+        "1",
+        0
+      ],
+      "image_b": [
+        "142",
+        0
+      ]
+    },
+    "class_type": "Image Comparer (rgthree)",
+    "_meta": {
+      "title": "ANTES/DEPOIS"
+    }
+  },
+  "138": {
+    "inputs": {
+      "conditioning": [
+        "139",
+        0
+      ]
+    },
+    "class_type": "ConditioningZeroOut",
+    "_meta": {
+      "title": "ConditioningZeroOut"
+    }
+  },
+  "139": {
+    "inputs": {
+      "guidance": 3.5
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "142": {
+    "inputs": {
+      "upscale_by": 1.0000000000000002,
+      "seed": 3,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "ddim_uniform",
+      "denoise": [
+        "165",
+        0
+      ],
+      "mode_type": "Chess",
+      "tile_width": [
+        "137:1",
+        0
+      ],
+      "tile_height": [
+        "137:2",
+        0
+      ],
+      "mask_blur": 8,
+      "tile_padding": 128,
+      "seam_fix_mode": "None",
+      "seam_fix_denoise": 1,
+      "seam_fix_width": 128,
+      "seam_fix_mask_blur": 8,
+      "seam_fix_padding": 16,
+      "force_uniform_tiles": true,
+      "tiled_decode": false,
+      "image": [
+        "136:1",
+        0
+      ],
+      "model": [
+        "66",
+        0
+      ],
+      "positive": [
+        "139",
+        0
+      ]
+    },
+    "class_type": "UltimateSDUpscale",
+    "_meta": {
+      "title": "Ultimate SD Upscale"
+    }
+  },
+  "164": {
+    "inputs": {
+      "value": 0.11000000000000001
+    },
+    "class_type": "Float",
+    "_meta": {
+      "title": "KSAMPLER"
+    }
+  },
+  "165": {
+    "inputs": {
+      "value": 0.29000000000000004
+    },
+    "class_type": "Float",
+    "_meta": {
+      "title": "UPSCALE"
+    }
+  },
+  "198": {
+    "inputs": {
+      "anything": [
+        "23",
+        0
+      ]
+    },
+    "class_type": "Anything Everywhere",
+    "_meta": {
+      "title": "Wifi"
+    }
+  },
+  "199": {
+    "inputs": {
+      "anything": [
+        "25",
+        0
+      ]
+    },
+    "class_type": "Anything Everywhere",
+    "_meta": {
+      "title": "Wifi"
+    }
+  },
+  "200": {
+    "inputs": {
+      "anything": [
+        "24",
+        0
+      ]
+    },
+    "class_type": "Anything Everywhere",
+    "_meta": {
+      "title": "Wifi"
+    }
+  },
+  "211": {
+    "inputs": {
+      "images": [
+        "142",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "BAIXE AQUI SUA IMAGEM EM ALTA QUALIDADE"
+    }
+  },
+  "283": {
+    "inputs": {
+      "filename_prefix": "UpscallerArcano",
+      "images": [
+        "142",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "284": {
+    "inputs": {
+      "filename_prefix": "UpscallerArcano",
+      "images": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "285": {
+    "inputs": {
+      "text": "DESCREVA A IMAGEM COM DETALHES PARA PRESERVAR EXATAMENTE A MESMA COISA!",
+      "model": "Qwen3-VL-4B-Instruct-FP8",
+      "quantization": "none",
+      "keep_model_loaded": false,
+      "temperature": 0.30000000000000004,
+      "max_new_tokens": 512,
+      "min_pixels": 125440,
+      "max_pixels": 334768,
+      "seed": 1395,
+      "attention": "eager"
+    },
+    "class_type": "Qwen3_VQA",
+    "_meta": {
+      "title": "AGENTE AVANÇADO GERADOR DE PROMPT"
+    }
+  },
+  "133:0": {
+    "inputs": {
+      "guidance": 3.5,
+      "conditioning": [
+        "133:1",
+        0
+      ]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "133:1": {
+    "inputs": {
+      "strength": 1.0000000000000002,
+      "start_percent": 0,
+      "end_percent": 1,
+      "negative": [
+        "133:2",
+        0
+      ]
+    },
+    "class_type": "ControlNetApplySD3",
+    "_meta": {
+      "title": "ControlNetApplySD3"
+    }
+  },
+  "133:2": {
+    "inputs": {},
+    "class_type": "ConditioningZeroOut",
+    "_meta": {
+      "title": "ConditioningZeroOut"
+    }
+  },
+  "134:0": {
+    "inputs": {},
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "134:1": {
+    "inputs": {
+      "seed": 2,
+      "steps": 20,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": [
+        "164",
+        0
+      ],
+      "positive": [
+        "133:0",
+        0
+      ],
+      "negative": [
+        "133:1",
+        1
+      ],
+      "latent_image": [
+        "134:0",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "134:2": {
+    "inputs": {
+      "samples": [
+        "134:1",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "72:0": {
+    "inputs": {
+      "image": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "Upscale Image (using Model)"
+    }
+  },
+  "72:1": {
+    "inputs": {
+      "max_width": 1536,
+      "max_height": 1536,
+      "min_width": 0,
+      "min_height": 0,
+      "crop_if_required": "no",
+      "images": [
+        "72:0",
+        0
+      ]
+    },
+    "class_type": "ConstrainImage|pysssss",
+    "_meta": {
+      "title": "Constrain Image 🐍"
+    }
+  },
+  "136:0": {
+    "inputs": {
+      "image": [
+        "134:2",
+        0
+      ]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "Upscale Image (using Model)"
+    }
+  },
+  "136:1": {
+    "inputs": {
+      "max_width": 4096,
+      "max_height": 4096,
+      "min_width": 0,
+      "min_height": 0,
+      "crop_if_required": "no",
+      "images": [
+        "136:0",
+        0
+      ]
+    },
+    "class_type": "ConstrainImage|pysssss",
+    "_meta": {
+      "title": "Constrain Image 🐍"
+    }
+  },
+  "137:0": {
+    "inputs": {
+      "image": [
+        "136:1",
+        0
+      ]
+    },
+    "class_type": "DF_Get_image_size",
+    "_meta": {
+      "title": "Get image size"
+    }
+  },
+  "137:1": {
+    "inputs": {
+      "expression": "floor(a/4)",
+      "a": [
+        "137:0",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "Width"
+    }
+  },
+  "137:2": {
+    "inputs": {
+      "expression": "floor(a/4)",
+      "a": [
+        "137:0",
+        1
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "Height"
+    }
+  }
+}

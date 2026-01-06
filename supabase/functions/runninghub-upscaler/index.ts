@@ -350,7 +350,7 @@ async function tryWorkflowCreate(nodeInfoList: any[]): Promise<{
 // Get human-readable solution based on error code
 function getSolutionForError(code?: number, msg?: string): string {
   if (msg?.includes('WORKFLOW_NOT_SAVED_OR_NOT_RUNNING') || code === 810) {
-    return 'O workflow não está em modo executável. No RunningHub: 1) Abra o workflow 2) Clique "Save" e depois "Save (API Format)" 3) Clique "Queue Prompt" uma vez 4) Aguarde 1-2 minutos. OU configure RUNNINGHUB_WEBAPP_ID para usar o modo AI App.';
+    return 'Seu workflow não está executável via API no modo workflow/create. Solução mais garantida: publique como AI App/WebApp e configure RUNNINGHUB_WEBAPP_ID (webappId). Alternativa: salve o workflow e rode 1x no editor (Queue/Run) e aguarde 1–2 min para propagação.';
   }
   if (msg?.includes('API_KEY') || code === 401) {
     return 'API Key inválida ou expirada. Verifique RUNNINGHUB_API_KEY nas configurações.';
