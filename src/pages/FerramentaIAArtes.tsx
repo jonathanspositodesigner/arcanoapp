@@ -106,13 +106,13 @@ const FerramentaIAArtes = () => {
       <div className="min-h-screen bg-background">
         <header className="bg-card border-b border-border p-4">
           <div className="container mx-auto flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/biblioteca-artes")}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/biblioteca-artes?secao=ferramentas-ia")}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
             <div>
               <h1 className="text-xl font-bold text-foreground">
                 {ferramenta?.name || "Ferramenta de IA"}
@@ -156,7 +156,7 @@ const FerramentaIAArtes = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/biblioteca-artes")}
+            onClick={() => navigate("/biblioteca-artes?secao=ferramentas-ia")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
