@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ArrowLeft, Upload, Sparkles, Eraser, Download, RotateCcw, Loader2, ZoomIn, Info } from 'lucide-react';
+import { ArrowLeft, Upload, Sparkles, Eraser, Download, RotateCcw, Loader2, ZoomIn, Info, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -10,6 +10,13 @@ import { supabase } from '@/integrations/supabase/client';
 type Mode = 'upscale' | 'rembg';
 type Resolution = 2048 | 4096;
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
+
+interface ErrorDetails {
+  message: string;
+  code?: string | number;
+  solution?: string;
+  details?: any;
+}
 
 const UpscalerArcanoTool: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +32,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [progress, setProgress] = useState(0);
   const [sliderPosition, setSliderPosition] = useState(50);
+  const [lastError, setLastError] = useState<ErrorDetails | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -95,6 +103,9 @@ const UpscalerArcanoTool: React.FC = () => {
       return;
     }
 
+    // Clear previous error
+    setLastError(null);
+
     try {
       setStatus('uploading');
       setProgress(10);
@@ -116,6 +127,12 @@ const UpscalerArcanoTool: React.FC = () => {
 
       // Check for API error in response data
       if (uploadResponse.data?.error) {
+        setLastError({
+          message: uploadResponse.data.error,
+          code: uploadResponse.data.code,
+          solution: uploadResponse.data.solution,
+          details: uploadResponse.data.details
+        });
         throw new Error(uploadResponse.data.error);
       }
 
@@ -142,8 +159,30 @@ const UpscalerArcanoTool: React.FC = () => {
         throw new Error(runResponse.error.message || 'Erro ao iniciar processamento');
       }
 
+      // Check for API error in run response
+      if (runResponse.data?.error) {
+        setLastError({
+          message: runResponse.data.error,
+          code: runResponse.data.code,
+          solution: runResponse.data.solution,
+          details: runResponse.data.details
+        });
+        throw new Error(runResponse.data.error);
+      }
+
       const { taskId } = runResponse.data;
-      console.log('Workflow started, taskId:', taskId);
+      
+      // Validate taskId exists
+      if (!taskId) {
+        setLastError({
+          message: 'O servidor não retornou um ID de tarefa',
+          code: 'NO_TASK_ID',
+          solution: 'Verifique a configuração do workflow no RunningHub'
+        });
+        throw new Error('Servidor não retornou taskId');
+      }
+      
+      console.log('Workflow started, taskId:', taskId, 'method:', runResponse.data.method);
       setProgress(40);
 
       // Step 3: Poll for status
@@ -156,6 +195,11 @@ const UpscalerArcanoTool: React.FC = () => {
         if (attempts > maxAttempts) {
           clearInterval(pollingRef.current!);
           setStatus('error');
+          setLastError({
+            message: 'Tempo limite excedido',
+            code: 'TIMEOUT',
+            solution: 'O processamento demorou mais de 6 minutos. Tente com uma imagem menor ou com menos resolução.'
+          });
           toast.error('Tempo limite excedido. Tente novamente.');
           return;
         }
@@ -170,7 +214,27 @@ const UpscalerArcanoTool: React.FC = () => {
             return;
           }
 
-          const { status: taskStatus } = statusResponse.data;
+          // Check for API error in status
+          if (statusResponse.data?.error) {
+            clearInterval(pollingRef.current!);
+            setStatus('error');
+            setLastError({
+              message: statusResponse.data.error,
+              code: statusResponse.data.code,
+              solution: 'Erro ao verificar status do processamento'
+            });
+            toast.error('Erro ao verificar status');
+            return;
+          }
+
+          const taskStatus = statusResponse.data?.status;
+          
+          // Handle undefined status
+          if (!taskStatus) {
+            console.warn('Status undefined, continuing polling...');
+            return;
+          }
+          
           console.log('Task status:', taskStatus);
 
           // Update progress based on status
@@ -189,6 +253,14 @@ const UpscalerArcanoTool: React.FC = () => {
               throw new Error('Erro ao obter resultado');
             }
 
+            if (outputsResponse.data?.error) {
+              setLastError({
+                message: outputsResponse.data.error,
+                code: outputsResponse.data.code
+              });
+              throw new Error(outputsResponse.data.error);
+            }
+
             const { outputs } = outputsResponse.data;
             console.log('Outputs:', outputs);
 
@@ -199,11 +271,21 @@ const UpscalerArcanoTool: React.FC = () => {
               setProgress(100);
               toast.success('Imagem processada com sucesso!');
             } else {
+              setLastError({
+                message: 'Nenhuma imagem retornada',
+                code: 'NO_OUTPUT',
+                solution: 'O processamento foi concluído mas não retornou imagens. Tente novamente.'
+              });
               throw new Error('Nenhuma imagem retornada');
             }
           } else if (taskStatus === 'FAILED') {
             clearInterval(pollingRef.current!);
             setStatus('error');
+            setLastError({
+              message: 'O processamento falhou no servidor',
+              code: 'TASK_FAILED',
+              solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
+            });
             toast.error('Erro no processamento. Tente novamente.');
           }
         } catch (error) {
@@ -214,6 +296,15 @@ const UpscalerArcanoTool: React.FC = () => {
     } catch (error: any) {
       console.error('Process error:', error);
       setStatus('error');
+      
+      // Set error details if not already set
+      if (!lastError) {
+        setLastError({
+          message: error.message || 'Erro desconhecido ao processar imagem',
+          code: 'PROCESS_ERROR'
+        });
+      }
+      
       toast.error(error.message || 'Erro ao processar imagem');
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
@@ -249,6 +340,7 @@ const UpscalerArcanoTool: React.FC = () => {
     setOutputImage(null);
     setStatus('idle');
     setProgress(0);
+    setLastError(null);
     if (pollingRef.current) {
       clearInterval(pollingRef.current);
     }
@@ -607,14 +699,39 @@ const UpscalerArcanoTool: React.FC = () => {
           )}
 
           {status === 'error' && (
-            <Button
-              variant="outline"
-              className="w-full py-6 text-lg border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-              onClick={resetTool}
-            >
-              <RotateCcw className="w-5 h-5 mr-2" />
-              Tentar Novamente
-            </Button>
+            <>
+              {/* Error Details Card */}
+              {lastError && (
+                <Card className="bg-red-950/30 border-red-500/30 p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 space-y-2">
+                      <p className="font-medium text-red-300">
+                        {lastError.message}
+                      </p>
+                      {lastError.code && (
+                        <p className="text-sm text-red-400/70">
+                          Código: {lastError.code}
+                        </p>
+                      )}
+                      {lastError.solution && (
+                        <p className="text-sm text-purple-300/80 mt-2">
+                          💡 {lastError.solution}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              )}
+              <Button
+                variant="outline"
+                className="w-full py-6 text-lg border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                onClick={resetTool}
+              >
+                <RotateCcw className="w-5 h-5 mr-2" />
+                Tentar Novamente
+              </Button>
+            </>
           )}
         </div>
       </div>
