@@ -42,31 +42,17 @@ const EdgeFunctionLogs = () => {
   const { data: response, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["edge-logs", timeFilter],
     queryFn: async () => {
+      // Use supabase.functions.invoke with body containing timeFilter
       const { data, error } = await supabase.functions.invoke<EdgeLogResponse>('get-edge-logs', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: null,
+        body: { timeFilter },
       });
       
-      // Build URL with query param since invoke doesn't support query params well
-      const projectUrl = import.meta.env.VITE_SUPABASE_URL;
-      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      
-      const res = await fetch(`${projectUrl}/functions/v1/get-edge-logs?timeFilter=${timeFilter}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${anonKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!res.ok) {
-        throw new Error(`Failed to fetch edge logs: ${res.status}`);
+      if (error) {
+        console.error('Error fetching edge logs:', error);
+        throw error;
       }
       
-      return await res.json() as EdgeLogResponse;
+      return data as EdgeLogResponse;
     },
     refetchInterval: false,
   });
