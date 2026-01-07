@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
@@ -17,6 +17,20 @@ interface ToolData {
 
 const FerramentasIA = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const from = searchParams.get("from");
+
+  const getBackRoute = () => {
+    if (from === "prompts") return "/biblioteca-prompts";
+    if (from === "artes") return "/biblioteca-artes";
+    return "/biblioteca-artes";
+  };
+
+  const getBackLabel = () => {
+    if (from === "prompts") return "Voltar para Biblioteca de Prompts";
+    if (from === "artes") return "Voltar para Biblioteca de Artes";
+    return "Voltar";
+  };
   const { user, hasAccessToPack, isPremium, isLoading: isPremiumLoading } = usePremiumArtesStatus();
   const { planType: promptsPlanType, isLoading: isPromptsLoading } = usePremiumStatus();
   const [tools, setTools] = useState<ToolData[]>([]);
@@ -120,11 +134,15 @@ const FerramentasIA = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(getBackRoute())}
             className="text-fuchsia-300 hover:text-fuchsia-100 hover:bg-fuchsia-500/20"
+            title={getBackLabel()}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
+          <span className="text-fuchsia-300/70 text-sm hidden sm:inline">
+            {getBackLabel()}
+          </span>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
