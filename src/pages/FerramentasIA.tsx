@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
-import { ArrowLeft, Sparkles, CheckCircle, Loader2, Play, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Sparkles, CheckCircle, Loader2, Play, ShoppingCart, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -206,24 +206,41 @@ const FerramentasIA = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-purple-200 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(getBackRoute())}
-            className="text-purple-600 hover:text-purple-800 hover:bg-purple-100"
-            title={getBackLabel()}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <span className="text-purple-600/70 text-sm hidden sm:inline">
-            {getBackLabel()}
-          </span>
-          <div className="flex items-center gap-3 ml-auto sm:ml-0">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Lado Esquerdo - Voltar + Botão de Acesso */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(getBackRoute())}
+              className="text-purple-600 hover:text-purple-800 hover:bg-purple-100"
+              title={getBackLabel()}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const section = document.querySelector('section');
+                if (section) section.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-purple-600 border-purple-300 hover:bg-purple-50 text-xs sm:text-sm"
+            >
+              <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Já adquiriu? </span>Acesse aqui
+            </Button>
+          </div>
+
+          {/* Lado Direito - Logo + Título (fixo) */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900">Ferramentas de IA</h1>
+            <h1 className="text-base sm:text-xl font-bold text-gray-900 hidden sm:block">
+              Ferramentas de IA
+            </h1>
           </div>
         </div>
       </header>
