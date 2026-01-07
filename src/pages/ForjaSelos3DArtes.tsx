@@ -39,7 +39,7 @@ const ForjaSelos3DArtes = () => {
       setChecked(true);
       
       if (!access) {
-        navigate("/biblioteca-artes");
+        navigate("/ferramentas-ia");
       }
     }
   }, [isLoading, checked, hasAccessToPack, navigate]);
@@ -80,7 +80,7 @@ const ForjaSelos3DArtes = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/biblioteca-artes")}
+            onClick={() => navigate("/ferramentas-ia")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

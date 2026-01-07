@@ -38,7 +38,7 @@ const UpscalerArcano = () => {
 
   useEffect(() => {
     if (!isLoading && (!user || !hasAccess)) {
-      navigate("/biblioteca-prompts");
+      navigate("/ferramentas-ia");
     }
   }, [isLoading, user, hasAccess, navigate]);
 
@@ -62,7 +62,7 @@ const UpscalerArcano = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/biblioteca-prompts")}
+            onClick={() => navigate("/ferramentas-ia")}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
