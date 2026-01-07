@@ -155,18 +155,14 @@ const FerramentasIA = () => {
             </div>
           )}
           
-          <div className="absolute top-2 right-2 z-10">
-            {hasAccess ? (
+          {hasAccess && (
+            <div className="absolute top-2 right-2 z-10">
               <Badge className="bg-green-500 text-white border-0 text-[10px] font-semibold shadow-lg px-2 py-0.5">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 LIBERADO
               </Badge>
-            ) : (
-              <Badge className="bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white border-0 text-[10px] font-semibold shadow-lg px-2 py-0.5">
-                {formatPrice(tool.price_vitalicio)}
-              </Badge>
-            )}
-          </div>
+            </div>
+          )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4">
             <h3 className="font-bold text-base sm:text-lg text-white text-center leading-tight drop-shadow-lg">
