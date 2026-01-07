@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.runninghub-upscaler]
 verify_jwt = false
+
+[functions.runpod-upscaler]
+verify_jwt = false

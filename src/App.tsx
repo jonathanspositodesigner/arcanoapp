@@ -100,6 +100,7 @@ import SucessoArtesMusicos from "./pages/SucessoArtesMusicos";
 import PlanosUpscalerArcano from "./pages/PlanosUpscalerArcano";
 import PlanosForjaSelos3D from "./pages/PlanosForjaSelos3D";
 import UpscalerArcanoTool from "./pages/UpscalerArcanoTool";
+import UpscalerRunpod from "./pages/UpscalerRunpod";
 import AguardandoPagamentoMusicos from "./pages/AguardandoPagamentoMusicos";
 import GlobalImportProgress from "./components/GlobalImportProgress";
 
@@ -227,6 +228,7 @@ const AppContent = () => {
         <Route path="/planos-upscaler-arcano" element={<PlanosUpscalerArcano />} />
         <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
         <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
+        <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
