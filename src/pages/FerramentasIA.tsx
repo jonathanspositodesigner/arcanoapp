@@ -81,7 +81,7 @@ const FerramentasIA = () => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
-    }).format(price);
+    }).format(price / 100);
   };
 
   if (loading || isPremiumLoading) {
