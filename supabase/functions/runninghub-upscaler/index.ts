@@ -11,7 +11,7 @@ const RUNNINGHUB_API_KEY = (
 // Workflow ID - now configurable via secret, with fallback to hardcoded
 const WORKFLOW_ID = (
   Deno.env.get('RUNNINGHUB_WORKFLOW_ID') || 
-  '2008664033892769794'
+  '2008684425269219329'
 ).trim();
 
 // Optional: AI App/WebApp ID for more stable execution
