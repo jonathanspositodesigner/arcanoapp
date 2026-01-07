@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { trackPushNotificationEvent } from "@/hooks/usePushNotificationAnalytics";
-import { Check, Smartphone, Bell } from "lucide-react";
+import { Check, Smartphone, Bell, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import promptclubLogo from "@/assets/promptclub_logo.png";
@@ -71,7 +71,7 @@ const Index = () => {
       </FadeIn>
 
       <StaggeredAnimation 
-        className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full max-w-3xl"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 w-full max-w-5xl"
         staggerDelay={150}
         animation="fade-up"
       >
@@ -102,6 +102,22 @@ const Index = () => {
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground">
             Prompts prontos para criar selos, imagens, logos e muito mais com IA
+          </p>
+        </div>
+
+        {/* Card - Ferramentas de IA */}
+        <div 
+          onClick={() => navigate("/ferramentas-ia")} 
+          className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-fuchsia-500/50"
+        >
+          <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600">
+            <Wand2 className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+          </div>
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
+            Ferramentas de IA
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Upscaler, Forja de Selos 3D, Mudar Pose e Roupa
           </p>
         </div>
       </StaggeredAnimation>
