@@ -228,8 +228,8 @@ const FerramentasIA = () => {
               }}
               className="text-purple-600 border-purple-300 hover:bg-purple-50 text-xs sm:text-sm"
             >
-              <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Já adquiriu? </span>Acesse aqui
+            <LogIn className="w-4 h-4 mr-2" />
+              Já adquiriu? Acesse aqui
             </Button>
           </div>
 
