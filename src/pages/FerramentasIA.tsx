@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
-import { ArrowLeft, Sparkles, Lock, CheckCircle, Loader2, Play, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Sparkles, CheckCircle, Loader2, Play, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -142,7 +142,7 @@ const FerramentasIA = () => {
         className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all group border border-gray-200 shadow-md hover:shadow-xl bg-white"
         onClick={() => handleToolClick(tool)}
       >
-        <div className="aspect-[3/4] relative overflow-hidden">
+        <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
           {tool.cover_url ? (
             <img 
               src={tool.cover_url} 
@@ -157,29 +157,28 @@ const FerramentasIA = () => {
           
           <div className="absolute top-2 right-2 z-10">
             {hasAccess ? (
-              <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+              <Badge className="bg-green-500 text-white border-0 text-[10px] font-semibold shadow-lg px-2 py-0.5">
                 <CheckCircle className="h-3 w-3 mr-1" />
-                DISPONÍVEL
+                LIBERADO
               </Badge>
             ) : (
-              <Badge className="bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
-                <Lock className="h-3 w-3 mr-1" />
+              <Badge className="bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white border-0 text-[10px] font-semibold shadow-lg px-2 py-0.5">
                 {formatPrice(tool.price_vitalicio)}
               </Badge>
             )}
           </div>
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
-            <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4">
+            <h3 className="font-bold text-base sm:text-lg text-white text-center leading-tight drop-shadow-lg">
               {tool.name}
             </h3>
-            <p className="text-xs text-white/80 text-center mt-1 line-clamp-2">
+            <p className="text-xs sm:text-sm text-white/80 text-center mt-1 line-clamp-2">
               {description}
             </p>
             
             <Button
               size="sm"
-              className={`mt-2 text-xs ${
+              className={`mt-3 w-full text-sm font-medium ${
                 hasAccess 
                   ? "bg-green-500 hover:bg-green-600" 
                   : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
@@ -187,12 +186,12 @@ const FerramentasIA = () => {
             >
               {hasAccess ? (
                 <>
-                  <Play className="h-3 w-3 mr-1" />
-                  Acessar
+                  <Play className="h-4 w-4 mr-2" />
+                  Acessar Ferramenta
                 </>
               ) : (
                 <>
-                  <ShoppingCart className="h-3 w-3 mr-1" />
+                  <ShoppingCart className="h-4 w-4 mr-2" />
                   Ver Planos
                 </>
               )}
@@ -243,7 +242,7 @@ const FerramentasIA = () => {
               <CheckCircle className="w-5 h-5 text-green-500" />
               Suas Ferramentas
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {toolsWithAccess.map(renderToolCard)}
             </div>
           </section>
@@ -256,7 +255,7 @@ const FerramentasIA = () => {
               <Sparkles className="w-5 h-5 text-purple-500" />
               Disponíveis para Aquisição
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {toolsWithoutAccess.map(renderToolCard)}
             </div>
           </section>
