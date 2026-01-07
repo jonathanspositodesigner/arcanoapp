@@ -474,13 +474,16 @@ const UpscalerArcanoTool: React.FC = () => {
                 {/* Before Image (clipped) */}
                 <div 
                   className="absolute inset-0 overflow-hidden"
-                  style={{ width: `${Math.max(sliderPosition, 1)}%` }}
+                  style={{ width: `${sliderPosition}%` }}
                 >
                   <img 
                     src={inputImage} 
                     alt="Antes" 
-                    className="absolute inset-0 w-full h-full object-contain bg-black"
-                    style={{ width: `${100 / Math.max(sliderPosition / 100, 0.01)}%` }}
+                    className="h-full object-contain bg-black"
+                    style={{ 
+                      width: sliderRef.current ? `${sliderRef.current.offsetWidth}px` : '100vw',
+                      maxWidth: 'none'
+                    }}
                     draggable={false}
                   />
                 </div>
