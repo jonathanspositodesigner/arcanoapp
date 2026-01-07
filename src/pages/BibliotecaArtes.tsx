@@ -568,9 +568,9 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
-        changeSection('ferramentas_ia');
+        navigate('/ferramentas-ia');
         setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'ferramentas_ia' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
+      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-muted-foreground hover:bg-accent hover:text-foreground`}>
           <Cpu className="h-5 w-5" />
           <span className="font-medium">Ferramentas de IA</span>
           <Badge variant="secondary" className="ml-auto text-xs">
@@ -840,7 +840,7 @@ const BibliotecaArtes = () => {
             {!selectedPack && <BannerCarousel />}
 
             {/* Ferramentas de IA Button - Below Banner */}
-            {!selectedPack && activeSection !== 'ferramentas_ia' && <button onClick={() => changeSection('ferramentas_ia')} className="w-full my-4 bg-gradient-to-r from-purple-600 via-violet-600 to-purple-600 bg-[length:200%_100%] text-white py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 font-semibold text-base sm:text-lg hover:shadow-xl transition-shadow hover:opacity-90">
+            {!selectedPack && <button onClick={() => navigate('/ferramentas-ia')} className="w-full my-4 bg-gradient-to-r from-purple-600 via-violet-600 to-purple-600 bg-[length:200%_100%] text-white py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 font-semibold text-base sm:text-lg hover:shadow-xl transition-shadow hover:opacity-90">
                 <Cpu className="h-5 w-5 sm:h-6 sm:w-6" />
                 <span>Se você comprou uma Ferramenta de IA - Acesse aqui</span>
               </button>}
