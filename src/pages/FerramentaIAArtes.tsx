@@ -36,7 +36,7 @@ const FerramentaIAArtes = () => {
   useEffect(() => {
     const fetchFerramenta = async () => {
       if (!slug) {
-        navigate("/biblioteca-artes");
+        navigate("/ferramentas-ia");
         return;
       }
 
@@ -116,7 +116,7 @@ const FerramentaIAArtes = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/biblioteca-artes?secao=ferramentas-ia")}
+            onClick={() => navigate("/ferramentas-ia")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -163,7 +163,7 @@ const FerramentaIAArtes = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/biblioteca-artes?secao=ferramentas-ia")}
+            onClick={() => navigate("/ferramentas-ia")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
