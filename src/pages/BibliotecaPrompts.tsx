@@ -485,7 +485,7 @@ const BibliotecaPrompts = () => {
                 </p>
               </div>
             </div>
-            <Button onClick={() => setShowArcaneStudioModal(true)} variant="secondary" size="default" className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
+            <Button onClick={() => navigate("/ferramentas-ia")} variant="secondary" size="default" className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
               <Zap className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Acessar Ferramentas
             </Button>
