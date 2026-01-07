@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Play } from "lucide-react";
-import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 
 interface VideoLesson {
   title: string;
@@ -35,9 +35,10 @@ const lessons: VideoLesson[] = [
 
 const MudarPose = () => {
   const navigate = useNavigate();
-  const { user, isPremium, planType, isLoading } = usePremiumStatus();
+  const { user, isPremium, isLoading } = usePremiumArtesStatus();
 
-  const hasAccess = isPremium && (planType === "arcano_pro" || planType === "arcano_unlimited");
+  // Qualquer pack ativo dá acesso (ferramenta bônus)
+  const hasAccess = isPremium;
 
   useEffect(() => {
     if (!isLoading && (!user || !hasAccess)) {
