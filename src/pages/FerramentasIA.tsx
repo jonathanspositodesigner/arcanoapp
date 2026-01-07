@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { ArrowLeft, Sparkles, Lock, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
 interface ToolData {
   id: string;
   name: string;
@@ -18,6 +18,7 @@ interface ToolData {
 const FerramentasIA = () => {
   const navigate = useNavigate();
   const { user, hasAccessToPack, isPremium, isLoading: isPremiumLoading } = usePremiumArtesStatus();
+  const { planType: promptsPlanType, isLoading: isPromptsLoading } = usePremiumStatus();
   const [tools, setTools] = useState<ToolData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -64,10 +65,19 @@ const FerramentasIA = () => {
   // Ferramentas que são bônus (qualquer pack ativo dá acesso)
   const bonusTools = ["ia-muda-pose", "ia-muda-roupa"];
   
+  // Usuários com arcano_unlimited (plano de prompts) têm acesso a TODAS as ferramentas
+  const hasUnlimitedAccess = promptsPlanType === "arcano_unlimited";
+  
   const checkToolAccess = (slug: string): boolean => {
+    // Arcano Unlimited tem acesso a tudo
+    if (hasUnlimitedAccess) {
+      return true;
+    }
+    // Ferramentas bônus: qualquer pack de artes ativo dá acesso
     if (bonusTools.includes(slug)) {
       return isPremium;
     }
+    // Outras ferramentas: precisa comprar diretamente
     return hasAccessToPack(slug);
   };
 
@@ -94,7 +104,7 @@ const FerramentasIA = () => {
     }).format(price / 100);
   };
 
-  if (loading || isPremiumLoading) {
+  if (loading || isPremiumLoading || isPromptsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-fuchsia-500" />

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
-import { toPackSlug } from "@/lib/utils";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 
 interface LessonButton {
   text: string;
@@ -31,6 +31,7 @@ const FerramentaIAArtes = () => {
   const [ferramenta, setFerramenta] = useState<FerramentaData | null>(null);
   const [loading, setLoading] = useState(true);
   const { isPremium, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
+  const { planType: promptsPlanType, isLoading: isPromptsLoading } = usePremiumStatus();
 
   useEffect(() => {
     const fetchFerramenta = async () => {
@@ -89,11 +90,16 @@ const FerramentaIAArtes = () => {
     return url;
   };
 
+  // Usuários com arcano_unlimited (plano de prompts) têm acesso a TODAS as ferramentas
+  const hasUnlimitedAccess = promptsPlanType === "arcano_unlimited";
+  
   // Ferramentas que são bônus (qualquer pack ativo dá acesso)
   const bonusTools = ["ia-muda-pose", "ia-muda-roupa"];
-  const hasAccess = slug && bonusTools.includes(slug) ? isPremium : hasAccessToPack(slug || "");
+  
+  // Lógica de acesso: Unlimited > Bônus > Compra direta
+  const hasAccess = hasUnlimitedAccess || (slug && bonusTools.includes(slug) ? isPremium : hasAccessToPack(slug || ""));
 
-  if (loading || premiumLoading) {
+  if (loading || premiumLoading || isPromptsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-foreground">Carregando...</div>
