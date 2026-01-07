@@ -400,7 +400,7 @@ async function handleStatus(req: Request) {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      status: data.data.taskStatus
+      status: data.data  // data.data is already the status string like "SUCCESS", "RUNNING", etc.
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
