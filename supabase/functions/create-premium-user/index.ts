@@ -89,30 +89,8 @@ Deno.serve(async (req: Request) => {
     
     if (existingProfile && existingProfile.id) {
       userId = existingProfile.id;
-      console.log('Found existing user via profiles:', userId);
-      
-      // Check if user is admin before updating password
-      const { data: isAdmin } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', existingProfile.id)
-        .eq('role', 'admin')
-        .maybeSingle();
-
-      if (!isAdmin) {
-        // Update password to match email for existing users (only if NOT admin)
-        const { error: updatePasswordError } = await supabase.auth.admin.updateUserById(existingProfile.id, {
-          password: normalizedEmail
-        });
-        
-        if (updatePasswordError) {
-          console.error('Error updating password:', updatePasswordError);
-        } else {
-          console.log('Password updated to match email for existing user');
-        }
-      } else {
-        console.log('User is admin, skipping password change');
-      }
+      console.log('Found existing user via profiles, NOT updating password:', userId);
+      // Do NOT update password for existing users - only set on first creation
     } else {
       // Tentar criar novo usuário
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
@@ -140,27 +118,8 @@ Deno.serve(async (req: Request) => {
             if (matchingUser) {
               userId = matchingUser.id;
               found = true;
-              console.log('Found existing user via listUsers pagination:', userId);
-              
-              // Check if user is admin before updating password
-              const { data: isAdminUser } = await supabase
-                .from('user_roles')
-                .select('role')
-                .eq('user_id', userId)
-                .eq('role', 'admin')
-                .maybeSingle();
-
-              if (!isAdminUser) {
-                // Update password (only if NOT admin)
-                const { error: updatePwdError } = await supabase.auth.admin.updateUserById(userId, {
-                  password: normalizedEmail
-                });
-                if (updatePwdError) {
-                  console.error('Error updating password:', updatePwdError);
-                }
-              } else {
-                console.log('User is admin, skipping password change');
-              }
+              console.log('Found existing user via listUsers pagination, NOT updating password:', userId);
+              // Do NOT update password for existing users - only set on first creation
             }
             
             if (!usersPage?.users.length || usersPage.users.length < 1000) {
