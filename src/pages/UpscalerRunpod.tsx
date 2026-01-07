@@ -354,7 +354,7 @@ const UpscalerRunpod: React.FC = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/ferramentas-ia")}
             className="text-purple-300 hover:text-white hover:bg-purple-500/20"
           >
             <ArrowLeft className="w-5 h-5" />
