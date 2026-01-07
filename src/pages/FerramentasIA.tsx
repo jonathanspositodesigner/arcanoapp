@@ -5,6 +5,7 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { ArrowLeft, Sparkles, Lock, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 interface ToolData {
   id: string;
   name: string;
@@ -160,69 +161,69 @@ const FerramentasIA = () => {
         </p>
 
         {/* Tools Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {tools.map((tool) => {
-            const hasAccess = checkToolAccess(tool.slug);
-            
-            return (
-              <div
-                key={tool.id}
-                onClick={() => handleToolClick(tool)}
-                className="group cursor-pointer bg-[#1a0f25]/50 border-2 border-fuchsia-500/30 rounded-2xl overflow-hidden transition-all duration-300 hover:border-fuchsia-500/60 hover:shadow-[0_0_30px_rgba(217,70,239,0.2)]"
-              >
-                {/* Cover Image */}
-                <div className="relative aspect-video overflow-hidden">
-                  {tool.cover_url ? (
-                    <img
-                      src={tool.cover_url}
-                      alt={tool.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-fuchsia-600/30 to-purple-600/30 flex items-center justify-center">
-                      <Sparkles className="w-16 h-16 text-fuchsia-300/50" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            {tools.map((tool) => {
+              const hasAccess = checkToolAccess(tool.slug);
+              
+              return (
+                <Card 
+                  key={tool.id}
+                  className={`p-4 border-fuchsia-500/30 bg-[#1a0f25]/50 transition-all duration-300 ${
+                    hasAccess 
+                      ? "hover:shadow-lg hover:scale-[1.02] cursor-pointer hover:border-fuchsia-500/60" 
+                      : "opacity-90 cursor-pointer hover:border-fuchsia-500/60"
+                  }`}
+                  onClick={() => handleToolClick(tool)}
+                >
+                  <div className="flex flex-col h-full">
+                    {/* Header com ícone e badge */}
+                    <div className="flex items-start justify-between mb-3">
+                      {tool.cover_url ? (
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                          <img 
+                            src={tool.cover_url} 
+                            alt={tool.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="bg-fuchsia-500/10 p-2 rounded-lg">
+                          <Sparkles className="h-6 w-6 text-fuchsia-400" />
+                        </div>
+                      )}
+                      
+                      {hasAccess ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/90 text-white text-xs font-medium">
+                          <CheckCircle className="w-3 h-3" />
+                          Acesso
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-500 text-white text-xs font-medium">
+                          <Lock className="w-3 h-3" />
+                          {formatPrice(tool.price_vitalicio)}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  
-                  {/* Overlay Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f0a15] via-transparent to-transparent" />
-                  
-                  {/* Access Badge */}
-                  <div className="absolute top-3 right-3">
-                    {hasAccess ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-medium">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        Você tem acesso
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-fuchsia-500/90 text-white text-xs font-medium">
-                        <Lock className="w-3.5 h-3.5" />
-                        {formatPrice(tool.price_vitalicio)}
-                      </span>
-                    )}
+                    
+                    {/* Título */}
+                    <h3 className="font-bold text-white mb-3">{tool.name}</h3>
+                    
+                    {/* Botão */}
+                    <Button
+                      className={`w-full mt-auto font-semibold text-xs ${
+                        hasAccess
+                          ? "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white"
+                          : "bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white"
+                      }`}
+                      size="sm"
+                    >
+                      {hasAccess ? "Acessar Ferramenta" : "Adquirir Agora"}
+                    </Button>
                   </div>
-                </div>
-
-                {/* Card Content */}
-                <div className="p-5">
-                  <h3 className="text-lg font-bold text-white mb-3 group-hover:text-fuchsia-300 transition-colors">
-                    {tool.name}
-                  </h3>
-                  
-                  <Button
-                    className={`w-full font-semibold ${
-                      hasAccess
-                        ? "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white"
-                        : "bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white"
-                    }`}
-                  >
-                    {hasAccess ? "Acessar Ferramenta" : "Adquirir Agora"}
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                </Card>
+              );
+            })}
+          </div>
 
         {tools.length === 0 && (
           <div className="text-center py-16">
