@@ -214,9 +214,8 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     // Build tracking URLs
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
     const openTrackingPixel = `${trackingBaseUrl}?id=${trackingId}&action=open`
-    // TODO: Gatilho para link de ferramentas IA - alterar quando definido
     const platformUrl = isFerramentaIA 
-      ? 'https://arcanolab.voxvisual.com.br/login-artes'  // Alterar para link específico da ferramenta
+      ? 'https://arcanoapp.voxvisual.com.br/ferramentas-ia'
       : 'https://arcanolab.voxvisual.com.br/login-artes'
     const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
 
