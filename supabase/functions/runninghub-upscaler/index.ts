@@ -454,8 +454,9 @@ async function handleOutputs(req: Request) {
     }
 
     const outputs = data.data || [];
+    const imageExtensions = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'image'];
     const imageUrls = outputs
-      .filter((output: any) => output.fileType === 'image')
+      .filter((output: any) => imageExtensions.includes(output.fileType?.toLowerCase()))
       .map((output: any) => output.fileUrl);
 
     return new Response(JSON.stringify({ 
