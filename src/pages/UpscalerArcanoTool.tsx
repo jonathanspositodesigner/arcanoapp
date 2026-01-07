@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ArrowLeft, Upload, Sparkles, Eraser, Download, RotateCcw, Loader2, ZoomIn, Info, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Upload, Sparkles, Eraser, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle } from 'lucide-react';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -33,6 +34,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [sliderPosition, setSliderPosition] = useState(50);
   const [lastError, setLastError] = useState<ErrorDetails | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -455,60 +457,113 @@ const UpscalerArcanoTool: React.FC = () => {
           /* Result View */
           <Card className="bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden">
             {mode === 'upscale' ? (
-              /* Before/After Slider */
-              <div 
-                ref={sliderRef}
-                className="relative aspect-video cursor-ew-resize select-none"
-                onMouseDown={handleSliderMouseDown}
-                onMouseMove={handleSliderMouseMove}
-                onMouseUp={handleSliderMouseUp}
+              /* Before/After Slider with Zoom */
+              <TransformWrapper
+                initialScale={1}
+                minScale={1}
+                maxScale={5}
+                onTransformed={(_, state) => setZoomLevel(state.scale)}
+                wheel={{ step: 0.2 }}
+                pinch={{ step: 5 }}
+                doubleClick={{ mode: 'toggle', step: 2 }}
+                panning={{ disabled: zoomLevel <= 1 }}
               >
-                {/* After Image (full) */}
-                <img 
-                  src={outputImage} 
-                  alt="Depois" 
-                  className="absolute inset-0 w-full h-full object-contain bg-black"
-                  draggable={false}
-                />
-                
-                {/* Before Image (clipped) */}
-                <div 
-                  className="absolute inset-0 overflow-hidden"
-                  style={{ width: `${sliderPosition}%` }}
-                >
-                  <img 
-                    src={inputImage} 
-                    alt="Antes" 
-                    className="h-full object-contain bg-black"
-                    style={{ 
-                      width: sliderRef.current ? `${sliderRef.current.offsetWidth}px` : '100vw',
-                      maxWidth: 'none'
-                    }}
-                    draggable={false}
-                  />
-                </div>
-                
-                {/* Slider Line */}
-                <div 
-                  className="absolute top-0 bottom-0 w-1 bg-white shadow-lg cursor-ew-resize"
-                  style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
-                >
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center">
-                    <div className="flex gap-0.5">
-                      <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                      <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                {({ zoomIn, zoomOut, resetTransform }) => (
+                  <div className="relative">
+                    {/* Zoom Controls */}
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/80 rounded-full px-2 py-1">
+                      <button 
+                        onClick={() => zoomOut()}
+                        className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
+                        title="Diminuir zoom"
+                      >
+                        <ZoomOut className="w-4 h-4" />
+                      </button>
+                      <span className="text-xs font-mono min-w-[3rem] text-center">
+                        {Math.round(zoomLevel * 100)}%
+                      </span>
+                      <button 
+                        onClick={() => zoomIn()}
+                        className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
+                        title="Aumentar zoom"
+                      >
+                        <ZoomIn className="w-4 h-4" />
+                      </button>
+                      {zoomLevel > 1 && (
+                        <button 
+                          onClick={() => resetTransform()}
+                          className="p-1.5 hover:bg-white/20 rounded-full transition-colors ml-1"
+                          title="Resetar zoom"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    <TransformComponent wrapperStyle={{ width: '100%' }} contentStyle={{ width: '100%' }}>
+                      <div 
+                        ref={sliderRef}
+                        className="relative aspect-video select-none"
+                        style={{ cursor: zoomLevel > 1 ? 'grab' : 'ew-resize' }}
+                        onMouseDown={zoomLevel <= 1 ? handleSliderMouseDown : undefined}
+                        onMouseMove={zoomLevel <= 1 ? handleSliderMouseMove : undefined}
+                        onMouseUp={zoomLevel <= 1 ? handleSliderMouseUp : undefined}
+                      >
+                        {/* After Image (full) */}
+                        <img 
+                          src={outputImage} 
+                          alt="Depois" 
+                          className="absolute inset-0 w-full h-full object-contain bg-black"
+                          draggable={false}
+                        />
+                        
+                        {/* Before Image (clipped) */}
+                        <div 
+                          className="absolute inset-0 overflow-hidden"
+                          style={{ width: `${sliderPosition}%` }}
+                        >
+                          <img 
+                            src={inputImage} 
+                            alt="Antes" 
+                            className="h-full object-contain bg-black"
+                            style={{ 
+                              width: sliderRef.current ? `${sliderRef.current.offsetWidth}px` : '100vw',
+                              maxWidth: 'none'
+                            }}
+                            draggable={false}
+                          />
+                        </div>
+                        
+                        {/* Slider Line */}
+                        <div 
+                          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
+                          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)', cursor: 'ew-resize' }}
+                        >
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center">
+                            <div className="flex gap-0.5">
+                              <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                              <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Labels */}
+                        <div className="absolute top-14 left-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
+                          ANTES
+                        </div>
+                        <div className="absolute top-14 right-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
+                          DEPOIS
+                        </div>
+                      </div>
+                    </TransformComponent>
+
+                    {/* Zoom Hint */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-purple-300/60 bg-black/50 px-3 py-1 rounded-full">
+                      🔍 Scroll ou pinch para zoom • Duplo clique para zoom rápido
                     </div>
                   </div>
-                </div>
-
-                {/* Labels */}
-                <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
-                  ANTES
-                </div>
-                <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
-                  DEPOIS
-                </div>
-              </div>
+                )}
+              </TransformWrapper>
             ) : (
               /* PNG Preview with checkerboard background */
               <div 
