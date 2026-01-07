@@ -187,7 +187,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
       // Step 3: Poll for status
       let attempts = 0;
-      const maxAttempts = 30; // 30 minutes max (60s * 30) (3s * 120)
+      const maxAttempts = 60; // 30 minutes max (30s * 60)
 
       pollingRef.current = setInterval(async () => {
         attempts++;
@@ -291,7 +291,7 @@ const UpscalerArcanoTool: React.FC = () => {
         } catch (error) {
           console.error('Polling error:', error);
         }
-      }, 60000); // 1 minute polling interval
+      }, 30000); // 30 seconds polling interval
 
     } catch (error: any) {
       console.error('Process error:', error);
