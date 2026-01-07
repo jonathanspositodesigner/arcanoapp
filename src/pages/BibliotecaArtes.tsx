@@ -839,17 +839,28 @@ const BibliotecaArtes = () => {
             {/* Banner Carousel - Only show when no pack is selected */}
             {!selectedPack && <BannerCarousel />}
 
-            {/* Ferramentas de IA Button - Below Banner */}
-            {!selectedPack && <button onClick={() => navigate('/ferramentas-ia?from=artes')} className="w-full my-4 bg-gradient-to-r from-purple-600 via-violet-600 to-purple-600 bg-[length:200%_100%] text-white py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 font-semibold text-base sm:text-lg hover:shadow-xl transition-shadow hover:opacity-90">
-                <Cpu className="h-5 w-5 sm:h-6 sm:w-6" />
-                <span>Se você comprou uma Ferramenta de IA - Acesse aqui</span>
-              </button>}
-            
-            {/* Install App Button - Below Banner, Mobile Only */}
-            {!selectedPack && !isAppInstalled && <button onClick={() => navigate('/install-app')} className="lg:hidden w-full my-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 bg-[length:200%_100%] animate-pulse text-white py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 font-semibold text-lg hover:shadow-xl transition-shadow">
-                <Smartphone className="h-6 w-6" />
-                <span>Instalar App no Celular</span>
-              </button>}
+            {/* Ferramentas de IA + Install App - Compact Row */}
+            {!selectedPack && (
+              <div className="flex flex-col sm:flex-row gap-2 my-4">
+                <button 
+                  onClick={() => navigate('/ferramentas-ia?from=artes')} 
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+                >
+                  <Cpu className="h-4 w-4" />
+                  <span>Comprou Ferramenta de IA? Acesse aqui</span>
+                </button>
+                
+                {!isAppInstalled && (
+                  <button 
+                    onClick={() => navigate('/install-app')} 
+                    className="lg:hidden flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+                  >
+                    <Smartphone className="h-4 w-4" />
+                    <span>Instalar App</span>
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Pack/Bonus Selection View - excludes tutorial, cursos, all-artes, and free-sample sections */}
             {!selectedPack && activeSection !== 'cursos' && activeSection !== 'tutorial' && activeSection !== 'all-artes' && activeSection !== 'free-sample' && <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
