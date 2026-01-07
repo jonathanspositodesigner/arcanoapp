@@ -151,12 +151,13 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         bonusClicks: item.bonus_clicks || 0
       }));
 
-      // Combine and sort by date
-      const combined = [...adminPrompts, ...partnerPrompts, ...communityPrompts].sort((a, b) => {
-        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return dateB - dateA;
-      });
+      // Combine all prompts (without date sorting for Ver Tudo)
+      const combined = [...adminPrompts, ...partnerPrompts, ...communityPrompts];
+
+      // Pre-shuffle items for "Ver Tudo" (excluding Controles de Câmera)
+      const verTudoItems = combined.filter(p => p.category !== "Controles de Câmera");
+      shuffledPromptsRef.current = shuffleArray(verTudoItems);
+      lastPromptsLengthRef.current = combined.length;
 
       setAllPrompts(combined);
     } catch (err) {
@@ -172,14 +173,6 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
     fetchPrompts();
   }, [fetchPrompts]);
 
-  // Update shuffled array only when prompts actually change
-  useEffect(() => {
-    if (allPrompts.length !== lastPromptsLengthRef.current) {
-      const verTudoItems = allPrompts.filter(p => p.category !== "Controles de Câmera");
-      shuffledPromptsRef.current = shuffleArray(verTudoItems);
-      lastPromptsLengthRef.current = allPrompts.length;
-    }
-  }, [allPrompts]);
 
   // Memoized filter function
   const getFilteredPrompts = useCallback((

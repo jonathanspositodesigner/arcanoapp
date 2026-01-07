@@ -461,9 +461,6 @@ const BibliotecaPrompts = () => {
               <Video className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
             </Button>
           </a>
-          <Button onClick={() => navigate("/contribuir")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mt-4">
-            Envie o seu prompt 
-          </Button>
         </aside>
 
         {/* Main Content */}
