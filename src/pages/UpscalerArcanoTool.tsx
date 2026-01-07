@@ -611,18 +611,21 @@ const UpscalerArcanoTool: React.FC = () => {
 
             {/* Detail Denoise */}
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-purple-400" />
-                  <span className="font-medium">Nível de Detalhe</span>
+                  <span className="font-medium text-white">Nível de Detalhe</span>
                   <div className="group relative">
-                    <Info className="w-4 h-4 text-purple-400/50 cursor-help" />
+                    <Info className="w-4 h-4 text-purple-400/70 cursor-help" />
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
                       Controla a quantidade de detalhes adicionados
                     </div>
                   </div>
                 </div>
                 <span className="text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
+              </div>
+              <div className="text-xs text-purple-300 mb-3">
+                ✨ Recomendado: 0.10 - 0.30
               </div>
               <Slider
                 value={[detailDenoise]}
@@ -632,7 +635,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 step={0.01}
                 className="w-full"
               />
-              <div className="flex justify-between text-xs text-purple-300/50 mt-2">
+              <div className="flex justify-between text-xs text-purple-300/70 mt-2">
                 <span>Menos detalhe</span>
                 <span>Mais detalhe</span>
               </div>
@@ -640,18 +643,21 @@ const UpscalerArcanoTool: React.FC = () => {
 
             {/* Creativity Denoise */}
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-pink-400" />
-                  <span className="font-medium">Criatividade da IA</span>
+                  <span className="font-medium text-white">Criatividade da IA</span>
                   <div className="group relative">
-                    <Info className="w-4 h-4 text-purple-400/50 cursor-help" />
+                    <Info className="w-4 h-4 text-purple-400/70 cursor-help" />
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
                       Valores baixos = mais fiel à original
                     </div>
                   </div>
                 </div>
                 <span className="text-purple-300 font-mono">{creativityDenoise.toFixed(2)}</span>
+              </div>
+              <div className="text-xs text-pink-300 mb-3">
+                ✨ Recomendado: 0.05 - 0.20
               </div>
               <Slider
                 value={[creativityDenoise]}
@@ -661,7 +667,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 step={0.01}
                 className="w-full"
               />
-              <div className="flex justify-between text-xs text-purple-300/50 mt-2">
+              <div className="flex justify-between text-xs text-purple-300/70 mt-2">
                 <span>Fiel à original</span>
                 <span>Mais criativo</span>
               </div>
