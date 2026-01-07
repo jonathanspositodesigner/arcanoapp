@@ -140,17 +140,44 @@ const AdminPackPurchases = () => {
   };
 
   const fetchPurchases = async () => {
-    // Fetch ALL purchases using pagination to avoid 1000 record limit
-    let allPurchases: any[] = [];
-    let from = 0;
+    // 1. Fetch ALL profiles first (to include users without packs)
+    let allProfiles: any[] = [];
+    let profilesFrom = 0;
     const pageSize = 1000;
+    
+    while (true) {
+      const { data: profilesData, error } = await supabase
+        .from('profiles')
+        .select('id, email, name, phone')
+        .order('created_at', { ascending: false })
+        .range(profilesFrom, profilesFrom + pageSize - 1);
+
+      if (error) {
+        console.error('Error fetching profiles:', error);
+        break;
+      }
+
+      if (!profilesData || profilesData.length === 0) break;
+      
+      allProfiles = [...allProfiles, ...profilesData];
+      
+      if (profilesData.length < pageSize) break;
+      
+      profilesFrom += pageSize;
+    }
+
+    console.log(`Fetched ${allProfiles.length} total profiles`);
+
+    // 2. Fetch ALL purchases
+    let allPurchases: any[] = [];
+    let purchasesFrom = 0;
     
     while (true) {
       const { data: purchasesData, error } = await supabase
         .from('user_pack_purchases')
         .select('*')
         .order('purchased_at', { ascending: false })
-        .range(from, from + pageSize - 1);
+        .range(purchasesFrom, purchasesFrom + pageSize - 1);
 
       if (error) {
         console.error('Error fetching purchases:', error);
@@ -161,43 +188,60 @@ const AdminPackPurchases = () => {
       
       allPurchases = [...allPurchases, ...purchasesData];
       
-      // If we got less than pageSize, we've reached the end
       if (purchasesData.length < pageSize) break;
       
-      from += pageSize;
+      purchasesFrom += pageSize;
     }
 
     console.log(`Fetched ${allPurchases.length} total purchases`);
 
-    // Get unique user IDs
-    const userIds = [...new Set(allPurchases.map(p => p.user_id))];
-    console.log(`Found ${userIds.length} unique clients`);
-    
-    // Fetch profiles in batches to handle large numbers
-    let allProfiles: any[] = [];
-    const batchSize = 100;
-    
-    for (let i = 0; i < userIds.length; i += batchSize) {
-      const batchIds = userIds.slice(i, i + batchSize);
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, email, name, phone')
-        .in('id', batchIds);
-      
-      if (profilesData) {
-        allProfiles = [...allProfiles, ...profilesData];
-      }
-    }
-
     const profilesMap = new Map(allProfiles.map(p => [p.id, p]));
+    const purchasesByUser = new Map<string, any[]>();
+    
+    // Group purchases by user
+    allPurchases.forEach(purchase => {
+      if (!purchasesByUser.has(purchase.user_id)) {
+        purchasesByUser.set(purchase.user_id, []);
+      }
+      purchasesByUser.get(purchase.user_id)!.push(purchase);
+    });
 
-    const purchasesWithUsers = allPurchases.map(purchase => ({
-      ...purchase,
-      user_email: profilesMap.get(purchase.user_id)?.email || '',
-      user_name: profilesMap.get(purchase.user_id)?.name || '',
-      user_phone: profilesMap.get(purchase.user_id)?.phone || ''
-    }));
+    // 3. Create purchases array including users WITHOUT packs (as placeholder entries)
+    const purchasesWithUsers: PackPurchase[] = [];
+    
+    // Add all actual purchases with user info
+    allPurchases.forEach(purchase => {
+      purchasesWithUsers.push({
+        ...purchase,
+        user_email: profilesMap.get(purchase.user_id)?.email || '',
+        user_name: profilesMap.get(purchase.user_id)?.name || '',
+        user_phone: profilesMap.get(purchase.user_id)?.phone || ''
+      });
+    });
+    
+    // Add placeholder entries for users WITHOUT any packs
+    allProfiles.forEach(profile => {
+      if (!purchasesByUser.has(profile.id)) {
+        // User has no packs - create a placeholder entry
+        purchasesWithUsers.push({
+          id: `orphan-${profile.id}`,
+          user_id: profile.id,
+          pack_slug: '__none__',
+          access_type: 'vitalicio',
+          has_bonus_access: false,
+          is_active: false,
+          purchased_at: profile.created_at || new Date().toISOString(),
+          expires_at: null,
+          greenn_contract_id: null,
+          product_name: null,
+          user_email: profile.email || '',
+          user_name: profile.name || '',
+          user_phone: profile.phone || ''
+        });
+      }
+    });
 
+    console.log(`Total entries (including orphans): ${purchasesWithUsers.length}`);
     setPurchases(purchasesWithUsers);
   };
 
@@ -249,10 +293,7 @@ const AdminPackPurchases = () => {
       return;
     }
 
-    if (formData.packAccesses.length === 0) {
-      toast.error("Adicione pelo menos um pack");
-      return;
-    }
+    // Allow saving with no packs (just update profile)
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -612,7 +653,10 @@ const AdminPackPurchases = () => {
       userMap.set(purchase.user_id, client);
       groupedClientsUnsorted.push(client);
     }
-    userMap.get(purchase.user_id)!.purchases.push(purchase);
+    // Only add real purchases (not placeholder orphans)
+    if (purchase.pack_slug !== '__none__') {
+      userMap.get(purchase.user_id)!.purchases.push(purchase);
+    }
   });
 
   // Sorting logic
@@ -642,6 +686,7 @@ const AdminPackPurchases = () => {
   };
 
   const getLatestPurchaseDate = (client: GroupedClient): Date => {
+    if (client.purchases.length === 0) return new Date(0); // Orphans go to end
     const dates = client.purchases.map(p => new Date(p.purchased_at));
     return new Date(Math.max(...dates.map(d => d.getTime())));
   };
@@ -1211,7 +1256,21 @@ const AdminPackPurchases = () => {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={() => openEditDialog(client.purchases[0])}
+                              onClick={() => {
+                                // For orphans (no purchases), create a mock purchase for edit dialog
+                                if (client.purchases.length === 0) {
+                                  setEditingClient(client);
+                                  setFormData({
+                                    email: client.user_email,
+                                    name: client.user_name,
+                                    phone: client.user_phone,
+                                    packAccesses: []
+                                  });
+                                  setShowAddDialog(true);
+                                } else {
+                                  openEditDialog(client.purchases[0]);
+                                }
+                              }}
                               title="Editar"
                             >
                               <Edit className="h-4 w-4" />
@@ -1235,24 +1294,36 @@ const AdminPackPurchases = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
-                            {client.purchases.map((purchase) => (
-                              <Badge 
-                                key={purchase.id} 
-                                variant="outline"
-                                className={`text-xs ${!purchase.is_active ? 'opacity-50 line-through' : ''}`}
-                              >
-                                {getPackName(purchase.pack_slug)} ({getAccessTypeLabel(purchase.access_type)})
+                            {client.purchases.length === 0 ? (
+                              <Badge variant="outline" className="text-xs bg-muted text-muted-foreground">
+                                Sem packs
                               </Badge>
-                            ))}
+                            ) : (
+                              client.purchases.map((purchase) => (
+                                <Badge 
+                                  key={purchase.id} 
+                                  variant="outline"
+                                  className={`text-xs ${!purchase.is_active ? 'opacity-50 line-through' : ''}`}
+                                >
+                                  {getPackName(purchase.pack_slug)} ({getAccessTypeLabel(purchase.access_type)})
+                                </Badge>
+                              ))
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs">
-                            {format(latestPurchase, "dd/MM/yy", { locale: ptBR })}
-                          </span>
+                          {client.purchases.length === 0 ? (
+                            <span className="text-xs text-muted-foreground">-</span>
+                          ) : (
+                            <span className="text-xs">
+                              {format(latestPurchase, "dd/MM/yy", { locale: ptBR })}
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell>
-                          {hasVitalicio ? (
+                          {client.purchases.length === 0 ? (
+                            <span className="text-xs text-muted-foreground">-</span>
+                          ) : hasVitalicio ? (
                             <Badge variant="outline" className="bg-purple-500/10 text-purple-600 border-purple-500/30 text-xs">
                               Vitalício
                             </Badge>
