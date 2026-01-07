@@ -56,6 +56,9 @@ const FerramentasIA = () => {
   const [firstAccessLoading, setFirstAccessLoading] = useState(false);
   const [showEmailNotFoundModal, setShowEmailNotFoundModal] = useState(false);
 
+  // Preferred order for tools
+  const preferredOrder = ["upscaller-arcano", "forja-selos-3d-ilimitada", "ia-muda-pose", "ia-muda-roupa"];
+
   useEffect(() => {
     const fetchTools = async () => {
       const { data, error } = await supabase
@@ -66,7 +69,13 @@ const FerramentasIA = () => {
         .order("display_order", { ascending: true });
 
       if (!error && data) {
-        setTools(data);
+        // Sort by preferred order
+        const sorted = [...data].sort((a, b) => {
+          const indexA = preferredOrder.indexOf(a.slug);
+          const indexB = preferredOrder.indexOf(b.slug);
+          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+        });
+        setTools(sorted);
       }
       setLoading(false);
     };
