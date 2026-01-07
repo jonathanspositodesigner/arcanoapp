@@ -89,8 +89,9 @@ const FerramentaIAArtes = () => {
     return url;
   };
 
-  // Check if user has access to this tool (any active pack = access)
-  const hasAccess = isPremium;
+  // Ferramentas que são bônus (qualquer pack ativo dá acesso)
+  const bonusTools = ["ia-muda-pose", "ia-muda-roupa"];
+  const hasAccess = slug && bonusTools.includes(slug) ? isPremium : hasAccessToPack(slug || "");
 
   if (loading || premiumLoading) {
     return (

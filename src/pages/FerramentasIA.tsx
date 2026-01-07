@@ -61,8 +61,18 @@ const FerramentasIA = () => {
     return tool.checkout_link_vitalicio || "#";
   };
 
+  // Ferramentas que são bônus (qualquer pack ativo dá acesso)
+  const bonusTools = ["ia-muda-pose", "ia-muda-roupa"];
+  
+  const checkToolAccess = (slug: string): boolean => {
+    if (bonusTools.includes(slug)) {
+      return isPremium;
+    }
+    return hasAccessToPack(slug);
+  };
+
   const handleToolClick = (tool: ToolData) => {
-    const hasAccess = hasAccessToPack(tool.slug);
+    const hasAccess = checkToolAccess(tool.slug);
     
     if (hasAccess) {
       navigate(getAccessRoute(tool.slug));
@@ -124,7 +134,7 @@ const FerramentasIA = () => {
         {/* Tools Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {tools.map((tool) => {
-            const hasAccess = hasAccessToPack(tool.slug);
+            const hasAccess = checkToolAccess(tool.slug);
             
             return (
               <div
