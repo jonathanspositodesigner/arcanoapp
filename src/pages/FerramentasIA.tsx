@@ -3,9 +3,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
-import { ArrowLeft, Sparkles, Lock, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Lock, CheckCircle, Loader2, Play, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 interface ToolData {
   id: string;
   name: string;
@@ -161,69 +162,78 @@ const FerramentasIA = () => {
         </p>
 
         {/* Tools Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-            {tools.map((tool) => {
-              const hasAccess = checkToolAccess(tool.slug);
-              
-              return (
-                <Card 
-                  key={tool.id}
-                  className={`p-4 border-fuchsia-500/30 bg-[#1a0f25]/50 transition-all duration-300 ${
-                    hasAccess 
-                      ? "hover:shadow-lg hover:scale-[1.02] cursor-pointer hover:border-fuchsia-500/60" 
-                      : "opacity-90 cursor-pointer hover:border-fuchsia-500/60"
-                  }`}
-                  onClick={() => handleToolClick(tool)}
-                >
-                  <div className="flex flex-col h-full">
-                    {/* Header com ícone e badge */}
-                    <div className="flex items-start justify-between mb-3">
-                      {tool.cover_url ? (
-                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                          <img 
-                            src={tool.cover_url} 
-                            alt={tool.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="bg-fuchsia-500/10 p-2 rounded-lg">
-                          <Sparkles className="h-6 w-6 text-fuchsia-400" />
-                        </div>
-                      )}
-                      
-                      {hasAccess ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/90 text-white text-xs font-medium">
-                          <CheckCircle className="w-3 h-3" />
-                          Acesso
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-500 text-white text-xs font-medium">
-                          <Lock className="w-3 h-3" />
-                          {formatPrice(tool.price_vitalicio)}
-                        </span>
-                      )}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {tools.map((tool) => {
+            const hasAccess = checkToolAccess(tool.slug);
+            
+            return (
+              <Card 
+                key={tool.id}
+                className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group border-0"
+                onClick={() => handleToolClick(tool)}
+              >
+                <div className="aspect-[3/4] relative overflow-hidden">
+                  {/* Imagem de capa grande */}
+                  {tool.cover_url ? (
+                    <img 
+                      src={tool.cover_url} 
+                      alt={tool.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-fuchsia-500/60 to-purple-600 flex items-center justify-center">
+                      <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
                     </div>
+                  )}
+                  
+                  {/* Badge de acesso no canto superior direito */}
+                  <div className="absolute top-2 right-2 z-10">
+                    {hasAccess ? (
+                      <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        DISPONÍVEL
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-gradient-to-r from-fuchsia-500 to-purple-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                        <Lock className="h-3 w-3 mr-1" />
+                        {formatPrice(tool.price_vitalicio)}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {/* Overlay com gradiente e informações */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
+                    <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+                      {tool.name}
+                    </h3>
                     
-                    {/* Título */}
-                    <h3 className="font-bold text-white mb-3">{tool.name}</h3>
-                    
-                    {/* Botão */}
+                    {/* Botão de ação */}
                     <Button
-                      className={`w-full mt-auto font-semibold text-xs ${
-                        hasAccess
-                          ? "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white"
-                          : "bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white"
-                      }`}
                       size="sm"
+                      className={`mt-2 text-xs ${
+                        hasAccess 
+                          ? "bg-green-500 hover:bg-green-600" 
+                          : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90"
+                      } text-white`}
                     >
-                      {hasAccess ? "Acessar Ferramenta" : "Adquirir Agora"}
+                      {hasAccess ? (
+                        <>
+                          <Play className="h-3 w-3 mr-1" />
+                          Acessar
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="h-3 w-3 mr-1" />
+                          Comprar
+                        </>
+                      )}
                     </Button>
                   </div>
-                </Card>
-              );
-            })}
-          </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
 
         {tools.length === 0 && (
           <div className="text-center py-16">
