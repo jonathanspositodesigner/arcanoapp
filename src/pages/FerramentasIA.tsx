@@ -3,10 +3,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
-import { ArrowLeft, Sparkles, CheckCircle, Loader2, Play, ShoppingCart, LogIn } from "lucide-react";
+import { ArrowLeft, Sparkles, CheckCircle, Loader2, Play, ShoppingCart, LogIn, UserCheck, AlertTriangle, ChevronRight, ChevronLeft, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface ToolData {
   id: string;
@@ -47,6 +50,12 @@ const FerramentasIA = () => {
   const [tools, setTools] = useState<ToolData[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // First access modal states
+  const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
+  const [firstAccessEmail, setFirstAccessEmail] = useState("");
+  const [firstAccessLoading, setFirstAccessLoading] = useState(false);
+  const [showEmailNotFoundModal, setShowEmailNotFoundModal] = useState(false);
+
   useEffect(() => {
     const fetchTools = async () => {
       const { data, error } = await supabase
@@ -64,6 +73,64 @@ const FerramentasIA = () => {
 
     fetchTools();
   }, []);
+
+  const handleFirstAccessCheck = async () => {
+    if (!firstAccessEmail.trim()) {
+      toast.error("Digite seu email");
+      return;
+    }
+    setFirstAccessLoading(true);
+    try {
+      const { data: profileCheck, error: rpcError } = await supabase.rpc('check_profile_exists', {
+        check_email: firstAccessEmail.trim()
+      });
+      
+      if (rpcError) {
+        toast.error("Erro ao verificar cadastro. Tente novamente.");
+        setFirstAccessLoading(false);
+        return;
+      }
+      
+      const profileExists = profileCheck?.[0]?.exists_in_db || false;
+      const passwordChanged = profileCheck?.[0]?.password_changed || false;
+      
+      if (!profileExists) {
+        setShowFirstAccessModal(false);
+        setShowEmailNotFoundModal(true);
+        return;
+      }
+      
+      if (profileExists && !passwordChanged) {
+        // Primeiro acesso: login com email/email
+        const { error } = await supabase.auth.signInWithPassword({
+          email: firstAccessEmail.trim(),
+          password: firstAccessEmail.trim()
+        });
+        if (!error) {
+          setShowFirstAccessModal(false);
+          setFirstAccessEmail("");
+          toast.success("Bem-vindo! Agora defina sua nova senha.");
+          navigate('/change-password-artes');
+        } else {
+          toast.error("Erro ao acessar. Tente fazer login normalmente.");
+          setShowFirstAccessModal(false);
+          navigate('/login-artes');
+        }
+        return;
+      }
+      
+      if (profileExists && passwordChanged) {
+        toast.info("Você já definiu sua senha. Faça login normalmente.");
+        setShowFirstAccessModal(false);
+        setFirstAccessEmail("");
+        navigate('/login-artes');
+      }
+    } catch (error) {
+      toast.error("Erro ao verificar email. Tente novamente.");
+    } finally {
+      setFirstAccessLoading(false);
+    }
+  };
 
   const getAccessRoute = (slug: string) => {
     return `/ferramenta-ia-artes/${slug}`;
@@ -203,7 +270,7 @@ const FerramentasIA = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-purple-200 shadow-sm">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Lado Esquerdo - Voltar + Botão de Acesso */}
+          {/* Lado Esquerdo - Voltar + Login */}
           <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="ghost"
@@ -215,15 +282,17 @@ const FerramentasIA = () => {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/login-artes")}
-              className="text-purple-600 border-purple-300 hover:bg-purple-50 text-xs sm:text-sm"
-            >
-              <LogIn className="w-4 h-4 mr-2" />
-              Já adquiriu? Acesse aqui
-            </Button>
+            {!user && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/login-artes")}
+                className="text-purple-600 border-purple-300 hover:bg-purple-50 text-xs sm:text-sm"
+              >
+                <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
+                Login
+              </Button>
+            )}
           </div>
 
           {/* Lado Direito - Logo + Título (fixo) */}
@@ -237,6 +306,20 @@ const FerramentasIA = () => {
           </div>
         </div>
       </header>
+
+      {/* Primeiro Acesso Button - Below Header */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200">
+        <div className="container mx-auto px-4 py-3">
+          <Button
+            onClick={() => setShowFirstAccessModal(true)}
+            className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
+            size="sm"
+          >
+            <UserCheck className="w-4 h-4 mr-2" />
+            Já adquiriu? Primeiro acesso aqui
+          </Button>
+        </div>
+      </div>
 
       {/* Content */}
       <main className="container mx-auto px-4 py-8">
@@ -278,6 +361,99 @@ const FerramentasIA = () => {
           </div>
         )}
       </main>
+
+      {/* First Access Modal */}
+      <Dialog open={showFirstAccessModal} onOpenChange={setShowFirstAccessModal}>
+        <DialogContent className="max-w-[340px] sm:max-w-md">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto">
+              <UserCheck className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">Primeiro Acesso</h2>
+              <p className="text-muted-foreground mt-2 text-sm">
+                Comprou uma ferramenta? Coloque seu email de compra aqui para definir sua senha
+              </p>
+            </div>
+            <div className="space-y-3">
+              <Input 
+                type="email" 
+                placeholder="Digite seu email de compra" 
+                value={firstAccessEmail} 
+                onChange={e => setFirstAccessEmail(e.target.value)} 
+                onKeyDown={e => e.key === 'Enter' && handleFirstAccessCheck()} 
+              />
+              <Button 
+                onClick={handleFirstAccessCheck} 
+                disabled={firstAccessLoading} 
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500"
+              >
+                {firstAccessLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Verificando...
+                  </>
+                ) : (
+                  <>
+                    <ChevronRight className="h-4 w-4 mr-2" />
+                    Verificar Email
+                  </>
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Não é cliente ainda?{" "}
+              <button 
+                onClick={() => {
+                  setShowFirstAccessModal(false);
+                }} 
+                className="text-primary underline"
+              >
+                Veja nossas ferramentas
+              </button>
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Not Found Modal */}
+      <Dialog open={showEmailNotFoundModal} onOpenChange={setShowEmailNotFoundModal}>
+        <DialogContent className="max-w-[340px] sm:max-w-md">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
+              <AlertTriangle className="h-8 w-8 text-red-500" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">Email não encontrado</h2>
+              <p className="text-muted-foreground mt-2 text-sm">
+                O email <strong>{firstAccessEmail}</strong> não está cadastrado.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button 
+                onClick={() => {
+                  setShowEmailNotFoundModal(false);
+                  setShowFirstAccessModal(true);
+                }} 
+                variant="outline"
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Tentar outro email
+              </Button>
+              <Button 
+                onClick={() => {
+                  setShowEmailNotFoundModal(false);
+                  navigate('/login-artes');
+                }} 
+                className="bg-gradient-to-r from-yellow-500 to-orange-500"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Criar Conta
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
