@@ -218,13 +218,10 @@ const FerramentasIA = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                const section = document.querySelector('section');
-                if (section) section.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onClick={() => navigate("/login-artes")}
               className="text-purple-600 border-purple-300 hover:bg-purple-50 text-xs sm:text-sm"
             >
-            <LogIn className="w-4 h-4 mr-2" />
+              <LogIn className="w-4 h-4 mr-2" />
               Já adquiriu? Acesse aqui
             </Button>
           </div>
