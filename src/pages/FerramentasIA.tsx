@@ -230,7 +230,7 @@ const FerramentasIA = () => {
 
       {/* Content */}
       <main className="container mx-auto px-4 py-8">
-        <p className="text-gray-600 text-center mb-8 max-w-2xl mx-auto">
+        <p className="text-gray-600 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
           Acesse nossas ferramentas de inteligência artificial para criar artes incríveis, 
           melhorar a qualidade de imagens, gerar selos 3D e muito mais.
         </p>
