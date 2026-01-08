@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => ({
         name: "ArcanoApp",
         short_name: "ArcanoApp",
         description: "ArcanoApp - A plataforma dos criadores do futuro. Prompts e arquivos com IA",
+        // PWA Version 2.0.1 - Force cache update to remove old signed-url calls
         theme_color: "#552b99",
         background_color: "#fafafa",
         display: "standalone",
