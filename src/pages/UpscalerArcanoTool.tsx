@@ -347,19 +347,49 @@ const UpscalerArcanoTool: React.FC = () => {
     if (!outputImage) return;
 
     try {
-      const response = await fetch(outputImage);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = mode === 'rembg' ? 'sem-fundo.png' : 'upscaled.png';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success('Download iniciado!');
+      // Use edge function proxy to avoid CORS
+      const { data, error } = await supabase.functions.invoke('download-image', {
+        body: { imageUrl: outputImage }
+      });
+
+      if (error) throw new Error(error.message);
+
+      // Convert base64 to blob
+      const base64 = data.image;
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Uint8Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const contentType = data.contentType || 'image/png';
+      const blob = new Blob([byteNumbers], { type: contentType });
+
+      // Detect iOS
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+      if (isIOS) {
+        // iOS: Open image in new tab (user holds to save)
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+        toast.success('Imagem aberta! Segure a imagem para salvar.');
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+      } else {
+        // Other devices: Direct download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = mode === 'rembg' ? 'sem-fundo.png' : 'upscaled.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success('Download iniciado!');
+      }
     } catch (error) {
-      toast.error('Erro ao baixar imagem');
+      console.error('Download error:', error);
+      // Fallback: open URL directly
+      window.open(outputImage, '_blank');
+      toast.info('Imagem aberta em nova aba. Segure para salvar.');
     }
   };
 
