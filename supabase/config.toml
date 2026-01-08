@@ -89,3 +89,6 @@ verify_jwt = false
 
 [functions.runpod-upscaler]
 verify_jwt = false
+
+[functions.process-remarketing-emails]
+verify_jwt = false
