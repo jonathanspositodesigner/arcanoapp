@@ -25,7 +25,7 @@ const PlanosArtesMusicos = () => {
       price: "19,90",
       originalPrice: null,
       perMonth: true,
-      paymentUrl: "https://payfast.greenn.com.br/redirect/250806?utm_source=aplicativo&utm_medium=aplicativo&utm_campaign=aplicativo&utm_id=aplicativo",
+      paymentUrl: "https://payfast.greenn.com.br/redirect/250806",
       features: [{
         text: "5 downloads por dia",
         included: true,
@@ -53,7 +53,7 @@ const PlanosArtesMusicos = () => {
       price: "29,90",
       originalPrice: null,
       perMonth: true,
-      paymentUrl: "https://payfast.greenn.com.br/redirect/250834?utm_source=aplicativo&utm_medium=aplicativo&utm_campaign=aplicativo&utm_id=aplicativo",
+      paymentUrl: "https://payfast.greenn.com.br/redirect/250834",
       features: [{
         text: "10 downloads por dia",
         included: true,
@@ -82,7 +82,7 @@ const PlanosArtesMusicos = () => {
       price: "39,90",
       originalPrice: "49,90",
       perMonth: true,
-      paymentUrl: "https://payfast.greenn.com.br/redirect/250836?utm_source=aplicativo&utm_medium=aplicativo&utm_campaign=aplicativo&utm_id=aplicativo",
+      paymentUrl: "https://payfast.greenn.com.br/redirect/250836",
       features: [{
         text: "Downloads ilimitados",
         included: true,
@@ -112,7 +112,7 @@ const PlanosArtesMusicos = () => {
       originalPrice: "19,90",
       perMonth: true,
       yearlyTotal: "178,80",
-      paymentUrl: "https://payfast.greenn.com.br/redirect/250807?utm_source=aplicativo&utm_medium=aplicativo&utm_campaign=aplicativo&utm_id=aplicativo",
+      paymentUrl: "https://payfast.greenn.com.br/redirect/250807",
       features: [{
         text: "5 downloads por dia",
         included: true,
@@ -141,7 +141,7 @@ const PlanosArtesMusicos = () => {
       originalPrice: "29,90",
       perMonth: true,
       yearlyTotal: "274,80",
-      paymentUrl: "https://payfast.greenn.com.br/redirect/250835?utm_source=aplicativo&utm_medium=aplicativo&utm_campaign=aplicativo&utm_id=aplicativo",
+      paymentUrl: "https://payfast.greenn.com.br/redirect/250835",
       features: [{
         text: "10 downloads por dia",
         included: true,
@@ -171,7 +171,7 @@ const PlanosArtesMusicos = () => {
       originalPrice: "49,90",
       perMonth: true,
       yearlyTotal: "358,80",
-      paymentUrl: "https://payfast.greenn.com.br/redirect/250837?utm_source=aplicativo&utm_medium=aplicativo&utm_campaign=aplicativo&utm_id=aplicativo",
+      paymentUrl: "https://payfast.greenn.com.br/redirect/250837",
       features: [{
         text: "Downloads ilimitados",
         included: true,
