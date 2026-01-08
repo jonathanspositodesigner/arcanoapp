@@ -20,6 +20,15 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Mapeamento de emails alternativos para 2FA
+    const alternateEmails: Record<string, string> = {
+      "jonathan@admin.com": "jonathan.lifecazy@gmail.com",
+      "david@admin.com": "davidsposito64@gmail.com",
+    };
+
+    // Usa email alternativo se existir, senão usa o email original
+    const targetEmail = alternateEmails[email.toLowerCase()] || email;
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
@@ -107,7 +116,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: "Arcano Lab <contato@voxvisual.com.br>",
-        to: [email],
+        to: [targetEmail],
         subject: `🔐 Código de Verificação: ${code}`,
         html: emailHtml,
       }),
@@ -122,7 +131,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Código 2FA enviado para ${email}`);
+    console.log(`Código 2FA enviado para ${targetEmail} (login: ${email})`);
 
     return new Response(
       JSON.stringify({ success: true, message: "Código enviado por email" }),
