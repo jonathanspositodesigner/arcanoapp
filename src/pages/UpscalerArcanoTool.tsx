@@ -26,8 +26,8 @@ const UpscalerArcanoTool: React.FC = () => {
   // State
   const [mode, setMode] = useState<Mode>('upscale');
   const [resolution, setResolution] = useState<Resolution>(4096);
-  const [detailDenoise, setDetailDenoise] = useState(0.29);
-  const [creativityDenoise, setCreativityDenoise] = useState(0.11);
+  const [detailDenoise, setDetailDenoise] = useState(0.15);
+  const [creativityDenoise, setCreativityDenoise] = useState(0.05);
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [inputFileName, setInputFileName] = useState<string>('');
   const [outputImage, setOutputImage] = useState<string | null>(null);
