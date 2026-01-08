@@ -37,7 +37,6 @@ const PushNotificationPrompt = () => {
     const timer = setTimeout(() => {
       setShowModal(true);
       sessionStorage.setItem(SESSION_SHOWN_KEY, "true");
-      trackPushNotificationEvent('prompt_shown');
     }, SHOW_DELAY_MS);
 
     return () => clearTimeout(timer);
