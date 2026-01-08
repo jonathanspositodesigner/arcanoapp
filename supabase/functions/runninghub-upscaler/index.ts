@@ -457,7 +457,10 @@ async function handleOutputs(req: Request) {
     const imageExtensions = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'image'];
     const imageUrls = outputs
       .filter((output: any) => imageExtensions.includes(output.fileType?.toLowerCase()))
-      .map((output: any) => output.fileUrl);
+      .map((output: any) => output.fileUrl)
+      .filter((url: unknown) => typeof url === 'string' && url.trim().length > 0);
+    
+    console.log('[RunningHub] Filtered image URLs:', imageUrls);
 
     return new Response(JSON.stringify({ 
       success: true, 
