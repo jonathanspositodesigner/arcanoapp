@@ -494,14 +494,19 @@ const PlanosUpscalerArcano = () => {
       description: "Melhore fotos de clientes e crie seus 3Ds em alta qualidade"
     },
     {
-      icon: User,
-      title: "Usuário Comum",
-      description: "Tirou uma foto ruim e quer melhorar? Transforme em uma imagem nítida e profissional"
-    },
-    {
       icon: Camera,
       title: "Fotógrafos Profissionais",
       description: "Recupere fotos com ruído, pouca luz ou resolução baixa e entregue resultados impecáveis"
+    },
+    {
+      icon: MessageCircle,
+      title: "Social Media",
+      description: "Crie conteúdo visual de alta qualidade para suas redes sociais e engaje mais seguidores"
+    },
+    {
+      icon: User,
+      title: "Usuário Comum",
+      description: "Tirou uma foto ruim e quer melhorar? Transforme em uma imagem nítida e profissional"
     }
   ];
 
