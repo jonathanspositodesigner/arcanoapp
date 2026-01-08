@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           abandoned_at: string | null
           amount: number | null
+          auto_remarketing_attempts: number | null
           checkout_link: string | null
           checkout_step: number | null
           contacted_at: string | null
@@ -34,12 +35,14 @@ export type Database = {
           platform: string | null
           product_id: number | null
           product_name: string | null
+          remarketing_email_sent_at: string | null
           remarketing_status: string | null
           updated_at: string | null
         }
         Insert: {
           abandoned_at?: string | null
           amount?: number | null
+          auto_remarketing_attempts?: number | null
           checkout_link?: string | null
           checkout_step?: number | null
           contacted_at?: string | null
@@ -56,12 +59,14 @@ export type Database = {
           platform?: string | null
           product_id?: number | null
           product_name?: string | null
+          remarketing_email_sent_at?: string | null
           remarketing_status?: string | null
           updated_at?: string | null
         }
         Update: {
           abandoned_at?: string | null
           amount?: number | null
+          auto_remarketing_attempts?: number | null
           checkout_link?: string | null
           checkout_step?: number | null
           contacted_at?: string | null
@@ -78,6 +83,7 @@ export type Database = {
           platform?: string | null
           product_id?: number | null
           product_name?: string | null
+          remarketing_email_sent_at?: string | null
           remarketing_status?: string | null
           updated_at?: string | null
         }
