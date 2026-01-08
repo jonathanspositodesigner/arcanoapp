@@ -1618,7 +1618,7 @@ const BibliotecaArtes = () => {
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
                       Comprar Curso
                     </Button>
-                    <Button onClick={() => window.open('https://voxvisual.com.br/eventoia3/?utm_source=aplicativo&utm_medium=aplicativo&utm_campaign=aplicativo&utm_id=aplicativo', '_blank')} variant="outline" className="w-full">
+                    <Button onClick={() => window.open('https://voxvisual.com.br/eventoia3/', '_blank')} variant="outline" className="w-full">
                       Saiba mais
                     </Button>
                     <Button onClick={() => setShowCursoModal(false)} variant="outline" className="w-full">
