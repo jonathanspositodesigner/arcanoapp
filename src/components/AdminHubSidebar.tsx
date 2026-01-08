@@ -1,4 +1,4 @@
-import { Home, BarChart3, LogOut, ArrowLeft, Megaphone, Users, ShieldCheck } from "lucide-react";
+import { Home, BarChart3, LogOut, ArrowLeft, Megaphone, Users, ShieldCheck, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +38,12 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       label: "GERENCIAR PARCEIROS",
       icon: Users,
       description: "Cadastrar e gerenciar colaboradores"
+    },
+    {
+      id: "abandoned-checkouts" as const,
+      label: "REMARKETING",
+      icon: ShoppingCart,
+      description: "Checkouts abandonados"
     },
     {
       id: "admins" as const,
