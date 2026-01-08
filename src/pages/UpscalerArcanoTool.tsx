@@ -36,12 +36,12 @@ const UpscalerArcanoTool: React.FC = () => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [lastError, setLastError] = useState<ErrorDetails | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [transform, setTransform] = useState({ scale: 1, positionX: 0, positionY: 0 });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
+  const beforeTransformRef = useRef<HTMLDivElement>(null);
 
   // Cleanup polling on unmount
   useEffect(() => {
@@ -520,11 +520,18 @@ const UpscalerArcanoTool: React.FC = () => {
                 maxScale={100}
                 onInit={(ref) => {
                   setZoomLevel(ref.state.scale);
-                  setTransform({ scale: ref.state.scale, positionX: ref.state.positionX, positionY: ref.state.positionY });
+                  // Sync BEFORE layer directly via ref
+                  if (beforeTransformRef.current) {
+                    beforeTransformRef.current.style.transform = `translate(${ref.state.positionX}px, ${ref.state.positionY}px) scale(${ref.state.scale})`;
+                    beforeTransformRef.current.style.transformOrigin = '0% 0%';
+                  }
                 }}
                 onTransformed={(_, state) => {
                   setZoomLevel(state.scale);
-                  setTransform({ scale: state.scale, positionX: state.positionX, positionY: state.positionY });
+                  // Sync BEFORE layer directly via ref - same transform as library
+                  if (beforeTransformRef.current) {
+                    beforeTransformRef.current.style.transform = `translate(${state.positionX}px, ${state.positionY}px) scale(${state.scale})`;
+                  }
                 }}
                 wheel={{ step: 0.2 }}
                 pinch={{ step: 5 }}
@@ -588,10 +595,10 @@ const UpscalerArcanoTool: React.FC = () => {
                             }}
                           >
                             <div 
+                              ref={beforeTransformRef}
                               className="w-full h-full"
                               style={{ 
-                                transform: `translate(${transform.positionX}px, ${transform.positionY}px) scale(${transform.scale})`,
-                                transformOrigin: 'center center'
+                                transformOrigin: '0% 0%'
                               }}
                             >
                               <img 
