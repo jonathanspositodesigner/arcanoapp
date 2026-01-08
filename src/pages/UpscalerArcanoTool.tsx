@@ -187,122 +187,139 @@ const UpscalerArcanoTool: React.FC = () => {
       console.log('Workflow started, taskId:', taskId, 'method:', runResponse.data.method);
       setProgress(40);
 
-      // Step 3: Poll for status
+      // Step 3: Wait for minimum processing time, then poll for status
+      const initialDelay = 150000; // 2 minutes and 30 seconds
+      const pollingInterval = 5000; // 5 seconds
+      const maxAttempts = 120; // 10 minutes of polling after initial delay
       let attempts = 0;
-      const maxAttempts = 60; // 30 minutes max (30s * 60)
 
-      pollingRef.current = setInterval(async () => {
-        attempts++;
+      // Progress animation during initial delay (0-50% over 2:30)
+      const progressPerStep = 10 / 30; // Update every 5 seconds, reach 50% in 2:30
+      let progressValue = 40;
+      
+      const progressTimer = setInterval(() => {
+        progressValue = Math.min(progressValue + progressPerStep, 50);
+        setProgress(progressValue);
+      }, 5000);
+
+      // Start polling after initial delay
+      setTimeout(() => {
+        clearInterval(progressTimer);
+        setProgress(50);
         
-        if (attempts > maxAttempts) {
-          clearInterval(pollingRef.current!);
-          setStatus('error');
-          setLastError({
-            message: 'Tempo limite excedido',
-            code: 'TIMEOUT',
-            solution: 'O processamento demorou mais de 6 minutos. Tente com uma imagem menor ou com menos resolução.'
-          });
-          toast.error('Tempo limite excedido. Tente novamente.');
-          return;
-        }
-
-        try {
-          const statusResponse = await supabase.functions.invoke('runninghub-upscaler/status', {
-            body: { taskId },
-          });
-
-          if (statusResponse.error) {
-            console.error('Status check error:', statusResponse.error);
-            return;
-          }
-
-          // Check for API error in status
-          if (statusResponse.data?.error) {
+        pollingRef.current = setInterval(async () => {
+          attempts++;
+          
+          if (attempts > maxAttempts) {
             clearInterval(pollingRef.current!);
             setStatus('error');
             setLastError({
-              message: statusResponse.data.error,
-              code: statusResponse.data.code,
-              solution: 'Erro ao verificar status do processamento'
+              message: 'Tempo limite excedido',
+              code: 'TIMEOUT',
+              solution: 'O processamento demorou mais de 12 minutos. Tente com uma imagem menor ou com menos resolução.'
             });
-            toast.error('Erro ao verificar status');
+            toast.error('Tempo limite excedido. Tente novamente.');
             return;
           }
 
-          const taskStatus = statusResponse.data?.status;
-          
-          // Handle undefined status
-          if (!taskStatus) {
-            console.warn('Status undefined, continuing polling...');
-            return;
-          }
-          
-          console.log('Task status:', taskStatus);
-
-          // Update progress based on status
-          if (taskStatus === 'RUNNING' || taskStatus === 'PENDING') {
-            setProgress(Math.min(40 + (attempts * 0.5), 90));
-          } else if (taskStatus === 'SUCCESS') {
-            clearInterval(pollingRef.current!);
-            setProgress(95);
-
-            // Get outputs
-            const outputsResponse = await supabase.functions.invoke('runninghub-upscaler/outputs', {
+          try {
+            const statusResponse = await supabase.functions.invoke('runninghub-upscaler/status', {
               body: { taskId },
             });
 
-            if (outputsResponse.error) {
-              throw new Error('Erro ao obter resultado');
+            if (statusResponse.error) {
+              console.error('Status check error:', statusResponse.error);
+              return;
             }
 
-            if (outputsResponse.data?.error) {
+            // Check for API error in status
+            if (statusResponse.data?.error) {
+              clearInterval(pollingRef.current!);
+              setStatus('error');
               setLastError({
-                message: outputsResponse.data.error,
-                code: outputsResponse.data.code
+                message: statusResponse.data.error,
+                code: statusResponse.data.code,
+                solution: 'Erro ao verificar status do processamento'
               });
-              throw new Error(outputsResponse.data.error);
+              toast.error('Erro ao verificar status');
+              return;
             }
 
-            const { outputs } = outputsResponse.data;
-            console.log('[Upscaler] Raw outputs:', outputs);
+            const taskStatus = statusResponse.data?.status;
+            
+            // Handle undefined status
+            if (!taskStatus) {
+              console.warn('Status undefined, continuing polling...');
+              return;
+            }
+            
+            console.log('Task status:', taskStatus, 'attempt:', attempts);
 
-            // Filter and validate URLs - only keep non-empty strings
-            const validOutputs = (outputs || []).filter(
-              (url: unknown) => typeof url === 'string' && url.trim().length > 0
-            );
-            console.log('[Upscaler] Valid outputs:', validOutputs);
+            // Update progress based on status (50-95%)
+            if (taskStatus === 'RUNNING' || taskStatus === 'PENDING') {
+              setProgress(Math.min(50 + (attempts * 0.4), 95));
+            } else if (taskStatus === 'SUCCESS') {
+              clearInterval(pollingRef.current!);
+              setProgress(95);
 
-            if (validOutputs.length > 0) {
-              // Get the last valid output (usually the final processed image)
-              const finalUrl = validOutputs[validOutputs.length - 1];
-              console.log('[Upscaler] Selected finalUrl:', finalUrl);
-              
-              setOutputImage(finalUrl);
-              setStatus('completed');
-              setProgress(100);
-              toast.success('Imagem processada com sucesso!');
-            } else {
+              // Get outputs
+              const outputsResponse = await supabase.functions.invoke('runninghub-upscaler/outputs', {
+                body: { taskId },
+              });
+
+              if (outputsResponse.error) {
+                throw new Error('Erro ao obter resultado');
+              }
+
+              if (outputsResponse.data?.error) {
+                setLastError({
+                  message: outputsResponse.data.error,
+                  code: outputsResponse.data.code
+                });
+                throw new Error(outputsResponse.data.error);
+              }
+
+              const { outputs } = outputsResponse.data;
+              console.log('[Upscaler] Raw outputs:', outputs);
+
+              // Filter and validate URLs - only keep non-empty strings
+              const validOutputs = (outputs || []).filter(
+                (url: unknown) => typeof url === 'string' && url.trim().length > 0
+              );
+              console.log('[Upscaler] Valid outputs:', validOutputs);
+
+              if (validOutputs.length > 0) {
+                // Get the last valid output (usually the final processed image)
+                const finalUrl = validOutputs[validOutputs.length - 1];
+                console.log('[Upscaler] Selected finalUrl:', finalUrl);
+                
+                setOutputImage(finalUrl);
+                setStatus('completed');
+                setProgress(100);
+                toast.success('Imagem processada com sucesso!');
+              } else {
+                setLastError({
+                  message: 'Nenhuma imagem válida retornada',
+                  code: 'NO_VALID_OUTPUT',
+                  solution: 'O processamento foi concluído mas não retornou URLs de imagem válidas. Tente novamente.'
+                });
+                throw new Error('Nenhuma imagem válida retornada');
+              }
+            } else if (taskStatus === 'FAILED') {
+              clearInterval(pollingRef.current!);
+              setStatus('error');
               setLastError({
-                message: 'Nenhuma imagem válida retornada',
-                code: 'NO_VALID_OUTPUT',
-                solution: 'O processamento foi concluído mas não retornou URLs de imagem válidas. Tente novamente.'
+                message: 'O processamento falhou no servidor',
+                code: 'TASK_FAILED',
+                solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
               });
-              throw new Error('Nenhuma imagem válida retornada');
+              toast.error('Erro no processamento. Tente novamente.');
             }
-          } else if (taskStatus === 'FAILED') {
-            clearInterval(pollingRef.current!);
-            setStatus('error');
-            setLastError({
-              message: 'O processamento falhou no servidor',
-              code: 'TASK_FAILED',
-              solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
-            });
-            toast.error('Erro no processamento. Tente novamente.');
+          } catch (error) {
+            console.error('Polling error:', error);
           }
-        } catch (error) {
-          console.error('Polling error:', error);
-        }
-      }, 30000); // 30 seconds polling interval
+        }, pollingInterval);
+      }, initialDelay);
 
     } catch (error: any) {
       console.error('Process error:', error);
