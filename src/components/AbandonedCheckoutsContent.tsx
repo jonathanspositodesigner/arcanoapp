@@ -66,7 +66,8 @@ const AbandonedCheckoutsContent = () => {
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
-    converted: 0,
+    emailsEnviados: 0,
+    conversoesRemarketing: 0,
     potentialValue: 0
   });
   
@@ -133,10 +134,54 @@ const AbandonedCheckoutsContent = () => {
         .lt('abandoned_at', fifteenMinutesAgo)
         .eq('remarketing_status', 'pending');
 
-      const { count: converted } = await supabase
+      // Conta emails automáticos enviados
+      const { count: emailsEnviados } = await supabase
         .from('abandoned_checkouts')
         .select('*', { count: 'exact', head: true })
-        .eq('remarketing_status', 'converted');
+        .not('remarketing_email_sent_at', 'is', null);
+
+      // Busca checkouts com email automático enviado para verificar conversões
+      const { data: checkoutsComEmail } = await supabase
+        .from('abandoned_checkouts')
+        .select('email, remarketing_email_sent_at')
+        .not('remarketing_email_sent_at', 'is', null);
+
+      let conversoesRemarketing = 0;
+      
+      if (checkoutsComEmail && checkoutsComEmail.length > 0) {
+        // Para cada checkout com email enviado, verifica se o email existe em profiles
+        // e se tem compra após a data do email
+        for (const checkout of checkoutsComEmail) {
+          const emailSentAt = checkout.remarketing_email_sent_at;
+          
+          // Busca o profile pelo email
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', checkout.email)
+            .single();
+          
+          if (profile) {
+            // Verifica se tem compra em premium_artes_users após o email
+            const { count: premiumCount } = await supabase
+              .from('premium_artes_users')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', profile.id)
+              .gt('created_at', emailSentAt);
+            
+            // Verifica se tem compra em user_pack_purchases após o email
+            const { count: packCount } = await supabase
+              .from('user_pack_purchases')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', profile.id)
+              .gt('created_at', emailSentAt);
+            
+            if ((premiumCount && premiumCount > 0) || (packCount && packCount > 0)) {
+              conversoesRemarketing++;
+            }
+          }
+        }
+      }
 
       const { data: pendingData } = await supabase
         .from('abandoned_checkouts')
@@ -149,7 +194,8 @@ const AbandonedCheckoutsContent = () => {
       setStats({
         total: totalReal || 0,
         pending: pending || 0,
-        converted: converted || 0,
+        emailsEnviados: emailsEnviados || 0,
+        conversoesRemarketing,
         potentialValue
       });
     } catch (error) {
@@ -348,7 +394,7 @@ const AbandonedCheckoutsContent = () => {
   };
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-  const conversionRate = stats.total > 0 ? ((stats.converted / stats.total) * 100).toFixed(1) : '0';
+  const conversionRate = stats.emailsEnviados > 0 ? ((stats.conversoesRemarketing / stats.emailsEnviados) * 100).toFixed(1) : '0';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -396,7 +442,9 @@ const AbandonedCheckoutsContent = () => {
             </div>
             <div>
               <p className="text-2xl font-bold">{conversionRate}%</p>
-              <p className="text-xs text-muted-foreground">Taxa Conversão</p>
+              <p className="text-xs text-muted-foreground">
+                Remarketing ({stats.conversoesRemarketing}/{stats.emailsEnviados})
+              </p>
             </div>
           </div>
         </Card>
