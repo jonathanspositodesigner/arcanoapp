@@ -13,6 +13,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import baaLogo from "@/assets/BAA.png";
+import { appendUtmToUrl } from "@/lib/utmUtils";
 
 const PlanosArtesMusicos = () => {
   const navigate = useNavigate();
@@ -313,16 +314,16 @@ const PlanosArtesMusicos = () => {
 
               {/* CTA Button */}
               <Button 
-                onClick={() => {
-                  if ((plan as any).paymentUrl === "#") {
-                    setShowComingSoonModal(true);
-                  } else {
-                    // Redirect to waiting page with checkout URL
-                    const checkoutUrl = encodeURIComponent((plan as any).paymentUrl);
-                    const planName = encodeURIComponent(`${plan.name} ${billingPeriod === 'anual' ? 'Anual' : 'Mensal'}`);
-                    navigate(`/aguardando-pagamento-musicos?checkout=${checkoutUrl}&plan=${planName}`);
-                  }
-                }}
+              onClick={() => {
+                if ((plan as any).paymentUrl === "#") {
+                  setShowComingSoonModal(true);
+                } else {
+                  // Redirect to waiting page with checkout URL (with UTMs appended)
+                  const checkoutUrl = encodeURIComponent(appendUtmToUrl((plan as any).paymentUrl));
+                  const planName = encodeURIComponent(`${plan.name} ${billingPeriod === 'anual' ? 'Anual' : 'Mensal'}`);
+                  navigate(`/aguardando-pagamento-musicos?checkout=${checkoutUrl}&plan=${planName}`);
+                }
+              }}
                 className={`w-full mb-6 ${
                   plan.popular 
                     ? "bg-violet-600 hover:bg-violet-500 text-white" 
