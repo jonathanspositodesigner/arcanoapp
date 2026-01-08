@@ -598,11 +598,11 @@ const UpscalerArcanoTool: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Labels - also outside TransformComponent */}
-                          <div className="absolute top-14 left-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium z-20 pointer-events-none">
+                          {/* Labels ANTES/DEPOIS */}
+                          <div className="absolute top-14 left-4 px-4 py-1.5 rounded-full bg-black/90 border border-white/30 text-white text-sm font-bold z-20 pointer-events-none shadow-lg">
                             ANTES
                           </div>
-                          <div className="absolute top-14 right-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium z-20 pointer-events-none">
+                          <div className="absolute top-14 right-4 px-4 py-1.5 rounded-full bg-purple-600/90 border border-purple-400/50 text-white text-sm font-bold z-20 pointer-events-none shadow-lg">
                             DEPOIS
                           </div>
                         </div>
@@ -610,7 +610,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     </div>
 
                     {/* Zoom Hint */}
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-purple-300/60 bg-black/50 px-3 py-1 rounded-full z-20">
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-white/20 shadow-lg">
                       🔍 Scroll ou pinch para zoom • Arraste o divisor para comparar
                     </div>
                   </div>
