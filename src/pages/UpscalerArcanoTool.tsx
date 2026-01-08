@@ -550,18 +550,18 @@ const UpscalerArcanoTool: React.FC = () => {
                             />
                           </TransformComponent>
 
-                          {/* BEFORE image - overlay with same transform applied via CSS */}
+                          {/* BEFORE image - overlay clipped to left side */}
                           <div 
-                            className="absolute inset-0 overflow-hidden pointer-events-none"
-                            style={{ width: `${sliderPosition}%` }}
+                            className="absolute inset-0 pointer-events-none"
+                            style={{ 
+                              clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` 
+                            }}
                           >
                             <div 
                               className="w-full h-full"
                               style={{ 
-                                width: sliderRef.current ? `${sliderRef.current.offsetWidth}px` : '100%',
-                                height: '100%',
                                 transform: `translate(${transform.positionX}px, ${transform.positionY}px) scale(${transform.scale})`,
-                                transformOrigin: '0 0'
+                                transformOrigin: 'center center'
                               }}
                             >
                               <img 
