@@ -87,29 +87,92 @@ const AbandonedCheckoutsContent = () => {
     try {
       const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
       
-      let query = supabase
-        .from('abandoned_checkouts')
-        .select('*', { count: 'exact' })
-        .lt('abandoned_at', fifteenMinutesAgo)
-        .order('abandoned_at', { ascending: false });
+      // Para aba "Convertidos", buscar apenas conversões reais de remarketing automático
+      if (statusFilter === 'converted') {
+        // Busca checkouts com email automático enviado
+        const { data: checkoutsComEmail, error } = await supabase
+          .from('abandoned_checkouts')
+          .select('*')
+          .not('remarketing_email_sent_at', 'is', null)
+          .order('remarketing_email_sent_at', { ascending: false });
 
-      if (statusFilter !== 'all') {
-        query = query.eq('remarketing_status', statusFilter);
+        if (error) throw error;
+
+        // Filtra apenas os que têm compra APÓS o email de remarketing
+        const conversoesReais: AbandonedCheckout[] = [];
+        
+        for (const checkout of checkoutsComEmail || []) {
+          const emailSentAt = checkout.remarketing_email_sent_at;
+          
+          // Busca o profile pelo email
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', checkout.email)
+            .single();
+          
+          if (profile) {
+            // Verifica se tem compra em premium_artes_users após o email
+            const { count: premiumCount } = await supabase
+              .from('premium_artes_users')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', profile.id)
+              .gt('created_at', emailSentAt);
+            
+            // Verifica se tem compra em user_pack_purchases após o email
+            const { count: packCount } = await supabase
+              .from('user_pack_purchases')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', profile.id)
+              .gt('created_at', emailSentAt);
+            
+            if ((premiumCount && premiumCount > 0) || (packCount && packCount > 0)) {
+              conversoesReais.push(checkout as AbandonedCheckout);
+            }
+          }
+        }
+
+        // Aplicar filtro de busca
+        let filtered = conversoesReais;
+        if (searchTerm) {
+          filtered = conversoesReais.filter(c => 
+            c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.name?.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        }
+
+        // Paginação manual
+        const from = (currentPage - 1) * ITEMS_PER_PAGE;
+        const to = from + ITEMS_PER_PAGE;
+        
+        setCheckouts(filtered.slice(from, to));
+        setTotalCount(filtered.length);
+      } else {
+        // Lógica normal para outros filtros
+        let query = supabase
+          .from('abandoned_checkouts')
+          .select('*', { count: 'exact' })
+          .lt('abandoned_at', fifteenMinutesAgo)
+          .order('abandoned_at', { ascending: false });
+
+        if (statusFilter !== 'all') {
+          query = query.eq('remarketing_status', statusFilter);
+        }
+
+        if (searchTerm) {
+          query = query.or(`email.ilike.%${searchTerm}%,name.ilike.%${searchTerm}%`);
+        }
+
+        const from = (currentPage - 1) * ITEMS_PER_PAGE;
+        const to = from + ITEMS_PER_PAGE - 1;
+        query = query.range(from, to);
+
+        const { data, error, count } = await query;
+
+        if (error) throw error;
+        setCheckouts(data || []);
+        setTotalCount(count || 0);
       }
-
-      if (searchTerm) {
-        query = query.or(`email.ilike.%${searchTerm}%,name.ilike.%${searchTerm}%`);
-      }
-
-      const from = (currentPage - 1) * ITEMS_PER_PAGE;
-      const to = from + ITEMS_PER_PAGE - 1;
-      query = query.range(from, to);
-
-      const { data, error, count } = await query;
-
-      if (error) throw error;
-      setCheckouts(data || []);
-      setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching checkouts:', error);
       toast.error("Erro ao carregar checkouts abandonados");
@@ -482,7 +545,7 @@ const AbandonedCheckoutsContent = () => {
               <TabsTrigger value="pending">Pendentes</TabsTrigger>
               <TabsTrigger value="contacted_whatsapp">WhatsApp</TabsTrigger>
               <TabsTrigger value="contacted_email">Email</TabsTrigger>
-              <TabsTrigger value="converted">Convertidos</TabsTrigger>
+              <TabsTrigger value="converted">Convertidos Remarketing</TabsTrigger>
               <TabsTrigger value="ignored">Ignorados</TabsTrigger>
             </TabsList>
           </Tabs>
