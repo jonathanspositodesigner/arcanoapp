@@ -106,7 +106,6 @@ import AguardandoPagamentoMusicos from "./pages/AguardandoPagamentoMusicos";
 import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
-import { useSimpleAccessTracker } from "./hooks/useSimpleAccessTracker";
 
 const queryClient = new QueryClient();
 
@@ -116,9 +115,6 @@ const AppContent = () => {
   
   // Track app installations
   useInstallTracker();
-  
-  // Track page access (simple - one record per load)
-  useSimpleAccessTracker();
 
   return (
     <TooltipProvider>
