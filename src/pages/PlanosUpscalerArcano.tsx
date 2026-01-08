@@ -495,7 +495,7 @@ const PlanosUpscalerArcano = () => {
     },
     {
       icon: User,
-      title: "Qualquer Pessoa",
+      title: "Usuário Comum",
       description: "Tirou uma foto ruim e quer melhorar? Transforme em uma imagem nítida e profissional"
     },
     {
