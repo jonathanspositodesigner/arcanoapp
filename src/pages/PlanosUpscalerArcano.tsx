@@ -485,8 +485,8 @@ const PlanosUpscalerArcano = () => {
     },
     {
       icon: Palette,
-      title: "Artistas Visuais",
-      description: "Recebe fotos de baixa qualidade de clientes? Transforme em imagens profissionais"
+      title: "Infoprodutores",
+      description: "Melhore imagens de capas, thumbnails e materiais de venda para seus produtos digitais"
     },
     {
       icon: Camera,
