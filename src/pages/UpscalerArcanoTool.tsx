@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Card } from '@/components/ui/card';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -527,60 +528,62 @@ const UpscalerArcanoTool: React.FC = () => {
                     </div>
 
                     <TransformComponent wrapperStyle={{ width: '100%' }} contentStyle={{ width: '100%' }}>
-                      <div 
-                        ref={sliderRef}
-                        className="relative aspect-video select-none"
-                        style={{ cursor: zoomLevel > 1 ? 'grab' : 'ew-resize' }}
-                        onMouseDown={zoomLevel <= 1 ? handleSliderMouseDown : undefined}
-                        onMouseMove={zoomLevel <= 1 ? handleSliderMouseMove : undefined}
-                        onMouseUp={zoomLevel <= 1 ? handleSliderMouseUp : undefined}
-                      >
-                        {/* After Image (full) */}
-                        <img 
-                          src={outputImage} 
-                          alt="Depois" 
-                          className="absolute inset-0 w-full h-full object-contain bg-black"
-                          draggable={false}
-                        />
-                        
-                        {/* Before Image (clipped) */}
+                      <AspectRatio ratio={16 / 9}>
                         <div 
-                          className="absolute inset-0 overflow-hidden"
-                          style={{ width: `${sliderPosition}%` }}
+                          ref={sliderRef}
+                          className="relative w-full h-full select-none"
+                          style={{ cursor: zoomLevel > 1 ? 'grab' : 'ew-resize' }}
+                          onMouseDown={zoomLevel <= 1 ? handleSliderMouseDown : undefined}
+                          onMouseMove={zoomLevel <= 1 ? handleSliderMouseMove : undefined}
+                          onMouseUp={zoomLevel <= 1 ? handleSliderMouseUp : undefined}
                         >
+                          {/* After Image (full) */}
                           <img 
-                            src={inputImage} 
-                            alt="Antes" 
-                            className="h-full object-contain bg-black"
-                            style={{ 
-                              width: sliderRef.current ? `${sliderRef.current.offsetWidth}px` : '100vw',
-                              maxWidth: 'none'
-                            }}
+                            src={outputImage} 
+                            alt="Depois" 
+                            className="absolute inset-0 w-full h-full object-contain bg-black"
                             draggable={false}
                           />
-                        </div>
-                        
-                        {/* Slider Line */}
-                        <div 
-                          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
-                          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)', cursor: 'ew-resize' }}
-                        >
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center">
-                            <div className="flex gap-0.5">
-                              <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                              <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                          
+                          {/* Before Image (clipped) */}
+                          <div 
+                            className="absolute inset-0 overflow-hidden"
+                            style={{ width: `${sliderPosition}%` }}
+                          >
+                            <img 
+                              src={inputImage} 
+                              alt="Antes" 
+                              className="h-full object-contain bg-black"
+                              style={{ 
+                                width: sliderRef.current ? `${sliderRef.current.offsetWidth}px` : '100vw',
+                                maxWidth: 'none'
+                              }}
+                              draggable={false}
+                            />
+                          </div>
+                          
+                          {/* Slider Line */}
+                          <div 
+                            className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
+                            style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)', cursor: 'ew-resize' }}
+                          >
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center">
+                              <div className="flex gap-0.5">
+                                <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                                <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Labels */}
-                        <div className="absolute top-14 left-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
-                          ANTES
+                          {/* Labels */}
+                          <div className="absolute top-14 left-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
+                            ANTES
+                          </div>
+                          <div className="absolute top-14 right-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
+                            DEPOIS
+                          </div>
                         </div>
-                        <div className="absolute top-14 right-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
-                          DEPOIS
-                        </div>
-                      </div>
+                      </AspectRatio>
                     </TransformComponent>
 
                     {/* Zoom Hint */}
@@ -592,70 +595,74 @@ const UpscalerArcanoTool: React.FC = () => {
               </TransformWrapper>
             ) : (
               /* PNG Preview with checkerboard background */
-              <div 
-                className="relative aspect-video"
-                style={{
-                  backgroundImage: `
-                    linear-gradient(45deg, #1a1a2e 25%, transparent 25%),
-                    linear-gradient(-45deg, #1a1a2e 25%, transparent 25%),
-                    linear-gradient(45deg, transparent 75%, #1a1a2e 75%),
-                    linear-gradient(-45deg, transparent 75%, #1a1a2e 75%)
-                  `,
-                  backgroundSize: '20px 20px',
-                  backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
-                  backgroundColor: '#0d0d1a'
-                }}
-              >
-                <img 
-                  src={outputImage} 
-                  alt="Sem fundo" 
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              <AspectRatio ratio={16 / 9}>
+                <div 
+                  className="w-full h-full"
+                  style={{
+                    backgroundImage: `
+                      linear-gradient(45deg, #1a1a2e 25%, transparent 25%),
+                      linear-gradient(-45deg, #1a1a2e 25%, transparent 25%),
+                      linear-gradient(45deg, transparent 75%, #1a1a2e 75%),
+                      linear-gradient(-45deg, transparent 75%, #1a1a2e 75%)
+                    `,
+                    backgroundSize: '20px 20px',
+                    backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
+                    backgroundColor: '#0d0d1a'
+                  }}
+                >
+                  <img 
+                    src={outputImage} 
+                    alt="Sem fundo" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </AspectRatio>
             )}
           </Card>
         ) : (
           /* Input Preview */
           <Card className="bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden">
-            <div className="relative aspect-video bg-black/50">
-              <img 
-                src={inputImage} 
-                alt="Preview" 
-                className="w-full h-full object-contain"
-              />
-              {(status === 'uploading' || status === 'processing') && (
-                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-4">
-                  <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
-                  <div className="text-center">
-                    <p className="text-lg font-medium">
-                      {status === 'uploading' ? 'Enviando imagem...' : 'Processando...'}
-                    </p>
-                    <p className="text-sm text-purple-300/70">
-                      Isso pode levar até 2 minutos
-                    </p>
+            <AspectRatio ratio={16 / 9}>
+              <div className="relative w-full h-full bg-black/50">
+                <img 
+                  src={inputImage} 
+                  alt="Preview" 
+                  className="w-full h-full object-contain"
+                />
+                {(status === 'uploading' || status === 'processing') && (
+                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-4">
+                    <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+                    <div className="text-center">
+                      <p className="text-lg font-medium">
+                        {status === 'uploading' ? 'Enviando imagem...' : 'Processando...'}
+                      </p>
+                      <p className="text-sm text-purple-300/70">
+                        Isso pode levar até 2 minutos
+                      </p>
+                    </div>
+                    <div className="w-64 h-2 bg-purple-900/50 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <p className="text-sm text-purple-300">{Math.round(progress)}%</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (pollingRef.current) clearInterval(pollingRef.current);
+                        setStatus('idle');
+                        setProgress(0);
+                      }}
+                      className="text-purple-300 hover:text-white hover:bg-purple-500/20 mt-2"
+                    >
+                      Cancelar
+                    </Button>
                   </div>
-                  <div className="w-64 h-2 bg-purple-900/50 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <p className="text-sm text-purple-300">{Math.round(progress)}%</p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      if (pollingRef.current) clearInterval(pollingRef.current);
-                      setStatus('idle');
-                      setProgress(0);
-                    }}
-                    className="text-purple-300 hover:text-white hover:bg-purple-500/20 mt-2"
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </AspectRatio>
           </Card>
         )}
 
