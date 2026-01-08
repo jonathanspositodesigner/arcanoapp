@@ -533,8 +533,8 @@ const UpscalerArcanoTool: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Container with ref for slider calculations */}
-                    <div ref={sliderRef} className="relative">
+                    {/* Container with ref for slider calculations - 80% width on desktop */}
+                    <div ref={sliderRef} className="relative w-full lg:w-[80vw] lg:max-w-[80vw] mx-auto">
                       <AspectRatio ratio={16 / 9}>
                         <div className="relative w-full h-full bg-black overflow-hidden">
                           {/* AFTER image - inside TransformComponent (zoomable/pannable) */}
