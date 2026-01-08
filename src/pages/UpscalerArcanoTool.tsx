@@ -462,23 +462,23 @@ const UpscalerArcanoTool: React.FC = () => {
           <div className="flex gap-2">
             <Button
               variant={mode === 'upscale' ? 'default' : 'ghost'}
-              className={`flex-1 gap-2 ${mode === 'upscale' 
+              className={`flex-1 gap-1 sm:gap-2 text-xs sm:text-sm ${mode === 'upscale' 
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' 
                 : 'text-purple-300 hover:text-white hover:bg-purple-500/20'}`}
               onClick={() => setMode('upscale')}
             >
-              <Sparkles className="w-4 h-4" />
-              Aumentar Qualidade
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+              <span className="truncate">Aumentar Qualidade</span>
             </Button>
             <Button
               variant={mode === 'rembg' ? 'default' : 'ghost'}
-              className={`flex-1 gap-2 ${mode === 'rembg' 
+              className={`flex-1 gap-1 sm:gap-2 text-xs sm:text-sm ${mode === 'rembg' 
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' 
                 : 'text-purple-300 hover:text-white hover:bg-purple-500/20'}`}
               onClick={() => setMode('rembg')}
             >
-              <Eraser className="w-4 h-4" />
-              Remover Fundo
+              <Eraser className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+              <span className="truncate">Remover Fundo</span>
             </Button>
           </div>
         </Card>
@@ -540,8 +540,8 @@ const UpscalerArcanoTool: React.FC = () => {
               >
                 {({ zoomIn, zoomOut, resetTransform }) => (
                   <div className="relative">
-                    {/* Zoom Controls */}
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 bg-black/80 rounded-full px-2 py-1">
+                    {/* Zoom Controls - Hidden on mobile */}
+                    <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
                       <button 
                         onClick={() => zoomOut()}
                         className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
@@ -635,19 +635,19 @@ const UpscalerArcanoTool: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Labels ANTES/DEPOIS */}
-                          <div className="absolute top-14 left-4 px-4 py-1.5 rounded-full bg-black/90 border border-white/30 text-white text-sm font-bold z-20 pointer-events-none shadow-lg">
+                          {/* Labels ANTES/DEPOIS - Smaller on mobile */}
+                          <div className="absolute top-2 sm:top-14 left-2 sm:left-4 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-black/90 border border-white/30 text-white text-xs sm:text-sm font-bold z-20 pointer-events-none shadow-lg">
                             ANTES
                           </div>
-                          <div className="absolute top-14 right-4 px-4 py-1.5 rounded-full bg-purple-600/90 border border-purple-400/50 text-white text-sm font-bold z-20 pointer-events-none shadow-lg">
+                          <div className="absolute top-2 sm:top-14 right-2 sm:right-4 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-purple-600/90 border border-purple-400/50 text-white text-xs sm:text-sm font-bold z-20 pointer-events-none shadow-lg">
                             DEPOIS
                           </div>
                         </div>
                       </AspectRatio>
                     </div>
 
-                    {/* Zoom Hint */}
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-white/20 shadow-lg">
+                    {/* Zoom Hint - Hidden on mobile */}
+                    <div className="hidden sm:block absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-white/20 shadow-lg">
                       🔍 Scroll ou pinch para zoom • Arraste o divisor para comparar
                     </div>
                   </div>
