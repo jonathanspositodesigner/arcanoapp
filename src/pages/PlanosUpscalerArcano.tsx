@@ -8,6 +8,7 @@ import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Pa
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
+import { appendUtmToUrl } from "@/lib/utmUtils";
 import upscalerAntes1 from "@/assets/upscaler-antes-1.jpg";
 import upscalerDepois1 from "@/assets/upscaler-depois-1.jpg";
 import upscalerHeroAntes from "@/assets/upscaler-hero-antes.jpg";
@@ -394,9 +395,9 @@ const PlanosUpscalerArcano = () => {
       : tool.checkout_link_vitalicio;
 
     if (checkoutLink) {
-      window.open(checkoutLink, "_blank");
+      window.open(appendUtmToUrl(checkoutLink), "_blank");
     } else {
-      window.open("https://voxvisual.com.br/linksbio/", "_blank");
+      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
     }
   };
 

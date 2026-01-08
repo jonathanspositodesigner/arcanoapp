@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Star, ArrowLeft, Gift, Clock, Percent, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
+import { appendUtmToUrl } from "@/lib/utmUtils";
 
 interface Pack {
   id: string;
@@ -215,9 +216,9 @@ const PromosNatal = () => {
     }
     
     if (checkoutLink) {
-      window.open(checkoutLink, "_blank");
+      window.open(appendUtmToUrl(checkoutLink), "_blank");
     } else {
-      window.open("https://voxvisual.com.br/linksbio/", "_blank");
+      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
     }
   };
 

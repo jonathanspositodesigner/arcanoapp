@@ -7,6 +7,7 @@ import { Check, ArrowLeft, Crown, Zap, Box, Infinity, Layers } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
+import { appendUtmToUrl } from "@/lib/utmUtils";
 
 interface ToolData {
   id: string;
@@ -60,9 +61,9 @@ const PlanosForjaSelos3D = () => {
       : tool.checkout_link_vitalicio;
 
     if (checkoutLink) {
-      window.open(checkoutLink, "_blank");
+      window.open(appendUtmToUrl(checkoutLink), "_blank");
     } else {
-      window.open("https://voxvisual.com.br/linksbio/", "_blank");
+      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
     }
   };
 

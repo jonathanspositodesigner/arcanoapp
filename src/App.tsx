@@ -106,6 +106,7 @@ import AguardandoPagamentoMusicos from "./pages/AguardandoPagamentoMusicos";
 import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
+import { useUtmTracker } from "./hooks/useUtmTracker";
 
 const queryClient = new QueryClient();
 
@@ -115,6 +116,9 @@ const AppContent = () => {
   
   // Track app installations
   useInstallTracker();
+  
+  // Capture UTM parameters on app load
+  useUtmTracker();
 
   return (
     <TooltipProvider>

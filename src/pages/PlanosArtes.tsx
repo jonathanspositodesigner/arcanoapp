@@ -7,6 +7,7 @@ import { Check, Star, ArrowLeft, Gift, Clock, Percent, Bell } from "lucide-react
 import { supabase } from "@/integrations/supabase/client";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { AnimatedSection, StaggeredAnimation, FadeIn, AnimatedGrid } from "@/hooks/useScrollAnimation";
+import { appendUtmToUrl } from "@/lib/utmUtils";
 
 interface Pack {
   id: string;
@@ -271,10 +272,10 @@ const PlanosArtes = () => {
     }
     
     if (checkoutLink) {
-      window.open(checkoutLink, "_blank");
+      window.open(appendUtmToUrl(checkoutLink), "_blank");
     } else {
       // Fallback se não houver link configurado
-      window.open("https://voxvisual.com.br/linksbio/", "_blank");
+      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
     }
   };
 

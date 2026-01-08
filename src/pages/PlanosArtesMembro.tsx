@@ -7,6 +7,7 @@ import { Check, Star, ArrowLeft, Gift, Clock, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
+import { appendUtmToUrl } from "@/lib/utmUtils";
 
 interface Pack {
   id: string;
@@ -198,10 +199,10 @@ const PlanosArtesMembro = () => {
     }
     
     if (checkoutLink) {
-      window.open(checkoutLink, "_blank");
+      window.open(appendUtmToUrl(checkoutLink), "_blank");
     } else {
       // Fallback se não houver link configurado
-      window.open("https://voxvisual.com.br/linksbio/", "_blank");
+      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
     }
   };
 
