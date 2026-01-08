@@ -264,21 +264,30 @@ const UpscalerArcanoTool: React.FC = () => {
             }
 
             const { outputs } = outputsResponse.data;
-            console.log('Outputs:', outputs);
+            console.log('[Upscaler] Raw outputs:', outputs);
 
-            if (outputs && outputs.length > 0) {
-              // Get the last output (usually the final processed image)
-              setOutputImage(outputs[outputs.length - 1]);
+            // Filter and validate URLs - only keep non-empty strings
+            const validOutputs = (outputs || []).filter(
+              (url: unknown) => typeof url === 'string' && url.trim().length > 0
+            );
+            console.log('[Upscaler] Valid outputs:', validOutputs);
+
+            if (validOutputs.length > 0) {
+              // Get the last valid output (usually the final processed image)
+              const finalUrl = validOutputs[validOutputs.length - 1];
+              console.log('[Upscaler] Selected finalUrl:', finalUrl);
+              
+              setOutputImage(finalUrl);
               setStatus('completed');
               setProgress(100);
               toast.success('Imagem processada com sucesso!');
             } else {
               setLastError({
-                message: 'Nenhuma imagem retornada',
-                code: 'NO_OUTPUT',
-                solution: 'O processamento foi concluído mas não retornou imagens. Tente novamente.'
+                message: 'Nenhuma imagem válida retornada',
+                code: 'NO_VALID_OUTPUT',
+                solution: 'O processamento foi concluído mas não retornou URLs de imagem válidas. Tente novamente.'
               });
-              throw new Error('Nenhuma imagem retornada');
+              throw new Error('Nenhuma imagem válida retornada');
             }
           } else if (taskStatus === 'FAILED') {
             clearInterval(pollingRef.current!);
