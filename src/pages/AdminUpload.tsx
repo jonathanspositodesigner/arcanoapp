@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, ArrowLeft, X, Star, ImagePlus, Video } from "lucide-react";
+import { Upload, ArrowLeft, X, Star, ImagePlus, Video, FileText } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -54,6 +54,7 @@ interface MediaData {
   referenceImages: ReferenceImage[];
   hasTutorial: boolean;
   tutorialUrl: string;
+  txtFileName?: string;
 }
 
 const AdminUpload = () => {
@@ -199,6 +200,49 @@ const AdminUpload = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
+  };
+
+  const handleTxtUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith('.txt') && file.type !== 'text/plain') {
+      toast.error("Por favor, selecione um arquivo .txt");
+      return;
+    }
+
+    // Validate file size (max 1MB)
+    if (file.size > 1024 * 1024) {
+      toast.error("Arquivo TXT muito grande. Máximo 1MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      setMediaFiles(prev => prev.map((media, idx) => 
+        idx === currentIndex 
+          ? { ...media, prompt: content.trim(), txtFileName: file.name }
+          : media
+      ));
+      toast.success(`Prompt carregado de "${file.name}"`);
+    };
+    reader.onerror = () => {
+      toast.error("Erro ao ler o arquivo");
+    };
+    reader.readAsText(file, 'UTF-8');
+    
+    // Reset input
+    e.target.value = '';
+  };
+
+  const clearTxtFile = () => {
+    setMediaFiles(prev => prev.map((media, idx) => 
+      idx === currentIndex 
+        ? { ...media, txtFileName: undefined }
+        : media
+    ));
   };
 
   const allFieldsFilled = mediaFiles.every(media => 
@@ -516,6 +560,39 @@ const AdminUpload = () => {
                   </div>
                 </div>
               )}
+
+              <div>
+                <Label className="text-muted-foreground text-sm">Carregar Prompt de Arquivo TXT (opcional)</Label>
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="file"
+                    id="txtFile"
+                    accept=".txt,text/plain"
+                    onChange={handleTxtUpload}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="txtFile"
+                    className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg cursor-pointer hover:bg-secondary transition-colors flex-1"
+                  >
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm truncate">
+                      {currentMedia.txtFileName || "Selecionar arquivo .txt"}
+                    </span>
+                  </label>
+                  {currentMedia.txtFileName && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={clearTxtFile}
+                      className="h-9 w-9"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
 
               <div>
                 <Label htmlFor="prompt">Prompt</Label>
