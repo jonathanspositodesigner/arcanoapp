@@ -21,36 +21,32 @@ serve(async (req) => {
       );
     }
 
-    console.log('Downloading image from:', imageUrl);
+    console.log('Proxying image from:', imageUrl);
 
-    // Fetch image from external URL (no CORS restriction on server)
+    // Fetch image and stream it directly (no base64 conversion)
     const imageResponse = await fetch(imageUrl);
     
     if (!imageResponse.ok) {
       throw new Error(`Failed to fetch image: ${imageResponse.status}`);
     }
 
-    const imageBuffer = await imageResponse.arrayBuffer();
-    const base64 = btoa(
-      new Uint8Array(imageBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-    );
-
-    // Detect content type
     const contentType = imageResponse.headers.get('content-type') || 'image/png';
+    const contentLength = imageResponse.headers.get('content-length');
 
-    console.log('Image downloaded successfully, size:', imageBuffer.byteLength);
+    console.log('Streaming image, content-type:', contentType, 'size:', contentLength);
 
-    return new Response(
-      JSON.stringify({ 
-        image: base64,
-        contentType 
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // Stream the response directly without loading into memory
+    return new Response(imageResponse.body, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': contentType,
+        ...(contentLength && { 'Content-Length': contentLength }),
+      }
+    });
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Download error:', errorMessage);
+    console.error('Proxy error:', errorMessage);
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
