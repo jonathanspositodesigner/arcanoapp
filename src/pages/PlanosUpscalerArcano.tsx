@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X } from "lucide-react";
+import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
@@ -492,6 +492,11 @@ const PlanosUpscalerArcano = () => {
       icon: Camera,
       title: "Designers Gráficos",
       description: "Melhore fotos de clientes e crie seus 3Ds em alta qualidade"
+    },
+    {
+      icon: User,
+      title: "Qualquer Pessoa",
+      description: "Tirou uma foto ruim e quer melhorar? Transforme em uma imagem nítida e profissional"
     }
   ];
 
