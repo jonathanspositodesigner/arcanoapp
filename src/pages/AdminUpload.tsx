@@ -77,6 +77,16 @@ const AdminUpload = () => {
     fetchCategories();
   }, []);
 
+  // Safeguard: keep currentIndex within valid bounds
+  useEffect(() => {
+    if (mediaFiles.length === 0) {
+      setShowModal(false);
+      setCurrentIndex(0);
+    } else if (currentIndex >= mediaFiles.length) {
+      setCurrentIndex(mediaFiles.length - 1);
+    }
+  }, [mediaFiles.length, currentIndex]);
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     processFiles(files);
@@ -91,12 +101,16 @@ const AdminUpload = () => {
     e.preventDefault();
     e.stopPropagation();
     
+    // Allow images, videos, and TXT files
     const files = Array.from(e.dataTransfer.files).filter(file => 
-      file.type.startsWith('image/') || file.type.startsWith('video/')
+      file.type.startsWith('image/') || 
+      file.type.startsWith('video/') ||
+      file.name.toLowerCase().endsWith('.txt') ||
+      file.type === 'text/plain'
     );
     
     if (files.length === 0) {
-      toast.error("Por favor, envie apenas imagens ou vídeos");
+      toast.error("Por favor, envie imagens, vídeos ou arquivos .txt");
       return;
     }
     
@@ -415,7 +429,7 @@ const AdminUpload = () => {
             <input
               id="media"
               type="file"
-              accept="image/*,video/*"
+              accept="image/*,video/*,.txt,text/plain"
               multiple
               onChange={handleFileSelect}
               className="hidden"
@@ -438,7 +452,14 @@ const AdminUpload = () => {
               </h3>
               <div className="grid grid-cols-4 gap-4">
                 {mediaFiles.map((media, idx) => (
-                  <div key={idx} className="relative group">
+                  <div 
+                    key={idx} 
+                    className="relative group cursor-pointer"
+                    onClick={() => {
+                      setCurrentIndex(idx);
+                      setShowModal(true);
+                    }}
+                  >
                     {media.isVideo ? (
                       <video
                         src={media.preview}
@@ -456,7 +477,10 @@ const AdminUpload = () => {
                       />
                     )}
                     <button
-                      onClick={() => removeMedia(idx)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeMedia(idx);
+                      }}
                       className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X className="h-4 w-4" />
@@ -472,7 +496,12 @@ const AdminUpload = () => {
                 ))}
               </div>
               <Button
-                onClick={() => setShowModal(true)}
+                onClick={() => {
+                  // Find first pending item, or default to first
+                  const pendingIdx = mediaFiles.findIndex(m => !m.title || !m.prompt || !m.category);
+                  setCurrentIndex(pendingIdx >= 0 ? pendingIdx : 0);
+                  setShowModal(true);
+                }}
                 className="w-full mt-6 bg-gradient-primary hover:opacity-90"
               >
                 Preencher Informações
@@ -490,7 +519,7 @@ const AdminUpload = () => {
             </DialogTitle>
           </DialogHeader>
 
-          {currentMedia && (
+          {currentMedia ? (
             <div className="space-y-4 sm:space-y-6">
               <div className="flex justify-center">
                 {currentMedia.isVideo ? (
@@ -684,6 +713,20 @@ const AdminUpload = () => {
                   {isSubmitting ? "Enviando..." : "Upload de Todos"}
                 </Button>
               )}
+            </div>
+          ) : (
+            <div className="text-center py-8 space-y-4">
+              <p className="text-muted-foreground">Nenhum item selecionado ou índice inválido.</p>
+              <div className="flex gap-2 justify-center">
+                {mediaFiles.length > 0 && (
+                  <Button onClick={() => setCurrentIndex(0)} variant="outline">
+                    Ir para o primeiro item
+                  </Button>
+                )}
+                <Button onClick={() => setShowModal(false)} variant="secondary">
+                  Fechar
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
