@@ -103,25 +103,57 @@ const AdminUpload = () => {
     processFiles(files);
   };
 
+  const getFileNameWithoutExtension = (fileName: string): string => {
+    return fileName.replace(/\.[^/.]+$/, '').toLowerCase();
+  };
+
+  const readTxtFile = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve((e.target?.result as string)?.trim() || '');
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file, 'UTF-8');
+    });
+  };
+
   const processFiles = async (files: File[]) => {
-    const validFiles: File[] = [];
+    // Separate media files from TXT files
+    const txtFiles: File[] = [];
+    const mediaFilesToProcess: File[] = [];
     
-    // Validate all files first
     for (const file of files) {
-      const validationError = validateFile(file);
-      if (validationError) {
-        toast.error(validationError);
-        continue;
+      if (file.name.toLowerCase().endsWith('.txt') || file.type === 'text/plain') {
+        txtFiles.push(file);
+      } else {
+        const validationError = validateFile(file);
+        if (validationError) {
+          toast.error(validationError);
+          continue;
+        }
+        mediaFilesToProcess.push(file);
       }
-      validFiles.push(file);
     }
     
-    if (validFiles.length === 0) return;
+    if (mediaFilesToProcess.length === 0) {
+      if (txtFiles.length > 0) {
+        toast.error("Envie imagens/vídeos junto com os arquivos TXT para vincular automaticamente");
+      }
+      return;
+    }
+
+    // Create a map of TXT files by base name for quick lookup
+    const txtMap = new Map<string, File>();
+    for (const txt of txtFiles) {
+      const baseName = getFileNameWithoutExtension(txt.name);
+      txtMap.set(baseName, txt);
+    }
     
     const newMedia: MediaData[] = [];
+    let matchedCount = 0;
     
-    for (const file of validFiles) {
+    for (const file of mediaFilesToProcess) {
       const isVideo = file.type.startsWith('video/');
+      const baseName = getFileNameWithoutExtension(file.name);
       
       // Optimize images before adding
       let processedFile = file;
@@ -132,23 +164,42 @@ const AdminUpload = () => {
           console.log(`Optimized ${file.name}: ${formatBytes(result.originalSize)} → ${formatBytes(result.optimizedSize)} (${result.savingsPercent}% saved)`);
         }
       }
+
+      // Check if there's a matching TXT file
+      let prompt = '';
+      let txtFileName: string | undefined;
+      const matchingTxt = txtMap.get(baseName);
+      if (matchingTxt) {
+        try {
+          prompt = await readTxtFile(matchingTxt);
+          txtFileName = matchingTxt.name;
+          matchedCount++;
+        } catch (e) {
+          console.error(`Failed to read TXT for ${file.name}:`, e);
+        }
+      }
       
       newMedia.push({
         file: processedFile,
         preview: URL.createObjectURL(processedFile),
         title: "",
-        prompt: "",
+        prompt,
         category: "",
         isVideo,
         isPremium: false,
         referenceImages: [],
         hasTutorial: false,
-        tutorialUrl: ""
+        tutorialUrl: "",
+        txtFileName
       });
     }
     
     if (newMedia.length > 0) {
-      toast.success(`${newMedia.length} arquivo(s) otimizado(s) e adicionado(s)`);
+      let message = `${newMedia.length} arquivo(s) adicionado(s)`;
+      if (matchedCount > 0) {
+        message += ` (${matchedCount} prompt(s) vinculado(s) automaticamente)`;
+      }
+      toast.success(message);
       setMediaFiles(prev => [...prev, ...newMedia]);
       setShowModal(true);
       setCurrentIndex(0);
