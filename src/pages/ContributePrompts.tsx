@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, ArrowLeft } from "lucide-react";
+import { Upload, ArrowLeft, FileText, X } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +53,7 @@ const ContributePrompts = () => {
   const [isVideo, setIsVideo] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [txtFileName, setTxtFileName] = useState<string>("");
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -96,6 +97,33 @@ const ContributePrompts = () => {
         reader.readAsDataURL(file);
       }
     }
+  };
+
+  const handleTxtUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.name.endsWith('.txt') && file.type !== 'text/plain') {
+      toast.error("Por favor, envie apenas arquivos .txt");
+      return;
+    }
+    
+    if (file.size > 1024 * 1024) {
+      toast.error("Arquivo TXT muito grande. Máximo 1MB.");
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      setPrompt(content.trim());
+      setTxtFileName(file.name);
+      toast.success(`Prompt carregado de "${file.name}"`);
+    };
+    reader.onerror = () => {
+      toast.error("Erro ao ler arquivo TXT");
+    };
+    reader.readAsText(file, 'UTF-8');
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
@@ -245,6 +273,44 @@ const ContributePrompts = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="txtFile">Carregar Prompt de Arquivo TXT (opcional)</Label>
+              <div className="mt-2 flex items-center gap-3">
+                <label
+                  htmlFor="txtFile"
+                  className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg cursor-pointer hover:border-primary transition-colors bg-muted/50"
+                >
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {txtFileName || "Selecionar arquivo .txt"}
+                  </span>
+                </label>
+                <input
+                  id="txtFile"
+                  type="file"
+                  accept=".txt,text/plain"
+                  onChange={handleTxtUpload}
+                  className="hidden"
+                />
+                {txtFileName && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setTxtFileName("");
+                      setPrompt("");
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                O conteúdo do arquivo será automaticamente inserido no campo de prompt
+              </p>
             </div>
 
             <div>
