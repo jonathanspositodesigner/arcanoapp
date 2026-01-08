@@ -347,23 +347,27 @@ const UpscalerArcanoTool: React.FC = () => {
     if (!outputImage) return;
 
     try {
-      // Use edge function proxy to avoid CORS
-      const { data, error } = await supabase.functions.invoke('download-image', {
-        body: { imageUrl: outputImage }
-      });
+      // Use edge function proxy to stream image (avoids CORS and memory issues)
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/download-image`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ imageUrl: outputImage }),
+        }
+      );
 
-      if (error) throw new Error(error.message);
-
-      // Convert base64 to blob
-      const base64 = data.image;
-      const byteCharacters = atob(base64);
-      const byteNumbers = new Uint8Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
       }
-      const contentType = data.contentType || 'image/png';
-      const blob = new Blob([byteNumbers], { type: contentType });
 
+      // Get blob directly from streamed response
+      const blob = await response.blob();
+      
       // Detect iOS
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
