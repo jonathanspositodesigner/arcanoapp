@@ -487,7 +487,7 @@ const UpscalerArcanoTool: React.FC = () => {
               <TransformWrapper
                 initialScale={1}
                 minScale={1}
-                maxScale={5}
+                maxScale={100}
                 onInit={(ref) => {
                   setZoomLevel(ref.state.scale);
                   setTransform({ scale: ref.state.scale, positionX: ref.state.positionX, positionY: ref.state.positionY });
