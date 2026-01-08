@@ -36,6 +36,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [lastError, setLastError] = useState<ErrorDetails | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [transform, setTransform] = useState({ scale: 1, positionX: 0, positionY: 0 });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -375,37 +376,35 @@ const UpscalerArcanoTool: React.FC = () => {
     }
   };
 
-  // Slider drag handling
-  const handleSliderMouseDown = (e: React.MouseEvent) => {
-    isDraggingRef.current = true;
-    updateSliderPosition(e);
-  };
-
-  const handleSliderMouseMove = (e: React.MouseEvent) => {
-    if (isDraggingRef.current) {
-      updateSliderPosition(e);
-    }
-  };
-
-  const handleSliderMouseUp = () => {
-    isDraggingRef.current = false;
-  };
-
-  const updateSliderPosition = (e: React.MouseEvent) => {
+  // Slider drag handling with pointer events (works at any zoom level)
+  const updateSliderPositionFromClientX = useCallback((clientX: number) => {
     if (sliderRef.current) {
       const rect = sliderRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
+      const x = clientX - rect.left;
       const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
       setSliderPosition(percentage);
     }
-  };
+  }, []);
 
-  useEffect(() => {
-    const handleGlobalMouseUp = () => {
-      isDraggingRef.current = false;
-    };
-    window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+  const handleSliderPointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isDraggingRef.current = true;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    updateSliderPositionFromClientX(e.clientX);
+  }, [updateSliderPositionFromClientX]);
+
+  const handleSliderPointerMove = useCallback((e: React.PointerEvent) => {
+    if (isDraggingRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      updateSliderPositionFromClientX(e.clientX);
+    }
+  }, [updateSliderPositionFromClientX]);
+
+  const handleSliderPointerUp = useCallback((e: React.PointerEvent) => {
+    isDraggingRef.current = false;
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   }, []);
 
   return (
@@ -484,12 +483,19 @@ const UpscalerArcanoTool: React.FC = () => {
           /* Result View */
           <Card className="bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden">
             {mode === 'upscale' ? (
-              /* Before/After Slider with Zoom */
+              /* Before/After Slider with Zoom - Slider is OUTSIDE TransformComponent */
               <TransformWrapper
                 initialScale={1}
                 minScale={1}
                 maxScale={5}
-                onTransformed={(_, state) => setZoomLevel(state.scale)}
+                onInit={(ref) => {
+                  setZoomLevel(ref.state.scale);
+                  setTransform({ scale: ref.state.scale, positionX: ref.state.positionX, positionY: ref.state.positionY });
+                }}
+                onTransformed={(_, state) => {
+                  setZoomLevel(state.scale);
+                  setTransform({ scale: state.scale, positionX: state.positionX, positionY: state.positionY });
+                }}
                 wheel={{ step: 0.2 }}
                 pinch={{ step: 5 }}
                 doubleClick={{ mode: 'toggle', step: 2 }}
@@ -498,7 +504,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 {({ zoomIn, zoomOut, resetTransform }) => (
                   <div className="relative">
                     {/* Zoom Controls */}
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/80 rounded-full px-2 py-1">
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 bg-black/80 rounded-full px-2 py-1">
                       <button 
                         onClick={() => zoomOut()}
                         className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
@@ -527,47 +533,64 @@ const UpscalerArcanoTool: React.FC = () => {
                       )}
                     </div>
 
-                    <TransformComponent wrapperStyle={{ width: '100%' }} contentStyle={{ width: '100%' }}>
+                    {/* Container with ref for slider calculations */}
+                    <div ref={sliderRef} className="relative">
                       <AspectRatio ratio={16 / 9}>
-                        <div 
-                          ref={sliderRef}
-                          className="relative w-full h-full select-none"
-                          style={{ cursor: zoomLevel > 1 ? 'grab' : 'ew-resize' }}
-                          onMouseDown={zoomLevel <= 1 ? handleSliderMouseDown : undefined}
-                          onMouseMove={zoomLevel <= 1 ? handleSliderMouseMove : undefined}
-                          onMouseUp={zoomLevel <= 1 ? handleSliderMouseUp : undefined}
-                        >
-                          {/* After Image (full) */}
-                          <img 
-                            src={outputImage} 
-                            alt="Depois" 
-                            className="absolute inset-0 w-full h-full object-contain bg-black"
-                            draggable={false}
-                          />
-                          
-                          {/* Before Image (clipped) */}
-                          <div 
-                            className="absolute inset-0 overflow-hidden"
-                            style={{ width: `${sliderPosition}%` }}
+                        <div className="relative w-full h-full bg-black overflow-hidden">
+                          {/* AFTER image - inside TransformComponent (zoomable/pannable) */}
+                          <TransformComponent 
+                            wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} 
+                            contentStyle={{ width: '100%', height: '100%' }}
                           >
                             <img 
-                              src={inputImage} 
-                              alt="Antes" 
-                              className="h-full object-contain bg-black"
-                              style={{ 
-                                width: sliderRef.current ? `${sliderRef.current.offsetWidth}px` : '100vw',
-                                maxWidth: 'none'
-                              }}
+                              src={outputImage} 
+                              alt="Depois" 
+                              className="w-full h-full object-contain"
                               draggable={false}
                             />
-                          </div>
-                          
-                          {/* Slider Line */}
+                          </TransformComponent>
+
+                          {/* BEFORE image - overlay with same transform applied via CSS */}
                           <div 
-                            className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
-                            style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)', cursor: 'ew-resize' }}
+                            className="absolute inset-0 overflow-hidden pointer-events-none"
+                            style={{ width: `${sliderPosition}%` }}
                           >
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center">
+                            <div 
+                              className="w-full h-full"
+                              style={{ 
+                                width: sliderRef.current ? `${sliderRef.current.offsetWidth}px` : '100%',
+                                height: '100%',
+                                transform: `translate(${transform.positionX}px, ${transform.positionY}px) scale(${transform.scale})`,
+                                transformOrigin: '0 0'
+                              }}
+                            >
+                              <img 
+                                src={inputImage} 
+                                alt="Antes" 
+                                className="w-full h-full object-contain"
+                                draggable={false}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Slider Line and Handle - OUTSIDE TransformComponent, doesn't scale */}
+                          <div 
+                            className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-20"
+                            style={{ 
+                              left: `${sliderPosition}%`, 
+                              transform: 'translateX(-50%)', 
+                              cursor: 'ew-resize',
+                              touchAction: 'none'
+                            }}
+                            onPointerDown={handleSliderPointerDown}
+                            onPointerMove={handleSliderPointerMove}
+                            onPointerUp={handleSliderPointerUp}
+                            onPointerCancel={handleSliderPointerUp}
+                          >
+                            <div 
+                              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center cursor-ew-resize"
+                              style={{ touchAction: 'none' }}
+                            >
                               <div className="flex gap-0.5">
                                 <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
                                 <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
@@ -575,20 +598,20 @@ const UpscalerArcanoTool: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Labels */}
-                          <div className="absolute top-14 left-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
+                          {/* Labels - also outside TransformComponent */}
+                          <div className="absolute top-14 left-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium z-20 pointer-events-none">
                             ANTES
                           </div>
-                          <div className="absolute top-14 right-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
+                          <div className="absolute top-14 right-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium z-20 pointer-events-none">
                             DEPOIS
                           </div>
                         </div>
                       </AspectRatio>
-                    </TransformComponent>
+                    </div>
 
                     {/* Zoom Hint */}
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-purple-300/60 bg-black/50 px-3 py-1 rounded-full">
-                      🔍 Scroll ou pinch para zoom • Duplo clique para zoom rápido
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-purple-300/60 bg-black/50 px-3 py-1 rounded-full z-20">
+                      🔍 Scroll ou pinch para zoom • Arraste o divisor para comparar
                     </div>
                   </div>
                 )}
