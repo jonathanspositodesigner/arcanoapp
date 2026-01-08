@@ -95,8 +95,8 @@ const BibliotecaPrompts = () => {
 
   // Categories - Controles de Câmera only for exclusive, Populares comes first before Ver Tudo
   const categories = contentType === "exclusive" 
-    ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Movies para Telão", "Controles de Câmera"] 
-    : ["Populares", "Ver Tudo", "Novos", "Selos 3D", "Fotos", "Cenários"];
+    ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Logo", "Movies para Telão", "Controles de Câmera"] 
+    : ["Populares", "Ver Tudo", "Novos", "Selos 3D", "Fotos", "Cenários", "Logo"];
 
   // Read category from URL on mount and when searchParams change
   useEffect(() => {
