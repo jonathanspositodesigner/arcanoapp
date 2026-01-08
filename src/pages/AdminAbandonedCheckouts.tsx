@@ -41,6 +41,7 @@ interface AbandonedCheckout {
   checkout_link: string | null;
   checkout_step: number | null;
   remarketing_status: string;
+  remarketing_email_sent_at: string | null;
   contacted_at: string | null;
   notes: string | null;
   abandoned_at: string;
@@ -70,7 +71,8 @@ const AdminAbandonedCheckouts = () => {
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
-    converted: 0,
+    emailsEnviados: 0,
+    conversoesRemarketing: 0,
     potentialValue: 0
   });
   
@@ -87,35 +89,143 @@ const AdminAbandonedCheckouts = () => {
   const [emailContent, setEmailContent] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
 
+  const chunkArray = <T,>(arr: T[], size: number) => {
+    const chunks: T[][] = [];
+    for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
+    return chunks;
+  };
+
+  const getRemarketingAutoEmailConversions = async () => {
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+
+    const { data: checkoutsComEmail, error } = await supabase
+      .from('abandoned_checkouts')
+      .select('*')
+      .not('remarketing_email_sent_at', 'is', null)
+      .lt('abandoned_at', fifteenMinutesAgo)
+      .order('remarketing_email_sent_at', { ascending: false })
+      .limit(1000);
+
+    if (error) throw error;
+
+    const base = (checkoutsComEmail || []) as AbandonedCheckout[];
+    const emails = Array.from(
+      new Set(base.map(c => (c.email || '').trim().toLowerCase()).filter(Boolean))
+    );
+
+    // Map email -> user_id
+    const emailToUserId = new Map<string, string>();
+    if (emails.length > 0) {
+      for (const chunk of chunkArray(emails, 500)) {
+        const { data: profilesChunk } = await supabase
+          .from('profiles')
+          .select('id,email')
+          .in('email', chunk);
+
+        for (const p of profilesChunk || []) {
+          if (p.email && p.id) emailToUserId.set(String(p.email).toLowerCase(), String(p.id));
+        }
+      }
+    }
+
+    const userIds = Array.from(new Set(Array.from(emailToUserId.values())));
+
+    // Map user_id -> latest purchase timestamp
+    const latestByUserId = new Map<string, number>();
+
+    if (userIds.length > 0) {
+      for (const chunk of chunkArray(userIds, 500)) {
+        const { data: premiums } = await supabase
+          .from('premium_artes_users')
+          .select('user_id, created_at, subscribed_at')
+          .in('user_id', chunk);
+
+        for (const row of premiums || []) {
+          const ts = row.subscribed_at || row.created_at;
+          if (!ts || !row.user_id) continue;
+          const ms = Date.parse(ts);
+          const prev = latestByUserId.get(String(row.user_id));
+          if (!prev || ms > prev) latestByUserId.set(String(row.user_id), ms);
+        }
+
+        const { data: packs } = await supabase
+          .from('user_pack_purchases')
+          .select('user_id, purchased_at, created_at')
+          .in('user_id', chunk);
+
+        for (const row of packs || []) {
+          const ts = row.purchased_at || row.created_at;
+          if (!ts || !row.user_id) continue;
+          const ms = Date.parse(ts);
+          const prev = latestByUserId.get(String(row.user_id));
+          if (!prev || ms > prev) latestByUserId.set(String(row.user_id), ms);
+        }
+      }
+    }
+
+    const convertedCheckouts = base.filter((c) => {
+      const emailKey = (c.email || '').trim().toLowerCase();
+      const userId = emailToUserId.get(emailKey);
+      if (!userId || !c.remarketing_email_sent_at) return false;
+      const purchaseMs = latestByUserId.get(userId);
+      if (!purchaseMs) return false;
+      return purchaseMs > Date.parse(c.remarketing_email_sent_at);
+    });
+
+    return {
+      emailsEnviados: base.length,
+      convertedCheckouts,
+    };
+  };
+
   const fetchCheckouts = async () => {
     setLoading(true);
     try {
       // Só mostrar abandonos com mais de 15 minutos (para evitar mostrar pessoas ainda finalizando)
       const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-      
-      let query = supabase
-        .from('abandoned_checkouts')
-        .select('*', { count: 'exact' })
-        .lt('abandoned_at', fifteenMinutesAgo) // Só abandonos com mais de 15 min
-        .order('abandoned_at', { ascending: false });
 
-      if (statusFilter !== 'all') {
-        query = query.eq('remarketing_status', statusFilter);
+      if (statusFilter === 'converted') {
+        const { convertedCheckouts } = await getRemarketingAutoEmailConversions();
+
+        let filtered = convertedCheckouts;
+        if (searchTerm) {
+          const s = searchTerm.toLowerCase();
+          filtered = convertedCheckouts.filter(c =>
+            c.email?.toLowerCase().includes(s) ||
+            c.name?.toLowerCase().includes(s)
+          );
+        }
+
+        const from = (currentPage - 1) * ITEMS_PER_PAGE;
+        const to = from + ITEMS_PER_PAGE;
+
+        setCheckouts(filtered.slice(from, to));
+        setTotalCount(filtered.length);
+      } else {
+        let query = supabase
+          .from('abandoned_checkouts')
+          .select('*', { count: 'exact' })
+          .lt('abandoned_at', fifteenMinutesAgo) // Só abandonos com mais de 15 min
+          .order('abandoned_at', { ascending: false });
+
+        if (statusFilter !== 'all') {
+          query = query.eq('remarketing_status', statusFilter);
+        }
+
+        if (searchTerm) {
+          query = query.or(`email.ilike.%${searchTerm}%,name.ilike.%${searchTerm}%`);
+        }
+
+        const from = (currentPage - 1) * ITEMS_PER_PAGE;
+        const to = from + ITEMS_PER_PAGE - 1;
+        query = query.range(from, to);
+
+        const { data, error, count } = await query;
+
+        if (error) throw error;
+        setCheckouts((data || []) as AbandonedCheckout[]);
+        setTotalCount(count || 0);
       }
-
-      if (searchTerm) {
-        query = query.or(`email.ilike.%${searchTerm}%,name.ilike.%${searchTerm}%`);
-      }
-
-      const from = (currentPage - 1) * ITEMS_PER_PAGE;
-      const to = from + ITEMS_PER_PAGE - 1;
-      query = query.range(from, to);
-
-      const { data, error, count } = await query;
-
-      if (error) throw error;
-      setCheckouts(data || []);
-      setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching checkouts:', error);
       toast.error("Erro ao carregar checkouts abandonados");
@@ -143,11 +253,7 @@ const AdminAbandonedCheckouts = () => {
         .lt('abandoned_at', fifteenMinutesAgo)
         .eq('remarketing_status', 'pending');
 
-      // Converted (para calcular taxa de conversão)
-      const { count: converted } = await supabase
-        .from('abandoned_checkouts')
-        .select('*', { count: 'exact', head: true })
-        .eq('remarketing_status', 'converted');
+      const { emailsEnviados, convertedCheckouts } = await getRemarketingAutoEmailConversions();
 
       // Potential value (sum of pending amounts, só abandonos reais)
       const { data: pendingData } = await supabase
@@ -161,7 +267,8 @@ const AdminAbandonedCheckouts = () => {
       setStats({
         total: totalReal || 0,
         pending: pending || 0,
-        converted: converted || 0,
+        emailsEnviados: emailsEnviados || 0,
+        conversoesRemarketing: convertedCheckouts.length,
         potentialValue
       });
     } catch (error) {
@@ -185,9 +292,15 @@ const AdminAbandonedCheckouts = () => {
 
   useEffect(() => {
     fetchCheckouts();
-    fetchStats();
-    fetchEmailTemplates();
   }, [currentPage, statusFilter, searchTerm]);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    fetchEmailTemplates();
+  }, []);
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
@@ -361,7 +474,7 @@ const AdminAbandonedCheckouts = () => {
   };
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-  const conversionRate = stats.total > 0 ? ((stats.converted / stats.total) * 100).toFixed(1) : '0';
+  const conversionRate = stats.emailsEnviados > 0 ? ((stats.conversoesRemarketing / stats.emailsEnviados) * 100).toFixed(1) : '0';
 
   return (
     <AdminLayout>
@@ -410,7 +523,9 @@ const AdminAbandonedCheckouts = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{conversionRate}%</p>
-                <p className="text-xs text-muted-foreground">Taxa Conversão</p>
+                <p className="text-xs text-muted-foreground">
+                  Remarketing ({stats.conversoesRemarketing}/{stats.emailsEnviados})
+                </p>
               </div>
             </div>
           </Card>
@@ -448,7 +563,7 @@ const AdminAbandonedCheckouts = () => {
                 <TabsTrigger value="pending">Pendentes</TabsTrigger>
                 <TabsTrigger value="contacted_whatsapp">WhatsApp</TabsTrigger>
                 <TabsTrigger value="contacted_email">Email</TabsTrigger>
-                <TabsTrigger value="converted">Convertidos</TabsTrigger>
+                <TabsTrigger value="converted">Convertidos Remarketing</TabsTrigger>
                 <TabsTrigger value="ignored">Ignorados</TabsTrigger>
               </TabsList>
             </Tabs>
