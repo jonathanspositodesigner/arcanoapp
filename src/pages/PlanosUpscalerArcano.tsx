@@ -762,13 +762,13 @@ const PlanosUpscalerArcano = () => {
                   return (
                     <div 
                       key={index}
-                      className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/50 transition-all duration-300 hover:transform hover:scale-[1.02]"
+                      className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
                     >
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
                         <IconComponent className="h-8 w-8 text-fuchsia-400" />
                       </div>
                       <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
-                      <p className="text-white/60">{item.description}</p>
+                      <p className="text-white/60 flex-1">{item.description}</p>
                     </div>
                   );
                 })}
