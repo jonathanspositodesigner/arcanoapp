@@ -16,12 +16,21 @@ interface LocaleContextType {
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
+const LATAM_DOMAINS = [
+  'arcanoappes.voxvisual.com.br',
+];
+
 const getLocaleFromSubdomain = (): Locale => {
   if (typeof window === 'undefined') return 'pt';
   
   const hostname = window.location.hostname;
   
-  // Check for es. subdomain
+  // Check for specific LATAM domain
+  if (LATAM_DOMAINS.some(domain => hostname.includes(domain))) {
+    return 'es';
+  }
+  
+  // Legacy: Check for es. subdomain
   if (hostname.startsWith('es.')) {
     return 'es';
   }
@@ -44,20 +53,20 @@ const getLocaleFromNavigator = (): Locale => {
 };
 
 const detectLocale = (): Locale => {
-  // Priority: subdomain > navigator
-  const subdomainLocale = getLocaleFromSubdomain();
-  if (subdomainLocale === 'es') {
+  const hostname = window.location.hostname;
+  
+  // Check for specific LATAM domain first
+  if (LATAM_DOMAINS.some(domain => hostname.includes(domain))) {
     return 'es';
   }
   
-  // Fallback to navigator if not on es. subdomain
-  // But only on the main domain (not es. subdomain)
-  const hostname = window.location.hostname;
-  if (!hostname.startsWith('es.')) {
-    return getLocaleFromNavigator();
+  // Legacy: Check for es. subdomain
+  if (hostname.startsWith('es.')) {
+    return 'es';
   }
   
-  return 'pt';
+  // Fallback to navigator language detection
+  return getLocaleFromNavigator();
 };
 
 export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
