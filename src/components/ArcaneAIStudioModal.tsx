@@ -1,8 +1,6 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Star, Lock, LogIn, Zap, ImagePlus, UserRoundCog, Shirt } from "lucide-react";
+import { X, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ArcaneAIStudioModalProps {
@@ -13,222 +11,63 @@ interface ArcaneAIStudioModalProps {
   isLoggedIn: boolean;
 }
 
-interface ToolCard {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  requiredPlan: "basico" | "pro" | "unlimited";
-  link?: string;
-  isInternal?: boolean;
-}
-
-const tools: ToolCard[] = [
-  {
-    id: "forja",
-    title: "Forja de Selos 3D",
-    description: "Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.",
-    icon: Zap,
-    requiredPlan: "unlimited",
-    link: "/forja-selos-3d",
-    isInternal: true
-  },
-  {
-    id: "upscaler",
-    title: "Upscaler Arcano",
-    description: "Melhore suas imagens deixando em 4K e remova o fundo.",
-    icon: ImagePlus,
-    requiredPlan: "unlimited",
-    link: "/upscaler-arcano",
-    isInternal: true
-  },
-  {
-    id: "pose",
-    title: "Mudar Pose",
-    description: "Mude a pose de qualquer foto mantendo a fidelidade do rosto original.",
-    icon: UserRoundCog,
-    requiredPlan: "pro",
-    link: "/mudar-pose",
-    isInternal: true
-  },
-  {
-    id: "roupa",
-    title: "Mudar Roupa",
-    description: "Mude a roupa de qualquer foto mantendo a fidelidade do rosto original.",
-    icon: Shirt,
-    requiredPlan: "pro",
-    link: "/mudar-roupa",
-    isInternal: true
-  }
-];
-
-const ArcaneAIStudioModal = ({ open, onOpenChange, isPremium, planType, isLoggedIn }: ArcaneAIStudioModalProps) => {
+const ArcaneAIStudioModal = ({ open, onOpenChange }: ArcaneAIStudioModalProps) => {
   const navigate = useNavigate();
-
-  const canAccessTool = (tool: ToolCard): boolean => {
-    if (!isPremium) return false;
-    
-    if (planType === "arcano_unlimited") {
-      return true;
-    }
-    
-    if (planType === "arcano_pro") {
-      return tool.requiredPlan === "pro" || tool.requiredPlan === "basico";
-    }
-    
-    if (planType === "arcano_basico") {
-      return tool.requiredPlan === "basico";
-    }
-    
-    return false;
-  };
-
-  const handleToolClick = (tool: ToolCard) => {
-    if (canAccessTool(tool) && tool.link) {
-      if (tool.isInternal) {
-        navigate(tool.link);
-        onOpenChange(false);
-      } else {
-        window.open(tool.link, "_blank");
-      }
-    }
-  };
-
-  const getPlanLabel = (requiredPlan: string) => {
-    switch (requiredPlan) {
-      case "pro":
-        return "Pro+";
-      case "unlimited":
-        return "Unlimited";
-      default:
-        return "Básico+";
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Zap className="h-6 w-6 text-primary" />
-            Arcane AI Studio
-          </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Acesse nossas ferramentas de IA exclusivas para potenciar seus resultados e facilitar seu dia a dia.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-5xl w-[95vw] p-0 overflow-hidden bg-transparent border-0 shadow-2xl">
+        {/* Close button */}
+        <button 
+          onClick={() => onOpenChange(false)}
+          className="absolute right-4 top-4 z-50 rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
+        >
+          <X className="h-5 w-5" />
+        </button>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-          {tools.map((tool) => {
-            const hasAccess = canAccessTool(tool);
-            const IconComponent = tool.icon;
+        {/* Video Banner Container */}
+        <div className="relative w-full rounded-2xl overflow-hidden">
+          {/* Video Background - Replace with actual video when ready */}
+          <div className="relative w-full aspect-[16/6] sm:aspect-[16/5] bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
+            {/* Placeholder for video - will be replaced with actual video */}
+            <video 
+              className="absolute inset-0 w-full h-full object-cover"
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              poster=""
+            >
+              {/* Add your video source here */}
+              {/* <source src="/videos/ferramentas-ia-preview.mp4" type="video/mp4" /> */}
+            </video>
             
-            return (
-              <Card 
-                key={tool.id}
-                className={`p-4 border-border transition-all duration-300 ${
-                  hasAccess && tool.link 
-                    ? "hover:shadow-lg hover:scale-[1.02] cursor-pointer" 
-                    : "opacity-90"
-                }`}
-                onClick={() => hasAccess && tool.link && handleToolClick(tool)}
-              >
-                <div className="flex flex-col h-full">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                      <IconComponent className="h-6 w-6 text-primary" />
-                    </div>
-                    {!hasAccess && (
-                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-xs">
-                        <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                        {getPlanLabel(tool.requiredPlan)}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <h3 className="font-bold text-foreground mb-2">{tool.title}</h3>
-                  <p className="text-sm text-muted-foreground flex-grow">{tool.description}</p>
-                  
-                  {!isLoggedIn && (
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate("/planos");
-                          onOpenChange(false);
-                        }}
-                        size="sm"
-                        className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"
-                      >
-                        <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                        Torne-se Premium
-                      </Button>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate("/login");
-                          onOpenChange(false);
-                        }}
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 border-border text-xs"
-                      >
-                        <LogIn className="h-3 w-3 mr-1" />
-                        Fazer Login
-                      </Button>
-                    </div>
-                  )}
-                  
-                  {isLoggedIn && !hasAccess && isPremium && (
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate("/upgrade");
-                        onOpenChange(false);
-                      }}
-                      size="sm"
-                      className="w-full mt-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"
-                    >
-                      <Lock className="h-3 w-3 mr-1" />
-                      Fazer Upgrade
-                    </Button>
-                  )}
-                  
-                  {isLoggedIn && !isPremium && (
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate("/planos");
-                        onOpenChange(false);
-                      }}
-                      size="sm"
-                      className="w-full mt-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"
-                    >
-                      <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                      Torne-se Premium
-                    </Button>
-                  )}
-                  
-                  {hasAccess && tool.link && (
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToolClick(tool);
-                      }}
-                      size="sm"
-                      className="w-full mt-4 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 text-primary-foreground text-xs"
-                    >
-                      Acesse aqui
-                    </Button>
-                  )}
-                  
-                  {hasAccess && !tool.link && (
-                    <p className="text-xs text-muted-foreground mt-4 italic">Link em breve...</p>
-                  )}
-                </div>
-              </Card>
-            );
-          })}
+            {/* Gradient Overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+            
+            {/* Content Overlay */}
+            <div className="absolute inset-0 flex items-center">
+              <div className="p-6 sm:p-10 lg:p-14 max-w-xl">
+                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 leading-tight">
+                  Ferramentas de IA
+                </h2>
+                <p className="text-sm sm:text-base lg:text-lg text-white/80 mb-6 sm:mb-8 leading-relaxed">
+                  Potencialize suas criações com nossas ferramentas exclusivas de IA. 
+                  Upscaler, Forja de Selos 3D, Mudar Pose e muito mais disponíveis para você.
+                </p>
+                <Button 
+                  onClick={() => {
+                    navigate("/ferramentas-ia?from=prompts");
+                    onOpenChange(false);
+                  }}
+                  className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm px-6 py-5 sm:px-8 sm:py-6 text-sm sm:text-base font-semibold rounded-lg transition-all hover:scale-105"
+                >
+                  <Zap className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  Acessar Ferramentas
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
