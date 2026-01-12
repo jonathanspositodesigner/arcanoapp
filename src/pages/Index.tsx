@@ -163,13 +163,14 @@ const Index = () => {
 
         {/* Links de acesso */}
         <FadeIn delay={600} duration={600}>
-          <div className="mt-8 flex flex-col items-center gap-2">
+          <div className="mt-8 flex items-center justify-center gap-4">
             <button 
               onClick={() => navigate("/admin-login")} 
               className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
             >
               Acesso Administrador
             </button>
+            <span className="text-muted-foreground">•</span>
             <button 
               onClick={() => navigate("/parceiro-login-unificado")} 
               className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
