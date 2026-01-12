@@ -473,7 +473,7 @@ const BibliotecaPrompts = () => {
 
           {/* Banner Upscaler Arcano com Vídeo */}
           <div className="mb-6 sm:mb-8 relative w-full rounded-2xl overflow-hidden">
-            <div className="relative w-full aspect-[16/6] sm:aspect-[16/5]">
+            <div className="relative w-full aspect-[4/3] sm:aspect-[16/5]">
               {/* Vídeo Desktop */}
               <video 
                 className="absolute inset-0 w-full h-full object-cover hidden sm:block"
@@ -497,27 +497,27 @@ const BibliotecaPrompts = () => {
               </video>
               
               {/* Overlay gradiente para legibilidade */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
               
               {/* Conteúdo sobreposto */}
-              <div className="absolute inset-0 flex items-center">
-                <div className="p-6 sm:p-10 lg:p-14 max-w-xl">
-                  <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 leading-tight">
+              <div className="absolute inset-0 flex items-end sm:items-center">
+                <div className="p-4 sm:p-10 lg:p-14 w-full sm:max-w-xl">
+                  <h2 className="text-lg sm:text-4xl lg:text-5xl font-bold text-white mb-1 sm:mb-4 leading-tight">
                     Conheça o Upscaler Arcano
                   </h2>
-                  <p className="text-sm sm:text-base lg:text-lg text-white/80 mb-6 sm:mb-8 leading-relaxed">
+                  <p className="text-xs sm:text-base lg:text-lg text-white/80 mb-3 sm:mb-8 leading-relaxed">
                     Deixe suas fotos em 4K com alta nitidez, riqueza de detalhes e qualidade cinematográfica
                   </p>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                  <div className="flex flex-row items-center gap-3 sm:gap-4">
                     <Button 
                       onClick={() => navigate("/planos-upscaler-arcano")}
-                      className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm px-6 py-5 sm:px-8 sm:py-6 text-sm sm:text-base font-semibold rounded-lg transition-all hover:scale-105"
+                      className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm px-4 py-2 sm:px-8 sm:py-6 text-xs sm:text-base font-semibold rounded-lg transition-all hover:scale-105"
                     >
                       Adquirir agora
                     </Button>
                     <button 
                       onClick={() => navigate("/ferramentas-ia")}
-                      className="text-white/80 hover:text-white text-sm sm:text-base underline underline-offset-4 transition-colors"
+                      className="text-white/80 hover:text-white text-xs sm:text-base underline underline-offset-4 transition-colors"
                     >
                       Já adquiriu? acesse aqui
                     </button>
