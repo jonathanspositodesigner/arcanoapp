@@ -265,7 +265,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
 <body>
   <div class="container">
     <div class="logo">
-      <h1>${isFerramentaIA ? '🤖' : '🎨'} \${templateContent.heading}</h1>
+      <h1>${isFerramentaIA ? '🤖' : '🎨'} ${templateContent.heading}</h1>
     </div>
     
     <p>Olá${name ? ` <strong>${name}</strong>` : ''}!</p>
@@ -296,7 +296,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     </p>
     
     <div class="footer">
-      <p>\${templateContent.footer}</p>
+      <p>${templateContent.footer}</p>
       <p style="margin-top: 8px;">© ${isFerramentaIA ? 'Ferramentas IA Arcanas' : 'Biblioteca de Artes Arcanas'}</p>
     </div>
   </div>
