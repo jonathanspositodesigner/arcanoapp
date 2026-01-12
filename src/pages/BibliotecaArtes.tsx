@@ -21,6 +21,8 @@ import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 import PromoNatalBanner from "@/components/PromoNatalBanner";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileFilterDropdown from "@/components/MobileFilterDropdown";
 interface ArteItem {
   id: string | number;
   title: string;
@@ -158,6 +160,7 @@ const BibliotecaArtes = () => {
   const {
     isActive: isPromoActive
   } = useYearEndPromo();
+  const isMobile = useIsMobile();
 
   // First access modal states
   const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
@@ -1104,14 +1107,25 @@ const BibliotecaArtes = () => {
             {activeSection === 'all-artes' && <>
                 {/* Category Filter */}
                 <div className="mb-6">
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
-                    setSelectedCategory(category);
-                    setCurrentPage(1);
-                  }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
-                        {category}
-                      </Button>)}
-                  </div>
+                  {isMobile ? (
+                    <MobileFilterDropdown
+                      categories={categories}
+                      selectedCategory={selectedCategory}
+                      onSelectCategory={(cat) => {
+                        setSelectedCategory(cat);
+                        setCurrentPage(1);
+                      }}
+                    />
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
+                      setSelectedCategory(category);
+                      setCurrentPage(1);
+                    }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
+                          {category}
+                        </Button>)}
+                    </div>
+                  )}
                 </div>
 
                 {/* Artes Grid */}
@@ -1212,14 +1226,25 @@ const BibliotecaArtes = () => {
             {activeSection === 'free-sample' && !selectedPack && <>
                 {/* Category Filter */}
                 <div className="mb-6">
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
-                    setSelectedCategory(category);
-                    setCurrentPage(1);
-                  }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
-                        {category}
-                      </Button>)}
-                  </div>
+                  {isMobile ? (
+                    <MobileFilterDropdown
+                      categories={categories}
+                      selectedCategory={selectedCategory}
+                      onSelectCategory={(cat) => {
+                        setSelectedCategory(cat);
+                        setCurrentPage(1);
+                      }}
+                    />
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
+                      setSelectedCategory(category);
+                      setCurrentPage(1);
+                    }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
+                          {category}
+                        </Button>)}
+                    </div>
+                  )}
                 </div>
 
                 {/* Artes Grid */}
@@ -1300,14 +1325,25 @@ const BibliotecaArtes = () => {
 
                 {/* Category Filter - Only for packs, not for bonus */}
                 {activeSection === 'packs' && <div className="mb-6">
-                    <div className="flex flex-wrap gap-2">
-                      {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
-                    setSelectedCategory(category);
-                    setCurrentPage(1);
-                  }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
-                          {category}
-                        </Button>)}
-                    </div>
+                    {isMobile ? (
+                      <MobileFilterDropdown
+                        categories={categories}
+                        selectedCategory={selectedCategory}
+                        onSelectCategory={(cat) => {
+                          setSelectedCategory(cat);
+                          setCurrentPage(1);
+                        }}
+                      />
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => {
+                      setSelectedCategory(category);
+                      setCurrentPage(1);
+                    }} className={`text-xs sm:text-sm ${selectedCategory === category ? 'bg-primary' : ''}`}>
+                            {category}
+                          </Button>)}
+                      </div>
+                    )}
                   </div>}
 
                 {/* Artes Grid */}
