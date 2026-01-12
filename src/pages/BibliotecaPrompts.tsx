@@ -471,20 +471,20 @@ const BibliotecaPrompts = () => {
             Instalar App
           </Button>
 
-          {/* Arcane AI Studio Card */}
+          {/* Ferramentas de IA Card */}
           <Card className="mb-6 sm:mb-8 p-4 sm:p-6 lg:p-8 bg-gradient-primary text-primary-foreground shadow-hover bg-primary">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
               <Zap className="h-8 w-8 sm:h-12 sm:w-12 flex-shrink-0" />
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Arcane AI Studio</h1>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Ferramentas de IA</h1>
                 <p className="text-sm sm:text-base lg:text-lg opacity-90">
                   Acesse nossas ferramentas de IA exclusivas para potenciar seus resultados e facilitar seu dia a dia.
                 </p>
               </div>
             </div>
-            <Button onClick={() => navigate("/ferramentas-ia?from=prompts")} variant="secondary" size="default" className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
+            <Button onClick={() => setShowArcaneStudioModal(true)} variant="secondary" size="default" className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
               <Zap className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Acessar Ferramentas
+              Ver em Ação
             </Button>
           </Card>
 
