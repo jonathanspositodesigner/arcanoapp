@@ -2,11 +2,16 @@ import { useNavigate } from "react-router-dom";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { trackPushNotificationEvent } from "@/hooks/usePushNotificationAnalytics";
-import { Check, Smartphone, Bell, Wand2 } from "lucide-react";
+import { Check, Smartphone, Bell, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
-import promptclubLogo from "@/assets/promptclub_logo.png";
-import { FadeIn, AnimatedElement, StaggeredAnimation } from "@/hooks/useScrollAnimation";
+import { FadeIn, StaggeredAnimation } from "@/hooks/useScrollAnimation";
+import { Button } from "@/components/ui/button";
+
+// Imagens de preview para os cards
+import upscalerDepois from "@/assets/upscaler-depois-1.jpg";
+import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
+import upscalerLogoDepois from "@/assets/upscaler-logo-depois.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -25,6 +30,27 @@ const Index = () => {
       toast.error("Não foi possível ativar as notificações");
     }
   };
+
+  const cards = [
+    {
+      title: "Biblioteca de Artes Arcanas",
+      description: "Artes para Eventos editáveis PSD e Canva",
+      image: upscalerDepois,
+      route: "/biblioteca-artes",
+    },
+    {
+      title: "Biblioteca de Prompts IA",
+      description: "Prompts prontos para criar selos, imagens, logos e muito mais com IA",
+      image: upscalerSeloDepois,
+      route: "/biblioteca-prompts",
+    },
+    {
+      title: "Ferramentas de IA",
+      description: "Upscaler, Forja de Selos 3D, Mudar Pose e Roupa",
+      image: upscalerLogoDepois,
+      route: "/ferramentas-ia",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col items-center justify-center px-4 py-8">
@@ -75,51 +101,42 @@ const Index = () => {
         staggerDelay={150}
         animation="fade-up"
       >
-        {/* Card - Biblioteca de Artes Arcanas */}
-        <div 
-          onClick={() => navigate("/biblioteca-artes")} 
-          className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50"
-        >
-          <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
-            <img alt="Biblioteca de Artes Arcanas" className="w-full h-full object-contain" src="/lovable-uploads/0b5816a1-fee5-45f1-906e-9f7952d9b4e3.png" />
+        {cards.map((card) => (
+          <div 
+            key={card.route}
+            onClick={() => navigate(card.route)} 
+            className="group relative overflow-hidden rounded-2xl cursor-pointer aspect-[4/3] shadow-lg hover:shadow-2xl transition-shadow duration-300"
+          >
+            {/* Imagem de fundo */}
+            <img 
+              src={card.image} 
+              alt={card.title}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+            
+            {/* Overlay escuro sempre visível (leve) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            
+            {/* Overlay mais forte no hover */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {/* Conteúdo que sobe no hover */}
+            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 translate-y-[60%] group-hover:translate-y-0 transition-transform duration-300 ease-out">
+              <h2 className="text-lg sm:text-xl font-bold text-white mb-2 drop-shadow-lg">
+                {card.title}
+              </h2>
+              <p className="text-sm text-white/90 mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                {card.description}
+              </p>
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-150"
+              >
+                Acesse aqui
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
-            Biblioteca de Artes Arcanas
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Artes para Eventos editáveis PSD e Canva </p>
-        </div>
-
-        {/* Card - Biblioteca de Prompts IA */}
-        <div 
-          onClick={() => navigate("/biblioteca-prompts")} 
-          className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-primary/50"
-        >
-          <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center">
-            <img alt="Biblioteca de Prompts IA" className="w-full h-full object-contain" src={promptclubLogo} />
-          </div>
-          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
-            Biblioteca de Prompts IA
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Prompts prontos para criar selos, imagens, logos e muito mais com IA
-          </p>
-        </div>
-
-        {/* Card - Ferramentas de IA */}
-        <div 
-          onClick={() => navigate("/ferramentas-ia")} 
-          className="group cursor-pointer bg-card border border-border rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-fuchsia-500/50"
-        >
-          <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600">
-            <Wand2 className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-          </div>
-          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
-            Ferramentas de IA
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Upscaler, Forja de Selos 3D, Mudar Pose e Roupa
-          </p>
-        </div>
+        ))}
       </StaggeredAnimation>
 
       {/* Links de acesso */}
