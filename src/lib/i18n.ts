@@ -1,0 +1,70 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+// Import translation files
+import ptCommon from '@/locales/pt/common.json';
+import ptPlans from '@/locales/pt/plans.json';
+import ptLibrary from '@/locales/pt/library.json';
+import ptAuth from '@/locales/pt/auth.json';
+
+import esCommon from '@/locales/es/common.json';
+import esPlans from '@/locales/es/plans.json';
+import esLibrary from '@/locales/es/library.json';
+import esAuth from '@/locales/es/auth.json';
+
+const resources = {
+  pt: {
+    common: ptCommon,
+    plans: ptPlans,
+    library: ptLibrary,
+    auth: ptAuth,
+  },
+  es: {
+    common: esCommon,
+    plans: esPlans,
+    library: esLibrary,
+    auth: esAuth,
+  },
+};
+
+// Custom detector for subdomain
+const subdomainDetector = {
+  name: 'subdomain',
+  lookup() {
+    if (typeof window === 'undefined') return 'pt';
+    const hostname = window.location.hostname;
+    if (hostname.startsWith('es.')) {
+      return 'es';
+    }
+    return undefined; // Let other detectors handle it
+  },
+};
+
+const languageDetector = new LanguageDetector();
+languageDetector.addDetector(subdomainDetector);
+
+i18n
+  .use(languageDetector)
+  .use(initReactI18next)
+  .init({
+    resources,
+    fallbackLng: 'pt',
+    defaultNS: 'common',
+    ns: ['common', 'plans', 'library', 'auth'],
+    
+    detection: {
+      order: ['subdomain', 'navigator', 'htmlTag'],
+      caches: [],
+    },
+    
+    interpolation: {
+      escapeValue: false,
+    },
+    
+    react: {
+      useSuspense: false,
+    },
+  });
+
+export default i18n;

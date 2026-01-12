@@ -610,6 +610,18 @@ export type Database = {
         Row: {
           checkout_link_1_ano: string | null
           checkout_link_6_meses: string | null
+          checkout_link_latam_1_ano: string | null
+          checkout_link_latam_6_meses: string | null
+          checkout_link_latam_membro_1_ano: string | null
+          checkout_link_latam_membro_6_meses: string | null
+          checkout_link_latam_membro_vitalicio: string | null
+          checkout_link_latam_promo_1_ano: string | null
+          checkout_link_latam_promo_6_meses: string | null
+          checkout_link_latam_promo_vitalicio: string | null
+          checkout_link_latam_renovacao_1_ano: string | null
+          checkout_link_latam_renovacao_6_meses: string | null
+          checkout_link_latam_renovacao_vitalicio: string | null
+          checkout_link_latam_vitalicio: string | null
           checkout_link_membro_1_ano: string | null
           checkout_link_membro_6_meses: string | null
           checkout_link_membro_vitalicio: string | null
@@ -641,8 +653,11 @@ export type Database = {
           notification_discount_percent: number | null
           platform: string | null
           price_1_ano: number | null
+          price_1_ano_usd: number | null
           price_6_meses: number | null
+          price_6_meses_usd: number | null
           price_vitalicio: number | null
+          price_vitalicio_usd: number | null
           slug: string
           tutorial_lessons: Json | null
           type: string
@@ -651,6 +666,18 @@ export type Database = {
         Insert: {
           checkout_link_1_ano?: string | null
           checkout_link_6_meses?: string | null
+          checkout_link_latam_1_ano?: string | null
+          checkout_link_latam_6_meses?: string | null
+          checkout_link_latam_membro_1_ano?: string | null
+          checkout_link_latam_membro_6_meses?: string | null
+          checkout_link_latam_membro_vitalicio?: string | null
+          checkout_link_latam_promo_1_ano?: string | null
+          checkout_link_latam_promo_6_meses?: string | null
+          checkout_link_latam_promo_vitalicio?: string | null
+          checkout_link_latam_renovacao_1_ano?: string | null
+          checkout_link_latam_renovacao_6_meses?: string | null
+          checkout_link_latam_renovacao_vitalicio?: string | null
+          checkout_link_latam_vitalicio?: string | null
           checkout_link_membro_1_ano?: string | null
           checkout_link_membro_6_meses?: string | null
           checkout_link_membro_vitalicio?: string | null
@@ -682,8 +709,11 @@ export type Database = {
           notification_discount_percent?: number | null
           platform?: string | null
           price_1_ano?: number | null
+          price_1_ano_usd?: number | null
           price_6_meses?: number | null
+          price_6_meses_usd?: number | null
           price_vitalicio?: number | null
+          price_vitalicio_usd?: number | null
           slug: string
           tutorial_lessons?: Json | null
           type?: string
@@ -692,6 +722,18 @@ export type Database = {
         Update: {
           checkout_link_1_ano?: string | null
           checkout_link_6_meses?: string | null
+          checkout_link_latam_1_ano?: string | null
+          checkout_link_latam_6_meses?: string | null
+          checkout_link_latam_membro_1_ano?: string | null
+          checkout_link_latam_membro_6_meses?: string | null
+          checkout_link_latam_membro_vitalicio?: string | null
+          checkout_link_latam_promo_1_ano?: string | null
+          checkout_link_latam_promo_6_meses?: string | null
+          checkout_link_latam_promo_vitalicio?: string | null
+          checkout_link_latam_renovacao_1_ano?: string | null
+          checkout_link_latam_renovacao_6_meses?: string | null
+          checkout_link_latam_renovacao_vitalicio?: string | null
+          checkout_link_latam_vitalicio?: string | null
           checkout_link_membro_1_ano?: string | null
           checkout_link_membro_6_meses?: string | null
           checkout_link_membro_vitalicio?: string | null
@@ -723,8 +765,11 @@ export type Database = {
           notification_discount_percent?: number | null
           platform?: string | null
           price_1_ano?: number | null
+          price_1_ano_usd?: number | null
           price_6_meses?: number | null
+          price_6_meses_usd?: number | null
           price_vitalicio?: number | null
+          price_vitalicio_usd?: number | null
           slug?: string
           tutorial_lessons?: Json | null
           type?: string
