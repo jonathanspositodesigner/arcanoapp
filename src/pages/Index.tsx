@@ -9,7 +9,7 @@ import { FadeIn, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { Button } from "@/components/ui/button";
 
 // Imagens de preview para os cards
-import upscalerDepois from "@/assets/upscaler-depois-1.jpg";
+import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
 import upscalerLogoDepois from "@/assets/upscaler-logo-depois.jpg";
 
@@ -36,7 +36,7 @@ const Index = () => {
       category: "Artes Editáveis PSD e Canva",
       title: "Biblioteca de Artes Arcanas",
       description: "Artes para Eventos editáveis PSD e Canva",
-      image: upscalerDepois,
+      image: cardArtesArcanas,
       route: "/biblioteca-artes",
     },
     {
