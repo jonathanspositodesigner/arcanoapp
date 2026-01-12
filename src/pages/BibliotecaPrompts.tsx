@@ -508,12 +508,20 @@ const BibliotecaPrompts = () => {
                   <p className="text-sm sm:text-base lg:text-lg text-white/80 mb-6 sm:mb-8 leading-relaxed">
                     Deixe suas fotos em 4K com alta nitidez, riqueza de detalhes e qualidade cinematográfica
                   </p>
-                  <Button 
-                    onClick={() => navigate("/ferramentas-ia?from=prompts")}
-                    className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm px-6 py-5 sm:px-8 sm:py-6 text-sm sm:text-base font-semibold rounded-lg transition-all hover:scale-105"
-                  >
-                    Ver mais
-                  </Button>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                    <Button 
+                      onClick={() => navigate("/planos-upscaler-arcano")}
+                      className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm px-6 py-5 sm:px-8 sm:py-6 text-sm sm:text-base font-semibold rounded-lg transition-all hover:scale-105"
+                    >
+                      Adquirir agora
+                    </Button>
+                    <button 
+                      onClick={() => navigate("/ferramentas-ia")}
+                      className="text-white/80 hover:text-white text-sm sm:text-base underline underline-offset-4 transition-colors"
+                    >
+                      Já adquiriu? acesse aqui
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
