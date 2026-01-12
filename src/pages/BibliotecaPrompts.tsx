@@ -13,7 +13,7 @@ import promptclubLogo from "@/assets/promptclub_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import VideoThumbnail from "@/components/VideoThumbnail";
-import ArcaneAIStudioModal from "@/components/ArcaneAIStudioModal";
+
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 const isVideoUrl = (url: string) => {
@@ -68,7 +68,7 @@ const BibliotecaPrompts = () => {
   const [collectionSlug, setCollectionSlug] = useState<string | null>(colecaoParam);
   const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
-  const [showArcaneStudioModal, setShowArcaneStudioModal] = useState(false);
+  
 
   // Use optimized hook for fetching prompts
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
@@ -471,22 +471,53 @@ const BibliotecaPrompts = () => {
             Instalar App
           </Button>
 
-          {/* Ferramentas de IA Card */}
-          <Card className="mb-6 sm:mb-8 p-4 sm:p-6 lg:p-8 bg-gradient-primary text-primary-foreground shadow-hover bg-primary">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
-              <Zap className="h-8 w-8 sm:h-12 sm:w-12 flex-shrink-0" />
-              <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Ferramentas de IA</h1>
-                <p className="text-sm sm:text-base lg:text-lg opacity-90">
-                  Acesse nossas ferramentas de IA exclusivas para potenciar seus resultados e facilitar seu dia a dia.
-                </p>
+          {/* Banner Upscaler Arcano com Vídeo */}
+          <div className="mb-6 sm:mb-8 relative w-full rounded-2xl overflow-hidden">
+            <div className="relative w-full aspect-[16/6] sm:aspect-[16/5]">
+              {/* Vídeo Desktop */}
+              <video 
+                className="absolute inset-0 w-full h-full object-cover hidden sm:block"
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+              >
+                <source src="/videos/upscaler-promo-desktop.mp4" type="video/mp4" />
+              </video>
+
+              {/* Vídeo Mobile */}
+              <video 
+                className="absolute inset-0 w-full h-full object-cover block sm:hidden"
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+              >
+                <source src="/videos/upscaler-promo-mobile.mp4" type="video/mp4" />
+              </video>
+              
+              {/* Overlay gradiente para legibilidade */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+              
+              {/* Conteúdo sobreposto */}
+              <div className="absolute inset-0 flex items-center">
+                <div className="p-6 sm:p-10 lg:p-14 max-w-xl">
+                  <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 leading-tight">
+                    Conheça o Upscaler Arcano
+                  </h2>
+                  <p className="text-sm sm:text-base lg:text-lg text-white/80 mb-6 sm:mb-8 leading-relaxed">
+                    Deixe suas fotos em 4K com alta nitidez, riqueza de detalhes e qualidade cinematográfica
+                  </p>
+                  <Button 
+                    onClick={() => navigate("/ferramentas-ia?from=prompts")}
+                    className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm px-6 py-5 sm:px-8 sm:py-6 text-sm sm:text-base font-semibold rounded-lg transition-all hover:scale-105"
+                  >
+                    Ver mais
+                  </Button>
+                </div>
               </div>
             </div>
-            <Button onClick={() => setShowArcaneStudioModal(true)} variant="secondary" size="default" className="mt-2 sm:mt-4 font-semibold hover:scale-105 transition-transform bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
-              <Zap className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Ver em Ação
-            </Button>
-          </Card>
+          </div>
 
           {/* Page Title and Content Type Tabs */}
           <div className="mb-6 sm:mb-8">
@@ -785,8 +816,6 @@ const BibliotecaPrompts = () => {
       setSearchParams(searchParams);
     }} />}
 
-      {/* Arcane AI Studio Modal */}
-      <ArcaneAIStudioModal open={showArcaneStudioModal} onOpenChange={setShowArcaneStudioModal} isPremium={isPremium} planType={planType} isLoggedIn={!!user} />
 
       {/* Push Notification Prompt */}
       <PushNotificationPrompt />
