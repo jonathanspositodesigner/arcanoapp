@@ -47,7 +47,7 @@ const Index = () => {
       route: "/biblioteca-prompts",
     },
     {
-      category: "Ferramentas",
+      category: "Ferramentas Exclusivas de IA",
       title: "Ferramentas de IA",
       description: "Upscaler, Forja de Selos 3D, Mudar Pose e Roupa",
       image: upscalerLogoDepois,
