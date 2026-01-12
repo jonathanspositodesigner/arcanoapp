@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -88,6 +89,7 @@ const slugToSection: Record<string, SidebarSection> = {
   'ferramentas-ia': 'ferramentas_ia'
 };
 const BibliotecaArtes = () => {
+  const { t } = useTranslation('library');
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
@@ -184,7 +186,7 @@ const BibliotecaArtes = () => {
   // Handle first access email check
   const handleFirstAccessCheck = async () => {
     if (!firstAccessEmail.trim()) {
-      toast.error("Digite seu email");
+      toast.error(t('messages.enterEmail'));
       return;
     }
     setFirstAccessLoading(true);
@@ -197,7 +199,7 @@ const BibliotecaArtes = () => {
       });
       if (rpcError) {
         console.error('Erro ao verificar perfil:', rpcError);
-        toast.error("Erro ao verificar cadastro. Tente novamente.");
+        toast.error(t('messages.checkEmailError'));
         setFirstAccessLoading(false);
         return;
       }
@@ -220,10 +222,10 @@ const BibliotecaArtes = () => {
         if (!error) {
           setShowFirstAccessModal(false);
           setFirstAccessEmail("");
-          toast.success("Bem-vindo! Agora defina sua nova senha.");
+          toast.success(t('messages.welcomeSetPassword'));
           navigate('/change-password-artes');
         } else {
-          toast.error("Erro ao acessar. Tente fazer login normalmente.");
+          toast.error(t('messages.accessError'));
           setShowFirstAccessModal(false);
           navigate('/login-artes');
         }
@@ -231,14 +233,14 @@ const BibliotecaArtes = () => {
       }
       if (profileExists && passwordChanged) {
         // Já mudou senha - ir para tela de login normal
-        toast.info("Você já definiu sua senha. Faça login normalmente.");
+        toast.info(t('messages.alreadySetPassword'));
         setShowFirstAccessModal(false);
         setFirstAccessEmail("");
         navigate('/login-artes');
       }
     } catch (error) {
       console.error("Error checking profile:", error);
-      toast.error("Erro ao verificar email. Tente novamente.");
+      toast.error(t('messages.checkEmailError'));
     } finally {
       setFirstAccessLoading(false);
     }
@@ -424,10 +426,10 @@ const BibliotecaArtes = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
-      toast.success(`"${filename}" baixado com sucesso!`);
+      toast.success(`"${filename}" ${t('messages.downloadSuccess')}`);
     } catch (error) {
       console.error("Download failed:", error);
-      toast.error("Erro ao baixar arquivo");
+      toast.error(t('messages.downloadError'));
     }
   };
   const handleDownload = async (arteItem: ArteItem) => {
@@ -480,9 +482,9 @@ const BibliotecaArtes = () => {
     return <div className="flex flex-wrap gap-1">
         {item.isPremium ? <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px] sm:text-xs">
             <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
-            Premium
+            {t('badges.premium')}
           </Badge> : <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] sm:text-xs">
-            Grátis
+            {t('badges.free')}
           </Badge>}
         {item.pack && <Badge className="bg-primary/80 text-white border-0 text-[10px] sm:text-xs">
             {item.pack}
@@ -501,7 +503,7 @@ const BibliotecaArtes = () => {
           setSidebarOpen(false);
         }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700 shadow-md">
               <Smartphone className="h-5 w-5" />
-              <span className="font-medium">Instalar App</span>
+              <span className="font-medium">{t('sidebar.installApp')}</span>
             </button>
           </div>}
 
@@ -510,7 +512,7 @@ const BibliotecaArtes = () => {
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'tutorial' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <BookOpen className="h-5 w-5" />
-          <span className="font-medium">Tutoriais</span>
+          <span className="font-medium">{t('sidebar.tutorials')}</span>
           <Badge variant="secondary" className="ml-auto text-xs">
             {getPacksByType('tutorial').length}
           </Badge>
@@ -521,7 +523,7 @@ const BibliotecaArtes = () => {
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'packs' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <Package className="h-5 w-5" />
-          <span className="font-medium">Packs</span>
+          <span className="font-medium">{t('sidebar.packs')}</span>
           <Badge variant="secondary" className="ml-auto text-xs">
             {getPacksByType('pack').length}
           </Badge>
@@ -532,7 +534,7 @@ const BibliotecaArtes = () => {
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'updates' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <RefreshCw className="h-5 w-5" />
-          <span className="font-medium">Atualizações</span>
+          <span className="font-medium">{t('sidebar.updates')}</span>
           <Badge variant="secondary" className="ml-auto text-xs">
             {getPacksByType('updates').length}
           </Badge>
@@ -543,7 +545,7 @@ const BibliotecaArtes = () => {
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'bonus' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <Gift className="h-5 w-5" />
-          <span className="font-medium">Bônus</span>
+          <span className="font-medium">{t('sidebar.bonus')}</span>
           <Badge variant="secondary" className="ml-auto text-xs">
             {getPacksByType('bonus').length}
           </Badge>
@@ -554,7 +556,7 @@ const BibliotecaArtes = () => {
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'cursos' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <GraduationCap className="h-5 w-5" />
-          <span className="font-medium">Cursos</span>
+          <span className="font-medium">{t('sidebar.courses')}</span>
           <Badge variant="secondary" className="ml-auto text-xs">
             {getPacksByType('curso').length}
           </Badge>
@@ -565,7 +567,7 @@ const BibliotecaArtes = () => {
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'free-sample' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <Sparkles className="h-5 w-5" />
-          <span className="font-medium">Amostras Grátis</span>
+          <span className="font-medium">{t('sidebar.freeSamples')}</span>
           <Badge variant="secondary" className="ml-auto text-xs">
             {getPacksByType('free-sample').length}
           </Badge>
@@ -576,7 +578,7 @@ const BibliotecaArtes = () => {
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-muted-foreground hover:bg-accent hover:text-foreground`}>
           <Cpu className="h-5 w-5" />
-          <span className="font-medium">Ferramentas de IA</span>
+          <span className="font-medium">{t('sidebar.aiTools')}</span>
           <Badge variant="secondary" className="ml-auto text-xs">
             {getPacksByType('ferramentas_ia').length}
           </Badge>
@@ -587,7 +589,7 @@ const BibliotecaArtes = () => {
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'all-artes' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
           <LayoutGrid className="h-5 w-5" />
-          <span className="font-medium">Ver Todas as Artes</span>
+          <span className="font-medium">{t('sidebar.viewAllArts')}</span>
           <Badge variant="secondary" className="ml-auto text-xs">
             {allArtes.length}
           </Badge>
@@ -597,20 +599,20 @@ const BibliotecaArtes = () => {
       {/* WhatsApp Group Buttons */}
       <div className="px-4 pt-4 border-t border-border space-y-3">
         {userPacks.length > 0 ? <div className="space-y-2">
-            <p className="text-xs text-muted-foreground text-center">Faça parte do nosso grupo exclusivo para membros</p>
+            <p className="text-xs text-muted-foreground text-center">{t('messages.joinExclusiveGroup')}</p>
             <Button onClick={() => window.open("https://chat.whatsapp.com/JOUGeS21VHq92hJWyxpOJC", "_blank")} size="sm" className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white">
               <MessageCircle className="h-4 w-4 mr-2" />
-              Entrar no grupo
+              {t('messages.exclusiveGroup')}
             </Button>
           </div> : <div className="space-y-2">
-            <p className="text-xs text-muted-foreground text-center">Entre para os nossos grupos gratuitos</p>
+            <p className="text-xs text-muted-foreground text-center">{t('messages.joinFreeGroups')}</p>
             <Button onClick={() => window.open("https://chat.whatsapp.com/DJz6BbLDbbK9MBX8YiTsbw", "_blank")} size="sm" className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white">
               <MessageCircle className="h-4 w-4 mr-2" />
-              Grupo Free WhatsApp
+              {t('messages.freeWhatsApp')}
             </Button>
             <Button onClick={() => window.open("https://t.me/+8NKj2KNvLPswZTIx", "_blank")} size="sm" className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white">
               <Send className="h-4 w-4 mr-2" />
-              Grupo de Avisos Telegram
+              {t('messages.telegramAlerts')}
             </Button>
           </div>}
       </div>
@@ -618,28 +620,28 @@ const BibliotecaArtes = () => {
       <div className="px-4 pt-4 border-t border-border mt-auto space-y-2">
         <Button onClick={() => navigate("/parceiro-login-artes")} variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-foreground">
           <Users className="h-4 w-4 mr-2" />
-          Área do Colaborador
+          {t('sidebar.collaboratorArea')}
         </Button>
       </div>
     </div>;
   const getSectionTitle = () => {
     switch (activeSection) {
       case 'packs':
-        return 'Packs';
+        return t('sections.packs');
       case 'bonus':
-        return 'Bônus';
+        return t('sections.bonus');
       case 'cursos':
-        return 'Cursos';
+        return t('sections.courses');
       case 'updates':
-        return 'Atualizações de Artes Exclusivas para Membros';
+        return t('sections.updates');
       case 'free-sample':
-        return 'Amostras Grátis';
+        return t('sections.freeSamples');
       case 'all-artes':
-        return 'Todas as Artes';
+        return t('sections.allArts');
       case 'tutorial':
-        return 'Tutoriais';
+        return t('sections.tutorials');
       case 'ferramentas_ia':
-        return 'Ferramentas de IA';
+        return t('sections.aiTools');
     }
   };
   const getCurrentItems = () => {
