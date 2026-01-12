@@ -36,5 +36,37 @@
   "bestValue": "Melhor Custo-Benefício",
   "limitedOffer": "Oferta Limitada",
   "currency": "BRL",
-  "currencySymbol": "R$"
+  "currencySymbol": "R$",
+  "profile": {
+    "title": "Meu Perfil",
+    "name": "Nome",
+    "namePlaceholder": "Seu nome",
+    "phone": "Telefone",
+    "phonePlaceholder": "(00) 00000-0000",
+    "bio": "Bio",
+    "bioPlaceholder": "Fale um pouco sobre você",
+    "saveProfile": "Salvar Perfil",
+    "saving": "Salvando...",
+    "changePassword": "Alterar Senha",
+    "currentPassword": "Senha atual",
+    "newPassword": "Nova senha",
+    "notifications": "Notificações",
+    "disableNotifications": "Desativar notificações",
+    "enableNotifications": "Ativar notificações",
+    "backToLibrary": "Voltar para Biblioteca",
+    "backToMusiciansLibrary": "Voltar para Biblioteca de Músicos",
+    "profileUpdated": "Perfil atualizado com sucesso!",
+    "profileUpdateError": "Erro ao atualizar perfil"
+  },
+  "notifications": {
+    "disableTitle": "Desativar Notificações?",
+    "disableWarning": "Ao desativar as notificações, você perderá avisos sobre:",
+    "newContent": "Novos conteúdos e atualizações",
+    "exclusivePromos": "Promoções exclusivas",
+    "platformNews": "Novidades da plataforma",
+    "keepBenefits": "Quero aproveitar os benefícios",
+    "loseBenefits": "Prefiro perder os benefícios",
+    "enabled": "Notificações ativadas",
+    "disabled": "Notificações desativadas"
+  }
 }

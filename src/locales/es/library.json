@@ -65,7 +65,9 @@
     "expired": "ACCESO EXPIRADO",
     "exclusiveMembers": "Exclusivo para Miembros",
     "premium": "Premium",
-    "free": "Gratis"
+    "free": "Gratis",
+    "new": "Nuevo",
+    "bonus": "Bonus"
   },
   "buttons": {
     "downloadBonus": "Descargar Bonus",
@@ -91,7 +93,10 @@
     "seeOurPacks": "Mira nuestros packs",
     "understood": "¡ENTENDIDO, VOY A INTENTAR!",
     "bonusAndUpdates": "Bonus y Actualizaciones",
-    "memberDiscount": "20% OFF Miembro"
+    "memberDiscount": "20% OFF Miembro",
+    "editNow": "Editar Ahora",
+    "openInCanva": "Abrir en Canva",
+    "doLogin": "Iniciar Sesión"
   },
   "messages": {
     "joinExclusiveGroup": "Únete a nuestro grupo exclusivo para miembros",
@@ -116,7 +121,9 @@
     "accessExclusiveContent": "Accede al contenido exclusivo de este curso",
     "buyCourseForAccess": "Adquiere este curso para tener acceso al contenido exclusivo",
     "linkComingSoon": "El link se configurará pronto",
-    "unlockToPurchase": "Compra cualquier pack para desbloquear"
+    "unlockToPurchase": "Compra cualquier pack para desbloquear",
+    "loginRequired": "Inicia sesión para acceder a este arte",
+    "premiumRequired": "Este arte es exclusivo para miembros premium"
   },
   "firstAccess": {
     "alreadyClient": "¿Ya eres cliente? ¡Primer acceso aquí!",
@@ -152,5 +159,11 @@
   "pagination": {
     "page": "Página",
     "of": "de"
+  },
+  "modal": {
+    "restrictedAccess": "Acceso Restringido",
+    "exclusiveContent": "Este contenido es exclusivo para quienes adquirieron el pack",
+    "loginToAccess": "Inicia sesión para acceder a este contenido",
+    "buyPackToAccess": "Compra el pack para tener acceso a todas las artes"
   }
 }
