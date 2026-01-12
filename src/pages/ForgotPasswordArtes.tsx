@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Mail } from "lucide-react";
+import { useLocale } from "@/contexts/LocaleContext";
 
 const ForgotPasswordArtes = () => {
+  const { t } = useTranslation('auth');
+  const { isLatam } = useLocale();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -23,15 +27,15 @@ const ForgotPasswordArtes = () => {
       });
 
       if (error) {
-        toast.error("Erro ao enviar email de recuperação");
+        toast.error(isLatam ? "Error al enviar email de recuperación" : "Erro ao enviar email de recuperação");
         return;
       }
 
       setEmailSent(true);
-      toast.success("Email de recuperação enviado!");
+      toast.success(isLatam ? "¡Email de recuperación enviado!" : "Email de recuperação enviado!");
     } catch (error) {
       console.error("Error sending reset email:", error);
-      toast.error("Erro ao enviar email");
+      toast.error(isLatam ? "Error al enviar email" : "Erro ao enviar email");
     } finally {
       setIsLoading(false);
     }
@@ -45,16 +49,21 @@ const ForgotPasswordArtes = () => {
             <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
               <Mail className="h-8 w-8 text-green-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Email Enviado!</h2>
+            <h2 className="text-xl font-bold text-white mb-2">
+              {isLatam ? '¡Email Enviado!' : 'Email Enviado!'}
+            </h2>
             <p className="text-white/60 mb-6">
-              Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.
+              {isLatam 
+                ? 'Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.'
+                : 'Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.'
+              }
             </p>
             <Button
               variant="outline"
               className="border-[#2d4a5e] text-[#2d4a5e]"
               onClick={() => navigate("/login-artes")}
             >
-              Voltar ao Login
+              {isLatam ? 'Volver al Login' : 'Voltar ao Login'}
             </Button>
           </CardContent>
         </Card>
@@ -72,18 +81,21 @@ const ForgotPasswordArtes = () => {
             onClick={() => navigate("/login-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
+            {isLatam ? 'Volver' : 'Voltar'}
           </Button>
-          <CardTitle className="text-2xl text-white">Recuperar Senha</CardTitle>
+          <CardTitle className="text-2xl text-white">{t('resetPassword')}</CardTitle>
           <CardDescription className="text-white/60">
-            Informe seu email para receber as instruções
+            {isLatam 
+              ? 'Ingresa tu email para recibir las instrucciones'
+              : 'Informe seu email para receber as instruções'
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSendResetEmail} className="space-y-4">
             <Input
               type="email"
-              placeholder="Seu email"
+              placeholder={isLatam ? "Tu email" : "Seu email"}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
@@ -95,7 +107,10 @@ const ForgotPasswordArtes = () => {
               className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
               disabled={isLoading}
             >
-              {isLoading ? "Enviando..." : "Enviar Email de Recuperação"}
+              {isLoading 
+                ? (isLatam ? "Enviando..." : "Enviando...") 
+                : (isLatam ? "Enviar Email de Recuperación" : "Enviar Email de Recuperação")
+              }
             </Button>
           </form>
         </CardContent>
