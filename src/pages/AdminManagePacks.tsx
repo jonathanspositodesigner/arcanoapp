@@ -37,10 +37,14 @@ interface Pack {
   checkout_link_6_meses?: string | null;
   checkout_link_1_ano?: string | null;
   checkout_link_vitalicio?: string | null;
-  // Prices (in cents)
+  // Prices BRL (in cents)
   price_6_meses?: number | null;
   price_1_ano?: number | null;
   price_vitalicio?: number | null;
+  // Prices USD (in cents)
+  price_6_meses_usd?: number | null;
+  price_1_ano_usd?: number | null;
+  price_vitalicio_usd?: number | null;
   // Enabled toggles
   enabled_6_meses?: boolean;
   enabled_1_ano?: boolean;
@@ -59,6 +63,16 @@ interface Pack {
   checkout_link_notif_6_meses?: string | null;
   checkout_link_notif_1_ano?: string | null;
   checkout_link_notif_vitalicio?: string | null;
+  // LATAM checkout links
+  checkout_link_latam_6_meses?: string | null;
+  checkout_link_latam_1_ano?: string | null;
+  checkout_link_latam_vitalicio?: string | null;
+  checkout_link_latam_renovacao_6_meses?: string | null;
+  checkout_link_latam_renovacao_1_ano?: string | null;
+  checkout_link_latam_renovacao_vitalicio?: string | null;
+  checkout_link_latam_membro_6_meses?: string | null;
+  checkout_link_latam_membro_1_ano?: string | null;
+  checkout_link_latam_membro_vitalicio?: string | null;
   // Bonus download link
   download_url?: string | null;
   // Tutorial lessons
@@ -75,10 +89,14 @@ interface WebhookFormData {
 }
 
 interface SalesFormData {
-  // Prices
+  // Prices BRL
   price_6_meses: string;
   price_1_ano: string;
   price_vitalicio: string;
+  // Prices USD
+  price_6_meses_usd: string;
+  price_1_ano_usd: string;
+  price_vitalicio_usd: string;
   // Enabled toggles
   enabled_6_meses: boolean;
   enabled_1_ano: boolean;
@@ -101,6 +119,16 @@ interface SalesFormData {
   checkout_link_notif_6_meses: string;
   checkout_link_notif_1_ano: string;
   checkout_link_notif_vitalicio: string;
+  // LATAM checkout links
+  checkout_link_latam_6_meses: string;
+  checkout_link_latam_1_ano: string;
+  checkout_link_latam_vitalicio: string;
+  checkout_link_latam_renovacao_6_meses: string;
+  checkout_link_latam_renovacao_1_ano: string;
+  checkout_link_latam_renovacao_vitalicio: string;
+  checkout_link_latam_membro_6_meses: string;
+  checkout_link_latam_membro_1_ano: string;
+  checkout_link_latam_membro_vitalicio: string;
 }
 
 const WEBHOOK_URL = "https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-greenn-artes";
@@ -132,6 +160,9 @@ const AdminManagePacks = () => {
     price_6_meses: '',
     price_1_ano: '',
     price_vitalicio: '',
+    price_6_meses_usd: '',
+    price_1_ano_usd: '',
+    price_vitalicio_usd: '',
     enabled_6_meses: true,
     enabled_1_ano: true,
     enabled_vitalicio: true,
@@ -148,7 +179,16 @@ const AdminManagePacks = () => {
     notification_discount_percent: '20',
     checkout_link_notif_6_meses: '',
     checkout_link_notif_1_ano: '',
-    checkout_link_notif_vitalicio: ''
+    checkout_link_notif_vitalicio: '',
+    checkout_link_latam_6_meses: '',
+    checkout_link_latam_1_ano: '',
+    checkout_link_latam_vitalicio: '',
+    checkout_link_latam_renovacao_6_meses: '',
+    checkout_link_latam_renovacao_1_ano: '',
+    checkout_link_latam_renovacao_vitalicio: '',
+    checkout_link_latam_membro_6_meses: '',
+    checkout_link_latam_membro_1_ano: '',
+    checkout_link_latam_membro_vitalicio: ''
   });
 
   useEffect(() => {
@@ -474,6 +514,9 @@ const AdminManagePacks = () => {
       price_6_meses: pack.price_6_meses?.toString() || '2700',
       price_1_ano: pack.price_1_ano?.toString() || '3700',
       price_vitalicio: pack.price_vitalicio?.toString() || '4700',
+      price_6_meses_usd: pack.price_6_meses_usd?.toString() || '',
+      price_1_ano_usd: pack.price_1_ano_usd?.toString() || '',
+      price_vitalicio_usd: pack.price_vitalicio_usd?.toString() || '',
       enabled_6_meses: pack.enabled_6_meses ?? true,
       enabled_1_ano: pack.enabled_1_ano ?? true,
       enabled_vitalicio: pack.enabled_vitalicio ?? true,
@@ -490,7 +533,16 @@ const AdminManagePacks = () => {
       notification_discount_percent: pack.notification_discount_percent?.toString() || '20',
       checkout_link_notif_6_meses: pack.checkout_link_notif_6_meses || '',
       checkout_link_notif_1_ano: pack.checkout_link_notif_1_ano || '',
-      checkout_link_notif_vitalicio: pack.checkout_link_notif_vitalicio || ''
+      checkout_link_notif_vitalicio: pack.checkout_link_notif_vitalicio || '',
+      checkout_link_latam_6_meses: pack.checkout_link_latam_6_meses || '',
+      checkout_link_latam_1_ano: pack.checkout_link_latam_1_ano || '',
+      checkout_link_latam_vitalicio: pack.checkout_link_latam_vitalicio || '',
+      checkout_link_latam_renovacao_6_meses: pack.checkout_link_latam_renovacao_6_meses || '',
+      checkout_link_latam_renovacao_1_ano: pack.checkout_link_latam_renovacao_1_ano || '',
+      checkout_link_latam_renovacao_vitalicio: pack.checkout_link_latam_renovacao_vitalicio || '',
+      checkout_link_latam_membro_6_meses: pack.checkout_link_latam_membro_6_meses || '',
+      checkout_link_latam_membro_1_ano: pack.checkout_link_latam_membro_1_ano || '',
+      checkout_link_latam_membro_vitalicio: pack.checkout_link_latam_membro_vitalicio || ''
     });
   };
 
@@ -565,10 +617,14 @@ const AdminManagePacks = () => {
       const { error } = await supabase
         .from("artes_packs")
         .update({
-          // Prices
+          // Prices BRL
           price_6_meses: salesFormData.price_6_meses ? parseInt(salesFormData.price_6_meses) : null,
           price_1_ano: salesFormData.price_1_ano ? parseInt(salesFormData.price_1_ano) : null,
           price_vitalicio: salesFormData.price_vitalicio ? parseInt(salesFormData.price_vitalicio) : null,
+          // Prices USD
+          price_6_meses_usd: salesFormData.price_6_meses_usd ? parseInt(salesFormData.price_6_meses_usd) : null,
+          price_1_ano_usd: salesFormData.price_1_ano_usd ? parseInt(salesFormData.price_1_ano_usd) : null,
+          price_vitalicio_usd: salesFormData.price_vitalicio_usd ? parseInt(salesFormData.price_vitalicio_usd) : null,
           // Enabled toggles
           enabled_6_meses: salesFormData.enabled_6_meses,
           enabled_1_ano: salesFormData.enabled_1_ano,
@@ -590,7 +646,17 @@ const AdminManagePacks = () => {
           notification_discount_percent: salesFormData.notification_discount_percent ? parseInt(salesFormData.notification_discount_percent) : 20,
           checkout_link_notif_6_meses: salesFormData.checkout_link_notif_6_meses || null,
           checkout_link_notif_1_ano: salesFormData.checkout_link_notif_1_ano || null,
-          checkout_link_notif_vitalicio: salesFormData.checkout_link_notif_vitalicio || null
+          checkout_link_notif_vitalicio: salesFormData.checkout_link_notif_vitalicio || null,
+          // LATAM checkout links
+          checkout_link_latam_6_meses: salesFormData.checkout_link_latam_6_meses || null,
+          checkout_link_latam_1_ano: salesFormData.checkout_link_latam_1_ano || null,
+          checkout_link_latam_vitalicio: salesFormData.checkout_link_latam_vitalicio || null,
+          checkout_link_latam_renovacao_6_meses: salesFormData.checkout_link_latam_renovacao_6_meses || null,
+          checkout_link_latam_renovacao_1_ano: salesFormData.checkout_link_latam_renovacao_1_ano || null,
+          checkout_link_latam_renovacao_vitalicio: salesFormData.checkout_link_latam_renovacao_vitalicio || null,
+          checkout_link_latam_membro_6_meses: salesFormData.checkout_link_latam_membro_6_meses || null,
+          checkout_link_latam_membro_1_ano: salesFormData.checkout_link_latam_membro_1_ano || null,
+          checkout_link_latam_membro_vitalicio: salesFormData.checkout_link_latam_membro_vitalicio || null
         })
         .eq("id", editingPack.id);
 
@@ -605,8 +671,11 @@ const AdminManagePacks = () => {
     }
   };
   
-  const formatPriceInput = (cents: string) => {
+  const formatPriceInput = (cents: string, currency: 'BRL' | 'USD' = 'BRL') => {
     const value = parseInt(cents) || 0;
+    if (currency === 'USD') {
+      return `$ ${(value / 100).toFixed(2)}`;
+    }
     return `R$ ${(value / 100).toFixed(2).replace('.', ',')}`;
   };
 

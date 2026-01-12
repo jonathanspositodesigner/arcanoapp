@@ -20,6 +20,9 @@ interface Pack {
   price_6_meses: number | null;
   price_1_ano: number | null;
   price_vitalicio: number | null;
+  price_6_meses_usd: number | null;
+  price_1_ano_usd: number | null;
+  price_vitalicio_usd: number | null;
   enabled_6_meses: boolean;
   enabled_1_ano: boolean;
   enabled_vitalicio: boolean;
@@ -29,13 +32,19 @@ interface Pack {
   checkout_link_renovacao_6_meses: string | null;
   checkout_link_renovacao_1_ano: string | null;
   checkout_link_renovacao_vitalicio: string | null;
+  checkout_link_latam_membro_6_meses: string | null;
+  checkout_link_latam_membro_1_ano: string | null;
+  checkout_link_latam_membro_vitalicio: string | null;
+  checkout_link_latam_renovacao_6_meses: string | null;
+  checkout_link_latam_renovacao_1_ano: string | null;
+  checkout_link_latam_renovacao_vitalicio: string | null;
 }
 
 const PromosNatal = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation('plans');
-  const { isLatam } = useLocale();
+  const { isLatam, formatPrice: formatLocalePrice, getPrice: getLocalePrice } = useLocale();
   
   const packSlug = searchParams.get("pack");
   const isRenewal = searchParams.get("renovacao") === "true";
@@ -101,9 +110,12 @@ const PromosNatal = () => {
       .select(`
         id, name, slug, cover_url, type, is_visible,
         price_6_meses, price_1_ano, price_vitalicio,
+        price_6_meses_usd, price_1_ano_usd, price_vitalicio_usd,
         enabled_6_meses, enabled_1_ano, enabled_vitalicio,
         checkout_link_membro_6_meses, checkout_link_membro_1_ano, checkout_link_membro_vitalicio,
-        checkout_link_renovacao_6_meses, checkout_link_renovacao_1_ano, checkout_link_renovacao_vitalicio
+        checkout_link_renovacao_6_meses, checkout_link_renovacao_1_ano, checkout_link_renovacao_vitalicio,
+        checkout_link_latam_membro_6_meses, checkout_link_latam_membro_1_ano, checkout_link_latam_membro_vitalicio,
+        checkout_link_latam_renovacao_6_meses, checkout_link_latam_renovacao_1_ano, checkout_link_latam_renovacao_vitalicio
       `)
       .in("type", ["pack", "curso"])
       .eq("is_visible", true)
@@ -123,6 +135,14 @@ const PromosNatal = () => {
 
   const getPrice = (type: string): number => {
     if (!selectedPack) return 0;
+    if (isLatam) {
+      switch (type) {
+        case "6_meses": return selectedPack.price_6_meses_usd || 700;
+        case "1_ano": return selectedPack.price_1_ano_usd || 900;
+        case "vitalicio": return selectedPack.price_vitalicio_usd || 1100;
+        default: return 0;
+      }
+    }
     switch (type) {
       case "6_meses": return selectedPack.price_6_meses || 2700;
       case "1_ano": return selectedPack.price_1_ano || 3700;
@@ -139,8 +159,8 @@ const PromosNatal = () => {
     return (original * (1 - PROMO_DISCOUNT)) / 100;
   };
 
-  const formatPrice = (value: number) => `R$ ${value.toFixed(2).replace('.', ',')}`;
-  const formatOriginalPrice = (type: string) => `R$ ${(getPrice(type) / 100).toFixed(2).replace('.', ',')}`;
+  const formatPrice = (value: number) => formatLocalePrice(value);
+  const formatOriginalPrice = (type: string) => formatLocalePrice(getPrice(type) / 100);
 
   const isEnabled = (type: string): boolean => {
     if (!selectedPack) return true;
@@ -156,42 +176,42 @@ const PromosNatal = () => {
     const allOptions = [
       {
         type: "6_meses",
-        label: "Acesso 6 Meses",
+        label: t('access6Months'),
         icon: Clock,
-        buttonText: "Desbloquear 6 Meses",
+        buttonText: t('unlock6Months'),
         features: [
-          "Acesso completo ao pack selecionado",
-          "Download ilimitado das artes",
-          "Arquivos editáveis (PSD e Canva)",
-          "Atualizações do pack por 6 meses"
+          t('feature.fullAccess'),
+          t('feature.unlimitedDownload'),
+          t('feature.editableFiles'),
+          t('feature.updates6Months')
         ],
         hasBonus: false,
         highlighted: false
       },
       {
         type: "1_ano",
-        label: "Acesso 1 Ano",
+        label: t('access1Year'),
         icon: Star,
-        buttonText: "Desbloquear 1 Ano",
+        buttonText: t('unlock1Year'),
         features: [
-          "Tudo do acesso de 6 meses",
-          "Acesso por 12 meses",
-          "Acesso ao conteúdo bônus exclusivo",
-          "Novidades e atualizações premium"
+          t('feature.everything6Months'),
+          t('feature.access12Months'),
+          t('feature.bonusContent'),
+          t('feature.premiumUpdates')
         ],
         hasBonus: true,
         highlighted: false
       },
       {
         type: "vitalicio",
-        label: "Acesso Vitalício",
+        label: t('accessLifetime'),
         icon: Gift,
-        buttonText: "Desbloquear Acesso Vitalício",
+        buttonText: t('unlockLifetime'),
         features: [
-          "Tudo do acesso de 1 ano",
-          "Acesso permanente ao pack",
-          "Todas as atualizações futuras",
-          "Conteúdo bônus exclusivo para sempre"
+          t('feature.everything1Year'),
+          t('feature.permanentAccess'),
+          t('feature.allFutureUpdates'),
+          t('feature.bonusForever')
         ],
         hasBonus: true,
         highlighted: true
@@ -205,18 +225,33 @@ const PromosNatal = () => {
     
     let checkoutLink: string | null = null;
     
-    if (isRenewal) {
-      switch (accessType) {
-        case "6_meses": checkoutLink = selectedPack.checkout_link_renovacao_6_meses; break;
-        case "1_ano": checkoutLink = selectedPack.checkout_link_renovacao_1_ano; break;
-        case "vitalicio": checkoutLink = selectedPack.checkout_link_renovacao_vitalicio; break;
+    if (isLatam) {
+      if (isRenewal) {
+        switch (accessType) {
+          case "6_meses": checkoutLink = selectedPack.checkout_link_latam_renovacao_6_meses; break;
+          case "1_ano": checkoutLink = selectedPack.checkout_link_latam_renovacao_1_ano; break;
+          case "vitalicio": checkoutLink = selectedPack.checkout_link_latam_renovacao_vitalicio; break;
+        }
+      } else {
+        switch (accessType) {
+          case "6_meses": checkoutLink = selectedPack.checkout_link_latam_membro_6_meses; break;
+          case "1_ano": checkoutLink = selectedPack.checkout_link_latam_membro_1_ano; break;
+          case "vitalicio": checkoutLink = selectedPack.checkout_link_latam_membro_vitalicio; break;
+        }
       }
     } else {
-      // Use member links (with promo discount applied via coupon)
-      switch (accessType) {
-        case "6_meses": checkoutLink = selectedPack.checkout_link_membro_6_meses; break;
-        case "1_ano": checkoutLink = selectedPack.checkout_link_membro_1_ano; break;
-        case "vitalicio": checkoutLink = selectedPack.checkout_link_membro_vitalicio; break;
+      if (isRenewal) {
+        switch (accessType) {
+          case "6_meses": checkoutLink = selectedPack.checkout_link_renovacao_6_meses; break;
+          case "1_ano": checkoutLink = selectedPack.checkout_link_renovacao_1_ano; break;
+          case "vitalicio": checkoutLink = selectedPack.checkout_link_renovacao_vitalicio; break;
+        }
+      } else {
+        switch (accessType) {
+          case "6_meses": checkoutLink = selectedPack.checkout_link_membro_6_meses; break;
+          case "1_ano": checkoutLink = selectedPack.checkout_link_membro_1_ano; break;
+          case "vitalicio": checkoutLink = selectedPack.checkout_link_membro_vitalicio; break;
+        }
       }
     }
     
@@ -253,7 +288,7 @@ const PromosNatal = () => {
           onClick={() => navigate("/biblioteca-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar para Biblioteca
+          {t('backToLibrary')}
         </Button>
 
         {/* Promo Banner */}
@@ -280,12 +315,14 @@ const PromosNatal = () => {
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 mt-2 sm:mt-4 px-2">
             {selectedPack 
-              ? `${discountPercent}% OFF no ${selectedPack.name}` 
-              : "Escolha seu Pack com 50% OFF"
+              ? `${discountPercent}% OFF ${isLatam ? 'en' : 'no'} ${selectedPack.name}` 
+              : isLatam ? "Elige tu Pack con 50% OFF" : "Escolha seu Pack com 50% OFF"
             }
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Aproveite esta oferta especial de fim de ano! Preços exclusivos por tempo limitado.
+            {isLatam 
+              ? "¡Aprovecha esta oferta especial de fin de año! Precios exclusivos por tiempo limitado."
+              : "Aproveite esta oferta especial de fim de ano! Preços exclusivos por tempo limitado."}
           </p>
         </div>
 
@@ -293,7 +330,7 @@ const PromosNatal = () => {
           <div className="space-y-8">
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Packs de Artes</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{isLatam ? "Packs de Artes" : "Packs de Artes"}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {packItems.map((pack) => (
                     <Card
@@ -326,7 +363,7 @@ const PromosNatal = () => {
 
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Cursos</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{isLatam ? "Cursos" : "Cursos"}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {cursoItems.map((pack) => (
                     <Card
@@ -365,7 +402,7 @@ const PromosNatal = () => {
                 className="bg-white border-red-300 text-red-600 hover:bg-red-50"
                 onClick={() => setSelectedPack(null)}
               >
-                Escolher outro pack
+                {isLatam ? "Elegir otro pack" : "Escolher outro pack"}
               </Button>
             </div>
 
@@ -391,7 +428,7 @@ const PromosNatal = () => {
                   >
                     {option.highlighted && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap shadow-lg">
-                        🔥 Melhor Oferta!
+                        🔥 {t('bestValue')}
                       </div>
                     )}
                     {option.hasBonus && (
