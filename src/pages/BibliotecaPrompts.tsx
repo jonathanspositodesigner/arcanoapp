@@ -12,7 +12,7 @@ import { trackPromptClick } from "@/hooks/usePromptClickTracker";
 import promptclubLogo from "@/assets/promptclub_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
-import VideoThumbnail from "@/components/VideoThumbnail";
+
 
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
@@ -577,12 +577,17 @@ const BibliotecaPrompts = () => {
                   {/* Media Preview - Videos use lightweight thumbnail, actual video loads in modal */}
                   <div className="aspect-square overflow-hidden bg-secondary relative">
                     {isVideo ? (
-                      <VideoThumbnail 
-                        src={item.imageUrl} 
-                        alt={item.title} 
-                        thumbnailUrl={item.thumbnailUrl}
-                        className="w-full h-full" 
-                        onClick={() => handleItemClick(item)} 
+                      <SecureVideo 
+                        src={item.imageUrl}
+                        isPremium={false}
+                        className="w-full h-full object-cover cursor-pointer"
+                        autoPlay={true}
+                        muted={true}
+                        loop={true}
+                        playsInline={true}
+                        controls={false}
+                        preload="metadata"
+                        onClick={() => handleItemClick(item)}
                       />
                     ) : (
                       <SecureImage 
