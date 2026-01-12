@@ -38,6 +38,7 @@ const Index = () => {
       description: "Artes para Eventos editáveis PSD e Canva",
       image: cardArtesArcanas,
       route: "/biblioteca-artes",
+      imagePosition: "center 30%",
     },
     {
       category: "Prompts IA",
@@ -45,6 +46,7 @@ const Index = () => {
       description: "Prompts prontos para criar selos, imagens, logos e muito mais com IA",
       image: cardPromptsIA,
       route: "/biblioteca-prompts",
+      imagePosition: "center center",
     },
     {
       category: "Ferramentas Exclusivas de IA",
@@ -52,6 +54,7 @@ const Index = () => {
       description: "Upscaler, Forja de Selos 3D, Mudar Pose e Roupa",
       image: upscalerLogoDepois,
       route: "/ferramentas-ia",
+      imagePosition: "center center",
     },
   ];
 
@@ -121,6 +124,7 @@ const Index = () => {
                 src={card.image} 
                 alt={card.title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                style={{ objectPosition: card.imagePosition }}
               />
             </div>
             
