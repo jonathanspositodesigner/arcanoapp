@@ -91,6 +91,7 @@ serve(async (req) => {
     skipped_blacklist: 0,
     skipped_converted: 0,
     skipped_no_email: 0,
+    skipped_max_attempts: 0,
     errors: 0,
     details: [] as string[],
   };
@@ -104,8 +105,16 @@ serve(async (req) => {
       .select("*")
       .eq("remarketing_status", "pending")
       .is("remarketing_email_sent_at", null)
+      .lt("auto_remarketing_attempts", 10)
       .lt("abandoned_at", fifteenMinutesAgo)
       .limit(50);
+
+    // Also update any checkouts that have reached max attempts but are still pending
+    await supabase
+      .from("abandoned_checkouts")
+      .update({ remarketing_status: "max_attempts_reached" })
+      .eq("remarketing_status", "pending")
+      .gte("auto_remarketing_attempts", 10);
 
     if (checkoutsError) {
       throw new Error(`Error fetching checkouts: ${checkoutsError.message}`);
@@ -272,16 +281,30 @@ serve(async (req) => {
 
       } catch (itemError: any) {
         results.errors++;
-        results.details.push(`${checkout.id}: Error - ${itemError.message}`);
-        console.error(`Error processing checkout ${checkout.id}:`, itemError);
-
-        // Increment attempt counter on error
-        await supabase
-          .from("abandoned_checkouts")
-          .update({
-            auto_remarketing_attempts: (checkout.auto_remarketing_attempts || 0) + 1,
-          })
-          .eq("id", checkout.id);
+        const newAttempts = (checkout.auto_remarketing_attempts || 0) + 1;
+        
+        // If reached 10 attempts, mark as max_attempts_reached
+        if (newAttempts >= 10) {
+          results.skipped_max_attempts++;
+          results.details.push(`${checkout.id}: Max attempts reached (10) - ${checkout.email}`);
+          await supabase
+            .from("abandoned_checkouts")
+            .update({
+              auto_remarketing_attempts: newAttempts,
+              remarketing_status: "max_attempts_reached",
+            })
+            .eq("id", checkout.id);
+        } else {
+          results.details.push(`${checkout.id}: Error (attempt ${newAttempts}/10) - ${itemError.message}`);
+          await supabase
+            .from("abandoned_checkouts")
+            .update({
+              auto_remarketing_attempts: newAttempts,
+            })
+            .eq("id", checkout.id);
+        }
+        
+        console.error(`Error processing checkout ${checkout.id} (attempt ${newAttempts}/10):`, itemError);
       }
     }
 
