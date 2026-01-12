@@ -93,11 +93,16 @@ const Index = () => {
 
       {/* Conteúdo principal com padding para o header fixo */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 pt-24">
-        {/* Título */}
+        {/* Títulos */}
         <FadeIn delay={150} duration={600}>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-6 sm:mb-8 text-center">
-            A plataforma dos criadores do futuro!
-          </h1>
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-2">
+              Seja bem vindo ao Arcano App!
+            </h1>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
+              A plataforma dos criadores do futuro!
+            </p>
+          </div>
         </FadeIn>
 
       <StaggeredAnimation 
