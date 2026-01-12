@@ -297,7 +297,7 @@ const BibliotecaPrompts = () => {
     icon: Sparkles
   }, {
     name: "Gerar no Nano Banana",
-    url: "https://aistudio.google.com/prompts/new_chat?model=gemini-2.5-flash-image",
+    url: "https://labs.google/fx/pt/tools/flow",
     icon: Sparkles
   }, {
     name: "Gerar no Whisk",
