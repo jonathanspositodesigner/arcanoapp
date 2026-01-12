@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ForceUpdateModal } from "./components/ForceUpdateModal";
+import { LocaleProvider } from "./contexts/LocaleContext";
+import "./lib/i18n"; // Initialize i18n
 import Index from "./pages/Index";
 import Promptverso from "./pages/Promptverso";
 import BibliotecaPrompts from "./pages/BibliotecaPrompts";
@@ -246,9 +248,11 @@ const AppContent = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <LocaleProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </LocaleProvider>
   </QueryClientProvider>
 );
 
