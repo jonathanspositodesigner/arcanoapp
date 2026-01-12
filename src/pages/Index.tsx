@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 
 // Imagens de preview para os cards
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
-import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
+import cardPromptsIA from "@/assets/card-prompts-ia.png";
 import upscalerLogoDepois from "@/assets/upscaler-logo-depois.jpg";
 
 const Index = () => {
@@ -43,7 +43,7 @@ const Index = () => {
       category: "Prompts IA",
       title: "Biblioteca de Prompts IA",
       description: "Prompts prontos para criar selos, imagens, logos e muito mais com IA",
-      image: upscalerSeloDepois,
+      image: cardPromptsIA,
       route: "/biblioteca-prompts",
     },
     {
