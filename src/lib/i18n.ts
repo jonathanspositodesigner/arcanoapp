@@ -28,15 +28,28 @@ const resources = {
   },
 };
 
+// LATAM domains configuration
+const LATAM_DOMAINS = [
+  'arcanoappes.voxvisual.com.br',
+];
+
 // Custom detector for subdomain
 const subdomainDetector = {
   name: 'subdomain',
   lookup() {
     if (typeof window === 'undefined') return 'pt';
     const hostname = window.location.hostname;
+    
+    // Check for specific LATAM domain
+    if (LATAM_DOMAINS.some(domain => hostname.includes(domain))) {
+      return 'es';
+    }
+    
+    // Legacy: Check for es. subdomain
     if (hostname.startsWith('es.')) {
       return 'es';
     }
+    
     return undefined; // Let other detectors handle it
   },
 };
