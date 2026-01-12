@@ -136,26 +136,14 @@ const Index = () => {
                 {card.title}
               </h2>
               
-              {/* Botões */}
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline"
-                  className="flex-1 text-sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toast.info(card.description);
-                  }}
-                >
-                  Mostrar detalhes
-                </Button>
-                <Button 
-                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
-                  onClick={() => navigate(card.route)}
-                >
-                  Acessar
-                  <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
-                </Button>
-              </div>
+              {/* Botão */}
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
+                onClick={() => navigate(card.route)}
+              >
+                Acessar
+                <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+              </Button>
             </div>
           </div>
         ))}
