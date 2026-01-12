@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { trackPushNotificationEvent } from "@/hooks/usePushNotificationAnalytics";
-import { Check, Smartphone, Bell, ArrowRight } from "lucide-react";
+import { Check, Smartphone, Bell, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import { FadeIn, StaggeredAnimation } from "@/hooks/useScrollAnimation";
@@ -33,18 +33,21 @@ const Index = () => {
 
   const cards = [
     {
+      category: "Artes Editáveis",
       title: "Biblioteca de Artes Arcanas",
       description: "Artes para Eventos editáveis PSD e Canva",
       image: upscalerDepois,
       route: "/biblioteca-artes",
     },
     {
+      category: "Prompts IA",
       title: "Biblioteca de Prompts IA",
       description: "Prompts prontos para criar selos, imagens, logos e muito mais com IA",
       image: upscalerSeloDepois,
       route: "/biblioteca-prompts",
     },
     {
+      category: "Ferramentas",
       title: "Ferramentas de IA",
       description: "Upscaler, Forja de Selos 3D, Mudar Pose e Roupa",
       image: upscalerLogoDepois,
@@ -104,36 +107,49 @@ const Index = () => {
         {cards.map((card) => (
           <div 
             key={card.route}
-            onClick={() => navigate(card.route)} 
-            className="group relative overflow-hidden rounded-2xl cursor-pointer aspect-[4/3] shadow-lg hover:shadow-2xl transition-shadow duration-300"
+            className="group bg-card border border-border rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-primary/50"
           >
-            {/* Imagem de fundo */}
-            <img 
-              src={card.image} 
-              alt={card.title}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
+            {/* Imagem com hover zoom */}
+            <div className="relative overflow-hidden aspect-[4/3]">
+              <img 
+                src={card.image} 
+                alt={card.title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+            </div>
             
-            {/* Overlay escuro sempre visível (leve) */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-            
-            {/* Overlay mais forte no hover */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            
-            {/* Conteúdo que sobe no hover */}
-            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 translate-y-[60%] group-hover:translate-y-0 transition-transform duration-300 ease-out">
-              <h2 className="text-lg sm:text-xl font-bold text-white mb-2 drop-shadow-lg">
+            {/* Conteúdo abaixo da imagem */}
+            <div className="p-4 sm:p-5">
+              {/* Categoria */}
+              <p className="text-xs text-muted-foreground mb-1">
+                {card.category}
+              </p>
+              
+              {/* Título */}
+              <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4 line-clamp-2">
                 {card.title}
               </h2>
-              <p className="text-sm text-white/90 mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
-                {card.description}
-              </p>
-              <Button 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-150"
-              >
-                Acesse aqui
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              
+              {/* Botões */}
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  className="flex-1 text-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toast.info(card.description);
+                  }}
+                >
+                  Mostrar detalhes
+                </Button>
+                <Button 
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
+                  onClick={() => navigate(card.route)}
+                >
+                  Acessar
+                  <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           </div>
         ))}
