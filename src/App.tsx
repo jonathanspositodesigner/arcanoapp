@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ForceUpdateModal } from "./components/ForceUpdateModal";
+
 import { LocaleProvider } from "./contexts/LocaleContext";
 import "./lib/i18n"; // Initialize i18n
 import Index from "./pages/Index";
@@ -110,7 +110,7 @@ import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
-import { useServiceWorkerUpdate } from "./hooks/useServiceWorkerUpdate";
+
 
 const queryClient = new QueryClient();
 
@@ -124,12 +124,10 @@ const AppContent = () => {
   // Capture UTM parameters on app load
   useUtmTracker();
   
-  // Check for PWA updates (every 24h)
-  useServiceWorkerUpdate();
 
   return (
     <TooltipProvider>
-      <ForceUpdateModal />
+      
       <GlobalImportProgress />
       <Toaster />
       <Sonner />
