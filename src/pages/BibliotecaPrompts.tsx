@@ -12,6 +12,7 @@ import { trackPromptClick } from "@/hooks/usePromptClickTracker";
 import promptclubLogo from "@/assets/promptclub_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
+import LazyVideo from "@/components/LazyVideo";
 
 
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
@@ -577,16 +578,9 @@ const BibliotecaPrompts = () => {
                   {/* Media Preview - Videos use lightweight thumbnail, actual video loads in modal */}
                   <div className="aspect-square overflow-hidden bg-secondary relative">
                     {isVideo ? (
-                      <SecureVideo 
+                      <LazyVideo 
                         src={item.imageUrl}
-                        isPremium={false}
-                        className="w-full h-full object-cover cursor-pointer"
-                        autoPlay={true}
-                        muted={true}
-                        loop={true}
-                        playsInline={true}
-                        controls={false}
-                        preload="metadata"
+                        className="w-full h-full"
                         onClick={() => handleItemClick(item)}
                       />
                     ) : (
