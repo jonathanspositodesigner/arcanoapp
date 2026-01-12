@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { Check, Star, ArrowLeft, Gift, Clock, Percent, Sparkles } from "lucide-r
 import { supabase } from "@/integrations/supabase/client";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { appendUtmToUrl } from "@/lib/utmUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface Pack {
   id: string;
@@ -32,6 +34,9 @@ interface Pack {
 const PromosNatal = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('plans');
+  const { isLatam } = useLocale();
+  
   const packSlug = searchParams.get("pack");
   const isRenewal = searchParams.get("renovacao") === "true";
   

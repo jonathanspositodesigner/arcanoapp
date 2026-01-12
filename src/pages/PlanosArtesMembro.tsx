@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,29 +9,41 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { appendUtmToUrl } from "@/lib/utmUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface Pack {
   id: string;
   name: string;
   slug: string;
   cover_url: string | null;
-  // Prices (in cents)
+  // Prices BRL (in cents)
   price_6_meses: number | null;
   price_1_ano: number | null;
   price_vitalicio: number | null;
+  // Prices USD (in cents)
+  price_6_meses_usd: number | null;
+  price_1_ano_usd: number | null;
+  price_vitalicio_usd: number | null;
   // Enabled toggles
   enabled_6_meses: boolean;
   enabled_1_ano: boolean;
   enabled_vitalicio: boolean;
-  // Member checkout links (20% OFF)
+  // Member checkout links (20% OFF) BR
   checkout_link_membro_6_meses: string | null;
   checkout_link_membro_1_ano: string | null;
   checkout_link_membro_vitalicio: string | null;
+  // Member checkout links LATAM
+  checkout_link_latam_membro_6_meses: string | null;
+  checkout_link_latam_membro_1_ano: string | null;
+  checkout_link_latam_membro_vitalicio: string | null;
 }
 
 const PlanosArtesMembro = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('plans');
+  const { isLatam, getCheckoutLink } = useLocale();
+  
   const packSlug = searchParams.get("pack");
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [packs, setPacks] = useState<Pack[]>([]);
@@ -78,8 +91,10 @@ const PlanosArtesMembro = () => {
       .select(`
         id, name, slug, cover_url, type,
         price_6_meses, price_1_ano, price_vitalicio,
+        price_6_meses_usd, price_1_ano_usd, price_vitalicio_usd,
         enabled_6_meses, enabled_1_ano, enabled_vitalicio,
-        checkout_link_membro_6_meses, checkout_link_membro_1_ano, checkout_link_membro_vitalicio
+        checkout_link_membro_6_meses, checkout_link_membro_1_ano, checkout_link_membro_vitalicio,
+        checkout_link_latam_membro_6_meses, checkout_link_latam_membro_1_ano, checkout_link_latam_membro_vitalicio
       `)
       .in("type", ["pack", "curso"])
       .order("display_order", { ascending: true });
@@ -97,6 +112,16 @@ const PlanosArtesMembro = () => {
 
   const getPrice = (type: string): number => {
     if (!selectedPack) return 0;
+    
+    if (isLatam) {
+      switch (type) {
+        case "6_meses": return selectedPack.price_6_meses_usd || selectedPack.price_6_meses || 2700;
+        case "1_ano": return selectedPack.price_1_ano_usd || selectedPack.price_1_ano || 3700;
+        case "vitalicio": return selectedPack.price_vitalicio_usd || selectedPack.price_vitalicio || 4700;
+        default: return 0;
+      }
+    }
+    
     switch (type) {
       case "6_meses": return selectedPack.price_6_meses || 2700;
       case "1_ano": return selectedPack.price_1_ano || 3700;
@@ -112,11 +137,13 @@ const PlanosArtesMembro = () => {
   };
 
   const formatPrice = (value: number) => {
+    if (isLatam) return `$${value.toFixed(2)}`;
     return `R$ ${value.toFixed(2).replace('.', ',')}`;
   };
 
   const formatOriginalPrice = (type: string) => {
     const cents = getPrice(type);
+    if (isLatam) return `$${(cents / 100).toFixed(2)}`;
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
@@ -134,10 +161,15 @@ const PlanosArtesMembro = () => {
     const allOptions = [
       {
         type: "6_meses",
-        label: "Acesso 6 Meses",
+        label: t('access6Months'),
         icon: Clock,
-        buttonText: "Desbloquear 6 Meses",
-        features: [
+        buttonText: isLatam ? "Desbloquear 6 Meses" : "Desbloquear 6 Meses",
+        features: isLatam ? [
+          "Acceso completo al pack seleccionado",
+          "Descarga ilimitada de artes",
+          "Archivos editables (PSD y Canva)",
+          "Actualizaciones del pack por 6 meses"
+        ] : [
           "Acesso completo ao pack selecionado",
           "Download ilimitado das artes",
           "Arquivos editáveis (PSD e Canva)",
@@ -148,10 +180,15 @@ const PlanosArtesMembro = () => {
       },
       {
         type: "1_ano",
-        label: "Acesso 1 Ano",
+        label: t('access1Year'),
         icon: Star,
-        buttonText: "Desbloquear 1 Ano",
-        features: [
+        buttonText: isLatam ? "Desbloquear 1 Año" : "Desbloquear 1 Ano",
+        features: isLatam ? [
+          "Todo lo del acceso de 6 meses",
+          "Acceso por 12 meses",
+          "Acceso al contenido bonus exclusivo",
+          "Novedades y actualizaciones premium"
+        ] : [
           "Tudo do acesso de 6 meses",
           "Acesso por 12 meses",
           "Acesso ao conteúdo bônus exclusivo",
@@ -162,10 +199,15 @@ const PlanosArtesMembro = () => {
       },
       {
         type: "vitalicio",
-        label: "Acesso Vitalício",
+        label: t('accessLifetime'),
         icon: Gift,
-        buttonText: "Desbloquear Acesso Vitalício",
-        features: [
+        buttonText: isLatam ? "Desbloquear Acceso Vitalicio" : "Desbloquear Acesso Vitalício",
+        features: isLatam ? [
+          "Todo lo del acceso de 1 año",
+          "Acceso permanente al pack",
+          "Todas las actualizaciones futuras",
+          "Contenido bonus exclusivo para siempre"
+        ] : [
           "Tudo do acesso de 1 ano",
           "Acesso permanente ao pack",
           "Todas as atualizações futuras",
@@ -176,32 +218,36 @@ const PlanosArtesMembro = () => {
       }
     ];
 
-    // Filter only enabled options
     return allOptions.filter(opt => isEnabled(opt.type));
   };
 
   const handleSelectOption = (accessType: string) => {
     if (!selectedPack) return;
     
-    let checkoutLink: string | null = null;
+    let checkoutLinkBR: string | null = null;
+    let checkoutLinkLatam: string | null = null;
     
     // Use member links (20% OFF)
     switch (accessType) {
       case "6_meses":
-        checkoutLink = selectedPack.checkout_link_membro_6_meses;
+        checkoutLinkBR = selectedPack.checkout_link_membro_6_meses;
+        checkoutLinkLatam = selectedPack.checkout_link_latam_membro_6_meses;
         break;
       case "1_ano":
-        checkoutLink = selectedPack.checkout_link_membro_1_ano;
+        checkoutLinkBR = selectedPack.checkout_link_membro_1_ano;
+        checkoutLinkLatam = selectedPack.checkout_link_latam_membro_1_ano;
         break;
       case "vitalicio":
-        checkoutLink = selectedPack.checkout_link_membro_vitalicio;
+        checkoutLinkBR = selectedPack.checkout_link_membro_vitalicio;
+        checkoutLinkLatam = selectedPack.checkout_link_latam_membro_vitalicio;
         break;
     }
+    
+    const checkoutLink = getCheckoutLink(checkoutLinkBR, checkoutLinkLatam);
     
     if (checkoutLink) {
       window.open(appendUtmToUrl(checkoutLink), "_blank");
     } else {
-      // Fallback se não houver link configurado
       window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
     }
   };
@@ -225,24 +271,28 @@ const PlanosArtesMembro = () => {
           onClick={() => navigate("/biblioteca-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar para Biblioteca
+          {t('backToLibrary')}
         </Button>
 
         <div className="text-center mb-8">
           <Badge className="bg-gradient-to-r from-purple-500 to-violet-500 text-white text-lg px-4 py-2 mb-4">
             <Crown className="h-5 w-5 mr-2" />
-            20% OFF - Desconto Exclusivo para Membros
+            {isLatam ? '20% OFF - Descuento Exclusivo para Miembros' : '20% OFF - Desconto Exclusivo para Membros'}
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             {selectedPack 
-              ? `Adquira o ${selectedPack.name}` 
-              : "Escolha um novo Pack"
+              ? (isLatam ? `Adquiere el ${selectedPack.name}` : `Adquira o ${selectedPack.name}`)
+              : (isLatam ? "Elige un nuevo Pack" : "Escolha um novo Pack")
             }
           </h1>
           <p className="text-white/60 max-w-2xl mx-auto">
             {selectedPack 
-              ? "Como membro, você tem 20% de desconto em todos os novos packs!"
-              : "Selecione um pack para ver as opções de compra com desconto de membro"
+              ? (isLatam 
+                  ? "¡Como miembro, tienes 20% de descuento en todos los nuevos packs!"
+                  : "Como membro, você tem 20% de desconto em todos os novos packs!")
+              : (isLatam 
+                  ? "Selecciona un pack para ver las opciones de compra con descuento de miembro"
+                  : "Selecione um pack para ver as opções de compra com desconto de membro")
             }
           </p>
         </div>
@@ -253,10 +303,14 @@ const PlanosArtesMembro = () => {
             {availablePacks.length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <Crown className="h-16 w-16 text-purple-500 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">Você já possui todos os packs!</h3>
-                <p className="text-white/60 mb-4">Parabéns, você tem acesso completo à biblioteca.</p>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {isLatam ? '¡Ya tienes todos los packs!' : 'Você já possui todos os packs!'}
+                </h3>
+                <p className="text-white/60 mb-4">
+                  {isLatam ? 'Felicidades, tienes acceso completo a la biblioteca.' : 'Parabéns, você tem acesso completo à biblioteca.'}
+                </p>
                 <Button onClick={() => navigate("/biblioteca-artes")}>
-                  Voltar para Biblioteca
+                  {t('backToLibrary')}
                 </Button>
               </div>
             ) : (
@@ -296,7 +350,7 @@ const PlanosArtesMembro = () => {
                 className="bg-[#2d4a5e]/30 border-[#2d4a5e] text-white hover:bg-[#2d4a5e]/50"
                 onClick={() => setSelectedPack(null)}
               >
-                Escolher outro pack
+                {isLatam ? 'Elegir otro pack' : 'Escolher outro pack'}
               </Button>
             </div>
 
@@ -322,7 +376,7 @@ const PlanosArtesMembro = () => {
                   >
                     {option.highlighted && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
-                        Melhor Custo-Benefício
+                        {t('bestValue')}
                       </div>
                     )}
                     {option.hasBonus && (
@@ -344,7 +398,7 @@ const PlanosArtesMembro = () => {
                         <span className="text-3xl font-bold text-purple-400">
                           {formatPrice(calculatePrice(option.type))}
                         </span>
-                        <span className="text-white/60 text-sm block mt-1">pagamento único</span>
+                        <span className="text-white/60 text-sm block mt-1">{t('oneTimePayment')}</span>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -365,7 +419,7 @@ const PlanosArtesMembro = () => {
                         onClick={() => handleSelectOption(option.type)}
                       >
                         <Crown className="h-4 w-4 mr-2" />
-                        Comprar com Desconto
+                        {isLatam ? 'Comprar con Descuento' : 'Comprar com Desconto'}
                       </Button>
                     </CardContent>
                   </Card>

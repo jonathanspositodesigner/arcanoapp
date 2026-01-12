@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -9,8 +10,12 @@ import { Eye, EyeOff, ArrowLeft, AlertCircle, KeyRound, Mail, Lock, UserPlus } f
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { useLocale } from "@/contexts/LocaleContext";
 
 const UserLoginArtes = () => {
+  const { t } = useTranslation('auth');
+  const { isLatam } = useLocale();
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -208,13 +213,16 @@ const UserLoginArtes = () => {
               <KeyRound className="w-10 h-10 text-amber-400" />
             </div>
             <h2 className="text-2xl font-bold text-amber-400">
-              🔑 É o seu PRIMEIRO ACESSO?
+              {isLatam ? '🔑 ¿Es tu PRIMER ACCESO?' : '🔑 É o seu PRIMEIRO ACESSO?'}
             </h2>
           </div>
           
           <div className="p-6 space-y-4">
             <p className="text-white/90 text-center text-lg">
-              No primeiro acesso, seu <strong className="text-amber-400">login e senha</strong> são o <strong className="text-amber-400">MESMO EMAIL</strong> que você usou na compra pela Greenn!
+              {isLatam 
+                ? <>En el primer acceso, tu <strong className="text-amber-400">login y contraseña</strong> son el <strong className="text-amber-400">MISMO EMAIL</strong> que usaste en la compra!</>
+                : <>No primeiro acesso, seu <strong className="text-amber-400">login e senha</strong> são o <strong className="text-amber-400">MESMO EMAIL</strong> que você usou na compra pela Greenn!</>
+              }
             </p>
             
             <div className="bg-[#0f0f1a] rounded-xl p-5 border-2 border-amber-500/40 space-y-3">
@@ -242,14 +250,17 @@ const UserLoginArtes = () => {
             </div>
             
             <p className="text-white/60 text-center text-sm">
-              Digite o <strong className="text-amber-400">mesmo email</strong> nos dois campos!
+              {isLatam 
+                ? <><strong className="text-amber-400">¡Ingresa el mismo email</strong> en los dos campos!</>
+                : <>Digite o <strong className="text-amber-400">mesmo email</strong> nos dois campos!</>
+              }
             </p>
             
             <Button
               onClick={() => setShowFirstAccessModal(false)}
               className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-6 text-lg"
             >
-              ENTENDI, VOU TENTAR! ✨
+              {isLatam ? '¡ENTENDIDO, VOY A INTENTAR! ✨' : 'ENTENDI, VOU TENTAR! ✨'}
             </Button>
           </div>
         </DialogContent>
@@ -263,44 +274,44 @@ const UserLoginArtes = () => {
               <UserPlus className="w-10 h-10 text-emerald-400" />
             </div>
             <h2 className="text-2xl font-bold text-emerald-400">
-              Criar Conta
+              {isLatam ? 'Crear Cuenta' : 'Criar Conta'}
             </h2>
             <p className="text-white/70 text-sm mt-2">
-              Cadastre-se para explorar a biblioteca
+              {isLatam ? 'Regístrate para explorar la biblioteca' : 'Cadastre-se para explorar a biblioteca'}
             </p>
           </div>
           
           <form onSubmit={handleSignup} className="p-6 space-y-4">
             <div>
-              <Label className="text-white/80">Email</Label>
+              <Label className="text-white/80">{t('email')}</Label>
               <Input
                 type="email"
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
-                placeholder="seu@email.com"
+                placeholder={isLatam ? "tu@email.com" : "seu@email.com"}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white mt-1"
                 required
               />
             </div>
             
             <div>
-              <Label className="text-white/80">Nome (opcional)</Label>
+              <Label className="text-white/80">{isLatam ? 'Nombre (opcional)' : 'Nome (opcional)'}</Label>
               <Input
                 type="text"
                 value={signupName}
                 onChange={(e) => setSignupName(e.target.value)}
-                placeholder="Seu nome"
+                placeholder={isLatam ? "Tu nombre" : "Seu nome"}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white mt-1"
               />
             </div>
             
             <div className="relative">
-              <Label className="text-white/80">Senha</Label>
+              <Label className="text-white/80">{t('password')}</Label>
               <Input
                 type={showSignupPassword ? "text" : "password"}
                 value={signupPassword}
                 onChange={(e) => setSignupPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder={isLatam ? "Mínimo 6 caracteres" : "Mínimo 6 caracteres"}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white mt-1 pr-10"
                 required
               />
@@ -314,12 +325,12 @@ const UserLoginArtes = () => {
             </div>
             
             <div>
-              <Label className="text-white/80">Confirmar Senha</Label>
+              <Label className="text-white/80">{t('confirmPassword')}</Label>
               <Input
                 type="password"
                 value={signupConfirmPassword}
                 onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                placeholder="Digite a senha novamente"
+                placeholder={isLatam ? "Ingresa la contraseña nuevamente" : "Digite a senha novamente"}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white mt-1"
                 required
               />
@@ -328,7 +339,10 @@ const UserLoginArtes = () => {
             <Alert className="bg-amber-500/10 border-amber-500/30">
               <AlertCircle className="h-4 w-4 text-amber-500" />
               <AlertDescription className="text-amber-200 text-xs">
-                Após o cadastro, você poderá explorar a biblioteca, mas precisará comprar um pack para ter acesso ao conteúdo premium.
+                {isLatam 
+                  ? 'Después del registro, podrás explorar la biblioteca, pero necesitarás comprar un pack para acceder al contenido premium.'
+                  : 'Após o cadastro, você poderá explorar a biblioteca, mas precisará comprar um pack para ter acesso ao conteúdo premium.'
+                }
               </AlertDescription>
             </Alert>
             
@@ -337,7 +351,10 @@ const UserLoginArtes = () => {
               disabled={isSigningUp}
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-6 text-lg"
             >
-              {isSigningUp ? "Criando conta..." : "Criar minha conta"}
+              {isSigningUp 
+                ? (isLatam ? "Creando cuenta..." : "Criando conta...") 
+                : (isLatam ? "Crear mi cuenta" : "Criar minha conta")
+              }
             </Button>
             
             <Button
@@ -346,7 +363,7 @@ const UserLoginArtes = () => {
               onClick={() => setShowSignupModal(false)}
               className="w-full text-white/60 hover:text-white"
             >
-              Voltar ao login
+              {isLatam ? 'Volver al login' : 'Voltar ao login'}
             </Button>
           </form>
         </DialogContent>
@@ -360,18 +377,26 @@ const UserLoginArtes = () => {
             onClick={() => navigate("/biblioteca-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
+            {isLatam ? 'Volver' : 'Voltar'}
           </Button>
-          <CardTitle className="text-2xl text-white">Área Premium - Artes</CardTitle>
+          <CardTitle className="text-2xl text-white">
+            {isLatam ? 'Área Premium - Artes' : 'Área Premium - Artes'}
+          </CardTitle>
           <CardDescription className="text-white/60">
-            Acesse sua conta premium da Biblioteca de Artes Arcanas
+            {isLatam 
+              ? 'Accede a tu cuenta premium de la Biblioteca de Artes Arcanas'
+              : 'Acesse sua conta premium da Biblioteca de Artes Arcanas'
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Alert className="mb-4 bg-amber-500/10 border-amber-500/30">
             <AlertCircle className="h-4 w-4 text-amber-500" />
             <AlertDescription className="text-amber-200 text-sm">
-              Primeiro acesso? Sua senha inicial é o seu email.
+              {isLatam 
+                ? '¿Primer acceso? Tu contraseña inicial es tu email.'
+                : 'Primeiro acesso? Sua senha inicial é o seu email.'
+              }
             </AlertDescription>
           </Alert>
 
@@ -379,7 +404,7 @@ const UserLoginArtes = () => {
             <div>
               <Input
                 type="email"
-                placeholder="Email"
+                placeholder={t('email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
@@ -389,7 +414,7 @@ const UserLoginArtes = () => {
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
-                placeholder="Senha"
+                placeholder={t('password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
@@ -410,7 +435,7 @@ const UserLoginArtes = () => {
                 onClick={() => navigate("/forgot-password-artes")}
                 className="text-sm text-[#2d4a5e] hover:text-[#3d5a6e] underline"
               >
-                Esqueci minha senha
+                {t('forgotPassword')}
               </button>
             </div>
 
@@ -419,11 +444,13 @@ const UserLoginArtes = () => {
               className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
               disabled={isLoading}
             >
-              {isLoading ? "Entrando..." : "Entrar"}
+              {isLoading ? (isLatam ? "Entrando..." : "Entrando...") : t('signIn')}
             </Button>
 
             <div className="text-center pt-4 border-t border-[#2d4a5e]/30">
-              <p className="text-white/60 text-sm mb-2">Ainda não tem conta?</p>
+              <p className="text-white/60 text-sm mb-2">
+                {isLatam ? '¿Aún no tienes cuenta?' : 'Ainda não tem conta?'}
+              </p>
               <Button
                 type="button"
                 variant="outline"
@@ -431,7 +458,7 @@ const UserLoginArtes = () => {
                 onClick={() => setShowSignupModal(true)}
               >
                 <UserPlus className="h-4 w-4 mr-2" />
-                Criar Conta
+                {isLatam ? 'Crear Cuenta' : 'Criar Conta'}
               </Button>
             </div>
           </form>
