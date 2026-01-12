@@ -71,19 +71,23 @@ export const cleanOldCaches = async () => {
   
   try {
     const cacheNames = await caches.keys();
-    const currentCacheId = 'arcanoapp-v3.0.0';
+    const currentCacheId = 'arcanoapp-v4.0.0';
+    
+    console.log('[SW] Found caches:', cacheNames);
     
     await Promise.all(
       cacheNames.map(async (cacheName) => {
-        // Delete caches that don't match current version
-        if (!cacheName.includes(currentCacheId) && !cacheName.includes('google-fonts')) {
-          console.log('Deleting old cache:', cacheName);
+        // Delete ALL caches that don't match current version (including old arcanoapp versions)
+        if (!cacheName.includes(currentCacheId)) {
+          console.log('[SW] Deleting old cache:', cacheName);
           await caches.delete(cacheName);
         }
       })
     );
+    
+    console.log('[SW] Cache cleanup complete');
   } catch (error) {
-    console.error('Error cleaning old caches:', error);
+    console.error('[SW] Error cleaning old caches:', error);
   }
 };
 
