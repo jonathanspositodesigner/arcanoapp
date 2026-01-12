@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ForceUpdateModal } from "./components/ForceUpdateModal";
 import Index from "./pages/Index";
 import Promptverso from "./pages/Promptverso";
 import BibliotecaPrompts from "./pages/BibliotecaPrompts";
@@ -113,7 +114,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   // Log version to confirm deployment
-  console.log("[APP] ===== VERSION 4.0.0 LOADED =====", new Date().toISOString());
+  console.log("[APP] ===== VERSION 5.0.0 LOADED =====", new Date().toISOString());
   
   // Track app installations
   useInstallTracker();
@@ -126,6 +127,7 @@ const AppContent = () => {
 
   return (
     <TooltipProvider>
+      <ForceUpdateModal />
       <GlobalImportProgress />
       <Toaster />
       <Sonner />

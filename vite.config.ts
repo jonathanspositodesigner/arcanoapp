@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
         name: "ArcanoApp",
         short_name: "ArcanoApp",
         description: "ArcanoApp - A plataforma dos criadores do futuro. Prompts e arquivos com IA",
-        // PWA Version 4.0.0 - Force cache update with new card images
+        // PWA Version 5.0.0 - Force update system with database control
         theme_color: "#552b99",
         background_color: "#fafafa",
         display: "standalone",
@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
-        cacheId: "arcanoapp-v4.0.0",
+        cacheId: "arcanoapp-v5.0.0",
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
         runtimeCaching: [
@@ -72,7 +72,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
             handler: "NetworkFirst",
             options: {
-              cacheName: "arcanoapp-images-v4.0.0",
+              cacheName: "arcanoapp-images-v5.0.0",
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
