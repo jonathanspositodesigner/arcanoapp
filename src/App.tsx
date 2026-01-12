@@ -107,18 +107,22 @@ import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
+import { useServiceWorkerUpdate } from "./hooks/useServiceWorkerUpdate";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   // Log version to confirm deployment
-  console.log("[APP] ===== VERSION 4.0 LOADED =====", new Date().toISOString());
+  console.log("[APP] ===== VERSION 4.0.0 LOADED =====", new Date().toISOString());
   
   // Track app installations
   useInstallTracker();
   
   // Capture UTM parameters on app load
   useUtmTracker();
+  
+  // Check for PWA updates (every 24h)
+  useServiceWorkerUpdate();
 
   return (
     <TooltipProvider>
