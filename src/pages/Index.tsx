@@ -33,7 +33,7 @@ const Index = () => {
 
   const cards = [
     {
-      category: "Artes Editáveis",
+      category: "Artes Editáveis PSD e Canva",
       title: "Biblioteca de Artes Arcanas",
       description: "Artes para Eventos editáveis PSD e Canva",
       image: upscalerDepois,
