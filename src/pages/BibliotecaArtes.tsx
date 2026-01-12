@@ -839,64 +839,6 @@ const BibliotecaArtes = () => {
             {/* Banner Carousel - Only show when no pack is selected */}
             {!selectedPack && <BannerCarousel />}
 
-            {/* Banner Upscaler Arcano com Vídeo */}
-            {!selectedPack && (
-              <div className="mb-4 sm:mb-6 relative w-full rounded-lg sm:rounded-xl overflow-hidden mt-4">
-                <div className="relative h-40 sm:h-48 lg:h-56">
-                  {/* Vídeo Desktop */}
-                  <video 
-                    className="absolute inset-0 w-full h-full object-cover hidden sm:block"
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline
-                  >
-                    <source src="/videos/upscaler-promo-desktop.mp4" type="video/mp4" />
-                  </video>
-
-                  {/* Vídeo Mobile */}
-                  <video 
-                    className="absolute inset-0 w-full h-full object-cover block sm:hidden"
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline
-                  >
-                    <source src="/videos/upscaler-promo-mobile.mp4" type="video/mp4" />
-                  </video>
-                  
-                  {/* Overlay Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent sm:from-black/70 sm:via-black/40" />
-                  
-                  {/* Conteúdo */}
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="px-3 sm:px-8 lg:px-12 max-w-[75%] sm:max-w-xl">
-                      <h3 className="text-sm sm:text-2xl lg:text-3xl font-bold text-white mb-1 sm:mb-2 leading-tight">
-                        Upscaller Arcano
-                      </h3>
-                      <p className="text-[10px] sm:text-sm lg:text-base text-white/80 mb-2 sm:mb-4 leading-snug">
-                        Deixe suas fotos em 4K com alta nitidez, riqueza de detalhes e qualidade cinematográfica
-                      </p>
-                      <div className="flex flex-row items-center gap-3">
-                        <Button
-                          onClick={() => navigate('/planos-upscaler-arcano')}
-                          size="sm"
-                          className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] sm:text-sm h-7 sm:h-9 px-2 sm:px-4"
-                        >
-                          Adquirir Agora
-                        </Button>
-                        <button 
-                          onClick={() => navigate("/ferramentas-ia?from=artes")}
-                          className="text-white/80 hover:text-white text-[10px] sm:text-sm underline underline-offset-2 transition-colors"
-                        >
-                          Já adquiriu? acesse aqui
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Ferramentas de IA + Install App - Compact Row */}
             {!selectedPack && (
