@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 // Imagens de preview para os cards
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
 import cardPromptsIA from "@/assets/card-prompts-ia.png";
-import upscalerLogoDepois from "@/assets/upscaler-logo-depois.jpg";
+import cardFerramentasIA from "@/assets/card-ferramentas-ia.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const Index = () => {
       category: "Ferramentas Exclusivas de IA",
       title: "Ferramentas de IA",
       description: "Upscaler, Forja de Selos 3D, Mudar Pose e Roupa",
-      image: upscalerLogoDepois,
+      image: cardFerramentasIA,
       route: "/ferramentas-ia",
       imagePosition: "center center",
     },
