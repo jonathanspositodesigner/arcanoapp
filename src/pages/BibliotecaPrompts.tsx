@@ -502,7 +502,7 @@ const BibliotecaPrompts = () => {
               {/* Conteúdo sobreposto */}
               <div className="absolute inset-0 flex items-end sm:items-center">
                 <div className="p-4 sm:p-10 lg:p-14 w-full sm:max-w-xl">
-                  <h2 className="text-lg sm:text-4xl lg:text-5xl font-bold text-white mb-1 sm:mb-4 leading-tight">
+                  <h2 className="text-base sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-4 leading-tight">
                     Conheça o Upscaler Arcano
                   </h2>
                   <p className="text-xs sm:text-base lg:text-lg text-white/80 mb-3 sm:mb-8 leading-relaxed">
