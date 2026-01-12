@@ -505,7 +505,7 @@ const BibliotecaPrompts = () => {
                   <h2 className="text-base sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-4 leading-tight">
                     Conheça o Upscaler Arcano
                   </h2>
-                  <p className="text-xs sm:text-base lg:text-lg text-white/80 mb-3 sm:mb-8 leading-relaxed">
+                  <p className="text-[10px] sm:text-sm lg:text-base text-white/80 mb-3 sm:mb-8 leading-relaxed">
                     Deixe suas fotos em 4K com alta nitidez, riqueza de detalhes e qualidade cinematográfica
                   </p>
                   <div className="flex flex-row items-center gap-3 sm:gap-4">
