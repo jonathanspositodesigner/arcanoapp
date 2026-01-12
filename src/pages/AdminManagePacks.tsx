@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff, Copy, Webhook, Settings, Link, Check, Video, ExternalLink, X } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff, Copy, Webhook, Settings, Link, Check, Video, ExternalLink, X, Globe } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -1331,9 +1331,9 @@ const AdminManagePacks = () => {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <div className="relative">
-                        <Label className="text-xs text-muted-foreground">Valor (centavos)</Label>
+                        <Label className="text-xs text-muted-foreground">Valor BRL (centavos)</Label>
                         <div className="relative">
                           <Input
                             type="number"
@@ -1350,7 +1350,24 @@ const AdminManagePacks = () => {
                         <p className="text-xs text-green-600 mt-1">{formatPriceInput(salesFormData.price_6_meses)}</p>
                       </div>
                       <div className="relative">
-                        <Label className="text-xs text-muted-foreground">Link Checkout</Label>
+                        <Label className="text-xs text-muted-foreground">Valor USD (centavos)</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={salesFormData.price_6_meses_usd}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, price_6_meses_usd: e.target.value }))}
+                            placeholder="700"
+                            disabled={!salesFormData.enabled_6_meses}
+                            className={salesFormData.price_6_meses_usd && salesFormData.enabled_6_meses ? "pr-8 border-blue-500/50" : ""}
+                          />
+                          {salesFormData.price_6_meses_usd && salesFormData.enabled_6_meses && (
+                            <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                        <p className="text-xs text-blue-600 mt-1">{formatPriceInput(salesFormData.price_6_meses_usd, 'USD')}</p>
+                      </div>
+                      <div className="relative">
+                        <Label className="text-xs text-muted-foreground">Link Checkout BR</Label>
                         <div className="relative">
                           <Input
                             type="url"
@@ -1364,6 +1381,24 @@ const AdminManagePacks = () => {
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Globe className="w-3 h-3" /> Link Checkout LATAM
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          type="url"
+                          value={salesFormData.checkout_link_latam_6_meses}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_latam_6_meses: e.target.value }))}
+                          placeholder="https://..."
+                          disabled={!salesFormData.enabled_6_meses}
+                          className={salesFormData.checkout_link_latam_6_meses && salesFormData.enabled_6_meses ? "pr-8 border-blue-500/50" : ""}
+                        />
+                        {salesFormData.checkout_link_latam_6_meses && salesFormData.enabled_6_meses && (
+                          <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1385,9 +1420,9 @@ const AdminManagePacks = () => {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <div className="relative">
-                        <Label className="text-xs text-muted-foreground">Valor (centavos)</Label>
+                        <Label className="text-xs text-muted-foreground">Valor BRL (centavos)</Label>
                         <div className="relative">
                           <Input
                             type="number"
@@ -1404,7 +1439,24 @@ const AdminManagePacks = () => {
                         <p className="text-xs text-green-600 mt-1">{formatPriceInput(salesFormData.price_1_ano)}</p>
                       </div>
                       <div className="relative">
-                        <Label className="text-xs text-muted-foreground">Link Checkout</Label>
+                        <Label className="text-xs text-muted-foreground">Valor USD (centavos)</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={salesFormData.price_1_ano_usd}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, price_1_ano_usd: e.target.value }))}
+                            placeholder="900"
+                            disabled={!salesFormData.enabled_1_ano}
+                            className={salesFormData.price_1_ano_usd && salesFormData.enabled_1_ano ? "pr-8 border-blue-500/50" : ""}
+                          />
+                          {salesFormData.price_1_ano_usd && salesFormData.enabled_1_ano && (
+                            <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                        <p className="text-xs text-blue-600 mt-1">{formatPriceInput(salesFormData.price_1_ano_usd, 'USD')}</p>
+                      </div>
+                      <div className="relative">
+                        <Label className="text-xs text-muted-foreground">Link Checkout BR</Label>
                         <div className="relative">
                           <Input
                             type="url"
@@ -1418,6 +1470,24 @@ const AdminManagePacks = () => {
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Globe className="w-3 h-3" /> Link Checkout LATAM
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          type="url"
+                          value={salesFormData.checkout_link_latam_1_ano}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_latam_1_ano: e.target.value }))}
+                          placeholder="https://..."
+                          disabled={!salesFormData.enabled_1_ano}
+                          className={salesFormData.checkout_link_latam_1_ano && salesFormData.enabled_1_ano ? "pr-8 border-blue-500/50" : ""}
+                        />
+                        {salesFormData.checkout_link_latam_1_ano && salesFormData.enabled_1_ano && (
+                          <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1439,9 +1509,9 @@ const AdminManagePacks = () => {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <div className="relative">
-                        <Label className="text-xs text-muted-foreground">Valor (centavos)</Label>
+                        <Label className="text-xs text-muted-foreground">Valor BRL (centavos)</Label>
                         <div className="relative">
                           <Input
                             type="number"
@@ -1458,7 +1528,24 @@ const AdminManagePacks = () => {
                         <p className="text-xs text-green-600 mt-1">{formatPriceInput(salesFormData.price_vitalicio)}</p>
                       </div>
                       <div className="relative">
-                        <Label className="text-xs text-muted-foreground">Link Checkout</Label>
+                        <Label className="text-xs text-muted-foreground">Valor USD (centavos)</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={salesFormData.price_vitalicio_usd}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, price_vitalicio_usd: e.target.value }))}
+                            placeholder="1200"
+                            disabled={!salesFormData.enabled_vitalicio}
+                            className={salesFormData.price_vitalicio_usd && salesFormData.enabled_vitalicio ? "pr-8 border-blue-500/50" : ""}
+                          />
+                          {salesFormData.price_vitalicio_usd && salesFormData.enabled_vitalicio && (
+                            <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                        <p className="text-xs text-blue-600 mt-1">{formatPriceInput(salesFormData.price_vitalicio_usd, 'USD')}</p>
+                      </div>
+                      <div className="relative">
+                        <Label className="text-xs text-muted-foreground">Link Checkout BR</Label>
                         <div className="relative">
                           <Input
                             type="url"
@@ -1472,6 +1559,24 @@ const AdminManagePacks = () => {
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Globe className="w-3 h-3" /> Link Checkout LATAM
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          type="url"
+                          value={salesFormData.checkout_link_latam_vitalicio}
+                          onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_latam_vitalicio: e.target.value }))}
+                          placeholder="https://..."
+                          disabled={!salesFormData.enabled_vitalicio}
+                          className={salesFormData.checkout_link_latam_vitalicio && salesFormData.enabled_vitalicio ? "pr-8 border-blue-500/50" : ""}
+                        />
+                        {salesFormData.checkout_link_latam_vitalicio && salesFormData.enabled_vitalicio && (
+                          <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1560,14 +1665,97 @@ const AdminManagePacks = () => {
                   </div>
                 </div>
 
-                {/* DESCONTO PARA MEMBROS (20% OFF) */}
+                {/* LATAM - RENOVAÇÃO (30% OFF) */}
+                <div className="border rounded-lg p-4 space-y-4 border-blue-500/30 bg-blue-500/5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className="bg-blue-500/20 text-blue-600">🌎 LATAM 30% OFF</Badge>
+                    <Label className="font-semibold">Renovação LATAM</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Links de renovação para clientes da América Latina
+                  </p>
+                  
+                  <div className="space-y-3">
+                    {salesFormData.enabled_6_meses && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Renovação LATAM 6 Meses</Label>
+                          {salesFormData.checkout_link_latam_renovacao_6_meses && (
+                            <Check className="w-3 h-3 text-blue-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_latam_renovacao_6_meses}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_latam_renovacao_6_meses: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_latam_renovacao_6_meses ? "pr-8 border-blue-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_latam_renovacao_6_meses && (
+                            <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {salesFormData.enabled_1_ano && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Renovação LATAM 1 Ano</Label>
+                          {salesFormData.checkout_link_latam_renovacao_1_ano && (
+                            <Check className="w-3 h-3 text-blue-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_latam_renovacao_1_ano}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_latam_renovacao_1_ano: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_latam_renovacao_1_ano ? "pr-8 border-blue-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_latam_renovacao_1_ano && (
+                            <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {salesFormData.enabled_vitalicio && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Renovação LATAM Vitalício</Label>
+                          {salesFormData.checkout_link_latam_renovacao_vitalicio && (
+                            <Check className="w-3 h-3 text-blue-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_latam_renovacao_vitalicio}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_latam_renovacao_vitalicio: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_latam_renovacao_vitalicio ? "pr-8 border-blue-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_latam_renovacao_vitalicio && (
+                            <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {!salesFormData.enabled_6_meses && !salesFormData.enabled_1_ano && !salesFormData.enabled_vitalicio && (
+                      <p className="text-xs text-muted-foreground italic">Nenhuma opção de preço habilitada</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* DESCONTO PARA MEMBROS BR (20% OFF) */}
                 <div className="border rounded-lg p-4 space-y-4 border-purple-500/30 bg-purple-500/5">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge className="bg-purple-500/20 text-purple-600">👑 20% OFF</Badge>
-                    <Label className="font-semibold">Desconto para Membros</Label>
+                    <Label className="font-semibold">Desconto para Membros (Brasil)</Label>
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">
-                    Links para membros que já possuem um pack e querem comprar outro
+                    Links para membros brasileiros que já possuem um pack e querem comprar outro
                   </p>
                   
                   <div className="space-y-3">
@@ -1633,6 +1821,89 @@ const AdminManagePacks = () => {
                           />
                           {salesFormData.checkout_link_membro_vitalicio && (
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {!salesFormData.enabled_6_meses && !salesFormData.enabled_1_ano && !salesFormData.enabled_vitalicio && (
+                      <p className="text-xs text-muted-foreground italic">Nenhuma opção de preço habilitada</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* LATAM - MEMBROS (20% OFF) */}
+                <div className="border rounded-lg p-4 space-y-4 border-cyan-500/30 bg-cyan-500/5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className="bg-cyan-500/20 text-cyan-600">🌎 LATAM 20% OFF</Badge>
+                    <Label className="font-semibold">Desconto Membros LATAM</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Links para membros da América Latina que querem comprar outro pack
+                  </p>
+                  
+                  <div className="space-y-3">
+                    {salesFormData.enabled_6_meses && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Membro LATAM 6 Meses</Label>
+                          {salesFormData.checkout_link_latam_membro_6_meses && (
+                            <Check className="w-3 h-3 text-cyan-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_latam_membro_6_meses}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_latam_membro_6_meses: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_latam_membro_6_meses ? "pr-8 border-cyan-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_latam_membro_6_meses && (
+                            <Check className="w-4 h-4 text-cyan-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {salesFormData.enabled_1_ano && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Membro LATAM 1 Ano</Label>
+                          {salesFormData.checkout_link_latam_membro_1_ano && (
+                            <Check className="w-3 h-3 text-cyan-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_latam_membro_1_ano}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_latam_membro_1_ano: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_latam_membro_1_ano ? "pr-8 border-cyan-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_latam_membro_1_ano && (
+                            <Check className="w-4 h-4 text-cyan-500 absolute right-2 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {salesFormData.enabled_vitalicio && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Label className="text-sm">Link Membro LATAM Vitalício</Label>
+                          {salesFormData.checkout_link_latam_membro_vitalicio && (
+                            <Check className="w-3 h-3 text-cyan-500" />
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Input
+                            type="url"
+                            value={salesFormData.checkout_link_latam_membro_vitalicio}
+                            onChange={(e) => setSalesFormData(prev => ({ ...prev, checkout_link_latam_membro_vitalicio: e.target.value }))}
+                            placeholder="https://greenn.com.br/checkout/..."
+                            className={salesFormData.checkout_link_latam_membro_vitalicio ? "pr-8 border-cyan-500/50" : ""}
+                          />
+                          {salesFormData.checkout_link_latam_membro_vitalicio && (
+                            <Check className="w-4 h-4 text-cyan-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
                       </div>
