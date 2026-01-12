@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { AnimatedSection, StaggeredAnimation, FadeIn, AnimatedGrid } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface Pack {
   id: string;
@@ -16,22 +18,34 @@ interface Pack {
   type: string;
   cover_url: string | null;
   is_visible: boolean;
-  // Prices (in cents)
+  // Prices BRL (in cents)
   price_6_meses: number | null;
   price_1_ano: number | null;
   price_vitalicio: number | null;
+  // Prices USD (in cents)
+  price_6_meses_usd: number | null;
+  price_1_ano_usd: number | null;
+  price_vitalicio_usd: number | null;
   // Enabled toggles
   enabled_6_meses: boolean;
   enabled_1_ano: boolean;
   enabled_vitalicio: boolean;
-  // Normal checkout links
+  // Normal checkout links (BR)
   checkout_link_6_meses: string | null;
   checkout_link_1_ano: string | null;
   checkout_link_vitalicio: string | null;
+  // LATAM checkout links
+  checkout_link_latam_6_meses: string | null;
+  checkout_link_latam_1_ano: string | null;
+  checkout_link_latam_vitalicio: string | null;
   // Renewal checkout links (30% OFF)
   checkout_link_renovacao_6_meses: string | null;
   checkout_link_renovacao_1_ano: string | null;
   checkout_link_renovacao_vitalicio: string | null;
+  // LATAM Renewal checkout links
+  checkout_link_latam_renovacao_6_meses: string | null;
+  checkout_link_latam_renovacao_1_ano: string | null;
+  checkout_link_latam_renovacao_vitalicio: string | null;
   // Notification discount
   notification_discount_enabled: boolean;
   notification_discount_percent: number | null;
@@ -43,6 +57,10 @@ interface Pack {
 const PlanosArtes = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('plans');
+  const { t: tc } = useTranslation('common');
+  const { isLatam, formatPrice: formatLocalizedPrice, getCheckoutLink } = useLocale();
+  
   const packSlug = searchParams.get("pack");
   const isRenewal = searchParams.get("renovacao") === "true";
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
@@ -109,9 +127,12 @@ const PlanosArtes = () => {
       .select(`
         id, name, slug, cover_url, type, is_visible,
         price_6_meses, price_1_ano, price_vitalicio,
+        price_6_meses_usd, price_1_ano_usd, price_vitalicio_usd,
         enabled_6_meses, enabled_1_ano, enabled_vitalicio,
         checkout_link_6_meses, checkout_link_1_ano, checkout_link_vitalicio,
+        checkout_link_latam_6_meses, checkout_link_latam_1_ano, checkout_link_latam_vitalicio,
         checkout_link_renovacao_6_meses, checkout_link_renovacao_1_ano, checkout_link_renovacao_vitalicio,
+        checkout_link_latam_renovacao_6_meses, checkout_link_latam_renovacao_1_ano, checkout_link_latam_renovacao_vitalicio,
         notification_discount_enabled, notification_discount_percent,
         checkout_link_notif_6_meses, checkout_link_notif_1_ano, checkout_link_notif_vitalicio
       `)
@@ -135,6 +156,18 @@ const PlanosArtes = () => {
 
   const getPrice = (type: string): number => {
     if (!selectedPack) return 0;
+    
+    if (isLatam) {
+      // Use USD prices for LATAM
+      switch (type) {
+        case "6_meses": return selectedPack.price_6_meses_usd || selectedPack.price_6_meses || 2700;
+        case "1_ano": return selectedPack.price_1_ano_usd || selectedPack.price_1_ano || 3700;
+        case "vitalicio": return selectedPack.price_vitalicio_usd || selectedPack.price_vitalicio || 4700;
+        default: return 0;
+      }
+    }
+    
+    // Use BRL prices for Brazil
     switch (type) {
       case "6_meses": return selectedPack.price_6_meses || 2700;
       case "1_ano": return selectedPack.price_1_ano || 3700;
@@ -157,11 +190,17 @@ const PlanosArtes = () => {
   };
 
   const formatPrice = (value: number) => {
+    if (isLatam) {
+      return `$${value.toFixed(2)}`;
+    }
     return `R$ ${value.toFixed(2).replace('.', ',')}`;
   };
 
   const formatOriginalPrice = (type: string) => {
     const cents = getPrice(type);
+    if (isLatam) {
+      return `$${(cents / 100).toFixed(2)}`;
+    }
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
@@ -179,10 +218,15 @@ const PlanosArtes = () => {
     const allOptions = [
       {
         type: "6_meses",
-        label: "Acesso 6 Meses",
+        label: t('access6Months'),
         icon: Clock,
-        buttonText: "Desbloquear 6 Meses",
-        features: [
+        buttonText: isLatam ? "Desbloquear 6 Meses" : "Desbloquear 6 Meses",
+        features: isLatam ? [
+          "Acceso completo al pack seleccionado",
+          "Descarga ilimitada de artes",
+          "Archivos editables (PSD y Canva)",
+          "Actualizaciones del pack por 6 meses"
+        ] : [
           "Acesso completo ao pack selecionado",
           "Download ilimitado das artes",
           "Arquivos editáveis (PSD e Canva)",
@@ -193,10 +237,15 @@ const PlanosArtes = () => {
       },
       {
         type: "1_ano",
-        label: "Acesso 1 Ano",
+        label: t('access1Year'),
         icon: Star,
-        buttonText: "Desbloquear 1 Ano",
-        features: [
+        buttonText: isLatam ? "Desbloquear 1 Año" : "Desbloquear 1 Ano",
+        features: isLatam ? [
+          "Todo lo del acceso de 6 meses",
+          "Acceso por 12 meses",
+          "Acceso al contenido bonus exclusivo",
+          "Novedades y actualizaciones premium"
+        ] : [
           "Tudo do acesso de 6 meses",
           "Acesso por 12 meses",
           "Acesso ao conteúdo bônus exclusivo",
@@ -207,10 +256,15 @@ const PlanosArtes = () => {
       },
       {
         type: "vitalicio",
-        label: "Acesso Vitalício",
+        label: t('accessLifetime'),
         icon: Gift,
-        buttonText: "Desbloquear Acesso Vitalício",
-        features: [
+        buttonText: isLatam ? "Desbloquear Acceso Vitalicio" : "Desbloquear Acesso Vitalício",
+        features: isLatam ? [
+          "Todo lo del acceso de 1 año",
+          "Acceso permanente al pack",
+          "Todas las actualizaciones futuras",
+          "Contenido bonus exclusivo para siempre"
+        ] : [
           "Tudo do acesso de 1 ano",
           "Acesso permanente ao pack",
           "Todas as atualizações futuras",
@@ -228,48 +282,58 @@ const PlanosArtes = () => {
   const handleSelectOption = (accessType: string) => {
     if (!selectedPack) return;
     
-    let checkoutLink: string | null = null;
+    let checkoutLinkBR: string | null = null;
+    let checkoutLinkLatam: string | null = null;
     
     if (isRenewal) {
       // Use renewal links (30% OFF)
       switch (accessType) {
         case "6_meses":
-          checkoutLink = selectedPack.checkout_link_renovacao_6_meses;
+          checkoutLinkBR = selectedPack.checkout_link_renovacao_6_meses;
+          checkoutLinkLatam = selectedPack.checkout_link_latam_renovacao_6_meses;
           break;
         case "1_ano":
-          checkoutLink = selectedPack.checkout_link_renovacao_1_ano;
+          checkoutLinkBR = selectedPack.checkout_link_renovacao_1_ano;
+          checkoutLinkLatam = selectedPack.checkout_link_latam_renovacao_1_ano;
           break;
         case "vitalicio":
-          checkoutLink = selectedPack.checkout_link_renovacao_vitalicio;
+          checkoutLinkBR = selectedPack.checkout_link_renovacao_vitalicio;
+          checkoutLinkLatam = selectedPack.checkout_link_latam_renovacao_vitalicio;
           break;
       }
     } else if (hasNotificationDiscount) {
-      // Use notification discount links (20% OFF)
+      // Use notification discount links (20% OFF) - only BR for now
       switch (accessType) {
         case "6_meses":
-          checkoutLink = selectedPack.checkout_link_notif_6_meses;
+          checkoutLinkBR = selectedPack.checkout_link_notif_6_meses;
           break;
         case "1_ano":
-          checkoutLink = selectedPack.checkout_link_notif_1_ano;
+          checkoutLinkBR = selectedPack.checkout_link_notif_1_ano;
           break;
         case "vitalicio":
-          checkoutLink = selectedPack.checkout_link_notif_vitalicio;
+          checkoutLinkBR = selectedPack.checkout_link_notif_vitalicio;
           break;
       }
     } else {
       // Use normal links
       switch (accessType) {
         case "6_meses":
-          checkoutLink = selectedPack.checkout_link_6_meses;
+          checkoutLinkBR = selectedPack.checkout_link_6_meses;
+          checkoutLinkLatam = selectedPack.checkout_link_latam_6_meses;
           break;
         case "1_ano":
-          checkoutLink = selectedPack.checkout_link_1_ano;
+          checkoutLinkBR = selectedPack.checkout_link_1_ano;
+          checkoutLinkLatam = selectedPack.checkout_link_latam_1_ano;
           break;
         case "vitalicio":
-          checkoutLink = selectedPack.checkout_link_vitalicio;
+          checkoutLinkBR = selectedPack.checkout_link_vitalicio;
+          checkoutLinkLatam = selectedPack.checkout_link_latam_vitalicio;
           break;
       }
     }
+    
+    // Get the appropriate checkout link based on locale
+    const checkoutLink = getCheckoutLink(checkoutLinkBR, checkoutLinkLatam);
     
     if (checkoutLink) {
       window.open(appendUtmToUrl(checkoutLink), "_blank");
@@ -299,7 +363,7 @@ const PlanosArtes = () => {
             onClick={() => navigate("/biblioteca-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para Biblioteca
+            {t('backToLibrary')}
           </Button>
         </FadeIn>
 
@@ -307,33 +371,41 @@ const PlanosArtes = () => {
           {isRenewal && (
             <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg px-4 py-2 mb-4">
               <Percent className="h-5 w-5 mr-2" />
-              30% OFF - Renovação Especial
+              30% OFF - {isLatam ? 'Renovación Especial' : 'Renovação Especial'}
             </Badge>
           )}
           {hasNotificationDiscount && (
             <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-lg px-4 py-2 mb-4 animate-pulse">
               <Bell className="h-5 w-5 mr-2" />
-              {notificationDiscountPercent}% OFF - Desconto Exclusivo!
+              {notificationDiscountPercent}% OFF - {isLatam ? '¡Descuento Exclusivo!' : 'Desconto Exclusivo!'}
             </Badge>
           )}
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             {isRenewal 
-              ? `Renove seu acesso ao ${selectedPack?.name || "Pack"}`
+              ? (isLatam 
+                  ? `Renueva tu acceso al ${selectedPack?.name || "Pack"}`
+                  : `Renove seu acesso ao ${selectedPack?.name || "Pack"}`)
               : hasNotificationDiscount
-                ? `Seu desconto exclusivo no ${selectedPack?.name || "Pack"}`
+                ? (isLatam 
+                    ? `Tu descuento exclusivo en ${selectedPack?.name || "Pack"}`
+                    : `Seu desconto exclusivo no ${selectedPack?.name || "Pack"}`)
                 : selectedPack 
-                  ? `Adquira o ${selectedPack.name}` 
-                  : "Escolha seu Pack"
+                  ? (isLatam ? `Adquiere el ${selectedPack.name}` : `Adquira o ${selectedPack.name}`)
+                  : t('choosePack')
             }
           </h1>
           <p className="text-white/60 max-w-2xl mx-auto">
             {isRenewal
-              ? "Aproveite 30% de desconto na renovação do seu acesso!"
+              ? (isLatam 
+                  ? "¡Aprovecha 30% de descuento en la renovación de tu acceso!"
+                  : "Aproveite 30% de desconto na renovação do seu acesso!")
               : hasNotificationDiscount
-                ? `Parabéns! Você ativou as notificações e ganhou ${notificationDiscountPercent}% de desconto!`
+                ? (isLatam 
+                    ? `¡Felicidades! Activaste las notificaciones y ganaste ${notificationDiscountPercent}% de descuento!`
+                    : `Parabéns! Você ativou as notificações e ganhou ${notificationDiscountPercent}% de desconto!`)
                 : selectedPack 
-                  ? "Escolha o tipo de acesso ideal para você"
-                  : "Selecione um pack para ver as opções de compra"
+                  ? (isLatam ? "Elige el tipo de acceso ideal para ti" : "Escolha o tipo de acesso ideal para você")
+                  : (isLatam ? "Selecciona un pack para ver las opciones de compra" : "Selecione um pack para ver as opções de compra")
             }
           </p>
         </AnimatedSection>
@@ -344,7 +416,7 @@ const PlanosArtes = () => {
             {/* Packs de Artes */}
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">Packs de Artes</h2>
+                <h2 className="text-xl font-bold text-white mb-4">{isLatam ? 'Packs de Artes' : 'Packs de Artes'}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {packItems.map((pack) => (
                     <Card
@@ -381,7 +453,7 @@ const PlanosArtes = () => {
             {/* Cursos */}
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">Cursos</h2>
+                <h2 className="text-xl font-bold text-white mb-4">{isLatam ? 'Cursos' : 'Cursos'}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {cursoItems.map((pack) => (
                     <Card
@@ -426,7 +498,7 @@ const PlanosArtes = () => {
                   className="bg-[#2d4a5e]/30 border-[#2d4a5e] text-white hover:bg-[#2d4a5e]/50"
                   onClick={() => setSelectedPack(null)}
                 >
-                  Escolher outro pack
+                  {isLatam ? 'Elegir otro pack' : 'Escolher outro pack'}
                 </Button>
               </div>
             )}
@@ -453,7 +525,7 @@ const PlanosArtes = () => {
                   >
                     {option.highlighted && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
-                        Melhor Custo-Benefício
+                        {t('bestValue')}
                       </div>
                     )}
                     {option.hasBonus && (
@@ -479,7 +551,7 @@ const PlanosArtes = () => {
                         <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
                           {formatPrice(calculatePrice(option.type))}
                         </span>
-                        <span className="text-white/60 text-sm block mt-1">pagamento único</span>
+                        <span className="text-white/60 text-sm block mt-1">{t('oneTimePayment')}</span>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -505,7 +577,11 @@ const PlanosArtes = () => {
                       >
                         {hasNotificationDiscount && <Bell className="h-4 w-4 mr-2" />}
                         {!hasNotificationDiscount && <Star className="h-4 w-4 mr-2" />}
-                        {isRenewal ? "Renovar Agora" : hasNotificationDiscount ? "Usar Meu Desconto" : option.buttonText}
+                        {isRenewal 
+                          ? (isLatam ? "Renovar Ahora" : "Renovar Agora") 
+                          : hasNotificationDiscount 
+                            ? (isLatam ? "Usar Mi Descuento" : "Usar Meu Desconto") 
+                            : option.buttonText}
                       </Button>
                     </CardContent>
                   </Card>
@@ -521,7 +597,7 @@ const PlanosArtes = () => {
             className="text-[#2d4a5e] hover:text-[#3d5a6e]"
             onClick={() => navigate("/login-artes")}
           >
-            Já comprei um pack
+            {isLatam ? 'Ya compré un pack' : 'Já comprei um pack'}
           </Button>
         </div>
       </div>
