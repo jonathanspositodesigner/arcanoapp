@@ -27,19 +27,27 @@ const ArcaneAIStudioModal = ({ open, onOpenChange }: ArcaneAIStudioModalProps) =
 
         {/* Video Banner Container */}
         <div className="relative w-full rounded-2xl overflow-hidden">
-          {/* Video Background - Replace with actual video when ready */}
           <div className="relative w-full aspect-[16/6] sm:aspect-[16/5] bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900">
-            {/* Placeholder for video - will be replaced with actual video */}
+            {/* Video Desktop */}
             <video 
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover hidden sm:block"
               autoPlay 
               loop 
               muted 
               playsInline
-              poster=""
             >
-              {/* Add your video source here */}
-              {/* <source src="/videos/ferramentas-ia-preview.mp4" type="video/mp4" /> */}
+              <source src="/videos/upscaler-promo-desktop.mp4" type="video/mp4" />
+            </video>
+
+            {/* Video Mobile */}
+            <video 
+              className="absolute inset-0 w-full h-full object-cover block sm:hidden"
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+            >
+              <source src="/videos/upscaler-promo-mobile.mp4" type="video/mp4" />
             </video>
             
             {/* Gradient Overlay for text readability */}
@@ -49,11 +57,10 @@ const ArcaneAIStudioModal = ({ open, onOpenChange }: ArcaneAIStudioModalProps) =
             <div className="absolute inset-0 flex items-center">
               <div className="p-6 sm:p-10 lg:p-14 max-w-xl">
                 <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 leading-tight">
-                  Ferramentas de IA
+                  Conheça o Upscaler Arcano
                 </h2>
                 <p className="text-sm sm:text-base lg:text-lg text-white/80 mb-6 sm:mb-8 leading-relaxed">
-                  Potencialize suas criações com nossas ferramentas exclusivas de IA. 
-                  Upscaler, Forja de Selos 3D, Mudar Pose e muito mais disponíveis para você.
+                  Deixe suas fotos em 4K com alta nitidez, riqueza de detalhes e qualidade cinematográfica
                 </p>
                 <Button 
                   onClick={() => {
@@ -62,8 +69,7 @@ const ArcaneAIStudioModal = ({ open, onOpenChange }: ArcaneAIStudioModalProps) =
                   }}
                   className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm px-6 py-5 sm:px-8 sm:py-6 text-sm sm:text-base font-semibold rounded-lg transition-all hover:scale-105"
                 >
-                  <Zap className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  Acessar Ferramentas
+                  Ver mais
                 </Button>
               </div>
             </div>
