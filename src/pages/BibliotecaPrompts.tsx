@@ -446,7 +446,7 @@ const BibliotecaPrompts = () => {
               </Button>
             </>}
 
-          <h2 className="text-xl font-bold text-foreground mb-6">Ferramentas de IA</h2>
+          <h2 className="text-xl font-bold text-foreground mb-6">Gere com IA</h2>
           <div data-tutorial="ai-tools" className="space-y-3">
           {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
               <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
@@ -461,6 +461,15 @@ const BibliotecaPrompts = () => {
               <Video className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
             </Button>
           </a>
+
+          {/* Botão Ferramentas de IA destacado */}
+          <Button 
+            onClick={() => navigate("/ferramentas-ia")} 
+            className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold h-auto py-4 px-4"
+          >
+            <Zap className="h-5 w-5 mr-2" />
+            Ferramentas de IA
+          </Button>
         </aside>
 
         {/* Main Content */}
