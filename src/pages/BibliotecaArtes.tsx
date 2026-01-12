@@ -12,6 +12,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
+import LazyVideo from "@/components/LazyVideo";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import BannerCarousel from "@/components/BannerCarousel";
 import { toPackSlug } from "@/lib/utils";
@@ -1127,18 +1128,13 @@ const BibliotecaArtes = () => {
                   const hasAccess = isTutorialType || !arte.isPremium || hasAccessToPack(packSlug);
                   return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-                      {isVideo ? <>
-                              <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} preload="metadata" playsInline />
-                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="bg-black/60 rounded-full p-3">
-                                  <Play className="h-8 w-8 text-white" fill="white" />
-                                </div>
-                              </div>
-                              <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                                <Play className="h-3 w-3" fill="white" />
-                                Vídeo
-                              </div>
-                            </> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
+                      {isVideo ? (
+                              <LazyVideo 
+                                src={arte.imageUrl}
+                                className="w-full h-full"
+                                onClick={() => handleItemClick(arte)}
+                              />
+                            ) : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
                           
                           {!hasAccess && <div className="absolute top-2 right-2">
                               <Lock className="h-5 w-5 text-white drop-shadow-lg" />
@@ -1237,18 +1233,13 @@ const BibliotecaArtes = () => {
                   const hasAccess = true;
                   return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-                      {isVideo ? <>
-                              <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={false} preload="metadata" playsInline />
-                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="bg-black/60 rounded-full p-3">
-                                  <Play className="h-8 w-8 text-white" fill="white" />
-                                </div>
-                              </div>
-                              <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                                <Play className="h-3 w-3" fill="white" />
-                                Vídeo
-                              </div>
-                            </> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={false} />}
+                      {isVideo ? (
+                              <LazyVideo 
+                                src={arte.imageUrl}
+                                className="w-full h-full"
+                                onClick={() => handleItemClick(arte)}
+                              />
+                            ) : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={false} />}
                           
                           <div className="absolute bottom-2 left-2 right-2">
                             <Badge variant="secondary" className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
@@ -1337,18 +1328,13 @@ const BibliotecaArtes = () => {
                   const hasAccess = isTutorialType || !arte.isPremium || (isBonusOrUpdatesSection ? isPremium : hasAccessToPack(packSlug));
                   return <Card key={arte.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleItemClick(arte)}>
                         <div className="relative aspect-square">
-                      {isVideo ? <>
-                              <SecureVideo src={arte.imageUrl} className="w-full h-full object-cover" isPremium={arte.isPremium || false} preload="metadata" playsInline />
-                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="bg-black/60 rounded-full p-3">
-                                  <Play className="h-8 w-8 text-white" fill="white" />
-                                </div>
-                              </div>
-                              <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                                <Play className="h-3 w-3" fill="white" />
-                                Vídeo
-                              </div>
-                            </> : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
+                      {isVideo ? (
+                              <LazyVideo 
+                                src={arte.imageUrl}
+                                className="w-full h-full"
+                                onClick={() => handleItemClick(arte)}
+                              />
+                            ) : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={arte.isPremium || false} />}
                           
                           {!hasAccess && <div className="absolute top-2 right-2">
                               <Lock className="h-5 w-5 text-white drop-shadow-lg" />
