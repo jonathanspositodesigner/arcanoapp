@@ -13,6 +13,7 @@ import promptclubLogo from "@/assets/promptclub_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import LazyVideo from "@/components/LazyVideo";
+import { useTranslation } from "react-i18next";
 
 
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
@@ -39,6 +40,7 @@ const slugToCategory = (slug: string, categories: string[]): string | null => {
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useTranslation('prompts');
 
   // Check for collection slug in URL first
   const colecaoParam = searchParams.get("colecao");
@@ -98,6 +100,23 @@ const BibliotecaPrompts = () => {
   const categories = contentType === "exclusive" 
     ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Logo", "Movies para Telão", "Controles de Câmera"] 
     : ["Populares", "Ver Tudo", "Novos", "Selos 3D", "Fotos", "Cenários", "Logo"];
+
+  // Category display names for i18n
+  const getCategoryDisplayName = (category: string): string => {
+    const categoryMap: Record<string, string> = {
+      "Populares": t('categories.popular'),
+      "Ver Tudo": t('categories.seeAll'),
+      "Novos": t('categories.new'),
+      "Grátis": t('categories.free'),
+      "Selos 3D": t('categories.seals3D'),
+      "Fotos": t('categories.photos'),
+      "Cenários": t('categories.scenarios'),
+      "Logo": t('categories.logo'),
+      "Movies para Telão": t('categories.moviesForScreen'),
+      "Controles de Câmera": t('categories.cameraControls'),
+    };
+    return categoryMap[category] || category;
+  };
 
   // Read category from URL on mount and when searchParams change
   useEffect(() => {
@@ -161,7 +180,7 @@ const BibliotecaPrompts = () => {
     }
     try {
       await navigator.clipboard.writeText(promptItem.prompt);
-      toast.success(`Prompt "${promptItem.title}" copiado!`);
+      toast.success(t('toast.promptCopied', { title: promptItem.title }));
 
       // Track the click and increment counter locally if it's a new click
       const promptId = String(promptItem.id);
@@ -185,7 +204,7 @@ const BibliotecaPrompts = () => {
       }
     } catch (error) {
       console.error("Failed to copy:", error);
-      toast.error("Erro ao copiar prompt");
+      toast.error(t('toast.copyError'));
     }
   };
   const downloadFile = async (url: string, filename: string, isPremiumContent: boolean = false) => {
@@ -204,7 +223,7 @@ const BibliotecaPrompts = () => {
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
       console.error("Download failed:", error);
-      toast.error("Erro ao baixar arquivo");
+      toast.error(t('toast.downloadError'));
     }
   };
   const downloadMedia = async (mediaUrl: string, title: string, referenceImages?: string[], isPremiumContent: boolean = false, thumbnailUrl?: string) => {
@@ -231,14 +250,14 @@ const BibliotecaPrompts = () => {
       }
       
       if (imagesDownloaded > 0) {
-        toast.success(`${imagesDownloaded} imagem(ns) de referência baixada(s)!`);
+        toast.success(t('toast.referenceImagesDownloaded', { count: imagesDownloaded }));
       } else {
-        toast.error("Nenhuma imagem de referência disponível para este vídeo");
+        toast.error(t('toast.noReferenceImages'));
       }
     } else {
       // Para imagens, baixa normalmente
       await downloadFile(mediaUrl, `${baseTitle}.jpg`, isPremiumContent);
-      toast.success(`Imagem "${title}" baixada!`);
+      toast.success(t('toast.imageDownloaded', { title }));
     }
   };
   const handleItemClick = (item: PromptItem) => {
@@ -293,19 +312,19 @@ const BibliotecaPrompts = () => {
     setShowTutorialModal(true);
   };
   const externalLinks = [{
-    name: "Gerar no ChatGPT",
+    name: t('sidebar.generateInChatGPT'),
     url: "https://chatgpt.com/",
     icon: Sparkles
   }, {
-    name: "Gerar no Nano Banana",
+    name: t('sidebar.generateInNanoBanana'),
     url: "https://labs.google/fx/pt/tools/flow",
     icon: Sparkles
   }, {
-    name: "Gerar no Whisk",
+    name: t('sidebar.generateInWhisk'),
     url: "https://labs.google/fx/pt/tools/whisk",
     icon: Sparkles
   }, {
-    name: "Gerar no Flux 2",
+    name: t('sidebar.generateInFlux2'),
     url: "https://www.runninghub.ai/workflow/1995538803421020162",
     icon: Sparkles
   }];
@@ -314,21 +333,21 @@ const BibliotecaPrompts = () => {
         {/* Premium or Grátis badge - always show one */}
         {item.isPremium ? <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px] sm:text-xs">
             <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
-            Premium
+            {t('badges.premium')}
           </Badge> : <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] sm:text-xs">
-            Grátis
+            {t('badges.free')}
           </Badge>}
         {/* Tutorial badge */}
         {item.tutorialUrl && <Badge className="bg-red-600 text-white border-0 text-[10px] sm:text-xs">
             <Youtube className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
-            Tutorial
+            {t('badges.tutorial')}
           </Badge>}
         {/* Category badge */}
         {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs">
-            {item.category === "Fotos" ? "Foto Exclusiva" : item.category === "Cenários" ? "Cenário Exclusivo" : item.category === "Controles de Câmera" ? "Controle de Câmera" : item.category === "Movies para Telão" ? "Movie Exclusivo" : "Selo Exclusivo"}
+            {item.category === "Fotos" ? t('badges.exclusivePhoto') : item.category === "Cenários" ? t('badges.exclusiveScenario') : item.category === "Controles de Câmera" ? t('badges.cameraControl') : item.category === "Movies para Telão" ? t('badges.exclusiveMovie') : t('badges.exclusiveSeal')}
           </Badge>}
         {item.isCommunity && <Badge variant="secondary" className="bg-secondary text-foreground text-[10px] sm:text-xs">
-            Comunidade
+            {t('badges.community')}
           </Badge>}
       </div>;
   };
@@ -342,30 +361,30 @@ const BibliotecaPrompts = () => {
         <div className="flex items-center gap-3">
           <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
             <Users className="h-4 w-4 mr-2" />
-            Área do Parceiro
+            {t('header.partnerArea')}
           </Button>
           {!isPremium && <>
             <Button onClick={() => navigate("/login")} variant="ghost" size="sm">
               <LogIn className="h-4 w-4 mr-2" />
-              Login
+              {t('header.login')}
             </Button>
             <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
               <Star className="h-3 w-3 mr-2" fill="currentColor" />
-              Torne-se Premium
+              {t('header.becomePremium')}
             </Button>
           </>}
           {isPremium && <>
             <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
-              Premium Ativo
+              {t('header.premiumActive')}
             </Badge>
             <Button onClick={() => navigate("/profile-settings")} variant="ghost" size="sm">
               <Settings className="h-4 w-4 mr-2" />
-              Meu Perfil
+              {t('header.myProfile')}
             </Button>
             <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               <LogOut className="h-4 w-4 mr-2" />
-              Sair
+              {t('header.logout')}
             </Button>
           </>}
         </div>
@@ -377,7 +396,7 @@ const BibliotecaPrompts = () => {
         {!isPremium && <div className="flex items-center gap-2">
             <Button onClick={() => navigate("/login")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
-              Login
+              {t('header.login')}
             </Button>
             <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
@@ -402,7 +421,7 @@ const BibliotecaPrompts = () => {
       <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50" data-tutorial="mobile-menu">
         <Button onClick={() => setSidebarOpen(!sidebarOpen)} className="bg-primary hover:bg-primary/90 text-white shadow-xl px-6 py-6 rounded-full">
           <Menu className="h-6 w-6 mr-2" />
-          <span className="font-semibold">Gere sua imagem    </span>
+          <span className="font-semibold">{t('mobileMenu.generateImage')}    </span>
         </Button>
       </div>
 
@@ -426,28 +445,28 @@ const BibliotecaPrompts = () => {
           {/* Install App Button */}
           <Button onClick={() => navigate("/install-app")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-2">
             <Smartphone className="h-4 w-4 mr-2" />
-            Instalar App
+            {t('sidebar.installApp')}
           </Button>
 
           {/* Premium Badge - only show badge, buttons moved to top bar */}
           {isPremium && <div className="flex items-center justify-center gap-2 mb-4 p-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30">
               <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
-              <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">Premium Ativo</span>
+              <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">{t('sidebar.premiumActive')}</span>
             </div>}
 
           {/* Login/Premium buttons for non-premium users only */}
           {!isPremium && <>
               <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2">
                 <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                Torne-se Premium
+                {t('sidebar.becomePremium')}
               </Button>
               <Button onClick={() => navigate("/login")} variant="outline" className="w-full border-border hover:bg-secondary font-semibold mb-4">
                 <LogIn className="h-4 w-4 mr-2" />
-                Fazer Login
+                {t('sidebar.makeLogin')}
               </Button>
             </>}
 
-          <h2 className="text-xl font-bold text-foreground mb-6">Gere com IA</h2>
+          <h2 className="text-xl font-bold text-foreground mb-6">{t('sidebar.generateWithAI')}</h2>
           <div data-tutorial="ai-tools" className="space-y-3">
           {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
               <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
@@ -458,7 +477,7 @@ const BibliotecaPrompts = () => {
           </div>
           <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block mt-3">
             <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
-              <span className="font-medium text-foreground">Gerar Video no VEO 3</span>
+              <span className="font-medium text-foreground">{t('sidebar.generateVideoVEO3')}</span>
               <Video className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
             </Button>
           </a>
@@ -469,7 +488,7 @@ const BibliotecaPrompts = () => {
             className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold h-auto py-4 px-4"
           >
             <Zap className="h-5 w-5 mr-2" />
-            Ferramentas de IA
+            {t('sidebar.aiTools')}
           </Button>
         </aside>
 
@@ -478,7 +497,7 @@ const BibliotecaPrompts = () => {
           {/* Mobile Install App Button */}
           <Button onClick={() => navigate("/install-app")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden">
             <Smartphone className="h-4 w-4 mr-2" />
-            Instalar App
+            {t('sidebar.installApp')}
           </Button>
 
           {/* Banner Upscaler Arcano com Vídeo */}
@@ -513,23 +532,23 @@ const BibliotecaPrompts = () => {
               <div className="absolute inset-0 flex items-end sm:items-center">
                 <div className="p-4 sm:p-10 lg:p-14 w-full sm:max-w-xl">
                   <h2 className="text-base sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-4 leading-tight">
-                    Conheça o Upscaler Arcano
+                    {t('banner.upscalerTitle')}
                   </h2>
                   <p className="text-[10px] sm:text-sm lg:text-base text-white/80 mb-3 sm:mb-8 leading-relaxed">
-                    Deixe suas fotos em 4K com alta nitidez, riqueza de detalhes e qualidade cinematográfica
+                    {t('banner.upscalerDescription')}
                   </p>
                   <div className="flex flex-row items-center gap-3 sm:gap-4">
                     <Button 
                       onClick={() => navigate("/planos-upscaler-arcano")}
                       className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm px-4 py-2 sm:px-8 sm:py-6 text-xs sm:text-base font-semibold rounded-lg transition-all hover:scale-105"
                     >
-                      Adquirir agora
+                      {t('banner.buyNow')}
                     </Button>
                     <button 
                       onClick={() => navigate("/ferramentas-ia")}
                       className="text-white/80 hover:text-white text-xs sm:text-base underline underline-offset-4 transition-colors"
                     >
-                      Já adquiriu? acesse aqui
+                      {t('banner.alreadyPurchased')}
                     </button>
                   </div>
                 </div>
@@ -539,8 +558,8 @@ const BibliotecaPrompts = () => {
 
           {/* Page Title and Content Type Tabs */}
           <div className="mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground">Biblioteca de Prompts</h2>
-            <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">Explore nossa coleção de prompts para criar projetos incríveis com IA</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground">{t('library.title')}</h2>
+            <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">{t('library.description')}</p>
             
             {/* Content Type Tabs */}
             <div className="flex flex-wrap gap-2 mb-4">
@@ -549,14 +568,14 @@ const BibliotecaPrompts = () => {
               handleCategorySelect("Ver Tudo");
             }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "exclusive" ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary border-border"}`}>
                 <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                Arquivos Exclusivos
+                {t('library.exclusiveFiles')}
               </Button>
               <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => {
               setContentType("community");
               handleCategorySelect("Ver Tudo");
             }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "community" ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary border-border"}`}>
                 <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                Comunidade
+                {t('library.community')}
               </Button>
             </div>
 
@@ -564,7 +583,7 @@ const BibliotecaPrompts = () => {
             <div className="flex gap-1.5 sm:gap-2 flex-wrap">
               {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => handleCategorySelect(cat)} size="sm" className={`text-[11px] sm:text-xs px-2 sm:px-3 ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}>
                   {getCategoryIcon(cat)}
-                  {cat}
+                  {getCategoryDisplayName(cat)}
                 </Button>)}
             </div>
           </div>
@@ -624,15 +643,15 @@ const BibliotecaPrompts = () => {
                   // Check if user has reached daily limit for premium items
                   item.isPremium && hasReachedLimit && hasLimitPlan ? <Button onClick={() => setShowLimitModal(true)} size="sm" className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white text-xs sm:text-sm">
                             <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                            Limite diário atingido
+                            {t('buttons.dailyLimitReached')}
                           </Button> : <>
                             <Button onClick={() => copyToClipboard(item)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm" data-tutorial="copy-prompt">
                               <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                              Copiar Prompt {item.isPremium && hasLimitPlan && `(${remainingCopies} restantes)`}
+                              {t('buttons.copyPrompt')} {item.isPremium && hasLimitPlan && `(${remainingCopies} ${t('buttons.remaining')})`}
                             </Button>
                             <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages, item.isPremium, item.thumbnailUrl)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
                               <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                              Baixar Referência
+                              {t('buttons.downloadReference')}
                             </Button>
                             {item.tutorialUrl && (
                               <Button 
@@ -645,12 +664,12 @@ const BibliotecaPrompts = () => {
                                 className="w-full border-red-500 text-red-500 hover:bg-red-500/10 text-xs sm:text-sm"
                               >
                                 <Youtube className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                                Ver Tutorial
+                                {t('buttons.watchTutorial')}
                               </Button>
                             )}
                           </> : <Button onClick={() => navigate("/planos")} size="sm" className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm">
                           <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" fill="currentColor" />
-                          Torne-se Premium
+                          {t('buttons.becomePremium')}
                         </Button>}
                     </div>
                   </div>
@@ -662,13 +681,13 @@ const BibliotecaPrompts = () => {
           {totalPages > 1 && <div className="flex items-center justify-center gap-2 sm:gap-4 mt-6 sm:mt-8">
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="border-border hover:bg-secondary">
                 <ChevronLeft className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Anterior</span>
+                <span className="hidden sm:inline">{t('pagination.previous')}</span>
               </Button>
               <span className="text-sm text-muted-foreground">
                 {currentPage} / {totalPages}
               </span>
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="border-border hover:bg-secondary">
-                <span className="hidden sm:inline">Próxima</span>
+                <span className="hidden sm:inline">{t('pagination.next')}</span>
                 <ChevronRight className="h-4 w-4 sm:ml-2" />
               </Button>
             </div>}
@@ -694,20 +713,20 @@ const BibliotecaPrompts = () => {
                     setShowLimitModal(true);
                   }} className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white" size="sm">
                           <AlertTriangle className="h-4 w-4 mr-2" />
-                          Limite atingido
+                          {t('buttons.limitReached')}
                         </Button> : <>
                           <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-gradient-primary hover:opacity-90 text-white" size="sm">
                             <Copy className="h-4 w-4 mr-2" />
-                            Copiar Prompt
+                            {t('buttons.copyPrompt')}
                           </Button>
                           <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
                             <Download className="h-4 w-4 mr-2" />
-                            Baixar Referência
+                            {t('buttons.downloadReference')}
                           </Button>
                         </>}
                       {selectedPrompt.tutorialUrl && <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} variant="outline" className="w-full border-red-500 text-red-500 hover:bg-red-500/10" size="sm">
                           <Youtube className="h-4 w-4 mr-2" />
-                          Tutorial
+                          {t('badges.tutorial')}
                         </Button>}
                       {selectedPrompt.category === "Movies para Telão" && (
                         <Button 
@@ -720,7 +739,7 @@ const BibliotecaPrompts = () => {
                           size="sm"
                         >
                           <Video className="h-4 w-4 mr-2" />
-                          Ver mais modelos
+                          {t('buttons.seeMoreMovies')}
                         </Button>
                       )}
                     </div>
@@ -748,9 +767,9 @@ const BibliotecaPrompts = () => {
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-foreground mb-2">Conteúdo Premium</h3>
+                    <h3 className="text-xl font-bold text-foreground mb-2">{t('modals.premiumContent.title')}</h3>
                     <p className="text-sm text-muted-foreground">
-                      Este conteúdo está disponível apenas para assinantes premium.
+                      {t('modals.premiumContent.description')}
                     </p>
                   </div>
                   <div className="flex flex-col gap-3">
@@ -759,14 +778,14 @@ const BibliotecaPrompts = () => {
                     navigate("/login");
                   }} variant="outline" className="w-full">
                       <LogIn className="h-4 w-4 mr-2" />
-                      Fazer Login
+                      {t('sidebar.makeLogin')}
                     </Button>
                     <Button onClick={() => {
                     setShowPremiumModal(false);
                     navigate("/planos");
                   }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                      Torne-se Premium
+                      {t('buttons.becomePremium')}
                     </Button>
                   </div>
                 </div>
@@ -799,12 +818,12 @@ const BibliotecaPrompts = () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">Limite diário atingido!</h3>
+                  <h3 className="text-xl font-bold text-foreground mb-2">{t('modals.dailyLimit.title')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Você já utilizou seus {copiesUsed} prompts premium do dia no plano Arcano Básico.
+                    {t('modals.dailyLimit.description', { limit: copiesUsed })}
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Faça upgrade para continuar explorando ou aguarde até amanhã.
+                    {t('modals.dailyLimit.nextLevel')}
                   </p>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -813,10 +832,10 @@ const BibliotecaPrompts = () => {
                   navigate("/upgrade");
                 }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                     <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                    Fazer Upgrade
+                    {t('modals.dailyLimit.upgradePlan')}
                   </Button>
                   <Button onClick={() => setShowLimitModal(false)} variant="outline" className="w-full">
-                    Continuar navegando
+                    {t('modals.dailyLimit.understood')}
                   </Button>
                 </div>
               </div>

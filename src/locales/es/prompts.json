@@ -1,0 +1,102 @@
+{
+  "header": {
+    "partnerArea": "Área del Colaborador",
+    "login": "Iniciar Sesión",
+    "becomePremium": "Hazte Premium",
+    "premiumActive": "Premium Activo",
+    "myProfile": "Mi Perfil",
+    "logout": "Salir"
+  },
+  "sidebar": {
+    "installApp": "Instalar App",
+    "premiumActive": "Premium Activo",
+    "becomePremium": "Hazte Premium",
+    "makeLogin": "Iniciar Sesión",
+    "generateWithAI": "Genera con IA",
+    "generateInChatGPT": "Generar en ChatGPT",
+    "generateInNanoBanana": "Generar en Nano Banana",
+    "generateInWhisk": "Generar en Whisk",
+    "generateInFlux2": "Generar en Flux 2",
+    "generateVideoVEO3": "Generar Video en VEO 3",
+    "aiTools": "Herramientas de IA"
+  },
+  "mobileMenu": {
+    "generateImage": "Genera tu imagen"
+  },
+  "banner": {
+    "upscalerTitle": "Conoce el Upscaler Arcano",
+    "upscalerDescription": "Deja tus fotos en 4K con alta nitidez, riqueza de detalles y calidad cinematográfica",
+    "buyNow": "Adquirir ahora",
+    "alreadyPurchased": "¿Ya lo adquiriste? accede aquí"
+  },
+  "library": {
+    "title": "Biblioteca de Prompts",
+    "description": "Explora nuestra colección de prompts para crear proyectos increíbles con IA",
+    "exclusiveFiles": "Archivos Exclusivos",
+    "community": "Comunidad"
+  },
+  "categories": {
+    "popular": "Populares",
+    "seeAll": "Ver Todo",
+    "new": "Nuevos",
+    "free": "Gratis",
+    "seals3D": "Sellos 3D",
+    "photos": "Fotos",
+    "scenarios": "Escenarios",
+    "logo": "Logo",
+    "moviesForScreen": "Movies para Pantalla",
+    "cameraControls": "Controles de Cámara"
+  },
+  "badges": {
+    "premium": "Premium",
+    "free": "Gratis",
+    "tutorial": "Tutorial",
+    "exclusivePhoto": "Foto Exclusiva",
+    "exclusiveScenario": "Escenario Exclusivo",
+    "cameraControl": "Control de Cámara",
+    "exclusiveMovie": "Movie Exclusivo",
+    "exclusiveSeal": "Sello Exclusivo",
+    "community": "Comunidad"
+  },
+  "buttons": {
+    "copyPrompt": "Copiar Prompt",
+    "remaining": "restantes",
+    "downloadReference": "Descargar Referencia",
+    "watchTutorial": "Ver Tutorial",
+    "becomePremium": "Hazte Premium",
+    "dailyLimitReached": "Límite diario alcanzado",
+    "limitReached": "Límite alcanzado",
+    "seeMoreMovies": "Ver más Movies"
+  },
+  "pagination": {
+    "previous": "Anterior",
+    "next": "Siguiente"
+  },
+  "toast": {
+    "promptCopied": "Prompt \"{{title}}\" copiado!",
+    "copyError": "Error al copiar prompt",
+    "downloadError": "Error al descargar archivo",
+    "referenceImagesDownloaded": "{{count}} imagen(es) de referencia descargada(s)!",
+    "noReferenceImages": "No hay imágenes de referencia disponibles para este video",
+    "imageDownloaded": "Imagen \"{{title}}\" descargada!"
+  },
+  "modals": {
+    "premiumContent": {
+      "title": "Contenido Premium",
+      "description": "Este contenido está disponible solo para usuarios premium. ¡Adquiere un plan para tener acceso ilimitado!",
+      "seePlans": "Ver Planes",
+      "loginArea": "Área de Login"
+    },
+    "dailyLimit": {
+      "title": "Límite Diario Alcanzado",
+      "description": "Has alcanzado el límite diario de {{limit}} prompts premium.",
+      "currentPlan": "Tu plan actual:",
+      "nextLevel": "¿Quieres más prompts? ¡Conoce nuestros planes!",
+      "upgradePlan": "Hacer Upgrade",
+      "understood": "Entendido"
+    }
+  },
+  "collection": {
+    "viewCollection": "Ver Colección Completa"
+  }
+}
