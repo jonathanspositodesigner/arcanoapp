@@ -153,6 +153,23 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
   console.log(`   ├─ Tipo: ${isFerramentaIA ? 'Ferramenta IA' : 'Pack de Artes'}`)
   
   try {
+    // Verificar se já enviou email para este email+pack nos últimos 5 minutos (previne duplicatas de webhooks)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    const { data: recentEmail } = await supabase
+      .from('welcome_email_logs')
+      .select('id, sent_at')
+      .eq('email', email)
+      .eq('product_info', packInfo)
+      .eq('status', 'sent')
+      .gte('sent_at', fiveMinutesAgo)
+      .maybeSingle()
+    
+    if (recentEmail) {
+      const secondsAgo = Math.round((Date.now() - new Date(recentEmail.sent_at).getTime()) / 1000)
+      console.log(`   └─ ⏭️ Email já enviado há ${secondsAgo}s - IGNORANDO duplicata`)
+      return
+    }
+    
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
     const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
     const supabaseUrl = Deno.env.get("SUPABASE_URL")
