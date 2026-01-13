@@ -700,15 +700,15 @@ const BibliotecaArtes = () => {
             {!user && <>
                 <Button onClick={() => setShowFirstAccessModal(true)} className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white animate-pulse" size="sm">
                   <UserCheck className="h-4 w-4 mr-2" />
-                  Já é cliente? Primeiro acesso aqui!
+                  {t('firstAccess.alreadyClient')}
                 </Button>
                 <Button onClick={() => navigate("/login-artes")} variant="ghost" size="sm">
                   <LogIn className="h-4 w-4 mr-2" />
-                  Login
+                  {t('buttons.login')}
                 </Button>
                 <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"}>
                   <Star className="h-3 w-3 mr-2" fill="currentColor" />
-                  {isPromoActive ? "Comprar com 50% OFF" : "Comprar Pack"}
+                  {isPromoActive ? t('buttons.buyWith50Off') : t('buttons.buyPack')}
                 </Button>
               </>}
             {user && <>
@@ -718,15 +718,15 @@ const BibliotecaArtes = () => {
                   </Badge>}
                 {hasBonusAccess && <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
                     <Gift className="h-3 w-3 mr-1" />
-                    Bônus
+                    {t('sidebar.bonus')}
                   </Badge>}
                 <Button onClick={() => navigate("/perfil-artes")} variant="ghost" size="sm">
                   <Settings className="h-4 w-4 mr-2" />
-                  Meu Perfil
+                  {t('buttons.myProfile')}
                 </Button>
                 <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                   <LogOut className="h-4 w-4 mr-2" />
-                  Sair
+                  {t('buttons.logout')}
                 </Button>
               </>}
           </div>
@@ -753,15 +753,15 @@ const BibliotecaArtes = () => {
             {!user && <>
                 <Button onClick={() => setShowFirstAccessModal(true)} size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-sm animate-pulse">
                   <UserCheck className="h-4 w-4 mr-2" />
-                  Já é cliente? Primeiro acesso aqui!
+                  {t('firstAccess.alreadyClient')}
                 </Button>
                 <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-sm">
                   <LogIn className="h-4 w-4 mr-1" />
-                  Login
+                  {t('buttons.login')}
                 </Button>
                 <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-sm animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-sm"}>
                   <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                  {isPromoActive ? "50% OFF" : "Comprar"}
+                  {isPromoActive ? t('badges.off50') : t('buttons.buyPack')}
                 </Button>
               </>}
             {user && <>
@@ -800,11 +800,11 @@ const BibliotecaArtes = () => {
             {!user && <>
                 <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
                   <LogIn className="h-4 w-4 mr-1" />
-                  Login
+                  {t('buttons.login')}
                 </Button>
                 <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"}>
                   <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                  {isPromoActive ? "50% OFF" : "Comprar"}
+                  {isPromoActive ? t('badges.off50') : t('buttons.buyPack')}
                 </Button>
               </>}
             {user && <>
@@ -957,14 +957,14 @@ const BibliotecaArtes = () => {
                         {!hasPackAccess && isExpired && <div className="absolute top-2 right-2 z-10">
                             <Badge className="bg-red-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
                               <AlertTriangle className="h-3 w-3 mr-1" />
-                              ACESSO EXPIRADO
+                              {t('badges.expired')}
                             </Badge>
                           </div>}
                         
                         {showToolAvailableBadge && <div className="absolute top-2 right-2 z-10">
                             <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
                               <Sparkles className="h-3 w-3 mr-1" />
-                              DISPONÍVEL
+                              {t('badges.available')}
                             </Badge>
                           </div>}
                         
@@ -972,7 +972,7 @@ const BibliotecaArtes = () => {
                         {pack.type === 'updates' && <div className="absolute top-2 left-2 z-10">
                             <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
                               <Crown className="h-3 w-3 mr-1" />
-                              Exclusivo para Membros
+                              {t('badges.exclusiveMembers')}
                             </Badge>
                           </div>}
                         
@@ -986,17 +986,17 @@ const BibliotecaArtes = () => {
                           {isBonusType ? <Button size="sm" className={`mt-2 text-xs ${isPremium ? 'bg-green-500 hover:bg-green-600' : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90'} text-white`} onClick={handleBonusAction}>
                               {isPremium ? <>
                                   <Download className="h-3 w-3 mr-1" />
-                                  Baixar Bônus
+                                  {t('buttons.downloadBonus')}
                                 </> : <div className="flex flex-col items-center gap-1">
-                                  <span className="text-[10px] text-white/80 text-center">Compre qualquer pack para desbloquear</span>
+                                  <span className="text-[10px] text-white/80 text-center">{t('messages.unlockToPurchase')}</span>
                                   <span className="flex items-center">
                                     <Package className="h-3 w-3 mr-1" />
-                                    Ver packs
+                                    {t('buttons.viewPacks')}
                                   </span>
                                 </div>}
                             </Button> : isToolType ? isPremium ? <Badge className="mt-2 bg-green-500/80 text-white border-0 text-xs self-center backdrop-blur-sm">
                                 <Play className="h-3 w-3 mr-1" />
-                                Vídeo Aulas
+                                {t('buttons.videoLessons')}
                               </Badge> : <Button size="sm" className="mt-2 text-xs bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white" onClick={e => {
                         e.stopPropagation();
                         // Navigate to specific tool page based on slug
@@ -1009,9 +1009,9 @@ const BibliotecaArtes = () => {
                         }
                       }}>
                                 <ShoppingCart className="h-3 w-3 mr-1" />
-                                Comprar Ferramenta
+                                {t('buttons.buyTool')}
                               </Button> : <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
-                              {arteCount} {arteCount === 1 ? 'arte' : 'artes'}
+                              {arteCount} {arteCount === 1 ? t('art') : t('arts')}
                             </Badge>}
                           
                           {/* Renewal Button for expired packs */}
@@ -1020,21 +1020,21 @@ const BibliotecaArtes = () => {
                         navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
                       }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
-                              Renovar com Desconto
+                              {t('buttons.renewWithDiscount')}
                             </Button>}
                         </div>
                       </div>
                     </Card>;
               })}
                 {getCurrentItems().length === 0 && <div className="col-span-full text-center py-12">
-                    <p className="text-muted-foreground">Nenhum {activeSection === 'bonus' ? 'bônus' : 'pack'} disponível</p>
+                    <p className="text-muted-foreground">{activeSection === 'bonus' ? t('empty.noBonus') : t('empty.noPacks')}</p>
                   </div>}
               </div>}
 
             {/* Mobile Button to open sidebar for Bonus and Updates - Only show in packs section */}
             {!selectedPack && activeSection === 'packs' && <Button className="lg:hidden w-full mt-6 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white py-6 text-base font-semibold" onClick={() => setSidebarOpen(true)}>
                 <Gift className="h-5 w-5 mr-2" />
-                Bônus e Atualizações
+                {t('buttons.bonusAndUpdates')}
               </Button>}
 
             {/* Tutoriais View - Free for everyone, navigates to lesson page */}
@@ -1050,7 +1050,7 @@ const BibliotecaArtes = () => {
                         {/* Free for everyone Tag */}
                         <div className="absolute top-2 right-2 z-10">
                           <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
-                            DISPONÍVEL
+                            {t('badges.available')}
                           </Badge>
                         </div>
                         
@@ -1061,14 +1061,14 @@ const BibliotecaArtes = () => {
                           </h3>
                           <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
                             <Play className="h-3 w-3 mr-1" />
-                            Vídeo Aulas
+                            {t('buttons.videoLessons')}
                           </Badge>
                         </div>
                       </div>
                     </Card>;
               })}
                 {getPacksByType('tutorial').length === 0 && <div className="col-span-full text-center py-12">
-                    <p className="text-muted-foreground">Nenhum tutorial disponível</p>
+                    <p className="text-muted-foreground">{t('empty.noTutorials')}</p>
                   </div>}
               </div>}
 
@@ -1087,7 +1087,7 @@ const BibliotecaArtes = () => {
                         {/* Access Tag */}
                         {hasCursoAccess && <div className="absolute top-2 right-2 z-10">
                             <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
-                              DISPONÍVEL
+                              {t('badges.available')}
                             </Badge>
                           </div>}
                         
@@ -1101,7 +1101,7 @@ const BibliotecaArtes = () => {
                     </Card>;
               })}
                 {getPacksByType('curso').length === 0 && <div className="col-span-full text-center py-12">
-                    <p className="text-muted-foreground">Nenhum curso disponível</p>
+                    <p className="text-muted-foreground">{t('empty.noCourses')}</p>
                   </div>}
               </div>}
 
@@ -1174,31 +1174,31 @@ const BibliotecaArtes = () => {
                         e.stopPropagation();
                         handleItemClick(arte);
                       }}>
-                              Ver detalhes
+                              {t('buttons.viewDetails')}
                             </Button> : hasExpiredPack(packSlug) ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
                       }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
-                              Renovar com Desconto
+                              {t('buttons.renewWithDiscount')}
                             </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-purple-500 to-violet-500 hover:opacity-90 text-white text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes-membro?pack=${packSlug}`);
                       }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                              20% OFF Membro
+                              {t('buttons.memberDiscount')}
                             </Button> : isPromoActive ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" onClick={e => {
                         e.stopPropagation();
                         navigate(`/promos-natal?pack=${packSlug}`);
                       }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                              Comprar com 50% OFF
+                              {t('buttons.buyWith50Off')}
                             </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes?pack=${packSlug}`);
                       }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                              Comprar Pack
+                              {t('buttons.buyPack')}
                             </Button>}
                         </div>
                       </Card>;
@@ -1207,7 +1207,7 @@ const BibliotecaArtes = () => {
 
                 {/* Empty state */}
                 {paginatedArtes.length === 0 && <div className="text-center py-12">
-                    <p className="text-muted-foreground">Nenhuma arte encontrada</p>
+                    <p className="text-muted-foreground">{t('empty.noArts')}</p>
                   </div>}
 
                 {/* Pagination */}
@@ -1216,7 +1216,7 @@ const BibliotecaArtes = () => {
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <span className="text-muted-foreground">
-                      Página {currentPage} de {totalPages}
+                      {t('pagination.page')} {currentPage} {t('pagination.of')} {totalPages}
                     </span>
                     <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
                       <ChevronRight className="h-4 w-4" />
@@ -1484,22 +1484,22 @@ const BibliotecaArtes = () => {
                   window.open(selectedArte.canvaLink, '_blank');
                 }} className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white">
                         <Download className="h-4 w-4 mr-2" />
-                        Abrir no Canva
+                        {t('buttons.openInCanva')}
                       </Button>}
                     {selectedArte.driveLink && <Button onClick={async () => {
                   await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive, 'psd');
                   window.open(selectedArte.driveLink, '_blank');
                 }} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
                         <Download className="h-4 w-4 mr-2" />
-                        Baixar PSD
+                        {t('buttons.downloadPsd')}
                       </Button>}
                     {selectedArte.downloadUrl && <Button onClick={() => handleDownload(selectedArte)} className="w-full" variant="outline">
                         <Download className="h-4 w-4 mr-2" />
-                        Baixar Arquivo
+                        {t('buttons.downloadFile')}
                       </Button>}
                     {!selectedArte.canvaLink && !selectedArte.driveLink && !selectedArte.downloadUrl && <Button onClick={() => handleDownload(selectedArte)} className="w-full">
                         <Download className="h-4 w-4 mr-2" />
-                        Baixar Imagem
+                        {t('buttons.downloadImage')}
                       </Button>}
                     {/* Ver mais Artes button - only for free arts */}
                     {!selectedArte.isPremium && <Button onClick={() => {
@@ -1508,30 +1508,30 @@ const BibliotecaArtes = () => {
                   setActiveSection('all-artes');
                 }} variant="outline" className="w-full border-primary text-primary hover:bg-primary/10">
                         <Eye className="h-4 w-4 mr-2" />
-                        Ver mais Artes
+                        {t('buttons.viewMoreArts')}
                       </Button>}
                     <Button onClick={() => handleCloseModal()} variant="outline" className="w-full">
                       <ChevronLeft className="h-4 w-4 mr-2" />
-                      Voltar
+                      {t('buttons.back')}
                     </Button>
                   </div> : <div className="flex flex-col gap-2">
                     <p className="text-center text-muted-foreground text-sm">
-                      Adquira o pack "{selectedArte.pack}" para ter acesso completo a esta arte.
+                      {t('messages.acquirePackForAccess', { pack: selectedArte.pack })}
                     </p>
                     {!user && <Button onClick={() => navigate('/login-artes')} variant="outline" className="w-full">
                         <LogIn className="h-4 w-4 mr-2" />
-                        Fazer Login
+                        {t('buttons.doLogin')}
                       </Button>}
                     {isPromoActive ? <Button onClick={() => navigate(`/promos-natal?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse">
                         <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                        Comprar com 50% OFF
+                        {t('buttons.buyWith50Off')}
                       </Button> : <Button onClick={() => navigate(`/planos-artes?pack=${packSlug}`)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white">
                         <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                        Comprar Pack
+                        {t('buttons.buyPack')}
                       </Button>}
                     <Button onClick={() => handleCloseModal()} variant="outline" className="w-full">
                       <ChevronLeft className="h-4 w-4 mr-2" />
-                      Voltar
+                      {t('buttons.back')}
                     </Button>
                   </div>}
               </div>;

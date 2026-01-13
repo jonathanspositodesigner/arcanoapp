@@ -97,7 +97,14 @@
     "memberDiscount": "20% OFF Membro",
     "editNow": "Editar Agora",
     "openInCanva": "Abrir no Canva",
-    "doLogin": "Fazer Login"
+    "doLogin": "Fazer Login",
+    "tryAnotherEmail": "Tentar outro email",
+    "createAccount": "Criar Conta",
+    "renewNow": "Renovar Agora",
+    "useMyDiscount": "Usar Meu Desconto",
+    "chooseAnotherPack": "Escolher outro pack",
+    "buyWithDiscount": "Comprar com Desconto",
+    "alreadyBoughtPack": "Já comprei um pack"
   },
   "messages": {
     "joinExclusiveGroup": "Faça parte do nosso grupo exclusivo para membros",

@@ -220,17 +220,12 @@ const PlanosArtes = () => {
         type: "6_meses",
         label: t('access6Months'),
         icon: Clock,
-        buttonText: isLatam ? "Desbloquear 6 Meses" : "Desbloquear 6 Meses",
-        features: isLatam ? [
-          "Acceso completo al pack seleccionado",
-          "Descarga ilimitada de artes",
-          "Archivos editables (PSD y Canva)",
-          "Actualizaciones del pack por 6 meses"
-        ] : [
-          "Acesso completo ao pack selecionado",
-          "Download ilimitado das artes",
-          "Arquivos editáveis (PSD e Canva)",
-          "Atualizações do pack por 6 meses"
+        buttonText: t('unlock6Months'),
+        features: [
+          t('feature.fullAccess'),
+          t('feature.unlimitedDownload'),
+          t('feature.editableFiles'),
+          t('feature.updates6Months')
         ],
         hasBonus: false,
         highlighted: false
@@ -239,17 +234,12 @@ const PlanosArtes = () => {
         type: "1_ano",
         label: t('access1Year'),
         icon: Star,
-        buttonText: isLatam ? "Desbloquear 1 Año" : "Desbloquear 1 Ano",
-        features: isLatam ? [
-          "Todo lo del acceso de 6 meses",
-          "Acceso por 12 meses",
-          "Acceso al contenido bonus exclusivo",
-          "Novedades y actualizaciones premium"
-        ] : [
-          "Tudo do acesso de 6 meses",
-          "Acesso por 12 meses",
-          "Acesso ao conteúdo bônus exclusivo",
-          "Novidades e atualizações premium"
+        buttonText: t('unlock1Year'),
+        features: [
+          t('feature.everything6Months'),
+          t('feature.access12Months'),
+          t('feature.bonusContent'),
+          t('feature.premiumUpdates')
         ],
         hasBonus: true,
         highlighted: false
@@ -258,17 +248,12 @@ const PlanosArtes = () => {
         type: "vitalicio",
         label: t('accessLifetime'),
         icon: Gift,
-        buttonText: isLatam ? "Desbloquear Acceso Vitalicio" : "Desbloquear Acesso Vitalício",
-        features: isLatam ? [
-          "Todo lo del acceso de 1 año",
-          "Acceso permanente al pack",
-          "Todas las actualizaciones futuras",
-          "Contenido bonus exclusivo para siempre"
-        ] : [
-          "Tudo do acesso de 1 ano",
-          "Acesso permanente ao pack",
-          "Todas as atualizações futuras",
-          "Conteúdo bônus exclusivo para sempre"
+        buttonText: t('unlockLifetime'),
+        features: [
+          t('feature.everything1Year'),
+          t('feature.permanentAccess'),
+          t('feature.allFutureUpdates'),
+          t('feature.bonusForever')
         ],
         hasBonus: true,
         highlighted: true
@@ -371,41 +356,33 @@ const PlanosArtes = () => {
           {isRenewal && (
             <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg px-4 py-2 mb-4">
               <Percent className="h-5 w-5 mr-2" />
-              30% OFF - {isLatam ? 'Renovación Especial' : 'Renovação Especial'}
+              {t('renewal30Off')}
             </Badge>
           )}
           {hasNotificationDiscount && (
             <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-lg px-4 py-2 mb-4 animate-pulse">
               <Bell className="h-5 w-5 mr-2" />
-              {notificationDiscountPercent}% OFF - {isLatam ? '¡Descuento Exclusivo!' : 'Desconto Exclusivo!'}
+              {notificationDiscountPercent}% OFF - {t('exclusiveDiscount')}
             </Badge>
           )}
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             {isRenewal 
-              ? (isLatam 
-                  ? `Renueva tu acceso al ${selectedPack?.name || "Pack"}`
-                  : `Renove seu acesso ao ${selectedPack?.name || "Pack"}`)
+              ? t('renewAccessTo', { pack: selectedPack?.name || "Pack" })
               : hasNotificationDiscount
-                ? (isLatam 
-                    ? `Tu descuento exclusivo en ${selectedPack?.name || "Pack"}`
-                    : `Seu desconto exclusivo no ${selectedPack?.name || "Pack"}`)
+                ? t('exclusiveDiscountOn', { pack: selectedPack?.name || "Pack" })
                 : selectedPack 
-                  ? (isLatam ? `Adquiere el ${selectedPack.name}` : `Adquira o ${selectedPack.name}`)
+                  ? t('acquirePack', { pack: selectedPack.name })
                   : t('choosePack')
             }
           </h1>
           <p className="text-white/60 max-w-2xl mx-auto">
             {isRenewal
-              ? (isLatam 
-                  ? "¡Aprovecha 30% de descuento en la renovación de tu acceso!"
-                  : "Aproveite 30% de desconto na renovação do seu acesso!")
+              ? t('enjoy30Discount')
               : hasNotificationDiscount
-                ? (isLatam 
-                    ? `¡Felicidades! Activaste las notificaciones y ganaste ${notificationDiscountPercent}% de descuento!`
-                    : `Parabéns! Você ativou as notificações e ganhou ${notificationDiscountPercent}% de desconto!`)
+                ? t('congratsNotifications', { percent: notificationDiscountPercent })
                 : selectedPack 
-                  ? (isLatam ? "Elige el tipo de acceso ideal para ti" : "Escolha o tipo de acesso ideal para você")
-                  : (isLatam ? "Selecciona un pack para ver las opciones de compra" : "Selecione um pack para ver as opções de compra")
+                  ? t('selectAccessType')
+                  : t('selectPackToPurchase')
             }
           </p>
         </AnimatedSection>
@@ -416,7 +393,7 @@ const PlanosArtes = () => {
             {/* Packs de Artes */}
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">{isLatam ? 'Packs de Artes' : 'Packs de Artes'}</h2>
+                <h2 className="text-xl font-bold text-white mb-4">{t('packsOfArts')}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {packItems.map((pack) => (
                     <Card
@@ -453,7 +430,7 @@ const PlanosArtes = () => {
             {/* Cursos */}
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">{isLatam ? 'Cursos' : 'Cursos'}</h2>
+                <h2 className="text-xl font-bold text-white mb-4">{t('courses')}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {cursoItems.map((pack) => (
                     <Card
@@ -498,7 +475,7 @@ const PlanosArtes = () => {
                   className="bg-[#2d4a5e]/30 border-[#2d4a5e] text-white hover:bg-[#2d4a5e]/50"
                   onClick={() => setSelectedPack(null)}
                 >
-                  {isLatam ? 'Elegir otro pack' : 'Escolher outro pack'}
+                  {t('buttons.chooseAnotherPack', { ns: 'library' })}
                 </Button>
               </div>
             )}
@@ -531,7 +508,7 @@ const PlanosArtes = () => {
                     {option.hasBonus && (
                       <div className="absolute top-3 right-3 bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1">
                         <Gift className="h-3 w-3" />
-                        + Bônus
+                        {t('plusBonus')}
                       </div>
                     )}
                     <CardHeader className="text-center pt-8">
@@ -578,9 +555,9 @@ const PlanosArtes = () => {
                         {hasNotificationDiscount && <Bell className="h-4 w-4 mr-2" />}
                         {!hasNotificationDiscount && <Star className="h-4 w-4 mr-2" />}
                         {isRenewal 
-                          ? (isLatam ? "Renovar Ahora" : "Renovar Agora") 
+                          ? t('buttons.renewNow', { ns: 'library' }) 
                           : hasNotificationDiscount 
-                            ? (isLatam ? "Usar Mi Descuento" : "Usar Meu Desconto") 
+                            ? t('buttons.useMyDiscount', { ns: 'library' }) 
                             : option.buttonText}
                       </Button>
                     </CardContent>
@@ -597,7 +574,7 @@ const PlanosArtes = () => {
             className="text-[#2d4a5e] hover:text-[#3d5a6e]"
             onClick={() => navigate("/login-artes")}
           >
-            {isLatam ? 'Ya compré un pack' : 'Já comprei um pack'}
+            {t('buttons.alreadyBoughtPack', { ns: 'library' })}
           </Button>
         </div>
       </div>
