@@ -1,0 +1,25 @@
+{
+  "welcome": "¡Bienvenido a Arcano App!",
+  "subtitle": "¡La plataforma de los creadores del futuro!",
+  "appInstalled": "App Instalada",
+  "installApp": "Instalar App",
+  "notifications": "Notificaciones",
+  "access": "Acceder",
+  "adminAccess": "Acceso Administrador",
+  "collaboratorAccess": "Acceso Colaborador",
+  "cards": {
+    "artesCategory": "Artes Editables PSD y Canva",
+    "artesTitle": "Biblioteca de Artes Arcanas",
+    "artesDescription": "Artes para Eventos editables PSD y Canva",
+    "promptsCategory": "Prompts IA",
+    "promptsTitle": "Biblioteca de Prompts IA",
+    "promptsDescription": "Prompts listos para crear sellos, imágenes, logos y mucho más con IA",
+    "toolsCategory": "Herramientas Exclusivas de IA",
+    "toolsTitle": "Herramientas de IA",
+    "toolsDescription": "Upscaler, Forja de Sellos 3D, Cambiar Pose y Ropa"
+  },
+  "toast": {
+    "notificationsActivated": "¡Notificaciones activadas con éxito!",
+    "notificationsError": "No fue posible activar las notificaciones"
+  }
+}

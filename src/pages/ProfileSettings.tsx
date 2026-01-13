@@ -11,9 +11,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useTranslation } from "react-i18next";
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('auth');
   const { user, isPremium, isLoading: premiumLoading } = usePremiumStatus();
   const { isSupported, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   
@@ -69,7 +71,7 @@ const ProfileSettings = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        toast.error("A imagem deve ter no máximo 2MB");
+        toast.error(t('errors.imageMaxSize'));
         return;
       }
       setAvatarFile(file);
@@ -117,9 +119,9 @@ const ProfileSettings = () => {
 
       if (error) throw error;
 
-      toast.success("Perfil atualizado com sucesso!");
+      toast.success(t('success.profileUpdated'));
     } catch (error: any) {
-      toast.error(error.message || "Erro ao atualizar perfil");
+      toast.error(error.message || t('errors.saveProfileError'));
     } finally {
       setIsLoading(false);
     }
@@ -129,12 +131,12 @@ const ProfileSettings = () => {
     e.preventDefault();
 
     if (newPassword.length < 6) {
-      toast.error("A nova senha deve ter pelo menos 6 caracteres");
+      toast.error(t('errors.passwordMinLength'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("As senhas não coincidem");
+      toast.error(t('errors.passwordsDoNotMatch'));
       return;
     }
 
@@ -148,7 +150,7 @@ const ProfileSettings = () => {
       });
 
       if (signInError) {
-        toast.error("Senha atual incorreta");
+        toast.error(t('errors.incorrectCurrentPassword'));
         return;
       }
 
@@ -166,12 +168,12 @@ const ProfileSettings = () => {
           .eq('id', user.id);
       }
 
-      toast.success("Senha alterada com sucesso!");
+      toast.success(t('success.passwordChanged'));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
-      toast.error(error.message || "Erro ao alterar senha");
+      toast.error(error.message || t('errors.passwordChangeError'));
     } finally {
       setIsPasswordLoading(false);
     }
@@ -194,17 +196,17 @@ const ProfileSettings = () => {
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
+          {t('back')}
         </Button>
 
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <User className="h-6 w-6" />
-          Configurações do Perfil
+          {t('profile.title')}
         </h1>
 
         {/* Profile Information */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Informações Pessoais</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('profile.personalInfo')}</h2>
           <form onSubmit={handleSaveProfile} className="space-y-4">
             {/* Avatar */}
             <div className="flex items-center gap-4">
@@ -232,16 +234,16 @@ const ProfileSettings = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">
-                  Clique no ícone para alterar sua foto
+                  {t('profile.clickToChangePhoto')}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Máximo 2MB
+                  {t('profile.maxSize')}
                 </p>
               </div>
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -252,19 +254,19 @@ const ProfileSettings = () => {
             </div>
 
             <div>
-              <Label htmlFor="name">Nome</Label>
+              <Label htmlFor="name">{t('name')}</Label>
               <Input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Seu nome"
+                placeholder={t('signupModal.namePlaceholder')}
                 className="mt-2"
               />
             </div>
 
             <div>
-              <Label htmlFor="phone">Telefone</Label>
+              <Label htmlFor="phone">{t('phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -276,12 +278,12 @@ const ProfileSettings = () => {
             </div>
 
             <div>
-              <Label htmlFor="bio">Sobre você</Label>
+              <Label htmlFor="bio">{t('profile.aboutYou')}</Label>
               <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Conte um pouco sobre você..."
+                placeholder={t('profile.aboutYouPlaceholder')}
                 className="mt-2"
                 rows={3}
               />
@@ -293,7 +295,7 @@ const ProfileSettings = () => {
               className="w-full"
             >
               <Save className="h-4 w-4 mr-2" />
-              {isLoading ? "Salvando..." : "Salvar Alterações"}
+              {isLoading ? t('saving') : t('profile.saveChanges')}
             </Button>
           </form>
         </Card>
@@ -302,11 +304,11 @@ const ProfileSettings = () => {
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Lock className="h-5 w-5" />
-            Alterar Senha
+            {t('changePassword')}
           </h2>
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div>
-              <Label htmlFor="currentPassword">Senha Atual</Label>
+              <Label htmlFor="currentPassword">{t('currentPassword')}</Label>
               <div className="relative mt-2">
                 <Input
                   id="currentPassword"
@@ -327,7 +329,7 @@ const ProfileSettings = () => {
             </div>
 
             <div>
-              <Label htmlFor="newPasswordProfile">Nova Senha</Label>
+              <Label htmlFor="newPasswordProfile">{t('newPassword')}</Label>
               <div className="relative mt-2">
                 <Input
                   id="newPasswordProfile"
@@ -349,7 +351,7 @@ const ProfileSettings = () => {
             </div>
 
             <div>
-              <Label htmlFor="confirmPasswordProfile">Confirmar Nova Senha</Label>
+              <Label htmlFor="confirmPasswordProfile">{t('confirmNewPassword')}</Label>
               <div className="relative mt-2">
                 <Input
                   id="confirmPasswordProfile"
@@ -376,7 +378,7 @@ const ProfileSettings = () => {
               variant="outline"
               className="w-full"
             >
-              {isPasswordLoading ? "Alterando..." : "Alterar Senha"}
+              {isPasswordLoading ? t('changing') : t('changePassword')}
             </Button>
           </form>
         </Card>
@@ -386,35 +388,35 @@ const ProfileSettings = () => {
           <Card className="p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Bell className="h-5 w-5" />
-              Notificações
+              {t('profile.notifications')}
             </h2>
             <div className="text-sm text-muted-foreground">
               {hasPermission ? (
                 <div className="flex items-center justify-between">
-                  <span>Notificações estão ativadas</span>
+                  <span>{t('profile.notificationsEnabled')}</span>
                   <button
                     onClick={() => setShowDisableModal(true)}
                     className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
                   >
-                    Desativar
+                    {t('profile.deactivate')}
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
-                  <span>Notificações estão desativadas</span>
+                  <span>{t('profile.notificationsDisabled')}</span>
                   <button
                     onClick={async () => {
                       const success = await subscribe();
                       if (success) {
-                        toast.success("Notificações ativadas!");
+                        toast.success(t('success.notificationsEnabled'));
                       } else {
-                        toast.error("Erro ao ativar notificações");
+                        toast.error(t('success.notificationsError'));
                       }
                     }}
                     className="text-xs text-green-600 hover:text-green-700 underline transition-colors flex items-center gap-1"
                   >
                     <Bell className="h-3 w-3" />
-                    Ativar
+                    {t('profile.activate')}
                   </button>
                 </div>
               )}
@@ -429,26 +431,26 @@ const ProfileSettings = () => {
           <DialogHeader>
             <DialogTitle className="text-center flex items-center justify-center gap-2">
               <BellOff className="h-5 w-5 text-red-500" />
-              Desativar Notificações?
+              {t('disableNotifications.title')}
             </DialogTitle>
           </DialogHeader>
           
           <div className="py-4">
             <p className="text-muted-foreground text-sm text-center mb-6">
-              Ao desativar as notificações, você perderá avisos sobre:
+              {t('disableNotifications.description')}
             </p>
             <ul className="text-muted-foreground text-sm space-y-2 mb-6">
               <li className="flex items-center gap-2">
                 <span className="text-amber-500">•</span>
-                Novos conteúdos e atualizações
+                {t('disableNotifications.newContent')}
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-amber-500">•</span>
-                Promoções exclusivas
+                {t('disableNotifications.exclusivePromos')}
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-amber-500">•</span>
-                Novidades da plataforma
+                {t('disableNotifications.platformNews')}
               </li>
             </ul>
 
@@ -456,23 +458,23 @@ const ProfileSettings = () => {
               className="w-full bg-green-600 hover:bg-green-700 text-white mb-3"
               onClick={() => setShowDisableModal(false)}
             >
-              Quero aproveitar os benefícios
+              {t('disableNotifications.keepBenefits')}
             </Button>
 
             <button
               onClick={async () => {
                 const success = await unsubscribe();
                 if (success) {
-                  toast.success("Notificações desativadas");
+                  toast.success(t('success.notificationsDisabled'));
                   setShowDisableModal(false);
                 } else {
-                  toast.error("Erro ao desativar notificações");
+                  toast.error(t('success.notificationsDeactivateError'));
                 }
               }}
               disabled={pushLoading}
               className="w-full text-xs text-muted-foreground hover:text-foreground underline transition-colors text-center py-2"
             >
-              {pushLoading ? "Desativando..." : "Prefiro perder os benefícios"}
+              {pushLoading ? t('disableNotifications.deactivating') : t('disableNotifications.loseBenefits')}
             </button>
           </div>
         </DialogContent>

@@ -9,9 +9,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useTranslation } from "react-i18next";
 
 const UserLogin = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +35,6 @@ const UserLogin = () => {
       if (user) {
         const { data: isPremium } = await supabase.rpc('is_premium');
         if (isPremium) {
-          // Check if password has been changed
           const { data: profile } = await supabase
             .from('profiles')
             .select('password_changed')
@@ -62,13 +63,12 @@ const UserLogin = () => {
       });
 
       if (error) {
-        // Use RPC function with SECURITY DEFINER to check profile (bypasses RLS)
         const { data: profileCheck, error: rpcError } = await supabase
           .rpc('check_profile_exists', { check_email: email.trim() });
 
         if (rpcError) {
           console.error('Erro ao verificar perfil:', rpcError);
-          toast.error("Erro ao verificar cadastro. Tente novamente.");
+          toast.error(t('errors.checkRegisterError'));
           setIsLoading(false);
           return;
         }
@@ -77,20 +77,16 @@ const UserLogin = () => {
         const passwordChanged = profileCheck?.[0]?.password_changed || false;
 
         if (profileExists && !passwordChanged) {
-          // First-time user with wrong password - show modal immediately
-          toast.error("Este é seu primeiro acesso! Use seu email como senha.");
+          toast.error(t('errors.firstAccessUseEmail'));
           setShowFirstAccessModal(true);
         } else if (!profileExists) {
-          // Email doesn't exist - offer signup
-          toast.info("Email não encontrado. Deseja criar uma conta?");
+          toast.info(t('errors.emailNotFoundSignup'));
           setShowSignupModal(true);
         } else {
-          // Regular wrong password (user already changed password before)
           const newAttempts = failedAttempts + 1;
           setFailedAttempts(newAttempts);
-          toast.error("Email ou senha incorretos");
+          toast.error(t('errors.invalidCredentials'));
           
-          // Show modal after 2 failed attempts as fallback
           if (newAttempts >= 2) {
             setShowFirstAccessModal(true);
           }
@@ -100,25 +96,21 @@ const UserLogin = () => {
         return;
       }
 
-      // Check if user is premium and active using secure RPC function
       const { data: isPremium, error: premiumError } = await supabase.rpc('is_premium');
 
       if (premiumError || !isPremium) {
         await supabase.auth.signOut();
-        toast.error("Acesso negado. Sua assinatura premium não está ativa.");
+        toast.error(t('errors.accessDenied'));
         return;
       }
 
-      // Check if this is first login (password equals email)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('password_changed')
         .eq('id', data.user.id)
         .single();
 
-      // If profile doesn't exist or password not changed, force password change
       if (profileError || !profile) {
-        // Create profile if it doesn't exist
         await supabase
           .from('profiles')
           .upsert({
@@ -127,21 +119,21 @@ const UserLogin = () => {
             password_changed: false,
           }, { onConflict: 'id' });
         
-        toast.success("Primeiro acesso! Por favor, crie uma nova senha.");
+        toast.success(t('errors.firstAccessSetPassword'));
         navigate('/change-password');
         return;
       }
 
       if (!profile.password_changed) {
-        toast.success("Primeiro acesso! Por favor, crie uma nova senha.");
+        toast.success(t('errors.firstAccessSetPassword'));
         navigate('/change-password');
         return;
       }
 
-      toast.success("Login realizado com sucesso!");
+      toast.success(t('success.loginSuccess'));
       navigate('/biblioteca-prompts');
     } catch (error: any) {
-      toast.error(error.message || "Erro ao fazer login");
+      toast.error(error.message || t('errors.loginError'));
     } finally {
       setIsLoading(false);
     }
@@ -151,24 +143,23 @@ const UserLogin = () => {
     e.preventDefault();
     
     if (!signupEmail.trim()) {
-      toast.error("Digite seu email");
+      toast.error(t('errors.enterEmail'));
       return;
     }
     
     if (signupPassword.length < 6) {
-      toast.error("A senha deve ter pelo menos 6 caracteres");
+      toast.error(t('errors.passwordMinLength'));
       return;
     }
     
     if (signupPassword !== signupConfirmPassword) {
-      toast.error("As senhas não coincidem");
+      toast.error(t('errors.passwordsDoNotMatch'));
       return;
     }
     
     setIsSigningUp(true);
     
     try {
-      // Create user in Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: signupEmail.trim(),
         password: signupPassword,
@@ -179,15 +170,14 @@ const UserLogin = () => {
       
       if (error) {
         if (error.message.includes("already registered")) {
-          toast.error("Este email já está cadastrado. Tente fazer login.");
+          toast.error(t('errors.emailAlreadyRegistered'));
         } else {
-          toast.error("Erro ao criar conta: " + error.message);
+          toast.error(t('errors.signupError') + ": " + error.message);
         }
         return;
       }
       
       if (data.user) {
-        // Create profile with password_changed = true (user chose their own password)
         const { error: profileError } = await supabase.from('profiles').upsert({
           id: data.user.id,
           email: signupEmail.trim().toLowerCase(),
@@ -199,30 +189,28 @@ const UserLogin = () => {
           console.error("Profile creation error:", profileError);
         }
         
-        // Verify session is active, if not login manually
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
-          // Auto-confirm might be off or session not established - login manually
           const { error: loginError } = await supabase.auth.signInWithPassword({
             email: signupEmail.trim(),
             password: signupPassword,
           });
           
           if (loginError) {
-            toast.success("Conta criada! Faça login para continuar.");
+            toast.success(t('success.accountCreatedLogin'));
             setShowSignupModal(false);
             return;
           }
         }
         
-        toast.success("Conta criada com sucesso! Você está logado.");
+        toast.success(t('success.accountCreatedSuccess'));
         setShowSignupModal(false);
         navigate("/biblioteca-prompts");
       }
     } catch (error) {
       console.error("Signup error:", error);
-      toast.error("Erro ao criar conta");
+      toast.error(t('errors.signupError'));
     } finally {
       setIsSigningUp(false);
     }
@@ -240,13 +228,13 @@ const UserLogin = () => {
               <KeyRound className="w-10 h-10 text-amber-600 dark:text-amber-400" />
             </div>
             <h2 className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-              🔑 É o seu PRIMEIRO ACESSO?
+              {t('firstAccessModal.title')}
             </h2>
           </div>
           
           <div className="p-6 space-y-4">
             <p className="text-foreground/90 text-center text-lg">
-              No primeiro acesso, seu <strong className="text-amber-600 dark:text-amber-400">login e senha</strong> são o <strong className="text-amber-600 dark:text-amber-400">MESMO EMAIL</strong> que você usou na compra!
+              {t('firstAccessModal.explanation')}
             </p>
             
             <div className="bg-background rounded-xl p-5 border-2 border-amber-500/40 space-y-3">
@@ -255,7 +243,7 @@ const UserLogin = () => {
                   <Mail className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Email:</p>
+                  <p className="text-xs text-muted-foreground">{t('firstAccessModal.emailLabel')}</p>
                   <p className="font-mono text-amber-600 dark:text-amber-300 text-sm break-all">{displayEmail}</p>
                 </div>
               </div>
@@ -267,21 +255,21 @@ const UserLogin = () => {
                   <Lock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Senha:</p>
+                  <p className="text-xs text-muted-foreground">{t('firstAccessModal.passwordLabel')}</p>
                   <p className="font-mono text-amber-600 dark:text-amber-300 text-sm break-all">{displayEmail}</p>
                 </div>
               </div>
             </div>
             
             <p className="text-muted-foreground text-center text-sm">
-              Digite o <strong className="text-amber-600 dark:text-amber-400">mesmo email</strong> nos dois campos!
+              {t('firstAccessModal.sameEmailTip')}
             </p>
             
             <Button
               onClick={() => setShowFirstAccessModal(false)}
               className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-6 text-lg"
             >
-              ENTENDI, VOU TENTAR! ✨
+              {t('firstAccessModal.understood')}
             </Button>
           </div>
         </DialogContent>
@@ -295,44 +283,44 @@ const UserLogin = () => {
               <UserPlus className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
             </div>
             <h2 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              Criar Conta
+              {t('signupModal.title')}
             </h2>
             <p className="text-foreground/70 text-sm mt-2">
-              Cadastre-se para explorar a biblioteca
+              {t('signupModal.subtitle')}
             </p>
           </div>
           
           <form onSubmit={handleSignup} className="p-6 space-y-4">
             <div>
-              <Label className="text-foreground/80">Email</Label>
+              <Label className="text-foreground/80">{t('email')}</Label>
               <Input
                 type="email"
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
-                placeholder="seu@email.com"
+                placeholder={t('signupModal.emailPlaceholder')}
                 className="mt-1"
                 required
               />
             </div>
             
             <div>
-              <Label className="text-foreground/80">Nome (opcional)</Label>
+              <Label className="text-foreground/80">{t('signupModal.nameOptional')}</Label>
               <Input
                 type="text"
                 value={signupName}
                 onChange={(e) => setSignupName(e.target.value)}
-                placeholder="Seu nome"
+                placeholder={t('signupModal.namePlaceholder')}
                 className="mt-1"
               />
             </div>
             
             <div className="relative">
-              <Label className="text-foreground/80">Senha</Label>
+              <Label className="text-foreground/80">{t('password')}</Label>
               <Input
                 type={showSignupPassword ? "text" : "password"}
                 value={signupPassword}
                 onChange={(e) => setSignupPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder={t('signupModal.minCharacters')}
                 className="mt-1 pr-10"
                 required
               />
@@ -346,12 +334,12 @@ const UserLogin = () => {
             </div>
             
             <div>
-              <Label className="text-foreground/80">Confirmar Senha</Label>
+              <Label className="text-foreground/80">{t('confirmPassword')}</Label>
               <Input
                 type="password"
                 value={signupConfirmPassword}
                 onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                placeholder="Digite a senha novamente"
+                placeholder={t('signupModal.confirmPasswordPlaceholder')}
                 className="mt-1"
                 required
               />
@@ -360,7 +348,7 @@ const UserLogin = () => {
             <Alert className="bg-amber-500/10 border-amber-500/30">
               <AlertCircle className="h-4 w-4 text-amber-500" />
               <AlertDescription className="text-amber-600 dark:text-amber-200 text-xs">
-                Após o cadastro, você poderá explorar a biblioteca, mas precisará de uma assinatura premium para ter acesso ao conteúdo exclusivo.
+                {t('signupModal.afterSignupWarning')}
               </AlertDescription>
             </Alert>
             
@@ -369,7 +357,7 @@ const UserLogin = () => {
               disabled={isSigningUp}
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-6 text-lg"
             >
-              {isSigningUp ? "Criando conta..." : "Criar minha conta"}
+              {isSigningUp ? t('creatingAccount') : t('signupModal.createMyAccount')}
             </Button>
             
             <Button
@@ -378,7 +366,7 @@ const UserLogin = () => {
               onClick={() => setShowSignupModal(false)}
               className="w-full text-muted-foreground hover:text-foreground"
             >
-              Voltar ao login
+              {t('signupModal.backToLogin')}
             </Button>
           </form>
         </DialogContent>
@@ -391,18 +379,18 @@ const UserLogin = () => {
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
+          {t('back')}
         </Button>
 
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Star className="h-8 w-8 text-yellow-500" fill="currentColor" />
             <h1 className="text-3xl font-bold text-foreground">
-              Área Premium
+              {t('premiumArea')}
             </h1>
           </div>
           <p className="text-muted-foreground">
-            Entre com suas credenciais para acessar conteúdos exclusivos
+            {t('premiumAreaDescription')}
           </p>
         </div>
 
@@ -410,13 +398,13 @@ const UserLogin = () => {
         <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
           <Info className="h-4 w-4 text-yellow-500" />
           <AlertDescription className="text-sm text-yellow-600 dark:text-yellow-400">
-            <strong>Primeiro acesso?</strong> Sua senha inicial é o seu email.
+            <strong>{t('firstAccess.title')}?</strong> {t('loginCard.firstAccessHint')}
           </AlertDescription>
         </Alert>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('email')}</Label>
             <Input
               id="email"
               type="email"
@@ -429,7 +417,7 @@ const UserLogin = () => {
           </div>
 
           <div>
-            <Label htmlFor="password">Senha</Label>
+            <Label htmlFor="password">{t('password')}</Label>
             <Input
               id="password"
               type="password"
@@ -446,7 +434,7 @@ const UserLogin = () => {
             disabled={isLoading}
             className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
           >
-            {isLoading ? "Entrando..." : "Entrar"}
+            {isLoading ? t('signingIn') : t('login')}
           </Button>
 
           <div className="text-center">
@@ -454,14 +442,14 @@ const UserLogin = () => {
               to="/forgot-password" 
               className="text-sm text-primary hover:underline"
             >
-              Esqueci minha senha
+              {t('forgotPassword')}
             </Link>
           </div>
         </form>
 
         <div className="mt-6 pt-6 border-t border-border text-center">
           <p className="text-sm text-muted-foreground mb-4">
-            Ainda não tem conta?
+            {t('noAccount')}
           </p>
           <div className="flex flex-col gap-3">
             <Button
@@ -471,7 +459,7 @@ const UserLogin = () => {
               onClick={() => setShowSignupModal(true)}
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Criar Conta
+              {t('createAccount')}
             </Button>
             <Button 
               onClick={() => navigate("/planos")} 
@@ -479,7 +467,7 @@ const UserLogin = () => {
               className="w-full border-yellow-500 text-yellow-600 hover:bg-yellow-50"
             >
               <Star className="h-4 w-4 mr-2" />
-              Torne-se Premium
+              {t('becomePremium')}
             </Button>
           </div>
         </div>
