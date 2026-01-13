@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +12,7 @@ import { ArrowLeft, User, Eye, EyeOff, Bell, BellOff } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 const ProfileSettingsArtes = () => {
+  const { t } = useTranslation(['common', 'auth']);
   const navigate = useNavigate();
   const location = useLocation();
   const fromMusicos = location.state?.from === 'musicos';
@@ -72,7 +74,7 @@ const ProfileSettingsArtes = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Sessão expirada");
+        toast.error(t('auth:errors.sessionExpired'));
         return;
       }
 
@@ -87,14 +89,14 @@ const ProfileSettingsArtes = () => {
         .eq('id', user.id);
 
       if (error) {
-        toast.error("Erro ao salvar perfil");
+        toast.error(t('auth:errors.saveProfileError'));
         return;
       }
 
-      toast.success("Perfil salvo com sucesso!");
+      toast.success(t('auth:success.profileSaved'));
     } catch (error) {
       console.error("Error saving profile:", error);
-      toast.error("Erro ao salvar perfil");
+      toast.error(t('auth:errors.saveProfileError'));
     } finally {
       setIsSaving(false);
     }
@@ -102,7 +104,7 @@ const ProfileSettingsArtes = () => {
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
-      toast.error("A nova senha deve ter pelo menos 6 caracteres");
+      toast.error(t('auth:errors.passwordMinLength'));
       return;
     }
 
@@ -110,7 +112,7 @@ const ProfileSettingsArtes = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Sessão expirada");
+        toast.error(t('auth:errors.sessionExpired'));
         return;
       }
 
@@ -121,7 +123,7 @@ const ProfileSettingsArtes = () => {
       });
 
       if (signInError) {
-        toast.error("Senha atual incorreta");
+        toast.error(t('auth:errors.incorrectCurrentPassword'));
         setIsSaving(false);
         return;
       }
@@ -132,17 +134,17 @@ const ProfileSettingsArtes = () => {
       });
 
       if (updateError) {
-        toast.error("Erro ao alterar senha");
+        toast.error(t('auth:errors.passwordChangeError'));
         return;
       }
 
-      toast.success("Senha alterada com sucesso!");
+      toast.success(t('auth:success.passwordChanged'));
       setCurrentPassword("");
       setNewPassword("");
       setShowPasswordSection(false);
     } catch (error) {
       console.error("Error changing password:", error);
-      toast.error("Erro ao alterar senha");
+      toast.error(t('auth:errors.passwordChangeError'));
     } finally {
       setIsSaving(false);
     }
@@ -151,26 +153,26 @@ const ProfileSettingsArtes = () => {
   const handleEnableNotifications = async () => {
     const success = await subscribe();
     if (success) {
-      toast.success("Notificações ativadas com sucesso!");
+      toast.success(t('auth:success.notificationsEnabled'));
     } else {
-      toast.error("Erro ao ativar notificações");
+      toast.error(t('common:error'));
     }
   };
 
   const handleDisableNotifications = async () => {
     const success = await unsubscribe();
     if (success) {
-      toast.success("Notificações desativadas");
+      toast.success(t('auth:success.notificationsDisabled'));
       setShowDisableModal(false);
     } else {
-      toast.error("Erro ao desativar notificações");
+      toast.error(t('common:error'));
     }
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
+        <div className="text-white">{t('common:loading')}</div>
       </div>
     );
   }
@@ -184,44 +186,44 @@ const ProfileSettingsArtes = () => {
           onClick={() => navigate(fromMusicos ? "/biblioteca-artes-musicos" : "/biblioteca-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          {fromMusicos ? "Voltar para Biblioteca de Músicos" : "Voltar para Biblioteca"}
+          {fromMusicos ? t('common:profile.backToMusiciansLibrary') : t('common:profile.backToLibrary')}
         </Button>
 
         <Card className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <User className="h-5 w-5" />
-              Meu Perfil
+              {t('common:profile.title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm text-white/60">Nome</label>
+              <label className="text-sm text-white/60">{t('common:profile.name')}</label>
               <Input
                 value={profile.name}
                 onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
-                placeholder="Seu nome"
+                placeholder={t('common:profile.namePlaceholder')}
               />
             </div>
 
             <div>
-              <label className="text-sm text-white/60">Telefone</label>
+              <label className="text-sm text-white/60">{t('common:profile.phone')}</label>
               <Input
                 value={profile.phone}
                 onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
-                placeholder="(00) 00000-0000"
+                placeholder={t('common:profile.phonePlaceholder')}
               />
             </div>
 
             <div>
-              <label className="text-sm text-white/60">Bio</label>
+              <label className="text-sm text-white/60">{t('common:profile.bio')}</label>
               <Textarea
                 value={profile.bio}
                 onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white min-h-[80px]"
-                placeholder="Fale um pouco sobre você"
+                placeholder={t('common:profile.bioPlaceholder')}
               />
             </div>
 
@@ -230,7 +232,7 @@ const ProfileSettingsArtes = () => {
               onClick={handleSaveProfile}
               disabled={isSaving}
             >
-              {isSaving ? "Salvando..." : "Salvar Perfil"}
+              {isSaving ? t('common:profile.saving') : t('common:profile.saveProfile')}
             </Button>
 
             {/* Password Section */}
@@ -240,7 +242,7 @@ const ProfileSettingsArtes = () => {
                 className="w-full border-amber-500/50 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300 hover:border-amber-400"
                 onClick={() => setShowPasswordSection(!showPasswordSection)}
               >
-                Alterar Senha
+                {t('common:profile.changePassword')}
               </Button>
 
               {showPasswordSection && (
@@ -248,7 +250,7 @@ const ProfileSettingsArtes = () => {
                   <div className="relative">
                     <Input
                       type={showCurrentPassword ? "text" : "password"}
-                      placeholder="Senha atual"
+                      placeholder={t('common:profile.currentPassword')}
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
@@ -264,7 +266,7 @@ const ProfileSettingsArtes = () => {
                   <div className="relative">
                     <Input
                       type={showNewPassword ? "text" : "password"}
-                      placeholder="Nova senha"
+                      placeholder={t('common:profile.newPassword')}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
@@ -282,7 +284,7 @@ const ProfileSettingsArtes = () => {
                     onClick={handleChangePassword}
                     disabled={isSaving || !currentPassword || !newPassword}
                   >
-                    Alterar Senha
+                    {t('common:profile.changePassword')}
                   </Button>
                 </div>
               )}
@@ -291,13 +293,13 @@ const ProfileSettingsArtes = () => {
             {/* Notification Settings - usa permission do browser como fonte de verdade */}
             {isSupported && (
               <div className="border-t border-[#2d4a5e]/30 pt-4 mt-4">
-                <p className="text-xs text-white/40 mb-2">Notificações</p>
+                <p className="text-xs text-white/40 mb-2">{t('common:profile.notifications')}</p>
                 {hasPermission ? (
                   <button
                     onClick={() => setShowDisableModal(true)}
                     className="text-xs text-white/40 hover:text-white/60 underline transition-colors"
                   >
-                    Desativar notificações
+                    {t('common:profile.disableNotifications')}
                   </button>
                 ) : (
                   <button
@@ -305,7 +307,7 @@ const ProfileSettingsArtes = () => {
                     className="text-xs text-green-400/70 hover:text-green-400 underline transition-colors flex items-center gap-1"
                   >
                     <Bell className="h-3 w-3" />
-                    Ativar notificações
+                    {t('common:profile.enableNotifications')}
                   </button>
                 )}
               </div>
@@ -320,26 +322,26 @@ const ProfileSettingsArtes = () => {
           <DialogHeader>
             <DialogTitle className="text-white text-center flex items-center justify-center gap-2">
               <BellOff className="h-5 w-5 text-red-400" />
-              Desativar Notificações?
+              {t('common:notifications.disableTitle')}
             </DialogTitle>
           </DialogHeader>
           
           <div className="py-4">
             <p className="text-white/70 text-sm text-center mb-6">
-              Ao desativar as notificações, você perderá avisos sobre:
+              {t('common:notifications.disableWarning')}
             </p>
             <ul className="text-white/60 text-sm space-y-2 mb-6">
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">•</span>
-                Novos conteúdos e atualizações
+                {t('common:notifications.newContent')}
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">•</span>
-                Promoções exclusivas
+                {t('common:notifications.exclusivePromos')}
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">•</span>
-                Novidades da plataforma
+                {t('common:notifications.platformNews')}
               </li>
             </ul>
 
@@ -347,7 +349,7 @@ const ProfileSettingsArtes = () => {
               className="w-full bg-green-600 hover:bg-green-700 text-white mb-3"
               onClick={() => setShowDisableModal(false)}
             >
-              Quero aproveitar os benefícios
+              {t('common:notifications.keepBenefits')}
             </Button>
 
             <button
@@ -355,7 +357,7 @@ const ProfileSettingsArtes = () => {
               disabled={pushLoading}
               className="w-full text-xs text-white/40 hover:text-white/60 underline transition-colors text-center py-2"
             >
-              {pushLoading ? "Desativando..." : "Prefiro perder os benefícios"}
+              {pushLoading ? t('common:notifications.disabling') : t('common:notifications.loseBenefits')}
             </button>
           </div>
         </DialogContent>

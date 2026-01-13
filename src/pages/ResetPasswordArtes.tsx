@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Lock } from "lucide-react";
 
 const ResetPasswordArtes = () => {
+  const { t } = useTranslation('auth');
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -22,7 +24,7 @@ const ResetPasswordArtes = () => {
     const errorDescription = hashParams.get('error_description');
     
     if (error) {
-      toast.error(errorDescription || "Link inválido ou expirado");
+      toast.error(errorDescription || t('errors.invalidResetLink'));
       navigate("/forgot-password-artes");
       return;
     }
@@ -47,7 +49,7 @@ const ResetPasswordArtes = () => {
     const timer = setTimeout(async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error("Link inválido ou expirado. Solicite um novo link.");
+        toast.error(t('errors.invalidResetLink'));
         navigate("/forgot-password-artes");
       }
     }, 1500);
@@ -56,18 +58,18 @@ const ResetPasswordArtes = () => {
       subscription.unsubscribe();
       clearTimeout(timer);
     };
-  }, [navigate]);
+  }, [navigate, t]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (newPassword.length < 6) {
-      toast.error("A senha deve ter pelo menos 6 caracteres");
+      toast.error(t('errors.passwordMinLength'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("As senhas não coincidem");
+      toast.error(t('errors.passwordsDoNotMatch'));
       return;
     }
 
@@ -79,7 +81,7 @@ const ResetPasswordArtes = () => {
       });
 
       if (error) {
-        toast.error("Erro ao redefinir senha");
+        toast.error(t('errors.passwordChangeError'));
         return;
       }
 
@@ -92,11 +94,11 @@ const ResetPasswordArtes = () => {
           .eq('id', user.id);
       }
 
-      toast.success("Senha redefinida com sucesso!");
+      toast.success(t('success.passwordResetSuccess'));
       navigate("/biblioteca-artes");
     } catch (error) {
       console.error("Error resetting password:", error);
-      toast.error("Erro ao redefinir senha");
+      toast.error(t('errors.passwordChangeError'));
     } finally {
       setIsLoading(false);
     }
@@ -109,9 +111,9 @@ const ResetPasswordArtes = () => {
           <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
             <Lock className="h-6 w-6 text-white" />
           </div>
-          <CardTitle className="text-2xl text-white">Nova Senha</CardTitle>
+          <CardTitle className="text-2xl text-white">{t('newPasswordTitle')}</CardTitle>
           <CardDescription className="text-white/60">
-            Defina sua nova senha
+            {t('setNewPassword')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -119,7 +121,7 @@ const ResetPasswordArtes = () => {
             <div className="relative">
               <Input
                 type={showNewPassword ? "text" : "password"}
-                placeholder="Nova senha"
+                placeholder={t('newPassword')}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
@@ -136,7 +138,7 @@ const ResetPasswordArtes = () => {
             <div className="relative">
               <Input
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirmar nova senha"
+                placeholder={t('confirmNewPassword')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
@@ -152,7 +154,7 @@ const ResetPasswordArtes = () => {
             </div>
 
             <p className="text-white/50 text-sm">
-              A senha deve ter pelo menos 6 caracteres
+              {t('passwordHint')}
             </p>
 
             <Button
@@ -160,7 +162,7 @@ const ResetPasswordArtes = () => {
               className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
               disabled={isLoading}
             >
-              {isLoading ? "Salvando..." : "Salvar Nova Senha"}
+              {isLoading ? t('saving') : t('saveNewPassword')}
             </Button>
           </form>
         </CardContent>

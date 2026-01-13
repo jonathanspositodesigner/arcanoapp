@@ -67,7 +67,8 @@
     "premium": "Premium",
     "free": "Grátis",
     "new": "Novo",
-    "bonus": "Bônus"
+    "bonus": "Bônus",
+    "off50": "50% OFF"
   },
   "buttons": {
     "downloadBonus": "Baixar Bônus",
@@ -146,7 +147,8 @@
     "freeSamples": "Amostras Grátis",
     "allArts": "Todas as Artes",
     "tutorials": "Tutoriais",
-    "aiTools": "Ferramentas de IA"
+    "aiTools": "Ferramentas de IA",
+    "libraryTitle": "Biblioteca de Artes - {{section}}"
   },
   "empty": {
     "noPacks": "Nenhum pack disponível",
@@ -165,5 +167,25 @@
     "exclusiveContent": "Este conteúdo é exclusivo para quem adquiriu o pack",
     "loginToAccess": "Faça login para acessar este conteúdo",
     "buyPackToAccess": "Compre o pack para ter acesso a todas as artes"
+  },
+  "install": {
+    "back": "Voltar",
+    "alreadyInstalled": "App já instalado!",
+    "alreadyInstalledDescription": "O ArcanoApp já está instalado no seu dispositivo. Procure o ícone na sua tela inicial.",
+    "goToLibrary": "Ir para Biblioteca",
+    "installNow": "Instalar agora",
+    "installDescription": "Clique no botão abaixo para instalar o app no seu dispositivo",
+    "installButton": "Instalar ArcanoApp",
+    "afterInstall": "Após instalar, o app abrirá em tela cheia e funcionará mesmo offline!"
+  },
+  "tools": {
+    "loading": "Carregando...",
+    "aiTool": "Ferramenta de IA",
+    "restrictedAccess": "Acesso Restrito",
+    "restrictedDescription": "Esta ferramenta está disponível apenas para membros com acesso ativo.",
+    "viewPlans": "Ver Planos",
+    "comingSoon": "Conteúdo em breve",
+    "comingSoonDescription": "As aulas desta ferramenta serão disponibilizadas em breve.",
+    "aiToolDescription": "Ferramenta de Inteligência Artificial"
   }
 }

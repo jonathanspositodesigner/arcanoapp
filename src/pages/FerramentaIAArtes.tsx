@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink, Lock } from "lucide-react";
@@ -26,6 +27,7 @@ interface FerramentaData {
 }
 
 const FerramentaIAArtes = () => {
+  const { t } = useTranslation('library');
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const [ferramenta, setFerramenta] = useState<FerramentaData | null>(null);
@@ -102,7 +104,7 @@ const FerramentaIAArtes = () => {
   if (loading || premiumLoading || isPromptsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-foreground">Carregando...</div>
+        <div className="text-foreground">{t('tools.loading')}</div>
       </div>
     );
   }
@@ -122,7 +124,7 @@ const FerramentaIAArtes = () => {
           </Button>
             <div>
               <h1 className="text-xl font-bold text-foreground">
-                {ferramenta?.name || "Ferramenta de IA"}
+                {ferramenta?.name || t('tools.aiTool')}
               </h1>
             </div>
           </div>
@@ -133,16 +135,16 @@ const FerramentaIAArtes = () => {
             <CardContent className="p-8 text-center">
               <Lock className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-foreground mb-2">
-                Acesso Restrito
+                {t('tools.restrictedAccess')}
               </h2>
               <p className="text-muted-foreground mb-6">
-                Esta ferramenta está disponível apenas para membros com acesso ativo.
+                {t('tools.restrictedDescription')}
               </p>
               <Button 
                 onClick={() => navigate("/planos-artes")}
                 className="bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90"
               >
-                Ver Planos
+                {t('tools.viewPlans')}
               </Button>
             </CardContent>
           </Card>
@@ -152,8 +154,8 @@ const FerramentaIAArtes = () => {
   }
 
   const lessons = ferramenta?.tutorial_lessons || [];
-  const title = ferramenta?.name || "Ferramenta de IA";
-  const description = "Ferramenta de Inteligência Artificial";
+  const title = ferramenta?.name || t('tools.aiTool');
+  const description = t('tools.aiToolDescription');
 
   return (
     <div className="min-h-screen bg-background">
@@ -185,10 +187,10 @@ const FerramentaIAArtes = () => {
             <CardContent className="p-8 text-center">
               <Play className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-foreground mb-2">
-                Conteúdo em breve
+                {t('tools.comingSoon')}
               </h2>
               <p className="text-muted-foreground">
-                As aulas desta ferramenta serão disponibilizadas em breve.
+                {t('tools.comingSoonDescription')}
               </p>
             </CardContent>
           </Card>

@@ -67,6 +67,7 @@
     "keepBenefits": "Quero aproveitar os benefícios",
     "loseBenefits": "Prefiro perder os benefícios",
     "enabled": "Notificações ativadas",
-    "disabled": "Notificações desativadas"
+    "disabled": "Notificações desativadas",
+    "disabling": "Desativando..."
   }
 }

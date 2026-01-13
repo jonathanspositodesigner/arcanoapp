@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Lock } from "lucide-react";
 
 const ChangePasswordArtes = () => {
+  const { t } = useTranslation('auth');
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -21,19 +23,19 @@ const ChangePasswordArtes = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
-        toast.error("Você precisa fazer login primeiro");
+        toast.error(t('errors.needLoginFirst'));
         navigate("/login-artes");
         return;
       }
       setIsCheckingAuth(false);
     };
     checkAuth();
-  }, [navigate]);
+  }, [navigate, t]);
 
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <p className="text-white">Verificando...</p>
+        <p className="text-white">{t('verifying')}</p>
       </div>
     );
   }
@@ -42,12 +44,12 @@ const ChangePasswordArtes = () => {
     e.preventDefault();
     
     if (newPassword.length < 6) {
-      toast.error("A senha deve ter pelo menos 6 caracteres");
+      toast.error(t('errors.passwordMinLength'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("As senhas não coincidem");
+      toast.error(t('errors.passwordsDoNotMatch'));
       return;
     }
 
@@ -56,7 +58,7 @@ const ChangePasswordArtes = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Sessão expirada");
+        toast.error(t('errors.sessionExpired'));
         navigate("/login-artes");
         return;
       }
@@ -67,7 +69,7 @@ const ChangePasswordArtes = () => {
       });
 
       if (updateError) {
-        toast.error("Erro ao alterar senha");
+        toast.error(t('errors.passwordChangeError'));
         return;
       }
 
@@ -81,11 +83,11 @@ const ChangePasswordArtes = () => {
         console.error("Error updating profile:", profileError);
       }
 
-      toast.success("Senha alterada com sucesso!");
+      toast.success(t('success.passwordChanged'));
       navigate("/biblioteca-artes");
     } catch (error) {
       console.error("Error changing password:", error);
-      toast.error("Erro ao alterar senha");
+      toast.error(t('errors.passwordChangeError'));
     } finally {
       setIsLoading(false);
     }
@@ -98,9 +100,9 @@ const ChangePasswordArtes = () => {
           <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
             <Lock className="h-6 w-6 text-white" />
           </div>
-          <CardTitle className="text-2xl text-white">Alterar Senha</CardTitle>
+          <CardTitle className="text-2xl text-white">{t('changePassword')}</CardTitle>
           <CardDescription className="text-white/60">
-            Por segurança, altere sua senha antes de continuar
+            {t('changePasswordDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,7 +110,7 @@ const ChangePasswordArtes = () => {
             <div className="relative">
               <Input
                 type={showNewPassword ? "text" : "password"}
-                placeholder="Nova senha"
+                placeholder={t('newPassword')}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
@@ -125,7 +127,7 @@ const ChangePasswordArtes = () => {
             <div className="relative">
               <Input
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirmar nova senha"
+                placeholder={t('confirmNewPassword')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
@@ -141,7 +143,7 @@ const ChangePasswordArtes = () => {
             </div>
 
             <p className="text-white/50 text-sm">
-              A senha deve ter pelo menos 6 caracteres
+              {t('passwordHint')}
             </p>
 
             <Button
@@ -149,7 +151,7 @@ const ChangePasswordArtes = () => {
               className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
               disabled={isLoading}
             >
-              {isLoading ? "Alterando..." : "Alterar Senha"}
+              {isLoading ? t('changing') : t('changePassword')}
             </Button>
           </form>
         </CardContent>
