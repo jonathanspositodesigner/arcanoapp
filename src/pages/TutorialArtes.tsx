@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink } from "lucide-react";
@@ -25,6 +26,7 @@ interface TutorialData {
 
 const TutorialArtes = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('prompts');
   const { slug } = useParams<{ slug: string }>();
   const [tutorial, setTutorial] = useState<TutorialData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,14 +91,14 @@ const TutorialArtes = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-foreground">Carregando...</div>
+        <div className="text-foreground">{t('tutorial.loading')}</div>
       </div>
     );
   }
 
   const lessons = tutorial?.tutorial_lessons || [];
   const title = tutorial?.name || "Tutorial";
-  const description = "Aprenda com nossos tutoriais gratuitos";
+  const description = t('tutorial.learnWithTutorials');
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,10 +130,10 @@ const TutorialArtes = () => {
             <CardContent className="p-8 text-center">
               <Play className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-foreground mb-2">
-                Conteúdo em breve
+                {t('tutorial.contentComingSoon')}
               </h2>
               <p className="text-muted-foreground">
-                As aulas deste tutorial serão disponibilizadas em breve.
+                {t('tutorial.lessonsComingSoon')}
               </p>
             </CardContent>
           </Card>

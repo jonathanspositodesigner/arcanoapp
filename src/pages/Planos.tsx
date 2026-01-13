@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Check, X, Sparkles, Clock, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import { AnimatedSection, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAn
 
 const Planos = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('prompts');
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   
@@ -27,16 +29,16 @@ const Planos = () => {
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
       features: [
-        { text: "10 prompts premium por dia", included: true },
-        { text: "Acesso a todo conteúdo premium", included: true },
-        { text: "Arcano Academy - Mini curso de IA", included: true },
-        { text: "Atualizações diárias", included: true },
-        { text: "Liberação imediata", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "IA que muda a roupa", included: false },
-        { text: "IA que muda pose", included: false },
-        { text: "Upscale Arcano", included: false },
-        { text: "Forja de Selos 3D", included: false }
+        { text: t('planos.features.10PromptsDay'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: t('planos.features.arcanoAcademy'), included: true },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.changeClothesAI'), included: false },
+        { text: t('planos.features.changePoseAI'), included: false },
+        { text: t('planos.features.upscaleArcano'), included: false },
+        { text: t('planos.features.forja3D'), included: false }
       ],
       popular: false,
       promo: false
@@ -47,16 +49,16 @@ const Planos = () => {
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/kbgwmH",
       features: [
-        { text: "24 prompts premium por dia", included: true },
-        { text: "Acesso a todo conteúdo premium", included: true },
-        { text: "Arcano Academy - Mini curso de IA", included: true },
-        { text: "Atualizações diárias", included: true },
-        { text: "Liberação imediata", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "IA que muda a roupa", included: true },
-        { text: "IA que muda pose", included: true },
-        { text: "Upscale Arcano", included: false },
-        { text: "Forja de Selos 3D", included: false }
+        { text: t('planos.features.24PromptsDay'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: t('planos.features.arcanoAcademy'), included: true },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.changeClothesAI'), included: true },
+        { text: t('planos.features.changePoseAI'), included: true },
+        { text: t('planos.features.upscaleArcano'), included: false },
+        { text: t('planos.features.forja3D'), included: false }
       ],
       popular: true,
       promo: false,
@@ -68,16 +70,16 @@ const Planos = () => {
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/CiCenB",
       features: [
-        { text: "Prompts premium ilimitados", included: true },
-        { text: "Acesso a todo conteúdo premium", included: true },
-        { text: "Arcano Academy - Mini curso de IA", included: true },
-        { text: "Atualizações diárias", included: true },
-        { text: "Liberação imediata", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "IA que muda a roupa", included: true },
-        { text: "IA que muda pose", included: true },
-        { text: "Upscale Arcano", included: true },
-        { text: "Forja de Selos 3D", included: true }
+        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: t('planos.features.arcanoAcademy'), included: true },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.changeClothesAI'), included: true },
+        { text: t('planos.features.changePoseAI'), included: true },
+        { text: t('planos.features.upscaleArcano'), included: true },
+        { text: t('planos.features.forja3D'), included: true }
       ],
       popular: false,
       promo: true
@@ -90,16 +92,16 @@ const Planos = () => {
       yearlyTotal: "118,80",
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/RaLcc5",
       features: [
-        { text: "10 prompts premium por dia", included: true },
-        { text: "Acesso a todo conteúdo premium", included: true },
-        { text: "Arcano Academy - Mini curso de IA", included: true },
-        { text: "Atualizações diárias", included: true },
-        { text: "Liberação imediata", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "IA que muda a roupa", included: false },
-        { text: "IA que muda pose", included: false },
-        { text: "Upscale Arcano", included: false },
-        { text: "Forja de Selos 3D", included: false }
+        { text: t('planos.features.10PromptsDay'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: t('planos.features.arcanoAcademy'), included: true },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.changeClothesAI'), included: false },
+        { text: t('planos.features.changePoseAI'), included: false },
+        { text: t('planos.features.upscaleArcano'), included: false },
+        { text: t('planos.features.forja3D'), included: false }
       ],
       popular: false,
       promo: false
@@ -111,16 +113,16 @@ const Planos = () => {
       yearlyTotal: "178,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
       features: [
-        { text: "24 prompts premium por dia", included: true },
-        { text: "Acesso a todo conteúdo premium", included: true },
-        { text: "Arcano Academy - Mini curso de IA", included: true },
-        { text: "Atualizações diárias", included: true },
-        { text: "Liberação imediata", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "IA que muda a roupa", included: true },
-        { text: "IA que muda pose", included: true },
-        { text: "Upscale Arcano", included: false },
-        { text: "Forja de Selos 3D", included: false }
+        { text: t('planos.features.24PromptsDay'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: t('planos.features.arcanoAcademy'), included: true },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.changeClothesAI'), included: true },
+        { text: t('planos.features.changePoseAI'), included: true },
+        { text: t('planos.features.upscaleArcano'), included: false },
+        { text: t('planos.features.forja3D'), included: false }
       ],
       popular: true,
       promo: false,
@@ -133,16 +135,16 @@ const Planos = () => {
       yearlyTotal: "238,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
       features: [
-        { text: "Prompts premium ilimitados", included: true },
-        { text: "Acesso a todo conteúdo premium", included: true },
-        { text: "Arcano Academy - Mini curso de IA", included: true },
-        { text: "Atualizações diárias", included: true },
-        { text: "Liberação imediata", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "IA que muda a roupa", included: true },
-        { text: "IA que muda pose", included: true },
-        { text: "Upscale Arcano", included: true },
-        { text: "Forja de Selos 3D", included: true }
+        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: t('planos.features.arcanoAcademy'), included: true },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.changeClothesAI'), included: true },
+        { text: t('planos.features.changePoseAI'), included: true },
+        { text: t('planos.features.upscaleArcano'), included: true },
+        { text: t('planos.features.forja3D'), included: true }
       ],
       popular: false,
       promo: true
@@ -157,11 +159,11 @@ const Planos = () => {
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
         <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar
+          {t('planos.back')}
         </Button>
         <Button variant="outline" onClick={() => navigate('/login')} className="gap-2">
           <LogIn className="w-4 h-4" />
-          Já sou premium
+          {t('planos.alreadyPremium')}
         </Button>
       </div>
 
@@ -169,20 +171,20 @@ const Planos = () => {
       <div className="container mx-auto px-4 pb-16">
         <AnimatedSection animation="fade-up" className="text-center mb-10" as="div">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-            ESCOLHA O MELHOR PLANO PARA VOCÊ
+            {t('planos.title')}
           </h1>
 
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
             <TabsList className="bg-muted/50 border border-border">
               <TabsTrigger value="mensal" className="data-[state=active]:bg-background data-[state=active]:text-foreground px-6">
-                MENSAL
+                {t('planos.monthly')}
               </TabsTrigger>
               <TabsTrigger value="anual" className="data-[state=active]:bg-background data-[state=active]:text-foreground px-6 relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-500 font-medium whitespace-nowrap">
-                  +Desconto
+                  {t('planos.discount')}
                 </span>
-                ANUAL PARCELADO
+                {t('planos.annualInstallments')}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -191,7 +193,7 @@ const Planos = () => {
         {/* Discount Banner */}
         <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-primary to-primary/80 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]" as="div">
           <span className="text-primary-foreground font-semibold tracking-wide">
-            ATÉ {billingPeriod === "anual" ? "33" : "25"}% DE DESCONTO
+            {t('planos.upToDiscount', { percent: billingPeriod === "anual" ? "33" : "25" })}
           </span>
         </AnimatedSection>
 
@@ -205,7 +207,7 @@ const Planos = () => {
             <Card key={plan.name} className={`relative bg-card border-border p-6 flex flex-col rounded-xl lg:rounded-none ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${plan.popular ? "border-2 border-primary" : ""}`}>
               {(plan.promo || plan.popular) && (
                 <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-emerald-500 text-white"}`}>
-                  {plan.promo ? "PROMOÇÃO DE LANÇAMENTO" : "Popular"}
+                  {plan.promo ? t('planos.launchPromo') : t('planos.popular')}
                 </Badge>
               )}
 
@@ -216,17 +218,17 @@ const Planos = () => {
               <div className="text-center mb-6 min-h-[80px]">
                 {plan.originalPrice && (
                   <p className="text-muted-foreground line-through text-sm">
-                    R${plan.originalPrice}/mês
+                    R${plan.originalPrice}{t('planos.perMonth')}
                   </p>
                 )}
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-muted-foreground text-lg">R$</span>
                   <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground">/mês</span>
+                  <span className="text-muted-foreground">{t('planos.perMonth')}</span>
                 </div>
                 {billingPeriod === "anual" && (plan as any).yearlyTotal && (
                   <p className="text-primary text-sm mt-1">
-                    R${(plan as any).yearlyTotal}/ano
+                    R${(plan as any).yearlyTotal}{t('planos.perYear')}
                   </p>
                 )}
               </div>
@@ -235,7 +237,7 @@ const Planos = () => {
                 onClick={() => window.open((plan as any).paymentUrl, '_blank')}
                 className={`w-full mb-6 ${plan.popular ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-muted hover:bg-muted/80 text-foreground"}`}
               >
-                {(plan as any).hasTrial ? "Teste grátis por 7 dias" : "Assinar"}
+                {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
 
               <ul className="space-y-3 flex-1">
@@ -256,11 +258,11 @@ const Planos = () => {
               {plan.name === "IA Unlimited" && (
                 <div className="mt-6 pt-4 border-t border-border">
                   <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">
-                    Benefícios extras do plano:
+                    {t('planos.extraBenefits')}
                   </p>
                   <div className="flex items-center gap-2 text-sm">
                     <Sparkles className="w-4 h-4 text-primary" />
-                    <span className="text-foreground">Todos os recursos de IA</span>
+                    <span className="text-foreground">{t('planos.allAIFeatures')}</span>
                   </div>
                 </div>
               )}
@@ -276,13 +278,13 @@ const Planos = () => {
             <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
               <Clock className="w-8 h-8 text-primary" />
             </div>
-            <DialogTitle className="text-2xl font-bold text-center">Em Breve</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-center">{t('planos.comingSoon.title')}</DialogTitle>
             <DialogDescription className="text-center text-muted-foreground">
-              Estamos trabalhando para disponibilizar os planos de assinatura em breve. Fique atento às novidades!
+              {t('planos.comingSoon.description')}
             </DialogDescription>
           </DialogHeader>
           <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4">
-            Entendi
+            {t('planos.comingSoon.understood')}
           </Button>
         </DialogContent>
       </Dialog>

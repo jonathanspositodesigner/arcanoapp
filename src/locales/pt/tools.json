@@ -1,0 +1,256 @@
+{
+  "upscaler": {
+    "title": "Upscaler Arcano",
+    "back": "Voltar",
+    "backToLibrary": "Voltar para Biblioteca",
+    "backToTools": "Voltar para Ferramentas",
+    "alreadyHaveAccess": "Você já tem acesso!",
+    "alreadyHaveAccessDesc": "Você já possui acesso ao Upscaler Arcano.",
+    "goToLibrary": "Ir para Biblioteca",
+    "hero": {
+      "title1": "Melhore suas",
+      "photos": "fotos",
+      "title2": "com Inteligência Artificial",
+      "subtitle": "Transforme fotos de celular, imagens de clientes ou artes geradas por IA em imagens",
+      "sharp": "nítidas e profissionais",
+      "dragToCompare": "Arraste para ver a diferença"
+    },
+    "cta": "QUERO MEU ACESSO AGORA",
+    "trustBadges": {
+      "secure": "Seguro",
+      "immediate": "Imediato",
+      "lifetime": "Vitalício"
+    },
+    "scrollMore": "Role para ver mais",
+    "pain": {
+      "title": "Você já passou por isso?",
+      "phone": "Tirou foto com celular e ficou",
+      "bad": "ruim",
+      "client": "Recebeu foto de cliente em",
+      "lowQuality": "baixa qualidade",
+      "aiGenerated": "Gerou imagem com IA mas",
+      "notGood": "não ficou boa",
+      "solution": "O Upscaler Arcano resolve isso em segundos."
+    },
+    "beforeAfter": {
+      "title": "Melhore",
+      "anyImage": "Qualquer Imagem",
+      "subtitle": "Fotos, logos, mockups, selos 3D, fotos antigas e muito mais — tudo em alta qualidade",
+      "before": "ANTES",
+      "after": "DEPOIS",
+      "photoImproved4K": "Foto melhorada em 4K",
+      "seal3DHD": "Selo 3D em alta definição",
+      "logoHD": "Logo em alta resolução",
+      "mockupSharp": "Mockup nítido e profissional",
+      "oldPhotoRestored": "Foto antiga restaurada",
+      "badges": {
+        "photo": "FOTO",
+        "seals3D": "Selos 3D",
+        "logo": "Logo",
+        "mockup": "Mockup",
+        "oldPhoto": "Foto Antiga"
+      }
+    },
+    "targetAudience": {
+      "title": "Para quem é o",
+      "musicians": {
+        "title": "Músicos e Produtores",
+        "description": "Melhore suas fotos de eventos e material promocional"
+      },
+      "infoproducers": {
+        "title": "Infoprodutores",
+        "description": "Melhore imagens de capas, thumbnails e materiais de venda para seus produtos digitais"
+      },
+      "designers": {
+        "title": "Designers Gráficos",
+        "description": "Melhore fotos de clientes e crie seus 3Ds em alta qualidade"
+      },
+      "photographers": {
+        "title": "Fotógrafos Profissionais",
+        "description": "Recupere fotos com ruído, pouca luz ou resolução baixa e entregue resultados impecáveis"
+      },
+      "socialMedia": {
+        "title": "Social Media",
+        "description": "Crie conteúdo visual de alta qualidade para suas redes sociais e engaje mais seguidores"
+      },
+      "common": {
+        "title": "Usuário Comum",
+        "description": "Tirou uma foto ruim e quer melhorar? Transforme em uma imagem nítida e profissional"
+      }
+    },
+    "benefits": {
+      "title": "O que o",
+      "subtitle": "Upscaler faz",
+      "improveImages": "Melhore suas imagens até 4K",
+      "removeBackground": "Remoção de fundo automática com IA",
+      "lifetimeAccess": "Acesso vitalício à ferramenta",
+      "futureUpdates": "Todas as atualizações futuras incluídas"
+    },
+    "howItWorks": {
+      "title": "Como",
+      "subtitle": "funciona",
+      "upload": {
+        "title": "Faça upload",
+        "description": "Envie sua imagem em baixa qualidade"
+      },
+      "chooseMode": {
+        "title": "Escolha o modo",
+        "description": "Upscale até 4K ou remoção de fundo"
+      },
+      "download": {
+        "title": "Baixe",
+        "description": "Sua imagem melhorada em segundos"
+      }
+    },
+    "socialProof": {
+      "title": "Veja o",
+      "result": "resultado",
+      "subtitle": "de alguns usuários",
+      "description": "Pessoas reais usando o Upscaler Arcano",
+      "userResult": "Resultado de usuário"
+    },
+    "faq": {
+      "title": "Perguntas",
+      "subtitle": "Frequentes",
+      "q1": "Preciso pagar mensalidade?",
+      "a1": "Não! O pagamento é único e o acesso é vitalício. Você paga uma vez e usa para sempre, sem taxas extras ou assinaturas.",
+      "q2": "Funciona com qualquer imagem?",
+      "a2": "Sim! Funciona com fotos, artes de IA, logos, mockups, capturas de tela, fotos antigas e muito mais. Qualquer tipo de imagem pode ser melhorada.",
+      "q3": "Quanto tempo leva para melhorar uma imagem?",
+      "a3": "Segundos! Basta fazer o upload e em poucos segundos sua imagem estará pronta para download em alta qualidade.",
+      "q4": "Tem suporte se eu tiver dúvidas?",
+      "a4": "Sim! Você terá acesso ao nosso suporte via WhatsApp para tirar qualquer dúvida sobre a ferramenta.",
+      "q5": "Posso usar em quantas imagens eu quiser?",
+      "a5": "Sim! Não há limite de imagens. Use quantas vezes precisar, para sempre."
+    },
+    "finalCTA": {
+      "title": "Transforme suas imagens",
+      "subtitle": "hoje",
+      "description": "Acesso vitalício à melhor ferramenta de upscale por IA",
+      "from": "De",
+      "for": "Por",
+      "oneTimePayment": "pagamento único",
+      "or": "ou",
+      "inInstallments": "em até 3x de"
+    }
+  },
+  "upscalerTool": {
+    "title": "Upscaler Arcano",
+    "modes": {
+      "upscale": "Aumentar Qualidade",
+      "removeBackground": "Remover Fundo"
+    },
+    "upload": {
+      "dragHere": "Arraste sua imagem aqui",
+      "orClick": "ou clique para selecionar • Cole com Ctrl+V",
+      "formats": "PNG, JPG, WebP • Máximo 10MB"
+    },
+    "controls": {
+      "finalResolution": "Resolução Final",
+      "detailLevel": "Nível de Detalhe",
+      "detailRecommended": "Recomendado: 0.10 - 0.30",
+      "lessDetail": "Menos detalhe",
+      "moreDetail": "Mais detalhe",
+      "aiCreativity": "Criatividade da IA",
+      "creativityRecommended": "Recomendado: 0.05 - 0.20",
+      "faithful": "Fiel à original",
+      "moreCreative": "Mais criativo",
+      "controlsDetails": "Controla a quantidade de detalhes adicionados",
+      "lowValues": "Valores baixos = mais fiel à original"
+    },
+    "buttons": {
+      "increaseQuality": "Aumentar Qualidade",
+      "removeBackground": "Remover Fundo",
+      "downloadHD": "Baixar Imagem HD",
+      "downloadPNG": "Baixar PNG",
+      "processAnother": "Processar Outra Imagem",
+      "cancel": "Cancelar"
+    },
+    "status": {
+      "uploading": "Enviando imagem...",
+      "processing": "Processando...",
+      "mayTake2Min": "Isso pode levar até 2 minutos"
+    },
+    "labels": {
+      "before": "ANTES",
+      "after": "DEPOIS"
+    },
+    "zoomHint": "Scroll ou pinch para zoom • Arraste o divisor para comparar",
+    "errors": {
+      "selectImage": "Por favor, selecione uma imagem válida",
+      "maxSize": "A imagem deve ter no máximo 10MB",
+      "selectFirst": "Selecione uma imagem primeiro"
+    },
+    "toast": {
+      "success": "Imagem processada com sucesso!",
+      "downloadStarted": "Download iniciado!",
+      "imageOpened": "Imagem aberta! Segure a imagem para salvar.",
+      "openedNewTab": "Imagem aberta em nova aba. Segure para salvar."
+    }
+  },
+  "forja3D": {
+    "title": "Forja de Selos 3D",
+    "subtitle": "Crie selos 3D incríveis com inteligência artificial",
+    "alreadyHaveAccess": "Você já tem acesso!",
+    "alreadyHaveAccessDesc": "Você já possui acesso à Forja de Selos 3D.",
+    "goToLibrary": "Ir para Biblioteca",
+    "lifetimeAccess": "Acesso Vitalício",
+    "memberDiscount": "Desconto de Membro",
+    "toolDescription": "Ferramenta de IA para criar selos 3D",
+    "oneTimePayment": "pagamento único",
+    "buyNow": "Comprar Agora",
+    "afterPurchase": "Após a compra, você receberá acesso automático",
+    "features": {
+      "create3D": "Crie selos 3D profissionais com IA",
+      "multipleStyles": "Múltiplos estilos e templates",
+      "lifetimeAccess": "Acesso vitalício à ferramenta",
+      "futureUpdates": "Todas as atualizações futuras incluídas"
+    }
+  },
+  "ferramentas": {
+    "title": "Ferramentas de IA",
+    "description": "Acesse nossas ferramentas de inteligência artificial para criar artes incríveis, melhorar a qualidade de imagens, gerar selos 3D e muito mais.",
+    "back": "Voltar",
+    "backToPrompts": "Voltar para Biblioteca de Prompts",
+    "backToArtes": "Voltar para Biblioteca de Artes",
+    "login": "Login",
+    "firstAccess": "Já adquiriu? Primeiro acesso aqui",
+    "yourTools": "Suas Ferramentas",
+    "availableForPurchase": "Disponíveis para Aquisição",
+    "noToolsAvailable": "Nenhuma ferramenta disponível no momento.",
+    "accessTool": "Acessar Ferramenta",
+    "seePlans": "Ver Planos",
+    "released": "LIBERADO",
+    "descriptions": {
+      "upscaler": "Aumente a resolução de suas imagens com IA",
+      "forja3D": "Crie selos 3D personalizados ilimitados",
+      "mudaPose": "Altere a pose de pessoas em fotos",
+      "mudaRoupa": "Troque roupas em fotos com IA"
+    },
+    "modals": {
+      "firstAccess": {
+        "title": "Primeiro Acesso",
+        "description": "Comprou uma ferramenta? Coloque seu email de compra aqui para definir sua senha",
+        "placeholder": "Digite seu email de compra",
+        "verifying": "Verificando...",
+        "verify": "Verificar Email",
+        "notCustomer": "Não é cliente ainda?",
+        "seeTools": "Veja nossas ferramentas"
+      },
+      "emailNotFound": {
+        "title": "Email não encontrado",
+        "description": "O email {{email}} não está cadastrado.",
+        "tryAnother": "Tentar outro email",
+        "createAccount": "Criar Conta"
+      }
+    },
+    "toast": {
+      "enterEmail": "Digite seu email",
+      "errorVerifying": "Erro ao verificar cadastro. Tente novamente.",
+      "welcome": "Bem-vindo! Agora defina sua nova senha.",
+      "errorAccessing": "Erro ao acessar. Tente fazer login normalmente.",
+      "alreadySetPassword": "Você já definiu sua senha. Faça login normalmente.",
+      "errorVerifyingEmail": "Erro ao verificar email. Tente novamente."
+    }
+  }
+}

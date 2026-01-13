@@ -98,5 +98,143 @@
   },
   "collection": {
     "viewCollection": "Ver Coleção Completa"
+  },
+  "planos": {
+    "title": "ESCOLHA O MELHOR PLANO PARA VOCÊ",
+    "back": "Voltar",
+    "alreadyPremium": "Já sou premium",
+    "monthly": "MENSAL",
+    "annualInstallments": "ANUAL PARCELADO",
+    "discount": "+Desconto",
+    "upToDiscount": "ATÉ {{percent}}% DE DESCONTO",
+    "launchPromo": "PROMOÇÃO DE LANÇAMENTO",
+    "popular": "Popular",
+    "perMonth": "/mês",
+    "perYear": "/ano",
+    "subscribe": "Assinar",
+    "freeTrial": "Teste grátis por 7 dias",
+    "extraBenefits": "Benefícios extras do plano:",
+    "allAIFeatures": "Todos os recursos de IA",
+    "comingSoon": {
+      "title": "Em Breve",
+      "description": "Estamos trabalhando para disponibilizar os planos de assinatura em breve. Fique atento às novidades!",
+      "understood": "Entendi"
+    },
+    "features": {
+      "10PromptsDay": "10 prompts premium por dia",
+      "24PromptsDay": "24 prompts premium por dia",
+      "unlimitedPrompts": "Prompts premium ilimitados",
+      "allPremiumContent": "Acesso a todo conteúdo premium",
+      "arcanoAcademy": "Arcano Academy - Mini curso de IA",
+      "dailyUpdates": "Atualizações diárias",
+      "immediateRelease": "Liberação imediata",
+      "whatsappSupport": "Suporte exclusivo via WhatsApp",
+      "changeClothesAI": "IA que muda a roupa",
+      "changePoseAI": "IA que muda pose",
+      "upscaleArcano": "Upscale Arcano",
+      "forja3D": "Forja de Selos 3D"
+    }
+  },
+  "promptverso": {
+    "title": "A plataforma dos criadores do futuro",
+    "subtitle": "Descubra uma coleção incrível de prompts para criar selos e elementos 3D profissionais",
+    "accessPrompts": "Acessar Prompts",
+    "contributeWithCommunity": "Contribua com a Comunidade",
+    "installApp": "Instalar App",
+    "accessArtesLibrary": "Acessar Biblioteca de Artes Arcanas",
+    "artesEditableDesc": "Artes editáveis psd e canva para eventos",
+    "adminSubmission": "Envio de administrador",
+    "partnerArea": "Área do Parceiro",
+    "modal": {
+      "title": "Biblioteca de Artes Arcanas",
+      "alreadyMember": "Já sou membro",
+      "knowPacks": "Conhecer os nossos packs"
+    }
+  },
+  "contribute": {
+    "title": "Contribua com a Comunidade Arcana",
+    "subtitle": "Compartilhe seus prompts e ajude outros criadores",
+    "back": "Voltar",
+    "yourName": "Seu Nome (opcional)",
+    "yourNamePlaceholder": "Ex: João Silva",
+    "fileTitle": "Título do Arquivo",
+    "fileTitlePlaceholder": "Ex: Arquivo de Natal",
+    "category": "Categoria",
+    "selectCategory": "Selecione uma categoria",
+    "loadFromTxt": "Carregar Prompt de Arquivo TXT (opcional)",
+    "selectTxtFile": "Selecionar arquivo .txt",
+    "txtHint": "O conteúdo do arquivo será automaticamente inserido no campo de prompt",
+    "prompt": "Prompt",
+    "promptPlaceholder": "Cole ou escreva seu prompt aqui...",
+    "referenceMedia": "Imagem ou Vídeo de Referência",
+    "dragOrClick": "Clique ou arraste uma imagem ou vídeo aqui",
+    "submitting": "Enviando...",
+    "submit": "Enviar Contribuição",
+    "validation": {
+      "titleRequired": "Título é obrigatório",
+      "titleMax": "Título deve ter no máximo 200 caracteres",
+      "promptRequired": "Prompt é obrigatório",
+      "promptMax": "Prompt deve ter no máximo 10.000 caracteres",
+      "categoryRequired": "Selecione uma categoria válida",
+      "nameMax": "Nome deve ter no máximo 20 caracteres",
+      "mediaRequired": "Por favor, envie uma imagem ou vídeo",
+      "fileTooLarge": "Arquivo muito grande. Máximo 50MB.",
+      "fileTypeNotAllowed": "Tipo de arquivo não permitido. Use JPEG, PNG, GIF, WebP, MP4, WebM ou MOV.",
+      "txtFilesOnly": "Por favor, envie apenas arquivos .txt",
+      "txtTooLarge": "Arquivo TXT muito grande. Máximo 1MB.",
+      "imageOrVideoOnly": "Por favor, envie apenas imagens ou vídeos"
+    },
+    "toast": {
+      "optimizing": "Otimizando imagem...",
+      "optimized": "Imagem otimizada: {{original}} → {{optimized}} ({{percent}}% economizado)",
+      "promptLoaded": "Prompt carregado de \"{{filename}}\"",
+      "txtReadError": "Erro ao ler arquivo TXT",
+      "submissionSuccess": "Contribuição enviada com sucesso!",
+      "submissionError": "Erro ao enviar contribuição. Tente novamente."
+    }
+  },
+  "tutorial": {
+    "loading": "Carregando...",
+    "learnWithTutorials": "Aprenda com nossos tutoriais gratuitos",
+    "contentComingSoon": "Conteúdo em breve",
+    "lessonsComingSoon": "As aulas deste tutorial serão disponibilizadas em breve."
+  },
+  "collectionModal": {
+    "loading": "Carregando...",
+    "notFound": "Coleção não encontrada",
+    "notFoundDesc": "Esta coleção não existe ou foi removida.",
+    "goToLibrary": "Ir para Biblioteca",
+    "backToCollection": "Voltar para coleção",
+    "copyPrompt": "Copiar Prompt",
+    "downloadRef": "Baixar Ref.",
+    "watchTutorial": "Ver Tutorial",
+    "becomePremium": "Torne-se Premium",
+    "seeMorePrompts": "Ver Mais Prompts",
+    "premiumExclusive": "Conteúdo exclusivo para assinantes Premium",
+    "toast": {
+      "copied": "Prompt copiado!",
+      "copyError": "Erro ao copiar prompt",
+      "downloadStarted": "Download iniciado!",
+      "downloadError": "Erro ao baixar arquivo"
+    }
+  },
+  "onboarding": {
+    "skip": "Pular",
+    "welcome": "Seja bem-vindo! 👋",
+    "tutorialIntro": "Este tutorial vai te ensinar como usar a plataforma",
+    "step1": {
+      "title": "Copie o Prompt",
+      "description": "Clique no botão para copiar o prompt!"
+    },
+    "step2": {
+      "title": "Gere sua Imagem",
+      "description": "Clique aqui para acessar as ferramentas de IA!"
+    },
+    "step3": {
+      "title": "Ferramentas de IA",
+      "description": "Use ChatGPT, Nano Banana, Whisk ou Flux 2 para gerar!"
+    },
+    "understood": "Entendi",
+    "copyPrompt": "Copiar Prompt"
   }
 }
