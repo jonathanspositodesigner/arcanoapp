@@ -69,5 +69,22 @@
     "enabled": "Notificaciones activadas",
     "disabled": "Notificaciones desactivadas",
     "disabling": "Desactivando..."
+  },
+  "pushNotifications": {
+    "earn20Off": "¡Gana 20% OFF! 🎁",
+    "activateToGetDiscount": "¡Activa las notificaciones y recibe 20% de descuento en el próximo lanzamiento!",
+    "nextPackDiscount": "20% OFF en el próximo pack",
+    "firstHandNews": "Novedades de primera mano",
+    "exclusivePromos": "Promociones exclusivas",
+    "importantUpdates": "Actualizaciones importantes",
+    "activating": "Activando...",
+    "activateAndEarn": "Activar y Ganar 20% OFF",
+    "maybeLater": "Quizás después"
+  },
+  "promo": {
+    "yearEndTitle": "🎄🔥 Promoción de Fin de Año: {{percent}}% OFF en todos los packs! 🔥🎄",
+    "yearEndShort": "🎄 Fin de Año: {{percent}}% OFF! 🎄",
+    "endsIn": "Termina en:",
+    "closeBanner": "Cerrar banner"
   }
 }

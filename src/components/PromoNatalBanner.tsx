@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 
 const PromoNatalBanner = () => {
+  const { t } = useTranslation('common');
   const location = useLocation();
   const { isActive, discountPercent, endDate, loading } = useYearEndPromo();
   const [dismissed, setDismissed] = useState(false);
@@ -52,12 +54,12 @@ const PromoNatalBanner = () => {
       {/* Desktop layout - single line */}
       <div className="relative hidden md:flex items-center justify-center gap-4">
         <span className="font-bold text-sm whitespace-nowrap">
-          🎄🔥 Promoção de Fim de Ano: {discountPercent}% OFF em todos os packs! 🔥🎄
+          {t('promo.yearEndTitle', { percent: discountPercent })}
         </span>
         
         {/* Countdown */}
         <div className="flex items-center gap-1">
-          <span className="text-xs opacity-80">Termina em:</span>
+          <span className="text-xs opacity-80">{t('promo.endsIn')}</span>
           <div className="flex items-center gap-1">
             {countdown.days > 0 && (
               <div className="bg-white/20 rounded px-2 py-1">
@@ -84,7 +86,7 @@ const PromoNatalBanner = () => {
         <button 
           onClick={() => setDismissed(true)}
           className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
-          aria-label="Fechar banner"
+          aria-label={t('promo.closeBanner')}
         >
           <X className="h-4 w-4" />
         </button>
@@ -93,12 +95,12 @@ const PromoNatalBanner = () => {
       {/* Mobile/Tablet layout - two lines */}
       <div className="relative flex md:hidden flex-col items-center gap-0.5 pr-6">
         <span className="font-bold text-[11px] sm:text-xs text-center leading-tight">
-          🎄 Fim de Ano: {discountPercent}% OFF! 🎄
+          {t('promo.yearEndShort', { percent: discountPercent })}
         </span>
         
         {/* Countdown */}
         <div className="flex items-center gap-0.5">
-          <span className="text-[9px] opacity-80">Termina em:</span>
+          <span className="text-[9px] opacity-80">{t('promo.endsIn')}</span>
           <div className="flex items-center gap-0.5">
             {countdown.days > 0 && (
               <div className="bg-white/20 rounded px-1 py-0.5">
@@ -125,7 +127,7 @@ const PromoNatalBanner = () => {
         <button 
           onClick={() => setDismissed(true)}
           className="absolute right-1 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
-          aria-label="Fechar banner"
+          aria-label={t('promo.closeBanner')}
         >
           <X className="h-3 w-3" />
         </button>

@@ -7,11 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Mail } from "lucide-react";
-import { useLocale } from "@/contexts/LocaleContext";
 
 const ForgotPasswordArtes = () => {
   const { t } = useTranslation('auth');
-  const { isLatam } = useLocale();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -27,15 +25,15 @@ const ForgotPasswordArtes = () => {
       });
 
       if (error) {
-        toast.error(isLatam ? "Error al enviar email de recuperación" : "Erro ao enviar email de recuperação");
+        toast.error(t('errors.sendRecoveryEmailError'));
         return;
       }
 
       setEmailSent(true);
-      toast.success(isLatam ? "¡Email de recuperación enviado!" : "Email de recuperação enviado!");
+      toast.success(t('success.recoveryEmailSent'));
     } catch (error) {
       console.error("Error sending reset email:", error);
-      toast.error(isLatam ? "Error al enviar email" : "Erro ao enviar email");
+      toast.error(t('errors.sendRecoveryEmailError'));
     } finally {
       setIsLoading(false);
     }
@@ -50,20 +48,17 @@ const ForgotPasswordArtes = () => {
               <Mail className="h-8 w-8 text-green-400" />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">
-              {isLatam ? '¡Email Enviado!' : 'Email Enviado!'}
+              {t('emailSent.title')}
             </h2>
             <p className="text-white/60 mb-6">
-              {isLatam 
-                ? 'Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.'
-                : 'Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.'
-              }
+              {t('emailSent.checkInboxInstructions')}
             </p>
             <Button
               variant="outline"
               className="border-[#2d4a5e] text-[#2d4a5e]"
               onClick={() => navigate("/login-artes")}
             >
-              {isLatam ? 'Volver al Login' : 'Voltar ao Login'}
+              {t('emailSent.backToLogin')}
             </Button>
           </CardContent>
         </Card>
@@ -81,21 +76,18 @@ const ForgotPasswordArtes = () => {
             onClick={() => navigate("/login-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {isLatam ? 'Volver' : 'Voltar'}
+            {t('back')}
           </Button>
           <CardTitle className="text-2xl text-white">{t('resetPassword')}</CardTitle>
           <CardDescription className="text-white/60">
-            {isLatam 
-              ? 'Ingresa tu email para recibir las instrucciones'
-              : 'Informe seu email para receber as instruções'
-            }
+            {t('forgotPasswordCard.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSendResetEmail} className="space-y-4">
             <Input
               type="email"
-              placeholder={isLatam ? "Tu email" : "Seu email"}
+              placeholder={t('forgotPasswordCard.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
@@ -107,10 +99,7 @@ const ForgotPasswordArtes = () => {
               className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
               disabled={isLoading}
             >
-              {isLoading 
-                ? (isLatam ? "Enviando..." : "Enviando...") 
-                : (isLatam ? "Enviar Email de Recuperación" : "Enviar Email de Recuperação")
-              }
+              {isLoading ? t('sending') : t('sendRecoveryEmail')}
             </Button>
           </form>
         </CardContent>
