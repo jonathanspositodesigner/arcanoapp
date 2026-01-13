@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,31 +20,14 @@ const formatTitle = (title: string): string => {
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
 };
 
-// Validation schema
-const promptSchema = z.object({
-  title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
-  prompt: z.string().trim().min(1, "Prompt é obrigatório").max(10000, "Prompt deve ter no máximo 10.000 caracteres"),
-  category: z.string().min(1, "Selecione uma categoria válida"),
-  contributorName: z.string().trim().max(20, "Nome deve ter no máximo 20 caracteres").optional(),
-});
-
 // File validation constants
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
-const validateFile = (file: File): string | null => {
-  if (file.size > MAX_FILE_SIZE) {
-    return "Arquivo muito grande. Máximo 50MB.";
-  }
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type) && !ALLOWED_VIDEO_TYPES.includes(file.type)) {
-    return "Tipo de arquivo não permitido. Use JPEG, PNG, GIF, WebP, MP4, WebM ou MOV.";
-  }
-  return null;
-};
-
 const ContributePrompts = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('prompts');
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [category, setCategory] = useState("");
@@ -54,6 +38,24 @@ const ContributePrompts = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
   const [txtFileName, setTxtFileName] = useState<string>("");
+
+  // Validation schema
+  const promptSchema = z.object({
+    title: z.string().trim().min(1, t('contribute.validation.titleRequired')).max(200, t('contribute.validation.titleMax')),
+    prompt: z.string().trim().min(1, t('contribute.validation.promptRequired')).max(10000, t('contribute.validation.promptMax')),
+    category: z.string().min(1, t('contribute.validation.categoryRequired')),
+    contributorName: z.string().trim().max(20, t('contribute.validation.nameMax')).optional(),
+  });
+
+  const validateFile = (file: File): string | null => {
+    if (file.size > MAX_FILE_SIZE) {
+      return t('contribute.validation.fileTooLarge');
+    }
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type) && !ALLOWED_VIDEO_TYPES.includes(file.type)) {
+      return t('contribute.validation.fileTypeNotAllowed');
+    }
+    return null;
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -81,12 +83,16 @@ const ContributePrompts = () => {
       
       // Optimize images before setting
       if (isImageFile(file)) {
-        toast.info("Otimizando imagem...");
+        toast.info(t('contribute.toast.optimizing'));
         const result = await optimizeImage(file);
         setMediaFile(result.file);
         setMediaPreview(URL.createObjectURL(result.file));
         if (result.savingsPercent > 0) {
-          toast.success(`Imagem otimizada: ${formatBytes(result.originalSize)} → ${formatBytes(result.optimizedSize)} (${result.savingsPercent}% economizado)`);
+          toast.success(t('contribute.toast.optimized', {
+            original: formatBytes(result.originalSize),
+            optimized: formatBytes(result.optimizedSize),
+            percent: result.savingsPercent
+          }));
         }
       } else {
         setMediaFile(file);
@@ -104,12 +110,12 @@ const ContributePrompts = () => {
     if (!file) return;
     
     if (!file.name.endsWith('.txt') && file.type !== 'text/plain') {
-      toast.error("Por favor, envie apenas arquivos .txt");
+      toast.error(t('contribute.validation.txtFilesOnly'));
       return;
     }
     
     if (file.size > 1024 * 1024) {
-      toast.error("Arquivo TXT muito grande. Máximo 1MB.");
+      toast.error(t('contribute.validation.txtTooLarge'));
       return;
     }
     
@@ -118,10 +124,10 @@ const ContributePrompts = () => {
       const content = event.target?.result as string;
       setPrompt(content.trim());
       setTxtFileName(file.name);
-      toast.success(`Prompt carregado de "${file.name}"`);
+      toast.success(t('contribute.toast.promptLoaded', { filename: file.name }));
     };
     reader.onerror = () => {
-      toast.error("Erro ao ler arquivo TXT");
+      toast.error(t('contribute.toast.txtReadError'));
     };
     reader.readAsText(file, 'UTF-8');
   };
@@ -150,7 +156,7 @@ const ContributePrompts = () => {
       };
       reader.readAsDataURL(file);
     } else {
-      toast.error("Por favor, envie apenas imagens ou vídeos");
+      toast.error(t('contribute.validation.imageOrVideoOnly'));
     }
   };
 
@@ -158,7 +164,7 @@ const ContributePrompts = () => {
     e.preventDefault();
     
     if (!mediaFile) {
-      toast.error("Por favor, envie uma imagem ou vídeo");
+      toast.error(t('contribute.validation.mediaRequired'));
       return;
     }
 
@@ -202,11 +208,11 @@ const ContributePrompts = () => {
 
       if (insertError) throw insertError;
 
-      toast.success("Contribuição enviada com sucesso!");
+      toast.success(t('contribute.toast.submissionSuccess'));
       navigate("/biblioteca-prompts");
     } catch (error) {
       console.error("Error submitting contribution:", error);
-      toast.error("Erro ao enviar contribuição. Tente novamente.");
+      toast.error(t('contribute.toast.submissionError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -221,51 +227,51 @@ const ContributePrompts = () => {
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
+          {t('contribute.back')}
         </Button>
 
         <Card className="p-4 sm:p-8 shadow-hover">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">
-              Contribua com a Comunidade Arcana
+              {t('contribute.title')}
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg">
-              Compartilhe seus prompts e ajude outros criadores
+              {t('contribute.subtitle')}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="contributorName">Seu Nome (opcional)</Label>
+              <Label htmlFor="contributorName">{t('contribute.yourName')}</Label>
               <Input
                 id="contributorName"
                 value={contributorName}
                 onChange={(e) => setContributorName(e.target.value.slice(0, 20))}
-                placeholder="Ex: João Silva"
+                placeholder={t('contribute.yourNamePlaceholder')}
                 maxLength={20}
                 className="mt-2"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                {contributorName.length}/20 caracteres
+                {contributorName.length}/20
               </p>
             </div>
 
             <div>
-              <Label htmlFor="title">Título do Arquivo</Label>
+              <Label htmlFor="title">{t('contribute.fileTitle')}</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Arquivo de Natal"
+                placeholder={t('contribute.fileTitlePlaceholder')}
                 className="mt-2"
               />
             </div>
 
             <div>
-              <Label htmlFor="category">Categoria</Label>
+              <Label htmlFor="category">{t('contribute.category')}</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Selecione uma categoria" />
+                  <SelectValue placeholder={t('contribute.selectCategory')} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map(cat => (
@@ -276,7 +282,7 @@ const ContributePrompts = () => {
             </div>
 
             <div>
-              <Label htmlFor="txtFile">Carregar Prompt de Arquivo TXT (opcional)</Label>
+              <Label htmlFor="txtFile">{t('contribute.loadFromTxt')}</Label>
               <div className="mt-2 flex items-center gap-3">
                 <label
                   htmlFor="txtFile"
@@ -284,7 +290,7 @@ const ContributePrompts = () => {
                 >
                   <FileText className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    {txtFileName || "Selecionar arquivo .txt"}
+                    {txtFileName || t('contribute.selectTxtFile')}
                   </span>
                 </label>
                 <input
@@ -309,23 +315,23 @@ const ContributePrompts = () => {
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                O conteúdo do arquivo será automaticamente inserido no campo de prompt
+                {t('contribute.txtHint')}
               </p>
             </div>
 
             <div>
-              <Label htmlFor="prompt">Prompt</Label>
+              <Label htmlFor="prompt">{t('contribute.prompt')}</Label>
               <Textarea
                 id="prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Cole ou escreva seu prompt aqui..."
+                placeholder={t('contribute.promptPlaceholder')}
                 className="mt-2 min-h-32"
               />
             </div>
 
             <div>
-              <Label htmlFor="media">Imagem ou Vídeo de Referência</Label>
+              <Label htmlFor="media">{t('contribute.referenceMedia')}</Label>
               <div className="mt-2">
                 <label
                   htmlFor="media"
@@ -354,7 +360,7 @@ const ContributePrompts = () => {
                     <div className="flex flex-col items-center">
                       <Upload className="h-12 w-12 text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground">
-                        Clique ou arraste uma imagem ou vídeo aqui
+                        {t('contribute.dragOrClick')}
                       </p>
                     </div>
                   )}
@@ -374,7 +380,7 @@ const ContributePrompts = () => {
               disabled={isSubmitting}
               className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-lg py-6"
             >
-              {isSubmitting ? "Enviando..." : "Enviar Contribuição"}
+              {isSubmitting ? t('contribute.submitting') : t('contribute.submit')}
             </Button>
           </form>
         </Card>

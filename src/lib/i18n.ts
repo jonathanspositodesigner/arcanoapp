@@ -9,6 +9,7 @@ import ptLibrary from '@/locales/pt/library.json';
 import ptAuth from '@/locales/pt/auth.json';
 import ptPrompts from '@/locales/pt/prompts.json';
 import ptIndex from '@/locales/pt/index.json';
+import ptTools from '@/locales/pt/tools.json';
 
 import esCommon from '@/locales/es/common.json';
 import esPlans from '@/locales/es/plans.json';
@@ -16,6 +17,7 @@ import esLibrary from '@/locales/es/library.json';
 import esAuth from '@/locales/es/auth.json';
 import esPrompts from '@/locales/es/prompts.json';
 import esIndex from '@/locales/es/index.json';
+import esTools from '@/locales/es/tools.json';
 
 const resources = {
   pt: {
@@ -25,6 +27,7 @@ const resources = {
     auth: ptAuth,
     prompts: ptPrompts,
     index: ptIndex,
+    tools: ptTools,
   },
   es: {
     common: esCommon,
@@ -33,6 +36,7 @@ const resources = {
     auth: esAuth,
     prompts: esPrompts,
     index: esIndex,
+    tools: esTools,
   },
 };
 
@@ -72,7 +76,7 @@ i18n
     resources,
     fallbackLng: 'pt',
     defaultNS: 'common',
-    ns: ['common', 'plans', 'library', 'auth', 'prompts', 'index'],
+    ns: ['common', 'plans', 'library', 'auth', 'prompts', 'index', 'tools'],
     
     detection: {
       order: ['subdomain', 'navigator', 'htmlTag'],

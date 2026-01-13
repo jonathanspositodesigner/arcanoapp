@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
@@ -21,17 +22,18 @@ interface ToolData {
   checkout_link_membro_vitalicio: string | null;
 }
 
-const toolDescriptions: Record<string, string> = {
-  "upscaller-arcano": "Aumente a resolução de suas imagens com IA",
-  "forja-selos-3d-ilimitada": "Crie selos 3D personalizados ilimitados",
-  "ia-muda-pose": "Altere a pose de pessoas em fotos",
-  "ia-muda-roupa": "Troque roupas em fotos com IA",
-};
-
 const FerramentasIA = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('tools');
   const [searchParams] = useSearchParams();
   const from = searchParams.get("from");
+
+  const toolDescriptions: Record<string, string> = {
+    "upscaller-arcano": t('ferramentas.descriptions.upscaler'),
+    "forja-selos-3d-ilimitada": t('ferramentas.descriptions.forja3D'),
+    "ia-muda-pose": t('ferramentas.descriptions.mudaPose'),
+    "ia-muda-roupa": t('ferramentas.descriptions.mudaRoupa'),
+  };
 
   const getBackRoute = () => {
     if (from === "prompts") return "/biblioteca-prompts";
@@ -40,9 +42,9 @@ const FerramentasIA = () => {
   };
 
   const getBackLabel = () => {
-    if (from === "prompts") return "Voltar para Biblioteca de Prompts";
-    if (from === "artes") return "Voltar para Biblioteca de Artes";
-    return "Voltar";
+    if (from === "prompts") return t('ferramentas.backToPrompts');
+    if (from === "artes") return t('ferramentas.backToArtes');
+    return t('ferramentas.back');
   };
 
   const { user, hasAccessToPack, isPremium, isLoading: isPremiumLoading } = usePremiumArtesStatus();
@@ -85,7 +87,7 @@ const FerramentasIA = () => {
 
   const handleFirstAccessCheck = async () => {
     if (!firstAccessEmail.trim()) {
-      toast.error("Digite seu email");
+      toast.error(t('ferramentas.toast.enterEmail'));
       return;
     }
     setFirstAccessLoading(true);
@@ -95,7 +97,7 @@ const FerramentasIA = () => {
       });
       
       if (rpcError) {
-        toast.error("Erro ao verificar cadastro. Tente novamente.");
+        toast.error(t('ferramentas.toast.errorVerifying'));
         setFirstAccessLoading(false);
         return;
       }
@@ -118,10 +120,10 @@ const FerramentasIA = () => {
         if (!error) {
           setShowFirstAccessModal(false);
           setFirstAccessEmail("");
-          toast.success("Bem-vindo! Agora defina sua nova senha.");
+          toast.success(t('ferramentas.toast.welcome'));
           navigate('/change-password-artes');
         } else {
-          toast.error("Erro ao acessar. Tente fazer login normalmente.");
+          toast.error(t('ferramentas.toast.errorAccessing'));
           setShowFirstAccessModal(false);
           navigate('/login-artes');
         }
@@ -129,13 +131,13 @@ const FerramentasIA = () => {
       }
       
       if (profileExists && passwordChanged) {
-        toast.info("Você já definiu sua senha. Faça login normalmente.");
+        toast.info(t('ferramentas.toast.alreadySetPassword'));
         setShowFirstAccessModal(false);
         setFirstAccessEmail("");
         navigate('/login-artes');
       }
     } catch (error) {
-      toast.error("Erro ao verificar email. Tente novamente.");
+      toast.error(t('ferramentas.toast.errorVerifyingEmail'));
     } finally {
       setFirstAccessLoading(false);
     }
@@ -235,7 +237,7 @@ const FerramentasIA = () => {
             <div className="absolute top-2 right-2 z-10">
               <Badge className="bg-green-500 text-white border-0 text-[10px] font-semibold shadow-lg px-2 py-0.5">
                 <CheckCircle className="h-3 w-3 mr-1" />
-                LIBERADO
+                {t('ferramentas.released')}
               </Badge>
             </div>
           )}
@@ -259,12 +261,12 @@ const FerramentasIA = () => {
               {hasAccess ? (
                 <>
                   <Play className="h-4 w-4 mr-2" />
-                  Acessar Ferramenta
+                  {t('ferramentas.accessTool')}
                 </>
               ) : (
                 <>
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Ver Planos
+                  {t('ferramentas.seePlans')}
                 </>
               )}
             </Button>
@@ -299,7 +301,7 @@ const FerramentasIA = () => {
                 className="text-purple-600 border-purple-300 hover:bg-purple-50 text-xs sm:text-sm"
               >
                 <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
-                Login
+                {t('ferramentas.login')}
               </Button>
             )}
           </div>
@@ -310,7 +312,7 @@ const FerramentasIA = () => {
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <h1 className="text-base sm:text-xl font-bold text-gray-900 hidden sm:block">
-              Ferramentas de IA
+              {t('ferramentas.title')}
             </h1>
           </div>
         </div>
@@ -325,7 +327,7 @@ const FerramentasIA = () => {
             size="sm"
           >
             <UserCheck className="w-4 h-4 mr-2" />
-            Já adquiriu? Primeiro acesso aqui
+            {t('ferramentas.firstAccess')}
           </Button>
         </div>
       </div>
@@ -333,8 +335,7 @@ const FerramentasIA = () => {
       {/* Content */}
       <main className="container mx-auto px-4 py-8">
         <p className="text-gray-600 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
-          Acesse nossas ferramentas de inteligência artificial para criar artes incríveis, 
-          melhorar a qualidade de imagens, gerar selos 3D e muito mais.
+          {t('ferramentas.description')}
         </p>
 
         {/* Suas Ferramentas */}
@@ -342,7 +343,7 @@ const FerramentasIA = () => {
           <section className="mb-12">
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500" />
-              Suas Ferramentas
+              {t('ferramentas.yourTools')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {toolsWithAccess.map(renderToolCard)}
@@ -355,7 +356,7 @@ const FerramentasIA = () => {
           <section>
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-purple-500" />
-              Disponíveis para Aquisição
+              {t('ferramentas.availableForPurchase')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {toolsWithoutAccess.map(renderToolCard)}
@@ -366,7 +367,7 @@ const FerramentasIA = () => {
         {tools.length === 0 && (
           <div className="text-center py-16">
             <Sparkles className="w-16 h-16 text-purple-300 mx-auto mb-4" />
-            <p className="text-gray-500">Nenhuma ferramenta disponível no momento.</p>
+            <p className="text-gray-500">{t('ferramentas.noToolsAvailable')}</p>
           </div>
         )}
       </main>
@@ -379,15 +380,15 @@ const FerramentasIA = () => {
               <UserCheck className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Primeiro Acesso</h2>
+              <h2 className="text-xl font-bold text-foreground">{t('ferramentas.modals.firstAccess.title')}</h2>
               <p className="text-muted-foreground mt-2 text-sm">
-                Comprou uma ferramenta? Coloque seu email de compra aqui para definir sua senha
+                {t('ferramentas.modals.firstAccess.description')}
               </p>
             </div>
             <div className="space-y-3">
               <Input 
                 type="email" 
-                placeholder="Digite seu email de compra" 
+                placeholder={t('ferramentas.modals.firstAccess.placeholder')}
                 value={firstAccessEmail} 
                 onChange={e => setFirstAccessEmail(e.target.value)} 
                 onKeyDown={e => e.key === 'Enter' && handleFirstAccessCheck()} 
@@ -400,25 +401,25 @@ const FerramentasIA = () => {
                 {firstAccessLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Verificando...
+                    {t('ferramentas.modals.firstAccess.verifying')}
                   </>
                 ) : (
                   <>
                     <ChevronRight className="h-4 w-4 mr-2" />
-                    Verificar Email
+                    {t('ferramentas.modals.firstAccess.verify')}
                   </>
                 )}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Não é cliente ainda?{" "}
+              {t('ferramentas.modals.firstAccess.notCustomer')}{" "}
               <button 
                 onClick={() => {
                   setShowFirstAccessModal(false);
                 }} 
                 className="text-primary underline"
               >
-                Veja nossas ferramentas
+                {t('ferramentas.modals.firstAccess.seeTools')}
               </button>
             </p>
           </div>
@@ -433,9 +434,9 @@ const FerramentasIA = () => {
               <AlertTriangle className="h-8 w-8 text-red-500" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Email não encontrado</h2>
+              <h2 className="text-xl font-bold">{t('ferramentas.modals.emailNotFound.title')}</h2>
               <p className="text-muted-foreground mt-2 text-sm">
-                O email <strong>{firstAccessEmail}</strong> não está cadastrado.
+                {t('ferramentas.modals.emailNotFound.description', { email: firstAccessEmail })}
               </p>
             </div>
             <div className="flex flex-col gap-2">
@@ -447,7 +448,7 @@ const FerramentasIA = () => {
                 variant="outline"
               >
                 <ChevronLeft className="h-4 w-4 mr-2" />
-                Tentar outro email
+                {t('ferramentas.modals.emailNotFound.tryAnother')}
               </Button>
               <Button 
                 onClick={() => {
@@ -457,7 +458,7 @@ const FerramentasIA = () => {
                 className="bg-gradient-to-r from-yellow-500 to-orange-500"
               >
                 <User className="h-4 w-4 mr-2" />
-                Criar Conta
+                {t('ferramentas.modals.emailNotFound.createAccount')}
               </Button>
             </div>
           </div>
