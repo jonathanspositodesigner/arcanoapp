@@ -942,7 +942,7 @@ const BibliotecaArtes = () => {
                         {/* Access Tag - Priority: Active > Expired > None */}
                         {hasPackAccess && !isBonusType && <div className="absolute top-2 right-2 z-10">
                             <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
-                              DISPONÍVEL
+                              {t('badges.available')}
                             </Badge>
                           </div>}
                         
@@ -950,7 +950,7 @@ const BibliotecaArtes = () => {
                         {isBonusType && isPremium && <div className="absolute top-2 right-2 z-10">
                             <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
                               <Download className="h-3 w-3 mr-1" />
-                              DISPONÍVEL
+                              {t('badges.available')}
                             </Badge>
                           </div>}
                         
@@ -1402,25 +1402,25 @@ const BibliotecaArtes = () => {
                         navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
                       }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
-                              Renovar com Desconto
+                              {t('buttons.renewWithDiscount')}
                             </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-purple-500 to-violet-500 hover:opacity-90 text-white text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes-membro?pack=${packSlug}`);
                       }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                              20% OFF Membro
+                              {t('buttons.memberDiscount')}
                             </Button> : isPromoActive ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" onClick={e => {
                         e.stopPropagation();
                         navigate(`/promos-natal?pack=${packSlug}`);
                       }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                              Comprar com 50% OFF
+                              {t('buttons.buyWith50Off')}
                             </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes?pack=${packSlug}`);
                       }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                              Comprar Pack
+                              {t('buttons.buyPack')}
                             </Button>}
                         </div>
                       </Card>;
@@ -1429,7 +1429,7 @@ const BibliotecaArtes = () => {
 
                 {/* Empty state */}
                 {paginatedArtes.length === 0 && <div className="text-center py-12">
-                    <p className="text-muted-foreground">Nenhuma arte encontrada neste pack</p>
+                    <p className="text-muted-foreground">{t('empty.noArtsInPack')}</p>
                   </div>}
               </>}
 
@@ -1439,7 +1439,7 @@ const BibliotecaArtes = () => {
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-muted-foreground">
-                  Página {currentPage} de {totalPages}
+                  {t('pagination.page')} {currentPage} {t('pagination.of')} {totalPages}
                 </span>
                 <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
                   <ChevronRight className="h-4 w-4" />
@@ -1553,7 +1553,11 @@ const BibliotecaArtes = () => {
                 const packInfo = dbPacks.find(p => p.name === premiumModalItem.pack);
                 const isBonusOrUpdates = packInfo?.type === 'bonus' || packInfo?.type === 'updates';
                 return <p className="text-muted-foreground mt-2">
-                      {isBonusOrUpdates ? "Este conteúdo é exclusivo para membros. Adquira qualquer pack para ter acesso a todos os bônus e atualizações." : premiumModalItem.pack ? `Esta arte faz parte do pack "${premiumModalItem.pack}". Adquira o pack para ter acesso completo.` : "Esta arte é exclusiva. Adquira um pack para ter acesso."}
+                      {isBonusOrUpdates 
+                        ? t('messages.exclusiveForMembers')
+                        : premiumModalItem.pack 
+                          ? t('messages.artBelongsToPack', { pack: premiumModalItem.pack })
+                          : t('messages.exclusiveArt')}
                     </p>;
               })()}
               </div>
@@ -1561,24 +1565,24 @@ const BibliotecaArtes = () => {
               <div className="flex flex-col gap-2">
                 <Button onClick={() => navigate('/login-artes')} variant="outline">
                   <LogIn className="h-4 w-4 mr-2" />
-                  Fazer Login
+                  {t('buttons.doLogin')}
                 </Button>
                 {isPromoActive ? <Button onClick={() => {
                 const packSlug = toPackSlug(premiumModalItem.pack);
                 navigate(`/promos-natal${packSlug ? `?pack=${packSlug}` : ''}`);
               }} className="bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse">
                     <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                    Comprar com 50% OFF
+                    {t('buttons.buyWith50Off')}
                   </Button> : <Button onClick={() => {
                 const packSlug = toPackSlug(premiumModalItem.pack);
                 navigate(`/planos-artes${packSlug ? `?pack=${packSlug}` : ''}`);
               }} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
                     <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                    Comprar Pack
+                    {t('buttons.buyPack')}
                   </Button>}
                 <Button onClick={() => handleClosePremiumModal(false)} variant="outline">
                   <ChevronLeft className="h-4 w-4 mr-2" />
-                  Voltar
+                  {t('buttons.back')}
                 </Button>
               </div>
             </div>}
@@ -1600,7 +1604,7 @@ const BibliotecaArtes = () => {
                   {/* Access Badge */}
                   {hasCursoAccess && <div className="absolute top-2 right-2">
                       <Badge className="bg-green-500 text-white border-0 text-xs font-semibold shadow-lg">
-                        DISPONÍVEL
+                        {t('badges.available')}
                       </Badge>
                     </div>}
                 </div>
@@ -1608,7 +1612,9 @@ const BibliotecaArtes = () => {
                 <div>
                   <h2 className="text-xl font-bold text-foreground">{selectedCurso.name}</h2>
                   <p className="text-muted-foreground mt-2">
-                    {hasCursoAccess ? "Acesse o conteúdo exclusivo deste curso" : "Adquira este curso para ter acesso ao conteúdo exclusivo"}
+                    {hasCursoAccess 
+                      ? t('messages.accessExclusiveContent')
+                      : t('messages.buyCourseForAccess')}
                   </p>
                 </div>
 
@@ -1620,15 +1626,15 @@ const BibliotecaArtes = () => {
                   } else if (cursoSlug === 'eventoia-como-criar-selos-3d-animados') {
                     window.open('https://blibliotecadeartesarcanas.greenn.club/home', '_blank');
                   } else {
-                    toast.info("Link será configurado em breve");
+                    toast.info(t('messages.linkComingSoon'));
                   }
                 }} className="w-full">
                       <User className="h-4 w-4 mr-2" />
-                      Acessar Curso
+                      {t('buttons.accessCourse')}
                     </Button>
                     <Button onClick={() => setShowCursoModal(false)} variant="outline" className="w-full">
                       <ChevronLeft className="h-4 w-4 mr-2" />
-                      Voltar
+                      {t('buttons.back')}
                     </Button>
                   </div> : <div className="flex flex-col gap-2">
                     <Button onClick={() => {
@@ -1641,14 +1647,14 @@ const BibliotecaArtes = () => {
                   }
                 }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                      Comprar Curso
+                      {t('buttons.buyCourse')}
                     </Button>
                     <Button onClick={() => window.open('https://voxvisual.com.br/eventoia3/', '_blank')} variant="outline" className="w-full">
-                      Saiba mais
+                      {t('buttons.learnMore')}
                     </Button>
                     <Button onClick={() => setShowCursoModal(false)} variant="outline" className="w-full">
                       <ChevronLeft className="h-4 w-4 mr-2" />
-                      Voltar
+                      {t('buttons.back')}
                     </Button>
                   </div>}
               </div>;
@@ -1668,28 +1674,28 @@ const BibliotecaArtes = () => {
               <UserCheck className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Primeiro Acesso</h2>
+              <h2 className="text-xl font-bold text-foreground">{t('firstAccess.firstAccessTitle')}</h2>
               <p className="text-muted-foreground mt-2 text-sm">
-                Comprou um pack? Coloque seu email de compra aqui para definir sua senha
+                {t('firstAccess.firstAccessDescription')}
               </p>
             </div>
             <div className="space-y-3">
-              <Input type="email" placeholder="Digite seu email de compra" value={firstAccessEmail} onChange={e => setFirstAccessEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleFirstAccessCheck()} className="w-full" />
+              <Input type="email" placeholder={t('messages.enterPurchaseEmail')} value={firstAccessEmail} onChange={e => setFirstAccessEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleFirstAccessCheck()} className="w-full" />
               <Button onClick={handleFirstAccessCheck} disabled={firstAccessLoading} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600">
                 {firstAccessLoading ? <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Verificando...
+                    {t('messages.verifying')}
                   </> : <>
                     <ChevronRight className="h-4 w-4 mr-2" />
-                    Verificar Email
+                    {t('buttons.verifyEmail')}
                   </>}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Não é cliente ainda? <button onClick={() => {
+              {t('messages.notClientYet')} <button onClick={() => {
                 setShowFirstAccessModal(false);
                 navigate('/planos-artes');
-              }} className="text-primary underline">Veja nossos packs</button>
+              }} className="text-primary underline">{t('buttons.seeOurPacks')}</button>
             </p>
           </div>
         </DialogContent>
@@ -1703,12 +1709,9 @@ const BibliotecaArtes = () => {
               <AlertTriangle className="h-8 w-8 text-red-500" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Email não encontrado</h2>
+              <h2 className="text-xl font-bold text-foreground">{t('emailNotFound.title')}</h2>
               <p className="text-muted-foreground mt-2 text-sm">
-                O email <strong className="text-foreground">{firstAccessEmail}</strong> não está cadastrado no sistema.
-              </p>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Verifique se digitou corretamente ou crie uma nova conta.
+                {t('emailNotFound.description')}
               </p>
             </div>
             <div className="flex flex-col gap-2">
@@ -1717,7 +1720,7 @@ const BibliotecaArtes = () => {
                 setShowFirstAccessModal(true);
               }} variant="outline" className="w-full">
                 <ChevronLeft className="h-4 w-4 mr-2" />
-                Tentar outro email
+                {t('buttons.tryAnotherEmail')}
               </Button>
               <Button onClick={() => {
                 setShowEmailNotFoundModal(false);
@@ -1725,7 +1728,7 @@ const BibliotecaArtes = () => {
                 navigate('/login-artes');
               }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
                 <User className="h-4 w-4 mr-2" />
-                Criar Conta
+                {t('buttons.createAccount')}
               </Button>
             </div>
           </div>
