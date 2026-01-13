@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -26,9 +28,9 @@ const ForgotPassword = () => {
       if (error) throw error;
 
       setEmailSent(true);
-      toast.success("Email de recuperação enviado!");
+      toast.success(t('success.recoveryEmailSent'));
     } catch (error: any) {
-      toast.error(error.message || "Erro ao enviar email de recuperação");
+      toast.error(error.message || t('errors.sendRecoveryEmailError'));
     } finally {
       setIsLoading(false);
     }
@@ -40,10 +42,10 @@ const ForgotPassword = () => {
         <Card className="w-full max-w-md p-8 shadow-hover text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-4">
-            Email Enviado!
+            {t('emailSent.title')}
           </h1>
           <p className="text-muted-foreground mb-6">
-            Verifique sua caixa de entrada e clique no link para redefinir sua senha.
+            {t('emailSent.checkInboxInstructions')}
           </p>
           <Button
             onClick={() => navigate("/login")}
@@ -51,7 +53,7 @@ const ForgotPassword = () => {
             className="w-full"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar ao Login
+            {t('emailSent.backToLogin')}
           </Button>
         </Card>
       </div>
@@ -67,24 +69,24 @@ const ForgotPassword = () => {
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
+          {t('back')}
         </Button>
 
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Mail className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold text-foreground">
-              Recuperar Senha
+              {t('recoverPassword')}
             </h1>
           </div>
           <p className="text-muted-foreground">
-            Digite seu email para receber um link de recuperação
+            {t('recoverPasswordDescription')}
           </p>
         </div>
 
         <form onSubmit={handleResetPassword} className="space-y-6">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('email')}</Label>
             <Input
               id="email"
               type="email"
@@ -101,7 +103,7 @@ const ForgotPassword = () => {
             disabled={isLoading}
             className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
           >
-            {isLoading ? "Enviando..." : "Enviar Link de Recuperação"}
+            {isLoading ? t('sending') : t('sendRecoveryLink')}
           </Button>
         </form>
       </Card>

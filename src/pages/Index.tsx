@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import { FadeIn, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 // Imagens de preview para os cards
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
@@ -15,6 +16,7 @@ import cardFerramentasIA from "@/assets/card-ferramentas-ia.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('index');
   const isAppInstalled = useIsAppInstalled();
   const { subscribe } = usePushNotifications();
 
@@ -24,34 +26,34 @@ const Index = () => {
     const success = await subscribe();
     if (success) {
       trackPushNotificationEvent('activated_manual');
-      toast.success("Notificações ativadas com sucesso!");
+      toast.success(t('toast.notificationsActivated'));
     } else {
       trackPushNotificationEvent('permission_denied');
-      toast.error("Não foi possível ativar as notificações");
+      toast.error(t('toast.notificationsError'));
     }
   };
 
   const cards = [
     {
-      category: "Artes Editáveis PSD e Canva",
-      title: "Biblioteca de Artes Arcanas",
-      description: "Artes para Eventos editáveis PSD e Canva",
+      category: t('cards.artesCategory'),
+      title: t('cards.artesTitle'),
+      description: t('cards.artesDescription'),
       image: cardArtesArcanas,
       route: "/biblioteca-artes",
       imagePosition: "center 30%",
     },
     {
-      category: "Prompts IA",
-      title: "Biblioteca de Prompts IA",
-      description: "Prompts prontos para criar selos, imagens, logos e muito mais com IA",
+      category: t('cards.promptsCategory'),
+      title: t('cards.promptsTitle'),
+      description: t('cards.promptsDescription'),
       image: cardPromptsIA,
       route: "/biblioteca-prompts",
       imagePosition: "center center",
     },
     {
-      category: "Ferramentas Exclusivas de IA",
-      title: "Ferramentas de IA",
-      description: "Upscaler, Forja de Selos 3D, Mudar Pose e Roupa",
+      category: t('cards.toolsCategory'),
+      title: t('cards.toolsTitle'),
+      description: t('cards.toolsDescription'),
       image: cardFerramentasIA,
       route: "/ferramentas-ia",
       imagePosition: "center center",
@@ -69,7 +71,7 @@ const Index = () => {
             {isAppInstalled ? (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600">
                 <Check className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium hidden sm:inline">App Instalado</span>
+                <span className="text-xs font-medium hidden sm:inline">{t('appInstalled')}</span>
               </div>
             ) : (
               <button 
@@ -77,7 +79,7 @@ const Index = () => {
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-xs sm:text-sm font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-md hover:shadow-lg"
               >
                 <Smartphone className="h-4 w-4" />
-                <span className="hidden sm:inline">Instalar App</span>
+                <span className="hidden sm:inline">{t('installApp')}</span>
               </button>
             )}
 
@@ -87,7 +89,7 @@ const Index = () => {
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs sm:text-sm font-medium hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
               >
                 <Bell className="h-4 w-4" />
-                <span className="hidden sm:inline">Notificações</span>
+                <span className="hidden sm:inline">{t('notifications')}</span>
               </button>
             )}
           </div>
@@ -100,10 +102,10 @@ const Index = () => {
         <FadeIn delay={150} duration={600}>
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-2">
-              Seja bem vindo ao Arcano App!
+              {t('welcome')}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
-              A plataforma dos criadores do futuro!
+              {t('subtitle')}
             </p>
           </div>
         </FadeIn>
@@ -145,7 +147,7 @@ const Index = () => {
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
                 onClick={() => navigate(card.route)}
               >
-                Acessar
+                {t('access')}
                 <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
               </Button>
             </div>
@@ -160,14 +162,14 @@ const Index = () => {
               onClick={() => navigate("/admin-login")} 
               className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
             >
-              Acesso Administrador
+              {t('adminAccess')}
             </button>
             <span className="text-muted-foreground">•</span>
             <button 
               onClick={() => navigate("/parceiro-login-unificado")} 
               className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
             >
-              Acesso Colaborador
+              {t('collaboratorAccess')}
             </button>
           </div>
         </FadeIn>

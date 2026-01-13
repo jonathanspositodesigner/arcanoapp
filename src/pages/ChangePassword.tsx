@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 const ChangePassword = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('auth');
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -20,12 +22,12 @@ const ChangePassword = () => {
     e.preventDefault();
     
     if (newPassword.length < 6) {
-      toast.error("A senha deve ter pelo menos 6 caracteres");
+      toast.error(t('errors.passwordMinLength'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("As senhas não coincidem");
+      toast.error(t('errors.passwordsDoNotMatch'));
       return;
     }
 
@@ -47,10 +49,10 @@ const ChangePassword = () => {
           .eq('id', user.id);
       }
 
-      toast.success("Senha alterada com sucesso!");
+      toast.success(t('success.passwordChanged'));
       navigate('/biblioteca-prompts');
     } catch (error: any) {
-      toast.error(error.message || "Erro ao alterar senha");
+      toast.error(error.message || t('errors.passwordChangeError'));
     } finally {
       setIsLoading(false);
     }
@@ -63,17 +65,17 @@ const ChangePassword = () => {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Lock className="h-8 w-8 text-primary" />
             <h1 className="text-2xl font-bold text-foreground">
-              Criar Nova Senha
+              {t('createNewPassword')}
             </h1>
           </div>
           <p className="text-muted-foreground">
-            Por segurança, crie uma nova senha para sua conta
+            {t('createNewPasswordDescription')}
           </p>
         </div>
 
         <form onSubmit={handleChangePassword} className="space-y-6">
           <div>
-            <Label htmlFor="newPassword">Nova Senha</Label>
+            <Label htmlFor="newPassword">{t('newPassword')}</Label>
             <div className="relative mt-2">
               <Input
                 id="newPassword"
@@ -95,7 +97,7 @@ const ChangePassword = () => {
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+            <Label htmlFor="confirmPassword">{t('confirmNewPassword')}</Label>
             <div className="relative mt-2">
               <Input
                 id="confirmPassword"
@@ -121,7 +123,7 @@ const ChangePassword = () => {
             disabled={isLoading}
             className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
           >
-            {isLoading ? "Salvando..." : "Salvar Nova Senha"}
+            {isLoading ? t('saving') : t('saveNewPassword')}
           </Button>
         </form>
       </Card>
