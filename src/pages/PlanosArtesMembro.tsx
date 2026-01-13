@@ -163,17 +163,12 @@ const PlanosArtesMembro = () => {
         type: "6_meses",
         label: t('access6Months'),
         icon: Clock,
-        buttonText: isLatam ? "Desbloquear 6 Meses" : "Desbloquear 6 Meses",
-        features: isLatam ? [
-          "Acceso completo al pack seleccionado",
-          "Descarga ilimitada de artes",
-          "Archivos editables (PSD y Canva)",
-          "Actualizaciones del pack por 6 meses"
-        ] : [
-          "Acesso completo ao pack selecionado",
-          "Download ilimitado das artes",
-          "Arquivos editáveis (PSD e Canva)",
-          "Atualizações do pack por 6 meses"
+        buttonText: t('unlock6Months'),
+        features: [
+          t('features.fullAccess'),
+          t('features.unlimitedDownload'),
+          t('features.editableFiles'),
+          t('features.updates6Months')
         ],
         hasBonus: false,
         highlighted: false
@@ -182,17 +177,12 @@ const PlanosArtesMembro = () => {
         type: "1_ano",
         label: t('access1Year'),
         icon: Star,
-        buttonText: isLatam ? "Desbloquear 1 Año" : "Desbloquear 1 Ano",
-        features: isLatam ? [
-          "Todo lo del acceso de 6 meses",
-          "Acceso por 12 meses",
-          "Acceso al contenido bonus exclusivo",
-          "Novedades y actualizaciones premium"
-        ] : [
-          "Tudo do acesso de 6 meses",
-          "Acesso por 12 meses",
-          "Acesso ao conteúdo bônus exclusivo",
-          "Novidades e atualizações premium"
+        buttonText: t('unlock1Year'),
+        features: [
+          t('features.all6MonthsFeatures'),
+          t('features.access12Months'),
+          t('features.bonusAccess'),
+          t('features.premiumUpdates')
         ],
         hasBonus: true,
         highlighted: false
@@ -201,17 +191,12 @@ const PlanosArtesMembro = () => {
         type: "vitalicio",
         label: t('accessLifetime'),
         icon: Gift,
-        buttonText: isLatam ? "Desbloquear Acceso Vitalicio" : "Desbloquear Acesso Vitalício",
-        features: isLatam ? [
-          "Todo lo del acceso de 1 año",
-          "Acceso permanente al pack",
-          "Todas las actualizaciones futuras",
-          "Contenido bonus exclusivo para siempre"
-        ] : [
-          "Tudo do acesso de 1 ano",
-          "Acesso permanente ao pack",
-          "Todas as atualizações futuras",
-          "Conteúdo bônus exclusivo para sempre"
+        buttonText: t('unlockLifetime'),
+        features: [
+          t('features.all1YearFeatures'),
+          t('features.permanentAccess'),
+          t('features.allFutureUpdates'),
+          t('features.foreverBonus')
         ],
         hasBonus: true,
         highlighted: true
@@ -277,22 +262,18 @@ const PlanosArtesMembro = () => {
         <div className="text-center mb-8">
           <Badge className="bg-gradient-to-r from-purple-500 to-violet-500 text-white text-lg px-4 py-2 mb-4">
             <Crown className="h-5 w-5 mr-2" />
-            {isLatam ? '20% OFF - Descuento Exclusivo para Miembros' : '20% OFF - Desconto Exclusivo para Membros'}
+            {t('memberDiscountLabel')}
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             {selectedPack 
-              ? (isLatam ? `Adquiere el ${selectedPack.name}` : `Adquira o ${selectedPack.name}`)
-              : (isLatam ? "Elige un nuevo Pack" : "Escolha um novo Pack")
+              ? t('acquirePack', { pack: selectedPack.name })
+              : t('chooseNewPack')
             }
           </h1>
           <p className="text-white/60 max-w-2xl mx-auto">
             {selectedPack 
-              ? (isLatam 
-                  ? "¡Como miembro, tienes 20% de descuento en todos los nuevos packs!"
-                  : "Como membro, você tem 20% de desconto em todos os novos packs!")
-              : (isLatam 
-                  ? "Selecciona un pack para ver las opciones de compra con descuento de miembro"
-                  : "Selecione um pack para ver as opções de compra com desconto de membro")
+              ? t('memberDiscountInfo')
+              : t('selectPackMemberDiscount')
             }
           </p>
         </div>
@@ -304,10 +285,10 @@ const PlanosArtesMembro = () => {
               <div className="col-span-full text-center py-12">
                 <Crown className="h-16 w-16 text-purple-500 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-white mb-2">
-                  {isLatam ? '¡Ya tienes todos los packs!' : 'Você já possui todos os packs!'}
+                  {t('youOwnAllPacks')}
                 </h3>
                 <p className="text-white/60 mb-4">
-                  {isLatam ? 'Felicidades, tienes acceso completo a la biblioteca.' : 'Parabéns, você tem acesso completo à biblioteca.'}
+                  {t('congratsFullAccess')}
                 </p>
                 <Button onClick={() => navigate("/biblioteca-artes")}>
                   {t('backToLibrary')}
@@ -350,7 +331,7 @@ const PlanosArtesMembro = () => {
                 className="bg-[#2d4a5e]/30 border-[#2d4a5e] text-white hover:bg-[#2d4a5e]/50"
                 onClick={() => setSelectedPack(null)}
               >
-                {isLatam ? 'Elegir otro pack' : 'Escolher outro pack'}
+                {t('buttons.chooseAnotherPack', { ns: 'library' })}
               </Button>
             </div>
 
@@ -382,7 +363,7 @@ const PlanosArtesMembro = () => {
                     {option.hasBonus && (
                       <div className="absolute top-3 right-3 bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1">
                         <Gift className="h-3 w-3" />
-                        + Bônus
+                        {t('plusBonus')}
                       </div>
                     )}
                     <CardHeader className="text-center pt-8">
@@ -419,7 +400,7 @@ const PlanosArtesMembro = () => {
                         onClick={() => handleSelectOption(option.type)}
                       >
                         <Crown className="h-4 w-4 mr-2" />
-                        {isLatam ? 'Comprar con Descuento' : 'Comprar com Desconto'}
+                        {t('buttons.buyWithDiscount', { ns: 'library' })}
                       </Button>
                     </CardContent>
                   </Card>
