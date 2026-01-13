@@ -25,7 +25,7 @@ const PlanosForjaSelos3D = () => {
   const [tool, setTool] = useState<ToolData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const TOOL_SLUG = "forja-selos-3d";
+  const TOOL_SLUG = "forja-selos-3d-ilimitada";
 
   useEffect(() => {
     fetchToolData();
