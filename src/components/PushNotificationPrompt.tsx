@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Bell, Check, Gift, Sparkles, Zap } from "lucide-react";
@@ -11,6 +12,7 @@ const DISMISS_DAYS = 7;
 const SHOW_DELAY_MS = 3000;
 
 const PushNotificationPrompt = () => {
+  const { t } = useTranslation('common');
   const [showModal, setShowModal] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   const { subscribe } = usePushNotifications();
@@ -84,12 +86,12 @@ const PushNotificationPrompt = () => {
 
           {/* Title */}
           <h2 className="text-2xl font-bold text-foreground">
-            Ganhe 20% OFF! 🎁
+            {t('pushNotifications.earn20Off')}
           </h2>
 
           {/* Subtitle */}
           <p className="text-muted-foreground">
-            Ative as notificações e receba 20% de desconto no próximo lançamento!
+            {t('pushNotifications.activateToGetDiscount')}
           </p>
 
           {/* Benefits List */}
@@ -98,25 +100,25 @@ const PushNotificationPrompt = () => {
               <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
                 <Gift className="w-4 h-4 text-amber-500" />
               </div>
-              <span className="text-sm text-foreground font-medium">20% OFF no próximo pack</span>
+              <span className="text-sm text-foreground font-medium">{t('pushNotifications.nextPackDiscount')}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                 <Check className="w-4 h-4 text-green-500" />
               </div>
-              <span className="text-sm text-foreground">Novidades em primeira mão</span>
+              <span className="text-sm text-foreground">{t('pushNotifications.firstHandNews')}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                 <Sparkles className="w-4 h-4 text-green-500" />
               </div>
-              <span className="text-sm text-foreground">Promoções exclusivas</span>
+              <span className="text-sm text-foreground">{t('pushNotifications.exclusivePromos')}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                 <Zap className="w-4 h-4 text-green-500" />
               </div>
-              <span className="text-sm text-foreground">Atualizações importantes</span>
+              <span className="text-sm text-foreground">{t('pushNotifications.importantUpdates')}</span>
             </div>
           </div>
 
@@ -127,11 +129,11 @@ const PushNotificationPrompt = () => {
             className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-6 text-lg shadow-lg shadow-amber-500/30"
           >
             {isActivating ? (
-              "Ativando..."
+              t('pushNotifications.activating')
             ) : (
               <>
                 <Gift className="w-5 h-5 mr-2" />
-                Ativar e Ganhar 20% OFF
+                {t('pushNotifications.activateAndEarn')}
               </>
             )}
           </Button>
@@ -141,7 +143,7 @@ const PushNotificationPrompt = () => {
             onClick={handleDismiss}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
           >
-            Talvez depois
+            {t('pushNotifications.maybeLater')}
           </button>
         </div>
       </DialogContent>

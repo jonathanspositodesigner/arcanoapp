@@ -10,11 +10,9 @@ import { Eye, EyeOff, ArrowLeft, AlertCircle, KeyRound, Mail, Lock, UserPlus } f
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useLocale } from "@/contexts/LocaleContext";
 
 const UserLoginArtes = () => {
   const { t } = useTranslation('auth');
-  const { isLatam } = useLocale();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,7 +49,7 @@ const UserLoginArtes = () => {
 
         if (rpcError) {
           console.error('Erro ao verificar perfil:', rpcError);
-          toast.error("Erro ao verificar cadastro. Tente novamente.");
+          toast.error(t('errors.checkRegisterError'));
           setIsLoading(false);
           return;
         }
@@ -61,17 +59,17 @@ const UserLoginArtes = () => {
 
         if (profileExists && !passwordChanged) {
           // First-time user with wrong password - show modal immediately
-          toast.error("Este é seu primeiro acesso! Use seu email como senha.");
+          toast.error(t('errors.firstAccessUseEmail'));
           setShowFirstAccessModal(true);
         } else if (!profileExists) {
           // Email doesn't exist - offer signup
-          toast.info("Email não encontrado. Deseja criar uma conta?");
+          toast.info(t('errors.emailNotFoundSignup'));
           setShowSignupModal(true);
         } else {
           // Regular wrong password (user already changed password before)
           const newAttempts = failedAttempts + 1;
           setFailedAttempts(newAttempts);
-          toast.error("Email ou senha incorretos");
+          toast.error(t('errors.invalidCredentials'));
           
           // Show modal after 2 failed attempts as fallback
           if (newAttempts >= 2) {
@@ -104,17 +102,17 @@ const UserLoginArtes = () => {
               password_changed: false,
             }, { onConflict: 'id' });
           }
-          toast.success("Primeiro acesso! Por favor, altere sua senha.");
+          toast.success(t('errors.firstAccessSetPassword'));
           navigate("/change-password-artes");
           return;
         }
 
-        toast.success("Login realizado com sucesso!");
+        toast.success(t('success.loginSuccess'));
         navigate("/biblioteca-artes");
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Erro ao fazer login");
+      toast.error(t('errors.loginError'));
     } finally {
       setIsLoading(false);
     }
@@ -124,17 +122,17 @@ const UserLoginArtes = () => {
     e.preventDefault();
     
     if (!signupEmail.trim()) {
-      toast.error("Digite seu email");
+      toast.error(t('errors.enterEmail'));
       return;
     }
     
     if (signupPassword.length < 6) {
-      toast.error("A senha deve ter pelo menos 6 caracteres");
+      toast.error(t('errors.passwordMinLength'));
       return;
     }
     
     if (signupPassword !== signupConfirmPassword) {
-      toast.error("As senhas não coincidem");
+      toast.error(t('errors.passwordsDoNotMatch'));
       return;
     }
     
@@ -152,9 +150,9 @@ const UserLoginArtes = () => {
       
       if (error) {
         if (error.message.includes("already registered")) {
-          toast.error("Este email já está cadastrado. Tente fazer login.");
+          toast.error(t('errors.emailAlreadyRegistered'));
         } else {
-          toast.error("Erro ao criar conta: " + error.message);
+          toast.error(t('errors.signupError') + ": " + error.message);
         }
         return;
       }
@@ -183,19 +181,19 @@ const UserLoginArtes = () => {
           });
           
           if (loginError) {
-            toast.success("Conta criada! Faça login para continuar.");
+            toast.success(t('success.accountCreatedLogin'));
             setShowSignupModal(false);
             return;
           }
         }
         
-        toast.success("Conta criada com sucesso! Você está logado.");
+        toast.success(t('success.accountCreatedSuccess'));
         setShowSignupModal(false);
         navigate("/biblioteca-artes");
       }
     } catch (error) {
       console.error("Signup error:", error);
-      toast.error("Erro ao criar conta");
+      toast.error(t('errors.signupError'));
     } finally {
       setIsSigningUp(false);
     }
@@ -213,17 +211,15 @@ const UserLoginArtes = () => {
               <KeyRound className="w-10 h-10 text-amber-400" />
             </div>
             <h2 className="text-2xl font-bold text-amber-400">
-              {isLatam ? '🔑 ¿Es tu PRIMER ACCESO?' : '🔑 É o seu PRIMEIRO ACESSO?'}
+              {t('firstAccessModal.title')}
             </h2>
           </div>
           
           <div className="p-6 space-y-4">
-            <p className="text-white/90 text-center text-lg">
-              {isLatam 
-                ? <>En el primer acceso, tu <strong className="text-amber-400">login y contraseña</strong> son el <strong className="text-amber-400">MISMO EMAIL</strong> que usaste en la compra!</>
-                : <>No primeiro acesso, seu <strong className="text-amber-400">login e senha</strong> são o <strong className="text-amber-400">MESMO EMAIL</strong> que você usou na compra pela Greenn!</>
-              }
-            </p>
+            <p 
+              className="text-white/90 text-center text-lg"
+              dangerouslySetInnerHTML={{ __html: t('firstAccessModal.explanation') }}
+            />
             
             <div className="bg-[#0f0f1a] rounded-xl p-5 border-2 border-amber-500/40 space-y-3">
               <div className="flex items-center gap-3 text-white">
@@ -231,7 +227,7 @@ const UserLoginArtes = () => {
                   <Mail className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-white/60">Email:</p>
+                  <p className="text-xs text-white/60">{t('firstAccessModal.emailLabel')}</p>
                   <p className="font-mono text-amber-300 text-sm break-all">{displayEmail}</p>
                 </div>
               </div>
@@ -243,24 +239,22 @@ const UserLoginArtes = () => {
                   <Lock className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-white/60">Senha:</p>
+                  <p className="text-xs text-white/60">{t('firstAccessModal.passwordLabel')}</p>
                   <p className="font-mono text-amber-300 text-sm break-all">{displayEmail}</p>
                 </div>
               </div>
             </div>
             
-            <p className="text-white/60 text-center text-sm">
-              {isLatam 
-                ? <><strong className="text-amber-400">¡Ingresa el mismo email</strong> en los dos campos!</>
-                : <>Digite o <strong className="text-amber-400">mesmo email</strong> nos dois campos!</>
-              }
-            </p>
+            <p 
+              className="text-white/60 text-center text-sm"
+              dangerouslySetInnerHTML={{ __html: t('firstAccessModal.sameEmailTip') }}
+            />
             
             <Button
               onClick={() => setShowFirstAccessModal(false)}
               className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-6 text-lg"
             >
-              {isLatam ? '¡ENTENDIDO, VOY A INTENTAR! ✨' : 'ENTENDI, VOU TENTAR! ✨'}
+              {t('firstAccessModal.understood')}
             </Button>
           </div>
         </DialogContent>
@@ -274,10 +268,10 @@ const UserLoginArtes = () => {
               <UserPlus className="w-10 h-10 text-emerald-400" />
             </div>
             <h2 className="text-2xl font-bold text-emerald-400">
-              {isLatam ? 'Crear Cuenta' : 'Criar Conta'}
+              {t('signupModal.title')}
             </h2>
             <p className="text-white/70 text-sm mt-2">
-              {isLatam ? 'Regístrate para explorar la biblioteca' : 'Cadastre-se para explorar a biblioteca'}
+              {t('signupModal.subtitle')}
             </p>
           </div>
           
@@ -288,19 +282,19 @@ const UserLoginArtes = () => {
                 type="email"
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
-                placeholder={isLatam ? "tu@email.com" : "seu@email.com"}
+                placeholder={t('signupModal.emailPlaceholder')}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white mt-1"
                 required
               />
             </div>
             
             <div>
-              <Label className="text-white/80">{isLatam ? 'Nombre (opcional)' : 'Nome (opcional)'}</Label>
+              <Label className="text-white/80">{t('signupModal.nameOptional')}</Label>
               <Input
                 type="text"
                 value={signupName}
                 onChange={(e) => setSignupName(e.target.value)}
-                placeholder={isLatam ? "Tu nombre" : "Seu nome"}
+                placeholder={t('signupModal.namePlaceholder')}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white mt-1"
               />
             </div>
@@ -311,7 +305,7 @@ const UserLoginArtes = () => {
                 type={showSignupPassword ? "text" : "password"}
                 value={signupPassword}
                 onChange={(e) => setSignupPassword(e.target.value)}
-                placeholder={isLatam ? "Mínimo 6 caracteres" : "Mínimo 6 caracteres"}
+                placeholder={t('signupModal.minCharacters')}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white mt-1 pr-10"
                 required
               />
@@ -330,7 +324,7 @@ const UserLoginArtes = () => {
                 type="password"
                 value={signupConfirmPassword}
                 onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                placeholder={isLatam ? "Ingresa la contraseña nuevamente" : "Digite a senha novamente"}
+                placeholder={t('signupModal.confirmPasswordPlaceholder')}
                 className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white mt-1"
                 required
               />
@@ -339,10 +333,7 @@ const UserLoginArtes = () => {
             <Alert className="bg-amber-500/10 border-amber-500/30">
               <AlertCircle className="h-4 w-4 text-amber-500" />
               <AlertDescription className="text-amber-200 text-xs">
-                {isLatam 
-                  ? 'Después del registro, podrás explorar la biblioteca, pero necesitarás comprar un pack para acceder al contenido premium.'
-                  : 'Após o cadastro, você poderá explorar a biblioteca, mas precisará comprar um pack para ter acesso ao conteúdo premium.'
-                }
+                {t('signupModal.afterSignupWarning')}
               </AlertDescription>
             </Alert>
             
@@ -351,10 +342,7 @@ const UserLoginArtes = () => {
               disabled={isSigningUp}
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-6 text-lg"
             >
-              {isSigningUp 
-                ? (isLatam ? "Creando cuenta..." : "Criando conta...") 
-                : (isLatam ? "Crear mi cuenta" : "Criar minha conta")
-              }
+              {isSigningUp ? t('creatingAccount') : t('signupModal.createMyAccount')}
             </Button>
             
             <Button
@@ -363,7 +351,7 @@ const UserLoginArtes = () => {
               onClick={() => setShowSignupModal(false)}
               className="w-full text-white/60 hover:text-white"
             >
-              {isLatam ? 'Volver al login' : 'Voltar ao login'}
+              {t('signupModal.backToLogin')}
             </Button>
           </form>
         </DialogContent>
@@ -377,26 +365,20 @@ const UserLoginArtes = () => {
             onClick={() => navigate("/biblioteca-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {isLatam ? 'Volver' : 'Voltar'}
+            {t('back')}
           </Button>
           <CardTitle className="text-2xl text-white">
-            {isLatam ? 'Área Premium - Artes' : 'Área Premium - Artes'}
+            {t('loginCard.title')}
           </CardTitle>
           <CardDescription className="text-white/60">
-            {isLatam 
-              ? 'Accede a tu cuenta premium de la Biblioteca de Artes Arcanas'
-              : 'Acesse sua conta premium da Biblioteca de Artes Arcanas'
-            }
+            {t('loginCard.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Alert className="mb-4 bg-amber-500/10 border-amber-500/30">
             <AlertCircle className="h-4 w-4 text-amber-500" />
             <AlertDescription className="text-amber-200 text-sm">
-              {isLatam 
-                ? '¿Primer acceso? Tu contraseña inicial es tu email.'
-                : 'Primeiro acesso? Sua senha inicial é o seu email.'
-              }
+              {t('loginCard.firstAccessHint')}
             </AlertDescription>
           </Alert>
 
@@ -433,7 +415,7 @@ const UserLoginArtes = () => {
               <button
                 type="button"
                 onClick={() => navigate("/forgot-password-artes")}
-                className="text-sm text-[#2d4a5e] hover:text-[#3d5a6e] underline"
+                className="text-sm text-[#2d4a5e] hover:underline"
               >
                 {t('forgotPassword')}
               </button>
@@ -444,23 +426,8 @@ const UserLoginArtes = () => {
               className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
               disabled={isLoading}
             >
-              {isLoading ? (isLatam ? "Entrando..." : "Entrando...") : t('signIn')}
+              {isLoading ? t('signingIn') : t('signIn')}
             </Button>
-
-            <div className="text-center pt-4 border-t border-[#2d4a5e]/30">
-              <p className="text-white/60 text-sm mb-2">
-                {isLatam ? '¿Aún no tienes cuenta?' : 'Ainda não tem conta?'}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300"
-                onClick={() => setShowSignupModal(true)}
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                {isLatam ? 'Crear Cuenta' : 'Criar Conta'}
-              </Button>
-            </div>
           </form>
         </CardContent>
       </Card>
