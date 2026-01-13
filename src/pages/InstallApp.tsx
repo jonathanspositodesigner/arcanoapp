@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download } from "lucide-react";
@@ -11,6 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const InstallApp = () => {
+  const { t } = useTranslation('library');
   const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -56,7 +58,7 @@ const InstallApp = () => {
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
+          {t('install.back')}
         </Button>
 
         {isInstalled ? (
@@ -65,13 +67,13 @@ const InstallApp = () => {
               <Download className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              App já instalado!
+              {t('install.alreadyInstalled')}
             </h2>
             <p className="text-muted-foreground mb-4">
-              O ArcanoApp já está instalado no seu dispositivo. Procure o ícone na sua tela inicial.
+              {t('install.alreadyInstalledDescription')}
             </p>
             <Button onClick={() => navigate("/biblioteca-prompts")} className="bg-gradient-primary">
-              Ir para Biblioteca
+              {t('install.goToLibrary')}
             </Button>
           </Card>
         ) : deferredPrompt ? (
@@ -80,14 +82,14 @@ const InstallApp = () => {
               <Download className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              Instalar agora
+              {t('install.installNow')}
             </h2>
             <p className="text-muted-foreground mb-6">
-              Clique no botão abaixo para instalar o app no seu dispositivo
+              {t('install.installDescription')}
             </p>
             <Button onClick={handleInstall} size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8">
               <Download className="mr-2 h-5 w-5" />
-              Instalar ArcanoApp
+              {t('install.installButton')}
             </Button>
           </Card>
         ) : (
@@ -96,7 +98,7 @@ const InstallApp = () => {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Após instalar, o app abrirá em tela cheia e funcionará mesmo offline!
+            {t('install.afterInstall')}
           </p>
         </div>
       </div>
