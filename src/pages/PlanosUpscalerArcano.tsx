@@ -752,7 +752,7 @@ const PlanosUpscalerArcano = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.targetAudience.title')} <span className="text-fuchsia-400">Upscaler Arcano</span>?
+                  {t('tools:upscaler.targetAudience.title')}
                 </h2>
               </AnimatedSection>
               
