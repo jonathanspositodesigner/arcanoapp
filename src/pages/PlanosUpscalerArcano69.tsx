@@ -662,7 +662,7 @@ const PlanosUpscalerArcano69 = () => {
                 </div>
                 
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300">
-                  <div className="text-5xl mb-6">🤖</div>
+                  <div className="text-5xl mb-6">📷</div>
                   <p className="text-white/80 text-lg">
                     {t('tools:upscaler.pain.aiGenerated')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
                   </p>
