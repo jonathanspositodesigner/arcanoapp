@@ -333,5 +333,15 @@
     "courses": "Cursos",
     "chooseAnother": "Escolher outro pack",
     "bonus": "+ Bônus"
+  },
+  "artesHub": {
+    "title": "Biblioteca de Artes Arcanas",
+    "subtitle": "Escolha sua biblioteca de artes editáveis",
+    "eventosTitle": "Eventos & Festas",
+    "eventosDescription": "Artes Editáveis para Festas, Bares, Adegas, Eventos e etc...",
+    "musicosTitle": "Músicos & Artistas",
+    "musicosDescription": "Agendas, Telão de LED, Presskits, Lançamento de Música e tudo que você como precisa pra alavancar sua carreira!",
+    "access": "Acessar",
+    "backToHome": "Voltar para Home"
   }
 }

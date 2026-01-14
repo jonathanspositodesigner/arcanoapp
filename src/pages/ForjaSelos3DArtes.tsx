@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink } from "lucide-react";
@@ -16,6 +17,7 @@ interface Lesson {
 
 const ForjaSelos3DArtes = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('tools');
   const { hasAccessToPack, isLoading } = usePremiumArtesStatus();
   const [hasAccess, setHasAccess] = useState(false);
   const [checked, setChecked] = useState(false);
@@ -63,7 +65,7 @@ const ForjaSelos3DArtes = () => {
   if (isLoading || !checked) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-foreground">Carregando...</div>
+        <div className="text-foreground">{t('forja3DArtes.loading')}</div>
       </div>
     );
   }
@@ -86,10 +88,10 @@ const ForjaSelos3DArtes = () => {
           </Button>
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              Forja de Selos 3D Ilimitada
+              {t('forja3DArtes.title')}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Aprenda a criar selos 3D ilimitados com inteligência artificial
+              {t('forja3DArtes.description')}
             </p>
           </div>
         </div>
@@ -102,10 +104,10 @@ const ForjaSelos3DArtes = () => {
             <CardContent className="p-8 text-center">
               <Play className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-foreground mb-2">
-                Conteúdo em breve
+                {t('forja3DArtes.comingSoon')}
               </h2>
               <p className="text-muted-foreground">
-                As aulas deste curso serão disponibilizadas em breve.
+                {t('forja3DArtes.comingSoonDesc')}
               </p>
             </CardContent>
           </Card>

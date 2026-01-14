@@ -191,7 +191,7 @@ const FerramentasIA = () => {
   };
 
   const formatPrice = (price: number | null) => {
-    if (!price) return "Consultar";
+    if (!price) return t('ferramentas.contactPrice');
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",

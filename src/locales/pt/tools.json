@@ -262,7 +262,56 @@
       "errorAccessing": "Erro ao acessar. Tente fazer login normalmente.",
       "alreadySetPassword": "Você já definiu sua senha. Faça login normalmente.",
       "errorVerifyingEmail": "Erro ao verificar email. Tente novamente."
-    }
+    },
+    "contactPrice": "Consultar"
+  },
+  "upscalerLessons": {
+    "title": "Upscaler Arcano",
+    "description": "Melhore suas imagens deixando em 4K e remova o fundo.",
+    "lesson1": "Aula 1 - Acessando nossa IA exclusiva",
+    "lesson2": "Aula 2 - Como Usar o Upscaller Arcano",
+    "lesson3": "Aula 3 - Como usar de Graça e Ilimitado",
+    "createAccount": "Crie uma conta na Running Hub",
+    "accessTool": "Acesse a Ferramenta"
+  },
+  "forja3DLessons": {
+    "title": "Forja de Selos 3D",
+    "description": "Gere um selo novo, substitua o título, deixe em 4K e anime seus selos 3D em um só lugar.",
+    "lesson1": "1 - Acesse a Forja de Selos 3D aqui!",
+    "lesson2": "2 - Gerador de Prompt",
+    "lesson3": "3 - Gerador de Selos 3D",
+    "lesson4": "4 - Aumentar a Qualidade e Remover Fundo",
+    "lesson5": "5 - Troca de Título Selos 3D",
+    "lesson6": "6 - Animando o Selos 3D",
+    "createAccount": "Crie sua conta na Running Hub",
+    "accessTool": "Acesse a Ferramenta"
+  },
+  "mudarPose": {
+    "title": "Mudar Pose",
+    "description": "IA que muda a pose mantendo fidelidade do rosto.",
+    "lesson1": "1 - I.A que muda a pose de qualquer foto",
+    "lesson2": "2 - Como usar grátis",
+    "lesson3": "3 - NOVA AULA ATUALIZADA: Como usar a ferramenta de graça!",
+    "createAccount": "Crie sua conta na Running Hub",
+    "accessTool": "Acesse a Ferramenta",
+    "accessToolFree": "Acesse a Ferramenta Grátis"
+  },
+  "mudarRoupa": {
+    "title": "Mudar Roupa",
+    "description": "IA que troca a roupa mantendo fidelidade do rosto.",
+    "lesson1": "1 - I.A que muda a roupa de qualquer foto",
+    "lesson2": "2 - Como usar grátis",
+    "lesson3": "3 - NOVA AULA ATUALIZADA: Como usar a ferramenta de graça!",
+    "createAccount": "Crie sua conta na Running Hub",
+    "accessTool": "Acesse a Ferramenta",
+    "accessToolFree": "Acesse a Ferramenta Grátis"
+  },
+  "forja3DArtes": {
+    "title": "Forja de Selos 3D Ilimitada",
+    "description": "Aprenda a criar selos 3D ilimitados com inteligência artificial",
+    "comingSoon": "Conteúdo em breve",
+    "comingSoonDesc": "As aulas deste curso serão disponibilizadas em breve.",
+    "loading": "Carregando..."
   },
   "installTutorial": {
     "deviceButtons": {
