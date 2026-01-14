@@ -103,7 +103,7 @@
     "renewNow": "Renovar Agora",
     "useMyDiscount": "Usar Meu Desconto",
     "chooseAnotherPack": "Escolher outro pack",
-    "buyWithDiscount": "Comprar com Desconto",
+    "buyWithDiscount": "Comprar com Descuento",
     "alreadyBoughtPack": "Já comprei um pack"
   },
   "messages": {
@@ -194,5 +194,144 @@
     "comingSoon": "Conteúdo em breve",
     "comingSoonDescription": "As aulas desta ferramenta serão disponibilizadas em breve.",
     "aiToolDescription": "Ferramenta de Inteligência Artificial"
+  },
+  "musicos": {
+    "platformTitle": "Músicos & Artistas",
+    "sidebar": {
+      "installApp": "Instalar App",
+      "activateNotifications": "Ativar Notificações",
+      "myAccount": "Minha Conta",
+      "generateWithAI": "Gerar com IA",
+      "vipGroup": "Grupo VIP no WhatsApp"
+    },
+    "header": {
+      "profile": "Perfil",
+      "logout": "Sair",
+      "becomeMember": "Torne-se Membro",
+      "login": "Entrar"
+    },
+    "content": {
+      "title": "Modelos",
+      "subtitle": "Encontre o visual perfeito para sua carreira",
+      "all": "Todos",
+      "editModel": "Editar Modelo",
+      "unlock": "Liberar"
+    },
+    "modal": {
+      "promptUsed": "Prompt utilizado:",
+      "copyPrompt": "Copiar Prompt",
+      "referenceImage": "Imagem de Referência:",
+      "downloadReference": "Baixar Imagem de Referência",
+      "downloadsToday": "Downloads hoje:",
+      "openInCanva": "Abrir no Canva",
+      "downloadPsd": "Baixar PSD",
+      "noEditLinks": "Nenhum link de edição disponível"
+    },
+    "toast": {
+      "logoutSuccess": "Logout realizado com sucesso!",
+      "ledExclusive": "Telões de LED são exclusivos para planos Pro e Unlimited",
+      "ledExclusiveDescription": "Faça upgrade do seu plano para acessar este conteúdo",
+      "notificationsSuccess": "Notificações ativadas com sucesso!",
+      "promptCopied": "Prompt copiado!"
+    },
+    "empty": {
+      "title": "Em Breve!",
+      "description": "Estamos preparando uma biblioteca incrível de artes para músicos e artistas. Em breve você terá acesso a modelos incríveis para:"
+    },
+    "aiTools": {
+      "chatgpt": "Gerar no ChatGPT",
+      "nanoBanana": "Gerar no Nano Banana",
+      "whisk": "Gerar no Whisk",
+      "flux2": "Gerar no Flux 2",
+      "veo3": "Gerar Video no VEO 3"
+    }
+  },
+  "plansMusicos": {
+    "title": "ESCOLHA O MELHOR PLANO PARA VOCÊ",
+    "back": "Voltar",
+    "alreadySubscriber": "Já sou assinante",
+    "login": "Entrar",
+    "monthly": "MENSAL",
+    "annual": "ANUAL PARCELADO",
+    "discount": "+Desconto",
+    "discountBanner": "ATÉ {{percent}}% DE DESCONTO",
+    "subscribe": "Assinar",
+    "freeTrial": "Teste grátis por 7 dias",
+    "perMonth": "/mês",
+    "perYear": "/ano",
+    "plans": {
+      "basic": "Básico",
+      "pro": "Pro",
+      "unlimited": "Unlimited"
+    },
+    "badges": {
+      "promo": "PROMOÇÃO DE LANÇAMENTO",
+      "popular": "Popular",
+      "proPlusBadge": "Pro+",
+      "exclusivePro": "Exclusivo Pro+"
+    },
+    "features": {
+      "downloadsPerDay": "{{count}} downloads por dia",
+      "unlimitedDownloads": "Downloads ilimitados",
+      "editableArts": "Acesso as artes editáveis",
+      "weeklyUpdates": "Atualizações semanais",
+      "whatsappSupport": "Suporte via WhatsApp",
+      "ledScreens": "Modelos de Telões de LED",
+      "aiTools": "Ferramentas de IA",
+      "allUnlocked": "Todos os recursos liberados",
+      "extraBenefits": "Benefícios extras do plano:"
+    },
+    "ledCallout": {
+      "title": "Modelos de Telões de LED",
+      "description": "Acesse nossa biblioteca de modelos para telões de LED exclusivos para shows e eventos. Disponível apenas nos planos Pro e Unlimited."
+    },
+    "comingSoon": {
+      "title": "Em Breve",
+      "description": "Estamos trabalhando para disponibilizar os planos de assinatura em breve. Fique atento às novidades!",
+      "understood": "Entendi"
+    }
+  },
+  "successMusicos": {
+    "title": "Compra Confirmada! 🎉",
+    "welcome": "Bem-vindo ao",
+    "platformName": "Artes Músicos",
+    "howToAccess": "Como acessar sua conta",
+    "step1Title": "Verifique seu email",
+    "step1Description": "Enviamos suas credenciais de acesso para o email cadastrado",
+    "step2Title": "Faça login",
+    "step2Description": "Use o email e senha enviados para acessar a biblioteca",
+    "step3Title": "Acesse as artes",
+    "step3Description": "Explore nossa biblioteca completa de artes para músicos",
+    "spamWarning": "Não recebeu? Verifique a pasta de spam",
+    "loginButton": "Fazer Login",
+    "goToLibrary": "Ir para a biblioteca"
+  },
+  "pendingMusicos": {
+    "title": "Aguardando Pagamento",
+    "description": "Complete seu pagamento para ativar o plano",
+    "detecting": "Detectando pagamento automaticamente...",
+    "whatHappens": "O que acontece após o pagamento?",
+    "instantProcessing": "Processamento instantâneo",
+    "instantDescription": "Seu pagamento é confirmado automaticamente",
+    "welcomeEmail": "Email de boas-vindas",
+    "welcomeDescription": "Você receberá suas credenciais por email",
+    "autoRedirect": "Redirecionamento automático",
+    "autoRedirectDescription": "Esta página irá atualizar automaticamente",
+    "openCheckout": "Abrir Checkout Novamente",
+    "backToPlans": "Voltar aos Planos",
+    "alreadyPaid": "Já pagou? Aguarde alguns segundos ou verifique seu email.",
+    "helpText": "Problemas? Entre em contato pelo suporte."
+  },
+  "promo": {
+    "title": "Promoção de Fim de Ano!",
+    "offAllPacks": "OFF EM TODOS OS PACKS!",
+    "renewalBonus": "+ 30% OFF Renovação",
+    "chooseWithDiscount": "Escolha seu Pack com {{percent}}% OFF",
+    "discountOn": "{{percent}}% OFF",
+    "specialOffer": "Aproveite esta oferta especial de fim de ano! Preços exclusivos por tempo limitado.",
+    "packsOfArts": "Packs de Artes",
+    "courses": "Cursos",
+    "chooseAnother": "Escolher outro pack",
+    "bonus": "+ Bônus"
   }
 }
