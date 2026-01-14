@@ -1852,6 +1852,7 @@ export type Database = {
           created_at: string | null
           email: string | null
           id: string
+          locale: string | null
           name: string | null
           password_changed: boolean | null
           phone: string | null
@@ -1863,6 +1864,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id: string
+          locale?: string | null
           name?: string | null
           password_changed?: boolean | null
           phone?: string | null
@@ -1874,6 +1876,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id?: string
+          locale?: string | null
           name?: string | null
           password_changed?: boolean | null
           phone?: string | null
@@ -2293,6 +2296,7 @@ export type Database = {
           email: string
           error_message: string | null
           id: string
+          locale: string | null
           name: string | null
           open_count: number | null
           opened_at: string | null
@@ -2309,6 +2313,7 @@ export type Database = {
           email: string
           error_message?: string | null
           id?: string
+          locale?: string | null
           name?: string | null
           open_count?: number | null
           opened_at?: string | null
@@ -2325,6 +2330,7 @@ export type Database = {
           email?: string
           error_message?: string | null
           id?: string
+          locale?: string | null
           name?: string | null
           open_count?: number | null
           opened_at?: string | null
@@ -2343,6 +2349,7 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean | null
+          locale: string | null
           platform: string
           sender_email: string
           sender_name: string
@@ -2354,6 +2361,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean | null
+          locale?: string | null
           platform: string
           sender_email?: string
           sender_name?: string
@@ -2365,6 +2373,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean | null
+          locale?: string | null
           platform?: string
           sender_email?: string
           sender_name?: string

@@ -9,10 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import baaLogo from "@/assets/BAA.png";
 import { appendUtmToUrl } from "@/lib/utmUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 const PlanosArtesMusicos = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('library');
+  const { locale } = useLocale();
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   
@@ -183,7 +185,7 @@ const PlanosArtesMusicos = () => {
               <Button onClick={() => {
                 if ((plan as any).paymentUrl === "#") { setShowComingSoonModal(true); } 
                 else {
-                  const checkoutUrl = encodeURIComponent(appendUtmToUrl((plan as any).paymentUrl));
+                  const checkoutUrl = encodeURIComponent(appendUtmToUrl((plan as any).paymentUrl, locale));
                   const planName = encodeURIComponent(`${plan.name} ${billingPeriod === 'anual' ? 'Anual' : 'Mensal'}`);
                   navigate(`/aguardando-pagamento-musicos?checkout=${checkoutUrl}&plan=${planName}`);
                 }

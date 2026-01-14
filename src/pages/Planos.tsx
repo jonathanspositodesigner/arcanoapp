@@ -15,10 +15,12 @@ import {
 } from "@/components/ui/dialog";
 import { AnimatedSection, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 const Planos = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
+  const { locale } = useLocale();
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   
@@ -235,7 +237,7 @@ const Planos = () => {
               </div>
 
               <Button 
-                onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl), '_blank')}
+                onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
                 className={`w-full mb-6 ${plan.popular ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-muted hover:bg-muted/80 text-foreground"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}

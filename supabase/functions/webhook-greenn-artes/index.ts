@@ -79,6 +79,45 @@ function extractUtmSource(payload: any): string | null {
   return null
 }
 
+// Função para extrair locale do saleMetas
+function extractLocale(payload: any): 'pt' | 'es' {
+  const saleMetas = payload.saleMetas || []
+  for (const meta of saleMetas) {
+    if (meta.meta_key === 'utm_locale' && meta.meta_value === 'es') {
+      return 'es'
+    }
+  }
+  return 'pt'
+}
+
+// Textos de email por idioma
+const emailTexts = {
+  pt: {
+    greeting: 'Olá',
+    accessData: '📋 Dados do seu primeiro acesso:',
+    email: 'Email',
+    password: 'Senha',
+    securityWarning: 'Por segurança, você deverá trocar sua senha no primeiro acesso.',
+    clickButtonArtes: 'Clique no botão acima para fazer seu primeiro login e começar a explorar artes editáveis em PSD e Canva!',
+    clickButtonIA: 'Clique no botão acima para fazer seu primeiro login e começar a usar sua ferramenta de IA!',
+    copyrightArtes: '© Biblioteca de Artes Arcanas',
+    copyrightIA: '© Ferramentas IA Arcanas',
+    important: 'Importante'
+  },
+  es: {
+    greeting: 'Hola',
+    accessData: '📋 Datos de tu primer acceso:',
+    email: 'Email',
+    password: 'Contraseña',
+    securityWarning: 'Por seguridad, deberás cambiar tu contraseña en el primer acceso.',
+    clickButtonArtes: '¡Haz clic en el botón de arriba para iniciar sesión y explorar artes editables en PSD y Canva!',
+    clickButtonIA: '¡Haz clic en el botón de arriba para iniciar sesión y usar tu herramienta de IA!',
+    copyrightArtes: '© Biblioteca de Artes Arcanas',
+    copyrightIA: '© Herramientas IA Arcanas',
+    important: 'Importante'
+  }
+}
+
 // Função para verificar se venda veio do app (UTM = aplicativo)
 function isFromApp(payload: any): boolean {
   const utmSource = extractUtmSource(payload)
@@ -145,12 +184,15 @@ async function addToBlacklist(supabase: any, email: string, reason: string, requ
 }
 
 // Send welcome email to new pack purchasers via SendPulse with tracking
-async function sendWelcomeEmail(supabase: any, email: string, name: string, packInfo: string, requestId: string, isFerramentaIA: boolean = false): Promise<void> {
+async function sendWelcomeEmail(supabase: any, email: string, name: string, packInfo: string, requestId: string, isFerramentaIA: boolean = false, locale: 'pt' | 'es' = 'pt'): Promise<void> {
   console.log(`\n📧 [${requestId}] EMAIL DE BOAS-VINDAS:`)
   console.log(`   ├─ Destinatário: ${email}`)
   console.log(`   ├─ Nome: ${name || 'N/A'}`)
   console.log(`   ├─ Pack: ${packInfo}`)
   console.log(`   ├─ Tipo: ${isFerramentaIA ? 'Ferramenta IA' : 'Pack de Artes'}`)
+  console.log(`   ├─ Locale: ${locale}`)
+  
+  const t = emailTexts[locale]
   
   try {
     // Verificar se já enviou email para este email+pack nos últimos 5 minutos (previne duplicatas de webhooks)
@@ -179,21 +221,22 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
       return
     }
 
-    // Determinar plataforma do template com base no tipo de produto
+    // Determinar plataforma do template com base no tipo de produto e locale
     const templatePlatform = isFerramentaIA ? 'ferramentas_ia' : 'artes'
 
-    // Fetch template from database
+    // Fetch template from database with locale
     const { data: template } = await supabase
       .from('welcome_email_templates')
       .select('*')
       .eq('platform', templatePlatform)
+      .eq('locale', locale)
       .eq('is_active', true)
       .maybeSingle()
 
-    console.log(`   ├─ Template: ${template?.id || 'default'} (platform: ${templatePlatform})`)
+    console.log(`   ├─ Template: ${template?.id || 'default'} (platform: ${templatePlatform}, locale: ${locale})`)
 
-    // Parse template content com defaults baseados no tipo
-    let templateContent = isFerramentaIA 
+    // Parse template content com defaults baseados no tipo e locale
+    const defaultContentPt = isFerramentaIA 
       ? {
           heading: 'Sua Ferramenta de IA está Ativada!',
           intro: 'Sua compra foi confirmada com sucesso! Agora você tem acesso ilimitado a esta poderosa ferramenta de Inteligência Artificial.',
@@ -206,6 +249,22 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
           button_text: 'Acessar Plataforma',
           footer: 'Se tiver qualquer dúvida, responda este email que iremos te ajudar!'
         }
+    
+    const defaultContentEs = isFerramentaIA 
+      ? {
+          heading: '¡Tu Herramienta de IA está Activada!',
+          intro: '¡Tu compra fue confirmada con éxito! Ahora tienes acceso ilimitado a esta poderosa herramienta de Inteligencia Artificial.',
+          button_text: 'Acceder a Mi Herramienta',
+          footer: '¡Si tienes alguna duda, responde este email y te ayudaremos!'
+        }
+      : {
+          heading: '¡Bienvenido a la Biblioteca de Artes Arcanas!',
+          intro: '¡Tu compra fue confirmada con éxito! Ahora tienes acceso a nuestra biblioteca completa de artes editables.',
+          button_text: 'Acceder a la Plataforma',
+          footer: '¡Si tienes alguna duda, responde este email y te ayudaremos!'
+        }
+    
+    let templateContent = locale === 'es' ? { ...defaultContentEs } : { ...defaultContentPt }
     
     if (template?.content) {
       try {
@@ -285,7 +344,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
       <h1>${isFerramentaIA ? '🤖' : '🎨'} ${templateContent.heading}</h1>
     </div>
     
-    <p>Olá${name ? ` <strong>${name}</strong>` : ''}!</p>
+    <p>${t.greeting}${name ? ` <strong>${name}</strong>` : ''}!</p>
     
     <p>${templateContent.intro}</p>
     
@@ -294,11 +353,11 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     </div>
     
     <div class="credentials">
-      <h3>📋 Dados do seu primeiro acesso:</h3>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Senha:</strong> <span class="highlight">${email}</span></p>
+      <h3>${t.accessData}</h3>
+      <p><strong>${t.email}:</strong> ${email}</p>
+      <p><strong>${t.password}:</strong> <span class="highlight">${email}</span></p>
       <div class="warning">
-        <p>⚠️ <strong>Importante:</strong> Por segurança, você deverá trocar sua senha no primeiro acesso.</p>
+        <p>⚠️ <strong>${t.important}:</strong> ${t.securityWarning}</p>
       </div>
     </div>
     
@@ -307,14 +366,12 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     </a>
     
     <p style="text-align: center; color: #666;">
-      ${isFerramentaIA 
-        ? 'Clique no botão acima para fazer seu primeiro login e começar a usar sua ferramenta de IA!'
-        : 'Clique no botão acima para fazer seu primeiro login e começar a explorar artes editáveis em PSD e Canva!'}
+      ${isFerramentaIA ? t.clickButtonIA : t.clickButtonArtes}
     </p>
     
     <div class="footer">
       <p>${templateContent.footer}</p>
-      <p style="margin-top: 8px;">© ${isFerramentaIA ? 'Ferramentas IA Arcanas' : 'Biblioteca de Artes Arcanas'}</p>
+      <p style="margin-top: 8px;">${isFerramentaIA ? t.copyrightIA : t.copyrightArtes}</p>
     </div>
   </div>
   <img src="${openTrackingPixel}" width="1" height="1" style="display:none" alt="" />
@@ -357,7 +414,8 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
       template_used: template?.id || 'default',
       product_info: packInfo,
       status: result.result === true ? 'sent' : 'failed',
-      error_message: result.result !== true ? JSON.stringify(result) : null
+      error_message: result.result !== true ? JSON.stringify(result) : null,
+      locale
     })
     
     if (result.result === true) {
@@ -957,7 +1015,8 @@ Deno.serve(async (req) => {
       console.log(`\n💾 [${requestId}] OPERAÇÕES NO BANCO:`)
       console.log(`   ├─ Atualizando profile...`)
       
-      // Upsert profile with name and phone
+      // Upsert profile with name, phone and locale
+      const userLocale = extractLocale(payload)
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
@@ -965,6 +1024,7 @@ Deno.serve(async (req) => {
           name: clientName,
           phone: clientPhone,
           email: email,
+          locale: userLocale,
           password_changed: false,
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' })
@@ -1027,7 +1087,7 @@ Deno.serve(async (req) => {
       // Determinar se é ferramenta de IA
       const isFerramentaIA = packMapping?.isFerramentaIA || false
       
-      await sendWelcomeEmail(supabase, email, clientName, packInfo, requestId, isFerramentaIA)
+      await sendWelcomeEmail(supabase, email, clientName, packInfo, requestId, isFerramentaIA, userLocale)
 
       await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
 

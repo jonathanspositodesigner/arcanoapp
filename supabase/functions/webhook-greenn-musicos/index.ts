@@ -103,12 +103,50 @@ async function addToBlacklist(supabase: any, email: string, reason: string, requ
   }
 }
 
+// Função para extrair locale do saleMetas
+function extractLocale(payload: any): 'pt' | 'es' {
+  const saleMetas = payload.saleMetas || []
+  for (const meta of saleMetas) {
+    if (meta.meta_key === 'utm_locale' && meta.meta_value === 'es') {
+      return 'es'
+    }
+  }
+  return 'pt'
+}
+
+// Textos de email por idioma
+const emailTexts = {
+  pt: {
+    greeting: 'Olá',
+    accessData: '📋 Dados do seu primeiro acesso:',
+    email: 'Email',
+    password: 'Senha',
+    securityWarning: 'Por segurança, você deverá trocar sua senha no primeiro acesso.',
+    clickButton: 'Clique no botão acima para fazer seu primeiro login e começar a explorar artes incríveis para músicos!',
+    copyright: '© Biblioteca de Artes para Músicos',
+    important: 'Importante'
+  },
+  es: {
+    greeting: 'Hola',
+    accessData: '📋 Datos de tu primer acceso:',
+    email: 'Email',
+    password: 'Contraseña',
+    securityWarning: 'Por seguridad, deberás cambiar tu contraseña en el primer acceso.',
+    clickButton: '¡Haz clic en el botón de arriba para iniciar sesión y explorar artes increíbles para músicos!',
+    copyright: '© Biblioteca de Artes para Músicos',
+    important: 'Importante'
+  }
+}
+
 // Função para enviar email de boas-vindas
-async function sendWelcomeEmail(supabase: any, email: string, name: string, planInfo: string, requestId: string): Promise<void> {
+async function sendWelcomeEmail(supabase: any, email: string, name: string, planInfo: string, requestId: string, locale: 'pt' | 'es' = 'pt'): Promise<void> {
   console.log(`\n📧 [${requestId}] EMAIL DE BOAS-VINDAS:`)
   console.log(`   ├─ Destinatário: ${email}`)
   console.log(`   ├─ Nome: ${name || 'N/A'}`)
   console.log(`   ├─ Plano: ${planInfo}`)
+  console.log(`   ├─ Locale: ${locale}`)
+  
+  const t = emailTexts[locale]
   
   try {
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
@@ -120,23 +158,33 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       return
     }
 
-    // Fetch template from database
+    // Fetch template from database with locale
     const { data: template } = await supabase
       .from('welcome_email_templates')
       .select('*')
       .eq('platform', 'musicos')
+      .eq('locale', locale)
       .eq('is_active', true)
       .maybeSingle()
 
-    console.log(`   ├─ Template: ${template?.id || 'default'}`)
+    console.log(`   ├─ Template: ${template?.id || 'default'} (locale: ${locale})`)
 
-    // Parse template content
-    let templateContent = {
-      heading: 'Bem-vindo à Biblioteca de Artes para Músicos!',
-      intro: 'Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de artes para músicos.',
-      button_text: 'Acessar Plataforma',
-      footer: 'Se tiver qualquer dúvida, responda este email que iremos te ajudar!'
-    }
+    // Parse template content with locale-aware defaults
+    const defaultContent = locale === 'es'
+      ? {
+          heading: '¡Bienvenido a la Biblioteca de Artes para Músicos!',
+          intro: '¡Tu compra fue confirmada con éxito! Ahora tienes acceso a nuestra biblioteca completa de artes para músicos.',
+          button_text: 'Acceder a la Plataforma',
+          footer: '¡Si tienes alguna duda, responde este email y te ayudaremos!'
+        }
+      : {
+          heading: 'Bem-vindo à Biblioteca de Artes para Músicos!',
+          intro: 'Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de artes para músicos.',
+          button_text: 'Acessar Plataforma',
+          footer: 'Se tiver qualquer dúvida, responda este email que iremos te ajudar!'
+        }
+    
+    let templateContent = { ...defaultContent }
     
     if (template?.content) {
       try {
@@ -209,7 +257,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       <h1>🎵 ${templateContent.heading}</h1>
     </div>
     
-    <p>Olá${name ? ` <strong>${name}</strong>` : ''}!</p>
+    <p>${t.greeting}${name ? ` <strong>${name}</strong>` : ''}!</p>
     
     <p>${templateContent.intro}</p>
     
@@ -218,11 +266,11 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
     </div>
     
     <div class="credentials">
-      <h3>📋 Dados do seu primeiro acesso:</h3>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Senha:</strong> <span class="highlight">${email}</span></p>
+      <h3>${t.accessData}</h3>
+      <p><strong>${t.email}:</strong> ${email}</p>
+      <p><strong>${t.password}:</strong> <span class="highlight">${email}</span></p>
       <div class="warning">
-        <p>⚠️ <strong>Importante:</strong> Por segurança, você deverá trocar sua senha no primeiro acesso.</p>
+        <p>⚠️ <strong>${t.important}:</strong> ${t.securityWarning}</p>
       </div>
     </div>
     
@@ -231,12 +279,12 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
     </a>
     
     <p style="text-align: center; color: #666;">
-      Clique no botão acima para fazer seu primeiro login e começar a explorar artes incríveis para músicos!
+      ${t.clickButton}
     </p>
     
     <div class="footer">
       <p>${templateContent.footer}</p>
-      <p style="margin-top: 8px;">© Biblioteca de Artes para Músicos</p>
+      <p style="margin-top: 8px;">${t.copyright}</p>
     </div>
   </div>
   <img src="${openTrackingPixel}" width="1" height="1" style="display:none" alt="" />
@@ -279,7 +327,8 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       template_used: template?.id || 'default',
       product_info: planInfo,
       status: result.result === true ? 'sent' : 'failed',
-      error_message: result.result !== true ? JSON.stringify(result) : null
+      error_message: result.result !== true ? JSON.stringify(result) : null,
+      locale
     })
     
     if (result.result === true) {
