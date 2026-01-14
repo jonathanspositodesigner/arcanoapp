@@ -672,11 +672,6 @@ const PlanosUpscalerArcano = () => {
                 <p className="text-center text-2xl text-white mt-12">
                   {t('tools:upscaler.pain.solution')}
                 </p>
-
-                {/* CTA intermediário */}
-                <div className="flex justify-center mt-10">
-                  <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
-                </div>
               </AnimatedSection>
             </div>
           </AnimatedSection>
