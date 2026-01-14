@@ -8,11 +8,11 @@
     "alreadyHaveAccessDesc": "Você já possui acesso ao Upscaler Arcano.",
     "goToLibrary": "Ir para Biblioteca",
     "hero": {
-      "title1": "Melhore suas",
-      "photos": "fotos",
-      "title2": "com Inteligência Artificial",
-      "subtitle": "Transforme fotos de celular, imagens de clientes ou artes geradas por IA em imagens",
-      "sharp": "nítidas e profissionais",
+      "title1": "Pare de postar fotos sem qualidade",
+      "photos": "",
+      "title2": "e parecer um amador",
+      "subtitle": "Deixe suas fotos com qualidade profissional",
+      "sharp": "com apenas 1 clique",
       "dragToCompare": "Arraste para ver a diferença"
     },
     "cta": "QUERO MEU ACESSO AGORA",
