@@ -392,17 +392,7 @@ const PlanosUpscalerArcano69 = () => {
   };
 
   const handlePurchase = () => {
-    if (!tool) return;
-
-    const checkoutLink = isPremium && tool.checkout_link_membro_vitalicio
-      ? tool.checkout_link_membro_vitalicio
-      : tool.checkout_link_vitalicio;
-
-    if (checkoutLink) {
-      window.open(appendUtmToUrl(checkoutLink), "_blank");
-    } else {
-      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
-    }
+    window.open(appendUtmToUrl("https://payfast.greenn.com.br/redirect/256102"), "_blank");
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
