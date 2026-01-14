@@ -484,6 +484,11 @@ const PlanosUpscalerArcano = () => {
 
   const targetAudience = [
     {
+      icon: Camera,
+      title: t('tools:upscaler.targetAudience.photographers.title'),
+      description: t('tools:upscaler.targetAudience.photographers.description')
+    },
+    {
       icon: Music,
       title: t('tools:upscaler.targetAudience.musicians.title'),
       description: t('tools:upscaler.targetAudience.musicians.description')
@@ -497,11 +502,6 @@ const PlanosUpscalerArcano = () => {
       icon: Camera,
       title: t('tools:upscaler.targetAudience.designers.title'),
       description: t('tools:upscaler.targetAudience.designers.description')
-    },
-    {
-      icon: Camera,
-      title: t('tools:upscaler.targetAudience.photographers.title'),
-      description: t('tools:upscaler.targetAudience.photographers.description')
     },
     {
       icon: MessageCircle,
