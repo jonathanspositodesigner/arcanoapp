@@ -56,7 +56,8 @@
       }
     },
     "targetAudience": {
-      "title": "¡No importa tu nicho, el Upscaler Arcano es para ti!",
+      "titlePart1": "¡No importa tu nicho,",
+      "titlePart2": "el Upscaler Arcano es para ti!",
       "musicians": {
         "title": "Músicos y Productores",
         "description": "Entrega fotos profesionales a tus contratantes y posiciónate con mayor valor agregado."
