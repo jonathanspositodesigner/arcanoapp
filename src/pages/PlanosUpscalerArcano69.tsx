@@ -637,35 +637,35 @@ const PlanosUpscalerArcano69 = () => {
               
               {/* Grid responsivo: 1 coluna mobile, 2 ou 3 desktop */}
               <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" staggerDelay={100}>
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300">
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center md:min-h-[180px]">
                   <div className="text-4xl md:text-5xl mb-4 md:mb-6">📱</div>
                   <p className="text-white/80 text-base md:text-lg">
                     {t('tools:upscaler.pain.phone')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
                   </p>
                 </div>
                 
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300">
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center md:min-h-[180px]">
                   <div className="text-4xl md:text-5xl mb-4 md:mb-6">😤</div>
                   <p className="text-white/80 text-base md:text-lg">
                     {t('tools:upscaler.pain.client')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
                   </p>
                 </div>
                 
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300">
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center md:min-h-[180px]">
                   <div className="text-4xl md:text-5xl mb-4 md:mb-6">📷</div>
                   <p className="text-white/80 text-base md:text-lg">
                     {t('tools:upscaler.pain.aiGenerated')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
                   </p>
                 </div>
                 
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300">
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center md:min-h-[180px]">
                   <div className="text-4xl md:text-5xl mb-4 md:mb-6">🤖</div>
                   <p className="text-white/80 text-base md:text-lg">
                     {t('tools:upscaler.pain.aiImage')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
                   </p>
                 </div>
                 
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 sm:col-span-2 lg:col-span-1">
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center md:min-h-[180px] sm:col-span-2 lg:col-span-1">
                   <div className="text-4xl md:text-5xl mb-4 md:mb-6">🎸</div>
                   <p className="text-white/80 text-base md:text-lg">
                     {t('tools:upscaler.pain.lostContract')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
