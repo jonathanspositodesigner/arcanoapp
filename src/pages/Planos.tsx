@@ -14,6 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { AnimatedSection, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
+import { appendUtmToUrl } from "@/lib/utmUtils";
 
 const Planos = () => {
   const navigate = useNavigate();
@@ -234,7 +235,7 @@ const Planos = () => {
               </div>
 
               <Button 
-                onClick={() => window.open((plan as any).paymentUrl, '_blank')}
+                onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl), '_blank')}
                 className={`w-full mb-6 ${plan.popular ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-muted hover:bg-muted/80 text-foreground"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
