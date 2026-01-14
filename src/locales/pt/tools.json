@@ -124,14 +124,17 @@
       "a5": "Sim! Não há limite de imagens. Use quantas vezes precisar, para sempre."
     },
     "finalCTA": {
-      "title": "Transforme suas imagens",
-      "subtitle": "hoje",
-      "description": "Acesso vitalício à melhor ferramenta de upscale por IA",
-      "from": "De",
-      "for": "Por",
-      "oneTimePayment": "pagamento único",
+      "title": "Garanta seu acesso",
+      "subtitle": "vitalício",
+      "discount": "OFF",
+      "memberDiscount": "Desconto de Membro",
       "or": "ou",
-      "inInstallments": "em até 3x de"
+      "installments": "3x de",
+      "oneTimePayment": "pagamento único • acesso vitalício",
+      "limitedOffer": "Oferta por tempo limitado",
+      "card": "Cartão",
+      "pix": "PIX",
+      "secure": "Seguro"
     }
   },
   "upscalerTool": {
@@ -164,7 +167,9 @@
       "downloadHD": "Baixar Imagem HD",
       "downloadPNG": "Baixar PNG",
       "processAnother": "Processar Outra Imagem",
-      "cancel": "Cancelar"
+      "processNew": "Processar Nova Imagem",
+      "cancel": "Cancelar",
+      "tryAgain": "Tentar Novamente"
     },
     "status": {
       "uploading": "Enviando imagem...",
@@ -179,7 +184,8 @@
     "errors": {
       "selectImage": "Por favor, selecione uma imagem válida",
       "maxSize": "A imagem deve ter no máximo 10MB",
-      "selectFirst": "Selecione uma imagem primeiro"
+      "selectFirst": "Selecione uma imagem primeiro",
+      "code": "Código"
     },
     "toast": {
       "success": "Imagem processada com sucesso!",
@@ -251,6 +257,101 @@
       "errorAccessing": "Erro ao acessar. Tente fazer login normalmente.",
       "alreadySetPassword": "Você já definiu sua senha. Faça login normalmente.",
       "errorVerifyingEmail": "Erro ao verificar email. Tente novamente."
+    }
+  },
+  "installTutorial": {
+    "deviceButtons": {
+      "iphone": "iPhone",
+      "android": "Android",
+      "computer": "Computador"
+    },
+    "inAppWarning": {
+      "title": "Navegador interno detectado",
+      "description": "Você está usando o navegador do {{browser}}. Siga os passos acima para abrir no Safari ou Chrome."
+    },
+    "detected": "Detectado",
+    "change": "Alterar",
+    "close": "Fechar",
+    "selectBrowser": "Selecione seu navegador",
+    "steps": {
+      "ios": {
+        "safari": {
+          "step1Title": "Toque no ícone Compartilhar",
+          "step1Desc": "Na barra inferior do Safari, toque no ícone de compartilhar",
+          "step2Title": "Adicionar à Tela de Início",
+          "step2Desc": "Role o menu e toque em \"Adicionar à Tela de Início\"",
+          "step3Title": "Confirme a instalação",
+          "step3Desc": "Toque em \"Adicionar\" no canto superior direito"
+        },
+        "chrome": {
+          "step1Title": "Toque no ícone Compartilhar",
+          "step1Desc": "No topo da tela, perto do nome do site",
+          "step2Title": "Role o menu para baixo",
+          "step2Desc": "Procure a opção \"Adicionar à Tela de Início\"",
+          "step3Title": "Confirme a instalação",
+          "step3Desc": "Toque em \"Adicionar\" para confirmar"
+        }
+      },
+      "android": {
+        "chrome": {
+          "step1Title": "Toque nos três pontinhos",
+          "step1Desc": "No canto superior direito do Chrome",
+          "step2Title": "Toque em \"Instalar app\"",
+          "step2Desc": "No menu que aparecer, procure por \"Instalar app\"",
+          "step3Title": "Confirme a instalação",
+          "step3Desc": "Toque em \"Instalar\" no popup de confirmação"
+        }
+      },
+      "desktop": {
+        "chrome": {
+          "step1Title": "Clique no ícone de instalação",
+          "step1Desc": "Na barra de endereço do Chrome, à direita",
+          "step2Title": "Clique em \"Instalar\"",
+          "step2Desc": "No popup que aparecer, confirme a instalação",
+          "step3Title": "Pronto!",
+          "step3Desc": "O app será instalado e abrirá automaticamente"
+        }
+      },
+      "inApp": {
+        "step1Title": "Toque nos três pontinhos",
+        "step1Desc": "No canto superior direito da tela",
+        "step2Title": "Abra no navegador externo",
+        "step2Desc": "Toque em \"Abrir no navegador\" ou similar",
+        "step3Title": "Continue no navegador",
+        "step3Desc": "O site abrirá no Safari/Chrome, siga o tutorial normal"
+      }
+    },
+    "mockup": {
+      "addToHomeScreen": "Adicionar à Tela de Início",
+      "add": "Adicionar",
+      "cancel": "Cancelar",
+      "install": "Instalar",
+      "installApp": "Instalar app",
+      "scrollDown": "Role para baixo",
+      "openInBrowser": "Abrir no navegador",
+      "openingInBrowser": "Abrindo no navegador...",
+      "followNormalTutorial": "O site abrirá no Safari ou Chrome. Siga o tutorial normal para instalar.",
+      "appInstalled": "App Instalado!",
+      "findIcon": "Procure o ícone na sua área de trabalho"
+    },
+    "browsers": {
+      "safariIphone": "Safari no iPhone",
+      "chromeIphone": "Chrome no iPhone",
+      "firefoxIphone": "Firefox no iPhone",
+      "braveIphone": "Brave no iPhone",
+      "operaIphone": "Opera no iPhone",
+      "duckduckgoIphone": "DuckDuckGo no iPhone",
+      "chromeAndroid": "Chrome no Android",
+      "firefoxAndroid": "Firefox no Android",
+      "samsungInternet": "Samsung Internet",
+      "operaAndroid": "Opera no Android",
+      "braveAndroid": "Brave no Android",
+      "duckduckgoAndroid": "DuckDuckGo no Android",
+      "chromeDesktop": "Chrome",
+      "edgeDesktop": "Microsoft Edge",
+      "firefoxDesktop": "Firefox",
+      "instagram": "Navegador do Instagram",
+      "facebook": "Navegador do Facebook"
     }
   }
 }
