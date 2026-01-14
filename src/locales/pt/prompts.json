@@ -236,5 +236,56 @@
     },
     "understood": "Entendi",
     "copyPrompt": "Copiar Prompt"
+  },
+  "installTutorial": {
+    "title": "Instale o App",
+    "subtitle": "Siga os passos abaixo para instalar",
+    "detectingBrowser": "Detectando seu navegador...",
+    "inAppBrowserWarning": "Você está usando um navegador interno. Siga os passos para abrir no navegador externo.",
+    "step": "Passo",
+    "of": "de",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "done": "Concluído",
+    "close": "Fechar",
+    "openExternalBrowser": "Abrir no navegador externo",
+    "ios": {
+      "safari": {
+        "step1": "Toque no ícone Compartilhar",
+        "step1Desc": "Na barra inferior do Safari, toque no ícone de compartilhar",
+        "step2": "Adicionar à Tela de Início",
+        "step2Desc": "Role o menu e toque em \"Adicionar à Tela de Início\"",
+        "step3": "Confirme a instalação",
+        "step3Desc": "Toque em \"Adicionar\" no canto superior direito"
+      },
+      "chrome": {
+        "step1": "Toque no ícone Compartilhar",
+        "step1Desc": "No topo da tela, perto do nome do site",
+        "step2": "Role o menu para baixo",
+        "step2Desc": "Procure a opção \"Adicionar à Tela de Início\"",
+        "step3": "Confirme a instalação",
+        "step3Desc": "Toque em \"Adicionar\" para confirmar"
+      }
+    },
+    "android": {
+      "chrome": {
+        "step1": "Toque nos três pontinhos",
+        "step1Desc": "No canto superior direito do Chrome",
+        "step2": "Toque em \"Instalar app\"",
+        "step2Desc": "No menu que aparecer, procure por \"Instalar app\"",
+        "step3": "Confirme a instalação",
+        "step3Desc": "Toque em \"Instalar\" no popup de confirmação"
+      }
+    },
+    "desktop": {
+      "chrome": {
+        "step1": "Clique no ícone de instalação",
+        "step1Desc": "Na barra de endereço do Chrome, à direita",
+        "step2": "Clique em \"Instalar\"",
+        "step2Desc": "No popup que aparecer, confirme a instalação",
+        "step3": "Pronto!",
+        "step3Desc": "O app será instalado e abrirá automaticamente"
+      }
+    }
   }
 }

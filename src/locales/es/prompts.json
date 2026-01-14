@@ -98,5 +98,194 @@
   },
   "collection": {
     "viewCollection": "Ver Colección Completa"
+  },
+  "planos": {
+    "title": "ELIGE EL MEJOR PLAN PARA TI",
+    "back": "Volver",
+    "alreadyPremium": "Ya soy premium",
+    "monthly": "MENSUAL",
+    "annualInstallments": "ANUAL EN CUOTAS",
+    "discount": "+Descuento",
+    "upToDiscount": "HASTA {{percent}}% DE DESCUENTO",
+    "launchPromo": "PROMOCIÓN DE LANZAMIENTO",
+    "popular": "Popular",
+    "perMonth": "/mes",
+    "perYear": "/año",
+    "subscribe": "Suscribirse",
+    "freeTrial": "Prueba gratis por 7 días",
+    "extraBenefits": "Beneficios extras del plan:",
+    "allAIFeatures": "Todos los recursos de IA",
+    "comingSoon": {
+      "title": "Próximamente",
+      "description": "Estamos trabajando para disponibilizar los planes de suscripción pronto. ¡Estate atento a las novedades!",
+      "understood": "Entendido"
+    },
+    "features": {
+      "10PromptsDay": "10 prompts premium por día",
+      "24PromptsDay": "24 prompts premium por día",
+      "unlimitedPrompts": "Prompts premium ilimitados",
+      "allPremiumContent": "Acceso a todo contenido premium",
+      "arcanoAcademy": "Arcano Academy - Mini curso de IA",
+      "dailyUpdates": "Actualizaciones diarias",
+      "immediateRelease": "Liberación inmediata",
+      "whatsappSupport": "Soporte exclusivo vía WhatsApp",
+      "changeClothesAI": "IA que cambia la ropa",
+      "changePoseAI": "IA que cambia pose",
+      "upscaleArcano": "Upscale Arcano",
+      "forja3D": "Forja de Sellos 3D"
+    }
+  },
+  "promptverso": {
+    "title": "La plataforma de los creadores del futuro",
+    "subtitle": "Descubre una colección increíble de prompts para crear sellos y elementos 3D profesionales",
+    "accessPrompts": "Acceder a Prompts",
+    "contributeWithCommunity": "Contribuye con la Comunidad",
+    "installApp": "Instalar App",
+    "accessArtesLibrary": "Acceder a la Biblioteca de Artes Arcanas",
+    "artesEditableDesc": "Artes editables psd y canva para eventos",
+    "adminSubmission": "Envío de administrador",
+    "partnerArea": "Área del Colaborador",
+    "modal": {
+      "title": "Biblioteca de Artes Arcanas",
+      "alreadyMember": "Ya soy miembro",
+      "knowPacks": "Conocer nuestros packs"
+    }
+  },
+  "contribute": {
+    "title": "Contribuye con la Comunidad Arcana",
+    "subtitle": "Comparte tus prompts y ayuda a otros creadores",
+    "back": "Volver",
+    "yourName": "Tu Nombre (opcional)",
+    "yourNamePlaceholder": "Ej: Juan García",
+    "fileTitle": "Título del Archivo",
+    "fileTitlePlaceholder": "Ej: Archivo de Navidad",
+    "category": "Categoría",
+    "selectCategory": "Selecciona una categoría",
+    "loadFromTxt": "Cargar Prompt de Archivo TXT (opcional)",
+    "selectTxtFile": "Seleccionar archivo .txt",
+    "txtHint": "El contenido del archivo será automáticamente insertado en el campo de prompt",
+    "prompt": "Prompt",
+    "promptPlaceholder": "Pega o escribe tu prompt aquí...",
+    "referenceMedia": "Imagen o Video de Referencia",
+    "dragOrClick": "Haz clic o arrastra una imagen o video aquí",
+    "submitting": "Enviando...",
+    "submit": "Enviar Contribución",
+    "validation": {
+      "titleRequired": "Título es obligatorio",
+      "titleMax": "Título debe tener máximo 200 caracteres",
+      "promptRequired": "Prompt es obligatorio",
+      "promptMax": "Prompt debe tener máximo 10.000 caracteres",
+      "categoryRequired": "Selecciona una categoría válida",
+      "nameMax": "Nombre debe tener máximo 20 caracteres",
+      "mediaRequired": "Por favor, envía una imagen o video",
+      "fileTooLarge": "Archivo muy grande. Máximo 50MB.",
+      "fileTypeNotAllowed": "Tipo de archivo no permitido. Usa JPEG, PNG, GIF, WebP, MP4, WebM o MOV.",
+      "txtFilesOnly": "Por favor, envía solo archivos .txt",
+      "txtTooLarge": "Archivo TXT muy grande. Máximo 1MB.",
+      "imageOrVideoOnly": "Por favor, envía solo imágenes o videos"
+    },
+    "toast": {
+      "optimizing": "Optimizando imagen...",
+      "optimized": "Imagen optimizada: {{original}} → {{optimized}} ({{percent}}% economizado)",
+      "promptLoaded": "Prompt cargado de \"{{filename}}\"",
+      "txtReadError": "Error al leer archivo TXT",
+      "submissionSuccess": "¡Contribución enviada con éxito!",
+      "submissionError": "Error al enviar contribución. Intenta de nuevo."
+    }
+  },
+  "tutorial": {
+    "loading": "Cargando...",
+    "learnWithTutorials": "Aprende con nuestros tutoriales gratuitos",
+    "contentComingSoon": "Contenido próximamente",
+    "lessonsComingSoon": "Las clases de este tutorial estarán disponibles pronto."
+  },
+  "collectionModal": {
+    "loading": "Cargando...",
+    "notFound": "Colección no encontrada",
+    "notFoundDesc": "Esta colección no existe o fue removida.",
+    "goToLibrary": "Ir a la Biblioteca",
+    "backToCollection": "Volver a la colección",
+    "copyPrompt": "Copiar Prompt",
+    "downloadRef": "Descargar Ref.",
+    "watchTutorial": "Ver Tutorial",
+    "becomePremium": "Hazte Premium",
+    "seeMorePrompts": "Ver Más Prompts",
+    "premiumExclusive": "Contenido exclusivo para suscriptores Premium",
+    "toast": {
+      "copied": "¡Prompt copiado!",
+      "copyError": "Error al copiar prompt",
+      "downloadStarted": "¡Descarga iniciada!",
+      "downloadError": "Error al descargar archivo"
+    }
+  },
+  "onboarding": {
+    "skip": "Saltar",
+    "welcome": "¡Bienvenido! 👋",
+    "tutorialIntro": "Este tutorial te enseñará cómo usar la plataforma",
+    "step1": {
+      "title": "Copia el Prompt",
+      "description": "¡Haz clic en el botón para copiar el prompt!"
+    },
+    "step2": {
+      "title": "Genera tu Imagen",
+      "description": "¡Haz clic aquí para acceder a las herramientas de IA!"
+    },
+    "step3": {
+      "title": "Herramientas de IA",
+      "description": "¡Usa ChatGPT, Nano Banana, Whisk o Flux 2 para generar!"
+    },
+    "understood": "Entendido",
+    "copyPrompt": "Copiar Prompt"
+  },
+  "installTutorial": {
+    "title": "Instala el App",
+    "subtitle": "Sigue los pasos abajo para instalar",
+    "detectingBrowser": "Detectando tu navegador...",
+    "inAppBrowserWarning": "Estás usando un navegador interno. Sigue los pasos para abrir en el navegador externo.",
+    "step": "Paso",
+    "of": "de",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "done": "Listo",
+    "close": "Cerrar",
+    "openExternalBrowser": "Abrir en navegador externo",
+    "ios": {
+      "safari": {
+        "step1": "Toca el ícono Compartir",
+        "step1Desc": "En la barra inferior de Safari, toca el ícono de compartir",
+        "step2": "Agregar a la Pantalla de Inicio",
+        "step2Desc": "Desplázate por el menú y toca \"Agregar a la Pantalla de Inicio\"",
+        "step3": "Confirma la instalación",
+        "step3Desc": "Toca \"Agregar\" en la esquina superior derecha"
+      },
+      "chrome": {
+        "step1": "Toca el ícono Compartir",
+        "step1Desc": "En la parte superior de la pantalla, cerca del nombre del sitio",
+        "step2": "Desplázate por el menú",
+        "step2Desc": "Busca la opción \"Agregar a la Pantalla de Inicio\"",
+        "step3": "Confirma la instalación",
+        "step3Desc": "Toca \"Agregar\" para confirmar"
+      }
+    },
+    "android": {
+      "chrome": {
+        "step1": "Toca los tres puntitos",
+        "step1Desc": "En la esquina superior derecha de Chrome",
+        "step2": "Toca \"Instalar app\"",
+        "step2Desc": "En el menú que aparezca, busca \"Instalar app\"",
+        "step3": "Confirma la instalación",
+        "step3Desc": "Toca \"Instalar\" en el popup de confirmación"
+      }
+    },
+    "desktop": {
+      "chrome": {
+        "step1": "Haz clic en el ícono de instalación",
+        "step1Desc": "En la barra de direcciones de Chrome, a la derecha",
+        "step2": "Haz clic en \"Instalar\"",
+        "step2Desc": "En el popup que aparezca, confirma la instalación",
+        "step3": "¡Listo!",
+        "step3Desc": "El app se instalará y abrirá automáticamente"
+      }
+    }
   }
 }

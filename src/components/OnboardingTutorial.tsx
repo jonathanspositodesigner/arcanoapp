@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { X, ChevronRight, Copy, Smartphone, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,33 +15,6 @@ interface TutorialStep {
   position: "top" | "bottom" | "left" | "right";
   icon: React.ReactNode;
 }
-
-const tutorialSteps: TutorialStep[] = [
-  {
-    id: "copy-prompt",
-    title: "Copie o Prompt",
-    description: "Clique no botão para copiar o prompt!",
-    targetSelector: "[data-tutorial-modal='copy-prompt']",
-    position: "top",
-    icon: <Copy className="h-5 w-5" />,
-  },
-  {
-    id: "generate-image",
-    title: "Gere sua Imagem",
-    description: "Clique aqui para acessar as ferramentas de IA!",
-    targetSelector: "[data-tutorial='mobile-menu']",
-    position: "top",
-    icon: <Smartphone className="h-5 w-5" />,
-  },
-  {
-    id: "ai-tools",
-    title: "Ferramentas de IA",
-    description: "Use ChatGPT, Nano Banana, Whisk ou Flux 2 para gerar!",
-    targetSelector: "[data-tutorial='ai-tools']",
-    position: "right",
-    icon: <Zap className="h-5 w-5" />,
-  },
-];
 
 interface RealPromptItem {
   id: string;
@@ -59,6 +33,7 @@ const isVideoUrl = (url: string) => {
 };
 
 const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
+  const { t } = useTranslation("prompts");
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [isVisible, setIsVisible] = useState(true);
@@ -67,6 +42,33 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const { trackEvent } = useTutorialTracker();
   const [hasTrackedStart, setHasTrackedStart] = useState(false);
+
+  const tutorialSteps: TutorialStep[] = [
+    {
+      id: "copy-prompt",
+      title: t("onboarding.step1.title"),
+      description: t("onboarding.step1.description"),
+      targetSelector: "[data-tutorial-modal='copy-prompt']",
+      position: "top",
+      icon: <Copy className="h-5 w-5" />,
+    },
+    {
+      id: "generate-image",
+      title: t("onboarding.step2.title"),
+      description: t("onboarding.step2.description"),
+      targetSelector: "[data-tutorial='mobile-menu']",
+      position: "top",
+      icon: <Smartphone className="h-5 w-5" />,
+    },
+    {
+      id: "ai-tools",
+      title: t("onboarding.step3.title"),
+      description: t("onboarding.step3.description"),
+      targetSelector: "[data-tutorial='ai-tools']",
+      position: "right",
+      icon: <Zap className="h-5 w-5" />,
+    },
+  ];
 
   // Check if mobile
   useEffect(() => {
@@ -122,10 +124,10 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   }, []);
 
   const step = tutorialSteps[currentStep];
-  const isModalStep = step.id === "copy-prompt";
+  const isModalStep = step?.id === "copy-prompt";
 
   const updateTargetPosition = useCallback(() => {
-    if (isModalStep) return;
+    if (isModalStep || !step) return;
     
     setTimeout(() => {
       const target = document.querySelector(step.targetSelector);
@@ -153,7 +155,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
 
   // Add click listener to real target elements
   useEffect(() => {
-    if (isModalStep || !isVisible) return;
+    if (isModalStep || !isVisible || !step) return;
 
     const handleTargetClick = () => {
       // Small delay to let the actual click action happen first
@@ -210,7 +212,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
   const handleCopyPrompt = () => {
     if (realItem) {
       navigator.clipboard.writeText(realItem.prompt);
-      toast.success(`Prompt "${realItem.title}" copiado!`);
+      toast.success(t("toast.promptCopied", { title: realItem.title }));
     }
     handleNext();
   };
@@ -229,7 +231,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
         className="absolute top-3 right-3 z-[100] flex items-center gap-1 text-white/80 hover:text-white text-sm pointer-events-auto"
       >
         <X className="h-4 w-4" />
-        Pular
+        {t("onboarding.skip")}
       </button>
 
       {/* Modal step content */}
@@ -237,8 +239,8 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
         <div className="absolute inset-0 flex flex-col p-4 pt-10 pb-6 pointer-events-auto overflow-y-auto" style={{ backgroundColor: overlayColor }}>
           {/* Welcome header */}
           <div className="text-center mb-4">
-            <h2 className="text-2xl font-bold text-white mb-1">Seja bem-vindo! 👋</h2>
-            <p className="text-white/70 text-sm">Este tutorial vai te ensinar como usar a plataforma</p>
+            <h2 className="text-2xl font-bold text-white mb-1">{t("onboarding.welcome")}</h2>
+            <p className="text-white/70 text-sm">{t("onboarding.tutorialIntro")}</p>
           </div>
           {/* Example card */}
           <div className="bg-card rounded-2xl overflow-hidden shadow-xl flex flex-col" style={{ height: '55vh', maxHeight: '400px' }}>
@@ -278,7 +280,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
                 data-tutorial-modal="copy-prompt"
               >
                 <Copy className="h-5 w-5 mr-2" />
-                Copiar Prompt
+                {t("onboarding.copyPrompt")}
               </Button>
             </div>
           </div>
@@ -304,8 +306,8 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
                       {currentStep + 1}/{tutorialSteps.length}
                     </span>
                   </div>
-                  <h4 className="font-bold text-foreground">Copie o Prompt</h4>
-                  <p className="text-sm text-muted-foreground">Clique no botão acima para copiar!</p>
+                  <h4 className="font-bold text-foreground">{t("onboarding.step1.title")}</h4>
+                  <p className="text-sm text-muted-foreground">{t("onboarding.step1.description")}</p>
                 </div>
               </div>
             </div>
@@ -314,7 +316,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       )}
 
       {/* Non-modal steps - 4 panel overlay system */}
-      {!isModalStep && targetRect && (
+      {!isModalStep && targetRect && step && (
         <>
           {/* TOP panel */}
           <div 
@@ -417,7 +419,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
                 {currentStep < tutorialSteps.length - 1 ? (
                   <ChevronRight className="h-4 w-4" />
                 ) : (
-                  "Entendi"
+                  t("onboarding.understood")
                 )}
               </Button>
             </div>
