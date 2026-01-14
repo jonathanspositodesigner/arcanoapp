@@ -194,6 +194,7 @@
     }
   },
   "tutorial": {
+    "title": "Tutorial",
     "loading": "Carregando...",
     "learnWithTutorials": "Aprenda com nossos tutoriais gratuitos",
     "contentComingSoon": "Conteúdo em breve",

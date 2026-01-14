@@ -97,7 +97,7 @@ const TutorialArtes = () => {
   }
 
   const lessons = tutorial?.tutorial_lessons || [];
-  const title = tutorial?.name || "Tutorial";
+  const title = tutorial?.name || t('tutorial.title', { defaultValue: 'Tutorial' });
   const description = t('tutorial.learnWithTutorials');
 
   return (
