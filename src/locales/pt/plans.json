@@ -99,5 +99,15 @@
   "congratsFullAccess": "Parabéns, você tem acesso completo à biblioteca.",
   "plusBonus": "+ Bônus",
   "memberDiscountInfo": "Como membro, você tem 20% de desconto em todos os novos packs!",
-  "selectPackMemberDiscount": "Selecione um pack para ver as opções de compra com desconto de membro"
+  "selectPackMemberDiscount": "Selecione um pack para ver as opções de compra com desconto de membro",
+  "promo": {
+    "yearEndPromo": "Promoção de Fim de Ano!",
+    "offAllPacks": "OFF EM TODOS OS PACKS!",
+    "renewalOff": "+ 30% OFF Renovação",
+    "discountOnPack": "{{percent}}% OFF no {{pack}}",
+    "choosePackWithDiscount": "Escolha seu Pack com {{percent}}% OFF",
+    "specialOfferDescription": "Aproveite esta oferta especial de fim de ano! Preços exclusivos por tempo limitado.",
+    "chooseAnotherPack": "Escolher outro pack",
+    "inPreposition": "no"
+  }
 }

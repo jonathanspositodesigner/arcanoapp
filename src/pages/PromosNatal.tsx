@@ -297,32 +297,30 @@ const PromosNatal = () => {
             <div className="inline-flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-lg font-bold shadow-lg shadow-red-200">
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="hidden sm:inline">{promoName}</span>
-              <span className="sm:hidden">Promoção de Fim de Ano!</span>
+              <span className="sm:hidden">{t('promo.yearEndPromo')}</span>
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
 
             <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-base sm:text-xl px-3 sm:px-6 py-1.5 sm:py-2 shadow-lg">
               <Percent className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-              {discountPercent}% OFF<span className="hidden sm:inline"> EM TODOS OS PACKS!</span>
+              {discountPercent}% OFF<span className="hidden sm:inline"> {t('promo.offAllPacks')}</span>
             </Badge>
 
             {isRenewal && (
               <Badge className="bg-gradient-to-r from-red-700 to-red-600 text-white text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 shadow-lg">
-                + 30% OFF Renovação
+                {t('promo.renewalOff')}
               </Badge>
             )}
           </div>
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 mt-2 sm:mt-4 px-2">
             {selectedPack 
-              ? `${discountPercent}% OFF ${isLatam ? 'en' : 'no'} ${selectedPack.name}` 
-              : isLatam ? "Elige tu Pack con 50% OFF" : "Escolha seu Pack com 50% OFF"
+              ? t('promo.discountOnPack', { percent: discountPercent, pack: selectedPack.name })
+              : t('promo.choosePackWithDiscount', { percent: discountPercent })
             }
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            {isLatam 
-              ? "¡Aprovecha esta oferta especial de fin de año! Precios exclusivos por tiempo limitado."
-              : "Aproveite esta oferta especial de fim de ano! Preços exclusivos por tempo limitado."}
+            {t('promo.specialOfferDescription')}
           </p>
         </div>
 
@@ -330,7 +328,7 @@ const PromosNatal = () => {
           <div className="space-y-8">
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{isLatam ? "Packs de Artes" : "Packs de Artes"}</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{t('packsOfArts')}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {packItems.map((pack) => (
                     <Card
@@ -363,7 +361,7 @@ const PromosNatal = () => {
 
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{isLatam ? "Cursos" : "Cursos"}</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{t('courses')}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {cursoItems.map((pack) => (
                     <Card
@@ -402,7 +400,7 @@ const PromosNatal = () => {
                 className="bg-white border-red-300 text-red-600 hover:bg-red-50"
                 onClick={() => setSelectedPack(null)}
               >
-                {isLatam ? "Elegir otro pack" : "Escolher outro pack"}
+                {t('promo.chooseAnotherPack')}
               </Button>
             </div>
 
@@ -434,7 +432,7 @@ const PromosNatal = () => {
                     {option.hasBonus && (
                       <div className="absolute top-3 right-3 bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 border border-amber-200">
                         <Gift className="h-3 w-3" />
-                        + Bônus
+                        {t('plusBonus')}
                       </div>
                     )}
                     <CardHeader className="text-center pt-8">
