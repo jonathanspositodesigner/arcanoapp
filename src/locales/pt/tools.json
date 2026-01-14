@@ -28,8 +28,8 @@
       "bad": "ruim",
       "client": "Recebeu foto de cliente em",
       "lowQuality": "baixa qualidade",
-      "aiGenerated": "Gerou imagem com IA mas",
-      "notGood": "não ficou boa",
+      "aiGenerated": "Fez um ensaio perfeito mas a foto ficou",
+      "notGood": "granulada ou com a luz estourada",
       "solution": "O Upscaler Arcano resolve isso em segundos."
     },
     "beforeAfter": {
