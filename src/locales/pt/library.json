@@ -197,6 +197,10 @@
   },
   "musicos": {
     "platformTitle": "Músicos & Artistas",
+    "badges": {
+      "premium": "Premium",
+      "proPlus": "Pro+"
+    },
     "sidebar": {
       "installApp": "Instalar App",
       "activateNotifications": "Ativar Notificações",
