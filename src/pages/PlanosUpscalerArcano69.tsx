@@ -559,17 +559,6 @@ const PlanosUpscalerArcano69 = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]">
-      {/* Header */}
-      <div className="p-4">
-        <Button
-          variant="ghost"
-          className="text-white/70 hover:text-white rounded-full"
-          onClick={() => navigate("/biblioteca-artes")}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('tools:upscaler.back')}
-        </Button>
-      </div>
 
       {/* Se já tem acesso */}
       {hasAccess ? (
