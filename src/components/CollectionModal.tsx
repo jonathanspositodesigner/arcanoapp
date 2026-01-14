@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ const getThumbnailUrl = (url: string) => {
 };
 
 const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
+  const { t } = useTranslation("prompts");
   const navigate = useNavigate();
   const { isPremium } = usePremiumStatus();
   const [collection, setCollection] = useState<{ name: string; id: string } | null>(null);
@@ -161,11 +163,11 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
   const handleCopyPrompt = useCallback(async (prompt: string) => {
     try {
       await navigator.clipboard.writeText(prompt);
-      toast.success("Prompt copiado!");
+      toast.success(t("collectionModal.toast.copied"));
     } catch {
-      toast.error("Erro ao copiar prompt");
+      toast.error(t("collectionModal.toast.copyError"));
     }
-  }, []);
+  }, [t]);
 
   const handleDownload = useCallback(async (url: string, title: string, isPremiumContent: boolean = false) => {
     try {
@@ -180,11 +182,11 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
-      toast.success("Download iniciado!");
+      toast.success(t("collectionModal.toast.downloadStarted"));
     } catch {
-      toast.error("Erro ao baixar arquivo");
+      toast.error(t("collectionModal.toast.downloadError"));
     }
-  }, []);
+  }, [t]);
 
   const goToLibrary = () => {
     onClose();
@@ -200,7 +202,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
       <Dialog open onOpenChange={() => onClose()}>
         <DialogContent className="max-w-4xl">
           <div className="flex items-center justify-center py-12">
-            <p className="text-muted-foreground">Carregando...</p>
+            <p className="text-muted-foreground">{t("collectionModal.loading")}</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -212,11 +214,11 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
       <Dialog open onOpenChange={() => onClose()}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Coleção não encontrada</DialogTitle>
+            <DialogTitle>{t("collectionModal.notFound")}</DialogTitle>
           </DialogHeader>
-          <p className="text-muted-foreground">Esta coleção não existe ou foi removida.</p>
+          <p className="text-muted-foreground">{t("collectionModal.notFoundDesc")}</p>
           <Button onClick={goToLibrary} className="w-full mt-4">
-            Ir para Biblioteca
+            {t("collectionModal.goToLibrary")}
           </Button>
         </DialogContent>
       </Dialog>
@@ -269,11 +271,11 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
               {selectedItem.isPremium ? (
                 <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
                   <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                  Premium
+                  {t("badges.premium")}
                 </Badge>
               ) : (
                 <Badge variant="outline" className="border-green-500 text-green-600">
-                  Grátis
+                  {t("badges.free")}
                 </Badge>
               )}
             </div>
@@ -285,7 +287,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
               </div>
             ) : (
               <div className="bg-muted/50 rounded-lg p-4 text-center">
-                <p className="text-muted-foreground">Conteúdo exclusivo para assinantes Premium</p>
+                <p className="text-muted-foreground">{t("collectionModal.premiumExclusive")}</p>
               </div>
             )}
 
@@ -298,7 +300,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                     className="flex-1"
                   >
                     <Copy className="h-4 w-4 mr-2" />
-                    Copiar Prompt
+                    {t("collectionModal.copyPrompt")}
                   </Button>
                   <Button 
                     variant="outline"
@@ -306,7 +308,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                     className="flex-1"
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Baixar Ref.
+                    {t("collectionModal.downloadRef")}
                   </Button>
                 </div>
                 {selectedItem.tutorialUrl && (
@@ -316,7 +318,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                     className="w-full border-red-500 text-red-500 hover:bg-red-500/10"
                   >
                     <Youtube className="h-4 w-4 mr-2" />
-                    Ver Tutorial
+                    {t("collectionModal.watchTutorial")}
                   </Button>
                 )}
               </div>
@@ -326,7 +328,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                 className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90"
               >
                 <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                Torne-se Premium
+                {t("collectionModal.becomePremium")}
               </Button>
             )}
 
@@ -336,7 +338,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
               onClick={() => setSelectedItem(null)}
               className="w-full"
             >
-              Voltar para coleção
+              {t("collectionModal.backToCollection")}
             </Button>
           </div>
         </DialogContent>
@@ -389,11 +391,11 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                   {item.isPremium ? (
                     <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px]">
                       <Star className="h-2.5 w-2.5 mr-0.5" fill="currentColor" />
-                      Premium
+                      {t("badges.premium")}
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] bg-background/80">
-                      Grátis
+                      {t("badges.free")}
                     </Badge>
                   )}
                 </div>
@@ -411,7 +413,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
             onClick={goToLibrary} 
             className="w-full mt-6 bg-gradient-primary hover:opacity-90 text-white font-semibold py-6"
           >
-            Ver Mais Prompts
+            {t("collectionModal.seeMorePrompts")}
             <ArrowRight className="h-5 w-5 ml-2" />
           </Button>
         </DialogContent>

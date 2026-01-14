@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ interface ToolData {
 }
 
 const PlanosForjaSelos3D = () => {
+  const { t } = useTranslation("tools");
   const navigate = useNavigate();
   const { user, isPremium, hasAccessToPack, isLoading: authLoading } = usePremiumArtesStatus();
   const [tool, setTool] = useState<ToolData | null>(null);
@@ -80,10 +82,10 @@ const PlanosForjaSelos3D = () => {
   const price = tool?.price_vitalicio || 2990;
 
   const features = [
-    { icon: Box, text: "Crie selos 3D profissionais com IA" },
-    { icon: Layers, text: "Múltiplos estilos e templates" },
-    { icon: Infinity, text: "Acesso vitalício à ferramenta" },
-    { icon: Zap, text: "Todas as atualizações futuras incluídas" },
+    { icon: Box, text: t("forja3D.features.create3D") },
+    { icon: Layers, text: t("forja3D.features.multipleStyles") },
+    { icon: Infinity, text: t("forja3D.features.lifetimeAccess") },
+    { icon: Zap, text: t("forja3D.features.futureUpdates") },
   ];
 
   return (
@@ -96,16 +98,16 @@ const PlanosForjaSelos3D = () => {
             onClick={() => navigate("/biblioteca-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para Biblioteca
+            {t("upscaler.backToLibrary")}
           </Button>
         </FadeIn>
 
         <AnimatedSection animation="fade-up" delay={100} className="text-center mb-8" as="div">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-            Forja de Selos 3D
+            {t("forja3D.title")}
           </h1>
           <p className="text-white/60">
-            Crie selos 3D incríveis com inteligência artificial
+            {t("forja3D.subtitle")}
           </p>
         </AnimatedSection>
 
@@ -115,16 +117,16 @@ const PlanosForjaSelos3D = () => {
               <CardContent className="p-6 text-center">
                 <Badge className="bg-green-500 text-white text-lg px-4 py-2 mb-4">
                   <Check className="h-5 w-5 mr-2" />
-                  Você já tem acesso!
+                  {t("forja3D.alreadyHaveAccess")}
                 </Badge>
                 <p className="text-white/70 mb-4">
-                  Você já possui acesso à Forja de Selos 3D.
+                  {t("forja3D.alreadyHaveAccessDesc")}
                 </p>
                 <Button
                   onClick={() => navigate("/biblioteca-artes")}
                   className="bg-gradient-to-r from-[#2d4a5e] to-[#3d5a6e]"
                 >
-                  Ir para Biblioteca
+                  {t("forja3D.goToLibrary")}
                 </Button>
               </CardContent>
             </Card>
@@ -133,13 +135,13 @@ const PlanosForjaSelos3D = () => {
           <AnimatedSection animation="scale" delay={200} as="div">
             <Card className="relative bg-[#1a1a2e]/80 border-2 border-purple-500/50 ring-2 ring-purple-500/20">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                Acesso Vitalício
+                {t("forja3D.lifetimeAccess")}
               </div>
 
               {isPremium && (
                 <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                   <Crown className="h-3 w-3" />
-                  Desconto de Membro
+                  {t("forja3D.memberDiscount")}
                 </div>
               )}
 
@@ -149,9 +151,9 @@ const PlanosForjaSelos3D = () => {
                     <Box className="h-10 w-10 text-purple-400" />
                   </div>
                 </div>
-                <CardTitle className="text-white text-2xl">Forja de Selos 3D</CardTitle>
+                <CardTitle className="text-white text-2xl">{t("forja3D.title")}</CardTitle>
                 <p className="text-white/60 text-sm">
-                  Ferramenta de IA para criar selos 3D
+                  {t("forja3D.toolDescription")}
                 </p>
               </CardHeader>
 
@@ -160,7 +162,7 @@ const PlanosForjaSelos3D = () => {
                   <div className="text-4xl font-bold text-white mb-1">
                     {formatPrice(price)}
                   </div>
-                  <p className="text-white/50 text-sm">pagamento único</p>
+                  <p className="text-white/50 text-sm">{t("forja3D.oneTimePayment")}</p>
                 </div>
 
                 <StaggeredAnimation className="space-y-3" staggerDelay={100} animation="fade-left">
@@ -181,12 +183,12 @@ const PlanosForjaSelos3D = () => {
                   onClick={handlePurchase}
                   className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-purple-500/25 hover-lift"
                 >
-                  Comprar Agora
+                  {t("forja3D.buyNow")}
                 </Button>
 
                 {!user && (
                   <p className="text-center text-white/50 text-xs">
-                    Após a compra, você receberá acesso automático
+                    {t("forja3D.afterPurchase")}
                   </p>
                 )}
               </CardContent>
