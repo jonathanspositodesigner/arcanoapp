@@ -1,18 +1,23 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Music, Sparkles } from "lucide-react";
 import baaLogo from "@/assets/BAA.png";
+
 const BibliotecaArtesHub = () => {
   const navigate = useNavigate();
-  return <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e] flex flex-col items-center justify-center px-4 py-8">
+  const { t } = useTranslation('library');
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e] flex flex-col items-center justify-center px-4 py-8">
       {/* Logo BAA */}
-      <img src={baaLogo} alt="Biblioteca de Artes Arcanas" className="h-20 sm:h-24 mb-6 drop-shadow-2xl" />
+      <img src={baaLogo} alt={t('artesHub.title')} className="h-20 sm:h-24 mb-6 drop-shadow-2xl" />
       
       {/* Título */}
       <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 text-center">
-        Biblioteca de Artes Arcanas
+        {t('artesHub.title')}
       </h1>
       <p className="text-muted-foreground text-center mb-8 sm:mb-12 max-w-md">
-        Escolha sua biblioteca de artes editáveis
+        {t('artesHub.subtitle')}
       </p>
 
       {/* Cards de Seleção */}
@@ -29,17 +34,17 @@ const BibliotecaArtesHub = () => {
           
           {/* Title */}
           <h2 className="relative z-10 text-xl sm:text-2xl font-bold text-amber-100 mb-2">
-            Eventos & Festas
+            {t('artesHub.eventosTitle')}
           </h2>
           
           {/* Description */}
           <p className="relative z-10 text-sm sm:text-base text-amber-200/70 mb-4">
-            Artes Editáveis para Festas, Bares, Adegas, Eventos e etc...
+            {t('artesHub.eventosDescription')}
           </p>
           
           {/* Button */}
           <button className="relative z-10 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-medium hover:from-amber-400 hover:to-yellow-500 transition-all shadow-md hover:shadow-lg">
-            Acessar
+            {t('artesHub.access')}
           </button>
         </div>
 
@@ -55,25 +60,27 @@ const BibliotecaArtesHub = () => {
           
           {/* Title */}
           <h2 className="relative z-10 text-xl sm:text-2xl font-bold text-violet-100 mb-2">
-            Músicos & Artistas
+            {t('artesHub.musicosTitle')}
           </h2>
           
           {/* Description */}
           <p className="relative z-10 text-sm sm:text-base text-violet-200/70 mb-4">
-            Agendas, Telão de LED, Presskits, Lançamento de Música e tudo que você como precisa pra alavancar sua carreira!
+            {t('artesHub.musicosDescription')}
           </p>
           
           {/* Button */}
           <button className="relative z-10 px-6 py-2.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-medium hover:from-violet-400 hover:to-purple-500 transition-all shadow-md hover:shadow-lg">
-            Acessar
+            {t('artesHub.access')}
           </button>
         </div>
       </div>
 
       {/* Link para voltar */}
       <button onClick={() => navigate("/")} className="mt-8 text-sm text-muted-foreground hover:text-white transition-colors underline">
-        Voltar para Home
+        {t('artesHub.backToHome')}
       </button>
-    </div>;
+    </div>
+  );
 };
+
 export default BibliotecaArtesHub;
