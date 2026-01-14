@@ -30,6 +30,10 @@
       "lowQuality": "baixa qualidade",
       "aiGenerated": "Fez um ensaio perfeito mas a foto ficou",
       "notGood": "granulada ou com a luz estourada",
+      "aiImage": "Gerou imagem com IA mas",
+      "aiNotGood": "não ficou boa",
+      "lostContract": "Já deixou de fechar um contrato grande porque",
+      "noProPhotos": "não tinha fotos profissionais",
       "solution": "O Upscaler Arcano resolve isso em segundos."
     },
     "beforeAfter": {
