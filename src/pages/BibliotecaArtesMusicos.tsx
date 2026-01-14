@@ -355,12 +355,12 @@ const BibliotecaArtesMusicos = () => {
                   <div key={arte.id} className="group relative bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10">
                     {arte.is_premium && !ledRestricted && (
                       <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                        <Lock className="w-3 h-3" />Premium
+                        <Lock className="w-3 h-3" />{t('musicos.badges.premium')}
                       </div>
                     )}
                     {ledRestricted && (
                       <div className="absolute top-2 left-2 z-10 bg-amber-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                        <Lock className="w-3 h-3" />Pro+
+                        <Lock className="w-3 h-3" />{t('musicos.badges.proPlus')}
                       </div>
                     )}
                     <div className="aspect-square relative overflow-hidden">

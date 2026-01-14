@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ interface PlanInfo {
 
 const UpgradePlano = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('plans');
   const { user, isPremium } = usePremiumStatus();
   const [currentPlanType, setCurrentPlanType] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,15 +67,15 @@ const UpgradePlano = () => {
         slug: "basico",
         price: "14,90",
         features: [
-          { text: "10 prompts premium por dia", included: true },
-          { text: "Acesso a todo conteúdo premium", included: true },
-          { text: "Arcano Academy – Mini curso de IA", included: true },
-          { text: "Atualizações diárias", included: true },
-          { text: "Suporte via WhatsApp", included: true },
-          { text: "IA que muda a roupa", included: false },
-          { text: "IA que muda pose", included: false },
-          { text: "Upscale Arcano", included: false },
-          { text: "Forja de Selos 3D", included: false }
+          { text: t('features.premiumPromptsDay', { count: 10 }), included: true },
+          { text: t('features.allPremiumContent'), included: true },
+          { text: t('features.arcanoAcademy'), included: true },
+          { text: t('features.dailyUpdates'), included: true },
+          { text: t('features.whatsappSupport'), included: true },
+          { text: t('features.aiClothesChange'), included: false },
+          { text: t('features.aiPoseChange'), included: false },
+          { text: t('features.upscaleArcano'), included: false },
+          { text: t('features.forja3D'), included: false }
         ],
         checkoutUrl: "https://pay.greenn.com.br/arcano-basico"
       },
@@ -84,16 +86,16 @@ const UpgradePlano = () => {
         price: "20,90",
         isPopular: true,
         features: [
-          { text: "24 prompts premium por dia", included: true },
-          { text: "Acesso a todo conteúdo premium", included: true },
-          { text: "Arcano Academy – Mini curso de IA", included: true },
-          { text: "Atualizações diárias", included: true },
-          { text: "Liberação imediata", included: true },
-          { text: "Suporte exclusivo via WhatsApp", included: true },
-          { text: "IA que muda a roupa", included: true },
-          { text: "IA que muda pose", included: true },
-          { text: "Upscale Arcano", included: false },
-          { text: "Forja de Selos 3D", included: false }
+          { text: t('features.premiumPromptsDay', { count: 24 }), included: true },
+          { text: t('features.allPremiumContent'), included: true },
+          { text: t('features.arcanoAcademy'), included: true },
+          { text: t('features.dailyUpdates'), included: true },
+          { text: t('features.immediateRelease'), included: true },
+          { text: t('features.exclusiveWhatsappSupport'), included: true },
+          { text: t('features.aiClothesChange'), included: true },
+          { text: t('features.aiPoseChange'), included: true },
+          { text: t('features.upscaleArcano'), included: false },
+          { text: t('features.forja3D'), included: false }
         ],
         checkoutUrl: "https://pay.greenn.com.br/arcano-pro"
       },
@@ -105,16 +107,16 @@ const UpgradePlano = () => {
         originalPrice: "29,90",
         isPromo: true,
         features: [
-          { text: "Prompts premium ilimitados", included: true },
-          { text: "Acesso a todo conteúdo premium", included: true },
-          { text: "Arcano Academy – Mini curso de IA", included: true },
-          { text: "Atualizações diárias", included: true },
-          { text: "Liberação imediata", included: true },
-          { text: "Suporte VIP via WhatsApp", included: true },
-          { text: "IA que muda a roupa", included: true },
-          { text: "IA que muda pose", included: true },
-          { text: "Upscale Arcano", included: true },
-          { text: "Forja de Selos 3D", included: true }
+          { text: t('features.unlimitedPremiumPrompts'), included: true },
+          { text: t('features.allPremiumContent'), included: true },
+          { text: t('features.arcanoAcademy'), included: true },
+          { text: t('features.dailyUpdates'), included: true },
+          { text: t('features.immediateRelease'), included: true },
+          { text: t('features.vipWhatsappSupport'), included: true },
+          { text: t('features.aiClothesChange'), included: true },
+          { text: t('features.aiPoseChange'), included: true },
+          { text: t('features.upscaleArcano'), included: true },
+          { text: t('features.forja3D'), included: true }
         ],
         checkoutUrl: "https://pay.greenn.com.br/arcano-unlimited"
       }
@@ -128,15 +130,15 @@ const UpgradePlano = () => {
         originalPrice: "14,90",
         yearlyTotal: "118,80",
         features: [
-          { text: "10 prompts premium por dia", included: true },
-          { text: "Acesso a todo conteúdo premium", included: true },
-          { text: "Arcano Academy – Mini curso de IA", included: true },
-          { text: "Atualizações diárias", included: true },
-          { text: "Suporte via WhatsApp", included: true },
-          { text: "IA que muda a roupa", included: false },
-          { text: "IA que muda pose", included: false },
-          { text: "Upscale Arcano", included: false },
-          { text: "Forja de Selos 3D", included: false }
+          { text: t('features.premiumPromptsDay', { count: 10 }), included: true },
+          { text: t('features.allPremiumContent'), included: true },
+          { text: t('features.arcanoAcademy'), included: true },
+          { text: t('features.dailyUpdates'), included: true },
+          { text: t('features.whatsappSupport'), included: true },
+          { text: t('features.aiClothesChange'), included: false },
+          { text: t('features.aiPoseChange'), included: false },
+          { text: t('features.upscaleArcano'), included: false },
+          { text: t('features.forja3D'), included: false }
         ],
         checkoutUrl: "https://pay.greenn.com.br/arcano-basico-anual"
       },
@@ -149,16 +151,16 @@ const UpgradePlano = () => {
         yearlyTotal: "178,80",
         isPopular: true,
         features: [
-          { text: "24 prompts premium por dia", included: true },
-          { text: "Acesso a todo conteúdo premium", included: true },
-          { text: "Arcano Academy – Mini curso de IA", included: true },
-          { text: "Atualizações diárias", included: true },
-          { text: "Liberação imediata", included: true },
-          { text: "Suporte exclusivo via WhatsApp", included: true },
-          { text: "IA que muda a roupa", included: true },
-          { text: "IA que muda pose", included: true },
-          { text: "Upscale Arcano", included: false },
-          { text: "Forja de Selos 3D", included: false }
+          { text: t('features.premiumPromptsDay', { count: 24 }), included: true },
+          { text: t('features.allPremiumContent'), included: true },
+          { text: t('features.arcanoAcademy'), included: true },
+          { text: t('features.dailyUpdates'), included: true },
+          { text: t('features.immediateRelease'), included: true },
+          { text: t('features.exclusiveWhatsappSupport'), included: true },
+          { text: t('features.aiClothesChange'), included: true },
+          { text: t('features.aiPoseChange'), included: true },
+          { text: t('features.upscaleArcano'), included: false },
+          { text: t('features.forja3D'), included: false }
         ],
         checkoutUrl: "https://pay.greenn.com.br/arcano-pro-anual"
       },
@@ -171,16 +173,16 @@ const UpgradePlano = () => {
         yearlyTotal: "238,80",
         isPromo: true,
         features: [
-          { text: "Prompts premium ilimitados", included: true },
-          { text: "Acesso a todo conteúdo premium", included: true },
-          { text: "Arcano Academy – Mini curso de IA", included: true },
-          { text: "Atualizações diárias", included: true },
-          { text: "Liberação imediata", included: true },
-          { text: "Suporte VIP via WhatsApp", included: true },
-          { text: "IA que muda a roupa", included: true },
-          { text: "IA que muda pose", included: true },
-          { text: "Upscale Arcano", included: true },
-          { text: "Forja de Selos 3D", included: true }
+          { text: t('features.unlimitedPremiumPrompts'), included: true },
+          { text: t('features.allPremiumContent'), included: true },
+          { text: t('features.arcanoAcademy'), included: true },
+          { text: t('features.dailyUpdates'), included: true },
+          { text: t('features.immediateRelease'), included: true },
+          { text: t('features.vipWhatsappSupport'), included: true },
+          { text: t('features.aiClothesChange'), included: true },
+          { text: t('features.aiPoseChange'), included: true },
+          { text: t('features.upscaleArcano'), included: true },
+          { text: t('features.forja3D'), included: true }
         ],
         checkoutUrl: "https://pay.greenn.com.br/arcano-unlimited-anual"
       }
@@ -215,7 +217,7 @@ const UpgradePlano = () => {
             className="text-white hover:bg-white/20"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
+            {t('upgrade.back')}
           </Button>
         </div>
       </header>
@@ -225,14 +227,13 @@ const UpgradePlano = () => {
         <div className="text-center mb-8 sm:mb-10">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 px-4 py-2 rounded-full mb-4">
             <Crown className="h-5 w-5 text-yellow-500" />
-            <span className="text-sm font-medium text-yellow-600">Faça upgrade do seu plano</span>
+            <span className="text-sm font-medium text-yellow-600">{t('upgrade.upgradeYourPlan')}</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-            Desbloqueie todo o potencial
+            {t('upgrade.unlockPotential')}
           </h1>
           <p className="text-muted-foreground max-w-xl mx-auto mb-6">
-            Você atingiu o limite diário de prompts do plano Básico. 
-            Faça upgrade para continuar explorando nossa biblioteca completa!
+            {t('upgrade.limitReached')}
           </p>
 
           {/* Billing Toggle */}
@@ -246,16 +247,16 @@ const UpgradePlano = () => {
                 value="mensal" 
                 className="data-[state=active]:bg-background data-[state=active]:text-foreground px-6"
               >
-                MENSAL
+                {t('upgrade.monthly')}
               </TabsTrigger>
               <TabsTrigger 
                 value="anual" 
                 className="data-[state=active]:bg-background data-[state=active]:text-foreground px-6 relative"
               >
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-500 font-medium whitespace-nowrap">
-                  +Desconto
+                  {t('upgrade.discount')}
                 </span>
-                ANUAL PARCELADO
+                {t('upgrade.yearlyInstallments')}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -264,7 +265,7 @@ const UpgradePlano = () => {
         {/* Discount Banner */}
         <div className="bg-gradient-to-r from-primary to-primary/80 rounded-xl text-center max-w-5xl mx-auto py-3 px-4 mb-6">
           <span className="text-primary-foreground font-semibold tracking-wide">
-            ATÉ {billingPeriod === "anual" ? "33" : "25"}% DE DESCONTO
+            {t('upgrade.upToDiscount', { percent: billingPeriod === "anual" ? "33" : "25" })}
           </span>
         </div>
 
@@ -286,7 +287,7 @@ const UpgradePlano = () => {
                 {/* Promo Badge */}
                 {plan.isPromo && !isCurrent && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white border-0 flex items-center justify-center text-center">
-                    PROMOÇÃO DE LANÇAMENTO
+                    {t('upgrade.launchPromo')}
                   </Badge>
                 )}
 
@@ -294,7 +295,7 @@ const UpgradePlano = () => {
                 {plan.isPopular && !isCurrent && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white border-0">
                     <Zap className="h-3 w-3 mr-1" />
-                    Mais Popular
+                    {t('upgrade.mostPopular')}
                   </Badge>
                 )}
 
@@ -302,7 +303,7 @@ const UpgradePlano = () => {
                 {isCurrent && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white border-0">
                     <Check className="h-3 w-3 mr-1" />
-                    Plano Atual
+                    {t('upgrade.currentPlan')}
                   </Badge>
                 )}
 
@@ -350,7 +351,7 @@ const UpgradePlano = () => {
                 {isCurrent ? (
                   <Button disabled className="w-full bg-green-500/20 text-green-600 cursor-not-allowed">
                     <Check className="h-4 w-4 mr-2" />
-                    Plano Atual
+                    {t('upgrade.currentPlan')}
                   </Button>
                 ) : (
                   <a href={plan.checkoutUrl} target="_blank" rel="noopener noreferrer">
@@ -362,7 +363,7 @@ const UpgradePlano = () => {
                       }`}
                     >
                       <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                      {isUpgrade ? 'Fazer Upgrade' : 'Assinar'}
+                      {isUpgrade ? t('upgrade.doUpgrade') : t('upgrade.subscribe')}
                     </Button>
                   </a>
                 )}
@@ -373,8 +374,8 @@ const UpgradePlano = () => {
 
         {/* Footer Note */}
         <div className="text-center mt-8 text-sm text-muted-foreground">
-          <p>Seu limite diário será resetado à meia-noite.</p>
-          <p className="mt-1">Dúvidas? Entre em contato pelo nosso suporte.</p>
+          <p>{t('upgrade.limitResetNote')}</p>
+          <p className="mt-1">{t('upgrade.supportNote')}</p>
         </div>
       </main>
     </div>

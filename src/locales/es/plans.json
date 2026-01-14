@@ -60,7 +60,20 @@
     "bonusContent": "Contenido bonus",
     "futureUpdates": "Actualizaciones futuras incluidas",
     "commercialLicense": "Licencia comercial",
-    "noWatermark": "Sin marca de agua"
+    "noWatermark": "Sin marca de agua",
+    "premiumPromptsDay": "{{count}} prompts premium por día",
+    "allPremiumContent": "Acceso a todo el contenido premium",
+    "arcanoAcademy": "Arcano Academy – Mini curso de IA",
+    "dailyUpdates": "Actualizaciones diarias",
+    "whatsappSupport": "Soporte via WhatsApp",
+    "exclusiveWhatsappSupport": "Soporte exclusivo via WhatsApp",
+    "vipWhatsappSupport": "Soporte VIP via WhatsApp",
+    "immediateRelease": "Liberación inmediata",
+    "aiClothesChange": "IA que cambia la ropa",
+    "aiPoseChange": "IA que cambia pose",
+    "upscaleArcano": "Upscale Arcano",
+    "forja3D": "Forja de Sellos 3D",
+    "unlimitedPremiumPrompts": "Prompts premium ilimitados"
   },
   "guarantee": "Garantía de 7 días",
   "guaranteeDescription": "Si no te gusta, te devolvemos tu dinero",
@@ -109,5 +122,22 @@
     "specialOfferDescription": "¡Aprovecha esta oferta especial de fin de año! Precios exclusivos por tiempo limitado.",
     "chooseAnotherPack": "Elegir otro pack",
     "inPreposition": "en"
+  },
+  "upgrade": {
+    "back": "Volver",
+    "upgradeYourPlan": "Mejora tu plan",
+    "unlockPotential": "Desbloquea todo el potencial",
+    "limitReached": "Has alcanzado el límite diario de prompts del plan Básico. ¡Mejora para seguir explorando nuestra biblioteca completa!",
+    "monthly": "MENSUAL",
+    "discount": "+Descuento",
+    "yearlyInstallments": "ANUAL EN CUOTAS",
+    "upToDiscount": "HASTA {{percent}}% DE DESCUENTO",
+    "launchPromo": "PROMOCIÓN DE LANZAMIENTO",
+    "mostPopular": "Más Popular",
+    "currentPlan": "Plan Actual",
+    "doUpgrade": "Mejorar Plan",
+    "subscribe": "Suscribirse",
+    "limitResetNote": "Tu límite diario se reiniciará a medianoche.",
+    "supportNote": "¿Dudas? Contacta nuestro soporte."
   }
 }
