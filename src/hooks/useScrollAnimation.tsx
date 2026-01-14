@@ -178,7 +178,7 @@ export const StaggeredAnimation = ({
       {children.map((child, index) => (
         <div
           key={index}
-          className={`transition-all ease-out ${
+          className={`transition-all ease-out h-full ${
             isVisible 
               ? 'opacity-100 translate-y-0 translate-x-0 scale-100' 
               : `opacity-0 ${baseTransform[animation]}`
