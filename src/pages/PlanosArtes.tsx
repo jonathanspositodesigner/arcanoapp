@@ -59,7 +59,7 @@ const PlanosArtes = () => {
   const [searchParams] = useSearchParams();
   const { t } = useTranslation('plans');
   const { t: tc } = useTranslation('common');
-  const { isLatam, formatPrice: formatLocalizedPrice, getCheckoutLink } = useLocale();
+  const { isLatam, formatPrice: formatLocalizedPrice, getCheckoutLink, locale } = useLocale();
   
   const packSlug = searchParams.get("pack");
   const isRenewal = searchParams.get("renovacao") === "true";
@@ -321,10 +321,10 @@ const PlanosArtes = () => {
     const checkoutLink = getCheckoutLink(checkoutLinkBR, checkoutLinkLatam);
     
     if (checkoutLink) {
-      window.open(appendUtmToUrl(checkoutLink), "_blank");
+      window.open(appendUtmToUrl(checkoutLink, locale), "_blank");
     } else {
       // Fallback se não houver link configurado
-      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
+      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/", locale), "_blank");
     }
   };
 

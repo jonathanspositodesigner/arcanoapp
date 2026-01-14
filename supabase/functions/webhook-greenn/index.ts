@@ -90,11 +90,49 @@ async function findUserByEmail(supabase: any, email: string, requestId: string):
   return null;
 }
 
+// Textos de email por idioma
+const emailTexts = {
+  pt: {
+    greeting: 'Olá',
+    accessData: '📋 Dados do seu primeiro acesso:',
+    email: 'Email',
+    password: 'Senha',
+    securityWarning: 'Por segurança, você deverá trocar sua senha no primeiro acesso.',
+    clickButton: 'Clique no botão acima para fazer seu primeiro login e começar a explorar milhares de prompts!',
+    copyright: '© ArcanoApp - Biblioteca de Prompts de IA',
+    important: 'Importante'
+  },
+  es: {
+    greeting: 'Hola',
+    accessData: '📋 Datos de tu primer acceso:',
+    email: 'Email',
+    password: 'Contraseña',
+    securityWarning: 'Por seguridad, deberás cambiar tu contraseña en el primer acceso.',
+    clickButton: '¡Haz clic en el botón de arriba para iniciar sesión y explorar miles de prompts!',
+    copyright: '© ArcanoApp - Biblioteca de Prompts de IA',
+    important: 'Importante'
+  }
+}
+
+// Função para extrair locale do saleMetas
+function extractLocale(payload: any): 'pt' | 'es' {
+  const saleMetas = payload.saleMetas || []
+  for (const meta of saleMetas) {
+    if (meta.meta_key === 'utm_locale' && meta.meta_value === 'es') {
+      return 'es'
+    }
+  }
+  return 'pt'
+}
+
 // Send welcome email to new premium users via SendPulse with tracking
-async function sendWelcomeEmail(supabase: any, email: string, name: string, planType: string, requestId: string): Promise<void> {
+async function sendWelcomeEmail(supabase: any, email: string, name: string, planType: string, requestId: string, locale: 'pt' | 'es' = 'pt'): Promise<void> {
   console.log(`\n📧 [${requestId}] EMAIL DE BOAS-VINDAS:`)
   console.log(`   ├─ Destinatário: ${email}`)
   console.log(`   ├─ Nome: ${name || 'N/A'}`)
+  console.log(`   ├─ Locale: ${locale}`)
+  
+  const t = emailTexts[locale]
   
   try {
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
@@ -106,23 +144,33 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       return
     }
 
-    // Fetch template from database
+    // Fetch template from database based on locale
     const { data: template } = await supabase
       .from('welcome_email_templates')
       .select('*')
       .eq('platform', 'promptverso')
+      .eq('locale', locale)
       .eq('is_active', true)
       .maybeSingle()
 
-    console.log(`   ├─ Template: ${template?.id || 'default'}`)
+    console.log(`   ├─ Template: ${template?.id || 'default'} (locale: ${locale})`)
 
-    // Parse template content
-    let templateContent = {
-      heading: 'Bem-vindo ao ArcanoApp!',
-      intro: 'Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de prompts de IA.',
-      button_text: 'Acessar Plataforma',
-      footer: 'Se tiver qualquer dúvida, responda este email que iremos te ajudar!'
-    }
+    // Parse template content with locale-aware defaults
+    const defaultContent = locale === 'es' 
+      ? {
+          heading: '¡Bienvenido a ArcanoApp!',
+          intro: '¡Tu compra fue confirmada con éxito! Ahora tienes acceso a nuestra biblioteca completa de prompts de IA.',
+          button_text: 'Acceder a la Plataforma',
+          footer: '¡Si tienes alguna duda, responde este email y te ayudaremos!'
+        }
+      : {
+          heading: 'Bem-vindo ao ArcanoApp!',
+          intro: 'Sua compra foi confirmada com sucesso! Agora você tem acesso à nossa biblioteca completa de prompts de IA.',
+          button_text: 'Acessar Plataforma',
+          footer: 'Se tiver qualquer dúvida, responda este email que iremos te ajudar!'
+        }
+    
+    let templateContent = { ...defaultContent }
     
     if (template?.content) {
       try {
@@ -205,7 +253,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       <h1>🎉 ${templateContent.heading}</h1>
     </div>
     
-    <p>Olá${name ? ` <strong>${name}</strong>` : ''}!</p>
+    <p>${t.greeting}${name ? ` <strong>${name}</strong>` : ''}!</p>
     
     <p>${templateContent.intro}</p>
     
@@ -214,11 +262,11 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
     </div>
     
     <div class="credentials">
-      <h3>📋 Dados do seu primeiro acesso:</h3>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Senha:</strong> <span class="highlight">${email}</span></p>
+      <h3>${t.accessData}</h3>
+      <p><strong>${t.email}:</strong> ${email}</p>
+      <p><strong>${t.password}:</strong> <span class="highlight">${email}</span></p>
       <div class="warning">
-        <p>⚠️ <strong>Importante:</strong> Por segurança, você deverá trocar sua senha no primeiro acesso.</p>
+        <p>⚠️ <strong>${t.important}:</strong> ${t.securityWarning}</p>
       </div>
     </div>
     
@@ -227,12 +275,12 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
     </a>
     
     <p style="text-align: center; color: #666;">
-      Clique no botão acima para fazer seu primeiro login e começar a explorar milhares de prompts!
+      ${t.clickButton}
     </p>
     
     <div class="footer">
       <p>${templateContent.footer}</p>
-      <p style="margin-top: 8px;">© ArcanoApp - Biblioteca de Prompts de IA</p>
+      <p style="margin-top: 8px;">${t.copyright}</p>
     </div>
   </div>
   <img src="${openTrackingPixel}" width="1" height="1" style="display:none" alt="" />
@@ -275,7 +323,8 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       template_used: template?.id || 'default',
       product_info: planDisplayName,
       status: result.result === true ? 'sent' : 'failed',
-      error_message: result.result !== true ? JSON.stringify(result) : null
+      error_message: result.result !== true ? JSON.stringify(result) : null,
+      locale
     })
     
     if (result.result === true) {
@@ -444,8 +493,12 @@ Deno.serve(async (req) => {
       billingPeriod = 'yearly'
     }
     
+    // Extract locale from UTM
+    const locale = extractLocale(payload)
+    
     console.log(`   ├─ Plano Detectado: ${planType}`)
     console.log(`   ├─ Período: ${billingPeriod}`)
+    console.log(`   ├─ Locale: ${locale}`)
     console.log(`   └─ Dias: ${productPeriod}`)
 
     const isTrialStatus = status === 'trial' || status === 'trial_started' || status === 'trialing' || status === 'waiting_payment'
@@ -518,7 +571,7 @@ Deno.serve(async (req) => {
       console.log(`\n💾 [${requestId}] OPERAÇÕES NO BANCO:`)
       console.log(`   ├─ Atualizando profile...`)
       
-      // Upsert profile with name and phone
+      // Upsert profile with name and phone and locale
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
@@ -526,6 +579,7 @@ Deno.serve(async (req) => {
           name: clientName,
           phone: clientPhone,
           email: email,
+          locale: locale,
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' })
 
@@ -624,7 +678,7 @@ Deno.serve(async (req) => {
       
       // Send welcome email to new user with tracking
       currentStep = 'sending_email'
-      await sendWelcomeEmail(supabase, email, clientName, planType, requestId)
+      await sendWelcomeEmail(supabase, email, clientName, planType, requestId, locale)
       
       // Update log with success
       if (logId) {
