@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +51,7 @@ const FullscreenModal = ({
   beforeImage: string; 
   afterImage: string; 
 }) => {
+  const { t } = useTranslation();
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -149,10 +151,10 @@ const FullscreenModal = ({
 
         {/* Labels */}
         <div className="absolute top-4 left-4 bg-black/80 text-white text-base font-semibold px-5 py-2.5 rounded-full">
-          ANTES
+          {t('tools:upscaler.beforeAfter.before')}
         </div>
         <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-base font-semibold px-5 py-2.5 rounded-full">
-          DEPOIS
+          {t('tools:upscaler.beforeAfter.after')}
         </div>
       </div>
     </div>
@@ -173,6 +175,7 @@ const BeforeAfterSlider = ({
   size?: "default" | "large";
   onZoomClick?: () => void;
 }) => {
+  const { t } = useTranslation();
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -248,10 +251,10 @@ const BeforeAfterSlider = ({
 
         {/* Labels maiores */}
         <div className="absolute top-4 left-4 bg-black/80 text-white text-sm font-semibold px-4 py-2 rounded-full">
-          ANTES
+          {t('tools:upscaler.beforeAfter.before')}
         </div>
         <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
-          DEPOIS
+          {t('tools:upscaler.beforeAfter.after')}
         </div>
 
         {/* Botão de zoom */}
@@ -273,30 +276,30 @@ const BeforeAfterSlider = ({
 };
 
 // CTA Button Component - estilo pill
-const CTAButton = ({ onClick, isPremium }: { onClick: () => void; isPremium: boolean }) => (
+const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
     className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
   >
-    QUERO MEU ACESSO AGORA
+    {t('tools:upscaler.cta')}
     <ArrowRight className="h-5 w-5 ml-2" />
   </Button>
 );
 
 // Trust Badges Component
-const TrustBadges = () => (
+const TrustBadges = ({ t }: { t: (key: string) => string }) => (
   <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
     <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
       <Shield className="h-3 w-3 text-green-400" />
-      Seguro
+      {t('tools:upscaler.trustBadges.secure')}
     </span>
     <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
       <Zap className="h-3 w-3 text-yellow-400" />
-      Imediato
+      {t('tools:upscaler.trustBadges.immediate')}
     </span>
     <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
       <Infinity className="h-3 w-3 text-fuchsia-400" />
-      Vitalício
+      {t('tools:upscaler.trustBadges.lifetime')}
     </span>
   </div>
 );
@@ -343,6 +346,7 @@ const InfiniteCarousel = () => (
 
 const PlanosUpscalerArcano = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, isPremium, hasAccessToPack, isLoading: authLoading } = usePremiumArtesStatus();
   const [tool, setTool] = useState<ToolData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -419,36 +423,36 @@ const PlanosUpscalerArcano = () => {
     {
       before: upscalerAntes1,
       after: upscalerDepois1,
-      label: "Foto melhorada em 4K",
-      badge: "FOTO",
+      label: t('tools:upscaler.beforeAfter.photoImproved4K'),
+      badge: t('tools:upscaler.beforeAfter.badges.photo'),
       badgeColor: "from-fuchsia-500 to-pink-500"
     },
     {
       before: upscalerSeloAntes,
       after: upscalerSeloDepois,
-      label: "Selo 3D em alta definição",
-      badge: "Selos 3D",
+      label: t('tools:upscaler.beforeAfter.seal3DHD'),
+      badge: t('tools:upscaler.beforeAfter.badges.seals3D'),
       badgeColor: "from-purple-500 to-violet-600"
     },
     {
       before: upscalerLogoAntes,
       after: upscalerLogoDepois,
-      label: "Logo em alta resolução",
-      badge: "Logo",
+      label: t('tools:upscaler.beforeAfter.logoHD'),
+      badge: t('tools:upscaler.beforeAfter.badges.logo'),
       badgeColor: "from-blue-500 to-cyan-500"
     },
     {
       before: upscalerMockupAntes,
       after: upscalerMockupDepois,
-      label: "Mockup nítido e profissional",
-      badge: "Mockup",
+      label: t('tools:upscaler.beforeAfter.mockupSharp'),
+      badge: t('tools:upscaler.beforeAfter.badges.mockup'),
       badgeColor: "from-emerald-500 to-green-500"
     },
     {
       before: upscalerAntigaAntes,
       after: upscalerAntigaDepois,
-      label: "Foto antiga restaurada",
-      badge: "Foto Antiga",
+      label: t('tools:upscaler.beforeAfter.oldPhotoRestored'),
+      badge: t('tools:upscaler.beforeAfter.badges.oldPhoto'),
       badgeColor: "from-amber-500 to-orange-500"
     }
   ];
@@ -457,98 +461,98 @@ const PlanosUpscalerArcano = () => {
     {
       before: upscalerUser1Antes,
       after: upscalerUser1Depois,
-      label: "Resultado de usuário"
+      label: t('tools:upscaler.socialProof.userResult')
     },
     {
       before: upscalerUser2Antes,
       after: upscalerUser2Depois,
-      label: "Resultado de usuário"
+      label: t('tools:upscaler.socialProof.userResult')
     },
     {
       before: upscalerUser3Antes,
       after: upscalerUser3Depois,
-      label: "Resultado de usuário"
+      label: t('tools:upscaler.socialProof.userResult')
     }
   ];
 
   const features = [
-    { icon: Sparkles, text: "Melhore suas imagens até 4K" },
-    { icon: ImagePlus, text: "Remoção de fundo automática com IA" },
-    { icon: Infinity, text: "Acesso vitalício à ferramenta" },
-    { icon: Zap, text: "Todas as atualizações futuras incluídas" },
+    { icon: Sparkles, text: t('tools:upscaler.benefits.improveImages') },
+    { icon: ImagePlus, text: t('tools:upscaler.benefits.removeBackground') },
+    { icon: Infinity, text: t('tools:upscaler.benefits.lifetimeAccess') },
+    { icon: Zap, text: t('tools:upscaler.benefits.futureUpdates') },
   ];
 
   const targetAudience = [
     {
       icon: Music,
-      title: "Músicos e Produtores",
-      description: "Melhore suas fotos de eventos e material promocional"
+      title: t('tools:upscaler.targetAudience.musicians.title'),
+      description: t('tools:upscaler.targetAudience.musicians.description')
     },
     {
       icon: Palette,
-      title: "Infoprodutores",
-      description: "Melhore imagens de capas, thumbnails e materiais de venda para seus produtos digitais"
+      title: t('tools:upscaler.targetAudience.infoproducers.title'),
+      description: t('tools:upscaler.targetAudience.infoproducers.description')
     },
     {
       icon: Camera,
-      title: "Designers Gráficos",
-      description: "Melhore fotos de clientes e crie seus 3Ds em alta qualidade"
+      title: t('tools:upscaler.targetAudience.designers.title'),
+      description: t('tools:upscaler.targetAudience.designers.description')
     },
     {
       icon: Camera,
-      title: "Fotógrafos Profissionais",
-      description: "Recupere fotos com ruído, pouca luz ou resolução baixa e entregue resultados impecáveis"
+      title: t('tools:upscaler.targetAudience.photographers.title'),
+      description: t('tools:upscaler.targetAudience.photographers.description')
     },
     {
       icon: MessageCircle,
-      title: "Social Media",
-      description: "Crie conteúdo visual de alta qualidade para suas redes sociais e engaje mais seguidores"
+      title: t('tools:upscaler.targetAudience.socialMedia.title'),
+      description: t('tools:upscaler.targetAudience.socialMedia.description')
     },
     {
       icon: User,
-      title: "Usuário Comum",
-      description: "Tirou uma foto ruim e quer melhorar? Transforme em uma imagem nítida e profissional"
+      title: t('tools:upscaler.targetAudience.common.title'),
+      description: t('tools:upscaler.targetAudience.common.description')
     }
   ];
 
   const steps = [
     {
       icon: Upload,
-      title: "Faça upload",
-      description: "Envie sua imagem em baixa qualidade"
+      title: t('tools:upscaler.howItWorks.upload.title'),
+      description: t('tools:upscaler.howItWorks.upload.description')
     },
     {
       icon: Wand2,
-      title: "Escolha o modo",
-      description: "Upscale até 4K ou remoção de fundo"
+      title: t('tools:upscaler.howItWorks.chooseMode.title'),
+      description: t('tools:upscaler.howItWorks.chooseMode.description')
     },
     {
       icon: Download,
-      title: "Baixe",
-      description: "Sua imagem melhorada em segundos"
+      title: t('tools:upscaler.howItWorks.download.title'),
+      description: t('tools:upscaler.howItWorks.download.description')
     }
   ];
 
   const faqItems = [
     {
-      question: "Preciso pagar mensalidade?",
-      answer: "Não! O pagamento é único e o acesso é vitalício. Você paga uma vez e usa para sempre, sem taxas extras ou assinaturas."
+      question: t('tools:upscaler.faq.q1'),
+      answer: t('tools:upscaler.faq.a1')
     },
     {
-      question: "Funciona com qualquer imagem?",
-      answer: "Sim! Funciona com fotos, artes de IA, logos, mockups, capturas de tela, fotos antigas e muito mais. Qualquer tipo de imagem pode ser melhorada."
+      question: t('tools:upscaler.faq.q2'),
+      answer: t('tools:upscaler.faq.a2')
     },
     {
-      question: "Quanto tempo leva para melhorar uma imagem?",
-      answer: "Segundos! Basta fazer o upload e em poucos segundos sua imagem estará pronta para download em alta qualidade."
+      question: t('tools:upscaler.faq.q3'),
+      answer: t('tools:upscaler.faq.a3')
     },
     {
-      question: "Tem suporte se eu tiver dúvidas?",
-      answer: "Sim! Você terá acesso ao nosso suporte via WhatsApp para tirar qualquer dúvida sobre a ferramenta."
+      question: t('tools:upscaler.faq.q4'),
+      answer: t('tools:upscaler.faq.a4')
     },
     {
-      question: "Posso usar em quantas imagens eu quiser?",
-      answer: "Sim! Não há limite de imagens. Use quantas vezes precisar, para sempre."
+      question: t('tools:upscaler.faq.q5'),
+      answer: t('tools:upscaler.faq.a5')
     }
   ];
 
@@ -562,7 +566,7 @@ const PlanosUpscalerArcano = () => {
           onClick={() => navigate("/biblioteca-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar
+          {t('tools:upscaler.back')}
         </Button>
       </div>
 
@@ -573,16 +577,16 @@ const PlanosUpscalerArcano = () => {
             <CardContent className="p-8 text-center">
               <Badge className="bg-green-500 text-white text-lg px-6 py-3 rounded-full mb-6">
                 <Check className="h-5 w-5 mr-2" />
-                Você já tem acesso!
+                {t('tools:upscaler.alreadyHaveAccess')}
               </Badge>
               <p className="text-white/70 mb-6 text-lg">
-                Você já possui acesso ao Upscaler Arcano.
+                {t('tools:upscaler.alreadyHaveAccessDesc')}
               </p>
               <Button
                 onClick={() => navigate("/biblioteca-artes")}
                 className="bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-full px-8 py-6"
               >
-                Ir para Biblioteca
+                {t('tools:upscaler.goToLibrary')}
               </Button>
             </CardContent>
           </Card>
@@ -594,10 +598,10 @@ const PlanosUpscalerArcano = () => {
             <div className="flex flex-col items-center text-center">
               <FadeIn delay={0} duration={700}>
                 <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
-                  Melhore suas <span className="text-fuchsia-400">fotos</span>
+                  {t('tools:upscaler.hero.title1')} <span className="text-fuchsia-400">{t('tools:upscaler.hero.photos')}</span>
                   <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
-                    com Inteligência Artificial
+                    {t('tools:upscaler.hero.title2')}
                   </span>
                 </h1>
               </FadeIn>
@@ -607,27 +611,27 @@ const PlanosUpscalerArcano = () => {
                 <BeforeAfterSlider
                   beforeImage={upscalerHeroAntes}
                   afterImage={upscalerHeroDepois}
-                  label="Arraste para ver a diferença"
+                  label={t('tools:upscaler.hero.dragToCompare')}
                   size="large"
                 />
               </FadeIn>
               
               <FadeIn delay={400} duration={700}>
                 <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8 max-w-2xl">
-                  Transforme fotos de celular, imagens de clientes ou artes geradas por IA em imagens <span className="text-fuchsia-400 font-semibold">nítidas e profissionais</span>
+                  {t('tools:upscaler.hero.subtitle')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
               </FadeIn>
 
               <FadeIn delay={600} duration={700}>
                 <div className="flex flex-col items-center">
-                  <CTAButton onClick={handlePurchase} isPremium={isPremium} />
-                  <TrustBadges />
+                  <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+                  <TrustBadges t={t} />
                 </div>
               </FadeIn>
 
               {/* Scroll Indicator */}
               <FadeIn delay={800} duration={700}>
-                <ScrollIndicator className="mt-12 hidden md:flex" text="Role para ver mais" />
+                <ScrollIndicator className="mt-12 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
               </FadeIn>
             </div>
           </section>
@@ -637,7 +641,7 @@ const PlanosUpscalerArcano = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-8 md:mb-12 tracking-wide">
-                  Você já passou por isso?
+                  {t('tools:upscaler.pain.title')}
                 </h2>
               </AnimatedSection>
               
@@ -645,33 +649,33 @@ const PlanosUpscalerArcano = () => {
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300">
                   <div className="text-5xl mb-6">📱</div>
                   <p className="text-white/80 text-lg">
-                    Tirou foto com celular e ficou <span className="text-fuchsia-400 font-semibold">ruim</span>?
+                    {t('tools:upscaler.pain.phone')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
                   </p>
                 </div>
                 
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300">
                   <div className="text-5xl mb-6">😤</div>
                   <p className="text-white/80 text-lg">
-                    Recebeu foto de cliente em <span className="text-fuchsia-400 font-semibold">baixa qualidade</span>?
+                    {t('tools:upscaler.pain.client')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
                   </p>
                 </div>
                 
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300">
                   <div className="text-5xl mb-6">🤖</div>
                   <p className="text-white/80 text-lg">
-                    Gerou imagem com IA mas <span className="text-fuchsia-400 font-semibold">não ficou boa</span>?
+                    {t('tools:upscaler.pain.aiGenerated')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
                   </p>
                 </div>
               </StaggeredAnimation>
               
               <AnimatedSection as="div" delay={400}>
                 <p className="text-center text-2xl text-white mt-12">
-                  O <span className="text-fuchsia-400 font-bold">Upscaler Arcano</span> resolve isso em segundos.
+                  {t('tools:upscaler.pain.solution')}
                 </p>
 
                 {/* CTA intermediário */}
                 <div className="flex justify-center mt-10">
-                  <CTAButton onClick={handlePurchase} isPremium={isPremium} />
+                  <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
                 </div>
               </AnimatedSection>
             </div>
@@ -684,10 +688,10 @@ const PlanosUpscalerArcano = () => {
             
             <div className="max-w-6xl mx-auto relative">
               <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-3 md:mb-4 tracking-wide">
-                Melhore <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">Qualquer Imagem</span>
+                {t('tools:upscaler.beforeAfter.title')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">{t('tools:upscaler.beforeAfter.anyImage')}</span>
               </h2>
               <p className="text-white/60 text-center text-sm md:text-lg mb-10 md:mb-14 max-w-2xl mx-auto">
-                Fotos, logos, mockups, selos 3D, fotos antigas e muito mais — tudo em alta qualidade
+                {t('tools:upscaler.beforeAfter.subtitle')}
               </p>
               
               {/* Grid dinâmico: 3 colunas desktop, 1 mobile */}
@@ -753,7 +757,7 @@ const PlanosUpscalerArcano = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  Para quem é o <span className="text-fuchsia-400">Upscaler Arcano</span>?
+                  {t('tools:upscaler.targetAudience.title')} <span className="text-fuchsia-400">Upscaler Arcano</span>?
                 </h2>
               </AnimatedSection>
               
@@ -782,7 +786,7 @@ const PlanosUpscalerArcano = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  O que o <span className="text-fuchsia-400">Upscaler faz</span>?
+                  {t('tools:upscaler.benefits.title')} <span className="text-fuchsia-400">{t('tools:upscaler.benefits.subtitle')}</span>?
                 </h2>
               </AnimatedSection>
               
@@ -810,7 +814,7 @@ const PlanosUpscalerArcano = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  Como <span className="text-fuchsia-400">funciona</span>
+                  {t('tools:upscaler.howItWorks.title')} <span className="text-fuchsia-400">{t('tools:upscaler.howItWorks.subtitle')}</span>
                 </h2>
               </AnimatedSection>
               
@@ -844,10 +848,10 @@ const PlanosUpscalerArcano = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-4 tracking-wide">
-                  Veja o <span className="text-fuchsia-400">resultado</span> de alguns usuários
+                  {t('tools:upscaler.socialProof.title')} <span className="text-fuchsia-400">{t('tools:upscaler.socialProof.result')}</span> {t('tools:upscaler.socialProof.subtitle')}
                 </h2>
                 <p className="text-white/60 text-center text-lg mb-12">
-                  Pessoas reais usando o Upscaler Arcano
+                  {t('tools:upscaler.socialProof.description')}
                 </p>
               </AnimatedSection>
               
@@ -878,12 +882,12 @@ const PlanosUpscalerArcano = () => {
                   {isPremium && (
                     <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6">
                       <Crown className="h-3 w-3 md:h-4 md:w-4" />
-                      Desconto de Membro
+                      {t('tools:upscaler.finalCTA.memberDiscount')}
                     </div>
                   )}
 
                   <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
-                    Garanta seu acesso <span className="text-fuchsia-400">vitalício</span>
+                    {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
                   </h2>
 
                   {/* Preços */}
@@ -893,9 +897,9 @@ const PlanosUpscalerArcano = () => {
                       {formatPrice(price)}
                     </div>
                     <p className="text-white/60 text-base md:text-lg">
-                      ou <span className="text-fuchsia-400 font-semibold">3x de {formatPrice(installmentPrice)}</span>
+                      {t('tools:upscaler.finalCTA.or')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.finalCTA.installments')} {formatPrice(installmentPrice)}</span>
                     </p>
-                    <p className="text-white/40 text-xs md:text-sm mt-2">pagamento único • acesso vitalício</p>
+                    <p className="text-white/40 text-xs md:text-sm mt-2">{t('tools:upscaler.finalCTA.oneTimePayment')}</p>
                   </div>
 
                   {/* Features checklist */}
@@ -914,27 +918,27 @@ const PlanosUpscalerArcano = () => {
                   <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
                     <div className="flex items-center justify-center gap-2 text-fuchsia-300 text-xs md:text-sm">
                       <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                      <span className="font-medium">Oferta por tempo limitado</span>
+                      <span className="font-medium">{t('tools:upscaler.finalCTA.limitedOffer')}</span>
                     </div>
                   </div>
 
                   <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} />
+                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
                   </div>
 
                   {/* Badges de pagamento */}
                   <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-5 md:mt-6 text-white/50 text-xs">
                     <span className="flex items-center gap-1">
                       <CreditCard className="h-3 w-3" />
-                      Cartão
+                      {t('tools:upscaler.finalCTA.card')}
                     </span>
                     <span className="flex items-center gap-1">
                       <span className="text-sm">💵</span>
-                      PIX
+                      {t('tools:upscaler.finalCTA.pix')}
                     </span>
                     <span className="flex items-center gap-1">
                       <Shield className="h-3 w-3" />
-                      Seguro
+                      {t('tools:upscaler.finalCTA.secure')}
                     </span>
                   </div>
                 </CardContent>
@@ -947,7 +951,7 @@ const PlanosUpscalerArcano = () => {
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  Perguntas <span className="text-fuchsia-400">Frequentes</span>
+                  {t('tools:upscaler.faq.title')} <span className="text-fuchsia-400">{t('tools:upscaler.faq.subtitle')}</span>
                 </h2>
               </AnimatedSection>
               
@@ -980,7 +984,7 @@ const PlanosUpscalerArcano = () => {
               onClick={() => navigate("/biblioteca-artes")}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar para Biblioteca
+              {t('tools:upscaler.backToLibrary')}
             </Button>
           </section>
         </>
