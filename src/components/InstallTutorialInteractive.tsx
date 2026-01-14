@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, X, Check, Share, Plus, MoreVertical, Download, Info, ExternalLink, AlertTriangle } from "lucide-react";
@@ -184,40 +185,159 @@ function detectDevice(): DeviceType {
   return "desktop";
 }
 
-function getStepsForConfig(device: DeviceType, browser: BrowserType): DeviceBrowserConfig {
+function getStepsForConfig(device: DeviceType, browser: BrowserType, t: (key: string) => string): DeviceBrowserConfig {
   // Check for in-app browsers first (Instagram, Facebook, etc.)
   if (browser === "instagram" || browser === "facebook") {
-    const label = browser === "instagram" ? "Instagram" : "Facebook";
+    const label = browser === "instagram" ? t('installTutorial.browsers.instagram') : t('installTutorial.browsers.facebook');
     return { 
-      steps: inAppBrowserSteps, 
-      label: `Navegador do ${label}`,
+      steps: [
+        { title: t('installTutorial.steps.inApp.step1Title'), description: t('installTutorial.steps.inApp.step1Desc') },
+        { title: t('installTutorial.steps.inApp.step2Title'), description: t('installTutorial.steps.inApp.step2Desc') },
+        { title: t('installTutorial.steps.inApp.step3Title'), description: t('installTutorial.steps.inApp.step3Desc') },
+      ], 
+      label,
       isInAppBrowser: true
     };
   }
 
   if (device === "ios") {
-    if (browser === "chrome" || browser === "brave" || browser === "opera") return { steps: iosChromeSteps, label: `${browser === "chrome" ? "Chrome" : browser === "brave" ? "Brave" : "Opera"} no iPhone` };
-    if (browser === "firefox") return { steps: iosFirefoxSteps, label: "Firefox no iPhone" };
-    if (browser === "duckduckgo") return { steps: iosDuckDuckGoSteps, label: "DuckDuckGo no iPhone" };
-    return { steps: iosSafariSteps, label: "Safari no iPhone" };
+    if (browser === "chrome" || browser === "brave" || browser === "opera") {
+      const browserName = browser === "chrome" ? "Chrome" : browser === "brave" ? "Brave" : "Opera";
+      return { 
+        steps: [
+          { title: t('installTutorial.steps.ios.chrome.step1Title'), description: t('installTutorial.steps.ios.chrome.step1Desc') },
+          { title: t('installTutorial.steps.ios.chrome.step2Title'), description: t('installTutorial.steps.ios.chrome.step2Desc') },
+          { title: t('installTutorial.steps.ios.chrome.step3Title'), description: t('installTutorial.steps.ios.chrome.step3Desc') },
+        ], 
+        label: `${browserName} no iPhone` 
+      };
+    }
+    if (browser === "firefox") return { 
+      steps: [
+        { title: t('installTutorial.steps.ios.safari.step1Title'), description: t('installTutorial.steps.ios.safari.step1Desc') },
+        { title: t('installTutorial.steps.ios.safari.step2Title'), description: t('installTutorial.steps.ios.safari.step2Desc') },
+        { title: t('installTutorial.steps.ios.safari.step3Title'), description: t('installTutorial.steps.ios.safari.step3Desc') },
+      ], 
+      label: t('installTutorial.browsers.firefoxIphone') 
+    };
+    if (browser === "duckduckgo") return { 
+      steps: [
+        { title: t('installTutorial.steps.ios.safari.step1Title'), description: t('installTutorial.steps.ios.safari.step1Desc') },
+        { title: t('installTutorial.steps.ios.safari.step2Title'), description: t('installTutorial.steps.ios.safari.step2Desc') },
+        { title: t('installTutorial.steps.ios.safari.step3Title'), description: t('installTutorial.steps.ios.safari.step3Desc') },
+      ], 
+      label: t('installTutorial.browsers.duckduckgoIphone') 
+    };
+    return { 
+      steps: [
+        { title: t('installTutorial.steps.ios.safari.step1Title'), description: t('installTutorial.steps.ios.safari.step1Desc') },
+        { title: t('installTutorial.steps.ios.safari.step2Title'), description: t('installTutorial.steps.ios.safari.step2Desc') },
+        { title: t('installTutorial.steps.ios.safari.step3Title'), description: t('installTutorial.steps.ios.safari.step3Desc') },
+      ], 
+      label: t('installTutorial.browsers.safariIphone') 
+    };
   }
   
   if (device === "android") {
-    if (browser === "samsung") return { steps: androidSamsungSteps, label: "Samsung Internet" };
-    if (browser === "firefox") return { steps: androidFirefoxSteps, label: "Firefox no Android" };
-    if (browser === "opera") return { steps: androidOperaSteps, label: "Opera no Android" };
-    if (browser === "brave") return { steps: androidBraveSteps, label: "Brave no Android" };
-    if (browser === "duckduckgo") return { steps: androidDuckDuckGoSteps, label: "DuckDuckGo no Android" };
-    return { steps: androidChromeSteps, label: "Chrome no Android" };
+    if (browser === "samsung") return { 
+      steps: [
+        { title: t('installTutorial.steps.android.chrome.step1Title'), description: t('installTutorial.steps.android.chrome.step1Desc') },
+        { title: t('installTutorial.steps.android.chrome.step2Title'), description: t('installTutorial.steps.android.chrome.step2Desc') },
+        { title: t('installTutorial.steps.android.chrome.step3Title'), description: t('installTutorial.steps.android.chrome.step3Desc') },
+      ], 
+      label: t('installTutorial.browsers.samsungInternet') 
+    };
+    if (browser === "firefox") return { 
+      steps: [
+        { title: t('installTutorial.steps.android.chrome.step1Title'), description: t('installTutorial.steps.android.chrome.step1Desc') },
+        { title: t('installTutorial.steps.android.chrome.step2Title'), description: t('installTutorial.steps.android.chrome.step2Desc') },
+        { title: t('installTutorial.steps.android.chrome.step3Title'), description: t('installTutorial.steps.android.chrome.step3Desc') },
+      ], 
+      label: t('installTutorial.browsers.firefoxAndroid') 
+    };
+    if (browser === "opera") return { 
+      steps: [
+        { title: t('installTutorial.steps.android.chrome.step1Title'), description: t('installTutorial.steps.android.chrome.step1Desc') },
+        { title: t('installTutorial.steps.android.chrome.step2Title'), description: t('installTutorial.steps.android.chrome.step2Desc') },
+        { title: t('installTutorial.steps.android.chrome.step3Title'), description: t('installTutorial.steps.android.chrome.step3Desc') },
+      ], 
+      label: t('installTutorial.browsers.operaAndroid') 
+    };
+    if (browser === "brave") return { 
+      steps: [
+        { title: t('installTutorial.steps.android.chrome.step1Title'), description: t('installTutorial.steps.android.chrome.step1Desc') },
+        { title: t('installTutorial.steps.android.chrome.step2Title'), description: t('installTutorial.steps.android.chrome.step2Desc') },
+        { title: t('installTutorial.steps.android.chrome.step3Title'), description: t('installTutorial.steps.android.chrome.step3Desc') },
+      ], 
+      label: t('installTutorial.browsers.braveAndroid') 
+    };
+    if (browser === "duckduckgo") return { 
+      steps: [
+        { title: t('installTutorial.steps.android.chrome.step1Title'), description: t('installTutorial.steps.android.chrome.step1Desc') },
+        { title: t('installTutorial.steps.android.chrome.step2Title'), description: t('installTutorial.steps.android.chrome.step2Desc') },
+        { title: t('installTutorial.steps.android.chrome.step3Title'), description: t('installTutorial.steps.android.chrome.step3Desc') },
+      ], 
+      label: t('installTutorial.browsers.duckduckgoAndroid') 
+    };
+    return { 
+      steps: [
+        { title: t('installTutorial.steps.android.chrome.step1Title'), description: t('installTutorial.steps.android.chrome.step1Desc') },
+        { title: t('installTutorial.steps.android.chrome.step2Title'), description: t('installTutorial.steps.android.chrome.step2Desc') },
+        { title: t('installTutorial.steps.android.chrome.step3Title'), description: t('installTutorial.steps.android.chrome.step3Desc') },
+      ], 
+      label: t('installTutorial.browsers.chromeAndroid') 
+    };
   }
   
   // Desktop
-  if (browser === "edge") return { steps: desktopEdgeSteps, label: "Microsoft Edge" };
-  if (browser === "firefox") return { steps: desktopFirefoxSteps, label: "Firefox" };
-  if (browser === "opera") return { steps: desktopOperaSteps, label: "Opera" };
-  if (browser === "brave") return { steps: desktopBraveSteps, label: "Brave" };
-  if (browser === "duckduckgo") return { steps: desktopDuckDuckGoSteps, label: "DuckDuckGo" };
-  return { steps: desktopChromeSteps, label: "Chrome" };
+  if (browser === "edge") return { 
+    steps: [
+      { title: t('installTutorial.steps.desktop.chrome.step1Title'), description: t('installTutorial.steps.desktop.chrome.step1Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step2Title'), description: t('installTutorial.steps.desktop.chrome.step2Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step3Title'), description: t('installTutorial.steps.desktop.chrome.step3Desc') },
+    ], 
+    label: t('installTutorial.browsers.edgeDesktop') 
+  };
+  if (browser === "firefox") return { 
+    steps: [
+      { title: t('installTutorial.steps.desktop.chrome.step1Title'), description: t('installTutorial.steps.desktop.chrome.step1Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step2Title'), description: t('installTutorial.steps.desktop.chrome.step2Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step3Title'), description: t('installTutorial.steps.desktop.chrome.step3Desc') },
+    ], 
+    label: t('installTutorial.browsers.firefoxDesktop') 
+  };
+  if (browser === "opera") return { 
+    steps: [
+      { title: t('installTutorial.steps.desktop.chrome.step1Title'), description: t('installTutorial.steps.desktop.chrome.step1Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step2Title'), description: t('installTutorial.steps.desktop.chrome.step2Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step3Title'), description: t('installTutorial.steps.desktop.chrome.step3Desc') },
+    ], 
+    label: "Opera" 
+  };
+  if (browser === "brave") return { 
+    steps: [
+      { title: t('installTutorial.steps.desktop.chrome.step1Title'), description: t('installTutorial.steps.desktop.chrome.step1Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step2Title'), description: t('installTutorial.steps.desktop.chrome.step2Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step3Title'), description: t('installTutorial.steps.desktop.chrome.step3Desc') },
+    ], 
+    label: "Brave" 
+  };
+  if (browser === "duckduckgo") return { 
+    steps: [
+      { title: t('installTutorial.steps.desktop.chrome.step1Title'), description: t('installTutorial.steps.desktop.chrome.step1Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step2Title'), description: t('installTutorial.steps.desktop.chrome.step2Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step3Title'), description: t('installTutorial.steps.desktop.chrome.step3Desc') },
+    ], 
+    label: "DuckDuckGo" 
+  };
+  return { 
+    steps: [
+      { title: t('installTutorial.steps.desktop.chrome.step1Title'), description: t('installTutorial.steps.desktop.chrome.step1Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step2Title'), description: t('installTutorial.steps.desktop.chrome.step2Desc') },
+      { title: t('installTutorial.steps.desktop.chrome.step3Title'), description: t('installTutorial.steps.desktop.chrome.step3Desc') },
+    ], 
+    label: t('installTutorial.browsers.chromeDesktop') 
+  };
 }
 
 // iOS Safari Mockup
@@ -834,6 +954,7 @@ const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }
 );
 
 const InstallTutorialInteractive = () => {
+  const { t } = useTranslation('tools');
   const [deviceType, setDeviceType] = useState<DeviceType>("android");
   const [browserType, setBrowserType] = useState<BrowserType>("chrome");
   const [currentStep, setCurrentStep] = useState(0);
@@ -845,7 +966,7 @@ const InstallTutorialInteractive = () => {
     setBrowserType(detectBrowser());
   }, []);
 
-  const config = getStepsForConfig(deviceType, browserType);
+  const config = getStepsForConfig(deviceType, browserType, t);
   const steps = config.steps;
   const totalSteps = steps.length;
 
@@ -982,7 +1103,7 @@ const InstallTutorialInteractive = () => {
           onClick={() => { setDeviceType("ios"); setBrowserType("safari"); setCurrentStep(0); }}
           className={deviceType === "ios" ? "bg-gradient-primary" : ""}
         >
-          iPhone
+          {t('installTutorial.deviceButtons.iphone')}
         </Button>
         <Button
           variant={deviceType === "android" ? "default" : "outline"}
@@ -990,7 +1111,7 @@ const InstallTutorialInteractive = () => {
           onClick={() => { setDeviceType("android"); setBrowserType("chrome"); setCurrentStep(0); }}
           className={deviceType === "android" ? "bg-gradient-primary" : ""}
         >
-          Android
+          {t('installTutorial.deviceButtons.android')}
         </Button>
         <Button
           variant={deviceType === "desktop" ? "default" : "outline"}
@@ -998,7 +1119,7 @@ const InstallTutorialInteractive = () => {
           onClick={() => { setDeviceType("desktop"); setBrowserType("chrome"); setCurrentStep(0); }}
           className={deviceType === "desktop" ? "bg-gradient-primary" : ""}
         >
-          Computador
+          {t('installTutorial.deviceButtons.computer')}
         </Button>
       </div>
 
@@ -1007,10 +1128,9 @@ const InstallTutorialInteractive = () => {
         <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg flex items-start gap-2 mb-4">
           <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Navegador interno detectado</p>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">{t('installTutorial.inAppWarning.title')}</p>
             <p className="text-xs text-amber-600 dark:text-amber-300 mt-0.5">
-              Você está usando o navegador do {browserType === "instagram" ? "Instagram" : "Facebook"}. 
-              Siga os passos acima para abrir no Safari ou Chrome.
+              {t('installTutorial.inAppWarning.description', { browser: browserType === "instagram" ? "Instagram" : "Facebook" })}
             </p>
           </div>
         </div>
@@ -1019,21 +1139,21 @@ const InstallTutorialInteractive = () => {
       {/* Detected Browser Info with Edit Button */}
       <div className={`flex items-center justify-center gap-2 text-sm text-muted-foreground rounded-lg py-2 px-3 ${config.isInAppBrowser ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-muted/50'}`}>
         <Info className="h-4 w-4 flex-shrink-0" />
-        <span>Detectado: <strong className="text-foreground">{config.label}</strong></span>
+        <span>{t('installTutorial.detected')}: <strong className="text-foreground">{config.label}</strong></span>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setShowBrowserSelector(!showBrowserSelector)}
           className="h-6 px-2 text-xs ml-1"
         >
-          {showBrowserSelector ? "Fechar" : "Alterar"}
+          {showBrowserSelector ? t('installTutorial.close') : t('installTutorial.change')}
         </Button>
       </div>
 
       {/* Browser Selector (collapsible) */}
       {showBrowserSelector && (
         <div className="mt-4 p-3 bg-muted/30 rounded-lg animate-fade-in">
-          <p className="text-xs text-muted-foreground mb-2 text-center">Selecione seu navegador:</p>
+          <p className="text-xs text-muted-foreground mb-2 text-center">{t('installTutorial.selectBrowser')}:</p>
           <div className="flex flex-wrap justify-center gap-2">
             {getBrowsersForDevice().map((browser) => (
               <Button
