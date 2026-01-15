@@ -702,37 +702,11 @@ const PlanosUpscalerArcano = () => {
                 {t('tools:upscaler.beforeAfter.subtitle')}
               </p>
               
-              {/* Grid dinâmico: 3 colunas desktop, 1 mobile */}
+              {/* Grid 3x2: 3 cards por linha */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-                {/* Primeiros 3 cards */}
-                {beforeAfterExamples.slice(0, 3).map((example, index) => (
+                {beforeAfterExamples.map((example, index) => (
                   <div 
                     key={index} 
-                    className="relative group"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <div className="relative bg-white/5 border border-white/10 rounded-3xl p-4 hover:border-fuchsia-500/30 transition-all duration-300 hover:transform hover:scale-[1.02]">
-                      <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r ${example.badgeColor} text-white border-0 rounded-full px-4 py-1 font-semibold shadow-lg`}>
-                        {example.badge}
-                      </Badge>
-                      <div className="pt-2">
-                        <BeforeAfterSlider
-                          beforeImage={example.before}
-                          afterImage={example.after}
-                          label={example.label}
-                          onZoomClick={() => openModal(example.before, example.after)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Últimos 2 cards centralizados */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-6 md:mt-8 max-w-2xl mx-auto">
-                {beforeAfterExamples.slice(3).map((example, index) => (
-                  <div 
-                    key={index + 3} 
                     className="relative group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
