@@ -28,6 +28,8 @@ import upscalerUser2Antes from "@/assets/upscaler-user2-antes.jpg";
 import upscalerUser2Depois from "@/assets/upscaler-user2-depois.jpg";
 import upscalerUser3Antes from "@/assets/upscaler-user3-antes.jpg";
 import upscalerUser3Depois from "@/assets/upscaler-user3-depois.jpg";
+import upscalerFoodAntes from "@/assets/upscaler-food-antes.png";
+import upscalerFoodDepois from "@/assets/upscaler-food-depois.png";
 
 interface ToolData {
   id: string;
@@ -445,6 +447,13 @@ const PlanosUpscalerArcano69 = () => {
       label: t('tools:upscaler.beforeAfter.oldPhotoRestored'),
       badge: t('tools:upscaler.beforeAfter.badges.oldPhoto'),
       badgeColor: "from-amber-500 to-orange-500"
+    },
+    {
+      before: upscalerFoodAntes,
+      after: upscalerFoodDepois,
+      label: "fotos de comida com aspecto foodporn",
+      badge: "Fotos de Alimentos",
+      badgeColor: "from-red-500 to-orange-500"
     }
   ];
 
