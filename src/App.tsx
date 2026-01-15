@@ -102,7 +102,7 @@ import AdminCloudinaryMigration from "./pages/AdminCloudinaryMigration";
 import AdminPremiumMusicos from "./pages/AdminPremiumMusicos";
 import SucessoArtesMusicos from "./pages/SucessoArtesMusicos";
 import PlanosUpscalerArcano from "./pages/PlanosUpscalerArcano";
-import PlanosUpscalerArcano69 from "./pages/PlanosUpscalerArcano69";
+import PlanosUpscalerArcano69 from "./pages/PlanosUpscalerArcano69v2";
 import PlanosForjaSelos3D from "./pages/PlanosForjaSelos3D";
 import UpscalerArcanoTool from "./pages/UpscalerArcanoTool";
 import UpscalerRunpod from "./pages/UpscalerRunpod";
