@@ -643,49 +643,43 @@ const PlanosUpscalerArcano = () => {
                 </h2>
               </AnimatedSection>
               
-              {/* Grid responsivo: 1 coluna mobile, 2 ou 3 desktop - Linha 1 */}
-              <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 items-stretch" staggerDelay={100}>
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+              {/* Grid responsivo: 1 coluna mobile, 2 tablet, 3 cards por linha no desktop (2ª linha centralizada) */}
+              <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-stretch" staggerDelay={100}>
+                <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                   <div className="text-4xl md:text-5xl mb-4 md:mb-6">📱</div>
                   <p className="text-white/80 text-base md:text-lg">
                     {t('tools:upscaler.pain.phone')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
                   </p>
                 </div>
-                
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+
+                <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                   <div className="text-4xl md:text-5xl mb-4 md:mb-6">😤</div>
                   <p className="text-white/80 text-base md:text-lg">
                     {t('tools:upscaler.pain.client')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
                   </p>
                 </div>
-                
-                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+
+                <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                   <div className="text-4xl md:text-5xl mb-4 md:mb-6">📷</div>
                   <p className="text-white/80 text-base md:text-lg">
                     {t('tools:upscaler.pain.aiGenerated')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
                   </p>
                 </div>
-              </StaggeredAnimation>
-              
-              {/* Linha 2: 2 cards centralizados */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-4 md:mt-6">
-                <div className="lg:col-start-1 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+
+                <div className="lg:col-span-2 lg:col-start-2 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                   <div className="text-4xl md:text-5xl mb-4 md:mb-6">🤖</div>
                   <p className="text-white/80 text-base md:text-lg">
                     {t('tools:upscaler.pain.aiImage')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
                   </p>
                 </div>
-                
-                {/* Card invisível para ocupar espaço central */}
-                <div className="hidden lg:block" />
-                
-                <div className="lg:col-start-3 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+
+                <div className="lg:col-span-2 lg:col-start-4 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                   <div className="text-4xl md:text-5xl mb-4 md:mb-6">🎸</div>
                   <p className="text-white/80 text-base md:text-lg">
                     {t('tools:upscaler.pain.lostContract')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
                   </p>
                 </div>
-              </div>
+              </StaggeredAnimation>
               
               <AnimatedSection as="div" delay={400}>
                 <p className="text-center text-xl md:text-2xl text-white mt-10 md:mt-12">
