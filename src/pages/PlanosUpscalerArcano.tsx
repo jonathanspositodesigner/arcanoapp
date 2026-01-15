@@ -30,6 +30,12 @@ import upscalerUser3Antes from "@/assets/upscaler-user3-antes.jpg";
 import upscalerUser3Depois from "@/assets/upscaler-user3-depois.jpg";
 import upscalerFoodAntes from "@/assets/upscaler-food-antes.png";
 import upscalerFoodDepois from "@/assets/upscaler-food-depois.png";
+import upscalerUser4Antes from "@/assets/upscaler-user4-antes.png";
+import upscalerUser4Depois from "@/assets/upscaler-user4-depois.png";
+import upscalerUser5Antes from "@/assets/upscaler-user5-antes.png";
+import upscalerUser5Depois from "@/assets/upscaler-user5-depois.png";
+import upscalerUser6Antes from "@/assets/upscaler-user6-antes.png";
+import upscalerUser6Depois from "@/assets/upscaler-user6-depois.png";
 
 interface ToolData {
   id: string;
@@ -480,6 +486,21 @@ const PlanosUpscalerArcano = () => {
     {
       before: upscalerUser3Antes,
       after: upscalerUser3Depois,
+      label: t('tools:upscaler.socialProof.userResult')
+    },
+    {
+      before: upscalerUser4Antes,
+      after: upscalerUser4Depois,
+      label: t('tools:upscaler.socialProof.userResult')
+    },
+    {
+      before: upscalerUser5Antes,
+      after: upscalerUser5Depois,
+      label: t('tools:upscaler.socialProof.userResult')
+    },
+    {
+      before: upscalerUser6Antes,
+      after: upscalerUser6Depois,
       label: t('tools:upscaler.socialProof.userResult')
     }
   ];
