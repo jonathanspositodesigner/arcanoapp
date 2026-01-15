@@ -8,7 +8,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
-import { AnimatedSection, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
+import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import upscalerAntes1 from "@/assets/upscaler-antes-1.jpg";
 import upscalerDepois1 from "@/assets/upscaler-depois-1.jpg";
@@ -634,43 +634,53 @@ const PlanosUpscalerArcano69 = () => {
                 </h2>
               </AnimatedSection>
               
-              {/* Grid responsivo: 1 coluna mobile, 2 tablet, 3 cards por linha no desktop (2ª linha centralizada) */}
-              <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-stretch" staggerDelay={100}>
-                <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
-                  <div className="text-4xl md:text-5xl mb-4 md:mb-6">📱</div>
-                  <p className="text-white/80 text-base md:text-lg">
-                    {t('tools:upscaler.pain.phone')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
-                  </p>
-                </div>
+              {/* Grid responsivo: 1 coluna mobile, 2 tablet, 3 cards em cima + 2 centralizados embaixo no desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-stretch">
+                <AnimatedElement className="h-full lg:col-span-2" delay={0}>
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">📱</div>
+                    <p className="text-white/80 text-base md:text-lg">
+                      {t('tools:upscaler.pain.phone')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
+                    </p>
+                  </div>
+                </AnimatedElement>
 
-                <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
-                  <div className="text-4xl md:text-5xl mb-4 md:mb-6">😤</div>
-                  <p className="text-white/80 text-base md:text-lg">
-                    {t('tools:upscaler.pain.client')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
-                  </p>
-                </div>
+                <AnimatedElement className="h-full lg:col-span-2" delay={100}>
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">😤</div>
+                    <p className="text-white/80 text-base md:text-lg">
+                      {t('tools:upscaler.pain.client')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
+                    </p>
+                  </div>
+                </AnimatedElement>
 
-                <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
-                  <div className="text-4xl md:text-5xl mb-4 md:mb-6">📷</div>
-                  <p className="text-white/80 text-base md:text-lg">
-                    {t('tools:upscaler.pain.aiGenerated')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
-                  </p>
-                </div>
+                <AnimatedElement className="h-full lg:col-span-2" delay={200}>
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">📷</div>
+                    <p className="text-white/80 text-base md:text-lg">
+                      {t('tools:upscaler.pain.aiGenerated')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
+                    </p>
+                  </div>
+                </AnimatedElement>
 
-                <div className="lg:col-span-2 lg:col-start-2 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
-                  <div className="text-4xl md:text-5xl mb-4 md:mb-6">🤖</div>
-                  <p className="text-white/80 text-base md:text-lg">
-                    {t('tools:upscaler.pain.aiImage')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
-                  </p>
-                </div>
+                <AnimatedElement className="h-full lg:col-span-2 lg:col-start-2" delay={300}>
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">🤖</div>
+                    <p className="text-white/80 text-base md:text-lg">
+                      {t('tools:upscaler.pain.aiImage')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
+                    </p>
+                  </div>
+                </AnimatedElement>
 
-                <div className="lg:col-span-2 lg:col-start-4 bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
-                  <div className="text-4xl md:text-5xl mb-4 md:mb-6">🎸</div>
-                  <p className="text-white/80 text-base md:text-lg">
-                    {t('tools:upscaler.pain.lostContract')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
-                  </p>
-                </div>
-              </StaggeredAnimation>
+                <AnimatedElement className="h-full lg:col-span-2 lg:col-start-4" delay={400}>
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">🎸</div>
+                    <p className="text-white/80 text-base md:text-lg">
+                      {t('tools:upscaler.pain.lostContract')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
+                    </p>
+                  </div>
+                </AnimatedElement>
+              </div>
               
               <AnimatedSection as="div" delay={400}>
                 <p className="text-center text-xl md:text-2xl text-white mt-10 md:mt-12">
