@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
@@ -855,7 +856,28 @@ const PlanosUpscalerArcano69 = () => {
                 </p>
               </AnimatedSection>
               
-              <StaggeredAnimation className="grid md:grid-cols-3 gap-6" staggerDelay={150}>
+              {/* Versão MOBILE - Carrossel */}
+              <div className="md:hidden">
+                <Carousel className="w-full max-w-sm mx-auto">
+                  <CarouselContent>
+                    {userResults.map((result, index) => (
+                      <CarouselItem key={index}>
+                        <BeforeAfterSlider
+                          beforeImage={result.before}
+                          afterImage={result.after}
+                          label={result.label}
+                          onZoomClick={() => openModal(result.before, result.after)}
+                        />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="left-0 bg-fuchsia-500/20 border-fuchsia-500/50 hover:bg-fuchsia-500/40 text-white" />
+                  <CarouselNext className="right-0 bg-fuchsia-500/20 border-fuchsia-500/50 hover:bg-fuchsia-500/40 text-white" />
+                </Carousel>
+              </div>
+
+              {/* Versão DESKTOP - Grid */}
+              <StaggeredAnimation className="hidden md:grid md:grid-cols-3 gap-6" staggerDelay={150}>
                 {userResults.map((result, index) => (
                   <BeforeAfterSlider
                     key={index}
