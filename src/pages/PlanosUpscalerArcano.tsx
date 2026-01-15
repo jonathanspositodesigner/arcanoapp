@@ -861,17 +861,18 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-4 tracking-wide">
-                  {t('tools:upscaler.socialProof.title')} <span className="text-fuchsia-400">{t('tools:upscaler.socialProof.result')}</span> {t('tools:upscaler.socialProof.subtitle')}
+                <h2 className="font-bebas text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white text-center mb-2 tracking-wide leading-tight px-2">
+                  {t('tools:upscaler.socialProof.title')} <span className="text-fuchsia-400">{t('tools:upscaler.socialProof.result')}</span>
+                  <span className="block sm:inline"> {t('tools:upscaler.socialProof.subtitle')}</span>
                 </h2>
-                <p className="text-white/60 text-center text-lg mb-12">
+                <p className="text-white/60 text-center text-base sm:text-lg mb-8 md:mb-12 px-4">
                   {t('tools:upscaler.socialProof.description')}
                 </p>
               </AnimatedSection>
               
               {/* Versão MOBILE - Carrossel */}
-              <div className="md:hidden">
-                <Carousel className="w-full max-w-sm mx-auto">
+              <div className="md:hidden px-6">
+                <Carousel className="w-full max-w-xs mx-auto">
                   <CarouselContent>
                     {userResults.map((result, index) => (
                       <CarouselItem key={index}>
@@ -884,8 +885,8 @@ const PlanosUpscalerArcano = () => {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious className="left-0 bg-fuchsia-500/20 border-fuchsia-500/50 hover:bg-fuchsia-500/40 text-white" />
-                  <CarouselNext className="right-0 bg-fuchsia-500/20 border-fuchsia-500/50 hover:bg-fuchsia-500/40 text-white" />
+                  <CarouselPrevious className="-left-4 h-10 w-10 bg-fuchsia-500 hover:bg-fuchsia-600 border-none text-white shadow-lg shadow-fuchsia-500/30" />
+                  <CarouselNext className="-right-4 h-10 w-10 bg-fuchsia-500 hover:bg-fuchsia-600 border-none text-white shadow-lg shadow-fuchsia-500/30" />
                 </Carousel>
               </div>
 
