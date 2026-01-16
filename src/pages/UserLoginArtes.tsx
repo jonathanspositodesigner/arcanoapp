@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 
 const UserLoginArtes = () => {
   const { t } = useTranslation('auth');
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/biblioteca-artes';
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -103,12 +105,12 @@ const UserLoginArtes = () => {
             }, { onConflict: 'id' });
           }
           toast.success(t('errors.firstAccessSetPassword'));
-          navigate("/change-password-artes");
+          navigate(`/change-password-artes?redirect=${redirectTo}`);
           return;
         }
 
         toast.success(t('success.loginSuccess'));
-        navigate("/biblioteca-artes");
+        navigate(redirectTo);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -144,7 +146,7 @@ const UserLoginArtes = () => {
         email: signupEmail.trim(),
         password: signupPassword,
         options: {
-          emailRedirectTo: `${window.location.origin}/biblioteca-artes`
+          emailRedirectTo: `${window.location.origin}${redirectTo}`
         }
       });
       
@@ -189,7 +191,7 @@ const UserLoginArtes = () => {
         
         toast.success(t('success.accountCreatedSuccess'));
         setShowSignupModal(false);
-        navigate("/biblioteca-artes");
+        navigate(redirectTo);
       }
     } catch (error) {
       console.error("Signup error:", error);

@@ -98,7 +98,7 @@ const FerramentasIAES = () => {
           setShowFirstAccessModal(false);
           setFirstAccessEmail("");
           toast.success(t('ferramentas.toast.welcome'));
-          navigate('/change-password-artes');
+          navigate('/change-password-artes?redirect=/ferramentas-ia-es');
         } else {
           toast.error(t('ferramentas.toast.errorAccessing'));
           setShowFirstAccessModal(false);

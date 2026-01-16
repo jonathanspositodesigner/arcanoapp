@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,9 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 
 const ChangePasswordArtes = () => {
   const { t } = useTranslation('auth');
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/biblioteca-artes';
+  
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -24,13 +27,14 @@ const ChangePasswordArtes = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         toast.error(t('errors.needLoginFirst'));
-        navigate("/login-artes");
+        const redirectParam = searchParams.get('redirect');
+        navigate(redirectParam ? `/login-artes?redirect=${redirectParam}` : '/login-artes');
         return;
       }
       setIsCheckingAuth(false);
     };
     checkAuth();
-  }, [navigate, t]);
+  }, [navigate, t, searchParams]);
 
   if (isCheckingAuth) {
     return (
@@ -84,7 +88,7 @@ const ChangePasswordArtes = () => {
       }
 
       toast.success(t('success.passwordChanged'));
-      navigate("/biblioteca-artes");
+      navigate(redirectTo);
     } catch (error) {
       console.error("Error changing password:", error);
       toast.error(t('errors.passwordChangeError'));
