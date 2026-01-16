@@ -507,10 +507,11 @@ const ToolVersionEditor = ({
 
         {/* WEBHOOK TAB */}
         <TabsContent value="webhook" className="space-y-4 mt-4">
+          {/* Greenn Webhook Section */}
           <div className="bg-muted/50 rounded-lg p-4 space-y-3">
             <div className="flex items-center gap-2">
               <Webhook className="w-5 h-5 text-primary" />
-              <Label className="font-semibold">URL do Webhook</Label>
+              <Label className="font-semibold">🇧🇷 Greenn (Versão Português)</Label>
             </div>
             <p className="text-sm text-muted-foreground">
               Cole esta URL no seu produto da Greenn para receber as vendas automaticamente.
@@ -562,6 +563,52 @@ const ToolVersionEditor = ({
                   placeholder="Ex: 149334"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Hotmart Webhook Section */}
+          <div className="border-t pt-4 mt-4">
+            <div className="bg-orange-500/10 rounded-lg p-4 space-y-3 border border-orange-500/30">
+              <div className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-orange-500" />
+                <Label className="font-semibold text-orange-400">🇪🇸 Hotmart (Versão Espanhol)</Label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Cole esta URL no seu produto da Hotmart para vendas em espanhol.
+              </p>
+              <div className="flex gap-2">
+                <Input 
+                  value="https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-hotmart-artes" 
+                  readOnly 
+                  className="text-xs bg-background" 
+                />
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={() => {
+                    navigator.clipboard.writeText("https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-hotmart-artes");
+                    toast.success("URL do webhook Hotmart copiada!");
+                  }}
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <Label className="text-sm font-medium text-orange-400">ID Produto Hotmart (Vitalício)</Label>
+              <Input
+                type="text"
+                value={currentVersion.webhook.hotmart_product_id_vitalicio || ''}
+                onChange={(e) => onUpdateVersion(selectedIndex, {
+                  webhook: { ...currentVersion.webhook, hotmart_product_id_vitalicio: e.target.value || null }
+                })}
+                placeholder="Ex: 1234567 (ID do produto na Hotmart)"
+                className="mt-2"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Encontre este ID no painel da Hotmart → Produtos → Meu Produto → ID do Produto
+              </p>
             </div>
           </div>
         </TabsContent>

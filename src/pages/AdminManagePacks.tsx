@@ -29,6 +29,7 @@ interface ToolVersionWebhook {
   greenn_product_id_1_ano: number | null;
   greenn_product_id_order_bump: number | null;
   greenn_product_id_vitalicio: number | null;
+  hotmart_product_id_vitalicio: string | null;
 }
 
 interface ToolVersionSales {
@@ -110,6 +111,7 @@ interface Pack {
   greenn_product_id_1_ano?: number | null;
   greenn_product_id_order_bump?: number | null;
   greenn_product_id_vitalicio?: number | null;
+  hotmart_product_id_vitalicio?: string | null;
   // Normal checkout links
   checkout_link_6_meses?: string | null;
   checkout_link_1_ano?: string | null;
@@ -602,7 +604,8 @@ const AdminManagePacks = () => {
       greenn_product_id_6_meses: null,
       greenn_product_id_1_ano: null,
       greenn_product_id_order_bump: null,
-      greenn_product_id_vitalicio: null
+      greenn_product_id_vitalicio: null,
+      hotmart_product_id_vitalicio: null
     },
     sales: {
       price_6_meses: null,
@@ -873,7 +876,8 @@ const AdminManagePacks = () => {
             greenn_product_id_6_meses: pack.greenn_product_id_6_meses || null,
             greenn_product_id_1_ano: pack.greenn_product_id_1_ano || null,
             greenn_product_id_order_bump: pack.greenn_product_id_order_bump || null,
-            greenn_product_id_vitalicio: pack.greenn_product_id_vitalicio || null
+            greenn_product_id_vitalicio: pack.greenn_product_id_vitalicio || null,
+            hotmart_product_id_vitalicio: pack.hotmart_product_id_vitalicio || null
           },
           sales: {
             price_6_meses: pack.price_6_meses || null,

@@ -646,6 +646,7 @@ export type Database = {
           greenn_product_id_6_meses: number | null
           greenn_product_id_order_bump: number | null
           greenn_product_id_vitalicio: number | null
+          hotmart_product_id_vitalicio: string | null
           id: string
           is_visible: boolean
           name: string
@@ -703,6 +704,7 @@ export type Database = {
           greenn_product_id_6_meses?: number | null
           greenn_product_id_order_bump?: number | null
           greenn_product_id_vitalicio?: number | null
+          hotmart_product_id_vitalicio?: string | null
           id?: string
           is_visible?: boolean
           name: string
@@ -760,6 +762,7 @@ export type Database = {
           greenn_product_id_6_meses?: number | null
           greenn_product_id_order_bump?: number | null
           greenn_product_id_vitalicio?: number | null
+          hotmart_product_id_vitalicio?: string | null
           id?: string
           is_visible?: boolean
           name?: string
