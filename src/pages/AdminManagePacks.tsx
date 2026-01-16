@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ToolVersionEditor from "@/components/ToolVersionEditor";
 
 interface TutorialLesson {
   title: string;
@@ -1326,7 +1327,7 @@ const AdminManagePacks = () => {
 
         {/* Edit Dialog */}
         <Dialog open={!!editingPack} onOpenChange={(open) => { if (!open) { setEditingPack(null); resetForm(); } }}>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogContent className={`max-h-[90vh] overflow-y-auto ${(editingPack?.type === 'ferramentas_ia' || editingPack?.type === 'ferramenta') ? 'max-w-3xl' : 'max-w-lg'}`}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 {editingPack && getTypeIcon(editingPack.type)}
@@ -1334,6 +1335,52 @@ const AdminManagePacks = () => {
               </DialogTitle>
             </DialogHeader>
             
+            {/* Special layout for Ferramentas IA - shows ToolVersionEditor */}
+            {(editingPack?.type === 'ferramentas_ia' || editingPack?.type === 'ferramenta') ? (
+              <div className="mt-4 space-y-4">
+                {/* Basic info fields */}
+                <div className="grid grid-cols-2 gap-4 pb-4 border-b">
+                  <div>
+                    <Label>Nome da Ferramenta</Label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => handleNameChange(e.target.value)}
+                      placeholder="Ex: Upscaler Arcano"
+                    />
+                  </div>
+                  <div>
+                    <Label>Slug (URL)</Label>
+                    <Input
+                      value={formData.slug}
+                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                      placeholder="upscaller-arcano"
+                    />
+                  </div>
+                </div>
+                
+                {/* Tool Version Editor */}
+                <ToolVersionEditor
+                  versions={toolVersions}
+                  selectedIndex={selectedVersionIndex}
+                  onSelectVersion={setSelectedVersionIndex}
+                  onAddVersion={addToolVersion}
+                  onUpdateVersion={updateToolVersion}
+                  onRemoveVersion={removeToolVersion}
+                  onSave={handleSaveToolVersions}
+                  saving={saving}
+                  coverPreview={versionCoverPreview}
+                  onCoverChange={handleVersionCoverChange}
+                  onClearCover={() => {
+                    setVersionCoverFile(null);
+                    setVersionCoverPreview(null);
+                    if (toolVersions[selectedVersionIndex]) {
+                      updateToolVersion(selectedVersionIndex, { cover_url: null });
+                    }
+                  }}
+                  webhookUrl={WEBHOOK_URL}
+                />
+              </div>
+            ) : (
             <Tabs value={editTab} onValueChange={(v) => setEditTab(v as 'info' | 'webhook' | 'links')} className="w-full mt-4">
               <TabsList className={`grid w-full ${editingPack?.type === 'bonus' || editingPack?.type === 'tutorial' ? 'grid-cols-1' : 'grid-cols-3'}`}>
                 <TabsTrigger value="info" className="flex items-center gap-1 text-xs">
@@ -1459,8 +1506,8 @@ const AdminManagePacks = () => {
                   </div>
                 )}
                 
-                {/* Tutorial Lessons Editor - For tutorial and ferramentas_ia types */}
-                {(editingPack?.type === 'tutorial' || editingPack?.type === 'ferramentas_ia' || editingPack?.type === 'ferramenta') && (
+                {/* Tutorial Lessons Editor - Only for tutorial type (ferramentas_ia uses ToolVersionEditor) */}
+                {editingPack?.type === 'tutorial' && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <Label className="font-semibold flex items-center gap-2">
@@ -2378,6 +2425,7 @@ const AdminManagePacks = () => {
                 </Button>
               </TabsContent>
             </Tabs>
+            )}
           </DialogContent>
         </Dialog>
       </div>
