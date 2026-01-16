@@ -360,26 +360,6 @@ const AdminPackPurchases = () => {
           }
         }
 
-        // Update profile info via edge function (to reset password if needed)
-        const response = await fetch(
-          `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/update-user-password-artes`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`
-            },
-            body: JSON.stringify({ 
-              user_id: userId, 
-              new_password: formData.email.toLowerCase().trim() 
-            })
-          }
-        );
-
-        if (!response.ok) {
-          console.error('Error updating password:', await response.json());
-        }
-
         toast.success("Cliente atualizado com sucesso!");
       } else {
         // Creating new client - use edge function to avoid session switching
