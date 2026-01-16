@@ -7,6 +7,7 @@ import { ArrowLeft, Play, ExternalLink, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { useLocale } from "@/contexts/LocaleContext";
+import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface TutorialLesson {
   title: string;
@@ -351,6 +352,9 @@ const ToolVersionLessons = () => {
                     </div>
                   )}
                 </Card>
+
+                {/* WhatsApp Support Button */}
+                <WhatsAppSupportButton />
               </>
             )}
           </div>

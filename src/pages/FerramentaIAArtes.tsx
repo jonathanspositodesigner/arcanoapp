@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useLocale } from "@/contexts/LocaleContext";
+import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface LessonButton {
   text: string;
@@ -236,6 +237,9 @@ const FerramentaIAArtes = () => {
                 </CardContent>
               </Card>
             ))}
+
+            {/* WhatsApp Support Button */}
+            <WhatsAppSupportButton />
           </div>
         )}
       </main>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface LessonButton {
   text: string;
@@ -176,6 +177,9 @@ const TutorialArtes = () => {
             ))}
           </div>
         )}
+
+        {/* WhatsApp Support Button */}
+        <WhatsAppSupportButton />
       </main>
     </div>
   );

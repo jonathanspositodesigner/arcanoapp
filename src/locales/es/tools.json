@@ -431,5 +431,10 @@
       "instagram": "Navegador de Instagram",
       "facebook": "Navegador de Facebook"
     }
+  },
+  "support": {
+    "title": "¿Tienes problemas?",
+    "button": "Soporte aquí",
+    "message": "¡Hola! Necesito ayuda con las herramientas de IA."
   }
 }
