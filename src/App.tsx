@@ -55,6 +55,7 @@ import PartnerUpload from "./pages/PartnerUpload";
 import UpscalerArcanoVersionSelect from "./pages/UpscalerArcanoVersionSelect";
 import UpscalerArcanoV1 from "./pages/UpscalerArcanoV1";
 import UpscalerArcanoV2 from "./pages/UpscalerArcanoV2";
+import ToolVersionLessons from "./pages/ToolVersionLessons";
 import ForjaSelos3D from "./pages/ForjaSelos3D";
 import MudarRoupa from "./pages/MudarRoupa";
 import MudarPose from "./pages/MudarPose";
@@ -191,6 +192,8 @@ const AppContent = () => {
         <Route path="/ferramenta-ia-artes/upscaller-arcano" element={<UpscalerArcanoVersionSelect />} />
         <Route path="/ferramenta-ia-artes/upscaller-arcano-v1" element={<UpscalerArcanoV1 />} />
         <Route path="/ferramenta-ia-artes/upscaller-arcano-v2" element={<UpscalerArcanoV2 />} />
+        {/* Dynamic route for tool versions */}
+        <Route path="/ferramenta-ia-artes/:toolSlug/:versionSlug" element={<ToolVersionLessons />} />
         <Route path="/forja-selos-3d" element={<ForjaSelos3D />} />
         <Route path="/mudar-roupa" element={<MudarRoupa />} />
         <Route path="/mudar-pose" element={<MudarPose />} />
