@@ -402,8 +402,7 @@ const PlanosUpscalerArcano69ES = () => {
   };
 
   const handlePurchase = () => {
-    // PLACEHOLDER - Link de checkout LATAM será fornecido pelo usuário
-    window.open(appendUtmToUrl("LINK_CHECKOUT_LATAM"), "_blank");
+    window.open(appendUtmToUrl("https://pay.hotmart.com/R103906553W?off=k7k3jv6j"), "_blank");
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
