@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Lock, Unlock, Sparkles } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { supabase } from "@/integrations/supabase/client";
+import upscalerV1Image from "@/assets/upscaler-v1-card.png";
+import upscalerV15Image from "@/assets/upscaler-v1-5-card.png";
 
 const UpscalerArcanoVersionSelect = () => {
   const navigate = useNavigate();
@@ -122,25 +124,33 @@ const UpscalerArcanoVersionSelect = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* V1 Card - Always Accessible */}
           <Card 
-            className="relative p-6 bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/30 hover:border-purple-400/50 transition-all cursor-pointer group"
+            className="relative overflow-hidden bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/30 hover:border-purple-400/50 transition-all cursor-pointer group"
             onClick={() => navigate("/ferramenta-ia-artes/upscaller-arcano-v1")}
           >
+            {/* Image */}
+            <div className="aspect-[3/4] overflow-hidden">
+              <img 
+                src={upscalerV1Image} 
+                alt="Upscaler Arcano v1" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+
+            {/* Badge */}
             <div className="absolute top-4 right-4">
-              <div className="flex items-center gap-1.5 bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium">
+              <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
                 <Unlock className="h-3 w-3" />
                 Disponível
               </div>
             </div>
 
-            <div className="pt-6">
-              <h2 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+            {/* Content */}
+            <div className="p-4">
+              <h2 className="text-lg md:text-xl font-bold text-foreground mb-1">
                 Upscaler Arcano
               </h2>
-              <p className="text-3xl md:text-4xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+              <p className="text-2xl md:text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
                 v1.0
-              </p>
-              <p className="text-muted-foreground text-sm mb-6">
-                Versão original com todas as aulas de introdução e configuração da ferramenta.
               </p>
               
               <Button 
@@ -153,22 +163,38 @@ const UpscalerArcanoVersionSelect = () => {
 
           {/* V1.5 Card - Locked for 7 days */}
           <Card 
-            className={`relative p-6 transition-all ${
+            className={`relative overflow-hidden transition-all ${
               isV1_5Unlocked 
                 ? 'bg-gradient-to-br from-yellow-900/50 to-orange-800/30 border-yellow-500/30 hover:border-yellow-400/50 cursor-pointer group'
-                : 'bg-gradient-to-br from-gray-900/50 to-gray-800/30 border-gray-600/30 cursor-not-allowed opacity-80'
+                : 'bg-gradient-to-br from-gray-900/50 to-gray-800/30 border-gray-600/30 cursor-not-allowed'
             }`}
             onClick={() => isV1_5Unlocked && navigate("/ferramenta-ia-artes/upscaller-arcano-v1-5")}
           >
+            {/* Image with overlay if locked */}
+            <div className="aspect-[3/4] overflow-hidden relative">
+              <img 
+                src={upscalerV15Image} 
+                alt="Upscaler Arcano v1.5" 
+                className={`w-full h-full object-cover transition-transform duration-300 ${
+                  isV1_5Unlocked ? 'group-hover:scale-105' : 'grayscale'
+                }`}
+              />
+              {!isV1_5Unlocked && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <Lock className="h-16 w-16 text-gray-400" />
+                </div>
+              )}
+            </div>
+
             {/* Lock/Unlock Badge */}
             <div className="absolute top-4 right-4">
               {isV1_5Unlocked ? (
-                <div className="flex items-center gap-1.5 bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium">
+                <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
                   <Unlock className="h-3 w-3" />
                   Disponível
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-medium">
+                <div className="flex items-center gap-1.5 bg-red-500/20 backdrop-blur-sm text-red-400 px-3 py-1 rounded-full text-xs font-medium">
                   <Lock className="h-3 w-3" />
                   BLOQUEADO
                 </div>
@@ -177,30 +203,28 @@ const UpscalerArcanoVersionSelect = () => {
 
             {/* NEW Badge */}
             <div className="absolute top-4 left-4">
-              <div className="flex items-center gap-1.5 bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-medium">
+              <div className="flex items-center gap-1.5 bg-yellow-500/20 backdrop-blur-sm text-yellow-400 px-3 py-1 rounded-full text-xs font-medium">
                 <Sparkles className="h-3 w-3" />
                 NOVO
               </div>
             </div>
 
-            <div className="pt-6">
-              <h2 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+            {/* Content */}
+            <div className="p-4">
+              <h2 className="text-lg md:text-xl font-bold text-foreground mb-1">
                 Upscaler Arcano
               </h2>
-              <p className={`text-3xl md:text-4xl font-black bg-clip-text text-transparent mb-4 ${
+              <p className={`text-2xl md:text-3xl font-black bg-clip-text text-transparent mb-3 ${
                 isV1_5Unlocked 
                   ? 'bg-gradient-to-r from-yellow-400 to-orange-400'
                   : 'bg-gradient-to-r from-gray-400 to-gray-500'
               }`}>
                 v1.5
               </p>
-              <p className="text-muted-foreground text-sm mb-4">
-                Nova versão com atualizações e melhorias avançadas.
-              </p>
               
               {/* Unlock Info */}
               {!isV1_5Unlocked && unlockDate && (
-                <div className="bg-gray-800/50 rounded-lg p-3 mb-4 border border-gray-700/50">
+                <div className="bg-gray-800/50 rounded-lg p-3 mb-3 border border-gray-700/50">
                   <p className="text-sm text-gray-300">
                     <span className="font-medium text-yellow-400">Libera em:</span>{' '}
                     {formatDate(unlockDate)}
