@@ -659,6 +659,7 @@ export type Database = {
           price_vitalicio: number | null
           price_vitalicio_usd: number | null
           slug: string
+          tool_versions: Json | null
           tutorial_lessons: Json | null
           type: string
           updated_at: string
@@ -715,6 +716,7 @@ export type Database = {
           price_vitalicio?: number | null
           price_vitalicio_usd?: number | null
           slug: string
+          tool_versions?: Json | null
           tutorial_lessons?: Json | null
           type?: string
           updated_at?: string
@@ -771,6 +773,7 @@ export type Database = {
           price_vitalicio?: number | null
           price_vitalicio_usd?: number | null
           slug?: string
+          tool_versions?: Json | null
           tutorial_lessons?: Json | null
           type?: string
           updated_at?: string
