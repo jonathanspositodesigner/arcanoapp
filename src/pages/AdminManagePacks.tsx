@@ -846,8 +846,59 @@ const AdminManagePacks = () => {
       if (versions && versions.length > 0) {
         setToolVersions(versions);
       } else {
-        // Create default v1 if no versions exist
-        setToolVersions([createEmptyVersion(1)]);
+        // Create v1 populated with existing data from main columns
+        const migratedVersion: ToolVersion = {
+          id: 'v1',
+          name: 'v1.0',
+          slug: 'v1',
+          cover_url: pack.cover_url,
+          display_order: 0,
+          is_visible: true,
+          unlock_days: 0,
+          badges: [],
+          lessons: (pack.tutorial_lessons as TutorialLesson[]) || [],
+          webhook: {
+            greenn_product_id_6_meses: pack.greenn_product_id_6_meses || null,
+            greenn_product_id_1_ano: pack.greenn_product_id_1_ano || null,
+            greenn_product_id_order_bump: pack.greenn_product_id_order_bump || null,
+            greenn_product_id_vitalicio: pack.greenn_product_id_vitalicio || null
+          },
+          sales: {
+            price_6_meses: pack.price_6_meses || null,
+            price_1_ano: pack.price_1_ano || null,
+            price_vitalicio: pack.price_vitalicio || null,
+            price_6_meses_usd: pack.price_6_meses_usd || null,
+            price_1_ano_usd: pack.price_1_ano_usd || null,
+            price_vitalicio_usd: pack.price_vitalicio_usd || null,
+            enabled_6_meses: pack.enabled_6_meses ?? true,
+            enabled_1_ano: pack.enabled_1_ano ?? true,
+            enabled_vitalicio: pack.enabled_vitalicio ?? true,
+            checkout_link_6_meses: pack.checkout_link_6_meses || null,
+            checkout_link_1_ano: pack.checkout_link_1_ano || null,
+            checkout_link_vitalicio: pack.checkout_link_vitalicio || null,
+            checkout_link_renovacao_6_meses: pack.checkout_link_renovacao_6_meses || null,
+            checkout_link_renovacao_1_ano: pack.checkout_link_renovacao_1_ano || null,
+            checkout_link_renovacao_vitalicio: pack.checkout_link_renovacao_vitalicio || null,
+            checkout_link_membro_6_meses: pack.checkout_link_membro_6_meses || null,
+            checkout_link_membro_1_ano: pack.checkout_link_membro_1_ano || null,
+            checkout_link_membro_vitalicio: pack.checkout_link_membro_vitalicio || null,
+            notification_discount_enabled: pack.notification_discount_enabled ?? false,
+            notification_discount_percent: pack.notification_discount_percent || null,
+            checkout_link_notif_6_meses: pack.checkout_link_notif_6_meses || null,
+            checkout_link_notif_1_ano: pack.checkout_link_notif_1_ano || null,
+            checkout_link_notif_vitalicio: pack.checkout_link_notif_vitalicio || null,
+            checkout_link_latam_6_meses: pack.checkout_link_latam_6_meses || null,
+            checkout_link_latam_1_ano: pack.checkout_link_latam_1_ano || null,
+            checkout_link_latam_vitalicio: pack.checkout_link_latam_vitalicio || null,
+            checkout_link_latam_renovacao_6_meses: pack.checkout_link_latam_renovacao_6_meses || null,
+            checkout_link_latam_renovacao_1_ano: pack.checkout_link_latam_renovacao_1_ano || null,
+            checkout_link_latam_renovacao_vitalicio: pack.checkout_link_latam_renovacao_vitalicio || null,
+            checkout_link_latam_membro_6_meses: pack.checkout_link_latam_membro_6_meses || null,
+            checkout_link_latam_membro_1_ano: pack.checkout_link_latam_membro_1_ano || null,
+            checkout_link_latam_membro_vitalicio: pack.checkout_link_latam_membro_vitalicio || null
+          }
+        };
+        setToolVersions([migratedVersion]);
       }
       setSelectedVersionIndex(0);
       setVersionEditTab('info');
