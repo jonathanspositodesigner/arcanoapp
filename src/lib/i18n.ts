@@ -50,15 +50,34 @@ const subdomainDetector = {
   name: 'subdomain',
   lookup() {
     if (typeof window === 'undefined') return 'pt';
+    
+    // Check URL parameter first (for testing)
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+    if (langParam === 'es') {
+      console.log('[i18n] Forced to ES via URL param');
+      return 'es';
+    }
+    if (langParam === 'pt') {
+      console.log('[i18n] Forced to PT via URL param');
+      return 'pt';
+    }
+    
     const hostname = window.location.hostname;
+    console.log('[i18n] Hostname detected:', hostname);
     
     // Check for specific LATAM domain
-    if (LATAM_DOMAINS.some(domain => hostname.includes(domain))) {
+    const isLatamDomain = LATAM_DOMAINS.some(domain => hostname.includes(domain));
+    console.log('[i18n] Is LATAM domain:', isLatamDomain);
+    
+    if (isLatamDomain) {
+      console.log('[i18n] Returning ES for LATAM domain');
       return 'es';
     }
     
     // Legacy: Check for es. subdomain
     if (hostname.startsWith('es.')) {
+      console.log('[i18n] Returning ES for es. subdomain');
       return 'es';
     }
     

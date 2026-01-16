@@ -53,20 +53,40 @@ const getLocaleFromNavigator = (): Locale => {
 };
 
 const detectLocale = (): Locale => {
+  // Check URL parameter first (for testing)
+  const urlParams = new URLSearchParams(window.location.search);
+  const langParam = urlParams.get('lang');
+  if (langParam === 'es') {
+    console.log('[LOCALE] Forced to ES via URL param');
+    return 'es';
+  }
+  if (langParam === 'pt') {
+    console.log('[LOCALE] Forced to PT via URL param');
+    return 'pt';
+  }
+
   const hostname = window.location.hostname;
+  console.log('[LOCALE] Hostname detected:', hostname);
   
   // Check for specific LATAM domain first
-  if (LATAM_DOMAINS.some(domain => hostname.includes(domain))) {
+  const isLatamDomain = LATAM_DOMAINS.some(domain => hostname.includes(domain));
+  console.log('[LOCALE] Is LATAM domain:', isLatamDomain, '| Domains:', LATAM_DOMAINS);
+  
+  if (isLatamDomain) {
+    console.log('[LOCALE] Returning ES for LATAM domain');
     return 'es';
   }
   
   // Legacy: Check for es. subdomain
   if (hostname.startsWith('es.')) {
+    console.log('[LOCALE] Returning ES for es. subdomain');
     return 'es';
   }
   
   // Fallback to navigator language detection
-  return getLocaleFromNavigator();
+  const navigatorLocale = getLocaleFromNavigator();
+  console.log('[LOCALE] Fallback to navigator:', navigatorLocale);
+  return navigatorLocale;
 };
 
 export const LocaleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
