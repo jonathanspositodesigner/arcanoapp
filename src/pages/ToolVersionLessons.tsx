@@ -25,6 +25,44 @@ interface ToolVersion {
   lessons: TutorialLesson[];
 }
 
+// Helper function to extract video embed URL from iframe or various URL formats
+const getVideoEmbedUrl = (videoUrl: string): string | null => {
+  if (!videoUrl) return null;
+  
+  // Check if it's an iframe - extract src
+  if (videoUrl.includes('<iframe')) {
+    const srcMatch = videoUrl.match(/src="([^"]+)"/);
+    if (srcMatch && srcMatch[1]) {
+      return srcMatch[1];
+    }
+    return null;
+  }
+  
+  // Check if it's already an embed URL
+  if (videoUrl.includes('/embed/')) {
+    return videoUrl;
+  }
+  
+  // Convert YouTube watch URL to embed URL
+  if (videoUrl.includes('youtube.com/watch')) {
+    const videoId = new URL(videoUrl).searchParams.get('v');
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+  }
+  
+  // Handle youtu.be short URLs
+  if (videoUrl.includes('youtu.be/')) {
+    const videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+  }
+  
+  // Return as-is for other video sources (Vimeo embed URLs, etc)
+  return videoUrl;
+};
+
 const ToolVersionLessons = () => {
   const { toolSlug, versionSlug } = useParams<{ toolSlug: string; versionSlug: string }>();
   const navigate = useNavigate();
@@ -214,12 +252,21 @@ const ToolVersionLessons = () => {
                 {/* Video */}
                 <div className="aspect-video bg-black rounded-lg overflow-hidden">
                   {currentLesson.videoUrl ? (
-                    <iframe
-                      src={currentLesson.videoUrl.replace('watch?v=', 'embed/')}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+                    (() => {
+                      const embedUrl = getVideoEmbedUrl(currentLesson.videoUrl);
+                      return embedUrl ? (
+                        <iframe
+                          src={embedUrl}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                          <Play className="w-16 h-16" />
+                        </div>
+                      );
+                    })()
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       <Play className="w-16 h-16" />

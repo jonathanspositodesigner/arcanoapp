@@ -246,15 +246,8 @@ const UpscalerArcanoVersionSelect = () => {
     }
     
     if (isUnlocked) {
-      // Legacy routes for v1 and v2
-      if (version.slug === 'v1') {
-        navigate('/ferramenta-ia-artes/upscaller-arcano-v1');
-      } else if (version.slug === 'v2') {
-        navigate('/ferramenta-ia-artes/upscaller-arcano-v2');
-      } else {
-        // Dynamic route for new versions
-        navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
-      }
+      // Always use dynamic route - database is the source of truth
+      navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
     }
   };
 

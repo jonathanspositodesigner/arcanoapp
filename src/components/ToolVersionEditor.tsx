@@ -95,9 +95,22 @@ const ToolVersionEditor = ({
     onUpdateVersion(selectedIndex, { lessons: updated });
   };
 
+  // Clean video URL - extract src from iframe if pasted
+  const cleanVideoUrl = (input: string): string => {
+    if (input.includes('<iframe')) {
+      const srcMatch = input.match(/src="([^"]+)"/);
+      if (srcMatch && srcMatch[1]) {
+        return srcMatch[1];
+      }
+    }
+    return input;
+  };
+
   const updateLesson = (lessonIndex: number, field: keyof TutorialLesson, value: any) => {
     const lessons = [...currentVersion.lessons];
-    lessons[lessonIndex] = { ...lessons[lessonIndex], [field]: value };
+    // Clean video URL if it's an iframe
+    const cleanedValue = field === 'videoUrl' ? cleanVideoUrl(value) : value;
+    lessons[lessonIndex] = { ...lessons[lessonIndex], [field]: cleanedValue };
     onUpdateVersion(selectedIndex, { lessons });
   };
 
