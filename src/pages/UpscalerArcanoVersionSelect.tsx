@@ -182,14 +182,18 @@ const UpscalerArcanoVersionSelect = () => {
               </div>
             </div>
 
+            {/* Version Badge */}
+            <div className="absolute top-4 left-4">
+              <div className="bg-white text-purple-900 px-4 py-1.5 rounded-full text-sm font-black shadow-lg">
+                v1.0
+              </div>
+            </div>
+
             {/* Content */}
             <div className="p-4">
-              <h2 className="text-lg md:text-xl font-bold text-foreground mb-1">
+              <h2 className="text-lg md:text-xl font-bold text-foreground mb-3">
                 Upscaler Arcano
               </h2>
-              <p className="text-2xl md:text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
-                v1.0
-              </p>
               
               <Button 
                 className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white group-hover:scale-[1.02] transition-transform"
@@ -255,18 +259,22 @@ const UpscalerArcanoVersionSelect = () => {
               </div>
             </div>
 
-            {/* Content */}
-            <div className="p-4">
-              <h2 className="text-lg md:text-xl font-bold text-foreground mb-1">
-                Upscaler Arcano
-              </h2>
-              <p className={`text-2xl md:text-3xl font-black bg-clip-text text-transparent mb-3 ${
+            {/* Version Badge */}
+            <div className="absolute top-16 left-4">
+              <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg ${
                 isV1_5Unlocked 
-                  ? 'bg-gradient-to-r from-yellow-400 to-orange-400'
-                  : 'bg-gradient-to-r from-gray-400 to-gray-500'
+                  ? 'bg-white text-orange-600'
+                  : 'bg-white/80 text-gray-700'
               }`}>
                 v1.5
-              </p>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-4">
+              <h2 className="text-lg md:text-xl font-bold text-foreground mb-3">
+                Upscaler Arcano
+              </h2>
               
               {/* Unlock Info */}
               {!isV1_5Unlocked && unlockDate && (
