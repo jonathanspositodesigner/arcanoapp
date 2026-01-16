@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { 
   Plus, X, Upload, Video, ExternalLink, Settings, Webhook, Link, 
-  Layers, Sparkles, Zap, Target, Star, Calendar, Trash2, Copy, Check, Globe
+  Layers, Sparkles, Zap, Target, Star, Calendar, Trash2, Copy, Check, Globe,
+  Languages
 } from "lucide-react";
 import type { ToolVersion } from "@/pages/AdminManagePacks";
 
@@ -21,6 +22,14 @@ interface TutorialLesson {
   videoUrl: string;
   buttons: { text: string; url: string }[];
 }
+
+type LocaleKey = 'pt' | 'es' | 'en';
+
+const LOCALE_INFO: { key: LocaleKey; label: string; flag: string }[] = [
+  { key: 'pt', label: 'Português', flag: '🇧🇷' },
+  { key: 'es', label: 'Español', flag: '🇪🇸' },
+  { key: 'en', label: 'English', flag: '🇬🇧' },
+];
 
 interface ToolVersionEditorProps {
   versions: ToolVersion[];
@@ -69,6 +78,7 @@ const ToolVersionEditor = ({
   webhookUrl
 }: ToolVersionEditorProps) => {
   const [activeTab, setActiveTab] = useState<'info' | 'webhook' | 'links' | 'aulas'>('info');
+  const [selectedLocale, setSelectedLocale] = useState<LocaleKey>('pt');
   const currentVersion = versions[selectedIndex];
 
   if (!currentVersion) {
@@ -84,15 +94,54 @@ const ToolVersionEditor = ({
     );
   }
 
+  // Get current lessons based on locale
+  const getCurrentLessons = (): TutorialLesson[] => {
+    if (selectedLocale === 'pt') {
+      return currentVersion.lessons || [];
+    }
+    return currentVersion.localized?.[selectedLocale]?.lessons || [];
+  };
+
+  // Get current name based on locale
+  const getCurrentName = (): string => {
+    if (selectedLocale === 'pt') {
+      return currentVersion.name;
+    }
+    return currentVersion.localized?.[selectedLocale]?.name || '';
+  };
+
+  // Update name based on locale
+  const updateCurrentName = (value: string) => {
+    if (selectedLocale === 'pt') {
+      onUpdateVersion(selectedIndex, { name: value });
+    } else {
+      const localized = { ...currentVersion.localized };
+      localized[selectedLocale] = { ...localized[selectedLocale], name: value };
+      onUpdateVersion(selectedIndex, { localized });
+    }
+  };
+
+  // Update lessons based on locale
+  const updateCurrentLessons = (lessons: TutorialLesson[]) => {
+    if (selectedLocale === 'pt') {
+      onUpdateVersion(selectedIndex, { lessons });
+    } else {
+      const localized = { ...currentVersion.localized };
+      localized[selectedLocale] = { ...localized[selectedLocale], lessons };
+      onUpdateVersion(selectedIndex, { localized });
+    }
+  };
+
   const handleCopyWebhook = () => {
     navigator.clipboard.writeText(webhookUrl);
     toast.success("URL do webhook copiada!");
   };
 
-  // Lesson management for current version
+  // Lesson management for current version (locale-aware)
   const addLesson = () => {
-    const updated = [...currentVersion.lessons, { title: '', description: '', videoUrl: '', buttons: [] }];
-    onUpdateVersion(selectedIndex, { lessons: updated });
+    const currentLessons = getCurrentLessons();
+    const updated = [...currentLessons, { title: '', description: '', videoUrl: '', buttons: [] }];
+    updateCurrentLessons(updated);
   };
 
   // Clean video URL - extract src from iframe if pasted
@@ -107,42 +156,47 @@ const ToolVersionEditor = ({
   };
 
   const updateLesson = (lessonIndex: number, field: keyof TutorialLesson, value: any) => {
-    const lessons = [...currentVersion.lessons];
+    const currentLessons = getCurrentLessons();
+    const lessons = [...currentLessons];
     // Clean video URL if it's an iframe
     const cleanedValue = field === 'videoUrl' ? cleanVideoUrl(value) : value;
     lessons[lessonIndex] = { ...lessons[lessonIndex], [field]: cleanedValue };
-    onUpdateVersion(selectedIndex, { lessons });
+    updateCurrentLessons(lessons);
   };
 
   const removeLesson = (lessonIndex: number) => {
-    const lessons = currentVersion.lessons.filter((_, i) => i !== lessonIndex);
-    onUpdateVersion(selectedIndex, { lessons });
+    const currentLessons = getCurrentLessons();
+    const lessons = currentLessons.filter((_, i) => i !== lessonIndex);
+    updateCurrentLessons(lessons);
   };
 
   const addLessonButton = (lessonIndex: number) => {
-    const lessons = [...currentVersion.lessons];
+    const currentLessons = getCurrentLessons();
+    const lessons = [...currentLessons];
     lessons[lessonIndex] = {
       ...lessons[lessonIndex],
       buttons: [...(lessons[lessonIndex].buttons || []), { text: '', url: '' }]
     };
-    onUpdateVersion(selectedIndex, { lessons });
+    updateCurrentLessons(lessons);
   };
 
   const updateLessonButton = (lessonIndex: number, buttonIndex: number, field: 'text' | 'url', value: string) => {
-    const lessons = [...currentVersion.lessons];
+    const currentLessons = getCurrentLessons();
+    const lessons = [...currentLessons];
     const buttons = [...lessons[lessonIndex].buttons];
     buttons[buttonIndex] = { ...buttons[buttonIndex], [field]: value };
     lessons[lessonIndex] = { ...lessons[lessonIndex], buttons };
-    onUpdateVersion(selectedIndex, { lessons });
+    updateCurrentLessons(lessons);
   };
 
   const removeLessonButton = (lessonIndex: number, buttonIndex: number) => {
-    const lessons = [...currentVersion.lessons];
+    const currentLessons = getCurrentLessons();
+    const lessons = [...currentLessons];
     lessons[lessonIndex] = {
       ...lessons[lessonIndex],
       buttons: lessons[lessonIndex].buttons.filter((_, i) => i !== buttonIndex)
     };
-    onUpdateVersion(selectedIndex, { lessons });
+    updateCurrentLessons(lessons);
   };
 
   // Badge management
@@ -236,6 +290,35 @@ const ToolVersionEditor = ({
         )}
       </div>
 
+      {/* Language Selector Tabs */}
+      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/20">
+        <Languages className="w-4 h-4 text-blue-400" />
+        <Label className="text-sm font-semibold text-blue-400 mr-2">Idioma:</Label>
+        <div className="flex gap-1">
+          {LOCALE_INFO.map((locale) => (
+            <Button
+              key={locale.key}
+              variant={selectedLocale === locale.key ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedLocale(locale.key)}
+              className={`min-w-[80px] ${
+                selectedLocale === locale.key 
+                  ? 'bg-blue-600 hover:bg-blue-700' 
+                  : 'border-blue-500/30 hover:bg-blue-500/20'
+              }`}
+            >
+              <span className="mr-1">{locale.flag}</span>
+              {locale.label}
+            </Button>
+          ))}
+        </div>
+        {selectedLocale !== 'pt' && (
+          <Badge variant="outline" className="ml-auto text-xs border-orange-500/50 text-orange-400">
+            Conteúdo em {LOCALE_INFO.find(l => l.key === selectedLocale)?.label}
+          </Badge>
+        )}
+      </div>
+
       {/* Sub-Tabs for version content */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
@@ -259,13 +342,33 @@ const ToolVersionEditor = ({
 
         {/* INFO TAB */}
         <TabsContent value="info" className="space-y-4 mt-4">
-          <div className="grid grid-cols-2 gap-4">
+          {/* Locale-specific name field */}
+          {selectedLocale !== 'pt' && (
+            <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+              <Label className="text-sm text-orange-400 flex items-center gap-2">
+                {LOCALE_INFO.find(l => l.key === selectedLocale)?.flag} Nome da Versão em {LOCALE_INFO.find(l => l.key === selectedLocale)?.label}
+              </Label>
+              <Input
+                value={getCurrentName()}
+                onChange={(e) => updateCurrentName(e.target.value)}
+                placeholder={`Nome em ${LOCALE_INFO.find(l => l.key === selectedLocale)?.label}...`}
+                className="mt-2"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Deixe vazio para usar o nome em português ({currentVersion.name})
+              </p>
+            </div>
+          )}
+          
+          {/* Main fields - only editable in PT */}
+          <div className={`grid grid-cols-2 gap-4 ${selectedLocale !== 'pt' ? 'opacity-50 pointer-events-none' : ''}`}>
             <div>
-              <Label>Nome da Versão</Label>
+              <Label>Nome da Versão {selectedLocale !== 'pt' && '(Português)'}</Label>
               <Input
                 value={currentVersion.name}
                 onChange={(e) => onUpdateVersion(selectedIndex, { name: e.target.value })}
                 placeholder="Ex: v1.0"
+                disabled={selectedLocale !== 'pt'}
               />
             </div>
             <div>
@@ -274,6 +377,7 @@ const ToolVersionEditor = ({
                 value={currentVersion.slug}
                 onChange={(e) => onUpdateVersion(selectedIndex, { slug: e.target.value })}
                 placeholder="Ex: v1"
+                disabled={selectedLocale !== 'pt'}
               />
             </div>
           </div>
@@ -699,10 +803,28 @@ const ToolVersionEditor = ({
         <TabsContent value="aulas" className="mt-4">
           <ScrollArea className="h-[400px] pr-4">
             <div className="space-y-4">
+              {/* Locale indicator for Aulas */}
+              {selectedLocale !== 'pt' && (
+                <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg mb-4">
+                  <p className="text-sm text-orange-400 flex items-center gap-2">
+                    {LOCALE_INFO.find(l => l.key === selectedLocale)?.flag}
+                    Editando aulas em <strong>{LOCALE_INFO.find(l => l.key === selectedLocale)?.label}</strong>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Estas aulas serão exibidas para usuários que acessam em {LOCALE_INFO.find(l => l.key === selectedLocale)?.label}
+                  </p>
+                </div>
+              )}
+              
               <div className="flex items-center justify-between">
                 <Label className="font-semibold flex items-center gap-2">
                   <Video className="w-4 h-4" />
-                  Aulas - {currentVersion.name}
+                  Aulas - {currentVersion.name} 
+                  {selectedLocale !== 'pt' && (
+                    <Badge variant="outline" className="text-xs border-orange-500/50 text-orange-400 ml-2">
+                      {LOCALE_INFO.find(l => l.key === selectedLocale)?.flag} {LOCALE_INFO.find(l => l.key === selectedLocale)?.label}
+                    </Badge>
+                  )}
                 </Label>
                 <Button type="button" variant="outline" size="sm" onClick={addLesson}>
                   <Plus className="w-4 h-4 mr-1" />
@@ -710,15 +832,15 @@ const ToolVersionEditor = ({
                 </Button>
               </div>
               
-              {currentVersion.lessons.length === 0 && (
+              {getCurrentLessons().length === 0 && (
                 <div className="text-center py-6 text-muted-foreground border-2 border-dashed rounded-lg">
                   <Video className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Nenhuma aula cadastrada</p>
+                  <p className="text-sm">Nenhuma aula cadastrada {selectedLocale !== 'pt' ? `em ${LOCALE_INFO.find(l => l.key === selectedLocale)?.label}` : ''}</p>
                   <p className="text-xs">Clique em "Adicionar Aula" para começar</p>
                 </div>
               )}
               
-              {currentVersion.lessons.map((lesson, lessonIndex) => (
+              {getCurrentLessons().map((lesson, lessonIndex) => (
                 <div key={lessonIndex} className="border rounded-lg p-4 space-y-3 bg-muted/30">
                   <div className="flex items-center justify-between">
                     <Label className="font-medium">Aula {lessonIndex + 1}</Label>

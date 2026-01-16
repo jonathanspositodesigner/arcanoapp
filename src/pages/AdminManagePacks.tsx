@@ -72,6 +72,13 @@ interface ToolVersionBadge {
   color: 'yellow' | 'blue' | 'purple' | 'green' | 'orange';
 }
 
+// Localized content per language
+interface LocalizedVersionContent {
+  name?: string;
+  lessons?: TutorialLesson[];
+  sales?: Partial<ToolVersionSales>;
+}
+
 export interface ToolVersion {
   id: string;
   name: string;
@@ -84,6 +91,11 @@ export interface ToolVersion {
   lessons: TutorialLesson[];
   webhook: ToolVersionWebhook;
   sales: ToolVersionSales;
+  // Localized content for other languages (PT is the default in the main fields)
+  localized?: {
+    es?: LocalizedVersionContent;
+    en?: LocalizedVersionContent;
+  };
 }
 
 interface Pack {

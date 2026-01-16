@@ -1,16 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface TutorialLesson {
   title: string;
   description: string;
   videoUrl: string;
   buttons: { text: string; url: string }[];
+}
+
+interface LocalizedVersionContent {
+  name?: string;
+  lessons?: TutorialLesson[];
 }
 
 interface ToolVersion {
@@ -23,6 +29,10 @@ interface ToolVersion {
   unlock_days: number;
   badges: { text: string; icon: string; color: string }[];
   lessons: TutorialLesson[];
+  localized?: {
+    es?: LocalizedVersionContent;
+    en?: LocalizedVersionContent;
+  };
 }
 
 // Helper function to extract video embed URL from iframe or various URL formats
@@ -67,12 +77,46 @@ const ToolVersionLessons = () => {
   const { toolSlug, versionSlug } = useParams<{ toolSlug: string; versionSlug: string }>();
   const navigate = useNavigate();
   const { user, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
+  const { locale } = useLocale();
   
   const [loading, setLoading] = useState(true);
   const [version, setVersion] = useState<ToolVersion | null>(null);
   const [toolName, setToolName] = useState("");
   const [selectedLesson, setSelectedLesson] = useState(0);
   const [purchaseDate, setPurchaseDate] = useState<Date | null>(null);
+
+  // Get localized lessons based on current locale
+  const lessons = useMemo(() => {
+    if (!version) return [];
+    
+    // Check for localized lessons based on locale
+    if (locale === 'es' && version.localized?.es?.lessons && version.localized.es.lessons.length > 0) {
+      return version.localized.es.lessons;
+    }
+    // EN support for future (when LocaleContext is extended)
+    const localeStr = locale as string;
+    if (localeStr === 'en' && version.localized?.en?.lessons && version.localized.en.lessons.length > 0) {
+      return version.localized.en.lessons;
+    }
+    
+    // Fallback to Portuguese (default)
+    return version.lessons || [];
+  }, [version, locale]);
+
+  // Get localized version name
+  const versionName = useMemo(() => {
+    if (!version) return '';
+    
+    if (locale === 'es' && version.localized?.es?.name) {
+      return version.localized.es.name;
+    }
+    const localeStr = locale as string;
+    if (localeStr === 'en' && version.localized?.en?.name) {
+      return version.localized.en.name;
+    }
+    
+    return version.name;
+  }, [version, locale]);
 
   useEffect(() => {
     const fetchVersionData = async () => {
@@ -206,7 +250,7 @@ const ToolVersionLessons = () => {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <Lock className="w-16 h-16 mx-auto text-muted-foreground" />
-          <h1 className="text-2xl font-bold text-foreground">{toolName} - {version.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{toolName} - {versionName}</h1>
           <p className="text-muted-foreground">Esta versão ainda está bloqueada.</p>
           <p className="text-yellow-500 font-medium">
             Liberado em: {unlockDate.toLocaleDateString('pt-BR')} ({daysRemaining} dias restantes)
@@ -219,7 +263,7 @@ const ToolVersionLessons = () => {
     );
   }
 
-  const currentLesson = version.lessons[selectedLesson];
+  const currentLesson = lessons[selectedLesson];
 
   return (
     <div className="min-h-screen bg-background">
@@ -236,10 +280,10 @@ const ToolVersionLessons = () => {
           </Button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              {toolName} - {version.name}
+              {toolName} - {versionName}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              {version.lessons.length} aulas disponíveis
+              {lessons.length} aulas disponíveis
             </p>
           </div>
         </div>
@@ -305,7 +349,7 @@ const ToolVersionLessons = () => {
           {/* Lesson List */}
           <div className="space-y-2">
             <h3 className="font-semibold text-lg mb-4">Aulas</h3>
-            {version.lessons.map((lesson, index) => (
+            {lessons.map((lesson, index) => (
               <Card
                 key={index}
                 className={`p-3 cursor-pointer transition-all hover:bg-accent ${
