@@ -1,67 +1,56 @@
 import { useEffect } from 'react';
-import { toast } from 'sonner';
 
-const CHECK_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-const LAST_CHECK_KEY = 'sw-last-update-check';
+const SESSION_CHECK_KEY = 'sw-checked-this-session';
 
 export const useServiceWorkerUpdate = () => {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
+    const shouldCheck = () => {
+      // Use sessionStorage - resets when app is closed
+      if (sessionStorage.getItem(SESSION_CHECK_KEY)) {
+        return false;
+      }
+      sessionStorage.setItem(SESSION_CHECK_KEY, 'true');
+      return true;
+    };
+
     const checkForUpdates = async () => {
       try {
+        // First, clean old caches silently
+        await cleanOldCaches();
+        
         const registration = await navigator.serviceWorker.getRegistration();
         if (registration) {
           await registration.update();
           
           if (registration.waiting) {
-            // New service worker is waiting
-            toast.info('Nova versão disponível!', {
-              description: 'O app será atualizado em 5 segundos...',
-              duration: 5000,
-            });
-            
-            // Tell the waiting service worker to take over
+            // Tell the waiting service worker to take over immediately
             registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-            
-            // Reload after 5 seconds
-            setTimeout(() => {
-              window.location.reload();
-            }, 5000);
           }
         }
+        
+        console.log('[SW] Update check completed');
       } catch (error) {
-        console.error('Error checking for SW updates:', error);
+        console.error('[SW] Error checking for updates:', error);
       }
     };
 
-    const shouldCheck = () => {
-      const lastCheck = localStorage.getItem(LAST_CHECK_KEY);
-      if (!lastCheck) return true;
-      
-      const lastCheckTime = parseInt(lastCheck, 10);
-      return Date.now() - lastCheckTime >= CHECK_INTERVAL;
-    };
+    // Check on mount (once per session)
+    if (shouldCheck()) {
+      checkForUpdates();
+    }
 
-    const performCheck = () => {
-      if (shouldCheck()) {
-        localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
-        checkForUpdates();
-      }
-    };
-
-    // Check on mount
-    performCheck();
-
-    // Listen for controller change (new SW activated)
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
+    // Listen for controller change (new SW activated) - reload immediately
+    const handleControllerChange = () => {
       window.location.reload();
-    });
+    };
+    
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 
-    // Set up interval for periodic checks
-    const intervalId = setInterval(performCheck, CHECK_INTERVAL);
-
-    return () => clearInterval(intervalId);
+    return () => {
+      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+    };
   }, []);
 };
 
