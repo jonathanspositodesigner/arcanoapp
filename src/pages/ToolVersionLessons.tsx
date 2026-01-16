@@ -302,11 +302,11 @@ const ToolVersionLessons = () => {
         {toolSlug === 'upscaller-arcano' && lessons.length >= 5 && (
           <div 
             onClick={() => setSelectedLesson(4)}
-            className="mb-6 p-4 bg-gradient-to-r from-amber-500/20 to-orange-500/20 
-                       border border-amber-500/30 rounded-lg cursor-pointer 
-                       hover:border-amber-400/50 transition-all group"
+            className="mb-6 p-4 bg-purple-600 
+                       border border-purple-500 rounded-lg cursor-pointer 
+                       hover:bg-purple-500 transition-all group"
           >
-            <p className="text-amber-200 text-sm md:text-base flex items-center gap-2">
+            <p className="text-white text-sm md:text-base flex items-center gap-2 font-medium">
               <AlertTriangle className="h-5 w-5 shrink-0" />
               <span>
                 {t('toolLessons.lightVersionNotice')}
