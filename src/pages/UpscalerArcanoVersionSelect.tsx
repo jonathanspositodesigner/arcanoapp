@@ -53,9 +53,21 @@ const UpscalerArcanoVersionSelect = () => {
     }
   }, [user, premiumLoading]);
 
+  // Debug logs
+  useEffect(() => {
+    console.log('UpscalerArcanoVersionSelect Debug:', {
+      user: user?.id,
+      hasAccess,
+      premiumLoading,
+      isLoadingPurchase,
+      purchaseDate
+    });
+  }, [user, hasAccess, premiumLoading, isLoadingPurchase, purchaseDate]);
+
   // Redirect if no access
   useEffect(() => {
     if (!premiumLoading && !isLoadingPurchase && (!user || !hasAccess)) {
+      console.log('Redirecting to /ferramentas-ia because:', { user: !!user, hasAccess });
       navigate("/ferramentas-ia");
     }
   }, [premiumLoading, isLoadingPurchase, user, hasAccess, navigate]);
