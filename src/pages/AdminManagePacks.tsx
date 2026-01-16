@@ -9,16 +9,80 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff, Copy, Webhook, Settings, Link, Check, Video, ExternalLink, X, Globe } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, GripVertical, Package, Gift, GraduationCap, BookOpen, Cpu, Eye, EyeOff, Copy, Webhook, Settings, Link, Check, Video, ExternalLink, X, Globe, Layers, Sparkles, Zap, Target, Calendar } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface TutorialLesson {
   title: string;
   description: string;
   videoUrl: string;
   buttons: { text: string; url: string }[];
+}
+
+// Tool Version Interfaces
+interface ToolVersionWebhook {
+  greenn_product_id_6_meses: number | null;
+  greenn_product_id_1_ano: number | null;
+  greenn_product_id_order_bump: number | null;
+  greenn_product_id_vitalicio: number | null;
+}
+
+interface ToolVersionSales {
+  price_6_meses: number | null;
+  price_1_ano: number | null;
+  price_vitalicio: number | null;
+  price_6_meses_usd: number | null;
+  price_1_ano_usd: number | null;
+  price_vitalicio_usd: number | null;
+  enabled_6_meses: boolean;
+  enabled_1_ano: boolean;
+  enabled_vitalicio: boolean;
+  checkout_link_6_meses: string | null;
+  checkout_link_1_ano: string | null;
+  checkout_link_vitalicio: string | null;
+  checkout_link_renovacao_6_meses: string | null;
+  checkout_link_renovacao_1_ano: string | null;
+  checkout_link_renovacao_vitalicio: string | null;
+  checkout_link_membro_6_meses: string | null;
+  checkout_link_membro_1_ano: string | null;
+  checkout_link_membro_vitalicio: string | null;
+  notification_discount_enabled: boolean;
+  notification_discount_percent: number | null;
+  checkout_link_notif_6_meses: string | null;
+  checkout_link_notif_1_ano: string | null;
+  checkout_link_notif_vitalicio: string | null;
+  checkout_link_latam_6_meses: string | null;
+  checkout_link_latam_1_ano: string | null;
+  checkout_link_latam_vitalicio: string | null;
+  checkout_link_latam_renovacao_6_meses: string | null;
+  checkout_link_latam_renovacao_1_ano: string | null;
+  checkout_link_latam_renovacao_vitalicio: string | null;
+  checkout_link_latam_membro_6_meses: string | null;
+  checkout_link_latam_membro_1_ano: string | null;
+  checkout_link_latam_membro_vitalicio: string | null;
+}
+
+interface ToolVersionBadge {
+  text: string;
+  icon: 'sparkles' | 'zap' | 'target' | 'star';
+  color: 'yellow' | 'blue' | 'purple' | 'green' | 'orange';
+}
+
+export interface ToolVersion {
+  id: string;
+  name: string;
+  slug: string;
+  cover_url: string | null;
+  display_order: number;
+  is_visible: boolean;
+  unlock_days: number;
+  badges: ToolVersionBadge[];
+  lessons: TutorialLesson[];
+  webhook: ToolVersionWebhook;
+  sales: ToolVersionSales;
 }
 
 interface Pack {
@@ -150,6 +214,14 @@ const AdminManagePacks = () => {
   const [activeTab, setActiveTab] = useState<ItemType>('pack');
   const [downloadUrl, setDownloadUrl] = useState('');
   const [editTab, setEditTab] = useState<'info' | 'webhook' | 'links'>('info');
+  
+  // Tool Version States
+  const [toolVersions, setToolVersions] = useState<ToolVersion[]>([]);
+  const [selectedVersionIndex, setSelectedVersionIndex] = useState(0);
+  const [versionEditTab, setVersionEditTab] = useState<'info' | 'webhook' | 'links' | 'aulas'>('info');
+  const [versionCoverFile, setVersionCoverFile] = useState<File | null>(null);
+  const [versionCoverPreview, setVersionCoverPreview] = useState<string | null>(null);
+  
   const [webhookFormData, setWebhookFormData] = useState<WebhookFormData>({
     greenn_product_id_6_meses: '',
     greenn_product_id_1_ano: '',
@@ -494,6 +566,268 @@ const AdminManagePacks = () => {
     setCoverPreview(null);
     setDownloadUrl('');
     setTutorialLessons([]);
+    // Reset version states
+    setToolVersions([]);
+    setSelectedVersionIndex(0);
+    setVersionEditTab('info');
+    setVersionCoverFile(null);
+    setVersionCoverPreview(null);
+  };
+
+  // === Tool Version Management Functions ===
+  const createEmptyVersion = (versionNumber: number): ToolVersion => ({
+    id: `v${versionNumber}`,
+    name: `v${versionNumber}.0`,
+    slug: `v${versionNumber}`,
+    cover_url: null,
+    display_order: versionNumber - 1,
+    is_visible: true,
+    unlock_days: versionNumber === 1 ? 0 : 7,
+    badges: [],
+    lessons: [],
+    webhook: {
+      greenn_product_id_6_meses: null,
+      greenn_product_id_1_ano: null,
+      greenn_product_id_order_bump: null,
+      greenn_product_id_vitalicio: null
+    },
+    sales: {
+      price_6_meses: null,
+      price_1_ano: null,
+      price_vitalicio: null,
+      price_6_meses_usd: null,
+      price_1_ano_usd: null,
+      price_vitalicio_usd: null,
+      enabled_6_meses: true,
+      enabled_1_ano: true,
+      enabled_vitalicio: true,
+      checkout_link_6_meses: null,
+      checkout_link_1_ano: null,
+      checkout_link_vitalicio: null,
+      checkout_link_renovacao_6_meses: null,
+      checkout_link_renovacao_1_ano: null,
+      checkout_link_renovacao_vitalicio: null,
+      checkout_link_membro_6_meses: null,
+      checkout_link_membro_1_ano: null,
+      checkout_link_membro_vitalicio: null,
+      notification_discount_enabled: false,
+      notification_discount_percent: 20,
+      checkout_link_notif_6_meses: null,
+      checkout_link_notif_1_ano: null,
+      checkout_link_notif_vitalicio: null,
+      checkout_link_latam_6_meses: null,
+      checkout_link_latam_1_ano: null,
+      checkout_link_latam_vitalicio: null,
+      checkout_link_latam_renovacao_6_meses: null,
+      checkout_link_latam_renovacao_1_ano: null,
+      checkout_link_latam_renovacao_vitalicio: null,
+      checkout_link_latam_membro_6_meses: null,
+      checkout_link_latam_membro_1_ano: null,
+      checkout_link_latam_membro_vitalicio: null
+    }
+  });
+
+  const addToolVersion = () => {
+    const newVersionNumber = toolVersions.length + 1;
+    const newVersion = createEmptyVersion(newVersionNumber);
+    setToolVersions([...toolVersions, newVersion]);
+    setSelectedVersionIndex(toolVersions.length);
+    setVersionEditTab('info');
+    setVersionCoverFile(null);
+    setVersionCoverPreview(null);
+    toast.success(`Versão ${newVersion.name} criada!`);
+  };
+
+  const updateToolVersion = (index: number, updates: Partial<ToolVersion>) => {
+    const updated = [...toolVersions];
+    updated[index] = { ...updated[index], ...updates };
+    setToolVersions(updated);
+  };
+
+  const updateVersionWebhook = (index: number, field: keyof ToolVersionWebhook, value: number | null) => {
+    const updated = [...toolVersions];
+    updated[index] = {
+      ...updated[index],
+      webhook: { ...updated[index].webhook, [field]: value }
+    };
+    setToolVersions(updated);
+  };
+
+  const updateVersionSales = (index: number, field: keyof ToolVersionSales, value: any) => {
+    const updated = [...toolVersions];
+    updated[index] = {
+      ...updated[index],
+      sales: { ...updated[index].sales, [field]: value }
+    };
+    setToolVersions(updated);
+  };
+
+  const addVersionLesson = (versionIndex: number) => {
+    const updated = [...toolVersions];
+    updated[versionIndex] = {
+      ...updated[versionIndex],
+      lessons: [...updated[versionIndex].lessons, { title: '', description: '', videoUrl: '', buttons: [] }]
+    };
+    setToolVersions(updated);
+  };
+
+  const updateVersionLesson = (versionIndex: number, lessonIndex: number, field: keyof TutorialLesson, value: any) => {
+    const updated = [...toolVersions];
+    const lessons = [...updated[versionIndex].lessons];
+    lessons[lessonIndex] = { ...lessons[lessonIndex], [field]: value };
+    updated[versionIndex] = { ...updated[versionIndex], lessons };
+    setToolVersions(updated);
+  };
+
+  const removeVersionLesson = (versionIndex: number, lessonIndex: number) => {
+    const updated = [...toolVersions];
+    updated[versionIndex] = {
+      ...updated[versionIndex],
+      lessons: updated[versionIndex].lessons.filter((_, i) => i !== lessonIndex)
+    };
+    setToolVersions(updated);
+  };
+
+  const addVersionLessonButton = (versionIndex: number, lessonIndex: number) => {
+    const updated = [...toolVersions];
+    const lessons = [...updated[versionIndex].lessons];
+    lessons[lessonIndex] = {
+      ...lessons[lessonIndex],
+      buttons: [...(lessons[lessonIndex].buttons || []), { text: '', url: '' }]
+    };
+    updated[versionIndex] = { ...updated[versionIndex], lessons };
+    setToolVersions(updated);
+  };
+
+  const updateVersionLessonButton = (versionIndex: number, lessonIndex: number, buttonIndex: number, field: 'text' | 'url', value: string) => {
+    const updated = [...toolVersions];
+    const lessons = [...updated[versionIndex].lessons];
+    const buttons = [...lessons[lessonIndex].buttons];
+    buttons[buttonIndex] = { ...buttons[buttonIndex], [field]: value };
+    lessons[lessonIndex] = { ...lessons[lessonIndex], buttons };
+    updated[versionIndex] = { ...updated[versionIndex], lessons };
+    setToolVersions(updated);
+  };
+
+  const removeVersionLessonButton = (versionIndex: number, lessonIndex: number, buttonIndex: number) => {
+    const updated = [...toolVersions];
+    const lessons = [...updated[versionIndex].lessons];
+    lessons[lessonIndex] = {
+      ...lessons[lessonIndex],
+      buttons: lessons[lessonIndex].buttons.filter((_, i) => i !== buttonIndex)
+    };
+    updated[versionIndex] = { ...updated[versionIndex], lessons };
+    setToolVersions(updated);
+  };
+
+  const addVersionBadge = (versionIndex: number) => {
+    const updated = [...toolVersions];
+    updated[versionIndex] = {
+      ...updated[versionIndex],
+      badges: [...updated[versionIndex].badges, { text: 'NOVO', icon: 'sparkles' as const, color: 'yellow' as const }]
+    };
+    setToolVersions(updated);
+  };
+
+  const updateVersionBadge = (versionIndex: number, badgeIndex: number, updates: Partial<ToolVersionBadge>) => {
+    const updated = [...toolVersions];
+    const badges = [...updated[versionIndex].badges];
+    badges[badgeIndex] = { ...badges[badgeIndex], ...updates } as ToolVersionBadge;
+    updated[versionIndex] = { ...updated[versionIndex], badges };
+    setToolVersions(updated);
+  };
+
+  const removeVersionBadge = (versionIndex: number, badgeIndex: number) => {
+    const updated = [...toolVersions];
+    updated[versionIndex] = {
+      ...updated[versionIndex],
+      badges: updated[versionIndex].badges.filter((_, i) => i !== badgeIndex)
+    };
+    setToolVersions(updated);
+  };
+
+  const removeToolVersion = (index: number) => {
+    if (toolVersions.length <= 1) {
+      toast.error("É necessário ter pelo menos uma versão");
+      return;
+    }
+    const updated = toolVersions.filter((_, i) => i !== index);
+    // Re-order display_order
+    updated.forEach((v, i) => { v.display_order = i; });
+    setToolVersions(updated);
+    setSelectedVersionIndex(Math.max(0, index - 1));
+    toast.success("Versão removida");
+  };
+
+  const uploadVersionCover = async (packId: string, versionId: string): Promise<string | null> => {
+    if (!versionCoverFile) return null;
+    
+    const fileExt = versionCoverFile.name.split(".").pop();
+    const fileName = `${packId}-${versionId}.${fileExt}`;
+    
+    const { error } = await supabase.storage
+      .from("pack-covers")
+      .upload(fileName, versionCoverFile, { upsert: true });
+
+    if (error) {
+      console.error("Upload version cover error:", error);
+      return null;
+    }
+
+    const { data } = supabase.storage.from("pack-covers").getPublicUrl(fileName);
+    return data.publicUrl;
+  };
+
+  const handleSaveToolVersions = async () => {
+    if (!editingPack) return;
+    
+    setSaving(true);
+    try {
+      // Upload version cover if there's a new one
+      if (versionCoverFile && toolVersions[selectedVersionIndex]) {
+        const coverUrl = await uploadVersionCover(editingPack.id, toolVersions[selectedVersionIndex].id);
+        if (coverUrl) {
+          const updated = [...toolVersions];
+          updated[selectedVersionIndex] = { ...updated[selectedVersionIndex], cover_url: coverUrl };
+          setToolVersions(updated);
+          
+          // Update in DB
+          const { error } = await supabase
+            .from("artes_packs")
+            .update({ tool_versions: updated as unknown as any })
+            .eq("id", editingPack.id);
+          
+          if (error) throw error;
+        }
+      } else {
+        const { error } = await supabase
+          .from("artes_packs")
+          .update({ tool_versions: toolVersions as unknown as any })
+          .eq("id", editingPack.id);
+
+        if (error) throw error;
+      }
+
+      toast.success("Versões salvas com sucesso!");
+      setVersionCoverFile(null);
+      fetchPacks();
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao salvar versões");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleVersionCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Imagem deve ter no máximo 5MB");
+        return;
+      }
+      setVersionCoverFile(file);
+      setVersionCoverPreview(URL.createObjectURL(file));
+    }
   };
 
   const openEdit = (pack: Pack) => {
@@ -504,6 +838,24 @@ const AdminManagePacks = () => {
     setEditTab('info');
     setDownloadUrl(pack.download_url || '');
     setTutorialLessons((pack.tutorial_lessons as TutorialLesson[]) || []);
+    
+    // Load tool versions for ferramentas_ia types
+    if (pack.type === 'ferramentas_ia' || pack.type === 'ferramenta') {
+      const versions = (pack as any).tool_versions as ToolVersion[] | null;
+      if (versions && versions.length > 0) {
+        setToolVersions(versions);
+      } else {
+        // Create default v1 if no versions exist
+        setToolVersions([createEmptyVersion(1)]);
+      }
+      setSelectedVersionIndex(0);
+      setVersionEditTab('info');
+      setVersionCoverFile(null);
+      setVersionCoverPreview(null);
+    } else {
+      setToolVersions([]);
+    }
+    
     setWebhookFormData({
       greenn_product_id_6_meses: pack.greenn_product_id_6_meses?.toString() || '',
       greenn_product_id_1_ano: pack.greenn_product_id_1_ano?.toString() || '',
