@@ -8,7 +8,7 @@ interface WhatsAppSupportButtonProps {
 }
 
 const WhatsAppSupportButton = ({ 
-  whatsappNumber = "33988819891",
+  whatsappNumber = "5533988819891",
   className = "" 
 }: WhatsAppSupportButtonProps) => {
   const { t } = useTranslation('tools');
