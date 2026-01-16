@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Play } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface VideoLesson {
   titleKey: string;
@@ -121,6 +122,9 @@ const MudarRoupa = () => {
             </Card>
           ))}
         </div>
+
+        {/* WhatsApp Support Button */}
+        <WhatsAppSupportButton />
       </div>
     </div>
   );

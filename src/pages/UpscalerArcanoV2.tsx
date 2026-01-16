@@ -7,6 +7,7 @@ import { ArrowLeft, ExternalLink, Play } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
+import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface VideoLesson {
   titleKey: string;
@@ -184,6 +185,9 @@ const UpscalerArcanoV2 = () => {
             </p>
           </Card>
         )}
+
+        {/* WhatsApp Support Button */}
+        <WhatsAppSupportButton />
       </div>
     </div>
   );

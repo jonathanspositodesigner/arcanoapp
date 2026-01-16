@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface Lesson {
   title: string;
@@ -147,6 +148,9 @@ const ForjaSelos3DArtes = () => {
             ))}
           </div>
         )}
+
+        {/* WhatsApp Support Button */}
+        <WhatsAppSupportButton />
       </main>
     </div>
   );

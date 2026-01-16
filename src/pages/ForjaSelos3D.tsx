@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Play } from "lucide-react";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface VideoLesson {
   titleKey: string;
@@ -129,6 +130,9 @@ const ForjaSelos3D = () => {
             </Card>
           ))}
         </div>
+
+        {/* WhatsApp Support Button */}
+        <WhatsAppSupportButton />
       </div>
     </div>
   );
