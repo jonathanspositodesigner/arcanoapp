@@ -242,30 +242,32 @@ const FerramentasIAES = () => {
         </div>
       </header>
 
-      {/* Primeiro Acesso + Login Buttons - Below Header */}
-      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setShowFirstAccessModal(true)}
-              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
-              size="sm"
-            >
-              <UserCheck className="w-4 h-4 mr-2" />
-              {t('ferramentas.firstAccess')}
-            </Button>
-            <Button
-              onClick={() => navigate('/login-artes?redirect=/ferramentas-ia-es')}
-              variant="outline"
-              className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50"
-              size="sm"
-            >
-              <LogIn className="w-4 h-4 mr-2" />
-              Login
-            </Button>
+      {/* Primeiro Acesso + Login Buttons - Only show when NOT logged in */}
+      {!user && (
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowFirstAccessModal(true)}
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
+                size="sm"
+              >
+                <UserCheck className="w-4 h-4 mr-2" />
+                {t('ferramentas.firstAccess')}
+              </Button>
+              <Button
+                onClick={() => navigate('/login-artes?redirect=/ferramentas-ia-es')}
+                variant="outline"
+                className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50"
+                size="sm"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Login
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       <main className="container mx-auto px-4 py-8">
