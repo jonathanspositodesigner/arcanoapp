@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.process-remarketing-emails]
 verify_jwt = false
+
+[functions.webhook-hotmart-artes]
+verify_jwt = false

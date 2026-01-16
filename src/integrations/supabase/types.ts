@@ -2146,6 +2146,8 @@ export type Database = {
           expires_at: string | null
           greenn_contract_id: string | null
           has_bonus_access: boolean
+          hotmart_product_id: number | null
+          hotmart_transaction: string | null
           id: string
           import_source: string | null
           is_active: boolean
@@ -2162,6 +2164,8 @@ export type Database = {
           expires_at?: string | null
           greenn_contract_id?: string | null
           has_bonus_access?: boolean
+          hotmart_product_id?: number | null
+          hotmart_transaction?: string | null
           id?: string
           import_source?: string | null
           is_active?: boolean
@@ -2178,6 +2182,8 @@ export type Database = {
           expires_at?: string | null
           greenn_contract_id?: string | null
           has_bonus_access?: boolean
+          hotmart_product_id?: number | null
+          hotmart_transaction?: string | null
           id?: string
           import_source?: string | null
           is_active?: boolean
