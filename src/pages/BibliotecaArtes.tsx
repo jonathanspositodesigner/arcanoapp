@@ -900,7 +900,7 @@ const BibliotecaArtes = () => {
                     } else {
                       // Navigate to specific tool page based on slug
                       if (pack.slug === 'upscaller-arcano') {
-                        navigate('/planos-upscaler-arcano');
+                        navigate('/planos-upscaler-arcano-69');
                       } else if (pack.slug === 'forja-selos-3d') {
                         navigate('/planos-forja-selos-3d');
                       } else {
@@ -1001,7 +1001,7 @@ const BibliotecaArtes = () => {
                         e.stopPropagation();
                         // Navigate to specific tool page based on slug
                         if (pack.slug === 'upscaller-arcano') {
-                          navigate('/planos-upscaler-arcano');
+                          navigate('/planos-upscaler-arcano-69');
                         } else if (pack.slug === 'forja-selos-3d') {
                           navigate('/planos-forja-selos-3d');
                         } else {
