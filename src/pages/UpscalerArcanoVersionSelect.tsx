@@ -7,6 +7,7 @@ import { ArrowLeft, Lock, Unlock, Sparkles, Zap, Target, Star } from "lucide-rea
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
+import { useLocale } from "@/contexts/LocaleContext";
 // Fallback images for backwards compatibility
 import upscalerV1Image from "@/assets/upscaler-v1-card.png";
 import upscalerV2Image from "@/assets/upscaler-v1-5-card.png";
@@ -15,6 +16,10 @@ interface ToolVersionBadge {
   text: string;
   icon: 'sparkles' | 'zap' | 'target' | 'star';
   color: 'yellow' | 'blue' | 'purple' | 'green' | 'orange';
+}
+
+interface LocalizedVersionContent {
+  name?: string;
 }
 
 interface ToolVersion {
@@ -26,6 +31,10 @@ interface ToolVersion {
   is_visible: boolean;
   unlock_days: number;
   badges: ToolVersionBadge[];
+  localized?: {
+    es?: LocalizedVersionContent;
+    en?: LocalizedVersionContent;
+  };
 }
 
 const ICON_MAP = {
@@ -74,8 +83,14 @@ const FALLBACK_VERSIONS: ToolVersion[] = [
 const UpscalerArcanoVersionSelect = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
+  const { locale } = useLocale();
   const { user, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
   const { planType, isLoading: promptsLoading } = usePremiumStatus();
+  
+  // Locale-aware paths
+  const toolsHomePath = locale === 'es' ? '/ferramentas-ia-es' : '/ferramentas-ia';
+  const upscalerPlansPath = locale === 'es' ? '/planos-upscaler-arcano-69-es' : '/planos-upscaler-arcano-69';
+  const loginPath = `/login-artes?redirect=${encodeURIComponent('/ferramenta-ia-artes/upscaller-arcano')}`;
   
   const [purchaseDate, setPurchaseDate] = useState<Date | null>(null);
   const [isLoadingPurchase, setIsLoadingPurchase] = useState(true);
@@ -184,10 +199,10 @@ const UpscalerArcanoVersionSelect = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">Upscaler Arcano</h1>
-          <p className="text-muted-foreground">Faça login para acessar as versões.</p>
-          <Button onClick={() => navigate("/login-artes")}>
-            Fazer login
+          <h1 className="text-2xl font-bold text-foreground">{t('upscaler.title')}</h1>
+          <p className="text-muted-foreground">{t('versionSelect.loginRequired')}</p>
+          <Button onClick={() => navigate(loginPath)}>
+            {t('ferramentas.login')}
           </Button>
         </div>
       </div>
@@ -198,10 +213,10 @@ const UpscalerArcanoVersionSelect = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">Upscaler Arcano</h1>
-          <p className="text-muted-foreground">Você ainda não tem acesso a esta ferramenta.</p>
-          <Button onClick={() => navigate("/planos-upscaler-arcano-69")}>
-            Ver planos
+          <h1 className="text-2xl font-bold text-foreground">{t('upscaler.title')}</h1>
+          <p className="text-muted-foreground">{t('versionSelect.noAccess')}</p>
+          <Button onClick={() => navigate(upscalerPlansPath)}>
+            {t('ferramentas.seePlans')}
           </Button>
         </div>
       </div>
@@ -230,11 +245,19 @@ const UpscalerArcanoVersionSelect = () => {
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('pt-BR', {
+    return date.toLocaleDateString(locale === 'es' ? 'es-ES' : 'pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     });
+  };
+
+  // Get localized version name
+  const getVersionName = (version: ToolVersion) => {
+    if (locale === 'es' && version.localized?.es?.name) {
+      return version.localized.es.name;
+    }
+    return version.name;
   };
 
   const handleVersionClick = (version: ToolVersion) => {
@@ -278,17 +301,17 @@ const UpscalerArcanoVersionSelect = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/ferramentas-ia")}
+            onClick={() => navigate(toolsHomePath)}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Upscaler Arcano
+              {t('upscaler.title')}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              Escolha a versão que deseja acessar
+              {t('versionSelect.chooseVersion')}
             </p>
           </div>
         </div>
@@ -362,22 +385,22 @@ const UpscalerArcanoVersionSelect = () => {
                   {version.unlock_days > 0 && isArcanoUnlimitedOnly ? (
                     <div className="flex items-center gap-1.5 bg-orange-500/20 backdrop-blur-sm text-orange-400 px-3 py-1 rounded-full text-xs font-medium">
                       <Sparkles className="h-3 w-3" />
-                      UPGRADE
+                      {t('versionSelect.upgrade')}
                     </div>
                   ) : isUnlocked ? (
                     <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
                       <Unlock className="h-3 w-3" />
-                      Disponível
+                      {t('versionSelect.available')}
                     </div>
                   ) : version.unlock_days > 0 ? (
                     <div className="flex items-center gap-1.5 bg-red-500/20 backdrop-blur-sm text-red-400 px-3 py-1 rounded-full text-xs font-medium">
                       <Lock className="h-3 w-3" />
-                      BLOQUEADO
+                      {t('versionSelect.locked')}
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
                       <Unlock className="h-3 w-3" />
-                      Disponível
+                      {t('versionSelect.available')}
                     </div>
                   )}
                 </div>
@@ -389,25 +412,25 @@ const UpscalerArcanoVersionSelect = () => {
                       ? version.unlock_days > 0 ? 'bg-white text-orange-600' : 'bg-white text-purple-900'
                       : 'bg-white/80 text-gray-700'
                   }`}>
-                    {version.name}
+                    {getVersionName(version)}
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-4">
                   <h2 className="text-lg md:text-xl font-bold text-foreground mb-3">
-                    Upscaler Arcano
+                    {t('upscaler.title')}
                   </h2>
                   
                   {/* Unlock Info - only for pack owners waiting */}
                   {!isUnlocked && !isArcanoUnlimitedOnly && unlockDate && version.unlock_days > 0 && (
                     <div className="bg-gray-800/50 rounded-lg p-3 mb-3 border border-gray-700/50">
                       <p className="text-sm text-gray-300">
-                        <span className="font-medium text-yellow-400">Liberado a partir de:</span>{' '}
+                        <span className="font-medium text-yellow-400">{t('versionSelect.unlocksAt')}:</span>{' '}
                         {formatDate(unlockDate)}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
-                        Faltam <span className="font-bold text-yellow-400">{daysRemaining}</span> {daysRemaining === 1 ? 'dia' : 'dias'}
+                        {t('versionSelect.daysRemaining', { count: daysRemaining })}
                       </p>
                     </div>
                   )}
@@ -418,10 +441,10 @@ const UpscalerArcanoVersionSelect = () => {
                       className="w-full bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-500 hover:to-red-400 text-white group-hover:scale-[1.02] transition-transform"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate("/planos-upscaler-arcano");
+                        navigate(upscalerPlansPath);
                       }}
                     >
-                      Adquirir Versão Atualizada
+                      {t('versionSelect.acquireUpdated')}
                     </Button>
                   ) : isUnlocked ? (
                     <Button 
@@ -431,14 +454,14 @@ const UpscalerArcanoVersionSelect = () => {
                           : 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400'
                       }`}
                     >
-                      Acessar Aulas
+                      {t('versionSelect.accessLessons')}
                     </Button>
                   ) : (
                     <Button 
                       disabled
                       className="w-full bg-gray-700 text-gray-400 cursor-not-allowed"
                     >
-                      Bloqueado
+                      {t('versionSelect.locked')}
                     </Button>
                   )}
                 </div>
