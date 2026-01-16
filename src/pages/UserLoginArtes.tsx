@@ -73,9 +73,12 @@ const UserLoginArtes = () => {
           setFailedAttempts(newAttempts);
           toast.error(t('errors.invalidCredentials'));
           
-          // Show modal after 2 failed attempts as fallback
+          // After 2 failed attempts, suggest password reset instead of first access modal
           if (newAttempts >= 2) {
-            setShowFirstAccessModal(true);
+            toast.info(t('errors.multipleFailedAttempts'), {
+              description: t('errors.tryPasswordReset'),
+              duration: 8000
+            });
           }
         }
         
