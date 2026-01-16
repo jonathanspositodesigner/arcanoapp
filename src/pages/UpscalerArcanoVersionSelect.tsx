@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Lock, Unlock, Sparkles } from "lucide-react";
+import { ArrowLeft, Lock, Unlock, Sparkles, Zap, Target } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -239,11 +239,19 @@ const UpscalerArcanoVersionSelect = () => {
               )}
             </div>
 
-            {/* NEW Badge */}
-            <div className="absolute top-4 left-4">
+            {/* Badges - NOVO, MAIS RÁPIDO, MAIOR FIDELIDADE */}
+            <div className="absolute top-4 left-4 flex flex-col gap-1.5">
               <div className="flex items-center gap-1.5 bg-yellow-500/20 backdrop-blur-sm text-yellow-400 px-3 py-1 rounded-full text-xs font-medium">
                 <Sparkles className="h-3 w-3" />
                 NOVO
+              </div>
+              <div className="flex items-center gap-1.5 bg-blue-500/20 backdrop-blur-sm text-blue-400 px-3 py-1 rounded-full text-xs font-medium">
+                <Zap className="h-3 w-3" />
+                MAIS RÁPIDO
+              </div>
+              <div className="flex items-center gap-1.5 bg-purple-500/20 backdrop-blur-sm text-purple-400 px-3 py-1 rounded-full text-xs font-medium">
+                <Target className="h-3 w-3" />
+                MAIOR FIDELIDADE
               </div>
             </div>
 
@@ -264,7 +272,7 @@ const UpscalerArcanoVersionSelect = () => {
               {!isV1_5Unlocked && unlockDate && (
                 <div className="bg-gray-800/50 rounded-lg p-3 mb-3 border border-gray-700/50">
                   <p className="text-sm text-gray-300">
-                    <span className="font-medium text-yellow-400">Libera em:</span>{' '}
+                    <span className="font-medium text-yellow-400">Liberado a partir de:</span>{' '}
                     {formatDate(unlockDate)}
                   </p>
                   <p className="text-xs text-gray-400 mt-1">
