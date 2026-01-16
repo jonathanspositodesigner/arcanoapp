@@ -14,12 +14,12 @@ interface VideoLesson {
   buttons?: { labelKey: string; url: string }[];
 }
 
-// V1.5 lessons - To be configured
+// V2.0 lessons - To be configured
 const lessons: VideoLesson[] = [
   // Add lessons here as needed
 ];
 
-const UpscalerArcanoV1_5 = () => {
+const UpscalerArcanoV2 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
@@ -130,7 +130,7 @@ const UpscalerArcanoV1_5 = () => {
           </Button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Upscaler Arcano v1.5
+              Upscaler Arcano v2.0
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
               Nova versão com atualizações e melhorias
@@ -189,4 +189,4 @@ const UpscalerArcanoV1_5 = () => {
   );
 };
 
-export default UpscalerArcanoV1_5;
+export default UpscalerArcanoV2;
