@@ -299,9 +299,9 @@ const ToolVersionLessons = () => {
         </div>
 
         {/* Light Version Notice Banner */}
-        {toolSlug === 'upscaller-arcano' && lessons.length >= 5 && (
+        {toolSlug === 'upscaller-arcano' && lessons.length >= 4 && (
           <div 
-            onClick={() => setSelectedLesson(4)}
+            onClick={() => setSelectedLesson(lessons.length - 1)}
             className="mb-6 p-4 bg-purple-600 
                        border border-purple-500 rounded-lg cursor-pointer 
                        hover:bg-purple-500 transition-all group"
