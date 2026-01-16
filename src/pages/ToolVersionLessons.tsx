@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink, Lock } from "lucide-react";
@@ -76,8 +77,15 @@ const getVideoEmbedUrl = (videoUrl: string): string | null => {
 const ToolVersionLessons = () => {
   const { toolSlug, versionSlug } = useParams<{ toolSlug: string; versionSlug: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation('tools');
   const { user, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
   const { locale } = useLocale();
+  
+  // Locale-aware paths
+  const currentPath = `/ferramenta-ia-artes/${toolSlug}/${versionSlug}`;
+  const loginPath = `/login-artes?redirect=${encodeURIComponent(currentPath)}`;
+  const toolSelectPath = `/ferramenta-ia-artes/${toolSlug}`;
+  const plansPath = locale === 'es' ? `/planos-upscaler-arcano-69-es` : `/planos-${toolSlug}`;
   
   const [loading, setLoading] = useState(true);
   const [version, setVersion] = useState<ToolVersion | null>(null);
@@ -193,9 +201,9 @@ const ToolVersionLessons = () => {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">{toolName}</h1>
-          <p className="text-muted-foreground">Faça login para acessar as aulas.</p>
-          <Button onClick={() => navigate("/login-artes")}>
-            Fazer login
+          <p className="text-muted-foreground">{t('versionSelect.loginRequired')}</p>
+          <Button onClick={() => navigate(loginPath)}>
+            {t('ferramentas.login')}
           </Button>
         </div>
       </div>
@@ -209,9 +217,9 @@ const ToolVersionLessons = () => {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">{toolName}</h1>
-          <p className="text-muted-foreground">Você ainda não tem acesso a esta ferramenta.</p>
-          <Button onClick={() => navigate(`/planos-${toolSlug}`)}>
-            Ver planos
+          <p className="text-muted-foreground">{t('versionSelect.noAccess')}</p>
+          <Button onClick={() => navigate(plansPath)}>
+            {t('ferramentas.seePlans')}
           </Button>
         </div>
       </div>
@@ -231,10 +239,10 @@ const ToolVersionLessons = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">Versão não encontrada</h1>
-          <p className="text-muted-foreground">A versão solicitada não existe.</p>
-          <Button onClick={() => navigate(-1)}>
-            Voltar
+          <h1 className="text-2xl font-bold text-foreground">{t('toolLessons.versionNotFound')}</h1>
+          <p className="text-muted-foreground">{t('toolLessons.versionNotFoundDesc')}</p>
+          <Button onClick={() => navigate(toolSelectPath)}>
+            {t('upscaler.back')}
           </Button>
         </div>
       </div>
@@ -245,18 +253,19 @@ const ToolVersionLessons = () => {
     const unlockDate = purchaseDate ? new Date(purchaseDate) : new Date();
     unlockDate.setDate(unlockDate.getDate() + version.unlock_days);
     const daysRemaining = Math.max(0, Math.ceil((unlockDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
+    const formattedDate = unlockDate.toLocaleDateString(locale === 'es' ? 'es-ES' : 'pt-BR');
 
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <Lock className="w-16 h-16 mx-auto text-muted-foreground" />
           <h1 className="text-2xl font-bold text-foreground">{toolName} - {versionName}</h1>
-          <p className="text-muted-foreground">Esta versão ainda está bloqueada.</p>
+          <p className="text-muted-foreground">{t('toolLessons.versionLocked')}</p>
           <p className="text-yellow-500 font-medium">
-            Liberado em: {unlockDate.toLocaleDateString('pt-BR')} ({daysRemaining} dias restantes)
+            {t('toolLessons.unlocksOn', { date: formattedDate, days: daysRemaining })}
           </p>
-          <Button variant="outline" onClick={() => navigate(-1)}>
-            Voltar
+          <Button variant="outline" onClick={() => navigate(toolSelectPath)}>
+            {t('upscaler.back')}
           </Button>
         </div>
       </div>
@@ -283,7 +292,7 @@ const ToolVersionLessons = () => {
               {toolName} - {versionName}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              {lessons.length} aulas disponíveis
+              {t('toolLessons.lessonsAvailable', { count: lessons.length })}
             </p>
           </div>
         </div>
@@ -348,7 +357,7 @@ const ToolVersionLessons = () => {
 
           {/* Lesson List */}
           <div className="space-y-2">
-            <h3 className="font-semibold text-lg mb-4">Aulas</h3>
+            <h3 className="font-semibold text-lg mb-4">{t('toolLessons.lessons')}</h3>
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
@@ -369,7 +378,7 @@ const ToolVersionLessons = () => {
                     <p className={`font-medium truncate ${
                       selectedLesson === index ? 'text-primary' : ''
                     }`}>
-                      {lesson.title || `Aula ${index + 1}`}
+                      {lesson.title || `${t('toolLessons.lesson')} ${index + 1}`}
                     </p>
                   </div>
                 </div>

@@ -7,6 +7,7 @@
     "alreadyHaveAccess": "Você já tem acesso!",
     "alreadyHaveAccessDesc": "Você já possui acesso ao Upscaler Arcano.",
     "goToLibrary": "Ir para Biblioteca",
+    "goToTools": "Ir para Ferramentas",
     "hero": {
       "title1": "Pare de parecer um amador",
       "photos": "",
@@ -141,6 +142,29 @@
       "pix": "PIX",
       "secure": "Seguro"
     }
+  },
+  "versionSelect": {
+    "chooseVersion": "Escolha a versão que deseja acessar",
+    "loginRequired": "Faça login para acessar as versões.",
+    "noAccess": "Você ainda não tem acesso a esta ferramenta.",
+    "available": "Disponível",
+    "locked": "BLOQUEADO",
+    "upgrade": "UPGRADE",
+    "unlocksAt": "Liberado a partir de",
+    "daysRemaining": "Faltam {{count}} dias",
+    "daysRemaining_one": "Falta {{count}} dia",
+    "accessLessons": "Acessar Aulas",
+    "acquireUpdated": "Adquirir Versão Atualizada"
+  },
+  "toolLessons": {
+    "lessons": "Aulas",
+    "lesson": "Aula",
+    "lessonsAvailable": "{{count}} aulas disponíveis",
+    "lessonsAvailable_one": "{{count}} aula disponível",
+    "versionNotFound": "Versão não encontrada",
+    "versionNotFoundDesc": "A versão solicitada não existe.",
+    "versionLocked": "Esta versão ainda está bloqueada.",
+    "unlocksOn": "Liberado em: {{date}} ({{days}} dias restantes)"
   },
   "upscalerTool": {
     "title": "Upscaler Arcano",

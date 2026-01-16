@@ -7,6 +7,7 @@ import { ArrowLeft, Play, ExternalLink, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface LessonButton {
   text: string;
@@ -30,15 +31,19 @@ const FerramentaIAArtes = () => {
   const { t } = useTranslation('library');
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
+  const { locale } = useLocale();
   const [ferramenta, setFerramenta] = useState<FerramentaData | null>(null);
   const [loading, setLoading] = useState(true);
   const { isPremium, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
   const { planType: promptsPlanType, isLoading: isPromptsLoading } = usePremiumStatus();
+  
+  // Locale-aware paths
+  const toolsHomePath = locale === 'es' ? '/ferramentas-ia-es' : '/ferramentas-ia';
 
   useEffect(() => {
     const fetchFerramenta = async () => {
       if (!slug) {
-        navigate("/ferramentas-ia");
+        navigate(toolsHomePath);
         return;
       }
 
@@ -118,7 +123,7 @@ const FerramentaIAArtes = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/ferramentas-ia")}
+            onClick={() => navigate(toolsHomePath)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -165,7 +170,7 @@ const FerramentaIAArtes = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/ferramentas-ia")}
+            onClick={() => navigate(toolsHomePath)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

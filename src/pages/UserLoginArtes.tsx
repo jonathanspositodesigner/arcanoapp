@@ -364,7 +364,7 @@ const UserLoginArtes = () => {
           <Button
             variant="ghost"
             className="absolute left-4 top-4 text-white/70 hover:text-white"
-            onClick={() => navigate("/biblioteca-artes")}
+            onClick={() => navigate(redirectTo)}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('back')}

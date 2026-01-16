@@ -595,10 +595,10 @@ const PlanosUpscalerArcano69ES = () => {
                 {t('tools:upscaler.alreadyHaveAccessDesc')}
               </p>
               <Button
-                onClick={() => navigate("/biblioteca-artes")}
+                onClick={() => navigate("/ferramentas-ia-es")}
                 className="bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-full px-8 py-6"
               >
-                {t('tools:upscaler.goToLibrary')}
+                {t('tools:upscaler.goToTools')}
               </Button>
             </CardContent>
           </Card>
