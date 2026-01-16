@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Play } from "lucide-react";
+import { ArrowLeft, ExternalLink, Play, AlertTriangle, ChevronRight } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -137,6 +137,24 @@ const UpscalerArcanoV2 = () => {
               Nova versão com atualizações e melhorias
             </p>
           </div>
+        </div>
+
+        {/* Light Version Notice Banner */}
+        <div 
+          onClick={() => {
+            const lessonsContainer = document.querySelector('.space-y-8');
+            const lastLesson = lessonsContainer?.lastElementChild;
+            lastLesson?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="mb-6 p-4 bg-purple-600 border border-purple-500 rounded-lg cursor-pointer hover:bg-purple-500 transition-all group"
+        >
+          <p className="text-white text-sm md:text-base flex items-center gap-2 font-medium">
+            <AlertTriangle className="h-5 w-5 shrink-0" />
+            <span>
+              {t('toolLessons.lightVersionNotice')}
+            </span>
+            <ChevronRight className="h-4 w-4 ml-auto group-hover:translate-x-1 transition-transform" />
+          </p>
         </div>
 
         {/* Video Lessons */}
