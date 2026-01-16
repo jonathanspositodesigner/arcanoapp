@@ -149,7 +149,7 @@ const FerramentasIA = () => {
 
   const getPurchaseRoute = (tool: ToolData) => {
     if (tool.slug === "upscaller-arcano") {
-      return "/planos-upscaler-arcano";
+      return "/planos-upscaler-arcano-69";
     }
     if (tool.slug === "forja-selos-3d-ilimitada") {
       return "/planos-forja-selos-3d";

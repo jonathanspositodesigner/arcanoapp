@@ -36,7 +36,7 @@ const upscalerVideoBanner: VideoBanner = {
   title: 'Upscaller Arcano',
   description: 'Deixe suas fotos em 4K com alta nitidez, riqueza de detalhes e qualidade cinematográfica',
   buttonText: 'Adquirir Agora',
-  buttonLink: '/planos-upscaler-arcano',
+  buttonLink: '/planos-upscaler-arcano-69',
   secondaryText: 'Já adquiriu? acesse aqui',
   secondaryLink: '/ferramentas-ia?from=artes',
   desktopVideoUrl: '/videos/upscaler-promo-desktop.mp4',
