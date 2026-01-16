@@ -200,7 +200,7 @@ const UpscalerArcanoVersionSelect = () => {
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">Upscaler Arcano</h1>
           <p className="text-muted-foreground">Você ainda não tem acesso a esta ferramenta.</p>
-          <Button onClick={() => navigate("/planos-upscaler-arcano")}>
+          <Button onClick={() => navigate("/planos-upscaler-arcano-69")}>
             Ver planos
           </Button>
         </div>
@@ -418,7 +418,7 @@ const UpscalerArcanoVersionSelect = () => {
                       className="w-full bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-500 hover:to-red-400 text-white group-hover:scale-[1.02] transition-transform"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate("/planos-upscaler-arcano");
+                        navigate("/planos-upscaler-arcano-69");
                       }}
                     >
                       Adquirir Versão Atualizada
