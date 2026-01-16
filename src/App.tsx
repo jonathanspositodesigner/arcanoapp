@@ -52,7 +52,9 @@ import AdminPremiumDashboard from "./pages/AdminPremiumDashboard";
 import AdminPartners from "./pages/AdminPartners";
 import PartnerDashboard from "./pages/PartnerDashboard";
 import PartnerUpload from "./pages/PartnerUpload";
-import UpscalerArcano from "./pages/UpscalerArcano";
+import UpscalerArcanoVersionSelect from "./pages/UpscalerArcanoVersionSelect";
+import UpscalerArcanoV1 from "./pages/UpscalerArcanoV1";
+import UpscalerArcanoV1_5 from "./pages/UpscalerArcanoV1_5";
 import ForjaSelos3D from "./pages/ForjaSelos3D";
 import MudarRoupa from "./pages/MudarRoupa";
 import MudarPose from "./pages/MudarPose";
@@ -185,7 +187,10 @@ const AppContent = () => {
 
         <Route path="/parceiro-dashboard" element={<PartnerDashboard />} />
         <Route path="/parceiro-upload" element={<PartnerUpload />} />
-        <Route path="/upscaler-arcano" element={<UpscalerArcano />} />
+        <Route path="/upscaler-arcano" element={<UpscalerArcanoVersionSelect />} />
+        <Route path="/ferramenta-ia-artes/upscaller-arcano" element={<UpscalerArcanoVersionSelect />} />
+        <Route path="/ferramenta-ia-artes/upscaller-arcano-v1" element={<UpscalerArcanoV1 />} />
+        <Route path="/ferramenta-ia-artes/upscaller-arcano-v1-5" element={<UpscalerArcanoV1_5 />} />
         <Route path="/forja-selos-3d" element={<ForjaSelos3D />} />
         <Route path="/mudar-roupa" element={<MudarRoupa />} />
         <Route path="/mudar-pose" element={<MudarPose />} />
