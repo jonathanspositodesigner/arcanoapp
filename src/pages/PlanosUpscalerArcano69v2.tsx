@@ -864,7 +864,7 @@ const PlanosUpscalerArcano69v2 = () => {
               
               {/* Versão MOBILE - Carrossel */}
               <div className="md:hidden px-6">
-                <Carousel className="w-full max-w-xs mx-auto">
+                <Carousel opts={{ watchDrag: false }} className="w-full max-w-xs mx-auto">
                   <CarouselContent>
                     {userResults.map((result, index) => (
                       <CarouselItem key={index}>
