@@ -112,6 +112,7 @@ import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
+import { useServiceWorkerUpdate } from "./hooks/useServiceWorkerUpdate";
 
 
 const queryClient = new QueryClient();
@@ -125,6 +126,9 @@ const AppContent = () => {
   
   // Capture UTM parameters on app load
   useUtmTracker();
+  
+  // Auto-update Service Worker and clean old caches on each session
+  useServiceWorkerUpdate();
   
 
   return (
