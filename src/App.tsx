@@ -104,6 +104,7 @@ import AdminPremiumMusicos from "./pages/AdminPremiumMusicos";
 import SucessoArtesMusicos from "./pages/SucessoArtesMusicos";
 import PlanosUpscalerArcano from "./pages/PlanosUpscalerArcano";
 import PlanosUpscalerArcano69 from "./pages/PlanosUpscalerArcano69v2";
+import PlanosUpscalerArcano69ES from "./pages/PlanosUpscalerArcano69ES";
 import PlanosForjaSelos3D from "./pages/PlanosForjaSelos3D";
 import UpscalerArcanoTool from "./pages/UpscalerArcanoTool";
 import UpscalerRunpod from "./pages/UpscalerRunpod";
@@ -246,6 +247,7 @@ const AppContent = () => {
         <Route path="/aguardando-pagamento-musicos" element={<AguardandoPagamentoMusicos />} />
         <Route path="/planos-upscaler-arcano" element={<PlanosUpscalerArcano />} />
         <Route path="/planos-upscaler-arcano-69" element={<PlanosUpscalerArcano69 />} />
+        <Route path="/planos-upscaler-arcano-69-es" element={<PlanosUpscalerArcano69ES />} />
         <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
         <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
         <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
