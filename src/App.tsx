@@ -107,7 +107,6 @@ import PlanosForjaSelos3D from "./pages/PlanosForjaSelos3D";
 import UpscalerArcanoTool from "./pages/UpscalerArcanoTool";
 import UpscalerRunpod from "./pages/UpscalerRunpod";
 import AguardandoPagamentoMusicos from "./pages/AguardandoPagamentoMusicos";
-import TesteIframe from "./pages/TesteIframe";
 import GlobalImportProgress from "./components/GlobalImportProgress";
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
@@ -240,7 +239,6 @@ const AppContent = () => {
         <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
         <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
         <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
-        <Route path="/teste-iframe" element={<TesteIframe />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
