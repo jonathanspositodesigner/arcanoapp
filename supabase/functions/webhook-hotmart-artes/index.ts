@@ -9,16 +9,16 @@ const corsHeaders = {
 const APPROVED_EVENTS = [
   'PURCHASE_APPROVED',
   'PURCHASE_COMPLETE',
-  'PURCHASE_PROTEST',
-  'PURCHASE_REFUNDED', // Para cancelamento
 ]
 
-// Eventos de cancelamento/reembolso
+// Eventos de cancelamento/reembolso/suspensão
 const CANCEL_EVENTS = [
   'PURCHASE_REFUNDED',
   'PURCHASE_CHARGEBACK',
   'PURCHASE_CANCELED',
   'PURCHASE_EXPIRED',
+  'PURCHASE_PROTEST',    // Disputa - suspende acesso
+  'PURCHASE_DELAYED',    // Pagamento atrasado
 ]
 
 // Mapeamento de Product ID Hotmart para pack e tipo de acesso
@@ -440,7 +440,7 @@ Deno.serve(async (req) => {
     }
 
     // Check if it's an approved purchase event
-    if (!event || !APPROVED_EVENTS.includes(event) || event === 'PURCHASE_REFUNDED') {
+    if (!event || !APPROVED_EVENTS.includes(event)) {
       console.log(`\n⏭️ [${requestId}] Evento ignorado: ${event}`)
       await logWebhook(supabase, payload, status, productId, email, 'skipped', 'ignored_event')
       return new Response(JSON.stringify({ success: true, message: 'Event ignored' }), {
