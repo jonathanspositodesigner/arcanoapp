@@ -8,7 +8,7 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
 import upscalerV1Image from "@/assets/upscaler-v1-card.png";
-import upscalerV15Image from "@/assets/upscaler-v1-5-card.png";
+import upscalerV2Image from "@/assets/upscaler-v1-5-card.png";
 
 const UpscalerArcanoVersionSelect = () => {
   const navigate = useNavigate();
@@ -121,7 +121,7 @@ const UpscalerArcanoVersionSelect = () => {
   }
 
   const now = new Date();
-  const isV1_5Unlocked = unlockDate ? now >= unlockDate : false;
+  const isV2Unlocked = unlockDate ? now >= unlockDate : false;
   
   // Calculate days remaining
   const daysRemaining = unlockDate 
@@ -205,30 +205,30 @@ const UpscalerArcanoVersionSelect = () => {
             </div>
           </Card>
 
-          {/* V1.5 Card */}
+          {/* V2.0 Card */}
           <Card 
             className={`relative overflow-hidden transition-all ${
               isArcanoUnlimitedOnly
                 ? 'bg-gradient-to-br from-orange-900/50 to-red-800/30 border-orange-500/30 hover:border-orange-400/50 cursor-pointer group'
-                : isV1_5Unlocked 
+                : isV2Unlocked 
                   ? 'bg-gradient-to-br from-yellow-900/50 to-orange-800/30 border-yellow-500/30 hover:border-yellow-400/50 cursor-pointer group'
                   : 'bg-gradient-to-br from-gray-900/50 to-gray-800/30 border-gray-600/30 cursor-not-allowed'
             }`}
             onClick={() => {
               if (isArcanoUnlimitedOnly) return; // Prevent card click, use button instead
-              if (isV1_5Unlocked) navigate("/ferramenta-ia-artes/upscaller-arcano-v1-5");
+              if (isV2Unlocked) navigate("/ferramenta-ia-artes/upscaller-arcano-v2");
             }}
           >
             {/* Image with overlay if locked */}
             <div className="aspect-[3/4] overflow-hidden relative">
               <img 
-                src={upscalerV15Image} 
-                alt="Upscaler Arcano v1.5" 
+                src={upscalerV2Image} 
+                alt="Upscaler Arcano v2.0" 
                 className={`w-full h-full object-cover transition-transform duration-300 ${
-                  isV1_5Unlocked || isArcanoUnlimitedOnly ? 'group-hover:scale-105' : 'grayscale'
+                  isV2Unlocked || isArcanoUnlimitedOnly ? 'group-hover:scale-105' : 'grayscale'
                 }`}
               />
-              {!isV1_5Unlocked && !isArcanoUnlimitedOnly && (
+              {!isV2Unlocked && !isArcanoUnlimitedOnly && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                   <Lock className="h-16 w-16 text-gray-400" />
                 </div>
@@ -255,7 +255,7 @@ const UpscalerArcanoVersionSelect = () => {
                   <Sparkles className="h-3 w-3" />
                   UPGRADE
                 </div>
-              ) : isV1_5Unlocked ? (
+              ) : isV2Unlocked ? (
                 <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
                   <Unlock className="h-3 w-3" />
                   Disponível
@@ -271,11 +271,11 @@ const UpscalerArcanoVersionSelect = () => {
             {/* Version Badge - top left */}
             <div className="absolute top-4 left-4">
               <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg ${
-                isV1_5Unlocked || isArcanoUnlimitedOnly
+                isV2Unlocked || isArcanoUnlimitedOnly
                   ? 'bg-white text-orange-600'
                   : 'bg-white/80 text-gray-700'
               }`}>
-                v1.5
+                v2.0
               </div>
             </div>
 
@@ -286,7 +286,7 @@ const UpscalerArcanoVersionSelect = () => {
               </h2>
               
               {/* Unlock Info - only for pack owners waiting 7 days */}
-              {!isV1_5Unlocked && !isArcanoUnlimitedOnly && unlockDate && (
+              {!isV2Unlocked && !isArcanoUnlimitedOnly && unlockDate && (
                 <div className="bg-gray-800/50 rounded-lg p-3 mb-3 border border-gray-700/50">
                   <p className="text-sm text-gray-300">
                     <span className="font-medium text-yellow-400">Liberado a partir de:</span>{' '}
@@ -309,7 +309,7 @@ const UpscalerArcanoVersionSelect = () => {
                 >
                   Adquirir Versão Atualizada
                 </Button>
-              ) : isV1_5Unlocked ? (
+              ) : isV2Unlocked ? (
                 <Button 
                   className="w-full bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-500 hover:to-orange-400 text-white group-hover:scale-[1.02] transition-transform"
                 >
