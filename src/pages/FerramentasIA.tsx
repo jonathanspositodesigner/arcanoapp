@@ -149,6 +149,11 @@ const FerramentasIA = () => {
 
   const getPurchaseRoute = (tool: ToolData) => {
     if (tool.slug === "upscaller-arcano") {
+      // Se veio do domínio arcanoappes, abre página ES com preço em dólar
+      const hostname = window.location.hostname;
+      if (hostname.includes("arcanoappes")) {
+        return "/planos-upscaler-arcano-69-es";
+      }
       return "/planos-upscaler-arcano-69";
     }
     if (tool.slug === "forja-selos-3d-ilimitada") {
