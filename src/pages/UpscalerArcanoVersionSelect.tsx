@@ -418,7 +418,7 @@ const UpscalerArcanoVersionSelect = () => {
                       className="w-full bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-500 hover:to-red-400 text-white group-hover:scale-[1.02] transition-transform"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate("/planos-upscaler-arcano-69");
+                        navigate("/planos-upscaler-arcano");
                       }}
                     >
                       Adquirir Versão Atualizada
