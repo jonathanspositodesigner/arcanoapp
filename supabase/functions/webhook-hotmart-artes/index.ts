@@ -528,22 +528,76 @@ Deno.serve(async (req) => {
     console.log(`   ├─ Has Bonus: ${mapping.hasBonusAccess}`)
     console.log(`   ├─ Is Ferramenta IA: ${mapping.isFerramentaIA}`)
 
-    // Check if user exists
-    const { data: authUsers } = await supabase.auth.admin.listUsers()
-    let authUser = authUsers?.users?.find(u => u.email?.toLowerCase() === email)
+    // ESTRATÉGIA ROBUSTA: Tentar criar primeiro, se falhar buscar usuário existente
+    let authUser: any = null
     let isNewUser = false
 
-    if (!authUser) {
-      console.log(`\n👤 [${requestId}] Criando novo usuário...`)
-      
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email,
-        password: email,
-        email_confirm: true,
-        user_metadata: { name }
-      })
+    console.log(`\n👤 [${requestId}] Processando usuário: ${email}`)
 
-      if (createError) {
+    // Tentar criar o usuário
+    const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+      email,
+      password: email,
+      email_confirm: true,
+      user_metadata: { name }
+    })
+
+    if (createError) {
+      // Verificar se é erro de email já existente
+      const isEmailExists = createError.code === 'email_exists' || 
+                            createError.message?.includes('already been registered') ||
+                            createError.message?.includes('already exists')
+      
+      if (isEmailExists) {
+        console.log(`   ├─ ⚠️ Email já existe, buscando usuário...`)
+        
+        // Método 1: Buscar via profiles (mais rápido)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .ilike('email', email)
+          .maybeSingle()
+        
+        if (profile?.id) {
+          console.log(`   ├─ ✅ Encontrado via profiles: ${profile.id}`)
+          const { data: { user } } = await supabase.auth.admin.getUserById(profile.id)
+          authUser = user
+        }
+        
+        // Método 2: Fallback - buscar paginado em auth.users
+        if (!authUser) {
+          console.log(`   ├─ 🔍 Buscando em auth.users (paginado)...`)
+          let page = 1
+          const perPage = 1000
+          
+          while (!authUser && page <= 10) {
+            const { data: usersPage } = await supabase.auth.admin.listUsers({
+              page,
+              perPage
+            })
+            
+            if (!usersPage?.users?.length) break
+            
+            authUser = usersPage.users.find(u => u.email?.toLowerCase() === email)
+            if (authUser) {
+              console.log(`   ├─ ✅ Encontrado na página ${page}: ${authUser.id}`)
+            }
+            page++
+          }
+        }
+        
+        if (!authUser) {
+          console.error(`   └─ ❌ Usuário não encontrado após busca exaustiva`)
+          await logWebhook(supabase, payload, status, productId, email, 'error', 'user_not_found', 'User exists but could not be found')
+          return new Response(JSON.stringify({ error: 'User exists but could not be found' }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        
+        console.log(`   └─ ✅ Usuário existente encontrado: ${authUser.id}`)
+      } else {
+        // Outro tipo de erro
         console.error(`   └─ ❌ Erro ao criar usuário:`, createError)
         await logWebhook(supabase, payload, status, productId, email, 'error', 'user_creation_error', createError.message)
         return new Response(JSON.stringify({ error: 'Failed to create user' }), {
@@ -551,12 +605,10 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
       }
-
+    } else {
       authUser = newUser.user
       isNewUser = true
-      console.log(`   └─ ✅ Usuário criado: ${authUser?.id}`)
-    } else {
-      console.log(`\n👤 [${requestId}] Usuário existente: ${authUser.id}`)
+      console.log(`   └─ ✅ Novo usuário criado: ${authUser?.id}`)
     }
 
     const userId = authUser!.id
