@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Play } from "lucide-react";
-import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 
 interface VideoLesson {
   titleKey: string;
@@ -31,12 +31,12 @@ const lessons: VideoLesson[] = [
   }
 ];
 
-const UpscalerArcano = () => {
+const UpscalerArcanoV1 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
-  const { user, isPremium, planType, isLoading } = usePremiumStatus();
+  const { user, hasAccessToPack, isLoading } = usePremiumArtesStatus();
 
-  const hasAccess = isPremium && planType === "arcano_unlimited";
+  const hasAccess = hasAccessToPack('upscaller-arcano');
 
   useEffect(() => {
     if (!isLoading && (!user || !hasAccess)) {
@@ -64,14 +64,14 @@ const UpscalerArcano = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/ferramentas-ia")}
+            onClick={() => navigate("/ferramenta-ia-artes/upscaller-arcano")}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              {t('upscalerLessons.title')}
+              Upscaler Arcano v1.0
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
               {t('upscalerLessons.description')}
@@ -122,4 +122,4 @@ const UpscalerArcano = () => {
   );
 };
 
-export default UpscalerArcano;
+export default UpscalerArcanoV1;
