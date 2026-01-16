@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Lock, Unlock, Sparkles } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
 import upscalerV1Image from "@/assets/upscaler-v1-card.png";
 import upscalerV15Image from "@/assets/upscaler-v1-5-card.png";
@@ -13,11 +14,13 @@ const UpscalerArcanoVersionSelect = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
+  const { planType, isLoading: promptsLoading } = usePremiumStatus();
   
   const [purchaseDate, setPurchaseDate] = useState<Date | null>(null);
   const [isLoadingPurchase, setIsLoadingPurchase] = useState(true);
 
-  const hasAccess = hasAccessToPack('upscaller-arcano');
+  const hasUnlimitedAccess = planType === "arcano_unlimited";
+  const hasAccess = hasUnlimitedAccess || hasAccessToPack('upscaller-arcano');
 
   // Fetch purchase date for 7-day lock calculation
   useEffect(() => {
@@ -28,18 +31,35 @@ const UpscalerArcanoVersionSelect = () => {
       }
 
       try {
+        // 1) Prefer user_pack_purchases
         const { data, error } = await supabase
           .from('user_pack_purchases')
           .select('purchased_at')
           .eq('user_id', user.id)
-          .eq('pack_slug', 'upscaller-arcano')
+          .in('pack_slug', ['upscaller-arcano', 'upscaler-arcano'])
           .eq('is_active', true)
           .order('purchased_at', { ascending: true })
           .limit(1)
           .maybeSingle();
 
-        if (!error && data) {
+        if (!error && data?.purchased_at) {
           setPurchaseDate(new Date(data.purchased_at));
+          return;
+        }
+
+        // 2) Fallback: subscription-based access (if applicable)
+        const { data: premiumData, error: premiumError } = await supabase
+          .from('premium_artes_users')
+          .select('subscribed_at, created_at')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (!premiumError && premiumData) {
+          const dt = premiumData.subscribed_at || premiumData.created_at;
+          if (dt) setPurchaseDate(new Date(dt));
         }
       } catch (err) {
         console.error('Error fetching purchase date:', err);
@@ -53,26 +73,7 @@ const UpscalerArcanoVersionSelect = () => {
     }
   }, [user, premiumLoading]);
 
-  // Debug logs
-  useEffect(() => {
-    console.log('UpscalerArcanoVersionSelect Debug:', {
-      user: user?.id,
-      hasAccess,
-      premiumLoading,
-      isLoadingPurchase,
-      purchaseDate
-    });
-  }, [user, hasAccess, premiumLoading, isLoadingPurchase, purchaseDate]);
-
-  // Redirect if no access
-  useEffect(() => {
-    if (!premiumLoading && !isLoadingPurchase && (!user || !hasAccess)) {
-      console.log('Redirecting to /ferramentas-ia because:', { user: !!user, hasAccess });
-      navigate("/ferramentas-ia");
-    }
-  }, [premiumLoading, isLoadingPurchase, user, hasAccess, navigate]);
-
-  const isLoading = premiumLoading || isLoadingPurchase;
+  const isLoading = premiumLoading || promptsLoading || isLoadingPurchase;
 
   if (isLoading) {
     return (
@@ -82,8 +83,33 @@ const UpscalerArcanoVersionSelect = () => {
     );
   }
 
-  if (!user || !hasAccess) {
-    return null;
+  // Não redireciona silenciosamente (isso parecia que “não saiu da página”)
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
+          <h1 className="text-2xl font-bold text-foreground">Upscaler Arcano</h1>
+          <p className="text-muted-foreground">Faça login para acessar as versões.</p>
+          <Button onClick={() => navigate("/login-artes")}>
+            Fazer login
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
+          <h1 className="text-2xl font-bold text-foreground">Upscaler Arcano</h1>
+          <p className="text-muted-foreground">Você ainda não tem acesso a esta ferramenta.</p>
+          <Button onClick={() => navigate("/planos-upscaler-arcano")}>
+            Ver planos
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   // Calculate unlock date (7 days after purchase)

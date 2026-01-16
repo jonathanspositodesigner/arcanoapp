@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Play } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 
 interface VideoLesson {
   titleKey: string;
@@ -35,16 +36,18 @@ const UpscalerArcanoV1 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, hasAccessToPack, isLoading } = usePremiumArtesStatus();
+  const { planType, isLoading: promptsLoading } = usePremiumStatus();
 
-  const hasAccess = hasAccessToPack('upscaller-arcano');
+  const hasUnlimitedAccess = planType === "arcano_unlimited";
+  const hasAccess = hasUnlimitedAccess || hasAccessToPack('upscaller-arcano');
 
   useEffect(() => {
-    if (!isLoading && (!user || !hasAccess)) {
+    if (!isLoading && !promptsLoading && (!user || !hasAccess)) {
       navigate("/ferramentas-ia");
     }
-  }, [isLoading, user, hasAccess, navigate]);
+  }, [isLoading, promptsLoading, user, hasAccess, navigate]);
 
-  if (isLoading) {
+  if (isLoading || promptsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

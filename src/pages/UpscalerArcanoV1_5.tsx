@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Play } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
 
 interface VideoLesson {
@@ -22,11 +23,13 @@ const UpscalerArcanoV1_5 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
+  const { planType, isLoading: promptsLoading } = usePremiumStatus();
   
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isLoadingCheck, setIsLoadingCheck] = useState(true);
 
-  const hasAccess = hasAccessToPack('upscaller-arcano');
+  const hasUnlimitedAccess = planType === "arcano_unlimited";
+  const hasAccess = hasUnlimitedAccess || hasAccessToPack('upscaller-arcano');
 
   // Check if 7 days have passed since purchase
   useEffect(() => {
@@ -37,22 +40,43 @@ const UpscalerArcanoV1_5 = () => {
       }
 
       try {
+        // 1) Prefer user_pack_purchases
         const { data, error } = await supabase
           .from('user_pack_purchases')
           .select('purchased_at')
           .eq('user_id', user.id)
-          .eq('pack_slug', 'upscaller-arcano')
+          .in('pack_slug', ['upscaller-arcano', 'upscaler-arcano'])
           .eq('is_active', true)
           .order('purchased_at', { ascending: true })
           .limit(1)
           .maybeSingle();
 
-        if (!error && data) {
+        if (!error && data?.purchased_at) {
           const purchaseDate = new Date(data.purchased_at);
           const unlockDate = new Date(purchaseDate);
           unlockDate.setDate(unlockDate.getDate() + 7);
-          
           setIsUnlocked(new Date() >= unlockDate);
+          return;
+        }
+
+        // 2) Fallback: subscription-based access (if applicable)
+        const { data: premiumData, error: premiumError } = await supabase
+          .from('premium_artes_users')
+          .select('subscribed_at, created_at')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (!premiumError && premiumData) {
+          const dt = premiumData.subscribed_at || premiumData.created_at;
+          if (dt) {
+            const purchaseDate = new Date(dt);
+            const unlockDate = new Date(purchaseDate);
+            unlockDate.setDate(unlockDate.getDate() + 7);
+            setIsUnlocked(new Date() >= unlockDate);
+          }
         }
       } catch (err) {
         console.error('Error checking unlock status:', err);
@@ -68,16 +92,16 @@ const UpscalerArcanoV1_5 = () => {
 
   // Redirect if no access or not unlocked
   useEffect(() => {
-    if (!premiumLoading && !isLoadingCheck) {
+    if (!premiumLoading && !promptsLoading && !isLoadingCheck) {
       if (!user || !hasAccess) {
         navigate("/ferramentas-ia");
       } else if (!isUnlocked) {
         navigate("/ferramenta-ia-artes/upscaller-arcano");
       }
     }
-  }, [premiumLoading, isLoadingCheck, user, hasAccess, isUnlocked, navigate]);
+  }, [premiumLoading, promptsLoading, isLoadingCheck, user, hasAccess, isUnlocked, navigate]);
 
-  const isLoading = premiumLoading || isLoadingCheck;
+  const isLoading = premiumLoading || promptsLoading || isLoadingCheck;
 
   if (isLoading) {
     return (
