@@ -20,7 +20,9 @@ const UpscalerArcanoVersionSelect = () => {
   const [isLoadingPurchase, setIsLoadingPurchase] = useState(true);
 
   const hasUnlimitedAccess = planType === "arcano_unlimited";
-  const hasAccess = hasUnlimitedAccess || hasAccessToPack('upscaller-arcano');
+  const hasUpscalerPack = hasAccessToPack('upscaller-arcano');
+  const hasAccess = hasUnlimitedAccess || hasUpscalerPack;
+  const isArcanoUnlimitedOnly = hasUnlimitedAccess && !hasUpscalerPack;
 
   // Fetch purchase date for 7-day lock calculation
   useEffect(() => {
@@ -203,14 +205,19 @@ const UpscalerArcanoVersionSelect = () => {
             </div>
           </Card>
 
-          {/* V1.5 Card - Locked for 7 days */}
+          {/* V1.5 Card */}
           <Card 
             className={`relative overflow-hidden transition-all ${
-              isV1_5Unlocked 
-                ? 'bg-gradient-to-br from-yellow-900/50 to-orange-800/30 border-yellow-500/30 hover:border-yellow-400/50 cursor-pointer group'
-                : 'bg-gradient-to-br from-gray-900/50 to-gray-800/30 border-gray-600/30 cursor-not-allowed'
+              isArcanoUnlimitedOnly
+                ? 'bg-gradient-to-br from-orange-900/50 to-red-800/30 border-orange-500/30 hover:border-orange-400/50 cursor-pointer group'
+                : isV1_5Unlocked 
+                  ? 'bg-gradient-to-br from-yellow-900/50 to-orange-800/30 border-yellow-500/30 hover:border-yellow-400/50 cursor-pointer group'
+                  : 'bg-gradient-to-br from-gray-900/50 to-gray-800/30 border-gray-600/30 cursor-not-allowed'
             }`}
-            onClick={() => isV1_5Unlocked && navigate("/ferramenta-ia-artes/upscaller-arcano-v1-5")}
+            onClick={() => {
+              if (isArcanoUnlimitedOnly) return; // Prevent card click, use button instead
+              if (isV1_5Unlocked) navigate("/ferramenta-ia-artes/upscaller-arcano-v1-5");
+            }}
           >
             {/* Image with overlay if locked */}
             <div className="aspect-[3/4] overflow-hidden relative">
@@ -218,19 +225,37 @@ const UpscalerArcanoVersionSelect = () => {
                 src={upscalerV15Image} 
                 alt="Upscaler Arcano v1.5" 
                 className={`w-full h-full object-cover transition-transform duration-300 ${
-                  isV1_5Unlocked ? 'group-hover:scale-105' : 'grayscale'
+                  isV1_5Unlocked || isArcanoUnlimitedOnly ? 'group-hover:scale-105' : 'grayscale'
                 }`}
               />
-              {!isV1_5Unlocked && (
+              {!isV1_5Unlocked && !isArcanoUnlimitedOnly && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                   <Lock className="h-16 w-16 text-gray-400" />
                 </div>
               )}
+              
+              {/* Tags at bottom of image - NOVO, MAIS RÁPIDO, MAIOR FIDELIDADE */}
+              <div className="absolute bottom-0 left-0 right-0 p-3 flex flex-wrap gap-1.5 bg-gradient-to-t from-black/70 to-transparent">
+                <div className="flex items-center gap-1 bg-yellow-500/30 backdrop-blur-sm text-yellow-300 px-2 py-0.5 rounded-full text-[10px] font-medium">
+                  <Sparkles className="h-2.5 w-2.5" /> NOVO
+                </div>
+                <div className="flex items-center gap-1 bg-blue-500/30 backdrop-blur-sm text-blue-300 px-2 py-0.5 rounded-full text-[10px] font-medium">
+                  <Zap className="h-2.5 w-2.5" /> MAIS RÁPIDO
+                </div>
+                <div className="flex items-center gap-1 bg-purple-500/30 backdrop-blur-sm text-purple-300 px-2 py-0.5 rounded-full text-[10px] font-medium">
+                  <Target className="h-2.5 w-2.5" /> MAIOR FIDELIDADE
+                </div>
+              </div>
             </div>
 
-            {/* Lock/Unlock Badge */}
+            {/* Status Badge - top right */}
             <div className="absolute top-4 right-4">
-              {isV1_5Unlocked ? (
+              {isArcanoUnlimitedOnly ? (
+                <div className="flex items-center gap-1.5 bg-orange-500/20 backdrop-blur-sm text-orange-400 px-3 py-1 rounded-full text-xs font-medium">
+                  <Sparkles className="h-3 w-3" />
+                  UPGRADE
+                </div>
+              ) : isV1_5Unlocked ? (
                 <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
                   <Unlock className="h-3 w-3" />
                   Disponível
@@ -243,26 +268,10 @@ const UpscalerArcanoVersionSelect = () => {
               )}
             </div>
 
-            {/* Badges - NOVO, MAIS RÁPIDO, MAIOR FIDELIDADE */}
-            <div className="absolute top-4 left-4 flex flex-col gap-1.5">
-              <div className="flex items-center gap-1.5 bg-yellow-500/20 backdrop-blur-sm text-yellow-400 px-3 py-1 rounded-full text-xs font-medium">
-                <Sparkles className="h-3 w-3" />
-                NOVO
-              </div>
-              <div className="flex items-center gap-1.5 bg-blue-500/20 backdrop-blur-sm text-blue-400 px-3 py-1 rounded-full text-xs font-medium">
-                <Zap className="h-3 w-3" />
-                MAIS RÁPIDO
-              </div>
-              <div className="flex items-center gap-1.5 bg-purple-500/20 backdrop-blur-sm text-purple-400 px-3 py-1 rounded-full text-xs font-medium">
-                <Target className="h-3 w-3" />
-                MAIOR FIDELIDADE
-              </div>
-            </div>
-
-            {/* Version Badge */}
-            <div className="absolute top-16 left-4">
+            {/* Version Badge - top left */}
+            <div className="absolute top-4 left-4">
               <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg ${
-                isV1_5Unlocked 
+                isV1_5Unlocked || isArcanoUnlimitedOnly
                   ? 'bg-white text-orange-600'
                   : 'bg-white/80 text-gray-700'
               }`}>
@@ -276,8 +285,8 @@ const UpscalerArcanoVersionSelect = () => {
                 Upscaler Arcano
               </h2>
               
-              {/* Unlock Info */}
-              {!isV1_5Unlocked && unlockDate && (
+              {/* Unlock Info - only for pack owners waiting 7 days */}
+              {!isV1_5Unlocked && !isArcanoUnlimitedOnly && unlockDate && (
                 <div className="bg-gray-800/50 rounded-lg p-3 mb-3 border border-gray-700/50">
                   <p className="text-sm text-gray-300">
                     <span className="font-medium text-yellow-400">Liberado a partir de:</span>{' '}
@@ -289,16 +298,31 @@ const UpscalerArcanoVersionSelect = () => {
                 </div>
               )}
               
-              <Button 
-                disabled={!isV1_5Unlocked}
-                className={`w-full ${
-                  isV1_5Unlocked 
-                    ? 'bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-500 hover:to-orange-400 text-white group-hover:scale-[1.02] transition-transform'
-                    : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {isV1_5Unlocked ? 'Acessar Aulas' : 'Bloqueado'}
-              </Button>
+              {/* Button logic based on access type */}
+              {isArcanoUnlimitedOnly ? (
+                <Button 
+                  className="w-full bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-500 hover:to-red-400 text-white group-hover:scale-[1.02] transition-transform"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate("/planos-upscaler-arcano");
+                  }}
+                >
+                  Adquirir Versão Atualizada
+                </Button>
+              ) : isV1_5Unlocked ? (
+                <Button 
+                  className="w-full bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-500 hover:to-orange-400 text-white group-hover:scale-[1.02] transition-transform"
+                >
+                  Acessar Aulas
+                </Button>
+              ) : (
+                <Button 
+                  disabled
+                  className="w-full bg-gray-700 text-gray-400 cursor-not-allowed"
+                >
+                  Bloqueado
+                </Button>
+              )}
             </div>
           </Card>
         </div>
