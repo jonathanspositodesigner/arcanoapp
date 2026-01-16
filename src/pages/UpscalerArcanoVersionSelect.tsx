@@ -322,12 +322,25 @@ const UpscalerArcanoVersionSelect = () => {
                     src={getVersionImage(version, index)} 
                     alt={`Upscaler Arcano ${version.name}`} 
                     className={`w-full h-full object-cover transition-transform duration-300 ${
-                      isUnlocked || isArcanoUnlimitedOnly ? 'group-hover:scale-105' : 'grayscale'
+                      isUnlocked && !(version.unlock_days > 0 && isArcanoUnlimitedOnly) 
+                        ? 'group-hover:scale-105' 
+                        : version.unlock_days > 0 && isArcanoUnlimitedOnly 
+                          ? '' 
+                          : 'grayscale'
                     }`}
                   />
-                  {!isUnlocked && !isArcanoUnlimitedOnly && version.unlock_days > 0 && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <Lock className="h-16 w-16 text-gray-400" />
+                  {/* Cadeado para usuários bloqueados OU Arcano Unlimited que precisam fazer upgrade */}
+                  {((!isUnlocked && version.unlock_days > 0) || (version.unlock_days > 0 && isArcanoUnlimitedOnly)) && (
+                    <div className={`absolute inset-0 flex items-center justify-center ${
+                      isArcanoUnlimitedOnly 
+                        ? 'bg-black/40' 
+                        : 'bg-black/60'
+                    }`}>
+                      <Lock className={`h-16 w-16 ${
+                        isArcanoUnlimitedOnly 
+                          ? 'text-orange-400' 
+                          : 'text-gray-400'
+                      }`} />
                     </div>
                   )}
                   
