@@ -21,17 +21,53 @@ const CANCEL_EVENTS = [
   'PURCHASE_DELAYED',    // Pagamento atrasado
 ]
 
-// Mapeamento de Product ID Hotmart para pack e tipo de acesso
-// TODO: Atualizar com os IDs reais da Hotmart
-const HOTMART_PRODUCT_MAPPING: Record<string, {
+// Interface para mapeamento de produto
+interface ProductMapping {
   packSlug: string
   accessType: '6_meses' | '1_ano' | 'vitalicio'
   hasBonusAccess: boolean
   isFerramentaIA: boolean
-}> = {
-  // Upscaler Arcano - Versão Espanhol
-  // O ID do produto será adicionado quando você configurar na Hotmart
-  // Exemplo: 'PRODUTO_ID_HOTMART': { packSlug: 'upscaller-arcano', accessType: 'vitalicio', hasBonusAccess: true, isFerramentaIA: true }
+}
+
+// Função para buscar mapeamento de produto Hotmart do banco de dados
+async function findHotmartProductMapping(supabase: any, productId: string, requestId: string): Promise<ProductMapping | null> {
+  console.log(`   ├─ [${requestId}] 🔍 Buscando pack para Hotmart Product ID: ${productId}`)
+  
+  try {
+    const { data: packs, error } = await supabase
+      .from('artes_packs')
+      .select('slug, type, tool_versions')
+    
+    if (error) {
+      console.error(`   ├─ [${requestId}] ❌ Erro buscando packs:`, error)
+      return null
+    }
+
+    for (const pack of packs || []) {
+      const isFerramentaIA = pack.type === 'ferramentas_ia'
+      
+      // Verificar em tool_versions (para ferramentas IA)
+      if (pack.tool_versions && Array.isArray(pack.tool_versions)) {
+        for (const version of pack.tool_versions) {
+          if (version.webhook?.hotmart_product_id_vitalicio === productId) {
+            console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (vitalicio) via tool_versions [Hotmart]`)
+            return { 
+              packSlug: pack.slug, 
+              accessType: 'vitalicio', 
+              hasBonusAccess: true, 
+              isFerramentaIA 
+            }
+          }
+        }
+      }
+    }
+
+    console.log(`   ├─ [${requestId}] ⚠️ Nenhum pack encontrado para Hotmart Product ID: ${productId}`)
+    return null
+  } catch (e) {
+    console.error(`   ├─ [${requestId}] ❌ Exceção buscando packs:`, e)
+    return null
+  }
 }
 
 interface HotmartWebhookPayload {
@@ -467,12 +503,16 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Get mapping from config or use default for Upscaler Arcano
-    let mapping = productId ? HOTMART_PRODUCT_MAPPING[productId] : null
+    // Buscar mapeamento do banco de dados
+    let mapping: ProductMapping | null = null
     
-    // If no mapping found, assume it's Upscaler Arcano (since that's the only product for now)
+    if (productId) {
+      mapping = await findHotmartProductMapping(supabase, productId, requestId)
+    }
+    
+    // Se não encontrou no banco, usar mapeamento padrão para Upscaler Arcano
     if (!mapping) {
-      console.log(`   ├─ [${requestId}] ⚠️ Mapeamento não encontrado para Product ID: ${productId}`)
+      console.log(`   ├─ [${requestId}] ⚠️ Mapeamento não encontrado no banco para Product ID: ${productId}`)
       console.log(`   ├─ [${requestId}] 🎯 Usando mapeamento padrão: Upscaler Arcano (vitalício)`)
       mapping = {
         packSlug: 'upscaller-arcano',
