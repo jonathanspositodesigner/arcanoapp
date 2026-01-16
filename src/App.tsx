@@ -93,6 +93,7 @@ import ForjaSelos3DArtes from "./pages/ForjaSelos3DArtes";
 import TutorialArtes from "./pages/TutorialArtes";
 import FerramentaIAArtes from "./pages/FerramentaIAArtes";
 import FerramentasIA from "./pages/FerramentasIA";
+import FerramentasIAES from "./pages/FerramentasIAES";
 import AdminManagePromotions from "./pages/AdminManagePromotions";
 import AdminManageBlacklist from "./pages/AdminManageBlacklist";
 import AdminWebhookLogs from "./pages/AdminWebhookLogs";
@@ -235,6 +236,7 @@ const AppContent = () => {
         <Route path="/tutorial-artes/:slug" element={<TutorialArtes />} />
         <Route path="/ferramenta-ia-artes/:slug" element={<FerramentaIAArtes />} />
         <Route path="/ferramentas-ia" element={<FerramentasIA />} />
+        <Route path="/ferramentas-ia-es" element={<FerramentasIAES />} />
         <Route path="/admin-manage-promotions" element={<AdminManagePromotions />} />
         <Route path="/admin-blacklist" element={<AdminManageBlacklist />} />
         <Route path="/admin-webhook-logs" element={<AdminWebhookLogs />} />
