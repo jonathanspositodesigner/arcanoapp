@@ -164,7 +164,8 @@
     "versionNotFound": "Versão não encontrada",
     "versionNotFoundDesc": "A versão solicitada não existe.",
     "versionLocked": "Esta versão ainda está bloqueada.",
-    "unlocksOn": "Liberado em: {{date}} ({{days}} dias restantes)"
+    "unlocksOn": "Liberado em: {{date}} ({{days}} dias restantes)",
+    "lightVersionNotice": "Se o workflow não abrir no seu celular ou no seu computador, teste a versão light"
   },
   "upscalerTool": {
     "title": "Upscaler Arcano",

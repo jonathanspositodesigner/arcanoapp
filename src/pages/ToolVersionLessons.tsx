@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Play, ExternalLink, Lock } from "lucide-react";
+import { ArrowLeft, Play, ExternalLink, Lock, AlertTriangle, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -297,6 +297,24 @@ const ToolVersionLessons = () => {
             </p>
           </div>
         </div>
+
+        {/* Light Version Notice Banner */}
+        {toolSlug === 'upscaller-arcano' && lessons.length >= 5 && (
+          <div 
+            onClick={() => setSelectedLesson(4)}
+            className="mb-6 p-4 bg-gradient-to-r from-amber-500/20 to-orange-500/20 
+                       border border-amber-500/30 rounded-lg cursor-pointer 
+                       hover:border-amber-400/50 transition-all group"
+          >
+            <p className="text-amber-200 text-sm md:text-base flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 shrink-0" />
+              <span>
+                {t('toolLessons.lightVersionNotice')}
+              </span>
+              <ChevronRight className="h-4 w-4 ml-auto group-hover:translate-x-1 transition-transform" />
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Video Player Area */}
