@@ -48,12 +48,14 @@
       "logoHD": "Logo em alta resolução",
       "mockupSharp": "Mockup nítido e profissional",
       "oldPhotoRestored": "Foto antiga restaurada",
+      "foodPhotos": "fotos de comida com aspecto foodporn",
       "badges": {
         "photo": "FOTO",
         "seals3D": "Selos 3D",
         "logo": "Logo",
         "mockup": "Mockup",
-        "oldPhoto": "Foto Antiga"
+        "oldPhoto": "Foto Antiga",
+        "food": "Fotos de Alimentos"
       }
     },
     "targetAudience": {

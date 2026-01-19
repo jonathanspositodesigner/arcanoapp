@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import i18n from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -374,6 +375,11 @@ const PlanosUpscalerArcano69ES = () => {
 
   const TOOL_SLUG = "upscaller-arcano";
 
+  // Forçar idioma espanhol nesta página
+  useEffect(() => {
+    i18n.changeLanguage('es');
+  }, []);
+
   useEffect(() => {
     fetchToolData();
   }, []);
@@ -459,8 +465,8 @@ const PlanosUpscalerArcano69ES = () => {
     {
       before: upscalerFoodAntes,
       after: upscalerFoodDepois,
-      label: "fotos de comida con aspecto foodporn",
-      badge: "Fotos de Alimentos",
+      label: t('tools:upscaler.beforeAfter.foodPhotos'),
+      badge: t('tools:upscaler.beforeAfter.badges.food'),
       badgeColor: "from-red-500 to-orange-500"
     }
   ];
