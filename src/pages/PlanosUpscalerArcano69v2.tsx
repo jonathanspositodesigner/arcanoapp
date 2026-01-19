@@ -402,7 +402,7 @@ const PlanosUpscalerArcano69v2 = () => {
 
   const handlePurchase = () => {
     // Link fixo para o checkout de R$69,90
-    window.open(appendUtmToUrl("https://payfast.greenn.com.br/redirect/256102"), "_blank");
+    window.open(appendUtmToUrl("https://payfast.greenn.com.br/redirect/257117"), "_blank");
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
