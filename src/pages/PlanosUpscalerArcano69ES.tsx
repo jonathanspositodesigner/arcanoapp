@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import i18n from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,7 +60,8 @@ const FullscreenModal = ({
   beforeImage: string; 
   afterImage: string; 
 }) => {
-  const { t } = useTranslation();
+  const { t: tOriginal } = useTranslation();
+  const t = (key: string, options?: object) => tOriginal(key, { ...options, lng: 'es' });
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -130,7 +130,7 @@ const FullscreenModal = ({
         {/* Imagem "Depois" (background) */}
         <img 
           src={afterImage} 
-          alt="Depois" 
+          alt="Después" 
           className="absolute inset-0 w-full h-full object-contain bg-black"
         />
         
@@ -185,7 +185,8 @@ const BeforeAfterSlider = ({
   size?: "default" | "large";
   onZoomClick?: () => void;
 }) => {
-  const { t } = useTranslation();
+  const { t: tOriginal } = useTranslation();
+  const t = (key: string, options?: object) => tOriginal(key, { ...options, lng: 'es' });
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -230,7 +231,7 @@ const BeforeAfterSlider = ({
         {/* Imagem "Depois" (background) */}
         <img 
           src={afterImage} 
-          alt="Depois" 
+          alt="Después" 
           className="absolute inset-0 w-full h-full object-cover"
         />
         
@@ -340,7 +341,7 @@ const InfiniteCarousel = () => (
         <img 
           key={i} 
           src={img} 
-          alt={`Exemplo ${i + 1}`}
+          alt={`Ejemplo ${i + 1}`}
           className="h-52 md:h-48 w-auto rounded-xl object-cover flex-shrink-0 border border-white/10"
         />
       ))}
@@ -356,7 +357,8 @@ const InfiniteCarousel = () => (
 
 const PlanosUpscalerArcano69ES = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t: tOriginal } = useTranslation();
+  const t = (key: string, options?: object) => tOriginal(key, { ...options, lng: 'es' });
   const { user, isPremium, hasAccessToPack, isLoading: authLoading } = usePremiumArtesStatus();
   const [tool, setTool] = useState<ToolData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -375,10 +377,6 @@ const PlanosUpscalerArcano69ES = () => {
 
   const TOOL_SLUG = "upscaller-arcano";
 
-  // Forçar idioma espanhol nesta página
-  useEffect(() => {
-    i18n.changeLanguage('es');
-  }, []);
 
   useEffect(() => {
     fetchToolData();
