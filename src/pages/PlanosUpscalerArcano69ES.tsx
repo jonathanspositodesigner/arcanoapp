@@ -415,10 +415,10 @@ const PlanosUpscalerArcano69ES = () => {
     );
   }
 
-  // Preço em centavos de dólar para LATAM: $12.97 (1297 centavos)
-  const price = 1297;
-  const originalPrice = 1700; // $17.00 riscado
-  const installmentPrice = Math.ceil(price / 3); // $4.32
+  // Preço em centavos de dólar para LATAM: $9.90 (990 centavos)
+  const price = 990;
+  const originalPrice = 1297; // $12.97 riscado
+  const installmentPrice = Math.ceil(price / 3); // $3.30
 
   const beforeAfterExamples = [
     {

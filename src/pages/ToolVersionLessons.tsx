@@ -283,7 +283,7 @@ const ToolVersionLessons = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(`/ferramenta-ia-artes/${toolSlug}`)}
+            onClick={() => navigate(toolSelectPath)}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
