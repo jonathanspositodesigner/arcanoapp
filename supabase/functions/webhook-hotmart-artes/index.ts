@@ -670,9 +670,18 @@ Deno.serve(async (req) => {
       console.log(`   ├─ ✅ Novo acesso criado`)
     }
 
-    // Send welcome email for new users
-    if (isNewUser) {
+    // Send welcome email when:
+    // 1. New user OR
+    // 2. New pack access (user didn't have this pack before) OR
+    // 3. Pack was reactivated (was inactive, now active)
+    const wasInactive = existingPack && !existingPack.is_active
+    const shouldSendEmail = isNewUser || !existingPack || wasInactive
+
+    if (shouldSendEmail) {
+      console.log(`   ├─ 📧 Enviando email de boas-vindas (isNewUser: ${isNewUser}, newAccess: ${!existingPack}, reactivated: ${wasInactive})`)
       await sendWelcomeEmail(supabase, email, name, productName, requestId)
+    } else {
+      console.log(`   ├─ 📧 Email não enviado (usuário existente com acesso já ativo para este pack)`)
     }
 
     // Log success
