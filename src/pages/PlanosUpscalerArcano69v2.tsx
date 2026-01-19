@@ -415,9 +415,9 @@ const PlanosUpscalerArcano69v2 = () => {
     );
   }
 
-  // Preço fixo para esta página: R$69,90 (6990 centavos)
-  const price = 6990;
-  const originalPrice = 9990; // R$99,90 riscado
+  // Preço fixo para esta página: R$49,90 (4990 centavos)
+  const price = 4990;
+  const originalPrice = 6990; // R$69,90 riscado
   const installmentPrice = Math.ceil(price / 3);
 
   const beforeAfterExamples = [
