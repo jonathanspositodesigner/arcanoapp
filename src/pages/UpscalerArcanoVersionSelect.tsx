@@ -225,8 +225,12 @@ const UpscalerArcanoVersionSelect = () => {
 
   // Helper functions
   const getUnlockDate = (version: ToolVersion) => {
-    // unlock_days === 0 means immediately unlocked
-    if (version.unlock_days === 0) return null;
+    // HARDCODED: v1 SEMPRE liberada imediatamente
+    if (version.slug === 'v1') return null;
+    
+    // Normaliza unlock_days para número
+    const unlockDays = Number(version.unlock_days ?? 0);
+    if (unlockDays <= 0) return null;
     if (!purchaseDate) return null;
     
     // Clamp purchaseDate to prevent future dates from blocking access
@@ -234,13 +238,17 @@ const UpscalerArcanoVersionSelect = () => {
     const baseDate = purchaseDate > now ? now : purchaseDate;
     
     const unlockDate = new Date(baseDate);
-    unlockDate.setDate(unlockDate.getDate() + version.unlock_days);
+    unlockDate.setDate(unlockDate.getDate() + unlockDays);
     return unlockDate;
   };
 
   const isVersionUnlocked = (version: ToolVersion) => {
-    // unlock_days === 0 means immediately unlocked, no date check needed
-    if (version.unlock_days === 0) return true;
+    // HARDCODED: v1 SEMPRE liberada imediatamente
+    if (version.slug === 'v1') return true;
+    
+    // Normaliza unlock_days para número
+    const unlockDays = Number(version.unlock_days ?? 0);
+    if (unlockDays <= 0) return true;
     
     const unlockDate = getUnlockDate(version);
     if (!unlockDate) return false;
