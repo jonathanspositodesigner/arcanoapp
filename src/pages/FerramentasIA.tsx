@@ -302,7 +302,7 @@ const FerramentasIA = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate("/login-artes")}
+                onClick={() => navigate("/login-artes?redirect=/ferramentas-ia")}
                 className="text-purple-600 border-purple-300 hover:bg-purple-50 text-xs sm:text-sm"
               >
                 <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
