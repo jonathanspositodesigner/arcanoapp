@@ -8,6 +8,8 @@ export const usePremiumStatus = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [planType, setPlanType] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasExpiredSubscription, setHasExpiredSubscription] = useState(false);
+  const [expiredPlanType, setExpiredPlanType] = useState<string | null>(null);
   const isInitialized = useRef(false);
 
   useEffect(() => {
@@ -32,13 +34,43 @@ export const usePremiumStatus = () => {
           } else {
             setPlanType(null);
           }
+          // Clear expired subscription state when user is premium
+          setHasExpiredSubscription(false);
+          setExpiredPlanType(null);
         } else {
           setPlanType(null);
+          
+          // Check for expired subscription (inactive with past expiration date)
+          const { data: expiredData, error: expiredError } = await supabase
+            .from('premium_users')
+            .select('plan_type, expires_at')
+            .eq('user_id', userId)
+            .eq('is_active', false)
+            .order('expires_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (!expiredError && expiredData && expiredData.expires_at) {
+            const expiresAt = new Date(expiredData.expires_at);
+            const now = new Date();
+            if (expiresAt < now) {
+              setHasExpiredSubscription(true);
+              setExpiredPlanType(expiredData.plan_type);
+            } else {
+              setHasExpiredSubscription(false);
+              setExpiredPlanType(null);
+            }
+          } else {
+            setHasExpiredSubscription(false);
+            setExpiredPlanType(null);
+          }
         }
       } catch (error) {
         console.error('Error checking premium status:', error);
         setIsPremium(false);
         setPlanType(null);
+        setHasExpiredSubscription(false);
+        setExpiredPlanType(null);
       }
     };
 
@@ -87,7 +119,9 @@ export const usePremiumStatus = () => {
     setSession(null);
     setIsPremium(false);
     setPlanType(null);
+    setHasExpiredSubscription(false);
+    setExpiredPlanType(null);
   };
 
-  return { user, session, isPremium, planType, isLoading, logout };
+  return { user, session, isPremium, planType, isLoading, logout, hasExpiredSubscription, expiredPlanType };
 };
