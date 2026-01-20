@@ -229,11 +229,21 @@ const ToolVersionLessons = () => {
 
   // Check if version is unlocked
   const isVersionUnlocked = () => {
-    if (!version || !purchaseDate) return version?.unlock_days === 0;
+    if (!version) return false;
     
-    const unlockDate = new Date(purchaseDate);
+    // unlock_days === 0 means immediately unlocked, no date check needed
+    if (version.unlock_days === 0) return true;
+    
+    // For versions with unlock_days > 0, we need a purchase date
+    if (!purchaseDate) return false;
+    
+    // Clamp purchaseDate to prevent future dates from blocking access
+    const now = new Date();
+    const baseDate = purchaseDate > now ? now : purchaseDate;
+    
+    const unlockDate = new Date(baseDate);
     unlockDate.setDate(unlockDate.getDate() + version.unlock_days);
-    return new Date() >= unlockDate;
+    return now >= unlockDate;
   };
 
   if (!version) {
@@ -251,9 +261,13 @@ const ToolVersionLessons = () => {
   }
 
   if (!isVersionUnlocked()) {
-    const unlockDate = purchaseDate ? new Date(purchaseDate) : new Date();
+    const now = new Date();
+    const baseDate = purchaseDate && purchaseDate <= now ? purchaseDate : now;
+    const unlockDate = new Date(baseDate);
     unlockDate.setDate(unlockDate.getDate() + version.unlock_days);
-    const daysRemaining = Math.max(0, Math.ceil((unlockDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
+    
+    const diffMs = unlockDate.getTime() - now.getTime();
+    const daysRemaining = diffMs > 0 ? Math.ceil(diffMs / (1000 * 60 * 60 * 24)) : 0;
     const formattedDate = unlockDate.toLocaleDateString(locale === 'es' ? 'es-ES' : 'pt-BR');
 
     return (
