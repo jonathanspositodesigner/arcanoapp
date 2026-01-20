@@ -501,7 +501,32 @@ Deno.serve(async (req) => {
     console.log(`   ├─ Locale: ${locale}`)
     console.log(`   └─ Dias: ${productPeriod}`)
 
-    const isTrialStatus = status === 'trial' || status === 'trial_started' || status === 'trialing' || status === 'waiting_payment'
+    // IMPORTANTE: waiting_payment NÃO deve ativar premium - apenas status de pagamento confirmado
+    const isTrialStatus = status === 'trial' || status === 'trial_started' || status === 'trialing'
+    
+    // Ignorar status que NÃO concedem acesso (apenas loggar e retornar)
+    const isPendingStatus = status === 'waiting_payment' || status === 'pending_payment' || status === 'pending'
+    
+    if (isPendingStatus) {
+      console.log(`\n⏳ [${requestId}] STATUS PENDENTE - IGNORANDO (não ativa premium)`)
+      console.log(`   └─ Status: ${status}`)
+      
+      if (logId) {
+        await supabase.from('webhook_logs').update({
+          result: 'ignored',
+          error_message: `Status pendente ignorado: ${status}`
+        }).eq('id', logId)
+      }
+      
+      const duration = Date.now() - startTime
+      console.log(`\n⏱️ [${requestId}] Tempo de execução: ${duration}ms`)
+      console.log(`${'='.repeat(70)}\n`)
+      
+      return new Response(
+        JSON.stringify({ success: true, message: `Pending status ignored: ${status}` }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
     
     // Handle paid status OR trial status - activate or renew premium
     if (status === 'paid' || status === 'approved' || isTrialStatus) {
