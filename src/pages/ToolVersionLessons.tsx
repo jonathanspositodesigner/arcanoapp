@@ -231,8 +231,14 @@ const ToolVersionLessons = () => {
   const isVersionUnlocked = () => {
     if (!version) return false;
     
-    // unlock_days === 0 means immediately unlocked, no date check needed
-    if (version.unlock_days === 0) return true;
+    // HARDCODED: v1 do Upscaler Arcano SEMPRE liberada imediatamente
+    if (toolSlug === 'upscaller-arcano' && versionSlug === 'v1') return true;
+    
+    // Normaliza unlock_days para número (evita "0" string ou null)
+    const unlockDays = Number(version.unlock_days ?? 0);
+    
+    // unlock_days <= 0 means immediately unlocked, no date check needed
+    if (unlockDays <= 0) return true;
     
     // For versions with unlock_days > 0, we need a purchase date
     if (!purchaseDate) return false;
@@ -242,7 +248,7 @@ const ToolVersionLessons = () => {
     const baseDate = purchaseDate > now ? now : purchaseDate;
     
     const unlockDate = new Date(baseDate);
-    unlockDate.setDate(unlockDate.getDate() + version.unlock_days);
+    unlockDate.setDate(unlockDate.getDate() + unlockDays);
     return now >= unlockDate;
   };
 
