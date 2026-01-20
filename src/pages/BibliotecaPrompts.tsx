@@ -396,7 +396,7 @@ const BibliotecaPrompts = () => {
             {t('header.partnerArea')}
           </Button>
           {!isPremium && <>
-            <Button onClick={() => navigate("/login")} variant="ghost" size="sm">
+            <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} variant="ghost" size="sm">
               <LogIn className="h-4 w-4 mr-2" />
               {t('header.login')}
             </Button>
@@ -426,7 +426,7 @@ const BibliotecaPrompts = () => {
       <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
         <img alt="ArcanoApp" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" />
         {!isPremium && <div className="flex items-center gap-2">
-            <Button onClick={() => navigate("/login")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
+            <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
               {t('header.login')}
             </Button>

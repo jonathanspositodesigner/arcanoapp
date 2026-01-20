@@ -285,7 +285,7 @@ const BibliotecaArtesMusicos = () => {
                     <span className="hidden sm:inline">{t('musicos.header.becomeMember')}</span>
                     <span className="sm:hidden">{t('musicos.header.becomeMember')}</span>
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => navigate("/login-artes-musicos")} className="border-white/20 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/30">
+                  <Button variant="outline" size="sm" onClick={() => navigate("/login-artes-musicos?redirect=/biblioteca-artes-musicos")} className="border-white/20 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/30">
                     <LogIn className="w-4 h-4 mr-1" />
                     <span className="hidden sm:inline">{t('musicos.header.login')}</span>
                   </Button>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,10 @@ import { Label } from "@/components/ui/label";
 
 const UserLoginArtesMusicos = () => {
   const { t } = useTranslation('auth');
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +30,6 @@ const UserLoginArtesMusicos = () => {
   const [signupName, setSignupName] = useState("");
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
-  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,10 +52,10 @@ const UserLoginArtesMusicos = () => {
         if (!profile || !profile.password_changed) {
           if (!profile) { await supabase.from('profiles').upsert({ id: data.user.id, email: data.user.email, password_changed: false }, { onConflict: 'id' }); }
           toast.success(t('errors.firstAccessSetPassword'));
-          navigate("/change-password-artes-musicos"); return;
+          navigate(`/change-password-artes-musicos?redirect=${redirectTo}`); return;
         }
         toast.success(t('success.loginSuccess'));
-        navigate("/biblioteca-artes-musicos");
+        navigate(redirectTo);
       }
     } catch (error) { toast.error(t('errors.loginError')); } finally { setIsLoading(false); }
   };
@@ -64,7 +67,7 @@ const UserLoginArtesMusicos = () => {
     if (signupPassword !== signupConfirmPassword) { toast.error(t('errors.passwordsDoNotMatch')); return; }
     setIsSigningUp(true);
     try {
-      const { data, error } = await supabase.auth.signUp({ email: signupEmail.trim(), password: signupPassword, options: { emailRedirectTo: `${window.location.origin}/biblioteca-artes-musicos` } });
+      const { data, error } = await supabase.auth.signUp({ email: signupEmail.trim(), password: signupPassword, options: { emailRedirectTo: `${window.location.origin}${redirectTo}` } });
       if (error) { if (error.message.includes("already registered")) { toast.error(t('errors.emailAlreadyRegistered')); } else { toast.error(t('errors.signupError') + ": " + error.message); } return; }
       if (data.user) {
         await supabase.from('profiles').upsert({ id: data.user.id, email: signupEmail.trim().toLowerCase(), name: signupName.trim() || null, password_changed: true }, { onConflict: 'id' });
@@ -72,7 +75,7 @@ const UserLoginArtesMusicos = () => {
         if (!session) { const { error: loginError } = await supabase.auth.signInWithPassword({ email: signupEmail.trim(), password: signupPassword }); if (loginError) { toast.success(t('success.accountCreatedLogin')); setShowSignupModal(false); return; } }
         toast.success(t('success.accountCreatedSuccess'));
         setShowSignupModal(false);
-        navigate("/biblioteca-artes-musicos");
+        navigate(redirectTo);
       }
     } catch (error) { toast.error(t('errors.signupError')); } finally { setIsSigningUp(false); }
   };
@@ -121,7 +124,7 @@ const UserLoginArtesMusicos = () => {
 
       <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-violet-500/30">
         <CardHeader className="text-center">
-          <Button variant="ghost" className="absolute left-4 top-4 text-white/70 hover:text-white" onClick={() => navigate("/biblioteca-artes-musicos")}><ArrowLeft className="h-4 w-4 mr-2" />{t('back')}</Button>
+          <Button variant="ghost" className="absolute left-4 top-4 text-white/70 hover:text-white" onClick={() => navigate("/")}><ArrowLeft className="h-4 w-4 mr-2" />{t('back')}</Button>
           <div className="flex items-center justify-center gap-2 mb-2"><Music className="h-6 w-6 text-violet-400" /><CardTitle className="text-2xl text-white">{t('loginCard.titleMusicos')}</CardTitle></div>
           <CardDescription className="text-white/60">{t('loginCard.descriptionMusicos')}</CardDescription>
         </CardHeader>

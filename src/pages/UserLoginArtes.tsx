@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 const UserLoginArtes = () => {
   const { t } = useTranslation('auth');
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/biblioteca-artes';
+  const redirectTo = searchParams.get('redirect') || '/';
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -367,7 +367,7 @@ const UserLoginArtes = () => {
           <Button
             variant="ghost"
             className="absolute left-4 top-4 text-white/70 hover:text-white"
-            onClick={() => navigate(redirectTo)}
+            onClick={() => navigate("/")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('back')}
