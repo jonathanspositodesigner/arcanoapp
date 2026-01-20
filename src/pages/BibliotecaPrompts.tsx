@@ -15,6 +15,7 @@ import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/Sec
 import LazyVideo from "@/components/LazyVideo";
 import { useTranslation } from "react-i18next";
 import ExpiredSubscriptionModal from "@/components/ExpiredSubscriptionModal";
+import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
 
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
@@ -51,7 +52,8 @@ const BibliotecaPrompts = () => {
     planType,
     logout,
     hasExpiredSubscription,
-    expiredPlanType
+    expiredPlanType,
+    expiringStatus
   } = usePremiumStatus();
   const {
     copiesUsed,
@@ -74,6 +76,7 @@ const BibliotecaPrompts = () => {
   const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
   const [showExpiredModal, setShowExpiredModal] = useState(false);
+  const [showExpiringModal, setShowExpiringModal] = useState(false);
   
 
   // Use optimized hook for fetching prompts
@@ -107,6 +110,19 @@ const BibliotecaPrompts = () => {
       }
     }
   }, [user, hasExpiredSubscription, expiredPlanType]);
+
+  // Show expiring subscription modal once per session (for today/tomorrow)
+  useEffect(() => {
+    if (user && isPremium && expiringStatus) {
+      const modalShownKey = `expiring_modal_shown_${user.id}_${expiringStatus}`;
+      const alreadyShown = sessionStorage.getItem(modalShownKey);
+      
+      if (!alreadyShown) {
+        setShowExpiringModal(true);
+        sessionStorage.setItem(modalShownKey, 'true');
+      }
+    }
+  }, [user, isPremium, expiringStatus]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -874,6 +890,14 @@ const BibliotecaPrompts = () => {
         isOpen={showExpiredModal}
         onClose={() => setShowExpiredModal(false)}
         planType={expiredPlanType}
+      />
+
+      {/* Expiring Subscription Modal (today/tomorrow) */}
+      <ExpiringSubscriptionModal
+        isOpen={showExpiringModal}
+        onClose={() => setShowExpiringModal(false)}
+        expiringStatus={expiringStatus}
+        planType={planType}
       />
     </div>;
 };
