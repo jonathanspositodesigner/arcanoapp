@@ -10,6 +10,7 @@ export const usePremiumStatus = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasExpiredSubscription, setHasExpiredSubscription] = useState(false);
   const [expiredPlanType, setExpiredPlanType] = useState<string | null>(null);
+  const [expiringStatus, setExpiringStatus] = useState<'today' | 'tomorrow' | null>(null);
   const isInitialized = useRef(false);
 
   useEffect(() => {
@@ -24,21 +25,46 @@ export const usePremiumStatus = () => {
         if (premiumStatus) {
           const { data: premiumData, error: premiumError } = await supabase
             .from('premium_users')
-            .select('plan_type')
+            .select('plan_type, expires_at')
             .eq('user_id', userId)
             .eq('is_active', true)
             .maybeSingle();
 
           if (!premiumError && premiumData) {
             setPlanType(premiumData.plan_type);
+            
+            // Check if subscription expires today or tomorrow
+            if (premiumData.expires_at) {
+              const expiresDate = new Date(premiumData.expires_at);
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              
+              const tomorrow = new Date(today);
+              tomorrow.setDate(tomorrow.getDate() + 1);
+              
+              const expiresDay = new Date(expiresDate);
+              expiresDay.setHours(0, 0, 0, 0);
+              
+              if (expiresDay.getTime() === today.getTime()) {
+                setExpiringStatus('today');
+              } else if (expiresDay.getTime() === tomorrow.getTime()) {
+                setExpiringStatus('tomorrow');
+              } else {
+                setExpiringStatus(null);
+              }
+            } else {
+              setExpiringStatus(null);
+            }
           } else {
             setPlanType(null);
+            setExpiringStatus(null);
           }
           // Clear expired subscription state when user is premium
           setHasExpiredSubscription(false);
           setExpiredPlanType(null);
         } else {
           setPlanType(null);
+          setExpiringStatus(null);
           
           // Check for expired subscription (inactive with past expiration date)
           const { data: expiredData, error: expiredError } = await supabase
@@ -71,6 +97,7 @@ export const usePremiumStatus = () => {
         setPlanType(null);
         setHasExpiredSubscription(false);
         setExpiredPlanType(null);
+        setExpiringStatus(null);
       }
     };
 
@@ -91,6 +118,7 @@ export const usePremiumStatus = () => {
         } else {
           setIsPremium(false);
           setPlanType(null);
+          setExpiringStatus(null);
           setIsLoading(false);
         }
       }
@@ -121,7 +149,18 @@ export const usePremiumStatus = () => {
     setPlanType(null);
     setHasExpiredSubscription(false);
     setExpiredPlanType(null);
+    setExpiringStatus(null);
   };
 
-  return { user, session, isPremium, planType, isLoading, logout, hasExpiredSubscription, expiredPlanType };
+  return { 
+    user, 
+    session, 
+    isPremium, 
+    planType, 
+    isLoading, 
+    logout, 
+    hasExpiredSubscription, 
+    expiredPlanType,
+    expiringStatus
+  };
 };
