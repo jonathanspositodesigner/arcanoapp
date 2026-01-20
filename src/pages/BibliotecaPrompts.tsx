@@ -14,7 +14,7 @@ import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import LazyVideo from "@/components/LazyVideo";
 import { useTranslation } from "react-i18next";
-
+import ExpiredSubscriptionModal from "@/components/ExpiredSubscriptionModal";
 
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
@@ -49,7 +49,9 @@ const BibliotecaPrompts = () => {
     user,
     isPremium,
     planType,
-    logout
+    logout,
+    hasExpiredSubscription,
+    expiredPlanType
   } = usePremiumStatus();
   const {
     copiesUsed,
@@ -71,6 +73,7 @@ const BibliotecaPrompts = () => {
   const [collectionSlug, setCollectionSlug] = useState<string | null>(colecaoParam);
   const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
   const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
   
 
   // Use optimized hook for fetching prompts
@@ -91,6 +94,19 @@ const BibliotecaPrompts = () => {
       }
     }
   }, [searchParams, allPrompts, isPremium]);
+
+  // Show expired subscription modal once per session
+  useEffect(() => {
+    if (user && hasExpiredSubscription && expiredPlanType) {
+      const modalShownKey = `expired_modal_shown_${user.id}`;
+      const alreadyShown = sessionStorage.getItem(modalShownKey);
+      
+      if (!alreadyShown) {
+        setShowExpiredModal(true);
+        sessionStorage.setItem(modalShownKey, 'true');
+      }
+    }
+  }, [user, hasExpiredSubscription, expiredPlanType]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -850,10 +866,15 @@ const BibliotecaPrompts = () => {
       searchParams.delete("colecao");
       setSearchParams(searchParams);
     }} />}
-
-
       {/* Push Notification Prompt */}
       <PushNotificationPrompt />
+
+      {/* Expired Subscription Modal */}
+      <ExpiredSubscriptionModal 
+        isOpen={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+        planType={expiredPlanType}
+      />
     </div>;
 };
 export default BibliotecaPrompts;
