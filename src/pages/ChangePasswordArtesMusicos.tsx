@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,13 +8,16 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Lock, Music } from "lucide-react";
 
 const ChangePasswordArtesMusicos = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
+  
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const navigate = useNavigate();
 
   // Check if user is authenticated
   useEffect(() => {
@@ -22,7 +25,7 @@ const ChangePasswordArtesMusicos = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         toast.error("Você precisa fazer login primeiro");
-        navigate("/login-artes-musicos");
+        navigate(`/login-artes-musicos?redirect=${redirectTo}`);
         return;
       }
       setIsCheckingAuth(false);
@@ -57,7 +60,7 @@ const ChangePasswordArtesMusicos = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error("Sessão expirada");
-        navigate("/login-artes-musicos");
+        navigate(`/login-artes-musicos?redirect=${redirectTo}`);
         return;
       }
 
@@ -82,7 +85,7 @@ const ChangePasswordArtesMusicos = () => {
       }
 
       toast.success("Senha alterada com sucesso!");
-      navigate("/biblioteca-artes-musicos");
+      navigate(redirectTo);
     } catch (error) {
       console.error("Error changing password:", error);
       toast.error("Erro ao alterar senha");

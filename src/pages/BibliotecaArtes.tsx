@@ -702,7 +702,7 @@ const BibliotecaArtes = () => {
                   <UserCheck className="h-4 w-4 mr-2" />
                   {t('firstAccess.alreadyClient')}
                 </Button>
-                <Button onClick={() => navigate("/login-artes")} variant="ghost" size="sm">
+                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} variant="ghost" size="sm">
                   <LogIn className="h-4 w-4 mr-2" />
                   {t('buttons.login')}
                 </Button>
@@ -755,7 +755,7 @@ const BibliotecaArtes = () => {
                   <UserCheck className="h-4 w-4 mr-2" />
                   {t('firstAccess.alreadyClient')}
                 </Button>
-                <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-sm">
+                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-sm">
                   <LogIn className="h-4 w-4 mr-1" />
                   {t('buttons.login')}
                 </Button>
@@ -798,7 +798,7 @@ const BibliotecaArtes = () => {
           </div>
           <div className="flex items-center gap-2">
             {!user && <>
-                <Button onClick={() => navigate("/login-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
+                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
                   <LogIn className="h-4 w-4 mr-1" />
                   {t('buttons.login')}
                 </Button>

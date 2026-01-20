@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ import { useTranslation } from "react-i18next";
 
 const UserLogin = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
   const { t } = useTranslation('auth');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,9 +44,9 @@ const UserLogin = () => {
             .maybeSingle();
 
           if (!profile || !profile.password_changed) {
-            navigate('/change-password');
+            navigate(`/change-password?redirect=${redirectTo}`);
           } else {
-            navigate('/biblioteca-prompts');
+            navigate(redirectTo);
           }
         }
       }
@@ -120,18 +122,18 @@ const UserLogin = () => {
           }, { onConflict: 'id' });
         
         toast.success(t('errors.firstAccessSetPassword'));
-        navigate('/change-password');
+        navigate(`/change-password?redirect=${redirectTo}`);
         return;
       }
 
       if (!profile.password_changed) {
         toast.success(t('errors.firstAccessSetPassword'));
-        navigate('/change-password');
+        navigate(`/change-password?redirect=${redirectTo}`);
         return;
       }
 
       toast.success(t('success.loginSuccess'));
-      navigate('/biblioteca-prompts');
+      navigate(redirectTo);
     } catch (error: any) {
       toast.error(error.message || t('errors.loginError'));
     } finally {
@@ -164,7 +166,7 @@ const UserLogin = () => {
         email: signupEmail.trim(),
         password: signupPassword,
         options: {
-          emailRedirectTo: `${window.location.origin}/biblioteca-prompts`
+          emailRedirectTo: `${window.location.origin}${redirectTo}`
         }
       });
       
@@ -206,7 +208,7 @@ const UserLogin = () => {
         
         toast.success(t('success.accountCreatedSuccess'));
         setShowSignupModal(false);
-        navigate("/biblioteca-prompts");
+        navigate(redirectTo);
       }
     } catch (error) {
       console.error("Signup error:", error);
@@ -375,7 +377,7 @@ const UserLogin = () => {
       <Card className="w-full max-w-md p-8 shadow-hover">
         <Button
           variant="ghost"
-          onClick={() => navigate("/biblioteca-prompts")}
+          onClick={() => navigate("/")}
           className="mb-6"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

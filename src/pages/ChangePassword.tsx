@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { useTranslation } from "react-i18next";
 
 const ChangePassword = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
   const { t } = useTranslation('auth');
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -50,7 +52,7 @@ const ChangePassword = () => {
       }
 
       toast.success(t('success.passwordChanged'));
-      navigate('/biblioteca-prompts');
+      navigate(redirectTo);
     } catch (error: any) {
       toast.error(error.message || t('errors.passwordChangeError'));
     } finally {

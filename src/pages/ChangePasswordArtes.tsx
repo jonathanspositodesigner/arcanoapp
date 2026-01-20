@@ -11,7 +11,7 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 const ChangePasswordArtes = () => {
   const { t } = useTranslation('auth');
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/biblioteca-artes';
+  const redirectTo = searchParams.get('redirect') || '/';
   
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
