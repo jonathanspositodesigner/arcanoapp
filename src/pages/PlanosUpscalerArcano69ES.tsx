@@ -600,8 +600,8 @@ const PlanosUpscalerArcano69ES = () => {
               {/* Slider - logo abaixo do título */}
               <FadeIn delay={200} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
                 <BeforeAfterSlider
-                  beforeImage={upscalerHeroAntes}
-                  afterImage={upscalerHeroDepois}
+                  beforeImage={upscalerAntigaAntes}
+                  afterImage={upscalerAntigaDepois}
                   label={t('tools:upscaler.hero.dragToCompare')}
                   size="large"
                 />
