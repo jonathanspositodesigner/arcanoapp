@@ -29,14 +29,14 @@ import upscalerUser2Antes from "@/assets/upscaler-user2-antes.jpg";
 import upscalerUser2Depois from "@/assets/upscaler-user2-depois.jpg";
 import upscalerUser3Antes from "@/assets/upscaler-user3-antes.jpg";
 import upscalerUser3Depois from "@/assets/upscaler-user3-depois.jpg";
-import upscalerFoodAntes from "@/assets/upscaler-food-antes.png";
-import upscalerFoodDepois from "@/assets/upscaler-food-depois.png";
-import upscalerUser4Antes from "@/assets/upscaler-user4-antes.png";
-import upscalerUser4Depois from "@/assets/upscaler-user4-depois.png";
-import upscalerUser5Antes from "@/assets/upscaler-user5-antes.png";
-import upscalerUser5Depois from "@/assets/upscaler-user5-depois.png";
-import upscalerUser6Antes from "@/assets/upscaler-user6-antes.png";
-import upscalerUser6Depois from "@/assets/upscaler-user6-depois.png";
+import upscalerFoodAntes from "@/assets/upscaler-food-antes.webp";
+import upscalerFoodDepois from "@/assets/upscaler-food-depois.webp";
+import upscalerUser4Antes from "@/assets/upscaler-user4-antes.webp";
+import upscalerUser4Depois from "@/assets/upscaler-user4-depois.webp";
+import upscalerUser5Antes from "@/assets/upscaler-user5-antes.webp";
+import upscalerUser5Depois from "@/assets/upscaler-user5-depois.webp";
+import upscalerUser6Antes from "@/assets/upscaler-user6-antes.webp";
+import upscalerUser6Depois from "@/assets/upscaler-user6-depois.webp";
 
 interface ToolData {
   id: string;
@@ -232,6 +232,8 @@ const BeforeAfterSlider = ({
         <img 
           src={afterImage} 
           alt="Después" 
+          loading="lazy"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover"
         />
         
@@ -243,6 +245,8 @@ const BeforeAfterSlider = ({
           <img 
             src={beforeImage} 
             alt="Antes" 
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover"
           />
         </div>
@@ -316,15 +320,12 @@ const TrustBadges = ({ t }: { t: (key: string) => string }) => (
 );
 
 // Infinite Carousel Component
+// Optimized: reduced image quality for faster loading, smaller size
 const carouselImages = [
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=95",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=95",
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=95",
-  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=95",
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&q=95",
-  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&q=95",
-  "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400&q=95",
-  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=95",
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=60&auto=format",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=60&auto=format",
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=60&auto=format",
+  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&q=60&auto=format",
 ];
 
 const InfiniteCarousel = () => (
@@ -342,7 +343,9 @@ const InfiniteCarousel = () => (
           key={i} 
           src={img} 
           alt={`Ejemplo ${i + 1}`}
-          className="h-52 md:h-48 w-auto rounded-xl object-cover flex-shrink-0 border border-white/10"
+          loading="lazy"
+          decoding="async"
+          className="h-40 md:h-36 w-auto rounded-xl object-cover flex-shrink-0 border border-white/10"
         />
       ))}
     </div>
