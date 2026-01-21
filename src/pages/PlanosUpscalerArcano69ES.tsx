@@ -319,44 +319,6 @@ const TrustBadges = ({ t }: { t: (key: string) => string }) => (
   </div>
 );
 
-// Infinite Carousel Component
-// Optimized: reduced image quality for faster loading, smaller size
-const carouselImages = [
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=60&auto=format",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=60&auto=format",
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=60&auto=format",
-  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&q=60&auto=format",
-];
-
-const InfiniteCarousel = () => (
-  <div className="w-full overflow-hidden py-8">
-    <div 
-      className="flex gap-4"
-      style={{
-        animation: 'scroll 25s linear infinite',
-        width: 'fit-content'
-      }}
-    >
-      {/* Duplicate images for seamless loop */}
-      {[...carouselImages, ...carouselImages].map((img, i) => (
-        <img 
-          key={i} 
-          src={img} 
-          alt={`Ejemplo ${i + 1}`}
-          loading="lazy"
-          decoding="async"
-          className="h-40 md:h-36 w-auto rounded-xl object-cover flex-shrink-0 border border-white/10"
-        />
-      ))}
-    </div>
-    <style>{`
-      @keyframes scroll {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-      }
-    `}</style>
-  </div>
-);
 
 const PlanosUpscalerArcano69ES = () => {
   const navigate = useNavigate();
@@ -768,10 +730,6 @@ const PlanosUpscalerArcano69ES = () => {
                 ))}
               </div>
 
-              {/* Carrossel infinito de imagens */}
-              <div className="mt-14 -mx-4 md:-mx-8">
-                <InfiniteCarousel />
-              </div>
             </div>
           </section>
 
