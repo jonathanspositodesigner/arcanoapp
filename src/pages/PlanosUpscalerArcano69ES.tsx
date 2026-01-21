@@ -406,6 +406,16 @@ const PlanosUpscalerArcano69ES = () => {
   };
 
   const handlePurchase = () => {
+    // Disparar evento de InitiateCheckout no Meta Pixel
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'InitiateCheckout', {
+        content_name: 'Upscaler Arcano ES',
+        content_category: 'Ferramentas IA',
+        value: 9.90,
+        currency: 'USD'
+      });
+    }
+    
     window.open(appendUtmToUrl("https://pay.hotmart.com/R103906553W?off=k7k3jv6j"), "_blank");
   };
 
