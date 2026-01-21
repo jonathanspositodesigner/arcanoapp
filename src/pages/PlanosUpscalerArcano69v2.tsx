@@ -29,14 +29,14 @@ import upscalerUser2Antes from "@/assets/upscaler-user2-antes.jpg";
 import upscalerUser2Depois from "@/assets/upscaler-user2-depois.jpg";
 import upscalerUser3Antes from "@/assets/upscaler-user3-antes.jpg";
 import upscalerUser3Depois from "@/assets/upscaler-user3-depois.jpg";
-import upscalerFoodAntes from "@/assets/upscaler-food-antes.png";
-import upscalerFoodDepois from "@/assets/upscaler-food-depois.png";
-import upscalerUser4Antes from "@/assets/upscaler-user4-antes.png";
-import upscalerUser4Depois from "@/assets/upscaler-user4-depois.png";
-import upscalerUser5Antes from "@/assets/upscaler-user5-antes.png";
-import upscalerUser5Depois from "@/assets/upscaler-user5-depois.png";
-import upscalerUser6Antes from "@/assets/upscaler-user6-antes.png";
-import upscalerUser6Depois from "@/assets/upscaler-user6-depois.png";
+import upscalerFoodAntes from "@/assets/upscaler-food-antes.webp";
+import upscalerFoodDepois from "@/assets/upscaler-food-depois.webp";
+import upscalerUser4Antes from "@/assets/upscaler-user4-antes.webp";
+import upscalerUser4Depois from "@/assets/upscaler-user4-depois.webp";
+import upscalerUser5Antes from "@/assets/upscaler-user5-antes.webp";
+import upscalerUser5Depois from "@/assets/upscaler-user5-depois.webp";
+import upscalerUser6Antes from "@/assets/upscaler-user6-antes.webp";
+import upscalerUser6Depois from "@/assets/upscaler-user6-depois.webp";
 
 interface ToolData {
   id: string;
