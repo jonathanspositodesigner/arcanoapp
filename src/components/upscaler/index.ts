@@ -7,6 +7,7 @@ export { FullscreenModal } from './FullscreenModal';
 export { LazyImage } from './LazyImage';
 export { SectionSkeleton } from './SectionSkeleton';
 export { SectionErrorBoundary } from './SectionErrorBoundary';
+export { LazySocialProofWrapper } from './LazySocialProofWrapper';
 
 // Section components (use with React.lazy for code splitting)
 export { BeforeAfterGalleryPT } from './sections/BeforeAfterGalleryPT';
