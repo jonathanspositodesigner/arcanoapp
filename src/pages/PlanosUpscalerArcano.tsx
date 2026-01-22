@@ -14,9 +14,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
-// Hero images use public paths for HTML preloading (LCP optimization)
-const upscalerHeroAntes = "/images/upscaler-hero-antes.webp";
-const upscalerHeroDepois = "/images/upscaler-hero-depois.webp";
+// Hero images - Desktop uses high-res, Mobile uses optimized 600x900 versions
+const upscalerHeroAntesDesktop = "/images/upscaler-hero-antes.webp";
+const upscalerHeroDepoisDesktop = "/images/upscaler-hero-depois.webp";
+const upscalerHeroAntesMobile = "/images/upscaler-hero-antes-mobile.webp";
+const upscalerHeroDepoisMobile = "/images/upscaler-hero-depois-mobile.webp";
 
 // Lazy load heavy gallery sections - images will only load when user scrolls to section
 const BeforeAfterGalleryPT = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryPT"));
@@ -390,11 +392,12 @@ const PlanosUpscalerArcano = () => {
                     onReveal={() => setHeroRevealed(true)}
                     buttonText={t('tools:upscaler.hero.seeToolPower')}
                     locale="pt"
+                    isMobile={isMobile}
                   />
                 ) : (
                   <HeroBeforeAfterSlider
-                    beforeImage={upscalerHeroAntes}
-                    afterImage={upscalerHeroDepois}
+                    beforeImage={isMobile ? upscalerHeroAntesMobile : upscalerHeroAntesDesktop}
+                    afterImage={isMobile ? upscalerHeroDepoisMobile : upscalerHeroDepoisDesktop}
                     label={t('tools:upscaler.hero.dragToCompare')}
                     locale="pt"
                   />
