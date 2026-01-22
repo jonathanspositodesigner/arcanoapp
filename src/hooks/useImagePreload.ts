@@ -1,12 +1,27 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Hook for conditionally preloading images on specific pages
  * This prevents loading heavy images globally across the entire app
+ * 
+ * IMPORTANT: Uses a small delay to ensure `enabled` is stable
+ * (prevents race condition with useIsMobile on first render)
  */
 export const useImagePreload = (imageSrc: string, enabled = true) => {
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  // Wait for enabled state to stabilize (50ms delay)
   useEffect(() => {
-    if (!enabled || !imageSrc) return;
+    if (!enabled) {
+      setShouldLoad(false);
+      return;
+    }
+    const timer = setTimeout(() => setShouldLoad(true), 50);
+    return () => clearTimeout(timer);
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!shouldLoad || !imageSrc) return;
 
     // Check if already preloaded
     const existing = document.querySelector(`link[rel="preload"][href="${imageSrc}"]`);
@@ -22,15 +37,27 @@ export const useImagePreload = (imageSrc: string, enabled = true) => {
     return () => {
       // Don't remove on cleanup - images stay cached
     };
-  }, [imageSrc, enabled]);
+  }, [imageSrc, shouldLoad]);
 };
 
 /**
  * Preload multiple images at once
  */
 export const useImagesPreload = (images: string[], enabled = true) => {
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  // Wait for enabled state to stabilize (50ms delay)
   useEffect(() => {
-    if (!enabled || images.length === 0) return;
+    if (!enabled) {
+      setShouldLoad(false);
+      return;
+    }
+    const timer = setTimeout(() => setShouldLoad(true), 50);
+    return () => clearTimeout(timer);
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!shouldLoad || images.length === 0) return;
 
     const links: HTMLLinkElement[] = [];
 
@@ -50,5 +77,5 @@ export const useImagesPreload = (images: string[], enabled = true) => {
     return () => {
       // Don't remove on cleanup - images stay cached
     };
-  }, [images.join(','), enabled]);
+  }, [images.join(','), shouldLoad]);
 };
