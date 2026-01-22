@@ -13,9 +13,8 @@ import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, 
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import upscalerAntes1 from "@/assets/upscaler-antes-1.webp";
 import upscalerDepois1 from "@/assets/upscaler-depois-1.webp";
-// NOTE: keeping hero pair as JPG because the WebP conversion caused misalignment between before/after.
-import upscalerHeroAntes from "@/assets/upscaler-hero-antes.jpg";
-import upscalerHeroDepois from "@/assets/upscaler-hero-depois.jpg";
+import upscalerHeroAntes from "@/assets/upscaler-hero-antes.webp";
+import upscalerHeroDepois from "@/assets/upscaler-hero-depois.webp";
 import upscalerSeloAntes from "@/assets/upscaler-selo-antes.webp";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.webp";
 import upscalerLogoAntes from "@/assets/upscaler-logo-antes.webp";
@@ -132,18 +131,36 @@ const FullscreenModal = ({
         <img 
           src={afterImage} 
           alt="Después" 
-          className="absolute inset-0 w-full h-full object-contain bg-black"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center'
+          }}
         />
         
         {/* Imagem "Antes" (clipped) */}
         <div 
-          className="absolute inset-0 overflow-hidden"
-          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+          style={{ 
+            position: 'absolute',
+            inset: 0,
+            clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`,
+            overflow: 'hidden'
+          }}
         >
           <img 
             src={beforeImage} 
             alt="Antes" 
-            className="absolute inset-0 w-full h-full object-contain bg-black"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center'
+            }}
           />
         </div>
 
