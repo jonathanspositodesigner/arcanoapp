@@ -55,28 +55,66 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png">
     
-    <!-- Meta Pixel Code -->
+    <!-- Critical CSS for Hero LCP - prevents layout shift -->
+    <style>
+      .hero-placeholder-critical {
+        aspect-ratio: 2/3;
+        background: linear-gradient(135deg, #1a0f25 0%, #0f0a15 100%);
+        border-radius: 1rem;
+        overflow: hidden;
+      }
+      @media (min-width: 768px) {
+        .hero-placeholder-critical {
+          aspect-ratio: 16/9;
+        }
+      }
+    </style>
+    <!-- Deferred Meta Pixel - loads after user interaction or 3s delay to improve LCP -->
     <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '1162356848586894');
-    fbq('track', 'PageView');
+    (function() {
+      var loaded = false;
+      function loadMetaPixel() {
+        if (loaded) return;
+        loaded = true;
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '1162356848586894');
+        fbq('track', 'PageView');
+      }
+      // Load after first interaction OR after 3 seconds
+      ['click', 'scroll', 'touchstart', 'keydown'].forEach(function(evt) {
+        window.addEventListener(evt, loadMetaPixel, { once: true, passive: true });
+      });
+      setTimeout(loadMetaPixel, 3000);
+    })();
     </script>
     <!-- End Meta Pixel Code -->
     
-    <!-- Microsoft Clarity -->
-    <script type="text/javascript">
+    <!-- Deferred Microsoft Clarity - loads after user interaction or 3s delay -->
+    <script>
+    (function() {
+      var loaded = false;
+      function loadClarity() {
+        if (loaded) return;
+        loaded = true;
         (function(c,l,a,r,i,t,y){
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
         })(window, document, "clarity", "script", "qczq95ipaf");
+      }
+      // Load after first interaction OR after 3 seconds
+      ['click', 'scroll', 'touchstart', 'keydown'].forEach(function(evt) {
+        window.addEventListener(evt, loadClarity, { once: true, passive: true });
+      });
+      setTimeout(loadClarity, 3000);
+    })();
     </script>
     <!-- End Microsoft Clarity -->
   </head>

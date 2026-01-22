@@ -143,13 +143,16 @@ const AppContent = () => {
   // Auto-update Service Worker and clean old caches on each session
   useServiceWorkerUpdate();
   
+  // Only show GlobalImportProgress on admin routes to avoid background queries on public pages
+  const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
 
   return (
     <TooltipProvider>
-      
-      <Suspense fallback={null}>
-        <GlobalImportProgress />
-      </Suspense>
+      {isAdminRoute && (
+        <Suspense fallback={null}>
+          <GlobalImportProgress />
+        </Suspense>
+      )}
       <Toaster />
       <Sonner />
       
