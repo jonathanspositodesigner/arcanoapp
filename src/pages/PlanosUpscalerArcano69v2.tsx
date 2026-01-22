@@ -451,7 +451,8 @@ const PlanosUpscalerArcano69v2 = () => {
       after: upscalerLogoDepois,
       label: t('tools:upscaler.beforeAfter.logoHD'),
       badge: t('tools:upscaler.beforeAfter.badges.logo'),
-      badgeColor: "from-blue-500 to-cyan-500"
+      badgeColor: "from-blue-500 to-cyan-500",
+      aspectRatio: "2/3"
     },
     {
       before: upscalerMockupAntes,
