@@ -217,7 +217,8 @@ const BeforeAfterSlider = ({
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className={`relative w-full ${size === "large" ? "aspect-[4/3]" : "aspect-square"} rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10`}
+        className={`relative w-full ${size === "large" ? "aspect-[4/3]" : "aspect-square"} min-h-[200px] rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10`}
+        style={{ position: 'relative' }}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -229,17 +230,19 @@ const BeforeAfterSlider = ({
           src={afterImage} 
           alt="Depois" 
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
         
         {/* Imagem "Antes" (clipped) */}
         <div 
           className="absolute inset-0 overflow-hidden"
-          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+          style={{ position: 'absolute', inset: 0, overflow: 'hidden', clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
         >
           <img 
             src={beforeImage} 
             alt="Antes" 
             className="absolute inset-0 w-full h-full object-cover"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           />
         </div>
 
@@ -616,11 +619,11 @@ const PlanosUpscalerArcano69v2 = () => {
                 </h1>
               </FadeIn>
 
-              {/* Slider - logo abaixo do título */}
+              {/* Slider - foto 4K como solicitado */}
               <FadeIn delay={200} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
                 <BeforeAfterSlider
-                  beforeImage={upscalerAntigaAntes}
-                  afterImage={upscalerAntigaDepois}
+                  beforeImage={upscalerAntes1}
+                  afterImage={upscalerDepois1}
                   label={t('tools:upscaler.hero.dragToCompare')}
                   size="large"
                 />
