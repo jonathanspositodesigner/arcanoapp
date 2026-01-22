@@ -441,7 +441,7 @@ const PlanosUpscalerArcano69v2 = () => {
       label: t('tools:upscaler.beforeAfter.photoImproved4K'),
       badge: t('tools:upscaler.beforeAfter.badges.photo'),
       badgeColor: "from-fuchsia-500 to-pink-500",
-      aspectRatio: "3/4"
+      aspectRatio: "2/3"
     },
     {
       before: upscalerSeloAntes,
