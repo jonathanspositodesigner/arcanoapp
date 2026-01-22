@@ -13,8 +13,11 @@ import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, 
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
 import upscalerFotoDepois from "@/assets/upscaler-foto-depois.webp";
-import upscalerHeroAntes from "@/assets/upscaler-hero-antes.webp";
-import upscalerHeroDepois from "@/assets/upscaler-hero-depois.webp";
+import { HeroBeforeAfterSlider } from "@/components/upscaler";
+
+// Hero images use public paths for HTML preloading (LCP optimization)
+const upscalerHeroAntes = "/images/upscaler-hero-antes.webp";
+const upscalerHeroDepois = "/images/upscaler-hero-depois.webp";
 import upscalerSeloAntes from "@/assets/upscaler-selo-antes.webp";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.webp";
 import upscalerLogoAntes from "@/assets/upscaler-logo-antes.webp";
@@ -646,11 +649,11 @@ const PlanosUpscalerArcano = () => {
 
               {/* Slider - logo abaixo do título */}
               <FadeIn delay={200} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
-                <BeforeAfterSlider
+                <HeroBeforeAfterSlider
                   beforeImage={upscalerHeroAntes}
                   afterImage={upscalerHeroDepois}
                   label={t('tools:upscaler.hero.dragToCompare')}
-                  size="large"
+                  locale="pt"
                 />
               </FadeIn>
               
