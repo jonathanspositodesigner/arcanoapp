@@ -106,7 +106,6 @@ const AdminWebhookLogs = lazy(() => import("./pages/AdminWebhookLogs"));
 const AdminPushNotifications = lazy(() => import("./pages/AdminPushNotifications"));
 const AdminAbandonedCheckouts = lazy(() => import("./pages/AdminAbandonedCheckouts"));
 const AdminLeads = lazy(() => import("./pages/AdminLeads"));
-const AdminCloudinaryMigration = lazy(() => import("./pages/AdminCloudinaryMigration"));
 const AdminPremiumMusicos = lazy(() => import("./pages/AdminPremiumMusicos"));
 const SucessoArtesMusicos = lazy(() => import("./pages/SucessoArtesMusicos"));
 const PlanosUpscalerArcano = lazy(() => import("./pages/PlanosUpscalerArcano"));
@@ -258,7 +257,6 @@ const AppContent = () => {
           <Route path="/admin-push-notifications" element={<AdminPushNotifications />} />
           <Route path="/admin-abandoned-checkouts" element={<AdminAbandonedCheckouts />} />
           <Route path="/admin-leads" element={<AdminLeads />} />
-          <Route path="/admin-cloudinary-migration" element={<AdminCloudinaryMigration />} />
           <Route path="/admin-premium-musicos" element={<AdminPremiumMusicos />} />
           <Route path="/sucesso-artes-musicos" element={<SucessoArtesMusicos />} />
           <Route path="/aguardando-pagamento-musicos" element={<AguardandoPagamentoMusicos />} />
