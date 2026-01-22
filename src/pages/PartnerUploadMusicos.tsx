@@ -35,24 +35,6 @@ const PartnerUploadMusicos = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const { uploadToStorage } = { uploadToStorage: async (file: File, folder: string) => {
-    const base64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-    const timestamp = Date.now();
-    const extension = file.name.split('.').pop() || 'webp';
-    const filename = `${timestamp}-${Math.random().toString(36).substring(7)}.${extension}`;
-    const { data, error } = await supabase.functions.invoke('upload-to-storage', {
-      body: { file: base64, folder, filename, contentType: file.type },
-    });
-    if (error) return { success: false, error: error.message };
-    if (!data.success) return { success: false, error: data.error || 'Upload failed' };
-    return { success: true, url: data.url };
-  }};
-
   useEffect(() => {
     checkPartnerAccess();
     fetchCategories();
