@@ -101,6 +101,7 @@ export const SocialProofSectionES = ({ onZoomClick }: SocialProofSectionESProps)
               beforeImage={result.before}
               afterImage={result.after}
               label={result.label}
+              aspectRatio="2/3"
               locale="es"
               onZoomClick={() => onZoomClick(result.before, result.after)}
             />
