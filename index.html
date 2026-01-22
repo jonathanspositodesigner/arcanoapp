@@ -20,10 +20,7 @@
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     
-    <!-- Preload LCP hero images for upscaler pages -->
-    <link rel="preload" as="image" href="/images/upscaler-hero-antes.webp" fetchpriority="high" />
-    <link rel="preload" as="image" href="/images/upscaler-hero-depois.webp" fetchpriority="high" />
-    <link rel="preload" as="image" href="/images/upscaler-hero-preview.webp" fetchpriority="high" />
+    <!-- LCP images are loaded conditionally via useImagePreload hook on relevant pages only -->
     
     <!-- Preload critical fonts for faster text rendering -->
     <link rel="preload" 
