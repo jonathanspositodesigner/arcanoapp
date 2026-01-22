@@ -883,6 +883,7 @@ const PlanosUpscalerArcano = () => {
                     beforeImage={result.before}
                     afterImage={result.after}
                     label={result.label}
+                    aspectRatio="2/3"
                     onZoomClick={() => openModal(result.before, result.after)}
                   />
                 ))}
