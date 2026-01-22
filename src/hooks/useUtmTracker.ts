@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'utm_term', 'utm_content'];
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'utm_term', 'utm_content', 'fbclid'];
 const STORAGE_KEY = 'captured_utms';
 const CAPTURED_FLAG = 'utms_captured';
 
