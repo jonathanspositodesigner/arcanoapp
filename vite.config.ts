@@ -89,4 +89,34 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Agrupa todos os ícones Lucide em um único chunk
+          'lucide-icons': ['lucide-react'],
+          // Agrupa bibliotecas de UI em um chunk
+          'ui-vendor': [
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-select',
+            '@radix-ui/react-checkbox',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-slider',
+            '@radix-ui/react-progress',
+          ],
+          // React e dependências core
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Supabase client
+          'supabase': ['@supabase/supabase-js'],
+          // i18n
+          'i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
+        },
+      },
+    },
+  },
 }));
