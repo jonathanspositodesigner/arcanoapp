@@ -472,9 +472,10 @@ const PlanosUpscalerArcano69v2 = () => {
     {
       before: upscalerFoodAntes,
       after: upscalerFoodDepois,
-      label: "fotos de comida com aspecto foodporn",
-      badge: "Fotos de Alimentos",
-      badgeColor: "from-red-500 to-orange-500"
+      label: t('tools:upscaler.beforeAfter.foodPhotos'),
+      badge: t('tools:upscaler.beforeAfter.badges.food'),
+      badgeColor: "from-red-500 to-orange-500",
+      aspectRatio: "2/3"
     }
   ];
 
