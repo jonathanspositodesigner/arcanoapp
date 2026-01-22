@@ -5,8 +5,8 @@ import { LazyBeforeAfterSlider } from "../LazyBeforeAfterSlider";
 // Images will only load when LazyBeforeAfterSlider detects they're in viewport
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
 import upscalerFotoDepois from "@/assets/upscaler-foto-depois.webp";
-import upscalerSeloAntes from "@/assets/upscaler-selo-antes.jpg";
-import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
+import upscalerSeloAntes from "@/assets/upscaler-selo-antes.webp";
+import upscalerSeloDepois from "@/assets/upscaler-selo-depois.webp";
 import upscalerLogoAntes from "@/assets/upscaler-logo-antes.jpg";
 import upscalerLogoDepois from "@/assets/upscaler-logo-depois.png";
 import upscalerMockupAntes from "@/assets/upscaler-mockup-antes.jpg";
@@ -37,7 +37,8 @@ export const BeforeAfterGalleryPT = ({ onZoomClick }: BeforeAfterGalleryPTProps)
       after: upscalerSeloDepois,
       label: t('tools:upscaler.beforeAfter.seal3DHD'),
       badge: t('tools:upscaler.beforeAfter.badges.seals3D'),
-      badgeColor: "from-purple-500 to-violet-600"
+      badgeColor: "from-purple-500 to-violet-600",
+      aspectRatio: "2/3"
     },
     {
       before: upscalerLogoAntes,
