@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { LazyBeforeAfterSlider } from "../LazyBeforeAfterSlider";
 
-// Image paths - these are string references
+// Image paths - these are string references, not imports
 // Images will only load when LazyBeforeAfterSlider detects they're in viewport
 import upscalerAntes1 from "@/assets/upscaler-antes-1.webp";
 import upscalerDepois1 from "@/assets/upscaler-depois-1.webp";
@@ -16,13 +16,12 @@ import upscalerAntigaDepois from "@/assets/upscaler-antiga-depois.jpg";
 import upscalerFoodAntes from "@/assets/upscaler-food-antes.webp";
 import upscalerFoodDepois from "@/assets/upscaler-food-depois.webp";
 
-interface BeforeAfterGalleryESProps {
+interface BeforeAfterGalleryPTProps {
   onZoomClick: (before: string, after: string) => void;
 }
 
-export const BeforeAfterGalleryES = ({ onZoomClick }: BeforeAfterGalleryESProps) => {
-  const { t: tOriginal } = useTranslation();
-  const t = (key: string) => tOriginal(key, { lng: 'es' });
+export const BeforeAfterGalleryPT = ({ onZoomClick }: BeforeAfterGalleryPTProps) => {
+  const { t } = useTranslation();
 
   const beforeAfterExamples = [
     {
@@ -92,7 +91,7 @@ export const BeforeAfterGalleryES = ({ onZoomClick }: BeforeAfterGalleryESProps)
               label={example.label}
               badge={example.badge}
               badgeColor={example.badgeColor}
-              locale="es"
+              locale="pt"
               onZoomClick={() => onZoomClick(example.before, example.after)}
             />
           ))}
@@ -102,4 +101,4 @@ export const BeforeAfterGalleryES = ({ onZoomClick }: BeforeAfterGalleryESProps)
   );
 };
 
-export default BeforeAfterGalleryES;
+export default BeforeAfterGalleryPT;
