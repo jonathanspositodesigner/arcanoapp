@@ -5,20 +5,28 @@ interface HeroPlaceholderProps {
   onReveal: () => void;
   buttonText: string;
   locale?: "pt" | "es";
+  isMobile?: boolean;
 }
 
-export const HeroPlaceholder = ({ onReveal, buttonText, locale = "pt" }: HeroPlaceholderProps) => {
+export const HeroPlaceholder = ({ onReveal, buttonText, locale = "pt", isMobile = true }: HeroPlaceholderProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleReveal = () => {
     if (isLoading) return;
     setIsLoading(true);
 
-    // Preload before/after images ONLY when user clicks
+    // Preload mobile-optimized images when user clicks (600x900 ~70KB each)
+    const antesPath = isMobile 
+      ? "/images/upscaler-hero-antes-mobile.webp"
+      : "/images/upscaler-hero-antes.webp";
+    const depoisPath = isMobile
+      ? "/images/upscaler-hero-depois-mobile.webp"
+      : "/images/upscaler-hero-depois.webp";
+
     const imgBefore = new Image();
     const imgAfter = new Image();
-    imgBefore.src = "/images/upscaler-hero-antes.webp";
-    imgAfter.src = "/images/upscaler-hero-depois.webp";
+    imgBefore.src = antesPath;
+    imgAfter.src = depoisPath;
 
     // Wait for both images to load, then reveal
     Promise.all([
