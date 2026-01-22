@@ -11,8 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
-import upscalerAntes1 from "@/assets/upscaler-antes-1.jpg";
-import upscalerDepois1 from "@/assets/upscaler-depois-1.jpg";
+import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
+import upscalerFotoDepois from "@/assets/upscaler-foto-depois.webp";
 import upscalerHeroAntes from "@/assets/upscaler-hero-antes.webp";
 import upscalerHeroDepois from "@/assets/upscaler-hero-depois.webp";
 import upscalerSeloAntes from "@/assets/upscaler-selo-antes.jpg";
@@ -176,12 +176,14 @@ const BeforeAfterSlider = ({
   afterImage, 
   label,
   size = "default",
+  aspectRatio,
   onZoomClick
 }: { 
   beforeImage: string; 
   afterImage: string; 
   label?: string;
   size?: "default" | "large";
+  aspectRatio?: string;
   onZoomClick?: () => void;
 }) => {
   const { t } = useTranslation();
@@ -215,11 +217,17 @@ const BeforeAfterSlider = ({
     handleMove(e.touches[0].clientX);
   };
 
+  const getAspectStyle = () => {
+    if (aspectRatio) return { aspectRatio };
+    return { aspectRatio: size === "large" ? "4/3" : "1/1" };
+  };
+
   return (
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className={`relative w-full ${size === "large" ? "aspect-[4/3]" : "aspect-square"} rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10`}
+        className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10"
+        style={getAspectStyle()}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -430,11 +438,12 @@ const PlanosUpscalerArcano = () => {
 
   const beforeAfterExamples = [
     {
-      before: upscalerAntes1,
-      after: upscalerDepois1,
+      before: upscalerFotoAntes,
+      after: upscalerFotoDepois,
       label: t('tools:upscaler.beforeAfter.photoImproved4K'),
       badge: t('tools:upscaler.beforeAfter.badges.photo'),
-      badgeColor: "from-fuchsia-500 to-pink-500"
+      badgeColor: "from-fuchsia-500 to-pink-500",
+      aspectRatio: "3/4"
     },
     {
       before: upscalerSeloAntes,
@@ -743,6 +752,7 @@ const PlanosUpscalerArcano = () => {
                           beforeImage={example.before}
                           afterImage={example.after}
                           label={example.label}
+                          aspectRatio={(example as { aspectRatio?: string }).aspectRatio}
                           onZoomClick={() => openModal(example.before, example.after)}
                         />
                       </div>
