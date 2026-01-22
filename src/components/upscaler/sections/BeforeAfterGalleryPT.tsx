@@ -3,8 +3,8 @@ import { LazyBeforeAfterSlider } from "../LazyBeforeAfterSlider";
 
 // Image paths - these are string references, not imports
 // Images will only load when LazyBeforeAfterSlider detects they're in viewport
-import upscalerAntes1 from "@/assets/upscaler-antes-1.webp";
-import upscalerDepois1 from "@/assets/upscaler-depois-1.webp";
+import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
+import upscalerFotoDepois from "@/assets/upscaler-foto-depois.webp";
 import upscalerSeloAntes from "@/assets/upscaler-selo-antes.jpg";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
 import upscalerLogoAntes from "@/assets/upscaler-logo-antes.jpg";
@@ -25,11 +25,12 @@ export const BeforeAfterGalleryPT = ({ onZoomClick }: BeforeAfterGalleryPTProps)
 
   const beforeAfterExamples = [
     {
-      before: upscalerAntes1,
-      after: upscalerDepois1,
+      before: upscalerFotoAntes,
+      after: upscalerFotoDepois,
       label: t('tools:upscaler.beforeAfter.photoImproved4K'),
       badge: t('tools:upscaler.beforeAfter.badges.photo'),
-      badgeColor: "from-fuchsia-500 to-pink-500"
+      badgeColor: "from-fuchsia-500 to-pink-500",
+      aspectRatio: "3/4"
     },
     {
       before: upscalerSeloAntes,
@@ -91,6 +92,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick }: BeforeAfterGalleryPTProps)
               label={example.label}
               badge={example.badge}
               badgeColor={example.badgeColor}
+              aspectRatio={example.aspectRatio}
               locale="pt"
               onZoomClick={() => onZoomClick(example.before, example.after)}
             />
