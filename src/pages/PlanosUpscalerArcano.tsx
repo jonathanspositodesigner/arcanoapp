@@ -642,13 +642,6 @@ const PlanosUpscalerArcano = () => {
                 </p>
               </FadeIn>
 
-              <FadeIn delay={600} duration={700}>
-                <div className="flex flex-col items-center">
-                  <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
-                  <TrustBadges t={t} />
-                </div>
-              </FadeIn>
-
               {/* Scroll Indicator */}
               <FadeIn delay={800} duration={700}>
                 <ScrollIndicator className="mt-12 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
