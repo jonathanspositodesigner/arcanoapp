@@ -385,7 +385,7 @@ const PlanosUpscalerArcano69ES = () => {
 
           {/* SEÇÃO ANTES/DEPOIS - Lazy loaded */}
           <Suspense fallback={<SectionSkeleton height="600px" />}>
-            <BeforeAfterGalleryES onZoomClick={openModal} />
+            <BeforeAfterGalleryES onZoomClick={openModal} isMobile={isMobile} />
           </Suspense>
 
           {/* PARA QUEM É */}

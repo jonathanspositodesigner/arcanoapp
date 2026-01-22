@@ -18,56 +18,57 @@ import upscalerFoodDepois from "@/assets/upscaler-food-depois.webp";
 
 interface BeforeAfterGalleryESProps {
   onZoomClick: (before: string, after: string) => void;
+  isMobile?: boolean;
 }
 
-export const BeforeAfterGalleryES = ({ onZoomClick }: BeforeAfterGalleryESProps) => {
+export const BeforeAfterGalleryES = ({ onZoomClick, isMobile = false }: BeforeAfterGalleryESProps) => {
   const { t: tOriginal } = useTranslation();
   const t = (key: string) => tOriginal(key, { lng: 'es' });
 
   const beforeAfterExamples = [
     {
-      before: upscalerFotoAntes,
-      after: upscalerFotoDepois,
+      before: isMobile ? "/images/upscaler-foto-antes-mobile.webp" : upscalerFotoAntes,
+      after: isMobile ? "/images/upscaler-foto-depois-mobile.webp" : upscalerFotoDepois,
       label: t('tools:upscaler.beforeAfter.photoImproved4K'),
       badge: t('tools:upscaler.beforeAfter.badges.photo'),
       badgeColor: "from-fuchsia-500 to-pink-500",
       aspectRatio: "2/3"
     },
     {
-      before: upscalerSeloAntes,
-      after: upscalerSeloDepois,
+      before: isMobile ? "/images/upscaler-selo-antes-mobile.webp" : upscalerSeloAntes,
+      after: isMobile ? "/images/upscaler-selo-depois-mobile.webp" : upscalerSeloDepois,
       label: t('tools:upscaler.beforeAfter.seal3DHD'),
       badge: t('tools:upscaler.beforeAfter.badges.seals3D'),
       badgeColor: "from-purple-500 to-violet-600",
       aspectRatio: "2/3"
     },
     {
-      before: upscalerLogoAntes,
-      after: upscalerLogoDepois,
+      before: isMobile ? "/images/upscaler-logo-antes-mobile.webp" : upscalerLogoAntes,
+      after: isMobile ? "/images/upscaler-logo-depois-mobile.webp" : upscalerLogoDepois,
       label: t('tools:upscaler.beforeAfter.logoHD'),
       badge: t('tools:upscaler.beforeAfter.badges.logo'),
       badgeColor: "from-blue-500 to-cyan-500",
       aspectRatio: "2/3"
     },
     {
-      before: upscalerProdutoAntes,
-      after: upscalerProdutoDepois,
+      before: isMobile ? "/images/upscaler-produto-antes-mobile.webp" : upscalerProdutoAntes,
+      after: isMobile ? "/images/upscaler-produto-depois-mobile.webp" : upscalerProdutoDepois,
       label: t('tools:upscaler.beforeAfter.mockupSharp'),
       badge: t('tools:upscaler.beforeAfter.badges.mockup'),
       badgeColor: "from-emerald-500 to-green-500",
       aspectRatio: "2/3"
     },
     {
-      before: upscalerAntigaAntes,
-      after: upscalerAntigaDepois,
+      before: isMobile ? "/images/upscaler-antiga-antes-mobile.webp" : upscalerAntigaAntes,
+      after: isMobile ? "/images/upscaler-antiga-depois-mobile.webp" : upscalerAntigaDepois,
       label: t('tools:upscaler.beforeAfter.oldPhotoRestored'),
       badge: t('tools:upscaler.beforeAfter.badges.oldPhoto'),
       badgeColor: "from-amber-500 to-orange-500",
       aspectRatio: "2/3"
     },
     {
-      before: upscalerFoodAntes,
-      after: upscalerFoodDepois,
+      before: isMobile ? "/images/upscaler-food-antes-mobile.webp" : upscalerFoodAntes,
+      after: isMobile ? "/images/upscaler-food-depois-mobile.webp" : upscalerFoodDepois,
       label: t('tools:upscaler.beforeAfter.foodPhotos'),
       badge: t('tools:upscaler.beforeAfter.badges.food'),
       badgeColor: "from-red-500 to-orange-500",
