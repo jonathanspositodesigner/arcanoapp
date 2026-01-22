@@ -17,13 +17,12 @@ import upscalerUser5Depois from "@/assets/upscaler-user5-depois.webp";
 import upscalerUser6Antes from "@/assets/upscaler-user6-antes.webp";
 import upscalerUser6Depois from "@/assets/upscaler-user6-depois.webp";
 
-interface SocialProofSectionESProps {
+interface SocialProofSectionPTProps {
   onZoomClick: (before: string, after: string) => void;
 }
 
-export const SocialProofSectionES = ({ onZoomClick }: SocialProofSectionESProps) => {
-  const { t: tOriginal } = useTranslation();
-  const t = (key: string) => tOriginal(key, { lng: 'es' });
+export const SocialProofSectionPT = ({ onZoomClick }: SocialProofSectionPTProps) => {
+  const { t } = useTranslation();
 
   const userResults = [
     {
@@ -59,7 +58,7 @@ export const SocialProofSectionES = ({ onZoomClick }: SocialProofSectionESProps)
   ];
 
   return (
-    <AnimatedSection className="px-4 py-20">
+    <AnimatedSection className="px-4 py-20 bg-black/30">
       <div className="max-w-4xl mx-auto">
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-2 tracking-wide leading-tight px-2">
@@ -82,7 +81,7 @@ export const SocialProofSectionES = ({ onZoomClick }: SocialProofSectionESProps)
                     afterImage={result.after}
                     label={result.label}
                     aspectRatio="2/3"
-                    locale="es"
+                    locale="pt"
                     onZoomClick={() => onZoomClick(result.before, result.after)}
                   />
                 </CarouselItem>
@@ -102,7 +101,7 @@ export const SocialProofSectionES = ({ onZoomClick }: SocialProofSectionESProps)
               afterImage={result.after}
               label={result.label}
               aspectRatio="2/3"
-              locale="es"
+              locale="pt"
               onZoomClick={() => onZoomClick(result.before, result.after)}
             />
           ))}
@@ -112,4 +111,4 @@ export const SocialProofSectionES = ({ onZoomClick }: SocialProofSectionESProps)
   );
 };
 
-export default SocialProofSectionES;
+export default SocialProofSectionPT;
