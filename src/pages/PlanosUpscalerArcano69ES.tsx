@@ -234,7 +234,14 @@ const BeforeAfterSlider = ({
           alt="Después" 
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center'
+          }}
         />
         
         {/* Imagem "Antes" (clipped) */}
@@ -247,7 +254,14 @@ const BeforeAfterSlider = ({
             alt="Antes" 
             loading="lazy"
             decoding="async"
-            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center'
+            }}
           />
         </div>
 
