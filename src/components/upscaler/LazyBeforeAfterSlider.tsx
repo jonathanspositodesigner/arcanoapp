@@ -10,6 +10,7 @@ interface LazyBeforeAfterSliderProps {
   badgeColor?: string;
   locale?: 'pt' | 'es';
   onZoomClick?: () => void;
+  aspectRatio?: string;
 }
 
 /**
@@ -23,7 +24,8 @@ export const LazyBeforeAfterSlider = ({
   badge,
   badgeColor = "from-fuchsia-500 to-pink-500",
   locale = 'pt',
-  onZoomClick
+  onZoomClick,
+  aspectRatio
 }: LazyBeforeAfterSliderProps) => {
   const [isInView, setIsInView] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
@@ -91,7 +93,10 @@ export const LazyBeforeAfterSlider = ({
         <div className="pt-2">
           {/* Placeholder skeleton - shown while not in view or images loading */}
           {(!isInView || !imagesLoaded) && (
-            <div className="aspect-[4/3] rounded-xl overflow-hidden bg-white/5 relative">
+            <div 
+              className="rounded-xl overflow-hidden bg-white/5 relative"
+              style={{ aspectRatio: aspectRatio || '4/3' }}
+            >
               {/* Skeleton animation */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
               
@@ -119,6 +124,7 @@ export const LazyBeforeAfterSlider = ({
                 label={label}
                 locale={locale}
                 onZoomClick={onZoomClick}
+                aspectRatio={aspectRatio}
               />
             </div>
           )}

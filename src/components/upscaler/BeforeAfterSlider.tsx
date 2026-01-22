@@ -9,6 +9,7 @@ interface BeforeAfterSliderProps {
   size?: "default" | "large";
   onZoomClick?: () => void;
   locale?: 'pt' | 'es';
+  aspectRatio?: string;
 }
 
 /**
@@ -21,7 +22,8 @@ export const BeforeAfterSlider = ({
   label,
   size = "default",
   onZoomClick,
-  locale = 'pt'
+  locale = 'pt',
+  aspectRatio
 }: BeforeAfterSliderProps) => {
   const { t: tOriginal } = useTranslation();
   const t = (key: string) => tOriginal(key, { lng: locale });
@@ -57,11 +59,18 @@ export const BeforeAfterSlider = ({
     handleMove(e.touches[0].clientX);
   };
 
+  // Determine aspect ratio: custom > size-based default
+  const getAspectStyle = () => {
+    if (aspectRatio) return { aspectRatio };
+    return { aspectRatio: size === "large" ? "4/3" : "1/1" };
+  };
+
   return (
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className={`relative w-full ${size === "large" ? "aspect-[4/3]" : "aspect-square"} rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10`}
+        className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10"
+        style={getAspectStyle()}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
