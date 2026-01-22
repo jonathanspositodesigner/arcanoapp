@@ -217,16 +217,21 @@ const BeforeAfterSlider = ({
     handleMove(e.touches[0].clientX);
   };
 
+  const getAspectClass = () => {
+    if (aspectRatio) return "";
+    return size === "large" ? "aspect-[2/3] md:aspect-[4/3]" : "aspect-square";
+  };
+
   const getAspectStyle = () => {
     if (aspectRatio) return { aspectRatio };
-    return { aspectRatio: size === "large" ? "4/3" : "1/1" };
+    return {};
   };
 
   return (
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10"
+        className={`relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10 ${getAspectClass()}`}
         style={getAspectStyle()}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
