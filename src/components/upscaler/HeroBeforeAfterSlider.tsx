@@ -26,6 +26,8 @@ export const HeroBeforeAfterSlider = ({
   const [afterError, setAfterError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const isHorizontalDrag = useRef(false);
 
   const handleMove = (clientX: number) => {
     if (!containerRef.current) return;
@@ -49,8 +51,34 @@ export const HeroBeforeAfterSlider = ({
     }
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    isHorizontalDrag.current = false;
+    isDragging.current = true;
+  };
+
   const handleTouchMove = (e: React.TouchEvent) => {
-    handleMove(e.touches[0].clientX);
+    const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+    
+    // Se movimento horizontal > vertical, é um arrasto do slider
+    if (deltaX > deltaY && deltaX > 10) {
+      isHorizontalDrag.current = true;
+    }
+    
+    // Bloqueia scroll vertical se estiver arrastando horizontalmente
+    if (isHorizontalDrag.current) {
+      e.preventDefault();
+    }
+    
+    handleMove(touch.clientX);
+  };
+
+  const handleTouchEnd = () => {
+    isDragging.current = false;
+    isHorizontalDrag.current = false;
   };
 
   return (
@@ -62,7 +90,9 @@ export const HeroBeforeAfterSlider = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onMouseMove={handleMouseMove}
+        onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {/* After Image (background) - LCP optimized */}
         <img 
