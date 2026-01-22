@@ -64,6 +64,44 @@ const PlanosUpscalerArcano69ES = () => {
   };
 
   const TOOL_SLUG = "upscaller-arcano";
+  const ES_PIXEL_ID = '1383797283173351';
+
+  // Carregar Meta Pixel exclusivo para página ES
+  useEffect(() => {
+    // Evitar duplicação se já existir
+    if (document.getElementById('fb-pixel-es')) return;
+    
+    // Injetar script do Meta Pixel
+    const script = document.createElement('script');
+    script.id = 'fb-pixel-es';
+    script.innerHTML = `
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '${ES_PIXEL_ID}');
+      fbq('track', 'PageView');
+    `;
+    document.head.appendChild(script);
+    
+    // Adicionar noscript
+    const noscript = document.createElement('noscript');
+    noscript.id = 'fb-pixel-es-noscript';
+    noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${ES_PIXEL_ID}&ev=PageView&noscript=1"/>`;
+    document.body.appendChild(noscript);
+
+    return () => {
+      // Cleanup ao sair da página
+      const existingScript = document.getElementById('fb-pixel-es');
+      const existingNoscript = document.getElementById('fb-pixel-es-noscript');
+      if (existingScript) existingScript.remove();
+      if (existingNoscript) existingNoscript.remove();
+    };
+  }, []);
 
   useEffect(() => {
     fetchToolData();
@@ -93,9 +131,9 @@ const PlanosUpscalerArcano69ES = () => {
   };
 
   const handlePurchase = () => {
-    // Disparar evento de InitiateCheckout no Meta Pixel
+    // Disparar InitiateCheckout APENAS no Pixel ES (1383797283173351)
     if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'InitiateCheckout', {
+      (window as any).fbq('trackSingle', ES_PIXEL_ID, 'InitiateCheckout', {
         content_name: 'Upscaler Arcano ES',
         content_category: 'Ferramentas IA',
         value: 9.90,
