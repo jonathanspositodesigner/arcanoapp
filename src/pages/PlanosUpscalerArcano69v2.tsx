@@ -10,7 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
-import { HeroBeforeAfterSlider, SectionSkeleton } from "@/components/upscaler";
+import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton } from "@/components/upscaler";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Hero images use public paths for HTML preloading (LCP optimization)
 const upscalerHeroAntes = "/images/upscaler-hero-antes.webp";
@@ -185,10 +186,12 @@ const PlanosUpscalerArcano69v2 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user, isPremium, hasAccessToPack, isLoading: authLoading } = usePremiumArtesStatus();
+  const isMobile = useIsMobile();
   const [tool, setTool] = useState<ToolData | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
+  const [heroRevealed, setHeroRevealed] = useState(false);
 
   const openModal = (before: string, after: string) => {
     setModalImages({ before, after });
@@ -235,13 +238,8 @@ const PlanosUpscalerArcano69v2 = () => {
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
 
-  if (loading || authLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500"></div>
-      </div>
-    );
-  }
+  // Loading state removido do Hero para otimizar LCP
+  // O loading agora é usado apenas nas seções que dependem dos dados (preço)
 
   // Preço fixo para esta página: R$49,90 (4990 centavos)
   const price = 4990;
@@ -357,27 +355,36 @@ const PlanosUpscalerArcano69v2 = () => {
         </div>
       ) : (
         <>
-          {/* HERO SECTION - Vertical no mobile */}
+          {/* HERO SECTION - Renderiza imediatamente para LCP */}
           <section className="px-3 md:px-4 py-10 md:py-20 w-full">
             <div className="flex flex-col items-center text-center">
-              <FadeIn delay={0} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw]">
+              {/* H1 sem FadeIn para ser visível imediatamente (LCP) */}
+              <div className="w-full max-w-[95vw] md:max-w-[60vw]">
                 <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
                   {t('tools:upscaler.hero.title1')}{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                     {t('tools:upscaler.hero.title2')}
                   </span>
                 </h1>
-              </FadeIn>
+              </div>
 
-              {/* Slider - logo abaixo do título */}
-              <FadeIn delay={200} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
-                <HeroBeforeAfterSlider
-                  beforeImage={upscalerHeroAntes}
-                  afterImage={upscalerHeroDepois}
-                  label={t('tools:upscaler.hero.dragToCompare')}
-                  locale="pt"
-                />
-              </FadeIn>
+              {/* Hero Image sem FadeIn para LCP */}
+              <div className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
+                {isMobile && !heroRevealed ? (
+                  <HeroPlaceholder
+                    onReveal={() => setHeroRevealed(true)}
+                    buttonText={t('tools:upscaler.hero.seeToolPower')}
+                    locale="pt"
+                  />
+                ) : (
+                  <HeroBeforeAfterSlider
+                    beforeImage={upscalerHeroAntes}
+                    afterImage={upscalerHeroDepois}
+                    label={t('tools:upscaler.hero.dragToCompare')}
+                    locale="pt"
+                  />
+                )}
+              </div>
               
               <FadeIn delay={400} duration={700}>
                 <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8 max-w-2xl">

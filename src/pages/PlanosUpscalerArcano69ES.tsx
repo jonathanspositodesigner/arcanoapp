@@ -149,13 +149,8 @@ const PlanosUpscalerArcano69ES = () => {
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
 
-  if (loading || authLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500"></div>
-      </div>
-    );
-  }
+  // Loading state removido do Hero para otimizar LCP
+  // O loading agora é usado apenas nas seções que dependem dos dados (preço)
 
   // Preço em centavos de dólar para LATAM: $9.90 (990 centavos)
   const price = 990;
@@ -269,20 +264,21 @@ const PlanosUpscalerArcano69ES = () => {
         </div>
       ) : (
         <>
-          {/* HERO SECTION - Optimized for LCP */}
+          {/* HERO SECTION - Renderiza imediatamente para LCP */}
           <section className="px-3 md:px-4 py-10 md:py-20 w-full">
             <div className="flex flex-col items-center text-center">
-              <FadeIn delay={0} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw]">
+              {/* H1 sem FadeIn para ser visível imediatamente (LCP) */}
+              <div className="w-full max-w-[95vw] md:max-w-[60vw]">
                 <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
                   {t('tools:upscaler.hero.title1')}{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                     {t('tools:upscaler.hero.title2')}
                   </span>
                 </h1>
-              </FadeIn>
+              </div>
 
-              {/* Hero Slider - placeholder no mobile, carrega ao clicar */}
-              <FadeIn delay={200} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
+              {/* Hero Image sem FadeIn para LCP */}
+              <div className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
                 {isMobile && !heroRevealed ? (
                   <HeroPlaceholder
                     onReveal={() => setHeroRevealed(true)}
@@ -297,7 +293,7 @@ const PlanosUpscalerArcano69ES = () => {
                     locale="es"
                   />
                 )}
-              </FadeIn>
+              </div>
               
               <FadeIn delay={400} duration={700}>
                 <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8 max-w-2xl">
