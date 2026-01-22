@@ -4,3 +4,4 @@ export { BeforeAfterSlider } from './BeforeAfterSlider';
 export { FullscreenModal } from './FullscreenModal';
 export { LazyImage } from './LazyImage';
 export { SectionSkeleton } from './SectionSkeleton';
+export { SectionErrorBoundary } from './SectionErrorBoundary';

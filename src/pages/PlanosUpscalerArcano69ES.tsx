@@ -11,10 +11,12 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 
-// Optimized imports - only hero images loaded eagerly
-import { HeroBeforeAfterSlider, FullscreenModal, SectionSkeleton } from "@/components/upscaler";
-import upscalerHeroAntes from "@/assets/upscaler-hero-antes.webp";
-import upscalerHeroDepois from "@/assets/upscaler-hero-depois.webp";
+// Optimized imports - only hero images loaded eagerly from public folder
+import { HeroBeforeAfterSlider, FullscreenModal, SectionSkeleton, SectionErrorBoundary } from "@/components/upscaler";
+
+// Hero images from public folder for proper preloading
+const upscalerHeroAntes = "/images/upscaler-hero-antes.webp";
+const upscalerHeroDepois = "/images/upscaler-hero-depois.webp";
 
 // Lazy load heavy sections
 const BeforeAfterGalleryES = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryES"));
