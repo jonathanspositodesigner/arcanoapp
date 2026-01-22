@@ -35,7 +35,7 @@
       "aiNotGood": "no quedó bien",
       "lostContract": "¿Dejaste de cerrar un contrato grande porque",
       "noProPhotos": "no tenías fotos profesionales",
-      "solution": "El Upscaler Arcano resuelve esto en segundos."
+      "solution": "El Upscaler Arcano resuelve esto en minutos."
     },
     "beforeAfter": {
       "title": "Funciona con",
@@ -90,7 +90,7 @@
       "title": "¿Qué hace el",
       "subtitle": "Upscaler",
       "improveImages": "Deja tus fotos en 4K usando un motor exclusivo de inteligencia artificial",
-      "removeBackground": "Remueve el fondo en segundos de cualquier foto con un recorte perfecto",
+      "removeBackground": "Remueve el fondo en minutos de cualquier foto con un recorte perfecto",
       "lifetimeAccess": "Agrega detalles y texturas de piel ultra realistas",
       "futureUpdates": "Uso gratuito e ilimitado sin consumir créditos (¡solo pagas una vez!)"
     },
@@ -107,7 +107,7 @@
       },
       "download": {
         "title": "Descarga",
-        "description": "Tu imagen mejorada en segundos"
+        "description": "Tu imagen mejorada en minutos"
       }
     },
     "socialProof": {
@@ -125,7 +125,7 @@
       "q2": "¿Funciona con cualquier imagen?",
       "a2": "¡Sí! Funciona con fotos, artes de IA, logos, mockups, capturas de pantalla, fotos antiguas y mucho más. Cualquier tipo de imagen puede ser mejorada.",
       "q3": "¿Cuánto tiempo toma mejorar una imagen?",
-      "a3": "¡Segundos! Solo sube la imagen y en pocos segundos estará lista para descargar en alta calidad.",
+      "a3": "¡Minutos! Solo sube la imagen y en pocos minutos estará lista para descargar en alta calidad.",
       "q4": "¿Hay soporte si tengo dudas?",
       "a4": "¡Sí! Tendrás acceso a nuestro soporte vía WhatsApp para resolver cualquier duda sobre la herramienta.",
       "q5": "¿Puedo usar en cuantas imágenes quiera?",
