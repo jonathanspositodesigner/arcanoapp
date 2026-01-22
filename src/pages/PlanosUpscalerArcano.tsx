@@ -11,7 +11,7 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton } from "@/components/upscaler";
+import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
 // Hero images use public paths for HTML preloading (LCP optimization)
@@ -20,7 +20,6 @@ const upscalerHeroDepois = "/images/upscaler-hero-depois.webp";
 
 // Lazy load heavy gallery sections - images will only load when user scrolls to section
 const BeforeAfterGalleryPT = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryPT"));
-const SocialProofSectionPT = lazy(() => import("@/components/upscaler/sections/SocialProofSectionPT"));
 
 interface ToolData {
   id: string;
@@ -134,7 +133,7 @@ const FullscreenModal = ({
           className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
           style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
         >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center">
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center">
             <div className="flex gap-0.5">
               <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
               <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
@@ -548,10 +547,8 @@ const PlanosUpscalerArcano = () => {
             </div>
           </AnimatedSection>
 
-          {/* PROVA SOCIAL - Lazy loaded */}
-          <Suspense fallback={<SectionSkeleton height="600px" />}>
-            <SocialProofSectionPT onZoomClick={openModal} />
-          </Suspense>
+          {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
+          <LazySocialProofWrapper locale="pt" onZoomClick={openModal} />
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">

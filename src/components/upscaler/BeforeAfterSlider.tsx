@@ -107,7 +107,7 @@ export const BeforeAfterSlider = ({
           className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
           style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
         >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center">
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center">
             <div className="flex gap-0.5">
               <div className="w-0.5 h-5 bg-gray-400 rounded-full" />
               <div className="w-0.5 h-5 bg-gray-400 rounded-full" />

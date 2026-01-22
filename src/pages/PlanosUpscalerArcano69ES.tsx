@@ -14,7 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
 // Optimized imports - only hero images loaded eagerly from public folder
-import { HeroBeforeAfterSlider, HeroPlaceholder, FullscreenModal, SectionSkeleton, SectionErrorBoundary } from "@/components/upscaler";
+import { HeroBeforeAfterSlider, HeroPlaceholder, FullscreenModal, SectionSkeleton, SectionErrorBoundary, LazySocialProofWrapper } from "@/components/upscaler";
 
 // Hero images from public folder for proper preloading
 const upscalerHeroAntes = "/images/upscaler-hero-antes.webp";
@@ -22,7 +22,6 @@ const upscalerHeroDepois = "/images/upscaler-hero-depois.webp";
 
 // Lazy load heavy sections
 const BeforeAfterGalleryES = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryES"));
-const SocialProofSectionES = lazy(() => import("@/components/upscaler/sections/SocialProofSectionES"));
 
 interface ToolData {
   id: string;
@@ -449,10 +448,8 @@ const PlanosUpscalerArcano69ES = () => {
             </div>
           </AnimatedSection>
 
-          {/* PROVA SOCIAL - Lazy loaded */}
-          <Suspense fallback={<SectionSkeleton height="500px" />}>
-            <SocialProofSectionES onZoomClick={openModal} />
-          </Suspense>
+          {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
+          <LazySocialProofWrapper locale="es" onZoomClick={openModal} />
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
