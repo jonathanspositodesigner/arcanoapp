@@ -21,8 +21,8 @@ import upscalerLogoAntes from "@/assets/upscaler-logo-antes.webp";
 import upscalerLogoDepois from "@/assets/upscaler-logo-depois.webp";
 import upscalerAntigaAntes from "@/assets/upscaler-antiga-antes.webp";
 import upscalerAntigaDepois from "@/assets/upscaler-antiga-depois.jpg";
-import upscalerMockupAntes from "@/assets/upscaler-mockup-antes.jpg";
-import upscalerMockupDepois from "@/assets/upscaler-mockup-depois.jpg";
+import upscalerProdutoAntes from "@/assets/upscaler-produto-antes.webp";
+import upscalerProdutoDepois from "@/assets/upscaler-produto-depois.webp";
 import upscalerUser1Antes from "@/assets/upscaler-user1-antes.jpg";
 import upscalerUser1Depois from "@/assets/upscaler-user1-depois.jpg";
 import upscalerUser2Antes from "@/assets/upscaler-user2-antes.jpg";
@@ -462,11 +462,12 @@ const PlanosUpscalerArcano = () => {
       aspectRatio: "2/3"
     },
     {
-      before: upscalerMockupAntes,
-      after: upscalerMockupDepois,
+      before: upscalerProdutoAntes,
+      after: upscalerProdutoDepois,
       label: t('tools:upscaler.beforeAfter.mockupSharp'),
       badge: t('tools:upscaler.beforeAfter.badges.mockup'),
-      badgeColor: "from-emerald-500 to-green-500"
+      badgeColor: "from-emerald-500 to-green-500",
+      aspectRatio: "2/3"
     },
     {
       before: upscalerAntigaAntes,

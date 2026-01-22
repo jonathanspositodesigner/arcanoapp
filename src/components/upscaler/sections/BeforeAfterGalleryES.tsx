@@ -9,8 +9,8 @@ import upscalerSeloAntes from "@/assets/upscaler-selo-antes.webp";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.webp";
 import upscalerLogoAntes from "@/assets/upscaler-logo-antes.webp";
 import upscalerLogoDepois from "@/assets/upscaler-logo-depois.webp";
-import upscalerMockupAntes from "@/assets/upscaler-mockup-antes.jpg";
-import upscalerMockupDepois from "@/assets/upscaler-mockup-depois.jpg";
+import upscalerProdutoAntes from "@/assets/upscaler-produto-antes.webp";
+import upscalerProdutoDepois from "@/assets/upscaler-produto-depois.webp";
 import upscalerAntigaAntes from "@/assets/upscaler-antiga-antes.webp";
 import upscalerAntigaDepois from "@/assets/upscaler-antiga-depois.jpg";
 import upscalerFoodAntes from "@/assets/upscaler-food-antes.webp";
@@ -50,11 +50,12 @@ export const BeforeAfterGalleryES = ({ onZoomClick }: BeforeAfterGalleryESProps)
       aspectRatio: "2/3"
     },
     {
-      before: upscalerMockupAntes,
-      after: upscalerMockupDepois,
+      before: upscalerProdutoAntes,
+      after: upscalerProdutoDepois,
       label: t('tools:upscaler.beforeAfter.mockupSharp'),
       badge: t('tools:upscaler.beforeAfter.badges.mockup'),
-      badgeColor: "from-emerald-500 to-green-500"
+      badgeColor: "from-emerald-500 to-green-500",
+      aspectRatio: "2/3"
     },
     {
       before: upscalerAntigaAntes,
