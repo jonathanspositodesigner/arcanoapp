@@ -13,8 +13,9 @@ import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, 
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import upscalerAntes1 from "@/assets/upscaler-antes-1.webp";
 import upscalerDepois1 from "@/assets/upscaler-depois-1.webp";
-import upscalerHeroAntes from "@/assets/upscaler-hero-antes.webp";
-import upscalerHeroDepois from "@/assets/upscaler-hero-depois.webp";
+// NOTE: keeping hero pair as JPG because the WebP conversion caused misalignment between before/after.
+import upscalerHeroAntes from "@/assets/upscaler-hero-antes.jpg";
+import upscalerHeroDepois from "@/assets/upscaler-hero-depois.jpg";
 import upscalerSeloAntes from "@/assets/upscaler-selo-antes.webp";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.webp";
 import upscalerLogoAntes from "@/assets/upscaler-logo-antes.webp";
