@@ -700,8 +700,6 @@ Deno.serve(async (req) => {
         }
       }
 
-      await logWebhook(supabase, payload, 'abandoned', productId, leadEmail, 'success', 'lead', undefined)
-      
       const duration = Date.now() - startTime
       console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
       console.log(`${'='.repeat(70)}\n`)
@@ -740,8 +738,6 @@ Deno.serve(async (req) => {
     
     if (!email) {
       console.log(`\n❌ [${requestId}] ERRO: Email não fornecido`)
-      await logWebhook(supabase, payload, status, productId, email, 'error', 'unknown', 'Email is required')
-      
       const duration = Date.now() - startTime
       console.log(`⏱️ [${requestId}] Tempo: ${duration}ms`)
       console.log(`${'='.repeat(70)}\n`)
@@ -760,8 +756,6 @@ Deno.serve(async (req) => {
       const isBlacklisted = await isEmailBlacklisted(supabase, email)
       if (isBlacklisted) {
         console.log(`   └─ 🚫 Email BLOQUEADO`)
-        await logWebhook(supabase, payload, status, productId, email, 'blacklisted', 'blocked', 'Email is blacklisted')
-        
         const duration = Date.now() - startTime
         console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
         console.log(`${'='.repeat(70)}\n`)
@@ -865,8 +859,6 @@ Deno.serve(async (req) => {
     // Se não encontrou nenhum mapeamento, retornar erro
     if (mappingType !== 'promotion' && !packMapping) {
       console.log(`\n❌ [${requestId}] ERRO: Não foi possível determinar pack/promoção`)
-      await logWebhook(supabase, payload, status, productId, email, 'error', mappingType, 'Could not determine pack/promotion from product')
-      
       const duration = Date.now() - startTime
       console.log(`⏱️ [${requestId}] Tempo: ${duration}ms`)
       console.log(`${'='.repeat(70)}\n`)
@@ -1058,8 +1050,6 @@ Deno.serve(async (req) => {
       
       await sendWelcomeEmail(supabase, email, clientName, packInfo, requestId, isFerramentaIA, userLocale)
 
-      await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
-
       const duration = Date.now() - startTime
       console.log(`\n✅ [${requestId}] WEBHOOK PROCESSADO COM SUCESSO`)
       console.log(`   ├─ Email: ${email}`)
@@ -1138,8 +1128,6 @@ Deno.serve(async (req) => {
         console.log(`   ├─ ⚠️ Usuário não encontrado`)
       }
 
-      await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
-
       const duration = Date.now() - startTime
       console.log(`\n✅ [${requestId}] WEBHOOK PROCESSADO COM SUCESSO`)
       console.log(`   ├─ Email: ${email}`)
@@ -1187,8 +1175,6 @@ Deno.serve(async (req) => {
         console.log(`   └─ ⏭️ Lead já existe`)
       }
 
-      await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
-      
       const duration = Date.now() - startTime
       console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
       console.log(`${'='.repeat(70)}\n`)
@@ -1202,8 +1188,6 @@ Deno.serve(async (req) => {
     // Handle other statuses
     if (status === 'canceled' || status === 'unpaid' || status === 'expired') {
       console.log(`\n📋 [${requestId}] STATUS ${status.toUpperCase()}: Apenas logado`)
-      await logWebhook(supabase, payload, status, productId, email, 'success', mappingType)
-      
       const duration = Date.now() - startTime
       console.log(`   └─ Tempo: ${duration}ms`)
       console.log(`${'='.repeat(70)}\n`)
@@ -1216,11 +1200,7 @@ Deno.serve(async (req) => {
 
     // For other statuses
     console.log(`\n📋 [${requestId}] STATUS NÃO TRATADO: ${status}`)
-    await logWebhook(supabase, payload, status, productId, email, 'skipped', mappingType)
-    
     const duration = Date.now() - startTime
-    console.log(`   └─ Tempo: ${duration}ms`)
-    console.log(`${'='.repeat(70)}\n`)
     
     return new Response(
       JSON.stringify({ success: true, message: `Webhook received with status: ${status}` }),
@@ -1238,8 +1218,6 @@ Deno.serve(async (req) => {
     console.log(`   ├─ Status: ${status || 'N/A'}`)
     console.log(`   ├─ Erro: ${errorMessage}`)
     console.log(`   └─ Stack: ${errorStack?.split('\n')[0] || 'N/A'}`)
-    
-    await logWebhook(supabase, payload, status, productId, email, 'error', mappingType, `[${currentStep}] ${errorMessage}`)
     
     const duration = Date.now() - startTime
     console.log(`\n⏱️ [${requestId}] Tempo: ${duration}ms`)
