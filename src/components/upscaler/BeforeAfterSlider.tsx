@@ -26,6 +26,8 @@ export const BeforeAfterSlider = ({
   const { t: tOriginal } = useTranslation();
   const t = (key: string) => tOriginal(key, { lng: locale });
   const [sliderPosition, setSliderPosition] = useState(50);
+  const [beforeError, setBeforeError] = useState(false);
+  const [afterError, setAfterError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
@@ -68,10 +70,11 @@ export const BeforeAfterSlider = ({
       >
         {/* After Image (background) */}
         <img 
-          src={afterImage} 
+          src={afterError ? '/placeholder.svg' : afterImage} 
           alt={locale === 'es' ? "Después" : "Depois"}
           loading="lazy"
           decoding="async"
+          onError={() => setAfterError(true)}
           className="absolute inset-0 w-full h-full object-cover"
         />
         
@@ -81,10 +84,11 @@ export const BeforeAfterSlider = ({
           style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
         >
           <img 
-            src={beforeImage} 
+            src={beforeError ? '/placeholder.svg' : beforeImage} 
             alt={locale === 'es' ? "Antes" : "Antes"}
             loading="lazy"
             decoding="async"
+            onError={() => setBeforeError(true)}
             className="absolute inset-0 w-full h-full object-cover"
           />
         </div>

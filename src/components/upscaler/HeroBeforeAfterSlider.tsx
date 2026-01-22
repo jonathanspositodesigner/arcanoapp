@@ -22,6 +22,8 @@ export const HeroBeforeAfterSlider = ({
   const { t: tOriginal } = useTranslation();
   const t = (key: string) => tOriginal(key, { lng: locale });
   const [sliderPosition, setSliderPosition] = useState(50);
+  const [beforeError, setBeforeError] = useState(false);
+  const [afterError, setAfterError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
@@ -64,11 +66,12 @@ export const HeroBeforeAfterSlider = ({
       >
         {/* After Image (background) - LCP optimized */}
         <img 
-          src={afterImage} 
+          src={afterError ? '/placeholder.svg' : afterImage} 
           alt={locale === 'es' ? "Después" : "Depois"}
           loading="eager"
           fetchPriority="high"
           decoding="sync"
+          onError={() => setAfterError(true)}
           style={{
             position: 'absolute',
             inset: 0,
@@ -85,11 +88,12 @@ export const HeroBeforeAfterSlider = ({
           style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
         >
           <img 
-            src={beforeImage} 
+            src={beforeError ? '/placeholder.svg' : beforeImage} 
             alt={locale === 'es' ? "Antes" : "Antes"}
             loading="eager"
             fetchPriority="high"
             decoding="sync"
+            onError={() => setBeforeError(true)}
             style={{
               position: 'absolute',
               inset: 0,
