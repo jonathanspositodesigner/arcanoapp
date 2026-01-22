@@ -10,9 +10,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Optimized imports - only hero images loaded eagerly from public folder
-import { HeroBeforeAfterSlider, FullscreenModal, SectionSkeleton, SectionErrorBoundary } from "@/components/upscaler";
+import { HeroBeforeAfterSlider, HeroPlaceholder, FullscreenModal, SectionSkeleton, SectionErrorBoundary } from "@/components/upscaler";
 
 // Hero images from public folder for proper preloading
 const upscalerHeroAntes = "/images/upscaler-hero-antes.webp";
@@ -48,10 +49,12 @@ const PlanosUpscalerArcano69ES = () => {
   const { t: tOriginal } = useTranslation();
   const t = (key: string, options?: object) => tOriginal(key, { ...options, lng: 'es' });
   const { user, isPremium, hasAccessToPack, isLoading: authLoading } = usePremiumArtesStatus();
+  const isMobile = useIsMobile();
   const [tool, setTool] = useState<ToolData | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
+  const [heroRevealed, setHeroRevealed] = useState(false);
 
   const openModal = (before: string, after: string) => {
     setModalImages({ before, after });
@@ -278,14 +281,22 @@ const PlanosUpscalerArcano69ES = () => {
                 </h1>
               </FadeIn>
 
-              {/* Hero Slider - LCP optimized with eager loading */}
+              {/* Hero Slider - placeholder no mobile, carrega ao clicar */}
               <FadeIn delay={200} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
-                <HeroBeforeAfterSlider
-                  beforeImage={upscalerHeroAntes}
-                  afterImage={upscalerHeroDepois}
-                  label={t('tools:upscaler.hero.dragToCompare')}
-                  locale="es"
-                />
+                {isMobile && !heroRevealed ? (
+                  <HeroPlaceholder
+                    onReveal={() => setHeroRevealed(true)}
+                    buttonText={t('tools:upscaler.hero.seeToolPower')}
+                    locale="es"
+                  />
+                ) : (
+                  <HeroBeforeAfterSlider
+                    beforeImage={upscalerHeroAntes}
+                    afterImage={upscalerHeroDepois}
+                    label={t('tools:upscaler.hero.dragToCompare')}
+                    locale="es"
+                  />
+                )}
               </FadeIn>
               
               <FadeIn delay={400} duration={700}>
