@@ -13,8 +13,8 @@ import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, 
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import upscalerAntes1 from "@/assets/upscaler-antes-1.jpg";
 import upscalerDepois1 from "@/assets/upscaler-depois-1.jpg";
-import upscalerHeroAntes from "@/assets/upscaler-hero-antes.jpg";
-import upscalerHeroDepois from "@/assets/upscaler-hero-depois.jpg";
+import upscalerHeroAntes from "@/assets/upscaler-hero-antes.webp";
+import upscalerHeroDepois from "@/assets/upscaler-hero-depois.webp";
 import upscalerSeloAntes from "@/assets/upscaler-selo-antes.jpg";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
 import upscalerLogoAntes from "@/assets/upscaler-logo-antes.jpg";
