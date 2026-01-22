@@ -11,22 +11,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
-import upscalerAntes1 from "@/assets/upscaler-antes-1.webp";
-import upscalerDepois1 from "@/assets/upscaler-depois-1.webp";
-import upscalerSeloAntes from "@/assets/upscaler-selo-antes.webp";
-import upscalerSeloDepois from "@/assets/upscaler-selo-depois.webp";
-import upscalerLogoAntes from "@/assets/upscaler-logo-antes.webp";
-import upscalerLogoDepois from "@/assets/upscaler-logo-depois.webp";
+import upscalerAntes1 from "@/assets/upscaler-antes-1.jpg";
+import upscalerDepois1 from "@/assets/upscaler-depois-1.jpg";
+import upscalerHeroAntes from "@/assets/upscaler-hero-antes.jpg";
+import upscalerHeroDepois from "@/assets/upscaler-hero-depois.jpg";
+import upscalerSeloAntes from "@/assets/upscaler-selo-antes.jpg";
+import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
+import upscalerLogoAntes from "@/assets/upscaler-logo-antes.jpg";
+import upscalerLogoDepois from "@/assets/upscaler-logo-depois.png";
 import upscalerAntigaAntes from "@/assets/upscaler-antiga-antes.webp";
-import upscalerAntigaDepois from "@/assets/upscaler-antiga-depois.webp";
-import upscalerMockupAntes from "@/assets/upscaler-mockup-antes.webp";
-import upscalerMockupDepois from "@/assets/upscaler-mockup-depois.webp";
-import upscalerUser1Antes from "@/assets/upscaler-user1-antes.webp";
-import upscalerUser1Depois from "@/assets/upscaler-user1-depois.webp";
-import upscalerUser2Antes from "@/assets/upscaler-user2-antes.webp";
-import upscalerUser2Depois from "@/assets/upscaler-user2-depois.webp";
-import upscalerUser3Antes from "@/assets/upscaler-user3-antes.webp";
-import upscalerUser3Depois from "@/assets/upscaler-user3-depois.webp";
+import upscalerAntigaDepois from "@/assets/upscaler-antiga-depois.jpg";
+import upscalerMockupAntes from "@/assets/upscaler-mockup-antes.jpg";
+import upscalerMockupDepois from "@/assets/upscaler-mockup-depois.jpg";
+import upscalerUser1Antes from "@/assets/upscaler-user1-antes.jpg";
+import upscalerUser1Depois from "@/assets/upscaler-user1-depois.jpg";
+import upscalerUser2Antes from "@/assets/upscaler-user2-antes.jpg";
+import upscalerUser2Depois from "@/assets/upscaler-user2-depois.jpg";
+import upscalerUser3Antes from "@/assets/upscaler-user3-antes.jpg";
+import upscalerUser3Depois from "@/assets/upscaler-user3-depois.jpg";
 import upscalerFoodAntes from "@/assets/upscaler-food-antes.webp";
 import upscalerFoodDepois from "@/assets/upscaler-food-depois.webp";
 import upscalerUser4Antes from "@/assets/upscaler-user4-antes.webp";
@@ -217,8 +219,7 @@ const BeforeAfterSlider = ({
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className={`relative w-full ${size === "large" ? "aspect-[4/3]" : "aspect-square"} min-h-[200px] rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10`}
-        style={{ position: 'relative' }}
+        className={`relative w-full ${size === "large" ? "aspect-[4/3]" : "aspect-square"} rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10`}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -230,19 +231,17 @@ const BeforeAfterSlider = ({
           src={afterImage} 
           alt="Depois" 
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
         
         {/* Imagem "Antes" (clipped) */}
         <div 
           className="absolute inset-0 overflow-hidden"
-          style={{ position: 'absolute', inset: 0, overflow: 'hidden', clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
         >
           <img 
             src={beforeImage} 
             alt="Antes" 
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           />
         </div>
 
@@ -619,11 +618,11 @@ const PlanosUpscalerArcano69v2 = () => {
                 </h1>
               </FadeIn>
 
-              {/* Slider - foto 4K como solicitado */}
+              {/* Slider - logo abaixo do título */}
               <FadeIn delay={200} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
                 <BeforeAfterSlider
-                  beforeImage={upscalerAntes1}
-                  afterImage={upscalerDepois1}
+                  beforeImage={upscalerHeroAntes}
+                  afterImage={upscalerHeroDepois}
                   label={t('tools:upscaler.hero.dragToCompare')}
                   size="large"
                 />

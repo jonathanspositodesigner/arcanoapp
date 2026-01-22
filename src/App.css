@@ -1,5 +1,8 @@
 #root {
-  /* Removido CSS do template Vite que interferia no layout */
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
 }
 
 .logo {
