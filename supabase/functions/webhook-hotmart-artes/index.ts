@@ -145,35 +145,6 @@ function generateRequestId(): string {
   return Math.random().toString(36).substring(2, 10).toUpperCase()
 }
 
-// Função para registrar log do webhook
-async function logWebhook(
-  supabase: any,
-  payload: any,
-  status: string | undefined,
-  productId: number | string | undefined,
-  email: string | undefined,
-  result: 'success' | 'error' | 'skipped' | 'blacklisted' | 'cancelled',
-  mappingType: string,
-  errorMessage?: string
-): Promise<void> {
-  try {
-    await supabase.from('webhook_logs').insert({
-      payload,
-      status,
-      product_id: typeof productId === 'string' ? parseInt(productId) || null : productId,
-      email,
-      result,
-      mapping_type: mappingType,
-      error_message: errorMessage,
-      utm_source: 'hotmart',
-      from_app: false,
-      platform: 'hotmart-es'
-    })
-  } catch (e) {
-    console.error('Failed to log webhook:', e)
-  }
-}
-
 // Função para verificar se email está na lista negra
 async function isEmailBlacklisted(supabase: any, email: string): Promise<boolean> {
   const { data } = await supabase
@@ -469,7 +440,6 @@ Deno.serve(async (req) => {
         }
       }
       
-      await logWebhook(supabase, payload, status, productId, email, 'cancelled', 'hotmart_cancel')
       return new Response(JSON.stringify({ success: true, message: 'Cancellation processed' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
@@ -478,7 +448,6 @@ Deno.serve(async (req) => {
     // Check if it's an approved purchase event
     if (!event || !APPROVED_EVENTS.includes(event)) {
       console.log(`\n⏭️ [${requestId}] Evento ignorado: ${event}`)
-      await logWebhook(supabase, payload, status, productId, email, 'skipped', 'ignored_event')
       return new Response(JSON.stringify({ success: true, message: 'Event ignored' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
@@ -487,7 +456,6 @@ Deno.serve(async (req) => {
     // Validate required data
     if (!email) {
       console.log(`\n❌ [${requestId}] Email não fornecido`)
-      await logWebhook(supabase, payload, status, productId, undefined, 'error', 'missing_email', 'Email not provided')
       return new Response(JSON.stringify({ error: 'Email is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -497,7 +465,6 @@ Deno.serve(async (req) => {
     // Check blacklist
     if (await isEmailBlacklisted(supabase, email)) {
       console.log(`\n🚫 [${requestId}] Email na blacklist: ${email}`)
-      await logWebhook(supabase, payload, status, productId, email, 'blacklisted', 'blacklisted')
       return new Response(JSON.stringify({ success: true, message: 'Blocked email' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
@@ -588,7 +555,6 @@ Deno.serve(async (req) => {
         
         if (!authUser) {
           console.error(`   └─ ❌ Usuário não encontrado após busca exaustiva`)
-          await logWebhook(supabase, payload, status, productId, email, 'error', 'user_not_found', 'User exists but could not be found')
           return new Response(JSON.stringify({ error: 'User exists but could not be found' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -599,7 +565,6 @@ Deno.serve(async (req) => {
       } else {
         // Outro tipo de erro
         console.error(`   └─ ❌ Erro ao criar usuário:`, createError)
-        await logWebhook(supabase, payload, status, productId, email, 'error', 'user_creation_error', createError.message)
         return new Response(JSON.stringify({ error: 'Failed to create user' }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -683,9 +648,6 @@ Deno.serve(async (req) => {
     } else {
       console.log(`   ├─ 📧 Email não enviado (usuário existente com acesso já ativo para este pack)`)
     }
-
-    // Log success
-    await logWebhook(supabase, payload, status, productId, email, 'success', 'hotmart_purchase')
 
     console.log(`\n✅ [${requestId}] WEBHOOK PROCESSADO COM SUCESSO`)
     console.log(`${'='.repeat(60)}\n`)

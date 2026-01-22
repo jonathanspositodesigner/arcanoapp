@@ -50,32 +50,7 @@ interface GreennMusicosWebhookPayload {
   link_checkout?: string
 }
 
-// Função para registrar log do webhook
-async function logWebhook(
-  supabase: any,
-  payload: any,
-  status: string | undefined,
-  productId: number | undefined,
-  email: string | undefined,
-  result: 'success' | 'error' | 'skipped' | 'blacklisted',
-  mappingType: string,
-  errorMessage?: string
-): Promise<void> {
-  try {
-    await supabase.from('webhook_logs').insert({
-      payload,
-      status,
-      product_id: productId,
-      email,
-      result,
-      mapping_type: mappingType,
-      error_message: errorMessage,
-      platform: 'musicos'
-    })
-  } catch (e) {
-    console.error('Failed to log webhook:', e)
-  }
-}
+// logWebhook function removed - logs desativados para economizar recursos
 
 // Função para verificar se email está na lista negra
 async function isEmailBlacklisted(supabase: any, email: string): Promise<boolean> {
