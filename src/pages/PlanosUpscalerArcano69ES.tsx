@@ -58,10 +58,13 @@ const PlanosUpscalerArcano69ES = () => {
   const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
   const [heroRevealed, setHeroRevealed] = useState(false);
 
-  // Conditional preload: Mobile only loads preview, Desktop loads all hero images
-  useImagePreload("/images/upscaler-hero-preview.webp", isMobile);
+  // Preload: Mobile loads preview + antes/depois mobile, Desktop loads high-res versions
   useImagesPreload(
-    ["/images/upscaler-hero-antes.webp", "/images/upscaler-hero-depois.webp", "/images/upscaler-hero-preview.webp"],
+    ["/images/upscaler-hero-preview.webp", "/images/upscaler-hero-antes-mobile.webp", "/images/upscaler-hero-depois-mobile.webp"],
+    isMobile
+  );
+  useImagesPreload(
+    ["/images/upscaler-hero-antes.webp", "/images/upscaler-hero-depois.webp"],
     !isMobile
   );
 
@@ -293,7 +296,6 @@ const PlanosUpscalerArcano69ES = () => {
                     onReveal={() => setHeroRevealed(true)}
                     buttonText={t('tools:upscaler.hero.seeToolPower')}
                     locale="es"
-                    isMobile={isMobile}
                   />
                 ) : (
                   <HeroBeforeAfterSlider
