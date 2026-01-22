@@ -115,6 +115,7 @@ const PlanosForjaSelos3D = lazy(() => import("./pages/PlanosForjaSelos3D"));
 const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
 const UpscalerRunpod = lazy(() => import("./pages/UpscalerRunpod"));
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
+const PackAgendas = lazy(() => import("./pages/PackAgendas"));
 const GlobalImportProgress = lazy(() => import("./components/GlobalImportProgress"));
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
@@ -269,6 +270,7 @@ const AppContent = () => {
           <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
           <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
           <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
+          <Route path="/pack-agendas" element={<PackAgendas />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
