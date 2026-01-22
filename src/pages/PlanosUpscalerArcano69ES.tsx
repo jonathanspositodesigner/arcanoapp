@@ -269,8 +269,8 @@ const PlanosUpscalerArcano69ES = () => {
           {/* HERO SECTION - Optimized for LCP */}
           <section className="px-3 md:px-4 py-10 md:py-20 w-full">
             <div className="flex flex-col items-center text-center">
-              <FadeIn delay={0} duration={700}>
-                <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide max-w-4xl">
+              <FadeIn delay={0} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw]">
+                <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
                   {t('tools:upscaler.hero.title1')}{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                     {t('tools:upscaler.hero.title2')}
