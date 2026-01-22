@@ -3,125 +3,137 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 
 import { LocaleProvider } from "./contexts/LocaleContext";
 import "./lib/i18n"; // Initialize i18n
+
+// Critical pages - keep static for fast initial load
 import Index from "./pages/Index";
-import Promptverso from "./pages/Promptverso";
-import BibliotecaPrompts from "./pages/BibliotecaPrompts";
-import BibliotecaArtes from "./pages/BibliotecaArtes";
-import BibliotecaArtesHub from "./pages/BibliotecaArtesHub";
-import BibliotecaArtesMusicos from "./pages/BibliotecaArtesMusicos";
-import ContributePrompts from "./pages/ContributePrompts";
-import AdminUpload from "./pages/AdminUpload";
-import AdminUploadArtes from "./pages/AdminUploadArtes";
-import AdminUploadArtesMusicos from "./pages/AdminUploadArtesMusicos";
-import AdminLogin from "./pages/AdminLogin";
-import AdminHub from "./pages/AdminHub";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminFerramentas from "./pages/AdminFerramentas";
-import AdminMarketing from "./pages/AdminMarketing";
-// New platform-specific admin pages
-import ArtesEventosDashboard from "./pages/admin/ArtesEventosDashboard";
-import ArtesEventosFerramentas from "./pages/admin/ArtesEventosFerramentas";
-import ArtesEventosMarketing from "./pages/admin/ArtesEventosMarketing";
-import ArtesMusicosDashboard from "./pages/admin/ArtesMusicosDashboard";
-import ArtesMusicosFerramentas from "./pages/admin/ArtesMusicosFerramentas";
-import ArtesMusicosMarketing from "./pages/admin/ArtesMusicosMarketing";
-import PromptsDashboard from "./pages/admin/PromptsDashboard";
-import PromptsFerramentas from "./pages/admin/PromptsFerramentas";
-import PromptsMarketing from "./pages/admin/PromptsMarketing";
-import AdminEmailMarketing from "./pages/AdminEmailMarketing";
-import AdminCommunityReview from "./pages/AdminCommunityReview";
-import AdminArtesReview from "./pages/AdminArtesReview";
-import AdminManageImages from "./pages/AdminManageImages";
-import AdminManageArtes from "./pages/AdminManageArtes";
-import AdminManageArtesMusicos from "./pages/AdminManageArtesMusicos";
-import AdminCollections from "./pages/AdminCollections";
-import UserLogin from "./pages/UserLogin";
-import ChangePassword from "./pages/ChangePassword";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import ProfileSettings from "./pages/ProfileSettings";
-import InstallApp from "./pages/InstallApp";
-import Planos from "./pages/Planos";
-import UpgradePlano from "./pages/UpgradePlano";
-import AdminInstallStats from "./pages/AdminInstallStats";
-import AdminManagePremium from "./pages/AdminManagePremium";
-import AdminPremiumDashboard from "./pages/AdminPremiumDashboard";
-import AdminPartners from "./pages/AdminPartners";
-import PartnerDashboard from "./pages/PartnerDashboard";
-import PartnerUpload from "./pages/PartnerUpload";
-import UpscalerArcanoVersionSelect from "./pages/UpscalerArcanoVersionSelect";
-import ToolVersionLessons from "./pages/ToolVersionLessons";
-import ForjaSelos3D from "./pages/ForjaSelos3D";
-import MudarRoupa from "./pages/MudarRoupa";
-import MudarPose from "./pages/MudarPose";
 import NotFound from "./pages/NotFound";
 
+// Lazy-loaded pages - loaded on demand
+const Promptverso = lazy(() => import("./pages/Promptverso"));
+const BibliotecaPrompts = lazy(() => import("./pages/BibliotecaPrompts"));
+const BibliotecaArtes = lazy(() => import("./pages/BibliotecaArtes"));
+const BibliotecaArtesHub = lazy(() => import("./pages/BibliotecaArtesHub"));
+const BibliotecaArtesMusicos = lazy(() => import("./pages/BibliotecaArtesMusicos"));
+const ContributePrompts = lazy(() => import("./pages/ContributePrompts"));
+const AdminUpload = lazy(() => import("./pages/AdminUpload"));
+const AdminUploadArtes = lazy(() => import("./pages/AdminUploadArtes"));
+const AdminUploadArtesMusicos = lazy(() => import("./pages/AdminUploadArtesMusicos"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminHub = lazy(() => import("./pages/AdminHub"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminFerramentas = lazy(() => import("./pages/AdminFerramentas"));
+const AdminMarketing = lazy(() => import("./pages/AdminMarketing"));
+
+// Platform-specific admin pages
+const ArtesEventosDashboard = lazy(() => import("./pages/admin/ArtesEventosDashboard"));
+const ArtesEventosFerramentas = lazy(() => import("./pages/admin/ArtesEventosFerramentas"));
+const ArtesEventosMarketing = lazy(() => import("./pages/admin/ArtesEventosMarketing"));
+const ArtesMusicosDashboard = lazy(() => import("./pages/admin/ArtesMusicosDashboard"));
+const ArtesMusicosFerramentas = lazy(() => import("./pages/admin/ArtesMusicosFerramentas"));
+const ArtesMusicosMarketing = lazy(() => import("./pages/admin/ArtesMusicosMarketing"));
+const PromptsDashboard = lazy(() => import("./pages/admin/PromptsDashboard"));
+const PromptsFerramentas = lazy(() => import("./pages/admin/PromptsFerramentas"));
+const PromptsMarketing = lazy(() => import("./pages/admin/PromptsMarketing"));
+const AdminEmailMarketing = lazy(() => import("./pages/AdminEmailMarketing"));
+const AdminCommunityReview = lazy(() => import("./pages/AdminCommunityReview"));
+const AdminArtesReview = lazy(() => import("./pages/AdminArtesReview"));
+const AdminManageImages = lazy(() => import("./pages/AdminManageImages"));
+const AdminManageArtes = lazy(() => import("./pages/AdminManageArtes"));
+const AdminManageArtesMusicos = lazy(() => import("./pages/AdminManageArtesMusicos"));
+const AdminCollections = lazy(() => import("./pages/AdminCollections"));
+const UserLogin = lazy(() => import("./pages/UserLogin"));
+const ChangePassword = lazy(() => import("./pages/ChangePassword"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
+const InstallApp = lazy(() => import("./pages/InstallApp"));
+const Planos = lazy(() => import("./pages/Planos"));
+const UpgradePlano = lazy(() => import("./pages/UpgradePlano"));
+const AdminInstallStats = lazy(() => import("./pages/AdminInstallStats"));
+const AdminManagePremium = lazy(() => import("./pages/AdminManagePremium"));
+const AdminPremiumDashboard = lazy(() => import("./pages/AdminPremiumDashboard"));
+const AdminPartners = lazy(() => import("./pages/AdminPartners"));
+const PartnerDashboard = lazy(() => import("./pages/PartnerDashboard"));
+const PartnerUpload = lazy(() => import("./pages/PartnerUpload"));
+const UpscalerArcanoVersionSelect = lazy(() => import("./pages/UpscalerArcanoVersionSelect"));
+const ToolVersionLessons = lazy(() => import("./pages/ToolVersionLessons"));
+const ForjaSelos3D = lazy(() => import("./pages/ForjaSelos3D"));
+const MudarRoupa = lazy(() => import("./pages/MudarRoupa"));
+const MudarPose = lazy(() => import("./pages/MudarPose"));
+
 // Artes system pages
-import UserLoginArtes from "./pages/UserLoginArtes";
-import UserLoginArtesMusicos from "./pages/UserLoginArtesMusicos";
-import PlanosArtes from "./pages/PlanosArtes";
-import PlanosArtesMembro from "./pages/PlanosArtesMembro";
-import PromosNatal from "./pages/PromosNatal";
-import PlanosArtesMusicos from "./pages/PlanosArtesMusicos";
-import ChangePasswordArtes from "./pages/ChangePasswordArtes";
-import ForgotPasswordArtes from "./pages/ForgotPasswordArtes";
-import ResetPasswordArtes from "./pages/ResetPasswordArtes";
-import ChangePasswordArtesMusicos from "./pages/ChangePasswordArtesMusicos";
-import ForgotPasswordArtesMusicos from "./pages/ForgotPasswordArtesMusicos";
-import ResetPasswordArtesMusicos from "./pages/ResetPasswordArtesMusicos";
-import ProfileSettingsArtes from "./pages/ProfileSettingsArtes";
-import PartnerLoginArtes from "./pages/PartnerLoginArtes";
-import PartnerDashboardArtes from "./pages/PartnerDashboardArtes";
-import PartnerUploadArtes from "./pages/PartnerUploadArtes";
-import PartnerLoginUnified from "./pages/PartnerLoginUnified";
-import PartnerPlatformSelect from "./pages/PartnerPlatformSelect";
-import PartnerDashboardMusicos from "./pages/PartnerDashboardMusicos";
-import PartnerUploadMusicos from "./pages/PartnerUploadMusicos";
-import AdminPartnersArtes from "./pages/AdminPartnersArtes";
-import AdminCategoriesArtes from "./pages/AdminCategoriesArtes";
-import AdminCategoriesMusicos from "./pages/AdminCategoriesMusicos";
-import AdminCategoriesPrompts from "./pages/AdminCategoriesPrompts";
-import AdminManagePacks from "./pages/AdminManagePacks";
-import AdminManageBanners from "./pages/AdminManageBanners";
-import AdminPackPurchases from "./pages/AdminPackPurchases";
-import AdminImportClients from "./pages/AdminImportClients";
-import AdminManageAdmins from "./pages/AdminManageAdmins";
-import ForjaSelos3DArtes from "./pages/ForjaSelos3DArtes";
-import TutorialArtes from "./pages/TutorialArtes";
-import FerramentaIAArtes from "./pages/FerramentaIAArtes";
-import FerramentasIA from "./pages/FerramentasIA";
-import FerramentasIAES from "./pages/FerramentasIAES";
-import AdminManagePromotions from "./pages/AdminManagePromotions";
-import AdminManageBlacklist from "./pages/AdminManageBlacklist";
-import AdminWebhookLogs from "./pages/AdminWebhookLogs";
-import AdminPushNotifications from "./pages/AdminPushNotifications";
-import AdminAbandonedCheckouts from "./pages/AdminAbandonedCheckouts";
-import AdminLeads from "./pages/AdminLeads";
-import AdminCloudinaryMigration from "./pages/AdminCloudinaryMigration";
-import AdminPremiumMusicos from "./pages/AdminPremiumMusicos";
-import SucessoArtesMusicos from "./pages/SucessoArtesMusicos";
-import PlanosUpscalerArcano from "./pages/PlanosUpscalerArcano";
-import PlanosUpscalerArcano69 from "./pages/PlanosUpscalerArcano69v2";
-import PlanosUpscalerArcano69ES from "./pages/PlanosUpscalerArcano69ES";
-import PlanosForjaSelos3D from "./pages/PlanosForjaSelos3D";
-import UpscalerArcanoTool from "./pages/UpscalerArcanoTool";
-import UpscalerRunpod from "./pages/UpscalerRunpod";
-import AguardandoPagamentoMusicos from "./pages/AguardandoPagamentoMusicos";
-import GlobalImportProgress from "./components/GlobalImportProgress";
+const UserLoginArtes = lazy(() => import("./pages/UserLoginArtes"));
+const UserLoginArtesMusicos = lazy(() => import("./pages/UserLoginArtesMusicos"));
+const PlanosArtes = lazy(() => import("./pages/PlanosArtes"));
+const PlanosArtesMembro = lazy(() => import("./pages/PlanosArtesMembro"));
+const PromosNatal = lazy(() => import("./pages/PromosNatal"));
+const PlanosArtesMusicos = lazy(() => import("./pages/PlanosArtesMusicos"));
+const ChangePasswordArtes = lazy(() => import("./pages/ChangePasswordArtes"));
+const ForgotPasswordArtes = lazy(() => import("./pages/ForgotPasswordArtes"));
+const ResetPasswordArtes = lazy(() => import("./pages/ResetPasswordArtes"));
+const ChangePasswordArtesMusicos = lazy(() => import("./pages/ChangePasswordArtesMusicos"));
+const ForgotPasswordArtesMusicos = lazy(() => import("./pages/ForgotPasswordArtesMusicos"));
+const ResetPasswordArtesMusicos = lazy(() => import("./pages/ResetPasswordArtesMusicos"));
+const ProfileSettingsArtes = lazy(() => import("./pages/ProfileSettingsArtes"));
+const PartnerLoginArtes = lazy(() => import("./pages/PartnerLoginArtes"));
+const PartnerDashboardArtes = lazy(() => import("./pages/PartnerDashboardArtes"));
+const PartnerUploadArtes = lazy(() => import("./pages/PartnerUploadArtes"));
+const PartnerLoginUnified = lazy(() => import("./pages/PartnerLoginUnified"));
+const PartnerPlatformSelect = lazy(() => import("./pages/PartnerPlatformSelect"));
+const PartnerDashboardMusicos = lazy(() => import("./pages/PartnerDashboardMusicos"));
+const PartnerUploadMusicos = lazy(() => import("./pages/PartnerUploadMusicos"));
+const AdminPartnersArtes = lazy(() => import("./pages/AdminPartnersArtes"));
+const AdminCategoriesArtes = lazy(() => import("./pages/AdminCategoriesArtes"));
+const AdminCategoriesMusicos = lazy(() => import("./pages/AdminCategoriesMusicos"));
+const AdminCategoriesPrompts = lazy(() => import("./pages/AdminCategoriesPrompts"));
+const AdminManagePacks = lazy(() => import("./pages/AdminManagePacks"));
+const AdminManageBanners = lazy(() => import("./pages/AdminManageBanners"));
+const AdminPackPurchases = lazy(() => import("./pages/AdminPackPurchases"));
+const AdminImportClients = lazy(() => import("./pages/AdminImportClients"));
+const AdminManageAdmins = lazy(() => import("./pages/AdminManageAdmins"));
+const ForjaSelos3DArtes = lazy(() => import("./pages/ForjaSelos3DArtes"));
+const TutorialArtes = lazy(() => import("./pages/TutorialArtes"));
+const FerramentaIAArtes = lazy(() => import("./pages/FerramentaIAArtes"));
+const FerramentasIA = lazy(() => import("./pages/FerramentasIA"));
+const FerramentasIAES = lazy(() => import("./pages/FerramentasIAES"));
+const AdminManagePromotions = lazy(() => import("./pages/AdminManagePromotions"));
+const AdminManageBlacklist = lazy(() => import("./pages/AdminManageBlacklist"));
+const AdminWebhookLogs = lazy(() => import("./pages/AdminWebhookLogs"));
+const AdminPushNotifications = lazy(() => import("./pages/AdminPushNotifications"));
+const AdminAbandonedCheckouts = lazy(() => import("./pages/AdminAbandonedCheckouts"));
+const AdminLeads = lazy(() => import("./pages/AdminLeads"));
+const AdminCloudinaryMigration = lazy(() => import("./pages/AdminCloudinaryMigration"));
+const AdminPremiumMusicos = lazy(() => import("./pages/AdminPremiumMusicos"));
+const SucessoArtesMusicos = lazy(() => import("./pages/SucessoArtesMusicos"));
+const PlanosUpscalerArcano = lazy(() => import("./pages/PlanosUpscalerArcano"));
+const PlanosUpscalerArcano69 = lazy(() => import("./pages/PlanosUpscalerArcano69v2"));
+const PlanosUpscalerArcano69ES = lazy(() => import("./pages/PlanosUpscalerArcano69ES"));
+const PlanosForjaSelos3D = lazy(() => import("./pages/PlanosForjaSelos3D"));
+const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
+const UpscalerRunpod = lazy(() => import("./pages/UpscalerRunpod"));
+const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
+const GlobalImportProgress = lazy(() => import("./components/GlobalImportProgress"));
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 import { useServiceWorkerUpdate } from "./hooks/useServiceWorkerUpdate";
 
+// Loading fallback component
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500"></div>
+  </div>
+);
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   // Log version to confirm deployment
-  console.log("[APP] ===== VERSION 5.0.0 LOADED =====", new Date().toISOString());
+  console.log("[APP] ===== VERSION 5.1.0 LOADED =====", new Date().toISOString());
   
   // Track app installations
   useInstallTracker();
@@ -136,126 +148,130 @@ const AppContent = () => {
   return (
     <TooltipProvider>
       
-      <GlobalImportProgress />
+      <Suspense fallback={null}>
+        <GlobalImportProgress />
+      </Suspense>
       <Toaster />
       <Sonner />
       
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/promptverso" element={<Promptverso />} />
-        <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
-        <Route path="/biblioteca-artes" element={<BibliotecaArtes />} />
-        <Route path="/biblioteca-artes-hub" element={<BibliotecaArtesHub />} />
-        <Route path="/biblioteca-artes-musicos" element={<BibliotecaArtesMusicos />} />
-        <Route path="/contribuir" element={<ContributePrompts />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/admin-hub" element={<AdminHub />} />
-        <Route path="/admin-dashboard" element={<Navigate to="/admin-hub" replace />} />
-        <Route path="/admin-ferramentas" element={<Navigate to="/admin-hub" replace />} />
-        <Route path="/admin-marketing" element={<Navigate to="/admin-hub" replace />} />
-        {/* Platform-specific admin routes */}
-        <Route path="/admin-artes-eventos" element={<ArtesEventosDashboard />} />
-        <Route path="/admin-artes-eventos/ferramentas" element={<ArtesEventosFerramentas />} />
-        <Route path="/admin-artes-eventos/marketing" element={<ArtesEventosMarketing />} />
-        <Route path="/admin-artes-musicos" element={<ArtesMusicosDashboard />} />
-        <Route path="/admin-artes-musicos/ferramentas" element={<ArtesMusicosFerramentas />} />
-        <Route path="/admin-artes-musicos/marketing" element={<ArtesMusicosMarketing />} />
-        <Route path="/admin-prompts" element={<PromptsDashboard />} />
-        <Route path="/admin-prompts/ferramentas" element={<PromptsFerramentas />} />
-        <Route path="/admin-prompts/marketing" element={<PromptsMarketing />} />
-        <Route path="/admin-email-marketing" element={<AdminEmailMarketing />} />
-        <Route path="/admin-upload" element={<AdminUpload />} />
-        <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
-        <Route path="/admin-upload-artes-musicos" element={<AdminUploadArtesMusicos />} />
-        <Route path="/admin-community-review" element={<AdminCommunityReview />} />
-        <Route path="/admin-artes-review" element={<AdminArtesReview />} />
-        <Route path="/admin-manage-images" element={<AdminManageImages />} />
-        <Route path="/admin-manage-artes" element={<AdminManageArtes />} />
-        <Route path="/admin-manage-artes-musicos" element={<AdminManageArtesMusicos />} />
-        <Route path="/login" element={<UserLogin />} />
-        <Route path="/change-password" element={<ChangePassword />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/profile-settings" element={<ProfileSettings />} />
-        <Route path="/install-app" element={<InstallApp />} />
-        <Route path="/planos" element={<Planos />} />
-        <Route path="/upgrade" element={<UpgradePlano />} />
-        <Route path="/admin-install-stats" element={<AdminInstallStats />} />
-        <Route path="/admin-manage-premium" element={<AdminManagePremium />} />
-        <Route path="/admin-premium-dashboard" element={<AdminPremiumDashboard />} />
-        <Route path="/admin-collections" element={<AdminCollections />} />
-        <Route path="/admin-partners" element={<AdminPartners />} />
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/promptverso" element={<Promptverso />} />
+          <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
+          <Route path="/biblioteca-artes" element={<BibliotecaArtes />} />
+          <Route path="/biblioteca-artes-hub" element={<BibliotecaArtesHub />} />
+          <Route path="/biblioteca-artes-musicos" element={<BibliotecaArtesMusicos />} />
+          <Route path="/contribuir" element={<ContributePrompts />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin-hub" element={<AdminHub />} />
+          <Route path="/admin-dashboard" element={<Navigate to="/admin-hub" replace />} />
+          <Route path="/admin-ferramentas" element={<Navigate to="/admin-hub" replace />} />
+          <Route path="/admin-marketing" element={<Navigate to="/admin-hub" replace />} />
+          {/* Platform-specific admin routes */}
+          <Route path="/admin-artes-eventos" element={<ArtesEventosDashboard />} />
+          <Route path="/admin-artes-eventos/ferramentas" element={<ArtesEventosFerramentas />} />
+          <Route path="/admin-artes-eventos/marketing" element={<ArtesEventosMarketing />} />
+          <Route path="/admin-artes-musicos" element={<ArtesMusicosDashboard />} />
+          <Route path="/admin-artes-musicos/ferramentas" element={<ArtesMusicosFerramentas />} />
+          <Route path="/admin-artes-musicos/marketing" element={<ArtesMusicosMarketing />} />
+          <Route path="/admin-prompts" element={<PromptsDashboard />} />
+          <Route path="/admin-prompts/ferramentas" element={<PromptsFerramentas />} />
+          <Route path="/admin-prompts/marketing" element={<PromptsMarketing />} />
+          <Route path="/admin-email-marketing" element={<AdminEmailMarketing />} />
+          <Route path="/admin-upload" element={<AdminUpload />} />
+          <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
+          <Route path="/admin-upload-artes-musicos" element={<AdminUploadArtesMusicos />} />
+          <Route path="/admin-community-review" element={<AdminCommunityReview />} />
+          <Route path="/admin-artes-review" element={<AdminArtesReview />} />
+          <Route path="/admin-manage-images" element={<AdminManageImages />} />
+          <Route path="/admin-manage-artes" element={<AdminManageArtes />} />
+          <Route path="/admin-manage-artes-musicos" element={<AdminManageArtesMusicos />} />
+          <Route path="/login" element={<UserLogin />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/profile-settings" element={<ProfileSettings />} />
+          <Route path="/install-app" element={<InstallApp />} />
+          <Route path="/planos" element={<Planos />} />
+          <Route path="/upgrade" element={<UpgradePlano />} />
+          <Route path="/admin-install-stats" element={<AdminInstallStats />} />
+          <Route path="/admin-manage-premium" element={<AdminManagePremium />} />
+          <Route path="/admin-premium-dashboard" element={<AdminPremiumDashboard />} />
+          <Route path="/admin-collections" element={<AdminCollections />} />
+          <Route path="/admin-partners" element={<AdminPartners />} />
 
-        {/* Colaborador (login unificado) */}
-        <Route path="/parceiro-login" element={<Navigate to="/parceiro-login-unificado" replace />} />
-        <Route path="/parceiro-selecionar-plataforma" element={<Navigate to="/parceiro-plataformas" replace />} />
+          {/* Colaborador (login unificado) */}
+          <Route path="/parceiro-login" element={<Navigate to="/parceiro-login-unificado" replace />} />
+          <Route path="/parceiro-selecionar-plataforma" element={<Navigate to="/parceiro-plataformas" replace />} />
 
-        <Route path="/parceiro-dashboard" element={<PartnerDashboard />} />
-        <Route path="/parceiro-upload" element={<PartnerUpload />} />
-        <Route path="/upscaler-arcano" element={<UpscalerArcanoVersionSelect />} />
-        <Route path="/ferramenta-ia-artes/upscaller-arcano" element={<UpscalerArcanoVersionSelect />} />
-        <Route path="/ferramenta-ia-artes/upscaller-arcano-v1" element={<Navigate to="/ferramenta-ia-artes/upscaller-arcano/v1" replace />} />
-        <Route path="/ferramenta-ia-artes/upscaller-arcano-v2" element={<Navigate to="/ferramenta-ia-artes/upscaller-arcano/v2" replace />} />
-        {/* Dynamic route for tool versions */}
-        <Route path="/ferramenta-ia-artes/:toolSlug/:versionSlug" element={<ToolVersionLessons />} />
-        <Route path="/forja-selos-3d" element={<ForjaSelos3D />} />
-        <Route path="/mudar-roupa" element={<MudarRoupa />} />
-        <Route path="/mudar-pose" element={<MudarPose />} />
-        
-        {/* Artes system routes */}
-        <Route path="/login-artes" element={<UserLoginArtes />} />
-        <Route path="/login-artes-musicos" element={<UserLoginArtesMusicos />} />
-        <Route path="/planos-artes" element={<PlanosArtes />} />
-        <Route path="/planos-artes-membro" element={<PlanosArtesMembro />} />
-        <Route path="/promos-natal" element={<PromosNatal />} />
-        <Route path="/planos-artes-musicos" element={<PlanosArtesMusicos />} />
-        <Route path="/change-password-artes" element={<ChangePasswordArtes />} />
-        <Route path="/forgot-password-artes" element={<ForgotPasswordArtes />} />
-        <Route path="/reset-password-artes" element={<ResetPasswordArtes />} />
-        <Route path="/change-password-artes-musicos" element={<ChangePasswordArtesMusicos />} />
-        <Route path="/forgot-password-artes-musicos" element={<ForgotPasswordArtesMusicos />} />
-        <Route path="/reset-password-artes-musicos" element={<ResetPasswordArtesMusicos />} />
-        <Route path="/perfil-artes" element={<ProfileSettingsArtes />} />
-        <Route path="/parceiro-login-artes" element={<PartnerLoginArtes />} />
-        <Route path="/parceiro-dashboard-artes" element={<PartnerDashboardArtes />} />
-        <Route path="/parceiro-upload-artes" element={<PartnerUploadArtes />} />
-        <Route path="/parceiro-login-unificado" element={<PartnerLoginUnified />} />
-        <Route path="/parceiro-plataformas" element={<PartnerPlatformSelect />} />
-        <Route path="/parceiro-dashboard-musicos" element={<PartnerDashboardMusicos />} />
-        <Route path="/parceiro-upload-musicos" element={<PartnerUploadMusicos />} />
-        <Route path="/admin-parceiros-artes" element={<AdminPartnersArtes />} />
-        <Route path="/admin-categories-artes" element={<AdminCategoriesArtes />} />
-        <Route path="/admin-categories-musicos" element={<AdminCategoriesMusicos />} />
-        <Route path="/admin-categories-prompts" element={<AdminCategoriesPrompts />} />
-        <Route path="/admin-manage-packs" element={<AdminManagePacks />} />
-        <Route path="/admin-manage-banners" element={<AdminManageBanners />} />
-        <Route path="/admin-pack-purchases" element={<AdminPackPurchases />} />
-        <Route path="/admin-import-clients" element={<AdminImportClients />} />
-        <Route path="/admin-manage-admins" element={<AdminManageAdmins />} />
-        <Route path="/forja-selos-3d-artes" element={<ForjaSelos3DArtes />} />
-        <Route path="/tutorial-artes/:slug" element={<TutorialArtes />} />
-        <Route path="/ferramenta-ia-artes/:slug" element={<FerramentaIAArtes />} />
-        <Route path="/ferramentas-ia" element={<FerramentasIA />} />
-        <Route path="/ferramentas-ia-es" element={<FerramentasIAES />} />
-        <Route path="/admin-manage-promotions" element={<AdminManagePromotions />} />
-        <Route path="/admin-blacklist" element={<AdminManageBlacklist />} />
-        <Route path="/admin-webhook-logs" element={<AdminWebhookLogs />} />
-        <Route path="/admin-push-notifications" element={<AdminPushNotifications />} />
-        <Route path="/admin-abandoned-checkouts" element={<AdminAbandonedCheckouts />} />
-        <Route path="/admin-leads" element={<AdminLeads />} />
-        <Route path="/admin-cloudinary-migration" element={<AdminCloudinaryMigration />} />
-        <Route path="/admin-premium-musicos" element={<AdminPremiumMusicos />} />
-        <Route path="/sucesso-artes-musicos" element={<SucessoArtesMusicos />} />
-        <Route path="/aguardando-pagamento-musicos" element={<AguardandoPagamentoMusicos />} />
-        <Route path="/planos-upscaler-arcano" element={<PlanosUpscalerArcano />} />
-        <Route path="/planos-upscaler-arcano-69" element={<PlanosUpscalerArcano69 />} />
-        <Route path="/planos-upscaler-arcano-69-es" element={<PlanosUpscalerArcano69ES />} />
-        <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
-        <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
-        <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          <Route path="/parceiro-dashboard" element={<PartnerDashboard />} />
+          <Route path="/parceiro-upload" element={<PartnerUpload />} />
+          <Route path="/upscaler-arcano" element={<UpscalerArcanoVersionSelect />} />
+          <Route path="/ferramenta-ia-artes/upscaller-arcano" element={<UpscalerArcanoVersionSelect />} />
+          <Route path="/ferramenta-ia-artes/upscaller-arcano-v1" element={<Navigate to="/ferramenta-ia-artes/upscaller-arcano/v1" replace />} />
+          <Route path="/ferramenta-ia-artes/upscaller-arcano-v2" element={<Navigate to="/ferramenta-ia-artes/upscaller-arcano/v2" replace />} />
+          {/* Dynamic route for tool versions */}
+          <Route path="/ferramenta-ia-artes/:toolSlug/:versionSlug" element={<ToolVersionLessons />} />
+          <Route path="/forja-selos-3d" element={<ForjaSelos3D />} />
+          <Route path="/mudar-roupa" element={<MudarRoupa />} />
+          <Route path="/mudar-pose" element={<MudarPose />} />
+          
+          {/* Artes system routes */}
+          <Route path="/login-artes" element={<UserLoginArtes />} />
+          <Route path="/login-artes-musicos" element={<UserLoginArtesMusicos />} />
+          <Route path="/planos-artes" element={<PlanosArtes />} />
+          <Route path="/planos-artes-membro" element={<PlanosArtesMembro />} />
+          <Route path="/promos-natal" element={<PromosNatal />} />
+          <Route path="/planos-artes-musicos" element={<PlanosArtesMusicos />} />
+          <Route path="/change-password-artes" element={<ChangePasswordArtes />} />
+          <Route path="/forgot-password-artes" element={<ForgotPasswordArtes />} />
+          <Route path="/reset-password-artes" element={<ResetPasswordArtes />} />
+          <Route path="/change-password-artes-musicos" element={<ChangePasswordArtesMusicos />} />
+          <Route path="/forgot-password-artes-musicos" element={<ForgotPasswordArtesMusicos />} />
+          <Route path="/reset-password-artes-musicos" element={<ResetPasswordArtesMusicos />} />
+          <Route path="/perfil-artes" element={<ProfileSettingsArtes />} />
+          <Route path="/parceiro-login-artes" element={<PartnerLoginArtes />} />
+          <Route path="/parceiro-dashboard-artes" element={<PartnerDashboardArtes />} />
+          <Route path="/parceiro-upload-artes" element={<PartnerUploadArtes />} />
+          <Route path="/parceiro-login-unificado" element={<PartnerLoginUnified />} />
+          <Route path="/parceiro-plataformas" element={<PartnerPlatformSelect />} />
+          <Route path="/parceiro-dashboard-musicos" element={<PartnerDashboardMusicos />} />
+          <Route path="/parceiro-upload-musicos" element={<PartnerUploadMusicos />} />
+          <Route path="/admin-parceiros-artes" element={<AdminPartnersArtes />} />
+          <Route path="/admin-categories-artes" element={<AdminCategoriesArtes />} />
+          <Route path="/admin-categories-musicos" element={<AdminCategoriesMusicos />} />
+          <Route path="/admin-categories-prompts" element={<AdminCategoriesPrompts />} />
+          <Route path="/admin-manage-packs" element={<AdminManagePacks />} />
+          <Route path="/admin-manage-banners" element={<AdminManageBanners />} />
+          <Route path="/admin-pack-purchases" element={<AdminPackPurchases />} />
+          <Route path="/admin-import-clients" element={<AdminImportClients />} />
+          <Route path="/admin-manage-admins" element={<AdminManageAdmins />} />
+          <Route path="/forja-selos-3d-artes" element={<ForjaSelos3DArtes />} />
+          <Route path="/tutorial-artes/:slug" element={<TutorialArtes />} />
+          <Route path="/ferramenta-ia-artes/:slug" element={<FerramentaIAArtes />} />
+          <Route path="/ferramentas-ia" element={<FerramentasIA />} />
+          <Route path="/ferramentas-ia-es" element={<FerramentasIAES />} />
+          <Route path="/admin-manage-promotions" element={<AdminManagePromotions />} />
+          <Route path="/admin-blacklist" element={<AdminManageBlacklist />} />
+          <Route path="/admin-webhook-logs" element={<AdminWebhookLogs />} />
+          <Route path="/admin-push-notifications" element={<AdminPushNotifications />} />
+          <Route path="/admin-abandoned-checkouts" element={<AdminAbandonedCheckouts />} />
+          <Route path="/admin-leads" element={<AdminLeads />} />
+          <Route path="/admin-cloudinary-migration" element={<AdminCloudinaryMigration />} />
+          <Route path="/admin-premium-musicos" element={<AdminPremiumMusicos />} />
+          <Route path="/sucesso-artes-musicos" element={<SucessoArtesMusicos />} />
+          <Route path="/aguardando-pagamento-musicos" element={<AguardandoPagamentoMusicos />} />
+          <Route path="/planos-upscaler-arcano" element={<PlanosUpscalerArcano />} />
+          <Route path="/planos-upscaler-arcano-69" element={<PlanosUpscalerArcano69 />} />
+          <Route path="/planos-upscaler-arcano-69-es" element={<PlanosUpscalerArcano69ES />} />
+          <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
+          <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
+          <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </TooltipProvider>
   );
 };
