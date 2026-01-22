@@ -551,7 +551,7 @@ const PlanosUpscalerArcano = () => {
           </AnimatedSection>
 
           {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
-          <LazySocialProofWrapper locale="pt" onZoomClick={openModal} />
+          <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">

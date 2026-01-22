@@ -3,7 +3,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import { LazyBeforeAfterSlider } from "../LazyBeforeAfterSlider";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 
-// Images imported here - will only be in this lazy-loaded chunk
+// Desktop high-res images imported here - will only be in this lazy-loaded chunk
 import upscalerUser1Antes from "@/assets/upscaler-user1-antes.jpg";
 import upscalerUser1Depois from "@/assets/upscaler-user1-depois.jpg";
 import upscalerUser2Antes from "@/assets/upscaler-user2-antes.jpg";
@@ -19,40 +19,42 @@ import upscalerUser6Depois from "@/assets/upscaler-user6-depois.webp";
 
 interface SocialProofSectionPTProps {
   onZoomClick: (before: string, after: string) => void;
+  isMobile?: boolean;
 }
 
-export const SocialProofSectionPT = ({ onZoomClick }: SocialProofSectionPTProps) => {
+export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialProofSectionPTProps) => {
   const { t } = useTranslation();
 
+  // Conditional image loading: Mobile uses optimized 600x900 WebP, Desktop uses high-res imports
   const userResults = [
     {
-      before: upscalerUser1Antes,
-      after: upscalerUser1Depois,
+      before: isMobile ? "/images/upscaler-user1-antes-mobile.webp" : upscalerUser1Antes,
+      after: isMobile ? "/images/upscaler-user1-depois-mobile.webp" : upscalerUser1Depois,
       label: t('tools:upscaler.socialProof.userResult')
     },
     {
-      before: upscalerUser2Antes,
-      after: upscalerUser2Depois,
+      before: isMobile ? "/images/upscaler-user2-antes-mobile.webp" : upscalerUser2Antes,
+      after: isMobile ? "/images/upscaler-user2-depois-mobile.webp" : upscalerUser2Depois,
       label: t('tools:upscaler.socialProof.userResult')
     },
     {
-      before: upscalerUser3Antes,
-      after: upscalerUser3Depois,
+      before: isMobile ? "/images/upscaler-user3-antes-mobile.webp" : upscalerUser3Antes,
+      after: isMobile ? "/images/upscaler-user3-depois-mobile.webp" : upscalerUser3Depois,
       label: t('tools:upscaler.socialProof.userResult')
     },
     {
-      before: upscalerUser4Antes,
-      after: upscalerUser4Depois,
+      before: isMobile ? "/images/upscaler-user4-antes-mobile.webp" : upscalerUser4Antes,
+      after: isMobile ? "/images/upscaler-user4-depois-mobile.webp" : upscalerUser4Depois,
       label: t('tools:upscaler.socialProof.userResult')
     },
     {
-      before: upscalerUser5Antes,
-      after: upscalerUser5Depois,
+      before: isMobile ? "/images/upscaler-user5-antes-mobile.webp" : upscalerUser5Antes,
+      after: isMobile ? "/images/upscaler-user5-depois-mobile.webp" : upscalerUser5Depois,
       label: t('tools:upscaler.socialProof.userResult')
     },
     {
-      before: upscalerUser6Antes,
-      after: upscalerUser6Depois,
+      before: isMobile ? "/images/upscaler-user6-antes-mobile.webp" : upscalerUser6Antes,
+      after: isMobile ? "/images/upscaler-user6-depois-mobile.webp" : upscalerUser6Depois,
       label: t('tools:upscaler.socialProof.userResult')
     }
   ];
