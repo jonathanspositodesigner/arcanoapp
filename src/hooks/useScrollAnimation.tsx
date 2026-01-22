@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, ReactNode } from 'react';
+import { useEffect, useRef, useState, ReactNode, useCallback } from 'react';
 
 interface UseScrollAnimationOptions {
   threshold?: number;
@@ -6,33 +6,58 @@ interface UseScrollAnimationOptions {
   triggerOnce?: boolean;
 }
 
+// Shared observer pattern - single observer instance for all elements
+type ObserverCallback = (isIntersecting: boolean) => void;
+const observerCallbacks = new Map<Element, { callback: ObserverCallback; triggerOnce: boolean }>();
+let sharedObserver: IntersectionObserver | null = null;
+
+const getSharedObserver = (threshold: number = 0.1, rootMargin: string = '0px') => {
+  if (!sharedObserver) {
+    sharedObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          const config = observerCallbacks.get(entry.target);
+          if (config) {
+            config.callback(entry.isIntersecting);
+            if (entry.isIntersecting && config.triggerOnce) {
+              sharedObserver?.unobserve(entry.target);
+              observerCallbacks.delete(entry.target);
+            }
+          }
+        });
+      },
+      { threshold, rootMargin }
+    );
+  }
+  return sharedObserver;
+};
+
 export const useScrollAnimation = (options: UseScrollAnimationOptions = {}) => {
   const { threshold = 0.1, rootMargin = '0px', triggerOnce = true } = options;
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
+  const handleIntersection = useCallback((isIntersecting: boolean) => {
+    if (isIntersecting) {
+      setIsVisible(true);
+    } else if (!triggerOnce) {
+      setIsVisible(false);
+    }
+  }, [triggerOnce]);
+
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          if (triggerOnce) {
-            observer.unobserve(element);
-          }
-        } else if (!triggerOnce) {
-          setIsVisible(false);
-        }
-      },
-      { threshold, rootMargin }
-    );
-
+    const observer = getSharedObserver(threshold, rootMargin);
+    observerCallbacks.set(element, { callback: handleIntersection, triggerOnce });
     observer.observe(element);
 
-    return () => observer.disconnect();
-  }, [threshold, rootMargin, triggerOnce]);
+    return () => {
+      observer.unobserve(element);
+      observerCallbacks.delete(element);
+    };
+  }, [threshold, rootMargin, triggerOnce, handleIntersection]);
 
   return { ref, isVisible };
 };

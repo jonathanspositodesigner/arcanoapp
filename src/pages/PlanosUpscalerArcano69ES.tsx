@@ -1,42 +1,24 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
-import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool } from "lucide-react";
+import { Check, ArrowRight, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, Shield, Clock, CreditCard, MessageCircle, User, Rocket, PenTool } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
-import upscalerAntes1 from "@/assets/upscaler-antes-1.webp";
-import upscalerDepois1 from "@/assets/upscaler-depois-1.webp";
+
+// Optimized imports - only hero images loaded eagerly
+import { HeroBeforeAfterSlider, FullscreenModal, SectionSkeleton } from "@/components/upscaler";
 import upscalerHeroAntes from "@/assets/upscaler-hero-antes.webp";
 import upscalerHeroDepois from "@/assets/upscaler-hero-depois.webp";
-import upscalerSeloAntes from "@/assets/upscaler-selo-antes.jpg";
-import upscalerSeloDepois from "@/assets/upscaler-selo-depois.jpg";
-import upscalerLogoAntes from "@/assets/upscaler-logo-antes.jpg";
-import upscalerLogoDepois from "@/assets/upscaler-logo-depois.png";
-import upscalerAntigaAntes from "@/assets/upscaler-antiga-antes.webp";
-import upscalerAntigaDepois from "@/assets/upscaler-antiga-depois.jpg";
-import upscalerMockupAntes from "@/assets/upscaler-mockup-antes.jpg";
-import upscalerMockupDepois from "@/assets/upscaler-mockup-depois.jpg";
-import upscalerUser1Antes from "@/assets/upscaler-user1-antes.jpg";
-import upscalerUser1Depois from "@/assets/upscaler-user1-depois.jpg";
-import upscalerUser2Antes from "@/assets/upscaler-user2-antes.jpg";
-import upscalerUser2Depois from "@/assets/upscaler-user2-depois.jpg";
-import upscalerUser3Antes from "@/assets/upscaler-user3-antes.jpg";
-import upscalerUser3Depois from "@/assets/upscaler-user3-depois.jpg";
-import upscalerFoodAntes from "@/assets/upscaler-food-antes.webp";
-import upscalerFoodDepois from "@/assets/upscaler-food-depois.webp";
-import upscalerUser4Antes from "@/assets/upscaler-user4-antes.webp";
-import upscalerUser4Depois from "@/assets/upscaler-user4-depois.webp";
-import upscalerUser5Antes from "@/assets/upscaler-user5-antes.webp";
-import upscalerUser5Depois from "@/assets/upscaler-user5-depois.webp";
-import upscalerUser6Antes from "@/assets/upscaler-user6-antes.webp";
-import upscalerUser6Depois from "@/assets/upscaler-user6-depois.webp";
+
+// Lazy load heavy sections
+const BeforeAfterGalleryES = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryES"));
+const SocialProofSectionES = lazy(() => import("@/components/upscaler/sections/SocialProofSectionES"));
 
 interface ToolData {
   id: string;
@@ -48,248 +30,6 @@ interface ToolData {
   cover_url: string | null;
 }
 
-// Modal fullscreen para visualização ampliada
-const FullscreenModal = ({ 
-  isOpen, 
-  onClose, 
-  beforeImage, 
-  afterImage 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  beforeImage: string; 
-  afterImage: string; 
-}) => {
-  const { t: tOriginal } = useTranslation();
-  const t = (key: string, options?: object) => tOriginal(key, { ...options, lng: 'es' });
-  const [sliderPosition, setSliderPosition] = useState(50);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-
-  const handleMove = (clientX: number) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    setSliderPosition(percentage);
-  };
-
-  const handleMouseDown = () => {
-    isDragging.current = true;
-  };
-
-  const handleMouseUp = () => {
-    isDragging.current = false;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging.current) {
-      handleMove(e.clientX);
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    handleMove(e.touches[0].clientX);
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div 
-      className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <button 
-        onClick={onClose}
-        className="absolute top-4 right-4 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-      >
-        <X className="h-6 w-6 text-white" />
-      </button>
-      
-      <div 
-        ref={containerRef}
-        className="relative w-full max-w-4xl aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden cursor-ew-resize select-none"
-        onClick={(e) => e.stopPropagation()}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onTouchMove={handleTouchMove}
-      >
-        {/* Imagem "Depois" (background) */}
-        <img 
-          src={afterImage} 
-          alt="Después" 
-          className="absolute inset-0 w-full h-full object-contain bg-black"
-        />
-        
-        {/* Imagem "Antes" (clipped) */}
-        <div 
-          className="absolute inset-0 overflow-hidden"
-          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
-        >
-          <img 
-            src={beforeImage} 
-            alt="Antes" 
-            className="absolute inset-0 w-full h-full object-contain bg-black"
-          />
-        </div>
-
-        {/* Slider line */}
-        <div 
-          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
-          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
-        >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center">
-            <div className="flex gap-0.5">
-              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
-              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
-            </div>
-          </div>
-        </div>
-
-        {/* Labels */}
-        <div className="absolute top-4 left-4 bg-black/80 text-white text-base font-semibold px-5 py-2.5 rounded-full">
-          {t('tools:upscaler.beforeAfter.before')}
-        </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-base font-semibold px-5 py-2.5 rounded-full">
-          {t('tools:upscaler.beforeAfter.after')}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Componente de slider antes/depois
-const BeforeAfterSlider = ({ 
-  beforeImage, 
-  afterImage, 
-  label,
-  size = "default",
-  onZoomClick
-}: { 
-  beforeImage: string; 
-  afterImage: string; 
-  label?: string;
-  size?: "default" | "large";
-  onZoomClick?: () => void;
-}) => {
-  const { t: tOriginal } = useTranslation();
-  const t = (key: string, options?: object) => tOriginal(key, { ...options, lng: 'es' });
-  const [sliderPosition, setSliderPosition] = useState(50);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-
-  const handleMove = (clientX: number) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    setSliderPosition(percentage);
-  };
-
-  const handleMouseDown = () => {
-    isDragging.current = true;
-  };
-
-  const handleMouseUp = () => {
-    isDragging.current = false;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging.current) {
-      handleMove(e.clientX);
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    handleMove(e.touches[0].clientX);
-  };
-
-  return (
-    <div className="space-y-3">
-      <div 
-        ref={containerRef}
-        className={`relative w-full ${size === "large" ? "aspect-[4/3]" : "aspect-square"} rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10`}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onTouchMove={handleTouchMove}
-      >
-        {/* Imagem "Depois" (background) */}
-        <img 
-          src={afterImage} 
-          alt="Después" 
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        
-        {/* Imagem "Antes" (clipped) */}
-        <div 
-          className="absolute inset-0 overflow-hidden"
-          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
-        >
-          <img 
-            src={beforeImage} 
-            alt="Antes" 
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Slider line */}
-        <div 
-          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
-          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
-        >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center">
-            <div className="flex gap-0.5">
-              <div className="w-0.5 h-5 bg-gray-400 rounded-full" />
-              <div className="w-0.5 h-5 bg-gray-400 rounded-full" />
-            </div>
-          </div>
-        </div>
-
-        {/* Labels maiores */}
-        <div className="absolute top-4 left-4 bg-black/80 text-white text-sm font-semibold px-4 py-2 rounded-full">
-          {t('tools:upscaler.beforeAfter.before')}
-        </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
-          {t('tools:upscaler.beforeAfter.after')}
-        </div>
-
-        {/* Botão de zoom */}
-        {onZoomClick && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onZoomClick();
-            }}
-            className="absolute bottom-4 right-4 p-3 bg-black/70 hover:bg-black/90 rounded-full transition-all duration-300 hover:scale-110 border border-white/20"
-          >
-            <ZoomIn className="h-5 w-5 text-white" />
-          </button>
-        )}
-      </div>
-      {label && <p className="text-center text-white/60 text-sm">{label}</p>}
-    </div>
-  );
-};
-
 // CTA Button Component - estilo pill
 const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
@@ -300,25 +40,6 @@ const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: 
     <ArrowRight className="h-5 w-5 ml-2" />
   </Button>
 );
-
-// Trust Badges Component - SEM PIX para versão LATAM
-const TrustBadges = ({ t }: { t: (key: string) => string }) => (
-  <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
-    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
-      <Shield className="h-3 w-3 text-green-400" />
-      {t('tools:upscaler.trustBadges.secure')}
-    </span>
-    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
-      <Zap className="h-3 w-3 text-yellow-400" />
-      {t('tools:upscaler.trustBadges.immediate')}
-    </span>
-    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
-      <Infinity className="h-3 w-3 text-fuchsia-400" />
-      {t('tools:upscaler.trustBadges.lifetime')}
-    </span>
-  </div>
-);
-
 
 const PlanosUpscalerArcano69ES = () => {
   const navigate = useNavigate();
@@ -341,7 +62,6 @@ const PlanosUpscalerArcano69ES = () => {
   };
 
   const TOOL_SLUG = "upscaller-arcano";
-
 
   useEffect(() => {
     fetchToolData();
@@ -398,84 +118,6 @@ const PlanosUpscalerArcano69ES = () => {
   const price = 990;
   const originalPrice = 1297; // $12.97 riscado
   const installmentPrice = Math.ceil(price / 3); // $3.30
-
-  const beforeAfterExamples = [
-    {
-      before: upscalerAntes1,
-      after: upscalerDepois1,
-      label: t('tools:upscaler.beforeAfter.photoImproved4K'),
-      badge: t('tools:upscaler.beforeAfter.badges.photo'),
-      badgeColor: "from-fuchsia-500 to-pink-500"
-    },
-    {
-      before: upscalerSeloAntes,
-      after: upscalerSeloDepois,
-      label: t('tools:upscaler.beforeAfter.seal3DHD'),
-      badge: t('tools:upscaler.beforeAfter.badges.seals3D'),
-      badgeColor: "from-purple-500 to-violet-600"
-    },
-    {
-      before: upscalerLogoAntes,
-      after: upscalerLogoDepois,
-      label: t('tools:upscaler.beforeAfter.logoHD'),
-      badge: t('tools:upscaler.beforeAfter.badges.logo'),
-      badgeColor: "from-blue-500 to-cyan-500"
-    },
-    {
-      before: upscalerMockupAntes,
-      after: upscalerMockupDepois,
-      label: t('tools:upscaler.beforeAfter.mockupSharp'),
-      badge: t('tools:upscaler.beforeAfter.badges.mockup'),
-      badgeColor: "from-emerald-500 to-green-500"
-    },
-    {
-      before: upscalerAntigaAntes,
-      after: upscalerAntigaDepois,
-      label: t('tools:upscaler.beforeAfter.oldPhotoRestored'),
-      badge: t('tools:upscaler.beforeAfter.badges.oldPhoto'),
-      badgeColor: "from-amber-500 to-orange-500"
-    },
-    {
-      before: upscalerFoodAntes,
-      after: upscalerFoodDepois,
-      label: t('tools:upscaler.beforeAfter.foodPhotos'),
-      badge: t('tools:upscaler.beforeAfter.badges.food'),
-      badgeColor: "from-red-500 to-orange-500"
-    }
-  ];
-
-  const userResults = [
-    {
-      before: upscalerUser1Antes,
-      after: upscalerUser1Depois,
-      label: t('tools:upscaler.socialProof.userResult')
-    },
-    {
-      before: upscalerUser2Antes,
-      after: upscalerUser2Depois,
-      label: t('tools:upscaler.socialProof.userResult')
-    },
-    {
-      before: upscalerUser3Antes,
-      after: upscalerUser3Depois,
-      label: t('tools:upscaler.socialProof.userResult')
-    },
-    {
-      before: upscalerUser4Antes,
-      after: upscalerUser4Depois,
-      label: t('tools:upscaler.socialProof.userResult')
-    },
-    {
-      before: upscalerUser5Antes,
-      after: upscalerUser5Depois,
-      label: t('tools:upscaler.socialProof.userResult')
-    },
-    {
-      before: upscalerUser6Antes,
-      after: upscalerUser6Depois,
-      label: t('tools:upscaler.socialProof.userResult')
-    }
-  ];
 
   const features = [
     { icon: Sparkles, text: t('tools:upscaler.benefits.improveImages') },
@@ -584,7 +226,7 @@ const PlanosUpscalerArcano69ES = () => {
         </div>
       ) : (
         <>
-          {/* HERO SECTION - Vertical no mobile */}
+          {/* HERO SECTION - Optimized for LCP */}
           <section className="px-3 md:px-4 py-10 md:py-20 w-full">
             <div className="flex flex-col items-center text-center">
               <FadeIn delay={0} duration={700}>
@@ -596,13 +238,13 @@ const PlanosUpscalerArcano69ES = () => {
                 </h1>
               </FadeIn>
 
-              {/* Slider - logo abaixo do título */}
+              {/* Hero Slider - LCP optimized with eager loading */}
               <FadeIn delay={200} duration={700} className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
-                <BeforeAfterSlider
+                <HeroBeforeAfterSlider
                   beforeImage={upscalerHeroAntes}
                   afterImage={upscalerHeroDepois}
                   label={t('tools:upscaler.hero.dragToCompare')}
-                  size="large"
+                  locale="es"
                 />
               </FadeIn>
               
@@ -628,7 +270,7 @@ const PlanosUpscalerArcano69ES = () => {
                 </h2>
               </AnimatedSection>
               
-              {/* Grid responsivo: 1 coluna mobile, 2 tablet, 3 cards em cima + 2 centralizados embaixo no desktop */}
+              {/* Grid responsivo */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-stretch">
                 <AnimatedElement className="h-full lg:col-span-2" delay={0}>
                   <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
@@ -684,46 +326,10 @@ const PlanosUpscalerArcano69ES = () => {
             </div>
           </AnimatedSection>
 
-          {/* SEÇÃO ANTES/DEPOIS */}
-          <section className="px-3 md:px-4 py-16 md:py-20 relative overflow-hidden">
-            {/* Background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 via-purple-500/5 to-transparent pointer-events-none" />
-            
-            <div className="max-w-6xl mx-auto relative">
-              <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-3 md:mb-4 tracking-wide">
-                {t('tools:upscaler.beforeAfter.title')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">{t('tools:upscaler.beforeAfter.anyImage')}</span>
-              </h2>
-              <p className="text-white/60 text-center text-sm md:text-lg mb-10 md:mb-14 max-w-2xl mx-auto">
-                {t('tools:upscaler.beforeAfter.subtitle')}
-              </p>
-              
-              {/* Grid 3x2: 3 cards por linha */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-                {beforeAfterExamples.map((example, index) => (
-                  <div 
-                    key={index} 
-                    className="relative group"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <div className="relative bg-white/5 border border-white/10 rounded-3xl p-4 hover:border-fuchsia-500/30 transition-all duration-300 hover:transform hover:scale-[1.02]">
-                      <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r ${example.badgeColor} text-white border-0 rounded-full px-4 py-1 font-semibold shadow-lg`}>
-                        {example.badge}
-                      </Badge>
-                      <div className="pt-2">
-                        <BeforeAfterSlider
-                          beforeImage={example.before}
-                          afterImage={example.after}
-                          label={example.label}
-                          onZoomClick={() => openModal(example.before, example.after)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-            </div>
-          </section>
+          {/* SEÇÃO ANTES/DEPOIS - Lazy loaded */}
+          <Suspense fallback={<SectionSkeleton height="600px" />}>
+            <BeforeAfterGalleryES onZoomClick={openModal} />
+          </Suspense>
 
           {/* PARA QUEM É */}
           <AnimatedSection className="px-4 py-20 bg-black/30">
@@ -782,54 +388,10 @@ const PlanosUpscalerArcano69ES = () => {
             </div>
           </AnimatedSection>
 
-
-          {/* PROVA SOCIAL - Resultados de usuários */}
-          <AnimatedSection className="px-4 py-20">
-            <div className="max-w-4xl mx-auto">
-              <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-2 tracking-wide leading-tight px-2">
-                  {t('tools:upscaler.socialProof.title')} <span className="text-fuchsia-400">{t('tools:upscaler.socialProof.result')}</span>
-                  <span className="block sm:inline"> {t('tools:upscaler.socialProof.subtitle')}</span>
-                </h2>
-                <p className="text-white/60 text-center text-base sm:text-lg mb-8 md:mb-12 px-4">
-                  {t('tools:upscaler.socialProof.description')}
-                </p>
-              </AnimatedSection>
-              
-              {/* Versão MOBILE - Carrossel */}
-              <div className="md:hidden px-6">
-                <Carousel opts={{ watchDrag: false }} className="w-full max-w-xs mx-auto">
-                  <CarouselContent>
-                    {userResults.map((result, index) => (
-                      <CarouselItem key={index}>
-                        <BeforeAfterSlider
-                          beforeImage={result.before}
-                          afterImage={result.after}
-                          label={result.label}
-                          onZoomClick={() => openModal(result.before, result.after)}
-                        />
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <CarouselPrevious className="-left-4 h-10 w-10 bg-fuchsia-500 hover:bg-fuchsia-600 border-none text-white shadow-lg shadow-fuchsia-500/30" />
-                  <CarouselNext className="-right-4 h-10 w-10 bg-fuchsia-500 hover:bg-fuchsia-600 border-none text-white shadow-lg shadow-fuchsia-500/30" />
-                </Carousel>
-              </div>
-
-              {/* Versão DESKTOP - Grid */}
-              <StaggeredAnimation className="hidden md:grid md:grid-cols-3 gap-6" staggerDelay={150}>
-                {userResults.map((result, index) => (
-                  <BeforeAfterSlider
-                    key={index}
-                    beforeImage={result.before}
-                    afterImage={result.after}
-                    label={result.label}
-                    onZoomClick={() => openModal(result.before, result.after)}
-                  />
-                ))}
-              </StaggeredAnimation>
-            </div>
-          </AnimatedSection>
+          {/* PROVA SOCIAL - Lazy loaded */}
+          <Suspense fallback={<SectionSkeleton height="500px" />}>
+            <SocialProofSectionES onZoomClick={openModal} />
+          </Suspense>
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
@@ -938,7 +500,7 @@ const PlanosUpscalerArcano69ES = () => {
             </div>
           </AnimatedSection>
 
-          {/* FAQ SECTION - Depois do preço */}
+          {/* FAQ SECTION */}
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
@@ -978,6 +540,7 @@ const PlanosUpscalerArcano69ES = () => {
           onClose={closeModal}
           beforeImage={modalImages.before}
           afterImage={modalImages.after}
+          locale="es"
         />
       )}
     </div>
