@@ -12,6 +12,7 @@ import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, 
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton } from "@/components/upscaler";
+import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
 // Hero images use public paths for HTML preloading (LCP optimization)
 const upscalerHeroAntes = "/images/upscaler-hero-antes.webp";
@@ -192,6 +193,13 @@ const PlanosUpscalerArcano = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
   const [heroRevealed, setHeroRevealed] = useState(false);
+
+  // Conditional preload: Mobile only loads preview, Desktop loads all hero images
+  useImagePreload("/images/upscaler-hero-preview.webp", isMobile);
+  useImagesPreload(
+    ["/images/upscaler-hero-antes.webp", "/images/upscaler-hero-depois.webp", "/images/upscaler-hero-preview.webp"],
+    !isMobile
+  );
 
   const openModal = (before: string, after: string) => {
     setModalImages({ before, after });
