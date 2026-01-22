@@ -344,30 +344,18 @@ const UpscalerArcanoTool: React.FC = () => {
     }
   };
 
-  // Download result
+  // Download result - direct fetch without proxy
   const downloadResult = async () => {
     if (!outputImage) return;
 
     try {
-      // Use edge function proxy to stream image (avoids CORS and memory issues)
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/download-image`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ imageUrl: outputImage }),
-        }
-      );
+      // Direct fetch from image URL
+      const response = await fetch(outputImage);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}`);
+        throw new Error(`HTTP ${response.status}`);
       }
 
-      // Get blob directly from streamed response
       const blob = await response.blob();
       
       // Detect iOS
