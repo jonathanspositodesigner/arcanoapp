@@ -78,9 +78,6 @@ verify_jwt = false
 [functions.delete-auth-user-by-email]
 verify_jwt = false
 
-[functions.upload-to-storage]
-verify_jwt = false
-
 [functions.migrate-cloudinary-to-storage]
 verify_jwt = false
 

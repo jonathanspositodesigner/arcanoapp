@@ -6,60 +6,64 @@ export interface StorageUploadResult {
   error?: string;
 }
 
+// Determine bucket based on folder/type
+const getBucketName = (folder: string): string => {
+  if (folder.includes('prompt') || folder.includes('thumbnail')) {
+    return 'prompts-cloudinary';
+  }
+  return 'artes-cloudinary';
+};
+
 export const uploadToStorage = async (
   file: File,
   folder: string
 ): Promise<StorageUploadResult> => {
   try {
-    // Convert file to base64
-    const base64 = await fileToBase64(file);
+    // Determine file extension and content type
+    const isVideo = file.type.startsWith('video/') || 
+      /\.(mp4|webm|mov|avi|mkv|m4v)$/i.test(file.name);
+    const extension = isVideo ? 'mp4' : (file.name.split('.').pop() || 'webp');
     
-    // Get content type
-    const contentType = file.type;
-    
-    // Generate filename with timestamp
+    // Generate unique filename
     const timestamp = Date.now();
-    const extension = file.name.split('.').pop() || 'webp';
-    const filename = `${timestamp}-${Math.random().toString(36).substring(7)}.${extension}`;
+    const safeName = file.name
+      .replace(/[^a-zA-Z0-9.-]/g, '-')
+      .replace(/\.[^.]+$/, '');
+    const storagePath = `${folder}/${safeName}-${timestamp}.${extension}`;
+    
+    // Get bucket name
+    const bucket = getBucketName(folder);
+    
+    console.log(`Uploading to Storage: ${bucket}/${storagePath}`);
 
-    const { data, error } = await supabase.functions.invoke('upload-to-storage', {
-      body: {
-        file: base64,
-        folder,
-        filename,
-        contentType,
-      },
-    });
+    // Upload directly using SDK (FREE - no edge function)
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(storagePath, file, {
+        contentType: file.type,
+        upsert: true
+      });
 
     if (error) {
       console.error('Storage upload error:', error);
       return { success: false, error: error.message };
     }
 
-    if (!data.success) {
-      return { success: false, error: data.error || 'Upload failed' };
-    }
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(storagePath);
+
+    console.log(`Upload successful: ${urlData.publicUrl}`);
 
     return {
       success: true,
-      url: data.url,
+      url: urlData.publicUrl,
     };
   } catch (err) {
     console.error('Error uploading to Storage:', err);
     return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
   }
-};
-
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 };
 
 export const useStorageUpload = () => {

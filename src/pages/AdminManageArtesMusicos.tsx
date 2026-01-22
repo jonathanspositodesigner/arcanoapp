@@ -235,23 +235,11 @@ const AdminManageArtesMusicos = () => {
     }
   };
 
-  const uploadToStorage = async (file: File): Promise<string> => {
-    const base64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-    const timestamp = Date.now();
-    const extension = file.name.split('.').pop() || 'webp';
-    const filename = `${timestamp}-${Math.random().toString(36).substring(7)}.${extension}`;
-    
-    const { data, error } = await supabase.functions.invoke('upload-to-storage', {
-      body: { file: base64, folder: 'artes-cloudinary', filename, contentType: file.type }
-    });
-
-    if (error) throw error;
-    return data.url;
+  const uploadFileToStorage = async (file: File): Promise<string> => {
+    const { uploadToStorage } = await import("@/hooks/useStorageUpload");
+    const result = await uploadToStorage(file, 'artes-cloudinary');
+    if (!result.success) throw new Error(result.error);
+    return result.url!;
   };
 
   const handleSaveEdit = async () => {
@@ -261,13 +249,13 @@ const AdminManageArtesMusicos = () => {
       let newImageUrl = editingArte.image_url;
 
       if (newMediaFile) {
-        newImageUrl = await uploadToStorage(newMediaFile);
+        newImageUrl = await uploadFileToStorage(newMediaFile);
       }
 
       // Handle AI reference image upload
       let aiReferenceImageUrl = editAiReferenceImageUrl;
       if (newAiReferenceImage) {
-        aiReferenceImageUrl = await uploadToStorage(newAiReferenceImage);
+        aiReferenceImageUrl = await uploadFileToStorage(newAiReferenceImage);
       }
       // Clear reference image if AI is disabled
       if (!editIsAiGenerated) {
