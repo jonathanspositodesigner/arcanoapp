@@ -62,7 +62,7 @@ export const PricingSection = ({ onPurchase }: PricingSectionProps) => {
         >
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Escolha seu{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
               Plano
             </span>
           </h2>
@@ -81,26 +81,37 @@ export const PricingSection = ({ onPurchase }: PricingSectionProps) => {
                 key={plan.id}
                 className={`relative p-8 rounded-3xl transition-all duration-500 ${
                   plan.highlight
-                    ? "bg-gradient-to-br from-purple-900/50 via-zinc-900 to-pink-900/50 border-2 border-purple-500/50 scale-105"
+                    ? "bg-gradient-to-br from-orange-900/50 via-zinc-900 to-amber-900/50 border-2 border-orange-500/50 scale-105"
                     : "bg-zinc-900 border border-zinc-800"
                 } ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
                 {plan.badge && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg shadow-purple-500/25">
+                    <span className="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg shadow-orange-500/25">
                       {plan.badge}
                     </span>
+                  </div>
+                )}
+
+                {/* Box image for complete plan */}
+                {plan.highlight && (
+                  <div className="flex justify-center mb-6">
+                    <img 
+                      src="https://voxvisual.com.br/wp-content/uploads/2025/03/BOX-AGENDAS-COMPLETO.png"
+                      alt="Pack Completo"
+                      className="h-32 w-auto object-contain"
+                    />
                   </div>
                 )}
 
                 <div className="flex items-center gap-3 mb-6">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                     plan.highlight 
-                      ? "bg-gradient-to-br from-purple-500 to-pink-500" 
+                      ? "bg-gradient-to-br from-orange-500 to-amber-500" 
                       : "bg-zinc-800"
                   }`}>
-                    <Icon className={`w-6 h-6 ${plan.highlight ? "text-white" : "text-purple-400"}`} />
+                    <Icon className={`w-6 h-6 ${plan.highlight ? "text-white" : "text-orange-400"}`} />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white">{plan.name}</h3>
@@ -131,8 +142,8 @@ export const PricingSection = ({ onPurchase }: PricingSectionProps) => {
                     <li key={i} className="flex items-start gap-3">
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
                         plan.highlight 
-                          ? "bg-gradient-to-br from-purple-500 to-pink-500" 
-                          : "bg-purple-500/20"
+                          ? "bg-gradient-to-br from-orange-500 to-amber-500" 
+                          : "bg-orange-500/20"
                       }`}>
                         <Check className="w-3 h-3 text-white" />
                       </div>
@@ -146,7 +157,7 @@ export const PricingSection = ({ onPurchase }: PricingSectionProps) => {
                   onClick={() => onPurchase(plan.id)}
                   className={`w-full py-6 text-lg font-bold rounded-xl transition-all hover:scale-105 ${
                     plan.highlight
-                      ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
+                      ? "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 shadow-lg shadow-orange-500/25"
                       : "bg-zinc-800 hover:bg-zinc-700 text-white"
                   }`}
                 >
