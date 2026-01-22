@@ -62,7 +62,8 @@ export const BeforeAfterGalleryES = ({ onZoomClick }: BeforeAfterGalleryESProps)
       after: upscalerAntigaDepois,
       label: t('tools:upscaler.beforeAfter.oldPhotoRestored'),
       badge: t('tools:upscaler.beforeAfter.badges.oldPhoto'),
-      badgeColor: "from-amber-500 to-orange-500"
+      badgeColor: "from-amber-500 to-orange-500",
+      aspectRatio: "2/3"
     },
     {
       before: upscalerFoodAntes,
