@@ -124,38 +124,7 @@ function isFromApp(payload: any): boolean {
   return utmSource?.toLowerCase() === 'aplicativo'
 }
 
-// Função para registrar log do webhook
-async function logWebhook(
-  supabase: any,
-  payload: any,
-  status: string | undefined,
-  productId: number | undefined,
-  email: string | undefined,
-  result: 'success' | 'error' | 'skipped' | 'blacklisted',
-  mappingType: string,
-  errorMessage?: string,
-  platform: string = 'artes-eventos'
-): Promise<void> {
-  try {
-    const utmSource = extractUtmSource(payload)
-    const fromApp = isFromApp(payload)
-    
-    await supabase.from('webhook_logs').insert({
-      payload,
-      status,
-      product_id: productId,
-      email,
-      result,
-      mapping_type: mappingType,
-      error_message: errorMessage,
-      utm_source: utmSource,
-      from_app: fromApp,
-      platform
-    })
-  } catch (e) {
-    console.error('Failed to log webhook:', e)
-  }
-}
+// logWebhook function removed - logs desativados para economizar recursos
 
 // Função para verificar se email está na lista negra
 async function isEmailBlacklisted(supabase: any, email: string): Promise<boolean> {

@@ -380,7 +380,6 @@ Deno.serve(async (req) => {
   })
 
   let payload: GreennWebhookPayload = {}
-  let logId: string | null = null
   let currentStep = 'parsing_payload'
 
   try {
@@ -409,35 +408,8 @@ Deno.serve(async (req) => {
     console.log(`   ├─ Period (dias): ${productPeriod}`)
     console.log(`   └─ Contract ID: ${contractId || 'N/A'}`)
 
-    currentStep = 'logging_webhook'
-    
-    // Log webhook receipt immediately
-    const { data: logData } = await supabase
-      .from('webhook_logs')
-      .insert({
-        payload: payload,
-        status: status || 'unknown',
-        product_id: productId,
-        email: email || 'no-email',
-        result: 'processing',
-        from_app: false,
-        platform: 'prompts'
-      })
-      .select('id')
-      .single()
-    
-    logId = logData?.id
-    console.log(`\n📝 [${requestId}] Webhook logado com ID: ${logId}`)
-    
     if (!email) {
       console.log(`\n❌ [${requestId}] ERRO: Email não fornecido no payload`)
-      
-      if (logId) {
-        await supabase.from('webhook_logs').update({
-          result: 'error',
-          error_message: 'No email provided'
-        }).eq('id', logId)
-      }
       
       const duration = Date.now() - startTime
       console.log(`\n⏱️ [${requestId}] Tempo de execução: ${duration}ms`)
@@ -461,13 +433,6 @@ Deno.serve(async (req) => {
 
     if (blacklisted) {
       console.log(`   └─ 🚫 Email BLOQUEADO na blacklist`)
-      
-      if (logId) {
-        await supabase.from('webhook_logs').update({
-          result: 'blocked',
-          error_message: 'Email blacklisted'
-        }).eq('id', logId)
-      }
       
       const duration = Date.now() - startTime
       console.log(`\n⏱️ [${requestId}] Tempo de execução: ${duration}ms`)
@@ -495,8 +460,7 @@ Deno.serve(async (req) => {
     
     // Extract locale from UTM
     const locale = extractLocale(payload)
-    
-    console.log(`   ├─ Plano Detectado: ${planType}`)
+
     console.log(`   ├─ Período: ${billingPeriod}`)
     console.log(`   ├─ Locale: ${locale}`)
     console.log(`   └─ Dias: ${productPeriod}`)
@@ -510,13 +474,6 @@ Deno.serve(async (req) => {
     if (isPendingStatus) {
       console.log(`\n⏳ [${requestId}] STATUS PENDENTE - IGNORANDO (não ativa premium)`)
       console.log(`   └─ Status: ${status}`)
-      
-      if (logId) {
-        await supabase.from('webhook_logs').update({
-          result: 'ignored',
-          error_message: `Status pendente ignorado: ${status}`
-        }).eq('id', logId)
-      }
       
       const duration = Date.now() - startTime
       console.log(`\n⏱️ [${requestId}] Tempo de execução: ${duration}ms`)
@@ -705,14 +662,6 @@ Deno.serve(async (req) => {
       currentStep = 'sending_email'
       await sendWelcomeEmail(supabase, email, clientName, planType, requestId, locale)
       
-      // Update log with success
-      if (logId) {
-        await supabase.from('webhook_logs').update({
-          result: 'success',
-          mapping_type: planType
-        }).eq('id', logId)
-      }
-      
       const duration = Date.now() - startTime
       console.log(`\n✅ [${requestId}] WEBHOOK PROCESSADO COM SUCESSO`)
       console.log(`   ├─ Email: ${email}`)
@@ -769,14 +718,6 @@ Deno.serve(async (req) => {
         console.log(`   ├─ ⚠️ Usuário não encontrado`)
       }
 
-      // Update log with success
-      if (logId) {
-        await supabase.from('webhook_logs').update({
-          result: 'success',
-          mapping_type: `deactivated_${status}`
-        }).eq('id', logId)
-      }
-
       const duration = Date.now() - startTime
       console.log(`\n✅ [${requestId}] WEBHOOK PROCESSADO COM SUCESSO`)
       console.log(`   ├─ Email: ${email}`)
@@ -793,13 +734,6 @@ Deno.serve(async (req) => {
 
     // For other statuses, just log and acknowledge
     console.log(`\n📋 [${requestId}] STATUS NÃO TRATADO: ${status}`)
-    
-    if (logId) {
-      await supabase.from('webhook_logs').update({
-        result: 'ignored',
-        error_message: `Status ${status} not handled`
-      }).eq('id', logId)
-    }
     
     const duration = Date.now() - startTime
     console.log(`   └─ Tempo: ${duration}ms`)
@@ -821,14 +755,6 @@ Deno.serve(async (req) => {
     console.log(`   ├─ Status: ${payload.currentStatus || 'N/A'}`)
     console.log(`   ├─ Erro: ${errorMessage}`)
     console.log(`   └─ Stack: ${errorStack?.split('\n')[0] || 'N/A'}`)
-    
-    // Update log with error
-    if (logId) {
-      await supabase.from('webhook_logs').update({
-        result: 'error',
-        error_message: `[${currentStep}] ${errorMessage}`
-      }).eq('id', logId)
-    }
     
     const duration = Date.now() - startTime
     console.log(`\n⏱️ [${requestId}] Tempo de execução: ${duration}ms`)
