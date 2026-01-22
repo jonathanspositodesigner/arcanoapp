@@ -70,14 +70,13 @@ export default defineConfig(({ mode }) => ({
           },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
-            handler: "NetworkFirst",
+            handler: "CacheFirst",
             options: {
-              cacheName: "arcanoapp-images-v5.0.0",
+              cacheName: "arcanoapp-images-v5.1.0",
               expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+                maxEntries: 150,
+                maxAgeSeconds: 60 * 60 * 24 * 50, // 50 dias
               },
-              networkTimeoutSeconds: 3,
             },
           },
         ],
