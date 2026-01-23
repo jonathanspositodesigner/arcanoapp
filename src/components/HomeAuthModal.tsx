@@ -125,7 +125,8 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
 
     setIsLoading(true);
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      // SEMPRE usar URL de produção para evitar redirect para lovable.dev
+      const redirectUrl = 'https://arcanoapp.lovable.app/';
       
       const { data, error } = await supabase.auth.signUp({
         email: signupEmail.trim().toLowerCase(),
