@@ -296,8 +296,8 @@ const ToolVersionLessons = () => {
   const currentLesson = lessons[selectedLesson];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="container mx-auto px-4 py-8 max-w-6xl flex-1">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button
@@ -426,7 +426,10 @@ const ToolVersionLessons = () => {
           </div>
         </div>
 
-        {/* WhatsApp Support Button - No final da página */}
+      </div>
+
+      {/* WhatsApp Support Button - No final absoluto da página */}
+      <div className="container mx-auto px-4 pb-8 max-w-6xl">
         <WhatsAppSupportButton />
       </div>
     </div>
