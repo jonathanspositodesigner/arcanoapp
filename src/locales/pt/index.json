@@ -21,5 +21,38 @@
   "toast": {
     "notificationsActivated": "Notificações ativadas com sucesso!",
     "notificationsError": "Não foi possível ativar as notificações"
+  },
+  "auth": {
+    "welcomeTitle": "Bem-vindo ao Arcano App",
+    "welcomeSubtitle": "Faça login ou crie sua conta gratuita",
+    "login": "Entrar",
+    "signup": "Criar Conta",
+    "email": "E-mail",
+    "emailPlaceholder": "seu@email.com",
+    "password": "Senha",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "Confirmar Senha",
+    "confirmPasswordPlaceholder": "••••••••",
+    "name": "Nome Completo",
+    "namePlaceholder": "Seu nome completo",
+    "phone": "Telefone",
+    "phonePlaceholder": "(00) 00000-0000",
+    "loginButton": "Entrar",
+    "signupButton": "Criar Conta",
+    "loading": "Aguarde...",
+    "invalidEmail": "E-mail inválido",
+    "passwordRequired": "Senha é obrigatória",
+    "passwordMinLength": "Senha deve ter no mínimo 6 caracteres",
+    "passwordsMismatch": "As senhas não coincidem",
+    "nameRequired": "Nome é obrigatório",
+    "phoneRequired": "Telefone é obrigatório",
+    "invalidCredentials": "E-mail ou senha incorretos",
+    "emailNotConfirmed": "Por favor, confirme seu e-mail antes de fazer login",
+    "loginSuccess": "Login realizado com sucesso!",
+    "loginError": "Erro ao fazer login",
+    "emailAlreadyExists": "Este e-mail já está cadastrado",
+    "signupSuccess": "Conta criada! Verifique seu e-mail para confirmar.",
+    "signupError": "Erro ao criar conta",
+    "signupDisclaimer": "Ao criar uma conta, você receberá um e-mail de confirmação."
   }
 }
