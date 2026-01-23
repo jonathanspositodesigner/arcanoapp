@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Play } from "lucide-react";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface VideoLesson {
@@ -48,6 +49,7 @@ const ForjaSelos3D = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, isPremium, planType, isLoading } = usePremiumStatus();
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
 
   const hasAccess = isPremium && planType === "arcano_unlimited";
 
@@ -77,7 +79,7 @@ const ForjaSelos3D = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/ferramentas-ia")}
+            onClick={goBack}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />

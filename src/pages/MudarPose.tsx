@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Play } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface VideoLesson {
@@ -39,6 +40,7 @@ const MudarPose = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, isPremium, isLoading } = usePremiumArtesStatus();
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
 
   // Qualquer pack ativo dá acesso (ferramenta bônus)
   const hasAccess = isPremium;
@@ -69,7 +71,7 @@ const MudarPose = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/ferramentas-ia")}
+            onClick={goBack}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
