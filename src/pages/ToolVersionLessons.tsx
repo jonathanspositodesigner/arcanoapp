@@ -5,6 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink, Lock, Unlock, AlertTriangle, ChevronRight, Check, CheckCircle2, Circle, Trophy } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -132,6 +142,10 @@ const ToolVersionLessons = () => {
   });
   const [showConfetti, setShowConfetti] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
+  
+  // Warning modal state
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
 
   // Get localized lessons based on current locale
   const lessons = useMemo(() => {
@@ -201,6 +215,25 @@ const ToolVersionLessons = () => {
         JSON.stringify(updated)
       );
     }
+  };
+
+  // Handle tool button click - show warning modal
+  const handleToolButtonClick = (url: string) => {
+    setPendingUrl(url);
+    setShowWarningModal(true);
+  };
+
+  const handleConfirmOpen = () => {
+    if (pendingUrl) {
+      window.open(pendingUrl, '_blank');
+    }
+    setShowWarningModal(false);
+    setPendingUrl(null);
+  };
+
+  const handleContinueWatching = () => {
+    setShowWarningModal(false);
+    setPendingUrl(null);
   };
 
   // Detect unlock moment for confetti
@@ -573,7 +606,7 @@ const ToolVersionLessons = () => {
                       <Button
                         key={index}
                         variant="outline"
-                        onClick={() => window.open(button.url, '_blank')}
+                        onClick={() => handleToolButtonClick(button.url)}
                         className="gap-2"
                       >
                         <ExternalLink className="w-4 h-4" />
@@ -659,6 +692,39 @@ const ToolVersionLessons = () => {
       <div className="hidden lg:block container mx-auto px-4 pb-8 max-w-6xl">
         <WhatsAppSupportButton />
       </div>
+
+      {/* Warning Modal - Tool Access */}
+      <AlertDialog open={showWarningModal} onOpenChange={setShowWarningModal}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                <AlertTriangle className="h-8 w-8 text-yellow-500" />
+              </div>
+            </div>
+            <AlertDialogTitle className="text-center text-xl">
+              {t('toolLessons.warningModalTitle')}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-base">
+              {t('toolLessons.warningModalDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+            <AlertDialogCancel 
+              onClick={handleContinueWatching}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white border-0"
+            >
+              {t('toolLessons.continueWatching')}
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmOpen}
+              className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-300"
+            >
+              {t('toolLessons.assumeRisk')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
