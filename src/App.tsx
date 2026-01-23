@@ -122,6 +122,7 @@ const GlobalImportProgress = lazy(() => import("./components/GlobalImportProgres
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 import { useServiceWorkerUpdate } from "./hooks/useServiceWorkerUpdate";
+import { OneTimeUpdateModal } from "./components/OneTimeUpdateModal";
 
 // Loading fallback component
 const LoadingSpinner = () => (
@@ -150,6 +151,7 @@ const AppContent = () => {
 
   return (
     <TooltipProvider>
+      <OneTimeUpdateModal />
       {isAdminRoute && (
         <Suspense fallback={null}>
           <GlobalImportProgress />
