@@ -97,10 +97,25 @@ const UpscalerArcanoV1 = () => {
     }
   };
 
-  // Handle tool button click - show warning modal
+  // Check if button is a tool access button (should show warning modal)
+  const isToolAccessButton = (labelKey: string): boolean => {
+    const lowerKey = labelKey.toLowerCase();
+    return lowerKey.includes('accesstool') || 
+           lowerKey.includes('tool') || 
+           lowerKey.includes('ferramenta') ||
+           lowerKey.includes('herramienta') ||
+           lowerKey.includes('link');
+  };
+
+  // Handle tool button click - show warning modal only for tool links
   const handleToolButtonClick = (url: string) => {
     setPendingUrl(url);
     setShowWarningModal(true);
+  };
+
+  // Handle regular button click - open directly
+  const handleRegularButtonClick = (url: string) => {
+    window.open(url, '_blank');
   };
 
   const handleConfirmOpen = () => {
@@ -196,7 +211,7 @@ const UpscalerArcanoV1 = () => {
           {/* Progress Bar */}
           <div className="h-3 bg-muted rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-green-500 
+              className="h-full bg-gradient-to-r from-purple-600 via-violet-500 to-purple-400 
                          transition-all duration-700 ease-out rounded-full"
               style={{ width: `${(progressCount / requiredLessons) * 100}%` }}
             />
@@ -316,7 +331,11 @@ const UpscalerArcanoV1 = () => {
                     {currentLesson.buttons.map((button, btnIndex) => (
                       <Button
                         key={btnIndex}
-                        onClick={() => handleToolButtonClick(button.url)}
+                        onClick={() => 
+                          isToolAccessButton(button.labelKey) 
+                            ? handleToolButtonClick(button.url)
+                            : handleRegularButtonClick(button.url)
+                        }
                         className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
