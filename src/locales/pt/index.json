@@ -53,6 +53,11 @@
     "emailAlreadyExists": "Este e-mail já está cadastrado",
     "signupSuccess": "Conta criada! Verifique seu e-mail para confirmar.",
     "signupError": "Erro ao criar conta",
-    "signupDisclaimer": "Ao criar uma conta, você receberá um e-mail de confirmação."
+    "signupDisclaimer": "Ao criar uma conta, você receberá um e-mail de confirmação.",
+    "signupSuccessTitle": "Verifique seu E-mail!",
+    "signupSuccessMessage": "Enviamos um link de confirmação para:",
+    "signupSuccessInstruction": "Clique no link do e-mail para ativar sua conta e fazer login.",
+    "signupSuccessSpam": "Não encontrou? Verifique a pasta de spam.",
+    "backToLogin": "Voltar para Login"
   }
 }
