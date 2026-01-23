@@ -470,12 +470,7 @@ const PlanosUpscalerArcano590ES = () => {
                 </div>
               </div>
 
-              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10 relative">
-                {/* Badge de desconto agressivo */}
-                <div className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-red-500 text-white font-bold px-3 py-1.5 md:px-4 md:py-2 rounded-full text-sm md:text-lg shadow-lg animate-bounce z-10">
-                  -40% OFF
-                </div>
-
+              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
                 <CardContent className="p-5 md:p-8 text-center">
                   {/* Badge principal */}
                   <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
@@ -493,7 +488,7 @@ const PlanosUpscalerArcano590ES = () => {
                     {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
                   </h2>
 
-                  {/* Preços em dólar - Apresentação mais impactante */}
+                  {/* Preços em dólar */}
                   <div className="mb-5 md:mb-6">
                     <div className="flex items-center justify-center gap-3 mb-2">
                       <span className="text-white/40 text-lg md:text-xl">DE</span>
@@ -502,12 +497,9 @@ const PlanosUpscalerArcano590ES = () => {
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <span className="text-white text-base md:text-lg">POR SOLO</span>
                     </div>
-                    <div className="text-5xl md:text-6xl lg:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300 mb-2">
-                      🔥 {formatPrice(price)} 🔥
+                    <div className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-3">
+                      {formatPrice(price)}
                     </div>
-                    <p className="text-fuchsia-400 text-lg md:text-xl font-semibold mb-3">
-                      ¡AHORRAS $4.00 HOY!
-                    </p>
                     <p className="text-white/60 text-base md:text-lg">
                       {t('tools:upscaler.finalCTA.or')} <span className="text-fuchsia-400 font-semibold">3x {formatPrice(installmentPrice)}</span>
                     </p>
