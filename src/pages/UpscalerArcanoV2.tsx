@@ -195,20 +195,27 @@ const UpscalerArcanoV2 = () => {
                 )}
               </Card>
             ))}
+            
+            {/* WhatsApp Support Button - SEMPRE o último elemento após todas as aulas */}
+            <div className="mt-6">
+              <WhatsAppSupportButton />
+            </div>
           </div>
         ) : (
-          <Card className="p-8 bg-card border-border text-center">
-            <p className="text-muted-foreground">
-              Em breve novas aulas serão adicionadas aqui.
-            </p>
-          </Card>
+          <div className="space-y-8">
+            <Card className="p-8 bg-card border-border text-center">
+              <p className="text-muted-foreground">
+                Em breve novas aulas serão adicionadas aqui.
+              </p>
+            </Card>
+            
+            {/* WhatsApp Support Button - mesmo sem aulas, sempre último */}
+            <div className="mt-6">
+              <WhatsAppSupportButton />
+            </div>
+          </div>
         )}
 
-      </div>
-
-      {/* WhatsApp Support Button - No final absoluto da página */}
-      <div className="container mx-auto px-4 pb-8 max-w-4xl">
-        <WhatsAppSupportButton />
       </div>
     </div>
   );
