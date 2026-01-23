@@ -54,7 +54,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
-        cacheId: "arcanoapp-v5.0.0",
+        cacheId: "arcanoapp-v5.1.0",
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
         runtimeCaching: [

@@ -423,13 +423,18 @@ const ToolVersionLessons = () => {
                 </div>
               </Card>
             ))}
+            
+            {/* WhatsApp Support Button - MOBILE: dentro da lista, último elemento */}
+            <div className="lg:hidden mt-6">
+              <WhatsAppSupportButton />
+            </div>
           </div>
         </div>
 
       </div>
 
-      {/* WhatsApp Support Button - No final absoluto da página */}
-      <div className="container mx-auto px-4 pb-8 max-w-6xl">
+      {/* WhatsApp Support Button - DESKTOP: fora do grid, full width no final */}
+      <div className="hidden lg:block container mx-auto px-4 pb-8 max-w-6xl">
         <WhatsAppSupportButton />
       </div>
     </div>
