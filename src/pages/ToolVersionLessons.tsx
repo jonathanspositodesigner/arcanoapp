@@ -716,7 +716,7 @@ const ToolVersionLessons = () => {
 
       {/* Warning Modal - Tool Access */}
       <AlertDialog open={showWarningModal} onOpenChange={setShowWarningModal}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="max-w-md mx-4 sm:mx-auto">
           <AlertDialogHeader>
             <div className="flex items-center justify-center mb-4">
               <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
@@ -730,16 +730,16 @@ const ToolVersionLessons = () => {
               {t('toolLessons.warningModalDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+          <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
             <AlertDialogCancel 
               onClick={handleContinueWatching}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white border-0"
+              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white border-0 order-1 sm:order-1"
             >
               {t('toolLessons.continueWatching')}
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleConfirmOpen}
-              className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-300"
+              className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 order-2 sm:order-2"
             >
               {t('toolLessons.assumeRisk')}
             </AlertDialogAction>
