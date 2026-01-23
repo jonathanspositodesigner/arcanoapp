@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { trackPushNotificationEvent } from "@/hooks/usePushNotificationAnalytics";
@@ -8,6 +9,8 @@ import logoHorizontal from "@/assets/logo_horizontal.png";
 import { FadeIn, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import HomeAuthModal from "@/components/HomeAuthModal";
 
 // Imagens de preview para os cards
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
@@ -19,8 +22,26 @@ const Index = () => {
   const { t } = useTranslation('index');
   const isAppInstalled = useIsAppInstalled();
   const { subscribe } = usePushNotifications();
+  const [showAuthModal, setShowAuthModal] = useState(true);
 
   const showNotificationButton = typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted';
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setShowAuthModal(false);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setShowAuthModal(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
   
   const handleActivateNotifications = async () => {
     const success = await subscribe();
@@ -174,6 +195,13 @@ const Index = () => {
           </div>
         </FadeIn>
       </main>
+
+      {/* Auth Modal */}
+      <HomeAuthModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={() => setShowAuthModal(false)}
+      />
     </div>
   );
 };
