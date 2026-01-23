@@ -268,7 +268,7 @@ const AppContent = () => {
           <Route path="/planos-upscaler-arcano" element={<PlanosUpscalerArcano />} />
           <Route path="/planos-upscaler-arcano-69" element={<PlanosUpscalerArcano69 />} />
           <Route path="/planos-upscaler-arcano-69-es" element={<PlanosUpscalerArcano69ES />} />
-          <Route path="/upscaler-arcano-590-es" element={<PlanosUpscalerArcano590ES />} />
+          <Route path="/planos-upscaler-arcano-590-es" element={<PlanosUpscalerArcano590ES />} />
           <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
           <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
           <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
