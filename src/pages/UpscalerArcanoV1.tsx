@@ -139,7 +139,7 @@ const UpscalerArcanoV1 = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            <h1 className="text-lg md:text-3xl font-bold text-foreground">
               Upscaler Arcano v1.0
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
@@ -169,23 +169,37 @@ const UpscalerArcanoV1 = () => {
             />
           </div>
           
-          {/* Lesson Indicators */}
+          {/* Lesson Indicators - Clickable */}
           <div className="flex justify-between mt-3">
-            {Array.from({ length: requiredLessons }, (_, i) => i + 1).map((num) => (
-              <div 
-                key={num}
-                className={`flex flex-col items-center gap-1 transition-colors ${
-                  watchedLessons.includes(num) ? 'text-green-500' : 'text-muted-foreground'
-                }`}
-              >
-                {watchedLessons.includes(num) ? (
-                  <CheckCircle2 className="h-5 w-5" />
-                ) : (
-                  <Circle className="h-5 w-5" />
-                )}
-                <span className="text-[10px]">{t('toolLessons.lesson')} {num}</span>
-              </div>
-            ))}
+            {Array.from({ length: requiredLessons }, (_, i) => i + 1).map((num) => {
+              const isWatched = watchedLessons.includes(num);
+              const nextLesson = Array.from({ length: requiredLessons }, (_, i) => i + 1).find(n => !watchedLessons.includes(n)) || requiredLessons + 1;
+              const isNext = num === nextLesson;
+              
+              return (
+                <button
+                  key={num}
+                  onClick={() => handleLessonClick(num - 1)}
+                  className={`flex flex-col items-center gap-1 transition-all ${
+                    isWatched 
+                      ? 'text-green-500 hover:text-green-400' 
+                      : isNext 
+                        ? 'text-primary hover:text-primary/80' 
+                        : 'text-muted-foreground/50 cursor-not-allowed'
+                  }`}
+                  disabled={!isWatched && !isNext}
+                >
+                  {isWatched ? (
+                    <CheckCircle2 className="h-6 w-6" />
+                  ) : isNext ? (
+                    <Play className="h-6 w-6 animate-pulse fill-current" />
+                  ) : (
+                    <Circle className="h-5 w-5" />
+                  )}
+                  <span className="text-[10px]">{t('toolLessons.lesson')} {num}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -201,7 +215,7 @@ const UpscalerArcanoV1 = () => {
                     className={`w-full h-12 text-base font-semibold transition-all duration-500 ${
                       isToolUnlocked 
                         ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white shadow-lg shadow-orange-500/30' 
-                        : 'bg-muted text-muted-foreground cursor-not-allowed'
+                        : 'bg-zinc-700 text-zinc-300 border border-zinc-600 cursor-not-allowed'
                     }`}
                   >
                     {isToolUnlocked ? (
@@ -233,17 +247,6 @@ const UpscalerArcanoV1 = () => {
           )}
         </div>
 
-        {/* Light Version Notice Badge */}
-        <div 
-          onClick={() => handleLessonClick(lessons.length - 1)}
-          className="mb-6 px-3 py-1.5 bg-purple-500/20 border border-purple-400/30 
-                     rounded-full cursor-pointer hover:bg-purple-500/30 transition-all 
-                     inline-flex items-center gap-2 text-xs text-purple-300"
-        >
-          <AlertTriangle className="h-3 w-3" />
-          <span>{t('toolLessons.lightVersionAvailable')}</span>
-          <ChevronRight className="h-3 w-3" />
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Video Player Area */}
@@ -338,6 +341,18 @@ const UpscalerArcanoV1 = () => {
                 </div>
               </Card>
             ))}
+            
+            {/* Light Version Notice - Below lessons, above WhatsApp */}
+            <div 
+              onClick={() => handleLessonClick(lessons.length - 1)}
+              className="mt-4 px-3 py-1.5 bg-purple-500/20 border border-purple-400/30 
+                         rounded-full cursor-pointer hover:bg-purple-500/30 transition-all 
+                         inline-flex items-center gap-2 text-xs text-purple-300"
+            >
+              <AlertTriangle className="h-3 w-3" />
+              <span>{t('toolLessons.lightVersionAvailable')}</span>
+              <ChevronRight className="h-3 w-3" />
+            </div>
             
             {/* WhatsApp Support Button - MOBILE */}
             <div className="lg:hidden mt-6">
