@@ -30,15 +30,13 @@ export const appendUtmToUrl = (url: string, locale?: string): string => {
       
       // Build and add Hotmart sck parameter (format: source|campaign|content)
       // This is how Hotmart attributes sales to ad sources
-      const sckParts = [
-        utms.utm_source || 'app',
-        utms.utm_campaign || '',
-        utms.utm_content || ''
-      ].filter(part => part !== '');
-      
-      if (sckParts.length > 0) {
-        urlObj.searchParams.set('sck', sckParts.join('|'));
-      }
+      // IMPORTANT: Keep 3 parts always to preserve positional structure
+      const sckSource = utms.utm_source || 'app';
+      const sckCampaign = utms.utm_campaign || '';
+      const sckContent = utms.utm_content || '';
+
+      // Always build with 3 parts so Hotmart interprets correctly
+      urlObj.searchParams.set('sck', `${sckSource}|${sckCampaign}|${sckContent}`);
     }
 
     // Add locale automatically if provided
