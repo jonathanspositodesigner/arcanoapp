@@ -74,15 +74,21 @@ const UpscalerArcanoV2 = () => {
     return t('toolLessons.tooltipAlmostThere');
   };
 
-  // Handle lesson click
+  // Handle lesson click - just select, don't mark as watched
   const handleLessonClick = (index: number) => {
     setSelectedLesson(index);
-    const lessonNum = index + 1;
-    if (!watchedLessons.includes(lessonNum)) {
-      const updated = [...watchedLessons, lessonNum];
-      setWatchedLessons(updated);
-      localStorage.setItem('watched_lessons_upscaller-arcano_v2-legacy', JSON.stringify(updated));
+  };
+
+  // Toggle watched status for a lesson
+  const toggleWatchedStatus = (lessonNum: number) => {
+    let updated: number[];
+    if (watchedLessons.includes(lessonNum)) {
+      updated = watchedLessons.filter(n => n !== lessonNum);
+    } else {
+      updated = [...watchedLessons, lessonNum];
     }
+    setWatchedLessons(updated);
+    localStorage.setItem('watched_lessons_upscaller-arcano_v2-legacy', JSON.stringify(updated));
   };
 
   // Check if button is a tool access button (should show warning modal)
@@ -390,6 +396,24 @@ const UpscalerArcanoV2 = () => {
                       allowFullScreen
                     />
                   </div>
+
+                  {/* Mark as Watched Button */}
+                  <Button
+                    variant={watchedLessons.includes(selectedLesson + 1) ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => toggleWatchedStatus(selectedLesson + 1)}
+                    className={`w-full sm:w-auto ${
+                      watchedLessons.includes(selectedLesson + 1) 
+                        ? 'bg-green-600 hover:bg-green-700 text-white' 
+                        : 'hover:bg-green-600/10 hover:text-green-600 hover:border-green-600'
+                    }`}
+                  >
+                    <Check className="h-4 w-4 mr-2" />
+                    {watchedLessons.includes(selectedLesson + 1) 
+                      ? t('toolLessons.markedAsWatched')
+                      : t('toolLessons.markAsWatched')
+                    }
+                  </Button>
 
                   {/* Action Buttons */}
                   {currentLesson.buttons && currentLesson.buttons.length > 0 && (

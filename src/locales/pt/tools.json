@@ -175,6 +175,8 @@
     "watchToUnlock": "Assista até a aula 4 para liberar!",
     "lessonsProgress": "{{current}}/4 aulas",
     "completed": "Concluído",
+    "markAsWatched": "Marcar como assistido",
+    "markedAsWatched": "Aula concluída ✓",
     "lightVersionAvailable": "Versão light disponível",
     "tooltipStart": "🚀 Comece assistindo a Aula 1!",
     "tooltipProgress1": "💪 Ótimo começo! Faltam 3 aulas.",

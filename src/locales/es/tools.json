@@ -175,6 +175,8 @@
     "watchToUnlock": "¡Mira hasta la clase 4 para desbloquear!",
     "lessonsProgress": "{{current}}/4 clases",
     "completed": "Completado",
+    "markAsWatched": "Marcar como vista",
+    "markedAsWatched": "Clase completada ✓",
     "lightVersionAvailable": "Versión ligera disponible",
     "tooltipStart": "🚀 ¡Empieza viendo la Clase 1!",
     "tooltipProgress1": "💪 ¡Buen comienzo! Faltan 3 clases.",

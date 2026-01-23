@@ -203,18 +203,26 @@ const ToolVersionLessons = () => {
     return t('toolLessons.watchToUnlock');
   }, [progressCount, isToolUnlocked, t]);
 
-  // Handle lesson click - mark as watched
+  // Handle lesson click - just select, don't mark as watched
   const handleLessonClick = (index: number) => {
     setSelectedLesson(index);
-    const lessonNum = index + 1;
-    if (!watchedLessons.includes(lessonNum)) {
-      const updated = [...watchedLessons, lessonNum];
-      setWatchedLessons(updated);
-      localStorage.setItem(
-        `watched_lessons_${toolSlug}_${versionSlug}`, 
-        JSON.stringify(updated)
-      );
+  };
+
+  // Toggle watched status for a lesson
+  const toggleWatchedStatus = (lessonNum: number) => {
+    let updated: number[];
+    if (watchedLessons.includes(lessonNum)) {
+      // Unmark as watched
+      updated = watchedLessons.filter(n => n !== lessonNum);
+    } else {
+      // Mark as watched
+      updated = [...watchedLessons, lessonNum];
     }
+    setWatchedLessons(updated);
+    localStorage.setItem(
+      `watched_lessons_${toolSlug}_${versionSlug}`, 
+      JSON.stringify(updated)
+    );
   };
 
   // Check if button is a tool access button (should show warning modal)
@@ -621,6 +629,24 @@ const ToolVersionLessons = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Mark as Watched Button */}
+                <Button
+                  variant={watchedLessons.includes(selectedLesson + 1) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleWatchedStatus(selectedLesson + 1)}
+                  className={`w-full sm:w-auto ${
+                    watchedLessons.includes(selectedLesson + 1) 
+                      ? 'bg-green-600 hover:bg-green-700 text-white' 
+                      : 'hover:bg-green-600/10 hover:text-green-600 hover:border-green-600'
+                  }`}
+                >
+                  <Check className="h-4 w-4 mr-2" />
+                  {watchedLessons.includes(selectedLesson + 1) 
+                    ? t('toolLessons.markedAsWatched')
+                    : t('toolLessons.markAsWatched')
+                  }
+                </Button>
 
                 {/* Action Buttons */}
                 {currentLesson.buttons && currentLesson.buttons.length > 0 && (
