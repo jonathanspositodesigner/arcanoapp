@@ -527,7 +527,7 @@ const ToolVersionLessons = () => {
               <>
                 {/* Lesson Info - ABOVE video */}
                 <Card className="p-4">
-                  <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+                  <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap">
                     <Play className="h-5 w-5 text-primary" />
                     {currentLesson.title}
                     {watchedLessons.includes(selectedLesson + 1) && (
