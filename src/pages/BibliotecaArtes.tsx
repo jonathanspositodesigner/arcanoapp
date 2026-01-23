@@ -394,25 +394,7 @@ const BibliotecaArtes = () => {
     }
     return null;
   };
-  const trackArteClick = async (arteId: string, arteTitle: string, isAdmin: boolean, clickType: 'canva' | 'psd' | 'download' = 'download') => {
-    const sessionKey = `arte_clicked_${arteId}_${clickType}`;
-    if (sessionStorage.getItem(sessionKey)) {
-      return false;
-    }
-    try {
-      await supabase.from('arte_clicks').insert({
-        arte_id: arteId,
-        arte_title: arteTitle,
-        is_admin_arte: isAdmin,
-        click_type: clickType
-      });
-      sessionStorage.setItem(sessionKey, 'true');
-      return true;
-    } catch (error) {
-      console.error('Error tracking arte click:', error);
-      return false;
-    }
-  };
+  // Arte click tracking removed - no longer needed
   const downloadFile = async (url: string, filename: string, isPremiumContent: boolean = false) => {
     try {
       const signedUrl = await getSecureDownloadUrl(url);
@@ -433,22 +415,6 @@ const BibliotecaArtes = () => {
     }
   };
   const handleDownload = async (arteItem: ArteItem) => {
-    const arteId = String(arteItem.id);
-    const wasTracked = await trackArteClick(arteId, arteItem.title, !!arteItem.isExclusive);
-    if (wasTracked) {
-      setClickIncrements(prev => ({
-        ...prev,
-        [arteId]: (prev[arteId] || 0) + 1
-      }));
-      setAnimatingClicks(prev => new Set(prev).add(arteId));
-      setTimeout(() => {
-        setAnimatingClicks(prev => {
-          const next = new Set(prev);
-          next.delete(arteId);
-          return next;
-        });
-      }, 300);
-    }
     const downloadUrl = arteItem.downloadUrl || arteItem.imageUrl;
     const extension = downloadUrl.split('.').pop() || 'file';
     const filename = `${arteItem.title.toLowerCase().replace(/\s+/g, "-")}.${extension}`;
@@ -1479,15 +1445,13 @@ const BibliotecaArtes = () => {
                 </div>
 
                 {hasAccess ? <div className="flex flex-col gap-2">
-                    {selectedArte.canvaLink && <Button onClick={async () => {
-                  await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive, 'canva');
+                    {selectedArte.canvaLink && <Button onClick={() => {
                   window.open(selectedArte.canvaLink, '_blank');
                 }} className="w-full bg-[#00C4CC] hover:bg-[#00a8b0] text-white">
                         <Download className="h-4 w-4 mr-2" />
                         {t('buttons.openInCanva')}
                       </Button>}
-                    {selectedArte.driveLink && <Button onClick={async () => {
-                  await trackArteClick(String(selectedArte.id), selectedArte.title, !!selectedArte.isExclusive, 'psd');
+                    {selectedArte.driveLink && <Button onClick={() => {
                   window.open(selectedArte.driveLink, '_blank');
                 }} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
                         <Download className="h-4 w-4 mr-2" />
