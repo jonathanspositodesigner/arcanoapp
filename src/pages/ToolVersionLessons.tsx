@@ -217,10 +217,27 @@ const ToolVersionLessons = () => {
     }
   };
 
-  // Handle tool button click - show warning modal
+  // Check if button is a tool access button (should show warning modal)
+  const isToolAccessButton = (buttonText: string): boolean => {
+    const lowerText = buttonText.toLowerCase();
+    return lowerText.includes('link') || 
+           lowerText.includes('ferramenta') || 
+           lowerText.includes('herramienta') ||
+           lowerText.includes('acesse') ||
+           lowerText.includes('accede') ||
+           lowerText.includes('acceder') ||
+           lowerText.includes('tool');
+  };
+
+  // Handle tool button click - show warning modal only for tool links
   const handleToolButtonClick = (url: string) => {
     setPendingUrl(url);
     setShowWarningModal(true);
+  };
+
+  // Handle regular button click - open directly
+  const handleRegularButtonClick = (url: string) => {
+    window.open(url, '_blank');
   };
 
   const handleConfirmOpen = () => {
@@ -465,7 +482,7 @@ const ToolVersionLessons = () => {
             {/* Progress Bar */}
             <div className="h-3 bg-muted rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-green-500 
+                className="h-full bg-gradient-to-r from-purple-600 via-violet-500 to-purple-400 
                            transition-all duration-700 ease-out rounded-full"
                 style={{ width: `${(progressCount / 4) * 100}%` }}
               />
@@ -606,7 +623,11 @@ const ToolVersionLessons = () => {
                       <Button
                         key={index}
                         variant="outline"
-                        onClick={() => handleToolButtonClick(button.url)}
+                        onClick={() => 
+                          isToolAccessButton(button.text) 
+                            ? handleToolButtonClick(button.url)
+                            : handleRegularButtonClick(button.url)
+                        }
                         className="gap-2"
                       >
                         <ExternalLink className="w-4 h-4" />
