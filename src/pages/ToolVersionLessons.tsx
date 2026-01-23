@@ -229,8 +229,14 @@ const ToolVersionLessons = () => {
            lowerText.includes('tool');
   };
 
-  // Handle tool button click - show warning modal only for tool links
+  // Handle tool button click - show warning modal only if lessons not completed
   const handleToolButtonClick = (url: string) => {
+    // If all required lessons are completed, open directly
+    if (isToolUnlocked) {
+      window.open(url, '_blank');
+      return;
+    }
+    // Otherwise show warning modal
     setPendingUrl(url);
     setShowWarningModal(true);
   };
