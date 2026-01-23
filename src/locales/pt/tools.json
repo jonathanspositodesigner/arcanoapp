@@ -168,7 +168,19 @@
     "versionNotFoundDesc": "A versão solicitada não existe.",
     "versionLocked": "Esta versão ainda está bloqueada.",
     "unlocksOn": "Liberado em: {{date}} ({{days}} dias restantes)",
-    "lightVersionNotice": "Se o workflow não abrir no seu celular ou no seu computador, teste a versão light"
+    "lightVersionNotice": "Se o workflow não abrir no seu celular ou no seu computador, teste a versão light",
+    "mastersJourney": "Jornada do Mestre",
+    "accessTool": "Acessar Ferramenta",
+    "toolLinkLocked": "Link da Ferramenta",
+    "watchToUnlock": "Assista até a aula 4 para liberar!",
+    "lessonsProgress": "{{current}}/4 aulas",
+    "completed": "Concluído",
+    "lightVersionAvailable": "Versão light disponível",
+    "tooltipStart": "🚀 Comece assistindo a Aula 1!",
+    "tooltipProgress1": "💪 Ótimo começo! Faltam 3 aulas.",
+    "tooltipProgress2": "🔥 Você está no caminho certo! Faltam 2 aulas.",
+    "tooltipAlmostThere": "🎯 Quase lá! Complete a Aula 4 para desbloquear!",
+    "toolUnlocked": "🎉 Ferramenta liberada!"
   },
   "upscalerTool": {
     "title": "Upscaler Arcano",
