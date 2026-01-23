@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { trackPushNotificationEvent } from "@/hooks/usePushNotificationAnalytics";
 import { Check, Smartphone, Bell, ExternalLink, Clock } from "lucide-react";
 import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
@@ -80,10 +79,8 @@ const Index = () => {
   const handleActivateNotifications = async () => {
     const success = await subscribe();
     if (success) {
-      trackPushNotificationEvent('activated_manual');
       toast.success(t('toast.notificationsActivated'));
     } else {
-      trackPushNotificationEvent('permission_denied');
       toast.error(t('toast.notificationsError'));
     }
   };
