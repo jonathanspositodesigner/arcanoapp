@@ -395,16 +395,30 @@ const BibliotecaPrompts = () => {
             <Users className="h-4 w-4 mr-2" />
             {t('header.partnerArea')}
           </Button>
-          {!isPremium && <>
+          {!user && (
             <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} variant="ghost" size="sm">
               <LogIn className="h-4 w-4 mr-2" />
               {t('header.login')}
             </Button>
+          )}
+          {user && !isPremium && (
             <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
               <Star className="h-3 w-3 mr-2" fill="currentColor" />
               {t('header.becomePremium')}
             </Button>
-          </>}
+          )}
+          {user && !isPremium && (
+            <>
+              <Button onClick={() => navigate("/profile-settings")} variant="ghost" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                {t('header.myProfile')}
+              </Button>
+              <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <LogOut className="h-4 w-4 mr-2" />
+                {t('header.logout')}
+              </Button>
+            </>
+          )}
           {isPremium && <>
             <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
@@ -425,7 +439,8 @@ const BibliotecaPrompts = () => {
       {/* Top Bar - Mobile */}
       <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
         <img alt="ArcanoApp" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" />
-        {!isPremium && <div className="flex items-center gap-2">
+        {!user && (
+          <div className="flex items-center gap-2">
             <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
               {t('header.login')}
@@ -434,7 +449,22 @@ const BibliotecaPrompts = () => {
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Button>
-          </div>}
+          </div>
+        )}
+        {user && !isPremium && (
+          <div className="flex items-center gap-2">
+            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
+              <Star className="h-3 w-3 mr-1" fill="currentColor" />
+              Premium
+            </Button>
+            <Button onClick={() => navigate("/profile-settings")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+              <Settings className="h-4 w-4" />
+            </Button>
+            <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
         {isPremium && <div className="flex items-center gap-2">
             <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
@@ -486,8 +516,17 @@ const BibliotecaPrompts = () => {
               <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">{t('sidebar.premiumActive')}</span>
             </div>}
 
-          {/* Login/Premium buttons for non-premium users only */}
-          {!isPremium && <>
+          {/* Premium button for logged-in non-premium users */}
+          {user && !isPremium && (
+            <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2">
+              <Star className="h-4 w-4 mr-2" fill="currentColor" />
+              {t('sidebar.becomePremium')}
+            </Button>
+          )}
+          
+          {/* Login button only for non-logged users */}
+          {!user && (
+            <>
               <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2">
                 <Star className="h-4 w-4 mr-2" fill="currentColor" />
                 {t('sidebar.becomePremium')}
@@ -496,7 +535,8 @@ const BibliotecaPrompts = () => {
                 <LogIn className="h-4 w-4 mr-2" />
                 {t('sidebar.makeLogin')}
               </Button>
-            </>}
+            </>
+          )}
 
           <h2 className="text-xl font-bold text-foreground mb-6">{t('sidebar.generateWithAI')}</h2>
           <div data-tutorial="ai-tools" className="space-y-3">
