@@ -450,8 +450,8 @@ const UpscalerArcanoV1 = () => {
       </div>
 
       {/* Warning Modal - Tool Access */}
-      <AlertDialog open={showWarningModal} onOpenChange={setShowWarningModal}>
-        <AlertDialogContent className="max-w-md mx-4 sm:mx-auto">
+        <AlertDialog open={showWarningModal} onOpenChange={setShowWarningModal}>
+          <AlertDialogContent className="w-[calc(100%-2rem)] max-w-md left-1/2 -translate-x-1/2">
           <AlertDialogHeader>
             <div className="flex items-center justify-center mb-4">
               <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
