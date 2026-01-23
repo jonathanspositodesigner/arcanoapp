@@ -52,8 +52,11 @@ const Index = () => {
   const { subscribe } = usePushNotifications();
   const [showAuthModal, setShowAuthModal] = useState(true);
   const { isPremium, isLoading: isPremiumLoading } = usePremiumStatus();
-  const { userPacks, isLoading: isPacksLoading } = usePackAccess();
+  const { user, userPacks, isLoading: isPacksLoading } = usePackAccess();
   const { isLatam } = useLocale();
+
+  // Verificar se usuário está logado
+  const isLoggedIn = !!user;
 
   const showNotificationButton = typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted';
 
@@ -85,10 +88,10 @@ const Index = () => {
     }
   };
 
-  // Verificar acessos do usuário
-  const hasToolAccess = userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
-  const hasArtesAccess = userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
-  const hasPromptsAccess = isPremium; // Da tabela premium_users
+  // Verificar acessos do usuário (apenas se logado)
+  const hasToolAccess = isLoggedIn && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
+  const hasArtesAccess = isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
+  const hasPromptsAccess = isLoggedIn && isPremium;
 
   // LATAM que comprou apenas upscaler
   const hasOnlyUpscaler = userPacks.some(p => p.pack_slug === 'upscaller-arcano') && 
@@ -126,20 +129,20 @@ const Index = () => {
     },
   ];
 
-  // Categorizar cards baseado nas compras do usuário
-  const purchasedCards = cards.filter(card => {
+  // Categorizar cards baseado nas compras do usuário (apenas se logado)
+  const purchasedCards = isLoggedIn ? cards.filter(card => {
     if (card.id === 'ferramentas' && hasToolAccess) return true;
     if (card.id === 'artes' && hasArtesAccess) return true;
     if (card.id === 'prompts' && hasPromptsAccess) return true;
     return false;
-  });
+  }) : [];
 
-  const availableCards = cards.filter(card => {
+  const availableCards = isLoggedIn ? cards.filter(card => {
     if (card.id === 'ferramentas' && !hasToolAccess) return true;
     if (card.id === 'artes' && !hasArtesAccess) return true;
     if (card.id === 'prompts' && !hasPromptsAccess) return true;
     return false;
-  });
+  }) : [];
 
   // Determinar se o card deve aparecer como "Em Breve" para LATAM
   const isCardComingSoon = (cardId: string) => {
@@ -151,10 +154,49 @@ const Index = () => {
 
   const isLoading = isPremiumLoading || isPacksLoading;
 
+  // Card para usuário NÃO logado (descoberta)
+  const DiscoverCard = ({ card }: { card: CardData }) => (
+    <div 
+      className="group bg-card border border-border rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-primary/50 relative"
+    >
+      {/* Imagem com hover zoom */}
+      <div className="relative overflow-hidden aspect-[4/3]">
+        <img 
+          src={card.image} 
+          alt={card.title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          style={{ objectPosition: card.imagePosition }}
+        />
+      </div>
+      
+      {/* Conteúdo abaixo da imagem */}
+      <div className="p-4 sm:p-5">
+        {/* Categoria */}
+        <p className="text-xs text-muted-foreground mb-1">
+          {card.category}
+        </p>
+        
+        {/* Título */}
+        <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4 line-clamp-2">
+          {card.title}
+        </h2>
+        
+        {/* Botão */}
+        <Button 
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
+          onClick={() => navigate(card.route)}
+        >
+          {t('access')}
+          <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+
   // Card de compra realizada (com visual verde)
   const PurchasedCard = ({ card }: { card: CardData }) => (
     <div 
-      className="group bg-card border-2 border-green-500/30 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-green-500/50"
+      className="group bg-card border-2 border-green-500/30 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-green-500/50 relative"
     >
       {/* Badge de acesso */}
       <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/90 text-white text-xs font-medium shadow-md">
@@ -199,7 +241,7 @@ const Index = () => {
   // Card disponível para compra (ou "Em Breve" para LATAM)
   const AvailableCard = ({ card, isComingSoon }: { card: CardData; isComingSoon: boolean }) => (
     <div 
-      className={`group bg-card border border-border rounded-2xl overflow-hidden shadow-lg transition-all duration-300 ${
+      className={`group bg-card border border-border rounded-2xl overflow-hidden shadow-lg transition-all duration-300 relative ${
         isComingSoon 
           ? 'grayscale opacity-60 cursor-not-allowed' 
           : 'hover:shadow-2xl hover:border-primary/50'
@@ -316,7 +358,33 @@ const Index = () => {
               ))}
             </div>
           </div>
+        ) : !isLoggedIn ? (
+          /* Usuário NÃO logado - mostrar todos os cards com badge "Conheça nossas plataformas" */
+          <section className="w-full max-w-5xl">
+            <FadeIn delay={200} duration={500}>
+              <div className="flex items-center gap-2 mb-5">
+                <div className="px-4 py-1.5 rounded-full bg-primary/15 border border-primary/40">
+                  <span className="text-primary text-sm font-semibold">
+                    {t('discoverPlatforms')}
+                  </span>
+                </div>
+              </div>
+            </FadeIn>
+            
+            <StaggeredAnimation 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+              staggerDelay={150}
+              animation="fade-up"
+            >
+              {cards.map((card) => (
+                <div key={card.id} className="relative">
+                  <DiscoverCard card={card} />
+                </div>
+              ))}
+            </StaggeredAnimation>
+          </section>
         ) : (
+          /* Usuário LOGADO - mostrar seções "Suas Compras" e "Veja também" */
           <>
             {/* Seção "Suas Compras" - apenas se tiver alguma compra */}
             {purchasedCards.length > 0 && (
