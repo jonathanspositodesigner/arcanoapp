@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import { ForceUpdateModal } from "./components/ForceUpdateModal";
 
 import { LocaleProvider } from "./contexts/LocaleContext";
 import "./lib/i18n"; // Initialize i18n
@@ -134,7 +135,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   // Log version to confirm deployment
-  console.log("[APP] ===== VERSION 5.1.0 LOADED =====", new Date().toISOString());
+  console.log("[APP] ===== VERSION 5.2.0 LOADED =====", new Date().toISOString());
   
   // Track app installations
   useInstallTracker();
@@ -150,6 +151,7 @@ const AppContent = () => {
 
   return (
     <TooltipProvider>
+      <ForceUpdateModal />
       {isAdminRoute && (
         <Suspense fallback={null}>
           <GlobalImportProgress />
