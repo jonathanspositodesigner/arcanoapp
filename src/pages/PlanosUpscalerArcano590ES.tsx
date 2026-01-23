@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowRight, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, Shield, Clock, CreditCard, MessageCircle, User, Rocket, PenTool } from "lucide-react";
+import { Check, ArrowRight, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, Shield, Clock, CreditCard, MessageCircle, User, Rocket, PenTool, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
@@ -459,11 +459,27 @@ const PlanosUpscalerArcano590ES = () => {
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
             <div className="max-w-lg mx-auto">
-              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
+              
+              {/* Alerta de escassez exclusivo desta página */}
+              <div className="bg-red-600/90 border-2 border-red-500 rounded-2xl p-4 mb-6 animate-pulse">
+                <div className="flex items-center justify-center gap-2 text-white">
+                  <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                  <span className="font-bold text-xs md:text-sm text-center">
+                    ⚠️ OFERTA EXCLUSIVA DE ESTA PÁGINA - SI LA CIERRAS, LA PIERDES PARA SIEMPRE ⚠️
+                  </span>
+                </div>
+              </div>
+
+              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10 relative">
+                {/* Badge de desconto agressivo */}
+                <div className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-red-500 text-white font-bold px-3 py-1.5 md:px-4 md:py-2 rounded-full text-sm md:text-lg shadow-lg animate-bounce z-10">
+                  -40% OFF
+                </div>
+
                 <CardContent className="p-5 md:p-8 text-center">
-                  {/* Badge de desconto - 40% OFF para LATAM */}
+                  {/* Badge principal */}
                   <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
-                    🔥 40% OFF
+                    🔥 OFERTA ESPECIAL
                   </Badge>
 
                   {isPremium && (
@@ -477,12 +493,21 @@ const PlanosUpscalerArcano590ES = () => {
                     {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
                   </h2>
 
-                  {/* Preços em dólar */}
+                  {/* Preços em dólar - Apresentação mais impactante */}
                   <div className="mb-5 md:mb-6">
-                    <span className="text-white/40 text-lg md:text-xl line-through block mb-1">{formatPrice(originalPrice)}</span>
-                    <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">
-                      {formatPrice(price)}
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                      <span className="text-white/40 text-lg md:text-xl">DE</span>
+                      <span className="text-red-400 text-xl md:text-2xl line-through font-bold">{formatPrice(originalPrice)}</span>
                     </div>
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <span className="text-white text-base md:text-lg">POR SOLO</span>
+                    </div>
+                    <div className="text-5xl md:text-6xl lg:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300 mb-2">
+                      🔥 {formatPrice(price)} 🔥
+                    </div>
+                    <p className="text-fuchsia-400 text-lg md:text-xl font-semibold mb-3">
+                      ¡AHORRAS $4.00 HOY!
+                    </p>
                     <p className="text-white/60 text-base md:text-lg">
                       {t('tools:upscaler.finalCTA.or')} <span className="text-fuchsia-400 font-semibold">3x {formatPrice(installmentPrice)}</span>
                     </p>
@@ -501,17 +526,33 @@ const PlanosUpscalerArcano590ES = () => {
                     ))}
                   </div>
 
-                  {/* Alerta de urgência */}
-                  <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
-                    <div className="flex items-center justify-center gap-2 text-fuchsia-300 text-xs md:text-sm">
-                      <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                      <span className="font-medium">{t('tools:upscaler.finalCTA.limitedOffer')}</span>
+                  {/* Alerta de urgência mais agressivo */}
+                  <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border-2 border-red-500/50 rounded-xl md:rounded-2xl p-3 md:p-4 mb-5 md:mb-6">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex items-center gap-2 text-red-400 font-bold text-sm md:text-base">
+                        <Clock className="h-4 w-4 md:h-5 md:w-5 animate-pulse" />
+                        <span>⏰ PRECIO DE LANZAMIENTO - TIEMPO LIMITADO</span>
+                      </div>
+                      <p className="text-white/70 text-xs md:text-sm text-center">
+                        El precio puede volver a $9.90 en cualquier momento
+                      </p>
                     </div>
                   </div>
 
                   <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+                    <Button
+                      onClick={handlePurchase}
+                      className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
+                    >
+                      ¡QUIERO MI ACCESO AHORA!
+                      <ArrowRight className="h-5 w-5 ml-2" />
+                    </Button>
                   </div>
+
+                  {/* Frase de escassez final */}
+                  <p className="text-red-400/90 text-xs md:text-sm mt-4 text-center font-medium">
+                    🚨 Esta oferta NO está disponible en ningún otro lugar 🚨
+                  </p>
 
                   {/* Badges de pagamento - SEM PIX para LATAM */}
                   <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-5 md:mt-6 text-white/50 text-xs">
