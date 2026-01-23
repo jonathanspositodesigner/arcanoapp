@@ -518,19 +518,6 @@ const PlanosUpscalerArcano590ES = () => {
                     ))}
                   </div>
 
-                  {/* Alerta de urgência mais agressivo */}
-                  <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border-2 border-red-500/50 rounded-xl md:rounded-2xl p-3 md:p-4 mb-5 md:mb-6">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="flex items-center gap-2 text-red-400 font-bold text-sm md:text-base">
-                        <Clock className="h-4 w-4 md:h-5 md:w-5 animate-pulse" />
-                        <span>⏰ PRECIO DE LANZAMIENTO - TIEMPO LIMITADO</span>
-                      </div>
-                      <p className="text-white/70 text-xs md:text-sm text-center">
-                        El precio puede volver a $9.90 en cualquier momento
-                      </p>
-                    </div>
-                  </div>
-
                   <div className="px-0 md:px-2">
                     <Button
                       onClick={handlePurchase}
@@ -540,11 +527,6 @@ const PlanosUpscalerArcano590ES = () => {
                       <ArrowRight className="h-5 w-5 ml-2" />
                     </Button>
                   </div>
-
-                  {/* Frase de escassez final */}
-                  <p className="text-red-400/90 text-xs md:text-sm mt-4 text-center font-medium">
-                    🚨 Esta oferta NO está disponible en ningún otro lugar 🚨
-                  </p>
 
                   {/* Badges de pagamento - SEM PIX para LATAM */}
                   <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-5 md:mt-6 text-white/50 text-xs">
