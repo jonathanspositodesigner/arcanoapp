@@ -390,9 +390,6 @@ const ToolVersionLessons = () => {
                     </div>
                   )}
                 </Card>
-
-                {/* WhatsApp Support Button */}
-                <WhatsAppSupportButton />
               </>
             )}
           </div>
@@ -428,6 +425,9 @@ const ToolVersionLessons = () => {
             ))}
           </div>
         </div>
+
+        {/* WhatsApp Support Button - No final da página */}
+        <WhatsAppSupportButton />
       </div>
     </div>
   );
