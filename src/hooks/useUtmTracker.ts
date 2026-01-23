@@ -19,16 +19,11 @@ const DEFAULT_UTMS = {
  */
 export const useUtmTracker = () => {
   useEffect(() => {
-    // Check if already captured this session
-    if (sessionStorage.getItem(CAPTURED_FLAG)) {
-      return;
-    }
-
     const params = new URLSearchParams(window.location.search);
     const hasAnyUtm = UTM_KEYS.some(key => params.has(key));
 
+    // Se a URL atual tem UTMs, SEMPRE recapturar (anúncio tem prioridade)
     if (hasAnyUtm) {
-      // Save original UTMs from ads/external sources
       const utms: Record<string, string> = {};
       UTM_KEYS.forEach(key => {
         const value = params.get(key);
@@ -37,14 +32,17 @@ export const useUtmTracker = () => {
         }
       });
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(utms));
-      console.log('[UTM] Captured external UTMs:', utms);
-    } else {
-      // Set default app UTMs for organic/direct access
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_UTMS));
-      console.log('[UTM] Set default app UTMs');
+      sessionStorage.setItem(CAPTURED_FLAG, 'true');
+      console.log('[UTM] Captured/Updated UTMs from URL:', utms);
+      return;
     }
 
-    sessionStorage.setItem(CAPTURED_FLAG, 'true');
+    // Se não tem UTM na URL E ainda não capturou, usar defaults
+    if (!sessionStorage.getItem(CAPTURED_FLAG)) {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_UTMS));
+      sessionStorage.setItem(CAPTURED_FLAG, 'true');
+      console.log('[UTM] Set default app UTMs');
+    }
   }, []);
 };
 
