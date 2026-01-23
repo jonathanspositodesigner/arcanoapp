@@ -252,6 +252,12 @@ const PlanosUpscalerArcano590ES = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]">
+      {/* Banner promocional vermelho no topo */}
+      <div className="w-full bg-red-600 py-2.5 px-4 text-center">
+        <p className="text-white font-bold text-sm md:text-base tracking-wide">
+          🔥 PRECIO PROMOCIONAL DE LANZAMIENTO - DE <span className="line-through">$9.90</span> POR SOLO <span className="text-yellow-300">$5.90</span> 🔥
+        </p>
+      </div>
 
       {/* Se já tem acesso */}
       {hasAccess ? (
