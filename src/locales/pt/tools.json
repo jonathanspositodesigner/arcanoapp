@@ -180,7 +180,11 @@
     "tooltipProgress1": "💪 Ótimo começo! Faltam 3 aulas.",
     "tooltipProgress2": "🔥 Você está no caminho certo! Faltam 2 aulas.",
     "tooltipAlmostThere": "🎯 Quase lá! Complete a Aula 4 para desbloquear!",
-    "toolUnlocked": "🎉 Ferramenta liberada!"
+    "toolUnlocked": "🎉 Ferramenta liberada!",
+    "warningModalTitle": "⚠️ Atenção!",
+    "warningModalDescription": "É muito importante que você assista às aulas antes de usar a ferramenta para evitar erros e garantir os melhores resultados. Tem certeza que deseja abrir mesmo assim?",
+    "continueWatching": "Continuar Assistindo",
+    "assumeRisk": "Sim, assumir o risco"
   },
   "upscalerTool": {
     "title": "Upscaler Arcano",

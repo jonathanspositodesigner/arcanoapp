@@ -5,6 +5,16 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Play, AlertTriangle, ChevronRight, Lock, Unlock, Check, CheckCircle2, Circle, Trophy } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +52,10 @@ const UpscalerArcanoV2 = () => {
   });
   const [showConfetti, setShowConfetti] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
+  
+  // Warning modal state
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
 
   const hasUnlimitedAccess = planType === "arcano_unlimited";
   const hasAccess = hasUnlimitedAccess || hasAccessToPack('upscaller-arcano');
@@ -69,6 +83,25 @@ const UpscalerArcanoV2 = () => {
       setWatchedLessons(updated);
       localStorage.setItem('watched_lessons_upscaller-arcano_v2-legacy', JSON.stringify(updated));
     }
+  };
+
+  // Handle tool button click - show warning modal
+  const handleToolButtonClick = (url: string) => {
+    setPendingUrl(url);
+    setShowWarningModal(true);
+  };
+
+  const handleConfirmOpen = () => {
+    if (pendingUrl) {
+      window.open(pendingUrl, '_blank');
+    }
+    setShowWarningModal(false);
+    setPendingUrl(null);
+  };
+
+  const handleContinueWatching = () => {
+    setShowWarningModal(false);
+    setPendingUrl(null);
   };
 
   // Detect unlock moment for confetti
@@ -343,7 +376,7 @@ const UpscalerArcanoV2 = () => {
                       {currentLesson.buttons.map((button, btnIndex) => (
                         <Button
                           key={btnIndex}
-                          onClick={() => window.open(button.url, "_blank")}
+                          onClick={() => handleToolButtonClick(button.url)}
                           className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
@@ -445,6 +478,39 @@ const UpscalerArcanoV2 = () => {
           <WhatsAppSupportButton />
         </div>
       )}
+
+      {/* Warning Modal - Tool Access */}
+      <AlertDialog open={showWarningModal} onOpenChange={setShowWarningModal}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                <AlertTriangle className="h-8 w-8 text-yellow-500" />
+              </div>
+            </div>
+            <AlertDialogTitle className="text-center text-xl">
+              {t('toolLessons.warningModalTitle')}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-base">
+              {t('toolLessons.warningModalDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+            <AlertDialogCancel 
+              onClick={handleContinueWatching}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white border-0"
+            >
+              {t('toolLessons.continueWatching')}
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmOpen}
+              className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-300"
+            >
+              {t('toolLessons.assumeRisk')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
