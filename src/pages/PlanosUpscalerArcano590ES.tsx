@@ -1,0 +1,607 @@
+import { useState, useEffect, lazy, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Check, ArrowRight, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, Shield, Clock, CreditCard, MessageCircle, User, Rocket, PenTool } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
+import { appendUtmToUrl } from "@/lib/utmUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
+
+// Optimized imports - only hero images loaded eagerly from public folder
+import { HeroBeforeAfterSlider, HeroPlaceholder, FullscreenModal, SectionSkeleton, SectionErrorBoundary, LazySocialProofWrapper } from "@/components/upscaler";
+
+// Hero images - Desktop uses high-res, Mobile uses optimized 600x900 versions
+const upscalerHeroAntesDesktop = "/images/upscaler-hero-antes.webp";
+const upscalerHeroDepoisDesktop = "/images/upscaler-hero-depois.webp";
+const upscalerHeroAntesMobile = "/images/upscaler-hero-antes-mobile.webp";
+const upscalerHeroDepoisMobile = "/images/upscaler-hero-depois-mobile.webp";
+
+// Lazy load heavy sections
+const BeforeAfterGalleryES = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryES"));
+
+interface ToolData {
+  id: string;
+  name: string;
+  slug: string;
+  price_vitalicio: number | null;
+  checkout_link_vitalicio: string | null;
+  checkout_link_membro_vitalicio: string | null;
+  cover_url: string | null;
+}
+
+// CTA Button Component - estilo pill
+const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
+  <Button
+    onClick={onClick}
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
+  >
+    {t('tools:upscaler.cta')}
+    <ArrowRight className="h-5 w-5 ml-2" />
+  </Button>
+);
+
+const PlanosUpscalerArcano590ES = () => {
+  const navigate = useNavigate();
+  const { t: tOriginal } = useTranslation();
+  const t = (key: string, options?: object) => tOriginal(key, { ...options, lng: 'es' });
+  const { user, isPremium, hasAccessToPack, isLoading: authLoading } = usePremiumArtesStatus();
+  const isMobile = useIsMobile();
+  const [tool, setTool] = useState<ToolData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
+  const [heroRevealed, setHeroRevealed] = useState(false);
+
+  // Preload: Mobile loads preview + antes/depois mobile, Desktop loads high-res versions
+  useImagesPreload(
+    ["/images/upscaler-hero-preview.webp", "/images/upscaler-hero-antes-mobile.webp", "/images/upscaler-hero-depois-mobile.webp"],
+    isMobile
+  );
+  useImagesPreload(
+    ["/images/upscaler-hero-antes.webp", "/images/upscaler-hero-depois.webp"],
+    !isMobile
+  );
+
+  const openModal = (before: string, after: string) => {
+    setModalImages({ before, after });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalImages(null);
+  };
+
+  const TOOL_SLUG = "upscaller-arcano";
+  const ES_PIXEL_ID = '1383797283173351';
+
+  // Carregar Meta Pixel exclusivo para página ES
+  useEffect(() => {
+    // Evitar duplicação se já existir
+    if (document.getElementById('fb-pixel-es-590')) return;
+    
+    // Injetar script do Meta Pixel
+    const script = document.createElement('script');
+    script.id = 'fb-pixel-es-590';
+    script.innerHTML = `
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '${ES_PIXEL_ID}');
+      fbq('track', 'PageView');
+    `;
+    document.head.appendChild(script);
+    
+    // Adicionar noscript
+    const noscript = document.createElement('noscript');
+    noscript.id = 'fb-pixel-es-590-noscript';
+    noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${ES_PIXEL_ID}&ev=PageView&noscript=1"/>`;
+    document.body.appendChild(noscript);
+
+    return () => {
+      // Cleanup ao sair da página
+      const existingScript = document.getElementById('fb-pixel-es-590');
+      const existingNoscript = document.getElementById('fb-pixel-es-590-noscript');
+      if (existingScript) existingScript.remove();
+      if (existingNoscript) existingNoscript.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    fetchToolData();
+  }, []);
+
+  const fetchToolData = async () => {
+    const { data, error } = await supabase
+      .from("artes_packs")
+      .select(`
+        id, name, slug, cover_url,
+        price_vitalicio,
+        checkout_link_vitalicio,
+        checkout_link_membro_vitalicio
+      `)
+      .eq("slug", TOOL_SLUG)
+      .single();
+
+    if (!error && data) {
+      setTool(data as ToolData);
+    }
+    setLoading(false);
+  };
+
+  // Formatação em dólar para LATAM
+  const formatPrice = (cents: number) => {
+    return `$${(cents / 100).toFixed(2)}`;
+  };
+
+  const handlePurchase = () => {
+    // Disparar InitiateCheckout APENAS no Pixel ES (1383797283173351)
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('trackSingle', ES_PIXEL_ID, 'InitiateCheckout', {
+        content_name: 'Upscaler Arcano ES 590',
+        content_category: 'Ferramentas IA',
+        value: 5.90,
+        currency: 'USD'
+      });
+    }
+    
+    window.open(appendUtmToUrl("https://pay.hotmart.com/R103906553W?off=k7k3jv6j"), "_blank");
+  };
+
+  const hasAccess = hasAccessToPack(TOOL_SLUG);
+
+  // Loading state removido do Hero para otimizar LCP
+  // O loading agora é usado apenas nas seções que dependem dos dados (preço)
+
+  // Preço em centavos de dólar para LATAM: $5.90 (590 centavos)
+  const price = 590;
+  const originalPrice = 990; // $9.90 riscado
+  const installmentPrice = Math.ceil(price / 3); // $1.97
+
+  const features = [
+    { icon: Sparkles, text: t('tools:upscaler.benefits.improveImages') },
+    { icon: ImagePlus, text: t('tools:upscaler.benefits.removeBackground') },
+    { icon: Infinity, text: t('tools:upscaler.benefits.lifetimeAccess') },
+    { icon: Zap, text: t('tools:upscaler.benefits.futureUpdates') },
+  ];
+
+  const targetAudience = [
+    {
+      icon: Camera,
+      title: t('tools:upscaler.targetAudience.photographers.title'),
+      description: t('tools:upscaler.targetAudience.photographers.description')
+    },
+    {
+      icon: Music,
+      title: t('tools:upscaler.targetAudience.musicians.title'),
+      description: t('tools:upscaler.targetAudience.musicians.description')
+    },
+    {
+      icon: Rocket,
+      title: t('tools:upscaler.targetAudience.infoproducers.title'),
+      description: t('tools:upscaler.targetAudience.infoproducers.description')
+    },
+    {
+      icon: PenTool,
+      title: t('tools:upscaler.targetAudience.designers.title'),
+      description: t('tools:upscaler.targetAudience.designers.description')
+    },
+    {
+      icon: MessageCircle,
+      title: t('tools:upscaler.targetAudience.socialMedia.title'),
+      description: t('tools:upscaler.targetAudience.socialMedia.description')
+    },
+    {
+      icon: User,
+      title: t('tools:upscaler.targetAudience.common.title'),
+      description: t('tools:upscaler.targetAudience.common.description')
+    }
+  ];
+
+  const steps = [
+    {
+      icon: Upload,
+      title: t('tools:upscaler.howItWorks.upload.title'),
+      description: t('tools:upscaler.howItWorks.upload.description')
+    },
+    {
+      icon: Wand2,
+      title: t('tools:upscaler.howItWorks.chooseMode.title'),
+      description: t('tools:upscaler.howItWorks.chooseMode.description')
+    },
+    {
+      icon: Download,
+      title: t('tools:upscaler.howItWorks.download.title'),
+      description: t('tools:upscaler.howItWorks.download.description')
+    }
+  ];
+
+  const faqItems = [
+    {
+      question: t('tools:upscaler.faq.q1'),
+      answer: t('tools:upscaler.faq.a1')
+    },
+    {
+      question: t('tools:upscaler.faq.q2'),
+      answer: t('tools:upscaler.faq.a2')
+    },
+    {
+      question: t('tools:upscaler.faq.q3'),
+      answer: t('tools:upscaler.faq.a3')
+    },
+    {
+      question: t('tools:upscaler.faq.q4'),
+      answer: t('tools:upscaler.faq.a4')
+    },
+    {
+      question: t('tools:upscaler.faq.q5'),
+      answer: t('tools:upscaler.faq.a5')
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]">
+
+      {/* Se já tem acesso */}
+      {hasAccess ? (
+        <div className="max-w-lg mx-auto px-4 py-12">
+          <Card className="bg-[#1a0f25]/80 border-green-500/50 rounded-3xl">
+            <CardContent className="p-8 text-center">
+              <Badge className="bg-green-500 text-white text-lg px-6 py-3 rounded-full mb-6">
+                <Check className="h-5 w-5 mr-2" />
+                {t('tools:upscaler.alreadyHaveAccess')}
+              </Badge>
+              <p className="text-white/70 mb-6 text-lg">
+                {t('tools:upscaler.alreadyHaveAccessDesc')}
+              </p>
+              <Button
+                onClick={() => navigate("/ferramentas-ia-es")}
+                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-full px-8 py-6"
+              >
+                {t('tools:upscaler.goToTools')}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <>
+          {/* HERO SECTION - Renderiza imediatamente para LCP */}
+          <section className="px-3 md:px-4 py-10 md:py-20 w-full">
+            <div className="flex flex-col items-center text-center">
+              {/* H1 sem FadeIn para ser visível imediatamente (LCP) */}
+              <div className="w-full max-w-[95vw] md:max-w-[60vw]">
+                <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
+                  {t('tools:upscaler.hero.title1')}{' '}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+                    {t('tools:upscaler.hero.title2')}
+                  </span>
+                </h1>
+              </div>
+
+              {/* Hero Image sem FadeIn para LCP */}
+              <div className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
+                {isMobile && !heroRevealed ? (
+                  <HeroPlaceholder
+                    onReveal={() => setHeroRevealed(true)}
+                    buttonText={t('tools:upscaler.hero.seeToolPower')}
+                    locale="es"
+                  />
+                ) : (
+                  <HeroBeforeAfterSlider
+                    beforeImage={isMobile ? upscalerHeroAntesMobile : upscalerHeroAntesDesktop}
+                    afterImage={isMobile ? upscalerHeroDepoisMobile : upscalerHeroDepoisDesktop}
+                    label={t('tools:upscaler.hero.dragToCompare')}
+                    locale="es"
+                  />
+                )}
+              </div>
+              
+              <FadeIn delay={400} duration={700}>
+                <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8 max-w-2xl">
+                  {t('tools:upscaler.hero.subtitle')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
+                </p>
+              </FadeIn>
+
+              {/* Scroll Indicator */}
+              <FadeIn delay={800} duration={700}>
+                <ScrollIndicator className="mt-12 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
+              </FadeIn>
+            </div>
+          </section>
+
+          {/* SEÇÃO DA DOR */}
+          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
+            <div className="max-w-5xl mx-auto">
+              <AnimatedSection as="div" className="text-center" delay={100}>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-8 md:mb-12 tracking-wide">
+                  {t('tools:upscaler.pain.title')}
+                </h2>
+              </AnimatedSection>
+              
+              {/* Grid responsivo */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-stretch">
+                <AnimatedElement className="h-full lg:col-span-2" delay={0}>
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">📱</div>
+                    <p className="text-white/80 text-base md:text-lg">
+                      {t('tools:upscaler.pain.phone')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
+                    </p>
+                  </div>
+                </AnimatedElement>
+
+                <AnimatedElement className="h-full lg:col-span-2" delay={100}>
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">😤</div>
+                    <p className="text-white/80 text-base md:text-lg">
+                      {t('tools:upscaler.pain.client')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
+                    </p>
+                  </div>
+                </AnimatedElement>
+
+                <AnimatedElement className="h-full lg:col-span-2" delay={200}>
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">📷</div>
+                    <p className="text-white/80 text-base md:text-lg">
+                      {t('tools:upscaler.pain.aiGenerated')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
+                    </p>
+                  </div>
+                </AnimatedElement>
+
+                <AnimatedElement className="h-full lg:col-span-2 lg:col-start-2" delay={300}>
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">🤖</div>
+                    <p className="text-white/80 text-base md:text-lg">
+                      {t('tools:upscaler.pain.aiImage')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
+                    </p>
+                  </div>
+                </AnimatedElement>
+
+                <AnimatedElement className="h-full lg:col-span-2 lg:col-start-4" delay={400}>
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">🎸</div>
+                    <p className="text-white/80 text-base md:text-lg">
+                      {t('tools:upscaler.pain.lostContract')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
+                    </p>
+                  </div>
+                </AnimatedElement>
+              </div>
+              
+              <AnimatedSection as="div" delay={400}>
+                <p className="text-center text-xl md:text-2xl text-white mt-10 md:mt-12">
+                  {t('tools:upscaler.pain.solution')}
+                </p>
+              </AnimatedSection>
+            </div>
+          </AnimatedSection>
+
+          {/* SEÇÃO ANTES/DEPOIS - Lazy loaded */}
+          <Suspense fallback={<SectionSkeleton height="600px" />}>
+            <BeforeAfterGalleryES onZoomClick={openModal} isMobile={isMobile} />
+          </Suspense>
+
+          {/* PARA QUEM É */}
+          <AnimatedSection className="px-4 py-20 bg-black/30">
+            <div className="max-w-4xl mx-auto">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                  {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">{t('tools:upscaler.targetAudience.titlePart2')}</span>
+                </h2>
+              </AnimatedSection>
+              
+              <StaggeredAnimation className="grid md:grid-cols-3 gap-6" staggerDelay={150}>
+                {targetAudience.map((item, index) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <div 
+                      key={index}
+                      className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
+                    >
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
+                        <IconComponent className="h-8 w-8 text-fuchsia-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
+                      <p className="text-white/60 flex-1">{item.description}</p>
+                    </div>
+                  );
+                })}
+              </StaggeredAnimation>
+            </div>
+          </AnimatedSection>
+
+          {/* COMO FUNCIONA */}
+          <AnimatedSection className="px-4 py-20">
+            <div className="max-w-4xl mx-auto">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                  {t('tools:upscaler.howItWorks.title')} <span className="text-fuchsia-400">{t('tools:upscaler.howItWorks.subtitle')}</span>
+                </h2>
+              </AnimatedSection>
+              
+              <StaggeredAnimation className="flex flex-col md:flex-row md:justify-center gap-8 md:gap-12 max-w-3xl mx-auto" staggerDelay={200}>
+                {steps.map((step, index) => {
+                  const IconComponent = step.icon;
+                  return (
+                    <div key={index} className="text-center flex flex-col items-center relative">
+                      {/* Linha conectora para desktop */}
+                      {index < steps.length - 1 && (
+                        <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-fuchsia-500/50 to-transparent" />
+                      )}
+                      
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-fuchsia-500/30">
+                        {index + 1}
+                      </div>
+                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/30 flex items-center justify-center mb-5">
+                        <IconComponent className="h-10 w-10 text-fuchsia-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
+                      <p className="text-white/60 max-w-[180px]">{step.description}</p>
+                    </div>
+                  );
+                })}
+              </StaggeredAnimation>
+            </div>
+          </AnimatedSection>
+
+          {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
+          <LazySocialProofWrapper locale="es" onZoomClick={openModal} isMobile={isMobile} />
+
+          {/* SEÇÃO DE PREÇO E CTA - Com Card */}
+          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
+            <div className="max-w-lg mx-auto">
+              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
+                <CardContent className="p-5 md:p-8 text-center">
+                  {/* Badge de desconto - 40% OFF para LATAM */}
+                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
+                    🔥 40% OFF
+                  </Badge>
+
+                  {isPremium && (
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6">
+                      <Crown className="h-3 w-3 md:h-4 md:w-4" />
+                      {t('tools:upscaler.finalCTA.memberDiscount')}
+                    </div>
+                  )}
+
+                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
+                    {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
+                  </h2>
+
+                  {/* Preços em dólar */}
+                  <div className="mb-5 md:mb-6">
+                    <span className="text-white/40 text-lg md:text-xl line-through block mb-1">{formatPrice(originalPrice)}</span>
+                    <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">
+                      {formatPrice(price)}
+                    </div>
+                    <p className="text-white/60 text-base md:text-lg">
+                      {t('tools:upscaler.finalCTA.or')} <span className="text-fuchsia-400 font-semibold">3x {formatPrice(installmentPrice)}</span>
+                    </p>
+                    <p className="text-white/40 text-xs md:text-sm mt-2">{t('tools:upscaler.finalCTA.oneTimePayment')}</p>
+                  </div>
+
+                  {/* Features checklist */}
+                  <div className="grid gap-2 md:gap-3 mb-5 md:mb-6 text-left">
+                    {features.map((feature, index) => (
+                      <div key={index} className="flex items-center gap-2 md:gap-3 text-white/80">
+                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                          <Check className="h-3 w-3 md:h-4 md:w-4 text-green-400" />
+                        </div>
+                        <span className="text-xs md:text-sm">{feature.text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Alerta de urgência */}
+                  <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
+                    <div className="flex items-center justify-center gap-2 text-fuchsia-300 text-xs md:text-sm">
+                      <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      <span className="font-medium">{t('tools:upscaler.finalCTA.limitedOffer')}</span>
+                    </div>
+                  </div>
+
+                  <div className="px-0 md:px-2">
+                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+                  </div>
+
+                  {/* Badges de pagamento - SEM PIX para LATAM */}
+                  <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-5 md:mt-6 text-white/50 text-xs">
+                    <span className="flex items-center gap-1">
+                      <CreditCard className="h-3 w-3" />
+                      {t('tools:upscaler.finalCTA.card')}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Shield className="h-3 w-3" />
+                      {t('tools:upscaler.finalCTA.secure')}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </AnimatedSection>
+
+          {/* BENEFÍCIOS (O QUE FAZ) */}
+          <AnimatedSection className="px-4 py-20 bg-black/30">
+            <div className="max-w-4xl mx-auto">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                  {t('tools:upscaler.benefits.title')} <span className="text-fuchsia-400">{t('tools:upscaler.benefits.subtitle')}</span>?
+                </h2>
+              </AnimatedSection>
+              
+              <StaggeredAnimation className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto" staggerDelay={100}>
+                {features.map((feature, index) => {
+                  const IconComponent = feature.icon;
+                  return (
+                    <div 
+                      key={index}
+                      className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-fuchsia-500/30 transition-all duration-300"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+                        <IconComponent className="h-6 w-6 text-fuchsia-400" />
+                      </div>
+                      <span className="text-white/90 text-lg">{feature.text}</span>
+                    </div>
+                  );
+                })}
+              </StaggeredAnimation>
+            </div>
+          </AnimatedSection>
+
+          {/* FAQ SECTION */}
+          <AnimatedSection className="px-4 py-20">
+            <div className="max-w-2xl mx-auto">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                  {t('tools:upscaler.faq.title')} <span className="text-fuchsia-400">{t('tools:upscaler.faq.subtitle')}</span>
+                </h2>
+              </AnimatedSection>
+              
+              <AnimatedSection as="div" delay={200}>
+                <Accordion type="single" collapsible className="space-y-4">
+                  {faqItems.map((item, index) => (
+                    <AccordionItem 
+                      key={index} 
+                      value={`item-${index}`}
+                      className="bg-white/5 border border-white/10 rounded-2xl px-6 data-[state=open]:border-fuchsia-500/30"
+                    >
+                      <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
+                        {item.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-white/70 pb-5">
+                        {item.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </AnimatedSection>
+            </div>
+          </AnimatedSection>
+
+        </>
+      )}
+
+      {/* Modal Fullscreen */}
+      {modalImages && (
+        <FullscreenModal
+          isOpen={modalOpen}
+          onClose={closeModal}
+          beforeImage={modalImages.before}
+          afterImage={modalImages.after}
+          locale="es"
+        />
+      )}
+    </div>
+  );
+};
+
+export default PlanosUpscalerArcano590ES;

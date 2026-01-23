@@ -111,6 +111,7 @@ const SucessoArtesMusicos = lazy(() => import("./pages/SucessoArtesMusicos"));
 const PlanosUpscalerArcano = lazy(() => import("./pages/PlanosUpscalerArcano"));
 const PlanosUpscalerArcano69 = lazy(() => import("./pages/PlanosUpscalerArcano69v2"));
 const PlanosUpscalerArcano69ES = lazy(() => import("./pages/PlanosUpscalerArcano69ES"));
+const PlanosUpscalerArcano590ES = lazy(() => import("./pages/PlanosUpscalerArcano590ES"));
 const PlanosForjaSelos3D = lazy(() => import("./pages/PlanosForjaSelos3D"));
 const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
 const UpscalerRunpod = lazy(() => import("./pages/UpscalerRunpod"));
@@ -267,6 +268,7 @@ const AppContent = () => {
           <Route path="/planos-upscaler-arcano" element={<PlanosUpscalerArcano />} />
           <Route path="/planos-upscaler-arcano-69" element={<PlanosUpscalerArcano69 />} />
           <Route path="/planos-upscaler-arcano-69-es" element={<PlanosUpscalerArcano69ES />} />
+          <Route path="/upscaler-arcano-590-es" element={<PlanosUpscalerArcano590ES />} />
           <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
           <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
           <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
