@@ -323,19 +323,21 @@ const FerramentasIA = () => {
         </div>
       </header>
 
-      {/* Primeiro Acesso Button - Below Header */}
-      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200">
-        <div className="container mx-auto px-4 py-3">
-          <Button
-            onClick={() => setShowFirstAccessModal(true)}
-            className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
-            size="sm"
-          >
-            <UserCheck className="w-4 h-4 mr-2" />
-            {t('ferramentas.firstAccess')}
-          </Button>
+      {/* Primeiro Acesso Button - Below Header - Only for logged out users */}
+      {!user && (
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200">
+          <div className="container mx-auto px-4 py-3">
+            <Button
+              onClick={() => setShowFirstAccessModal(true)}
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
+              size="sm"
+            >
+              <UserCheck className="w-4 h-4 mr-2" />
+              {t('ferramentas.firstAccess')}
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       <main className="container mx-auto px-4 py-8">
