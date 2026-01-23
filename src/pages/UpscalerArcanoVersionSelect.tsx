@@ -8,6 +8,7 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 // Fallback images for backwards compatibility
 import upscalerV1Image from "@/assets/upscaler-v1-card.png";
 import upscalerV2Image from "@/assets/upscaler-v1-5-card.png";
@@ -91,6 +92,9 @@ const UpscalerArcanoVersionSelect = () => {
   const toolsHomePath = locale === 'es' ? '/ferramentas-ia-es' : '/ferramentas-ia';
   const upscalerPlansPath = locale === 'es' ? '/planos-upscaler-arcano-69-es' : '/planos-upscaler-arcano-69';
   const loginPath = `/login-artes?redirect=${encodeURIComponent('/ferramenta-ia-artes/upscaller-arcano')}`;
+  
+  // Smart back navigation - for ES keep original behavior, for PT use smart back
+  const { goBack } = useSmartBackNavigation({ fallback: toolsHomePath });
   
   const [purchaseDate, setPurchaseDate] = useState<Date | null>(null);
   const [isLoadingPurchase, setIsLoadingPurchase] = useState(true);
@@ -320,7 +324,7 @@ const UpscalerArcanoVersionSelect = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(toolsHomePath)}
+            onClick={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />

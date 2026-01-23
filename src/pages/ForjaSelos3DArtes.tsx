@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Play, ExternalLink } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface Lesson {
@@ -20,6 +21,7 @@ const ForjaSelos3DArtes = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { hasAccessToPack, isLoading } = usePremiumArtesStatus();
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
   const [hasAccess, setHasAccess] = useState(false);
   const [checked, setChecked] = useState(false);
 
@@ -83,7 +85,7 @@ const ForjaSelos3DArtes = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/ferramentas-ia")}
+            onClick={goBack}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

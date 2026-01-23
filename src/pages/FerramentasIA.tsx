@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { ArrowLeft, Sparkles, CheckCircle, Loader2, Play, ShoppingCart, LogIn, UserCheck, AlertTriangle, ChevronRight, ChevronLeft, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -35,11 +36,13 @@ const FerramentasIA = () => {
     "ia-muda-roupa": t('ferramentas.descriptions.mudaRoupa'),
   };
 
-  const getBackRoute = () => {
+  // Smart back navigation: go to previous page, fallback to from param or /
+  const getSmartFallback = () => {
     if (from === "prompts") return "/biblioteca-prompts";
     if (from === "artes") return "/biblioteca-artes";
-    return "/biblioteca-artes";
+    return "/";
   };
+  const { goBack } = useSmartBackNavigation({ fallback: getSmartFallback() });
 
   const getBackLabel = () => {
     if (from === "prompts") return t('ferramentas.backToPrompts');
@@ -291,7 +294,7 @@ const FerramentasIA = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(getBackRoute())}
+              onClick={goBack}
               className="text-purple-600 hover:text-purple-800 hover:bg-purple-100"
               title={getBackLabel()}
             >

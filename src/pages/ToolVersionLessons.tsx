@@ -18,6 +18,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface TutorialLesson {
@@ -127,6 +128,9 @@ const ToolVersionLessons = () => {
   const loginPath = `/login-artes?redirect=${encodeURIComponent(currentPath)}`;
   const toolSelectPath = `/ferramenta-ia-artes/${toolSlug}`;
   const plansPath = locale === 'es' ? `/planos-upscaler-arcano-69-es` : `/planos-${toolSlug}`;
+  
+  // Smart back navigation - for ES keep original behavior, for PT use smart back
+  const { goBack } = useSmartBackNavigation({ fallback: toolSelectPath });
   
   const [loading, setLoading] = useState(true);
   const [version, setVersion] = useState<ToolVersion | null>(null);
@@ -438,7 +442,7 @@ const ToolVersionLessons = () => {
           <p className="text-yellow-500 font-medium">
             {t('toolLessons.unlocksOn', { date: formattedDate, days: daysRemaining })}
           </p>
-          <Button variant="outline" onClick={() => navigate(toolSelectPath)}>
+          <Button variant="outline" onClick={locale === 'es' ? () => navigate(toolSelectPath) : goBack}>
             {t('upscaler.back')}
           </Button>
         </div>
@@ -465,7 +469,7 @@ const ToolVersionLessons = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(toolSelectPath)}
+            onClick={locale === 'es' ? () => navigate(toolSelectPath) : goBack}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
 interface VideoLesson {
@@ -52,6 +53,7 @@ const UpscalerArcanoV1 = () => {
   const { t } = useTranslation('tools');
   const { user, hasAccessToPack, isLoading } = usePremiumArtesStatus();
   const { planType, isLoading: promptsLoading } = usePremiumStatus();
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramenta-ia-artes/upscaller-arcano' });
 
   const hasUnlimitedAccess = planType === "arcano_unlimited";
   const hasAccess = hasUnlimitedAccess || hasAccessToPack('upscaller-arcano');
@@ -193,7 +195,7 @@ const UpscalerArcanoV1 = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/ferramenta-ia-artes/upscaller-arcano")}
+            onClick={goBack}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />

@@ -7,6 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 
 type Mode = 'upscale' | 'rembg';
 type Resolution = 2048 | 4096;
@@ -21,7 +22,8 @@ interface ErrorDetails {
 
 const UpscalerRunpod: React.FC = () => {
   const navigate = useNavigate();
-  
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
+
   // State
   const [mode, setMode] = useState<Mode>('upscale');
   const [resolution, setResolution] = useState<Resolution>(4096);
@@ -354,7 +356,7 @@ const UpscalerRunpod: React.FC = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/ferramentas-ia")}
+            onClick={goBack}
             className="text-purple-300 hover:text-white hover:bg-purple-500/20"
           >
             <ArrowLeft className="w-5 h-5" />

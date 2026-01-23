@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 
@@ -39,6 +40,7 @@ const UpscalerArcanoV2 = () => {
   const { t } = useTranslation('tools');
   const { user, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
   const { planType, isLoading: promptsLoading } = usePremiumStatus();
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramenta-ia-artes/upscaller-arcano' });
   
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isLoadingCheck, setIsLoadingCheck] = useState(true);
@@ -247,7 +249,7 @@ const UpscalerArcanoV2 = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/ferramenta-ia-artes/upscaller-arcano")}
+            onClick={goBack}
             className="shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
