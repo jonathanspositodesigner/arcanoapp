@@ -1,5 +1,6 @@
 // Combo Artes Arcanas components barrel export
 export { HeroSectionCombo } from './HeroSectionCombo';
+export { FeaturesSection } from './FeaturesSection';
 export { AreaMembrosSection } from './AreaMembrosSection';
 export { FlyersGallerySection } from './FlyersGallerySection';
 export { BonusFimDeAnoSection } from './BonusFimDeAnoSection';
