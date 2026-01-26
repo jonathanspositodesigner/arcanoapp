@@ -101,45 +101,47 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <div className="mb-16">
-      <h3 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
-        {title}
-      </h3>
-      
-      <div className="relative px-12 md:px-16">
-        {/* Navigation button - Left */}
-        <button
-          onClick={scrollPrev}
-          className="absolute left-0 top-1/2 -translate-y-1/2 bg-zinc-800 hover:bg-[#EF672C] text-white p-3 rounded-full transition-colors z-10"
-        >
-          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
+    <div className="mb-8">
+      <div className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-6 md:p-8 border border-zinc-800 hover:border-[#EF672C]/50 transition-all duration-300">
+        <h3 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
+          {title}
+        </h3>
         
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-4">
-            {images.map((image, index) => (
-              <div
-                key={index}
-                className="flex-none w-[260px] md:w-[300px]"
-              >
-                <img
-                  src={image}
-                  alt={`${title} ${index + 1}`}
-                  className="w-full h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-              </div>
-            ))}
+        <div className="relative px-10 md:px-14">
+          {/* Navigation button - Left */}
+          <button
+            onClick={scrollPrev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors z-10"
+          >
+            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
+          
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex gap-4">
+              {images.map((image, index) => (
+                <div
+                  key={index}
+                  className="flex-none w-[240px] md:w-[280px]"
+                >
+                  <img
+                    src={image}
+                    alt={`${title} ${index + 1}`}
+                    className="w-full h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
+          
+          {/* Navigation button - Right */}
+          <button
+            onClick={scrollNext}
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors z-10"
+          >
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
         </div>
-        
-        {/* Navigation button - Right */}
-        <button
-          onClick={scrollNext}
-          className="absolute right-0 top-1/2 -translate-y-1/2 bg-zinc-800 hover:bg-[#EF672C] text-white p-3 rounded-full transition-colors z-10"
-        >
-          <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
       </div>
     </div>
   );
