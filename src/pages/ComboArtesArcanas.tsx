@@ -1,19 +1,6 @@
 import { useEffect } from "react";
 import { ChevronDown } from "lucide-react";
-import {
-  HeroSectionCombo,
-  FeaturesSection,
-  FlyersGallerySection,
-  BonusFimDeAnoSection,
-  MotionsGallerySection,
-  Selos3DSection,
-  BonusGridSection,
-  GuaranteeSectionCombo,
-  PricingCardsSection,
-  FAQSectionCombo,
-  WhatsAppSupportSection,
-  FooterSection,
-} from "@/components/combo-artes";
+import { HeroSectionCombo, FeaturesSection, FlyersGallerySection, BonusFimDeAnoSection, MotionsGallerySection, Selos3DSection, BonusGridSection, GuaranteeSectionCombo, PricingCardsSection, FAQSectionCombo, WhatsAppSupportSection, FooterSection } from "@/components/combo-artes";
 
 // Extend Window interface for Meta Pixel
 declare global {
@@ -25,7 +12,6 @@ declare global {
 
 // Meta Pixel ID (same as other pages)
 const META_PIXEL_ID = "1051791498880287";
-
 const ComboArtesArcanas = () => {
   // Initialize Meta Pixel
   useEffect(() => {
@@ -57,13 +43,11 @@ const ComboArtesArcanas = () => {
         content_category: "Digital Product",
         content_type: "product",
         value: 79.9,
-        currency: "BRL",
+        currency: "BRL"
       });
     }
   }, []);
-
-  return (
-    <div className="min-h-screen bg-black">
+  return <div className="min-h-screen bg-black">
       <HeroSectionCombo />
       
       {/* Animated scroll indicator */}
@@ -77,15 +61,13 @@ const ComboArtesArcanas = () => {
       <FlyersGallerySection />
       <BonusFimDeAnoSection />
       <MotionsGallerySection />
-      <Selos3DSection />
+      
       <BonusGridSection />
       <GuaranteeSectionCombo />
       <PricingCardsSection />
       <FAQSectionCombo />
       <WhatsAppSupportSection />
       <FooterSection />
-    </div>
-  );
+    </div>;
 };
-
 export default ComboArtesArcanas;
