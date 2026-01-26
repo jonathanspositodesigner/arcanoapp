@@ -37,7 +37,7 @@ const motions = [
   },
   {
     thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/AFTER-DOS-GIGANTES.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Reveillon-Stories-Social-Media.mp4",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/AFTER-DOS-GIGANTES-.mp4",
     title: "Reveillon Stories",
   },
   {
