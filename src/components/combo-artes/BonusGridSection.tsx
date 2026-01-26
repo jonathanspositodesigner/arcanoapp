@@ -61,7 +61,7 @@ export const BonusGridSection = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-2">
-          <h2 className="text-2xl md:text-5xl font-bold text-white mb-4">
+          <h2 className="text-2xl md:text-5xl font-bold text-white mb-1 md:mb-4">
             E não é só isso...
           </h2>
           <p className="text-base md:text-lg text-zinc-400">
