@@ -64,13 +64,6 @@ export const HeroSectionCombo = () => {
           </div>
         </div>
         
-        {/* CTA Button */}
-        <button
-          onClick={scrollToPricing}
-          className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg md:text-xl px-10 py-4 rounded-xl shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300"
-        >
-          QUERO APROVEITAR A OFERTA!
-        </button>
       </div>
     </section>
   );
