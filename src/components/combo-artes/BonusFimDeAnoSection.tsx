@@ -2,22 +2,15 @@ import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Gift } from "lucide-react";
 import { useCallback } from "react";
 
-// URLs corretas extraídas do site https://voxvisual.com.br/combo3em1/
-const artesReveillon = [
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-LEO-SANTANA-E-IZA-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-DOS-SONHOS-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-2026-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-SURREAL-2026-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-TROPICAL-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-TROPICAL-ST-768x1365-1.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/O-ULTIMO-BAILE-DO-ANO-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/NATAL-PARTY-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/AGENDA-DE-NATAL-ST~1-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/AGENDA-DE-NATAL-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/AGENDA-FIM-DE-ANO-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/PROXIMOS-SHOWS-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-NA-PRAIA-2025-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/HOJE-REVEILLON-ST-768x1365.webp",
+// URLs das artes de Carnaval
+const artesCarnaval = [
+  "https://voxvisual.com.br/wp-content/uploads/2026/01/AQUECIMENTO-DE-CARNAVAL-ST.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2026/01/WE-LOVE-PAGODAO-ST.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/01/Bloquinho-do-Leo.jpg",
+  "https://voxvisual.com.br/wp-content/uploads/2025/01/BLOCO-LOUCO.jpg",
+  "https://voxvisual.com.br/wp-content/uploads/2025/01/BLOCO-DO-KEVINHO.jpg",
+  "https://voxvisual.com.br/wp-content/uploads/2025/01/BAILE-DA-SANTINHA.jpg",
+  "https://voxvisual.com.br/wp-content/uploads/2025/01/AGENDA-DE-CARNAVAL-2.jpg",
 ];
 
 export const BonusFimDeAnoSection = () => {
@@ -63,7 +56,7 @@ export const BonusFimDeAnoSection = () => {
         <div className="relative">
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex gap-4">
-              {artesReveillon.map((arte, index) => (
+              {artesCarnaval.map((arte, index) => (
                 <div
                   key={index}
                   className="flex-none w-[280px] md:w-[320px]"
