@@ -43,14 +43,14 @@ export const HeroSectionCombo = () => {
         </button>
         
         {/* Members badge - BELOW the button */}
-        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2.5">
+        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
           <img
             src="https://voxvisual.com.br/wp-content/uploads/2024/12/AssetAlunosIC.webp"
             alt="Membros"
-            className="w-8 h-8 object-contain"
+            className="w-14 h-14 object-contain"
           />
-          <Users className="w-4 h-4 text-white" />
-          <span className="text-white font-medium">+2200 Membros ativos!</span>
+          <Users className="w-5 h-5 text-white" />
+          <span className="text-white font-medium text-lg">+2200 Membros ativos!</span>
         </div>
       </div>
     </section>
