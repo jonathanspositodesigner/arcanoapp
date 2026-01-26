@@ -53,7 +53,7 @@ export const BonusFimDeAnoSection = () => {
         </div>
         
         {/* Mobile: image full, arrows overlay. Desktop: arrows outside. */}
-        <div className="relative md:flex md:items-center md:gap-4">
+        <div className="relative md:flex md:items-center md:gap-4 px-6 md:px-0">
           {/* Desktop left */}
           <button
             onClick={scrollPrev}
@@ -74,7 +74,7 @@ export const BonusFimDeAnoSection = () => {
                   <img
                     src={arte}
                     alt={`Arte Carnaval ${index + 1}`}
-                    className="w-full max-w-[360px] md:w-full md:max-w-none h-auto object-contain rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+                    className="w-full max-w-[280px] md:w-full md:max-w-none h-auto object-contain rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
                 </div>
