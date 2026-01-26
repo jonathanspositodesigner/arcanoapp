@@ -2,33 +2,35 @@ import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Sparkles, Wand2, Download } from "lucide-react";
 import { useCallback } from "react";
 
+// URLs exatas extraídas do HTML original do WordPress
+// selos 1-20 em /2024/12, selos 21-26 em /2025/11 com nomes diferentes
 const selos = [
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-1.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-2.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-3.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-4.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-5.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-6.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-7.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-8.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-9.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-10.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-11.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-12.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-13.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-14.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-15.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-16.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-17.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-18.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-19.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-20.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-21.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-22.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-23.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-24.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-25.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/selo-3d-26.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-1.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-2.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-3.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-4.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-5.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-6.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-7.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-8.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-9.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-10.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-11.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-12.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-13.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-14.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-15.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-16.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-17.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-18.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-19.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-20.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/11/21-1.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/11/22-1.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/11/23-1.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/11/24-1.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/11/25-1.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/11/26-1.webp",
 ];
 
 const resources = [
@@ -62,6 +64,16 @@ export const Selos3DSection = () => {
   return (
     <section className="py-16 px-4 bg-gradient-to-b from-[#0a0505] to-black">
       <div className="max-w-6xl mx-auto">
+        {/* Intro text */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-4xl font-black text-white mb-4">
+            INÚMEROS BÔNUS E RECURSOS ATUALIZADOS!
+          </h2>
+          <p className="text-gray-300 text-lg md:text-xl">
+            Tenha acesso aos mais atualizados recursos de I.A e destaque seu trabalho!
+          </p>
+        </div>
+        
         {/* Badge */}
         <div className="flex justify-center mb-10">
           <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg px-8 py-3 rounded-full shadow-lg">

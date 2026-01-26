@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Play, X } from "lucide-react";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
+// URLs exatas extraídas do HTML original do WordPress
 const motions = [
   {
     thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-HERIQUE-E-JULIANO.webp",
@@ -19,38 +21,38 @@ const motions = [
     title: "Atração Confirmada MC Pedrinho",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-SERTANEJO-STORIES.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-SERTANEJO-STORIES.mp4",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-SERTANEJO-PREMIUM-STORIES-768x1365.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Sertanejo-Stories-Social-Media.mp4",
     title: "Sertanejo Stories",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-FORRO-ELETRONICA.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-FORRO-ELETRONICA.mp4",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-FORRO-VIP-STORIES-768x1365.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Forro-Eletronica-Stories-Social-Media.mp4",
     title: "Forró Eletrônica",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-FUNK-BAILE.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-FUNK-BAILE.mp4",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-FUNK-PARTY-STORIES-768x1365.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Funk-Baile-Stories-Social-Media.mp4",
     title: "Funk Baile",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-REVEILLON-STORIES.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-REVEILLON-STORIES.mp4",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-REVEILLON-DO-SAMBA-STORIES-768x1365.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Reveillon-Stories-Social-Media.mp4",
     title: "Reveillon Stories",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-SAO-JOAO.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-SAO-JOAO.mp4",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-SAO-JOAO-DA-CIDADE-STORIES-768x1365.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Sao-Joao-Stories-Social-Media.mp4",
     title: "São João",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-HALLOWEEN.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-HALLOWEEN.mp4",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-HALLOWEEN-PARTY-STORIES-768x1365.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Halloween-Stories-Social-Media.mp4",
     title: "Halloween",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-COUNTRY.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-COUNTRY.mp4",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-RODEIO-COUNTRY-STORIES-768x1365.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Country-Stories-Social-Media.mp4",
     title: "Country",
   },
 ];
@@ -109,7 +111,7 @@ export const MotionsGallerySection = () => {
             onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
             className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg md:text-xl px-10 py-4 rounded-xl shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300 mb-6"
           >
-            QUERO ESSAS ARTES E MOTIONS
+            QUERO ESSAS ARTES AGORA!
           </button>
           
           {/* Compra segura badges */}
@@ -131,6 +133,9 @@ export const MotionsGallerySection = () => {
       {/* Video Modal */}
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
         <DialogContent className="max-w-4xl bg-black border-gray-800 p-0">
+          <VisuallyHidden>
+            <DialogTitle>Vídeo do Motion</DialogTitle>
+          </VisuallyHidden>
           <DialogClose className="absolute right-4 top-4 z-50 bg-black/70 hover:bg-[#EF672C] p-2 rounded-full transition-colors">
             <X className="w-6 h-6 text-white" />
           </DialogClose>

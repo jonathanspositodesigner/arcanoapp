@@ -1,14 +1,15 @@
-import { ShieldCheck } from "lucide-react";
-
 export const GuaranteeSectionCombo = () => {
   return (
     <section className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">
       <div className="max-w-4xl mx-auto text-center">
-        {/* Icon */}
+        {/* Guarantee icons from WordPress */}
         <div className="mb-8">
-          <div className="w-24 h-24 mx-auto bg-gradient-to-br from-[#EF672C] to-[#f65928] rounded-full flex items-center justify-center shadow-lg shadow-orange-500/30">
-            <ShieldCheck className="w-12 h-12 text-white" />
-          </div>
+          <img
+            src="https://voxvisual.com.br/wp-content/uploads/2024/11/ICONES-GARANTIA.png"
+            alt="Ícones de Garantia"
+            className="max-w-full h-auto mx-auto mb-6"
+            loading="lazy"
+          />
         </div>
         
         {/* Title */}
@@ -35,12 +36,12 @@ export const GuaranteeSectionCombo = () => {
           </p>
         </div>
         
-        {/* Badge */}
+        {/* 7 dias badge from WordPress */}
         <div className="mt-8">
           <img
-            src="https://voxvisual.com.br/wp-content/uploads/2025/11/selo-garantia-7-dias.webp"
-            alt="Garantia 7 dias"
-            className="h-24 md:h-32 mx-auto"
+            src="https://voxvisual.com.br/wp-content/uploads/2024/11/7-DIAS-DE-GARANTIA-IC-1.png"
+            alt="7 Dias de Garantia"
+            className="h-32 md:h-40 mx-auto"
             loading="lazy"
           />
         </div>
