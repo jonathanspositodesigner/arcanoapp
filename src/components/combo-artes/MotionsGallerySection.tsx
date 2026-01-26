@@ -132,23 +132,29 @@ export const MotionsGallerySection = () => {
       
       {/* Video Modal */}
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
-        <DialogContent className="w-auto max-w-[85vw] md:max-w-[400px] bg-transparent border-none p-0 shadow-none [&>button]:hidden">
+        <DialogContent className="w-auto max-w-[85vw] md:max-w-[400px] bg-transparent border-none p-0 shadow-none [&>button:last-child]:hidden">
           <VisuallyHidden>
             <DialogTitle>Vídeo do Motion</DialogTitle>
           </VisuallyHidden>
-          <DialogClose className="absolute -right-2 -top-2 z-50 bg-gradient-to-r from-[#EF672C] to-[#f65928] hover:from-[#f65928] hover:to-[#EF672C] p-2.5 rounded-full transition-all shadow-lg shadow-black/50">
-            <X className="w-5 h-5 text-white" />
-          </DialogClose>
           {selectedVideo && (
-            <div className="relative rounded-2xl overflow-hidden border-2 border-[#EF672C]/60 shadow-2xl shadow-orange-500/30">
-              <video
-                src={selectedVideo}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-auto max-h-[80vh] object-cover"
-              />
+            <div className="relative">
+              {/* Botão de fechar */}
+              <button
+                onClick={() => setSelectedVideo(null)}
+                className="absolute -right-3 -top-3 z-50 bg-gradient-to-r from-[#EF672C] to-[#f65928] hover:from-[#f65928] hover:to-[#EF672C] p-2.5 rounded-full transition-all shadow-lg shadow-black/50"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+              <div className="rounded-2xl overflow-hidden border-2 border-[#EF672C]/60 shadow-2xl shadow-orange-500/30">
+                <video
+                  src={selectedVideo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-auto max-h-[80vh] object-cover"
+                />
+              </div>
             </div>
           )}
         </DialogContent>
