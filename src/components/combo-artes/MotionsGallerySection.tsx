@@ -27,7 +27,7 @@ const motions = [
   },
   {
     thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/PIZEIRO-DO-JPZ.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Forro-Eletronica-Stories-Social-Media.mp4",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/PIZEIRO-DO-JPZ_31.mp4",
     title: "Forró Eletrônica",
   },
   {
