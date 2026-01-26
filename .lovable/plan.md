@@ -1,199 +1,89 @@
 
-## Correção Completa da Página Combo Artes Arcanas
+Contexto e diagnóstico (com base no seu print + leitura do HTML do WordPress que você enviou + leitura dos componentes atuais):
+- Não, não é “ok” ter imagem quebrada. Se aparece o ícone de imagem quebrada, significa que o navegador tentou buscar a URL e recebeu erro (normalmente 404), então a página NÃO está idêntica.
+- O problema principal não é “faltar seção” agora; é que várias seções estão com URLs erradas (nomes diferentes do WordPress, falta de sufixo -768x1365, pastas /2025/12 vs /2025/11, etc.), então “parece que falta tudo” porque o visual fica cheio de placeholders.
+- Eu não consigo “ver sua tela ao vivo”, mas consigo garantir 1:1 de forma objetiva fazendo duas coisas:
+  1) usar o HTML original como “fonte da verdade” e copiar as URLs exatamente como estão lá
+  2) implementar um verificador dentro da página que conte e liste qualquer imagem/vídeo que falhar (para só dizer “pronto” quando der 0 erros)
 
-### Problemas Identificados
+O que já está comprovadamente divergente hoje (por evidência do HTML):
+1) Flyers – várias categorias estão com listas diferentes do HTML (ex: Pagode no HTML tem itens com “-768x1365” e nomes diferentes; Sertanejo no HTML é outro conjunto; Funk/Cavalgada/Variadas também têm diferenças).
+2) Bônus Fim de Ano – no HTML as imagens estão em /2025/12 e com nomes diferentes; no código está apontando /2025/11 com nomes “inventados” → isso quebra.
+3) Selos 3D – no HTML muitos selos estão em /2024/12 (selo-3d-1..20) e os últimos aparecem como arquivos “21-1.webp … 26-1.webp” em /2025/11; no código está tudo “selo-3d-X.webp” em /2025/11 → tende a quebrar.
+4) Garantia – no HTML a garantia usa imagens específicas (ex: ICONES-GARANTIA.png e 7-DIAS-DE-GARANTIA-IC-1.png). No código está “selo-garantia-7-dias.webp” → não bate com o original.
+5) Motions – os MP4 corretos do WordPress são “MOTION-Flyer-…Social-Media.mp4” em vários casos (não os nomes curtos). Isso precisa ficar exatamente como no HTML.
 
-Com base na análise do HTML original e da implementação atual, identifiquei os seguintes problemas:
+Objetivo desta correção:
+- Zerar imagens quebradas e zerar vídeos quebrados
+- Garantir que as listas (quantidade + ordem) sejam exatamente as do HTML original
+- Só considerar “pronto” quando o auditor indicar 0 falhas em desktop e mobile
 
----
+Plano de implementação (na próxima etapa, em modo de edição):
 
-### 1. CATEGORIAS DE FLYERS FALTANDO
+A) Criar um “Auditor de Mídia” dentro da própria página (para garantir sem achismo)
+1. Adicionar um modo de auditoria ativado por query string, ex: /combo-artes-arcanas?audit=1
+2. Implementar um pequeno “registro” global na página (em React) que:
+   - para cada <img>, registra onLoad/onError (URL, seção, índice)
+   - para cada vídeo (thumbnails e mp4), registra se o thumbnail carregou e faz uma checagem simples do MP4 (ex: tentar carregar metadados ou fetch HEAD quando permitido)
+3. Mostrar um painel flutuante (somente quando audit=1) com:
+   - Total esperado vs total carregado
+   - Lista de URLs que falharam (com o nome da seção e o índice)
+4. Critério para “pronto”: painel mostrando 0 falhas.
 
-**Implementação atual:** 3 categorias (Pagode, Forró, Sertanejo)
-**Página original:** 6 categorias + Bônus Fim de Ano
+B) Corrigir as fontes (arrays) para bater 100% com o HTML original (zero “URL inventada”)
+1. FlyersGallerySection.tsx
+   - Substituir TODAS as listas de imagens por listas extraídas do HTML (exatamente como estão, com sufixos -768x1365 quando existirem).
+   - Ajustar as categorias para terem a mesma ordem do WordPress.
+   - Conferir contagem por categoria e bater com o HTML.
+2. BonusFimDeAnoSection.tsx
+   - Trocar o array inteiro para as 14 URLs corretas do HTML em /2025/12:
+     - PROXIMOS-SHOWS-ST.webp
+     - REVEILLON-NA-PRAIA-2025-ST.webp
+     - HOJE-REVEILLON-ST-768x1365.webp
+     - FESTA-DE-REVEILLON-ST-768x1365.webp
+     - REVEILLON-PREMIUM-ST-768x1365.webp
+     - ANO-NOVO-CELEBRATION-ST-768x1365.webp
+     - NATAL-LUXUOSO-ST-768x1365.webp
+     - NATAL-EM-FAMILIA-ST-768x1365.webp
+     - BOAS-FESTAS-ST-768x1365.webp
+     - NOITE-FELIZ-ST-768x1365.webp
+     - PAPAI-NOEL-ST-768x1365.webp
+     - FELIZ-NATAL-ST-768x1365.webp
+     - FELIZ-ANO-NOVO-ST-768x1365.webp
+     - REVEILLON-DOS-SONHOS-ST-768x1365.webp
+3. Selos3DSection.tsx
+   - Trocar o array para a lista exata do HTML:
+     - /2024/12/selo-3d-1.webp ... /2024/12/selo-3d-20.webp
+     - /2025/11/21-1.webp ... /2025/11/26-1.webp
+   - (Sem adivinhar “selo-3d-21.webp” etc.)
+4. GuaranteeSectionCombo.tsx
+   - Trocar as imagens para as corretas do HTML:
+     - https://voxvisual.com.br/wp-content/uploads/2024/11/ICONES-GARANTIA.png
+     - https://voxvisual.com.br/wp-content/uploads/2024/11/7-DIAS-DE-GARANTIA-IC-1.png
+   - Ajustar layout para ficar igual ao WordPress (se tiver faixa/strip + badge).
+5. MotionsGallerySection.tsx
+   - Corrigir os 10 itens para usar exatamente os MP4 do WordPress:
+     - MOTION-Flyer-Sertanejo-Stories-Social-Media.mp4
+     - MOTION-Flyer-Forro-Eletronica-Stories-Social-Media.mp4
+     - MOTION-Flyer-Funk-Baile-Stories-Social-Media.mp4
+     - MOTION-Flyer-Reveillon-Stories-Social-Media.mp4
+     - MOTION-Flyer-Sao-Joao-Stories-Social-Media.mp4
+     - MOTION-Flyer-Halloween-Stories-Social-Media.mp4
+     - MOTION-Flyer-Country-Stories-Social-Media.mp4
+     - (e os 3 que já estão corretos)
+   - Corrigir o texto do CTA desse bloco para exatamente: “QUERO ESSAS ARTES AGORA!”
+   - Manter os badges de compra segura como no original.
+6. HeroSectionCombo.tsx (ajuste de fidelidade)
+   - Conferir no HTML o texto exato do botão do Hero; hoje está “QUERO APROVEITAR A OFERTA!” e pode ser diferente do WordPress.
 
-**Categorias faltando:**
-- ARTES DE FUNK (10 imagens)
-- ARTES DE CAVALGADA (8 imagens)
-- CATEGORIAS VARIADAS (10+ imagens)
+C) Validação final (objetiva, sem “achar que está pronto”)
+1. Abrir /combo-artes-arcanas?audit=1 no modo Desktop e rolar toda a página:
+   - Auditor precisa mostrar 0 falhas.
+2. Abrir /combo-artes-arcanas?audit=1 no modo Mobile e rolar toda a página:
+   - Auditor precisa mostrar 0 falhas.
+3. Só depois disso eu confirmo “pronto”.
 
-**Arquivo a modificar:** `src/components/combo-artes/FlyersGallerySection.tsx`
-
----
-
-### 2. MOTIONS FALTANDO
-
-**Implementação atual:** 4 motions
-**Página original:** 10 motions
-
-**Motions faltando:**
-- MOTION-FORRO-ELETRONICA
-- MOTION-FUNK-BAILE
-- MOTION-REVEILLON-STORIES
-- MOTION-SAO-JOAO
-- MOTION-HALLOWEEN
-- E mais 1-2 adicionais
-
-**Arquivo a modificar:** `src/components/combo-artes/MotionsGallerySection.tsx`
-
----
-
-### 3. SEÇÃO DE BÔNUS ESPECIAL DE FIM DE ANO FALTANDO
-
-**Não existe na implementação atual**
-
-Deve incluir:
-- Texto: "Adquirindo essa semana você leva também nosso Pack BÔNUS ESPECIAL DE FIM DE ANO"
-- Carrossel com 14+ artes de Reveillon/Natal
-- Badge "Especial de Fim de ano!"
-
-**Ação:** Criar novo componente `BonusFimDeAnoSection.tsx`
-
----
-
-### 4. SEÇÃO "NÃO É SÓ MAIS UM PACK" (INTRO MOTIONS) FALTANDO
-
-**Não existe na implementação atual**
-
-Deve incluir:
-- Título: "NÃO É SÓ MAIS UM PACK DE ARTES, UMA PLATAFORMA COMPLETA!"
-- Subtítulo: "MOTIONS FLYERS"
-- Descrição: "Esses são alguns dos motions que você vai ter acesso dentro da nossa plataforma!"
-
-**Arquivo a modificar:** `src/components/combo-artes/MotionsGallerySection.tsx`
-
----
-
-### 5. SEÇÃO "E NÃO É SÓ ISSO" - GRID DE 8 BÔNUS FALTANDO
-
-**Não existe na implementação atual**
-
-Deve incluir um grid com 8 bônus:
-1. BÔNUS 1 - Pack Prompts de IA
-2. BÔNUS 2 - Pack Capas de Palco
-3. BÔNUS 3 - Pack Agendas de Shows
-4. BÔNUS 4 - Pack Mockups
-5. BÔNUS 5 - Comunidade VIP
-6. BÔNUS 6 - Video Aulas Exclusivas
-7. BÔNUS 7 - Atualizações Semanais
-8. BÔNUS 8 - Suporte VIP
-
-**Ação:** Criar novo componente `BonusGridSection.tsx`
-
----
-
-### 6. SEÇÃO DE GARANTIA FALTANDO
-
-**Não existe na implementação atual**
-
-Deve incluir:
-- Título: "Qual a minha garantia?"
-- Ícone de selo de garantia
-- Texto sobre 7 dias de garantia incondicional
-
-**Ação:** Criar novo componente `GuaranteeSectionCombo.tsx`
-
----
-
-### 7. SELOS 3D INCOMPLETOS
-
-**Implementação atual:** 8 selos
-**Página original:** 26+ selos
-
-**Arquivo a modificar:** `src/components/combo-artes/Selos3DSection.tsx`
-
----
-
-### Arquivos a Criar
-
-| Arquivo | Descrição |
-|---------|-----------|
-| `BonusFimDeAnoSection.tsx` | Carrossel de artes Reveillon/Natal |
-| `BonusGridSection.tsx` | Grid dos 8 bônus grátis |
-| `GuaranteeSectionCombo.tsx` | Seção de garantia 7 dias |
-
----
-
-### Arquivos a Modificar
-
-| Arquivo | Modificações |
-|---------|--------------|
-| `FlyersGallerySection.tsx` | Adicionar categorias Funk, Cavalgada, Variadas (30+ novas imagens) |
-| `MotionsGallerySection.tsx` | Adicionar título intro + 6 novos motions |
-| `Selos3DSection.tsx` | Expandir de 8 para 26 selos |
-| `ComboArtesArcanas.tsx` | Adicionar novos componentes na ordem correta |
-| `index.ts` | Exportar novos componentes |
-
----
-
-### Ordem Correta das Seções na Página
-
-1. HeroSectionCombo
-2. AreaMembrosSection
-3. FlyersGallerySection (com TODAS as 6 categorias)
-4. **BonusFimDeAnoSection** (NOVA)
-5. MotionsGallerySection (com intro + 10 motions)
-6. Selos3DSection (com 26 selos)
-7. **BonusGridSection** (NOVA - 8 bônus grátis)
-8. **GuaranteeSectionCombo** (NOVA)
-9. PricingCardsSection
-10. FAQSectionCombo
-11. WhatsAppSupportSection
-12. FooterSection
-13. FloatingCTAMobile
-
----
-
-### URLs de Imagens a Adicionar
-
-**ARTES DE FUNK (10 imagens):**
-- FLYER-EVENTO-BAILE-DA-FAVORITA-STORIES.webp
-- B-DAY-DO-TUBARAO-ST.webp
-- FUNK-PARTY-ST.webp
-- BAILE-DO-PISTINHA-ST.webp
-- FUNK-PREMIUM-ST.webp
-- (+ 5 mais)
-
-**ARTES DE CAVALGADA (8 imagens):**
-- 12a-CAVALGADA-DOS-AMIGOS.webp
-- RODEIO-E-VAQUEJADA.webp
-- CAVALGADA-BENEFICENTE.webp
-- RODEIO-COUNTRY-ST.webp
-- (+ 4 mais)
-
-**CATEGORIAS VARIADAS (10+ imagens):**
-- DIA-DOS-NAMORADOS-ST.webp
-- HALLOWEEN-PARTY-ST.webp
-- BLACK-FRIDAY-STORIES.webp
-- DIA-DAS-MAES-ST.webp
-- (+ 6 mais)
-
-**BÔNUS FIM DE ANO (14 imagens):**
-- REVEILLON-DOS-SONHOS-ST.webp
-- NATAL-PREMIUM-ST.webp
-- FELIZ-ANO-NOVO-ST.webp
-- (+ 11 mais)
-
-**MOTIONS ADICIONAIS (6 vídeos):**
-- MOTION-FORRO-ELETRONICA.mp4
-- MOTION-FUNK-BAILE.mp4
-- MOTION-REVEILLON-STORIES.mp4
-- MOTION-SAO-JOAO.mp4
-- MOTION-CAVALGADA.mp4
-- MOTION-COUNTRY.mp4
-
-**SELOS 3D (18 adicionais):**
-- selo-3d-9.webp até selo-3d-26.webp
-
----
-
-### Resultado Esperado
-
-Após as correções:
-- 6 categorias de flyers com 60+ artes no total
-- Seção Bônus Fim de Ano com 14 artes temáticas
-- 10 motions clicáveis com preview
-- 26 selos 3D no carrossel
-- Grid com 8 bônus grátis detalhados
-- Seção de garantia 7 dias
-- Página 100% fiel ao WordPress original
+Entrega esperada após aplicar o plano:
+- Nenhuma imagem quebrada em nenhuma categoria (incluindo as que aparecem quebradas no seu print: Forró/Sertanejo/Funk).
+- Nenhum vídeo quebrado.
+- Mesma quantidade e ordem de itens que o WordPress original em todas as seções.
