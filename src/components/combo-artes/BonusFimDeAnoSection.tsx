@@ -94,14 +94,14 @@ export const BonusFimDeAnoSection = () => {
           {/* Mobile overlay buttons */}
           <button
             onClick={scrollPrev}
-            className="md:hidden absolute left-10 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/65 text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
+            className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/65 text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
             aria-label="Anterior"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={scrollNext}
-            className="md:hidden absolute right-10 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/65 text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
+            className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/65 text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
             aria-label="Próximo"
           >
             <ChevronRight className="w-4 h-4" />
