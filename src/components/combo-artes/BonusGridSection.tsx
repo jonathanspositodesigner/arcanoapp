@@ -76,21 +76,33 @@ export const BonusGridSection = () => {
           {bonuses.map((bonus, index) => (
             <div
               key={index}
-              className="text-center"
+              className="group bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl border border-zinc-800 hover:border-[#EF672C]/50 transition-all duration-300 overflow-hidden"
             >
               {/* Badge */}
-              <span className="inline-block bg-black/80 border-2 border-[#EF672C] text-[#EF672C] font-bold text-sm md:text-base px-4 py-1.5 rounded-full mb-4">
-                {bonus.number}
-              </span>
+              <div className="pt-5 text-center">
+                <span className="inline-block bg-[#EF672C]/10 border border-[#EF672C] text-[#EF672C] font-bold text-xs md:text-sm px-4 py-1.5 rounded-full">
+                  {bonus.number}
+                </span>
+              </div>
               
               {/* Image */}
-              <div className="bg-white/5 rounded-2xl p-4 hover:bg-white/10 transition-all duration-300">
+              <div className="p-4 flex justify-center">
                 <img 
                   src={bonus.image} 
                   alt={bonus.title}
-                  className="w-full h-auto max-w-[200px] mx-auto object-contain"
+                  className="w-full h-auto max-w-[180px] object-contain group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                 />
+              </div>
+              
+              {/* Content */}
+              <div className="px-5 pb-5 text-center">
+                <h3 className="text-white font-bold text-base md:text-lg mb-2">
+                  {bonus.title}
+                </h3>
+                <p className="text-zinc-400 text-sm">
+                  {bonus.description}
+                </p>
               </div>
             </div>
           ))}
