@@ -52,18 +52,27 @@ export const BonusFimDeAnoSection = () => {
           </p>
         </div>
         
-        {/* Carousel */}
-        <div className="relative">
-          <div className="overflow-hidden" ref={emblaRef}>
+        {/* Carousel with external navigation */}
+        <div className="flex items-center gap-4">
+          {/* Left navigation button */}
+          <button
+            onClick={scrollPrev}
+            className="flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-3 rounded-full transition-colors"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          
+          {/* Carousel */}
+          <div className="overflow-hidden flex-1" ref={emblaRef}>
             <div className="flex gap-4">
               {artesCarnaval.map((arte, index) => (
                 <div
                   key={index}
-                  className="flex-none w-[280px] md:w-[320px]"
+                  className="flex-none w-[240px] md:w-[280px]"
                 >
                   <img
                     src={arte}
-                    alt={`Arte Reveillon ${index + 1}`}
+                    alt={`Arte Carnaval ${index + 1}`}
                     className="w-full h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
@@ -72,16 +81,10 @@ export const BonusFimDeAnoSection = () => {
             </div>
           </div>
           
-          {/* Navigation buttons */}
-          <button
-            onClick={scrollPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-[#EF672C] text-white p-2 rounded-full transition-colors z-10"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
+          {/* Right navigation button */}
           <button
             onClick={scrollNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-[#EF672C] text-white p-2 rounded-full transition-colors z-10"
+            className="flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-3 rounded-full transition-colors"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
