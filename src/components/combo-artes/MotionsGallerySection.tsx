@@ -47,7 +47,7 @@ const motions = [{
 }];
 export const MotionsGallerySection = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-  return <section className="py-5 md:py-8 px-4 bg-black">
+  return <section className="py-5 md:py-10 px-4 bg-black">
       <div className="max-w-6xl mx-auto">
         {/* Intro Section */}
         <div className="text-center mb-12">
@@ -77,7 +77,7 @@ export const MotionsGallerySection = () => {
         </div>
         
         {/* CTA Section */}
-        <div className="text-center mt-8">
+        <div className="text-center mt-8 md:mt-10">
           <button onClick={() => document.getElementById("pricing")?.scrollIntoView({
           behavior: "smooth"
         })} className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-sm md:text-lg px-6 md:px-8 py-2.5 md:py-3.5 rounded-lg shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300 mb-0">
