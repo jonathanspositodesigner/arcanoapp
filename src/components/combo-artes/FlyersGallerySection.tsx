@@ -93,7 +93,7 @@ const categories = [
 const CategoryCarousel = ({ title, images }: { title: string; images: string[] }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
-    align: "start",
+    align: "center",
     slidesToScroll: 1,
   });
 
@@ -123,7 +123,7 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
               {images.map((image, index) => (
                 <div
                   key={index}
-                  className="flex-none w-[240px] md:w-[280px]"
+                  className="flex-none w-[75vw] max-w-[280px] md:w-[280px]"
                 >
                   <img
                     src={image}
