@@ -44,7 +44,7 @@ export const HeroSectionCombo = () => {
         <img
           src="https://voxvisual.com.br/wp-content/uploads/2025/11/area-de-membros.webp"
           alt="Área de Membros"
-          className="-mt-6 md:mt-4 -mb-1 max-w-3xl w-full object-contain"
+          className="-mt-6 md:-mt-14 -mb-1 max-w-3xl w-full object-contain"
         />
         
         {/* Subtitle */}
