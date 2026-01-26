@@ -172,7 +172,7 @@ export const FlyersGallerySection = () => {
         
         {/* E muito mais... */}
         <div className="text-center mt-4">
-          <span className="text-xl md:text-2xl font-bold text-[#EF672C]">
+          <span className="text-xl md:text-2xl font-bold text-white">
             E muito mais...
           </span>
         </div>
