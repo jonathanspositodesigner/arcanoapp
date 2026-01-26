@@ -77,7 +77,7 @@ export const BonusGridSection = () => {
           <h2 className="text-xl md:text-4xl font-bold text-white mb-4">
             E não é só isso...
           </h2>
-          <p className="text-xl text-gray-300">
+          <p className="text-base md:text-lg text-zinc-400">
             Você também vai receber{" "}
             <span className="text-[#EF672C] font-bold">8 BÔNUS GRÁTIS</span>{" "}
             para turbinar suas artes!
