@@ -47,7 +47,7 @@ const motions = [
   },
   {
     thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/HALLOWGRILL.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Halloween-Stories-Social-Media.mp4",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-HallowGrill-Stories-Social-Media.mp4",
     title: "Halloween",
   },
   {
