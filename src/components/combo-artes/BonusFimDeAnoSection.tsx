@@ -16,7 +16,7 @@ const artesCarnaval = [
 export const BonusFimDeAnoSection = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
-    align: "start",
+    align: "center",
     slidesToScroll: 1,
   });
 
@@ -52,41 +52,59 @@ export const BonusFimDeAnoSection = () => {
           </p>
         </div>
         
-        {/* Carousel with external navigation */}
-        <div className="flex items-center gap-4">
-          {/* Left navigation button */}
+        {/* Mobile: image full, arrows overlay. Desktop: arrows outside. */}
+        <div className="relative md:flex md:items-center md:gap-4">
+          {/* Desktop left */}
           <button
             onClick={scrollPrev}
-            className="flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-3 rounded-full transition-colors"
+            className="hidden md:inline-flex flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors"
+            aria-label="Anterior"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
           </button>
-          
-          {/* Carousel */}
-          <div className="overflow-hidden flex-1" ref={emblaRef}>
-            <div className="flex gap-4">
+
+          {/* Viewport */}
+          <div className="overflow-hidden md:flex-1" ref={emblaRef}>
+            <div className="flex">
               {artesCarnaval.map((arte, index) => (
                 <div
                   key={index}
-                  className="flex-none w-[240px] md:w-[280px]"
+                  className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-0"
                 >
                   <img
                     src={arte}
                     alt={`Arte Carnaval ${index + 1}`}
-                    className="w-full h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+                    className="w-full max-w-[360px] md:w-full md:max-w-none h-auto object-contain rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
                 </div>
               ))}
             </div>
           </div>
-          
-          {/* Right navigation button */}
+
+          {/* Desktop right */}
           <button
             onClick={scrollNext}
-            className="flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-3 rounded-full transition-colors"
+            className="hidden md:inline-flex flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors"
+            aria-label="Próximo"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
+
+          {/* Mobile overlay buttons */}
+          <button
+            onClick={scrollPrev}
+            className="md:hidden absolute left-2 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/65 text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
+            aria-label="Anterior"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={scrollNext}
+            className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/65 text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
+            aria-label="Próximo"
+          >
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
