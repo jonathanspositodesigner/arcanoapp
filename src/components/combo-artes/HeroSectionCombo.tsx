@@ -23,19 +23,19 @@ export const HeroSectionCombo = () => {
         />
         
         {/* Members badge - ABOVE the title */}
-        <div className="flex items-center gap-3 bg-gradient-to-r from-[#3d1515]/80 to-[#2a0f0f]/80 backdrop-blur-sm border border-[#EF672C]/30 rounded-full px-4 py-1.5 mb-6">
+        <div className="flex items-center gap-2 bg-gradient-to-r from-[#3d1515]/80 to-[#2a0f0f]/80 backdrop-blur-sm border border-[#EF672C]/30 rounded-full px-3 py-1 mb-5">
           <img
             src="https://voxvisual.com.br/wp-content/uploads/2024/12/AssetAlunosIC.webp"
             alt="Membros"
-            className="w-16 h-16 object-contain -my-1"
+            className="w-12 h-12 object-contain -my-1"
           />
-          <span className="text-white/90 font-medium text-base md:text-lg">
+          <span className="text-white/90 font-medium text-sm md:text-base">
             Já são mais de <span className="text-[#EF672C] font-bold">+2.200</span> membros ativos!
           </span>
         </div>
         
         {/* Main title */}
-        <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-4 leading-tight">
+        <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-white mb-4 leading-tight">
           Leve 3 Packs de Artes{" "}
           <span className="text-[#EF672C]">pelo Preço de 1</span>
         </h1>
@@ -44,7 +44,7 @@ export const HeroSectionCombo = () => {
         <img
           src="https://voxvisual.com.br/wp-content/uploads/2025/11/area-de-membros.webp"
           alt="Área de Membros"
-          className="mb-6 max-w-md w-full object-contain"
+          className="mb-6 max-w-2xl w-full object-contain"
         />
         
         {/* Subtitle */}
