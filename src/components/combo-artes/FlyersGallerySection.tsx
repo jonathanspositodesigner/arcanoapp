@@ -122,11 +122,11 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
 
           {/* Viewport */}
           <div className="overflow-hidden md:flex-1" ref={emblaRef}>
-            <div className="flex">
+            <div className="flex md:-ml-4">
               {images.map((image, index) => (
                 <div
                   key={index}
-                  className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-0"
+                  className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-0 md:pl-4"
                 >
                   <img
                     src={image}
