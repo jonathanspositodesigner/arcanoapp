@@ -108,38 +108,39 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
             {title}
           </span>
         </div>
-        
-        <div className="relative px-10 md:px-14">
-          {/* Navigation button - Left */}
+
+        {/* Carousel with external navigation (no overlap) */}
+        <div className="flex items-center gap-3 md:gap-4">
           <button
             onClick={scrollPrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors z-10"
+            className="flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors"
+            aria-label="Anterior"
           >
             <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
           </button>
-          
-          <div className="overflow-hidden" ref={emblaRef}>
-            <div className="flex gap-4">
+
+          <div className="overflow-hidden flex-1" ref={emblaRef}>
+            <div className="flex">
               {images.map((image, index) => (
                 <div
                   key={index}
-                  className="flex-none w-[75vw] max-w-[280px] md:w-[280px]"
+                  className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-2 md:px-0"
                 >
                   <img
                     src={image}
                     alt={`${title} ${index + 1}`}
-                    className="w-full h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+                    className="w-full max-w-[240px] md:max-w-none h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
                 </div>
               ))}
             </div>
           </div>
-          
-          {/* Navigation button - Right */}
+
           <button
             onClick={scrollNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors z-10"
+            className="flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors"
+            aria-label="Próximo"
           >
             <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
           </button>
