@@ -1,245 +1,199 @@
 
+## Correção Completa da Página Combo Artes Arcanas
 
-## Recriar Página "Biblioteca de Artes Arcanas - Combo 3 em 1" no React
+### Problemas Identificados
 
-### Resumo
-
-Vou criar uma nova página React que replica EXATAMENTE a landing page WordPress "Biblioteca de Artes Arcanas - 3 packs pelo preço de 1" (combo3em1) que você enviou. A página será adicionada na rota `/combo-artes-arcanas`.
+Com base na análise do HTML original e da implementação atual, identifiquei os seguintes problemas:
 
 ---
 
-### Seções da Página (ordem exata do WordPress)
+### 1. CATEGORIAS DE FLYERS FALTANDO
 
-| # | Seção | Descrição |
-|---|-------|-----------|
-| 1 | Hero Mobile | Logo + Título "Leve 3 Packs pelo Preço de 1" + Subtítulo + Badge membros |
-| 2 | Hero Desktop | Símbolo gold + Screenshot área de membros + Título "BEM VINDO À BIBLIOTECA DE ARTES ARCANAS" + Cards de benefícios |
-| 3 | "VEJA TUDO QUE VOCÊ VAI RECEBER" | Título animado com gradiente |
-| 4 | Galeria Flyers | Badge "FLYERS EDITÁVEIS" + Carrosséis: Pagode, Forró, Sertanejo com imagens |
-| 5 | Galeria Motions | Badge "MOTIONS EDITÁVEIS" + Grid de vídeos com thumbnails (clicáveis) |
-| 6 | CTA Central | Botão "QUERO ESSAS ARTES E MOTIONS" + Badge "Compra Segura" |
-| 7 | Bônus | Badge "PACK DE SELOS 3D" + Carrossel de selos + Cards com recursos |
-| 8 | Planos de Preço | 3 cards: Trimestral (R$9,90 3x), Semestral (R$9,90 6x), Vitalício (R$6,66 12x) com lista de benefícios |
-| 9 | FAQ | Accordion com 5 perguntas frequentes |
-| 10 | Suporte WhatsApp | "Ainda tem dúvidas?" + Botão WhatsApp |
-| 11 | Footer | Nome + CNPJ + Direitos reservados |
-| 12 | Botão Fixo Mobile | CTA flutuante no rodapé para mobile |
+**Implementação atual:** 3 categorias (Pagode, Forró, Sertanejo)
+**Página original:** 6 categorias + Bônus Fim de Ano
+
+**Categorias faltando:**
+- ARTES DE FUNK (10 imagens)
+- ARTES DE CAVALGADA (8 imagens)
+- CATEGORIAS VARIADAS (10+ imagens)
+
+**Arquivo a modificar:** `src/components/combo-artes/FlyersGallerySection.tsx`
+
+---
+
+### 2. MOTIONS FALTANDO
+
+**Implementação atual:** 4 motions
+**Página original:** 10 motions
+
+**Motions faltando:**
+- MOTION-FORRO-ELETRONICA
+- MOTION-FUNK-BAILE
+- MOTION-REVEILLON-STORIES
+- MOTION-SAO-JOAO
+- MOTION-HALLOWEEN
+- E mais 1-2 adicionais
+
+**Arquivo a modificar:** `src/components/combo-artes/MotionsGallerySection.tsx`
+
+---
+
+### 3. SEÇÃO DE BÔNUS ESPECIAL DE FIM DE ANO FALTANDO
+
+**Não existe na implementação atual**
+
+Deve incluir:
+- Texto: "Adquirindo essa semana você leva também nosso Pack BÔNUS ESPECIAL DE FIM DE ANO"
+- Carrossel com 14+ artes de Reveillon/Natal
+- Badge "Especial de Fim de ano!"
+
+**Ação:** Criar novo componente `BonusFimDeAnoSection.tsx`
+
+---
+
+### 4. SEÇÃO "NÃO É SÓ MAIS UM PACK" (INTRO MOTIONS) FALTANDO
+
+**Não existe na implementação atual**
+
+Deve incluir:
+- Título: "NÃO É SÓ MAIS UM PACK DE ARTES, UMA PLATAFORMA COMPLETA!"
+- Subtítulo: "MOTIONS FLYERS"
+- Descrição: "Esses são alguns dos motions que você vai ter acesso dentro da nossa plataforma!"
+
+**Arquivo a modificar:** `src/components/combo-artes/MotionsGallerySection.tsx`
+
+---
+
+### 5. SEÇÃO "E NÃO É SÓ ISSO" - GRID DE 8 BÔNUS FALTANDO
+
+**Não existe na implementação atual**
+
+Deve incluir um grid com 8 bônus:
+1. BÔNUS 1 - Pack Prompts de IA
+2. BÔNUS 2 - Pack Capas de Palco
+3. BÔNUS 3 - Pack Agendas de Shows
+4. BÔNUS 4 - Pack Mockups
+5. BÔNUS 5 - Comunidade VIP
+6. BÔNUS 6 - Video Aulas Exclusivas
+7. BÔNUS 7 - Atualizações Semanais
+8. BÔNUS 8 - Suporte VIP
+
+**Ação:** Criar novo componente `BonusGridSection.tsx`
+
+---
+
+### 6. SEÇÃO DE GARANTIA FALTANDO
+
+**Não existe na implementação atual**
+
+Deve incluir:
+- Título: "Qual a minha garantia?"
+- Ícone de selo de garantia
+- Texto sobre 7 dias de garantia incondicional
+
+**Ação:** Criar novo componente `GuaranteeSectionCombo.tsx`
+
+---
+
+### 7. SELOS 3D INCOMPLETOS
+
+**Implementação atual:** 8 selos
+**Página original:** 26+ selos
+
+**Arquivo a modificar:** `src/components/combo-artes/Selos3DSection.tsx`
 
 ---
 
 ### Arquivos a Criar
 
-#### Estrutura de Componentes
-
-```text
-src/pages/ComboArtesArcanas.tsx          # Página principal
-src/components/combo-artes/
-├── index.ts                             # Exports
-├── HeroSectionCombo.tsx                 # Hero com logo e título
-├── AreaMembrosSection.tsx               # Símbolo gold + screenshot
-├── FlyersGallerySection.tsx             # Carrosséis de artes por categoria
-├── MotionsGallerySection.tsx            # Grid de vídeos
-├── Selos3DSection.tsx                   # Pack de selos 3D
-├── PricingCardsSection.tsx              # 3 planos de preço
-├── FAQSectionCombo.tsx                  # Accordion FAQ
-├── WhatsAppSupportSection.tsx           # Suporte WhatsApp
-├── FooterSection.tsx                    # Footer com CNPJ
-└── FloatingCTAMobile.tsx                # Botão fixo mobile
-```
+| Arquivo | Descrição |
+|---------|-----------|
+| `BonusFimDeAnoSection.tsx` | Carrossel de artes Reveillon/Natal |
+| `BonusGridSection.tsx` | Grid dos 8 bônus grátis |
+| `GuaranteeSectionCombo.tsx` | Seção de garantia 7 dias |
 
 ---
 
-### Detalhes de Cada Seção
+### Arquivos a Modificar
 
-#### 1. Hero Section (Mobile + Desktop)
-
-**Elementos:**
-- Logo: `https://voxvisual.com.br/wp-content/uploads/2024/11/LOGO-CLLR-1.png`
-- Título: "Leve 3 Packs de Artes **pelo Preço de 1**" (laranja: #EF672C)
-- Subtítulo: "+ de 200 Artes Editáveis PSD e CANVA! Promoção por tempo limitado!"
-- Badge membros: Ícone + "+2200 Membros ativos!"
-
-**Cores:**
-- Background: Gradiente escuro
-- Texto principal: Branco
-- Destaque: #EF672C (laranja)
-
-#### 2. Área de Membros Section
-
-**Elementos:**
-- Símbolo gold: `https://voxvisual.com.br/wp-content/uploads/2025/11/simbolo-gold-2.webp`
-- Screenshot: `https://voxvisual.com.br/wp-content/uploads/2025/11/area-de-membros.webp`
-- Título: "SEJA BEM VINDO À BIBLIOTECA DE ARTES ARCANAS!"
-- Descrição: "Uma plataforma completa com tudo que você precisa..."
-
-**3 Cards de Benefícios:**
-1. Comunidade: Ícone + "+1700 Membros Ativos na Comunidade"
-2. Canva/Photoshop: Ícone + "Edite tudo canva ou photoshop"
-3. Suporte: Ícone + "suporte técnico exclusivo e dedicado"
-
-#### 3. Galeria de Flyers
-
-**Categorias com Carrosséis:**
-1. ARTES DE PAGODE (10 imagens)
-2. ARTES DE FORRÓ (10 imagens)
-3. ARTES DE SERTANEJO (10 imagens)
-
-**Imagens (URLs do WordPress):**
-- Pagode: FESTEJA-TROPICAL, MIXTURADINHO, BYE-BYE-FERIAS, HOJE-JONAS-ESTICADO, etc.
-- Forró: similares
-- Sertanejo: similares
-
-#### 4. Galeria de Motions
-
-**Grid de 4 vídeos com thumbnails:**
-1. AGENDA-HERIQUE-E-JULIANO.webp → vídeo MP4
-2. HALLOWGRILL.webp → vídeo MP4
-3. ATRACAO-CONFIRMADA-MC-PEDRINHO.webp → vídeo MP4
-4. (mais vídeos)
-
-**Comportamento:** Click abre modal com vídeo
-
-#### 5. Pack de Selos 3D
-
-**Elementos:**
-- Badge: "PACK DE SELOS 3D"
-- Carrossel de selos 3D
-- Cards com recursos de IA
-
-#### 6. Pricing Cards (3 planos)
-
-**Plano Trimestral:**
-- Título: "Pack arcano 1 ao 3 acesso TRIMESTRAL"
-- Subtítulo: "Para quem quer testar tudo sem compromisso."
-- Lista: 3 Meses, 200 Artes, 210 Motions, 40 Selos 3D, Video Aulas, Bônus, Atualizações, WhatsApp, Área de Membros
-- Preço: 3x R$9,90 ou R$29,90 à vista
-- Link: `https://payfast.greenn.com.br/147967/offer/e6jRLB...`
-
-**Plano Semestral:**
-- Título: "Pack arcano 1 ao 3 acesso semestral"
-- Subtítulo: "Para quem quer mais economia e mais vantagem."
-- Preço: 6x R$9,90 ou R$59,90 à vista
-- Link: `https://payfast.greenn.com.br/147968/offer/KeCO0d...`
-
-**Plano Vitalício (destaque):**
-- Título: "Pack arcano 1 ao 3 acesso vitalício"
-- Subtítulo: "O mais vendido! 🔥"
-- Bônus Extra: +30 Artes Reveillon e Natal
-- Preço: 12x R$6,66 ou R$79,90 à vista
-- Link: `https://payfast.greenn.com.br/redirect/246696...`
-
-#### 7. FAQ Section
-
-**5 Perguntas:**
-1. "Como vou receber o meu acesso?" → Resposta sobre email
-2. "Qual programa preciso para editar as artes?" → Canva e Photoshop
-3. "O pacote inclui suporte técnico?" → Sim, email e video aulas
-4. "Sou iniciante, é pra mim?" → Excelente escolha para iniciantes
-5. "O pack recebe atualizações?" → Sim, 1 arte por semana
-
-#### 8. WhatsApp Support
-
-- Título: "Ainda tem dúvidas?"
-- Subtítulo: "Fale diretamente comigo pelo whatsapp"
-- Botão verde: "CHAMAR NO WHATSAPP" → Link WhatsApp
-
-#### 9. Footer
-
-- Nome: "Jonathan Christian Spósito Santos"
-- CNPJ: "56.413.822/000-159"
-- Copyright: "Todos os direitos reservados ©"
-
-#### 10. Floating CTA Mobile
-
-- Botão fixo: "DESBLOQUEAR 1 ano de acesso"
-- Texto: "Esta oferta é válida somente em dezembro!"
+| Arquivo | Modificações |
+|---------|--------------|
+| `FlyersGallerySection.tsx` | Adicionar categorias Funk, Cavalgada, Variadas (30+ novas imagens) |
+| `MotionsGallerySection.tsx` | Adicionar título intro + 6 novos motions |
+| `Selos3DSection.tsx` | Expandir de 8 para 26 selos |
+| `ComboArtesArcanas.tsx` | Adicionar novos componentes na ordem correta |
+| `index.ts` | Exportar novos componentes |
 
 ---
 
-### URLs das Imagens (WordPress)
+### Ordem Correta das Seções na Página
 
-Todas as imagens serão carregadas diretamente das URLs do WordPress original para manter fidelidade visual:
-
-```text
-# Logo
-https://voxvisual.com.br/wp-content/uploads/2024/11/LOGO-CLLR-1.png
-
-# Hero
-https://voxvisual.com.br/wp-content/uploads/2024/12/AssetAlunosIC.webp
-https://voxvisual.com.br/wp-content/uploads/2025/11/simbolo-gold-2.webp
-https://voxvisual.com.br/wp-content/uploads/2025/11/area-de-membros.webp
-
-# Ícones
-https://voxvisual.com.br/wp-content/uploads/2025/11/COMUNIDADE.webp
-https://voxvisual.com.br/wp-content/uploads/2025/11/tablet-and-laptop.webp
-https://voxvisual.com.br/wp-content/uploads/2025/11/suport-1.png
-
-# Artes Pagode
-https://voxvisual.com.br/wp-content/uploads/2025/11/FESTEJA-TROPICAL-ST.webp
-https://voxvisual.com.br/wp-content/uploads/2025/11/MIXTURADINHO-ST.webp
-https://voxvisual.com.br/wp-content/uploads/2025/11/BYE-BYE-FERIAS.webp
-... (mais 7)
-
-# Motions (thumbnails)
-https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-HERIQUE-E-JULIANO.webp
-https://voxvisual.com.br/wp-content/uploads/2025/11/HALLOWGRILL.webp
-https://voxvisual.com.br/wp-content/uploads/2025/11/ATRACAO-CONFIRMADA-MC-PEDRINHO.webp
-
-# Motions (vídeos)
-https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-HallowGrill-Stories-Social-Media.mp4
-https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-ATRACAO-CONFIRMADA-MC-PEDRINHO-1.mp4
-
-# Compra Segura
-https://voxvisual.com.br/wp-content/uploads/2025/11/greenn-compra-segura.png
-https://voxvisual.com.br/wp-content/uploads/2025/11/compra-Segura-vetor-branco1-1.png
-```
+1. HeroSectionCombo
+2. AreaMembrosSection
+3. FlyersGallerySection (com TODAS as 6 categorias)
+4. **BonusFimDeAnoSection** (NOVA)
+5. MotionsGallerySection (com intro + 10 motions)
+6. Selos3DSection (com 26 selos)
+7. **BonusGridSection** (NOVA - 8 bônus grátis)
+8. **GuaranteeSectionCombo** (NOVA)
+9. PricingCardsSection
+10. FAQSectionCombo
+11. WhatsAppSupportSection
+12. FooterSection
+13. FloatingCTAMobile
 
 ---
 
-### Rota
+### URLs de Imagens a Adicionar
 
-Adicionar no `App.tsx`:
-```typescript
-<Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
-```
+**ARTES DE FUNK (10 imagens):**
+- FLYER-EVENTO-BAILE-DA-FAVORITA-STORIES.webp
+- B-DAY-DO-TUBARAO-ST.webp
+- FUNK-PARTY-ST.webp
+- BAILE-DO-PISTINHA-ST.webp
+- FUNK-PREMIUM-ST.webp
+- (+ 5 mais)
+
+**ARTES DE CAVALGADA (8 imagens):**
+- 12a-CAVALGADA-DOS-AMIGOS.webp
+- RODEIO-E-VAQUEJADA.webp
+- CAVALGADA-BENEFICENTE.webp
+- RODEIO-COUNTRY-ST.webp
+- (+ 4 mais)
+
+**CATEGORIAS VARIADAS (10+ imagens):**
+- DIA-DOS-NAMORADOS-ST.webp
+- HALLOWEEN-PARTY-ST.webp
+- BLACK-FRIDAY-STORIES.webp
+- DIA-DAS-MAES-ST.webp
+- (+ 6 mais)
+
+**BÔNUS FIM DE ANO (14 imagens):**
+- REVEILLON-DOS-SONHOS-ST.webp
+- NATAL-PREMIUM-ST.webp
+- FELIZ-ANO-NOVO-ST.webp
+- (+ 11 mais)
+
+**MOTIONS ADICIONAIS (6 vídeos):**
+- MOTION-FORRO-ELETRONICA.mp4
+- MOTION-FUNK-BAILE.mp4
+- MOTION-REVEILLON-STORIES.mp4
+- MOTION-SAO-JOAO.mp4
+- MOTION-CAVALGADA.mp4
+- MOTION-COUNTRY.mp4
+
+**SELOS 3D (18 adicionais):**
+- selo-3d-9.webp até selo-3d-26.webp
 
 ---
 
-### Cores e Estilo
+### Resultado Esperado
 
-| Elemento | Cor |
-|----------|-----|
-| Background principal | Preto/Gradiente escuro |
-| Texto principal | Branco |
-| Destaque/CTA | #EF672C (laranja) / #f65928 |
-| Cards | Fundo escuro com borda sutil |
-| Botões compra | Laranja com gradiente |
-| WhatsApp | Verde (#25D366) |
-
----
-
-### Funcionalidades
-
-1. **Meta Pixel**: ViewContent + InitiateCheckout (igual outras páginas)
-2. **UTM Tracking**: appendUtmToUrl para links de checkout
-3. **Carrosséis**: Usar embla-carousel-react (já instalado)
-4. **Vídeos**: Modal com player ao clicar thumbnail
-5. **FAQ**: Accordion com radix-ui
-6. **Animações**: useScrollAnimation para fade-in
-7. **Responsivo**: Mobile-first, esconde/mostra seções por breakpoint
-
----
-
-### Resultado
-
-Uma página React que replica fielmente a landing page WordPress, mantendo:
-- Todas as imagens nas mesmas posições
-- Todos os textos exatos
-- Mesma estrutura de seções
-- Mesmos links de checkout Greenn
-- Mesmo estilo visual (cores, gradientes, espaçamentos)
-- Carrosséis funcionais
-- Vídeos clicáveis
-- FAQ expansível
-- CTA mobile fixo
-
+Após as correções:
+- 6 categorias de flyers com 60+ artes no total
+- Seção Bônus Fim de Ano com 14 artes temáticas
+- 10 motions clicáveis com preview
+- 26 selos 3D no carrossel
+- Grid com 8 bônus grátis detalhados
+- Seção de garantia 7 dias
+- Página 100% fiel ao WordPress original
