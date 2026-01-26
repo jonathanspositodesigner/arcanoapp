@@ -59,8 +59,8 @@ const ComboArtesArcanas = () => {
       
       <FeaturesSection />
       <FlyersGallerySection />
-      <BonusFimDeAnoSection />
       <MotionsGallerySection />
+      <BonusFimDeAnoSection />
       
       <BonusGridSection />
       <GuaranteeSectionCombo />
