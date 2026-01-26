@@ -2,22 +2,22 @@ import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Gift } from "lucide-react";
 import { useCallback } from "react";
 
-// URLs exatas extraídas do HTML original do WordPress - pasta /2025/12
+// URLs corretas extraídas do site https://voxvisual.com.br/combo3em1/
 const artesReveillon = [
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/PROXIMOS-SHOWS-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-NA-PRAIA-2025-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/HOJE-REVEILLON-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/FESTA-DE-REVEILLON-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-PREMIUM-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/ANO-NOVO-CELEBRATION-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/NATAL-LUXUOSO-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/NATAL-EM-FAMILIA-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/BOAS-FESTAS-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/NOITE-FELIZ-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/PAPAI-NOEL-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/FELIZ-NATAL-ST-768x1365.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/12/FELIZ-ANO-NOVO-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-LEO-SANTANA-E-IZA-ST-768x1365.webp",
   "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-DOS-SONHOS-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-2026-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-SURREAL-2026-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-TROPICAL-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-TROPICAL-ST-768x1365-1.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/O-ULTIMO-BAILE-DO-ANO-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/NATAL-PARTY-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/AGENDA-DE-NATAL-ST~1-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/AGENDA-DE-NATAL-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/AGENDA-FIM-DE-ANO-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/PROXIMOS-SHOWS-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-NA-PRAIA-2025-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/HOJE-REVEILLON-ST-768x1365.webp",
 ];
 
 export const BonusFimDeAnoSection = () => {
