@@ -23,6 +23,36 @@ const motions = [
     video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-SERTANEJO-STORIES.mp4",
     title: "Sertanejo Stories",
   },
+  {
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-FORRO-ELETRONICA.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-FORRO-ELETRONICA.mp4",
+    title: "Forró Eletrônica",
+  },
+  {
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-FUNK-BAILE.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-FUNK-BAILE.mp4",
+    title: "Funk Baile",
+  },
+  {
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-REVEILLON-STORIES.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-REVEILLON-STORIES.mp4",
+    title: "Reveillon Stories",
+  },
+  {
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-SAO-JOAO.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-SAO-JOAO.mp4",
+    title: "São João",
+  },
+  {
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-HALLOWEEN.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-HALLOWEEN.mp4",
+    title: "Halloween",
+  },
+  {
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-COUNTRY.webp",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-COUNTRY.mp4",
+    title: "Country",
+  },
 ];
 
 export const MotionsGallerySection = () => {
@@ -31,15 +61,26 @@ export const MotionsGallerySection = () => {
   return (
     <section className="py-16 px-4 bg-black">
       <div className="max-w-6xl mx-auto">
+        {/* Intro Section */}
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-4xl font-black text-white mb-4">
+            NÃO É SÓ MAIS UM PACK DE ARTES,{" "}
+            <span className="text-[#EF672C]">UMA PLATAFORMA COMPLETA!</span>
+          </h2>
+          <p className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto">
+            Esses são alguns dos motions que você vai ter acesso dentro da nossa plataforma!
+          </p>
+        </div>
+
         {/* Badge */}
         <div className="flex justify-center mb-10">
           <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg px-8 py-3 rounded-full shadow-lg">
-            MOTIONS EDITÁVEIS
+            MOTIONS FLYERS
           </span>
         </div>
         
         {/* Grid of motions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
           {motions.map((motion, index) => (
             <div
               key={index}

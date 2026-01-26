@@ -48,6 +48,49 @@ const categories = [
       "https://voxvisual.com.br/wp-content/uploads/2025/11/WESLEY-SAFADAO.webp",
     ],
   },
+  {
+    title: "ARTES DE FUNK",
+    images: [
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-BAILE-DA-FAVORITA-STORIES.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/B-DAY-DO-TUBARAO-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/FUNK-PARTY-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/BAILE-DO-PISTINHA-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/FUNK-PREMIUM-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/BAILE-FUNK-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/FUNK-RAVE-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/FUNK-VIP-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/MC-POZE-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/FUNK-EXPLOSION-ST.webp",
+    ],
+  },
+  {
+    title: "ARTES DE CAVALGADA",
+    images: [
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/12a-CAVALGADA-DOS-AMIGOS.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/RODEIO-E-VAQUEJADA.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-BENEFICENTE.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/RODEIO-COUNTRY-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-DO-PEAO.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/FESTA-DO-PEAO-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/VAQUEJADA-PREMIUM-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-COUNTRY-ST.webp",
+    ],
+  },
+  {
+    title: "CATEGORIAS VARIADAS",
+    images: [
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DOS-NAMORADOS-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/HALLOWEEN-PARTY-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/BLACK-FRIDAY-STORIES.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DAS-MAES-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DOS-PAIS-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/PASCOA-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/CARNAVAL-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DAS-CRIANCAS-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/FESTA-JUNINA-ST.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/ANIVERSARIO-ST.webp",
+    ],
+  },
 ];
 
 const CategoryCarousel = ({ title, images }: { title: string; images: string[] }) => {
