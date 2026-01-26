@@ -22,7 +22,7 @@ const motions = [
   },
   {
     thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/BOTECO-SERTANEJO-1.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Sertanejo-Stories-Social-Media.mp4",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/BOTECO-SERTANEJO1.mp4",
     title: "Sertanejo Stories",
   },
   {
