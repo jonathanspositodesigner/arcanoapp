@@ -70,7 +70,7 @@ export const MotionsGallerySection = () => {
             <span className="text-[#EF672C]">uma plataforma completa!</span>
           </h2>
           <p className="text-zinc-400 text-base md:text-lg max-w-3xl mx-auto">
-            Esses são alguns dos motions que você vai ter acesso dentro da nossa plataforma!
+            + de 200 motion flyers editáveis no Canva e After Effects
           </p>
         </div>
 
