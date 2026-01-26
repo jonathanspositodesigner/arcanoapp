@@ -26,7 +26,7 @@ const motions = [
     title: "Sertanejo Stories",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-FORRO-VIP-STORIES-768x1365.webp",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-FORRO-DO-VILA-STORY-SOCIAL-MEDIA-1.webp",
     video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Forro-Eletronica-Stories-Social-Media.mp4",
     title: "Forró Eletrônica",
   },
