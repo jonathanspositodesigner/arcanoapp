@@ -77,17 +77,16 @@ export const MotionsGallerySection = () => {
         </div>
         
         {/* CTA Section */}
-        <div className="text-center mt-12">
+        <div className="text-center mt-8">
           <button onClick={() => document.getElementById("pricing")?.scrollIntoView({
           behavior: "smooth"
-        })} className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg md:text-xl px-10 py-4 rounded-xl shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300 mb-6">
+        })} className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-sm md:text-base px-6 py-2.5 rounded-lg shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300 mb-4">
             QUERO ESSAS ARTES AGORA!
           </button>
           
           {/* Compra segura badges */}
-          <div className="flex flex-wrap justify-center items-center gap-4 mt-6">
-            <img src="https://voxvisual.com.br/wp-content/uploads/2025/11/greenn-compra-segura.png" alt="Greenn Compra Segura" className="h-10 md:h-12 object-contain" />
-            
+          <div className="flex flex-wrap justify-center items-center gap-4 mt-3">
+            <img src="https://voxvisual.com.br/wp-content/uploads/2025/11/greenn-compra-segura.png" alt="Greenn Compra Segura" className="h-5 md:h-6 object-contain" />
           </div>
         </div>
       </div>
