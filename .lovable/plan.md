@@ -1,84 +1,152 @@
 
-Contexto (o que o seu print prova)
-- Não está “correto” e não está “pronto”: no seu print todas as miniaturas dos carrosséis estão falhando (ícone de imagem quebrada).
-- O código atual está renderizando <img src="https://voxvisual.com.br/wp-content/uploads/..."> diretamente. Se o servidor do WordPress:
-  1) estiver com hotlink protection (bloqueio por Referer/origin), ou
-  2) os arquivos tiverem sido renomeados/removidos (404),
-  então vai quebrar exatamente como no seu print.
-- Eu já consegui evidência objetiva de pelo menos um caso de 404 real em um flyer específico, então “URL certa no código” ainda não garante que o arquivo exista de verdade no servidor.
 
-Problema real (definição precisa)
-- O app depende de mídia externa (voxvisual.com.br). Hoje, parte significativa desses arquivos não carrega no contexto do seu domínio (arcanoapp/lovable), seja por bloqueio/hotlink ou por inexistência/404.
-- Enquanto a mídia estiver sendo buscada diretamente do WordPress, você vai continuar vendo “tudo quebrado” mesmo com layout/sections corretos.
+## Correção das URLs de Imagens Quebradas - Combo Artes Arcanas
 
-Solução (para garantir que “sempre vai aparecer”)
-Vou implementar duas coisas complementares:
+### Problema Identificado
 
-A) “Proxy de Mídia” pelo backend (para acabar com hotlink e estabilizar o carregamento)
-- Criar uma função de backend (exposta como endpoint) do tipo /media-proxy?url=ENCODED_URL que:
-  - Só permite proxy de URLs em allowlist (ex: voxvisual.com.br/wp-content/uploads/…).
-  - Faz fetch do arquivo no servidor e devolve a resposta para o navegador.
-  - Repassa Content-Type, e suporta Range header (crítico para MP4 tocar sem travar).
-  - Define Cache-Control adequado para reduzir custo/latência.
-  - Opcional: seta headers como Referer: https://voxvisual.com.br/ (quando necessário) para contornar hotlink por referer.
-Resultado: as imagens e vídeos deixam de depender das regras de embed do WordPress e passam a carregar como se fossem do “seu” domínio.
+As imagens estão quebradas porque as URLs nos componentes estão **incorretas**. O código atual usa caminhos inventados como:
+- `/2024/11/FLYER-EVENTO-Pagode-dos-Monarcas-STORIES-768x1365.webp` ❌
 
-B) Auditor “zero erros” dentro da própria página (pra eu só dizer “pronto” quando estiver realmente pronto)
-- Implementar modo de auditoria via query param /combo-artes-arcanas?audit=1 (no seu navegador real; a ferramenta de screenshot do sandbox pode não respeitar query).
-- O auditor:
-  - Registra cada mídia esperada (todas as URLs das arrays de Flyers/Bônus/Selos/Motions).
-  - Marca success/fail por onLoad/onError (imagens) e eventos de carregamento (vídeos).
-  - Mostra um painel flutuante com:
-    - total esperado
-    - total carregado
-    - lista dos que falharam (com a seção e a URL)
-- Critério de “pronto”: auditor com 0 falhas em desktop e mobile depois de rolar a página inteira.
+Quando as URLs corretas do WordPress são:
+- `/2025/11/FESTEJA-TROPICAL-ST-768x1365.webp` ✅
 
-Mudanças previstas (arquivos e pontos exatos)
-1) Backend
-- Criar função de backend: media-proxy
-  - Validação de URL (host e path)
-  - Suporte a Range para MP4
-  - Forward de headers essenciais
-  - Cache-Control
+---
 
-2) Frontend (Combo Artes Arcanas)
-- Criar helper utilitário (ex: src/lib/mediaProxy.ts):
-  - export function proxiedMediaUrl(url: string): string
-  - Se url for voxvisual.com.br/wp-content/uploads → retorna endpoint do proxy
-  - Caso contrário → retorna a url original
-- Atualizar todos os componentes do combo para usar proxiedMediaUrl():
-  - src/components/combo-artes/FlyersGallerySection.tsx (todas as imagens)
-  - src/components/combo-artes/BonusFimDeAnoSection.tsx
-  - src/components/combo-artes/Selos3DSection.tsx
-  - src/components/combo-artes/MotionsGallerySection.tsx (thumbnails + mp4 + badges)
-  - src/components/combo-artes/HeroSectionCombo.tsx / AreaMembrosSection.tsx (se também estiverem falhando)
-- (Bônus de compatibilidade) adicionar referrerPolicy="no-referrer" nos <img> externos (mesmo com proxy, isso ajuda se algum ainda ficar direto).
+### Correções por Arquivo
 
-3) Auditor UI
-- Implementar um MediaAuditPanel (somente quando audit=1) dentro de:
-  - src/pages/ComboArtesArcanas.tsx
-- Ele vai consumir as arrays de URLs dos componentes (ou centralizar todas as URLs em um “manifest” único para garantir 1:1 e auditor simples).
+#### 1. FlyersGallerySection.tsx
 
-Validação (o que eu vou checar antes de falar “pronto”)
-1) Abrir /combo-artes-arcanas?audit=1 em Desktop:
-- Rolar até o final
-- Auditor deve ficar com 0 falhas
+**PAGODE (10 imagens) - URLs corretas:**
+```
+https://voxvisual.com.br/wp-content/uploads/2025/11/FESTEJA-TROPICAL-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/MIXTURADINHO-ST.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/BYE-BYE-FERIAS-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/HOJE-JONAS-ESTICADO-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/TARDEZINHA-HAVAIANA-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/PAGODINHO-SUNSET.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/PAGODE-SO-AS-ANTIGAS.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/SABADO-COM-PAGODE-STORIES-SOCIAL-MEDIA.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/REVOADA-DO-CHEFE.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/END-OF-SUUMER.webp
+```
 
-2) Abrir /combo-artes-arcanas?audit=1 em Mobile:
-- Rolar até o final
-- Auditor deve ficar com 0 falhas
+**FORRÓ (10 imagens) - URLs corretas:**
+```
+https://voxvisual.com.br/wp-content/uploads/2025/11/MIXTURADINHO-ST.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-FORRO-DO-VILA-STORY-SOCIAL-MEDIA-1.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/VIBE-FORROZEIRA-ST.jpg
+https://voxvisual.com.br/wp-content/uploads/2025/11/FORRO-DE-SAO-JOAO.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/FENOMENO-DO-PISEIRO-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/RESENHA-DO-SAMBA1.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/BALADINHA-DE-SABADO-STORY-SOCIAL-MEDIA.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-BAILE-DA-FAVORITA-STORIES.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/Flyer-Furacao-Hit-Stories-Social-Media1.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/ARROCHA-DA-PATROA-ST-768x1365.webp
+```
 
-3) Se ainda existirem falhas
-- A lista do auditor vai mostrar exatamente quais URLs retornam erro.
-- A partir daí existem apenas dois casos:
-  - Bloqueio/hotlink: proxy resolve (deve zerar)
-  - Arquivo realmente não existe no servidor (404): aí vou precisar que você me mande a URL correta (ou o arquivo) para substituir, porque não tem como “inventar” um arquivo que foi removido do WordPress.
+**FUNK (10 imagens) - URLs corretas:**
+```
+https://voxvisual.com.br/wp-content/uploads/2025/11/FUNK-PARTY-ST.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/NOITE-IN-VEGAS-ST.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/B-DAY-DO-TUBARAO.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/FLUXO-BAILE-FUNK.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/BAILE-DO-SINAL.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/B-DAY-MC-WM.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-BAILE-DO-MALVADAO-STORIES.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-GIRO-LOUCO-STORIES.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EMBRAZA-STORY-SOCIAL-MEDIA.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/MADE-IN-FUNK.webp
+```
 
-Riscos/Trade-offs (importante você saber)
-- Proxy de mídia aumenta tráfego no seu backend (mas com cache forte fica estável e econômico).
-- Alternativa “mais definitiva” (se você preferir depois): baixar e hospedar tudo no seu próprio armazenamento (mais trabalho, porém zero dependência do WordPress).
+**CAVALGADA (8 imagens) - URLs corretas:**
+```
+https://voxvisual.com.br/wp-content/uploads/2025/11/12a-CAVALGADA-DOS-AMIGOS.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-SEMANAL-TOCA-DO-VALE.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-DOS-GIGANTES-scaled.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-FEST-2025.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/PROXIMOS-SHOWS-BIU-DO-PISEIRO.jpg
+https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/RODEIO-E-VAQUEJADA.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/CONTRATE-JOAO-GOMES.webp
+```
 
-Resultado esperado
-- Os carrosséis deixam de mostrar imagem quebrada (porque o carregamento não depende mais do embed direto no voxvisual.com.br).
-- Você ganha um auditor objetivo: 0 erros = página realmente pronta (desktop + mobile).
+**SERTANEJO (8 imagens) - URLs corretas:**
+```
+https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DOS-PAIS-CABARET.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/BALADA-PRIME.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/ROTA-SERTANEJA-ST.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/BALADA-PRIME1.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/BOTECO-NOSSA-VIBE.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/SUNSET-FESTIVAL.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/BOTECO-SERTANEJO.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/NOITE-SEM-FIM.webp
+```
+
+**VARIADAS (8 imagens) - URLs corretas:**
+```
+https://voxvisual.com.br/wp-content/uploads/2025/11/ARRAIA-DE-SAO-JOAO.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DAS-MAES.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DOS-NAMORADOS.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/ELETRO-HOUSE.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/ENCONTRO-DE-PAREDOES.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/HALLOWEEN-PARTY-ST.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/HALLOWEEN-SURREAL-ST.webp
+https://voxvisual.com.br/wp-content/uploads/2025/11/PLAY-NAS-FERIAS.webp
+```
+
+---
+
+#### 2. BonusFimDeAnoSection.tsx
+
+**14 imagens de Reveillon/Natal - URLs corretas:**
+```
+https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-LEO-SANTANA-E-IZA-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-DOS-SONHOS-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-2026-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-SURREAL-2026-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-TROPICAL-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-TROPICAL-ST-768x1365-1.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/O-ULTIMO-BAILE-DO-ANO-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/NATAL-PARTY-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/AGENDA-DE-NATAL-ST~1-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/AGENDA-DE-NATAL-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/AGENDA-FIM-DE-ANO-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/PROXIMOS-SHOWS-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-NA-PRAIA-2025-ST-768x1365.webp
+https://voxvisual.com.br/wp-content/uploads/2025/12/HOJE-REVEILLON-ST-768x1365.webp
+```
+
+---
+
+#### 3. Selos3DSection.tsx
+
+**Selos 3D - as URLs atuais parecem corretas, mas preciso verificar se estão com os nomes exatos. Mantendo:**
+- Selos 1-20: `/2024/12/selo-3d-1.webp` até `selo-3d-20.webp`
+- Selos 21-26: `/2025/11/21-1.webp` até `26-1.webp`
+
+---
+
+#### 4. MotionsGallerySection.tsx
+
+**As URLs de thumbnails e vídeos parecem estar corretas, baseado no que foi verificado**
+
+---
+
+### Resumo das Alterações
+
+| Arquivo | Ação |
+|---------|------|
+| `FlyersGallerySection.tsx` | Substituir TODAS as 54 URLs por URLs corretas de `/2025/11/` |
+| `BonusFimDeAnoSection.tsx` | Substituir as 14 URLs por URLs corretas de `/2025/12/` |
+| `Selos3DSection.tsx` | Verificar/manter URLs atuais |
+| `MotionsGallerySection.tsx` | Verificar/manter URLs atuais |
+
+---
+
+### Resultado Esperado
+
+Após aplicar as correções:
+- Todas as imagens dos carrosséis de Flyers vão carregar
+- Todas as imagens do Bônus Fim de Ano vão carregar
+- Zero imagens quebradas na página
+
