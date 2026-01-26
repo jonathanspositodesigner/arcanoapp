@@ -1,4 +1,4 @@
-import { Users, RefreshCw, Palette } from "lucide-react";
+import { RefreshCw, Palette } from "lucide-react";
 
 export const HeroSectionCombo = () => {
   const scrollToPricing = () => {
@@ -21,6 +21,18 @@ export const HeroSectionCombo = () => {
           alt="Biblioteca de Artes Arcanas"
           className="mb-6 h-14 md:h-20 object-contain"
         />
+        
+        {/* Members badge - ABOVE the title */}
+        <div className="flex items-center gap-3 bg-gradient-to-r from-[#3d1515]/80 to-[#2a0f0f]/80 backdrop-blur-sm border border-[#EF672C]/30 rounded-full px-5 py-2.5 mb-6">
+          <img
+            src="https://voxvisual.com.br/wp-content/uploads/2024/12/AssetAlunosIC.webp"
+            alt="Membros"
+            className="w-12 h-12 object-contain"
+          />
+          <span className="text-white/90 font-medium text-base md:text-lg">
+            Já são mais de <span className="text-[#EF672C] font-bold">+2.200</span> membros ativos!
+          </span>
+        </div>
         
         {/* Main title */}
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-4 leading-tight">
@@ -49,21 +61,10 @@ export const HeroSectionCombo = () => {
         {/* CTA Button */}
         <button
           onClick={scrollToPricing}
-          className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg md:text-xl px-10 py-4 rounded-xl shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300 mb-6"
+          className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg md:text-xl px-10 py-4 rounded-xl shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300"
         >
           QUERO APROVEITAR A OFERTA!
         </button>
-        
-        {/* Members badge - BELOW the button */}
-        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
-          <img
-            src="https://voxvisual.com.br/wp-content/uploads/2024/12/AssetAlunosIC.webp"
-            alt="Membros"
-            className="w-14 h-14 object-contain"
-          />
-          <Users className="w-5 h-5 text-white" />
-          <span className="text-white font-medium text-lg">+2200 Membros ativos!</span>
-        </div>
       </div>
     </section>
   );
