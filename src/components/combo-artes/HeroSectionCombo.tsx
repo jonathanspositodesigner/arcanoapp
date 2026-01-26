@@ -35,9 +35,10 @@ export const HeroSectionCombo = () => {
         </div>
         
         {/* Main title */}
-        <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-white mb-4 leading-tight">
-          Leve 3 Packs de Artes{" "}
-          <span className="text-[#EF672C]">pelo Preço de 1</span>
+        <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-white mb-4 leading-tight">
+          Chega de perder tempo criando tudo do zero!
+          <br />
+          <span className="text-[#EF672C]">Conheça nossa plataforma de Artes Editáveis!</span>
         </h1>
         
         {/* Membros image below title */}
