@@ -63,6 +63,7 @@
     "signupSuccessMessage": "Enviamos un enlace de confirmación a:",
     "signupSuccessInstruction": "Haz clic en el enlace del e-mail para activar tu cuenta e iniciar sesión.",
     "signupSuccessSpam": "¿No lo encontraste? Revisa la carpeta de spam.",
-    "backToLogin": "Volver a Login"
+    "backToLogin": "Volver a Login",
+    "firstAccessSetPassword": "¡Primer acceso detectado! Por favor, registre su contraseña."
   }
 }

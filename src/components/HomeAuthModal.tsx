@@ -80,12 +80,35 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: loginEmail.trim().toLowerCase(),
         password: loginPassword,
       });
 
       if (error) {
+        // Check if this is a first-time access (purchased but never set password)
+        const { data: profileCheck } = await supabase
+          .rpc('check_profile_exists', { check_email: loginEmail.trim() });
+
+        const profileExists = profileCheck?.[0]?.exists_in_db || false;
+        const passwordChanged = profileCheck?.[0]?.password_changed || false;
+
+        if (profileExists && !passwordChanged) {
+          // FIRST ACCESS: try login with email as default password
+          const { error: autoLoginError } = await supabase.auth.signInWithPassword({
+            email: loginEmail.trim().toLowerCase(),
+            password: loginEmail.trim().toLowerCase(),
+          });
+
+          if (!autoLoginError) {
+            toast.success(t('auth.firstAccessSetPassword'));
+            onClose();
+            window.location.href = '/change-password?redirect=/';
+            return;
+          }
+        }
+
+        // Normal credentials error
         if (error.message.includes("Invalid login credentials")) {
           toast.error(t('auth.invalidCredentials'));
         } else if (error.message.includes("Email not confirmed")) {
@@ -93,6 +116,20 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
         } else {
           toast.error(error.message);
         }
+        return;
+      }
+
+      // Login successful - check if user needs to change password
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('password_changed')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (!profile || !profile.password_changed) {
+        toast.success(t('auth.firstAccessSetPassword'));
+        onClose();
+        window.location.href = '/change-password?redirect=/';
         return;
       }
 
@@ -141,6 +178,28 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
 
       if (error) {
         if (error.message.includes("already registered")) {
+          // Check if this is a first-time access (purchased but never set password)
+          const { data: profileCheck } = await supabase
+            .rpc('check_profile_exists', { check_email: signupEmail.trim() });
+
+          const profileExists = profileCheck?.[0]?.exists_in_db || false;
+          const passwordChanged = profileCheck?.[0]?.password_changed || false;
+
+          if (profileExists && !passwordChanged) {
+            // Try auto-login with email as default password
+            const { error: autoLoginError } = await supabase.auth.signInWithPassword({
+              email: signupEmail.trim().toLowerCase(),
+              password: signupEmail.trim().toLowerCase(),
+            });
+
+            if (!autoLoginError) {
+              toast.success(t('auth.firstAccessSetPassword'));
+              onClose();
+              window.location.href = '/change-password?redirect=/';
+              return;
+            }
+          }
+
           toast.error(t('auth.emailAlreadyExists'));
         } else {
           toast.error(error.message);
