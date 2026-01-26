@@ -53,7 +53,7 @@ export const BonusFimDeAnoSection = () => {
             Adquirindo essa semana você leva também nosso
           </h2>
           <h3 className="text-2xl md:text-4xl font-bold text-[#EF672C] mb-4">
-            Bônus especial de carnaval
+            Pack Especial de Carnaval
           </h3>
           <p className="text-zinc-400 text-base md:text-lg">
             +35 artes de Carnaval para você faturar mais no início do ano
