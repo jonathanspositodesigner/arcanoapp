@@ -117,6 +117,7 @@ const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
 const UpscalerRunpod = lazy(() => import("./pages/UpscalerRunpod"));
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
 const PackAgendas = lazy(() => import("./pages/PackAgendas"));
+const ComboArtesArcanas = lazy(() => import("./pages/ComboArtesArcanas"));
 const GlobalImportProgress = lazy(() => import("./components/GlobalImportProgress"));
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
@@ -273,6 +274,7 @@ const AppContent = () => {
           <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
           <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
           <Route path="/pack-agendas" element={<PackAgendas />} />
+          <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
