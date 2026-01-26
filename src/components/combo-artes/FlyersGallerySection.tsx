@@ -101,18 +101,26 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <div className="mb-12">
+    <div className="mb-16">
       <h3 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
         {title}
       </h3>
       
-      <div className="relative">
+      <div className="relative px-12 md:px-16">
+        {/* Navigation button - Left */}
+        <button
+          onClick={scrollPrev}
+          className="absolute left-0 top-1/2 -translate-y-1/2 bg-zinc-800 hover:bg-[#EF672C] text-white p-3 rounded-full transition-colors z-10"
+        >
+          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+        </button>
+        
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex gap-4">
             {images.map((image, index) => (
               <div
                 key={index}
-                className="flex-none w-[280px] md:w-[320px]"
+                className="flex-none w-[260px] md:w-[300px]"
               >
                 <img
                   src={image}
@@ -125,18 +133,12 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
           </div>
         </div>
         
-        {/* Navigation buttons */}
-        <button
-          onClick={scrollPrev}
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-[#EF672C] text-white p-2 rounded-full transition-colors z-10"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
+        {/* Navigation button - Right */}
         <button
           onClick={scrollNext}
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-[#EF672C] text-white p-2 rounded-full transition-colors z-10"
+          className="absolute right-0 top-1/2 -translate-y-1/2 bg-zinc-800 hover:bg-[#EF672C] text-white p-3 rounded-full transition-colors z-10"
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
         </button>
       </div>
     </div>
@@ -154,12 +156,6 @@ export const FlyersGallerySection = () => {
           </h2>
         </div>
         
-        {/* Badge */}
-        <div className="flex justify-center mb-10">
-          <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg px-8 py-3 rounded-full shadow-lg">
-            FLYERS EDITÁVEIS
-          </span>
-        </div>
         
         {/* Category carousels */}
         {categories.map((category, index) => (
