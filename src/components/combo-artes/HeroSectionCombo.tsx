@@ -1,4 +1,5 @@
 import { RefreshCw, Palette } from "lucide-react";
+import comboMembrosBadge from "@/assets/combo-membros-badge.png";
 
 export const HeroSectionCombo = () => {
   const scrollToPricing = () => {
@@ -39,6 +40,13 @@ export const HeroSectionCombo = () => {
           Leve 3 Packs de Artes{" "}
           <span className="text-[#EF672C]">pelo Preço de 1</span>
         </h1>
+        
+        {/* Membros image below title */}
+        <img
+          src={comboMembrosBadge}
+          alt="Mais de 2.750 usuários cadastrados"
+          className="mb-6 max-w-md w-full object-contain"
+        />
         
         {/* Subtitle */}
         <p className="text-lg md:text-xl text-gray-300 mb-6 max-w-2xl">
