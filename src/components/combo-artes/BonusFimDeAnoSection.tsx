@@ -2,21 +2,22 @@ import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Gift } from "lucide-react";
 import { useCallback } from "react";
 
+// URLs exatas extraídas do HTML original do WordPress - pasta /2025/12
 const artesReveillon = [
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/REVEILLON-DOS-SONHOS-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/NATAL-PREMIUM-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/FELIZ-ANO-NOVO-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/REVEILLON-VIP-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/NATAL-STORIES-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/REVEILLON-PREMIUM-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/VIRADA-DE-ANO-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/NATAL-VIP-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/REVEILLON-PARTY-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/FIM-DE-ANO-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/NATAL-PARTY-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/REVEILLON-STORIES-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/NATAL-ESPECIAL-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/ANO-NOVO-ST.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/PROXIMOS-SHOWS-ST.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-NA-PRAIA-2025-ST.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/HOJE-REVEILLON-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/FESTA-DE-REVEILLON-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-PREMIUM-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/ANO-NOVO-CELEBRATION-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/NATAL-LUXUOSO-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/NATAL-EM-FAMILIA-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/BOAS-FESTAS-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/NOITE-FELIZ-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/PAPAI-NOEL-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/FELIZ-NATAL-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/FELIZ-ANO-NOVO-ST-768x1365.webp",
+  "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-DOS-SONHOS-ST-768x1365.webp",
 ];
 
 export const BonusFimDeAnoSection = () => {
