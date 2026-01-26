@@ -24,7 +24,7 @@ export const BonusFimDeAnoSection = () => {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <section className="py-16 px-4 bg-gradient-to-b from-[#0a0505] to-black">
+    <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-[#0a0505] to-black">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
