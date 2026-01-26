@@ -1,9 +1,10 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback } from "react";
+import { proxiedMediaUrl } from "@/lib/mediaProxy";
 
 // URLs exatas extraídas do HTML original do WordPress
-const categories = [
+export const flyerCategories = [
   {
     title: "ARTES DE PAGODE",
     images: [
@@ -119,10 +120,11 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
                 className="flex-none w-[280px] md:w-[320px]"
               >
                 <img
-                  src={image}
+                  src={proxiedMediaUrl(image)}
                   alt={`${title} ${index + 1}`}
                   className="w-full h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
                   loading="lazy"
+                  referrerPolicy="no-referrer"
                 />
               </div>
             ))}
@@ -168,7 +170,7 @@ export const FlyersGallerySection = () => {
         </div>
         
         {/* Category carousels */}
-        {categories.map((category, index) => (
+        {flyerCategories.map((category, index) => (
           <CategoryCarousel
             key={index}
             title={category.title}

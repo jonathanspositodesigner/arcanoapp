@@ -1,9 +1,10 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Gift } from "lucide-react";
 import { useCallback } from "react";
+import { proxiedMediaUrl } from "@/lib/mediaProxy";
 
 // URLs exatas extraídas do HTML original do WordPress - pasta /2025/12
-const artesReveillon = [
+export const artesReveillon = [
   "https://voxvisual.com.br/wp-content/uploads/2025/12/PROXIMOS-SHOWS-ST.webp",
   "https://voxvisual.com.br/wp-content/uploads/2025/12/REVEILLON-NA-PRAIA-2025-ST.webp",
   "https://voxvisual.com.br/wp-content/uploads/2025/12/HOJE-REVEILLON-ST-768x1365.webp",
@@ -66,10 +67,11 @@ export const BonusFimDeAnoSection = () => {
                   className="flex-none w-[280px] md:w-[320px]"
                 >
                   <img
-                    src={arte}
+                    src={proxiedMediaUrl(arte)}
                     alt={`Arte Reveillon ${index + 1}`}
                     className="w-full h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
                     loading="lazy"
+                    referrerPolicy="no-referrer"
                   />
                 </div>
               ))}
