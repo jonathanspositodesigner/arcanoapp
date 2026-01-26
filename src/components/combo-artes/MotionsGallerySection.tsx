@@ -42,7 +42,7 @@ const motions = [
   },
   {
     thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/ARRAIA-DA-CAPITA-1.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Sao-Joao-Stories-Social-Media.mp4",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/ATRAC-MOTION1.mp4",
     title: "São João",
   },
   {
