@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ChevronDown } from "lucide-react";
 import {
   HeroSectionCombo,
   FeaturesSection,
@@ -64,6 +65,14 @@ const ComboArtesArcanas = () => {
   return (
     <div className="min-h-screen bg-black">
       <HeroSectionCombo />
+      
+      {/* Animated scroll indicator */}
+      <div className="flex justify-center pb-4 bg-black">
+        <div className="animate-bounce">
+          <ChevronDown className="w-8 h-8 text-[#EF672C]" />
+        </div>
+      </div>
+      
       <FeaturesSection />
       <FlyersGallerySection />
       <BonusFimDeAnoSection />
