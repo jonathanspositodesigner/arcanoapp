@@ -41,7 +41,7 @@ export const BonusFimDeAnoSection = () => {
               <Gift className="w-6 h-6 text-[#EF672C]" />
             </div>
             <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-base md:text-lg px-6 py-2.5 rounded-full shadow-lg">
-              Bônus especial de carnaval!
+              Bônus de Carnaval
             </span>
             <div className="w-12 h-12 rounded-full bg-[#EF672C]/20 flex items-center justify-center">
               <Gift className="w-6 h-6 text-[#EF672C]" />
