@@ -102,7 +102,7 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
 
   return (
     <div className="mb-8">
-      <div className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-6 md:p-8 border border-zinc-800 hover:border-[#EF672C]/50 transition-all duration-300">
+      <div className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-4 md:p-8 border border-zinc-800 hover:border-[#EF672C]/50 transition-all duration-300">
         <div className="flex justify-center mb-5">
           <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-semibold text-sm md:text-base px-5 py-2 rounded-full shadow-md">
             {title}
@@ -126,12 +126,12 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
               {images.map((image, index) => (
                 <div
                   key={index}
-                  className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-2 md:px-0"
+                  className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-0"
                 >
                   <img
                     src={image}
                     alt={`${title} ${index + 1}`}
-                    className="w-[86vw] max-w-[380px] md:w-full md:max-w-none h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+                    className="w-full max-w-[360px] md:w-full md:max-w-none h-auto object-contain rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
                 </div>
@@ -151,17 +151,17 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
           {/* Mobile overlay buttons */}
           <button
             onClick={scrollPrev}
-            className="md:hidden absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2.5 rounded-full transition-colors z-10 backdrop-blur-sm"
+            className="md:hidden absolute left-2 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/65 text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
             aria-label="Anterior"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={scrollNext}
-            className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2.5 rounded-full transition-colors z-10 backdrop-blur-sm"
+            className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/65 text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
             aria-label="Próximo"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
