@@ -50,10 +50,10 @@ export const BonusFimDeAnoSection = () => {
           
           {/* Main title - unified styling */}
           <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">
-            Adquirindo essa semana você leva também nosso
+            Adquirindo hoje você leva também
           </h2>
           <h3 className="text-2xl md:text-4xl font-bold text-[#EF672C] mb-4">
-            Pack Especial de Carnaval
+            nosso Pack Especial de Carnaval
           </h3>
           <p className="text-zinc-400 text-base md:text-lg">
             +35 artes de Carnaval para você faturar mais no início do ano
