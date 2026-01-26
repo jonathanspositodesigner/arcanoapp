@@ -103,9 +103,11 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
   return (
     <div className="mb-8">
       <div className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-6 md:p-8 border border-zinc-800 hover:border-[#EF672C]/50 transition-all duration-300">
-        <h3 className="text-lg md:text-xl font-semibold text-white mb-5 text-center">
-          {title}
-        </h3>
+        <div className="flex justify-center mb-5">
+          <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-semibold text-sm md:text-base px-5 py-2 rounded-full shadow-md">
+            {title}
+          </span>
+        </div>
         
         <div className="relative px-10 md:px-14">
           {/* Navigation button - Left */}
