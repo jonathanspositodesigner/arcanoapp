@@ -65,19 +65,19 @@ export const MotionsGallerySection = () => {
       <div className="max-w-6xl mx-auto">
         {/* Intro Section */}
         <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-4xl font-black text-white mb-4">
-            NÃO É SÓ MAIS UM PACK DE ARTES,{" "}
-            <span className="text-[#EF672C]">UMA PLATAFORMA COMPLETA!</span>
+          <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">
+            Não é só mais um pack de artes,{" "}
+            <span className="text-[#EF672C]">uma plataforma completa!</span>
           </h2>
-          <p className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto">
+          <p className="text-zinc-400 text-base md:text-lg max-w-3xl mx-auto">
             Esses são alguns dos motions que você vai ter acesso dentro da nossa plataforma!
           </p>
         </div>
 
         {/* Badge */}
         <div className="flex justify-center mb-10">
-          <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg px-8 py-3 rounded-full shadow-lg">
-            MOTIONS FLYERS
+          <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-sm md:text-base px-6 py-2.5 rounded-full shadow-lg">
+            Motions Flyers
           </span>
         </div>
         
