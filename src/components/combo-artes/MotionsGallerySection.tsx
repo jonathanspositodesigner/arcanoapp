@@ -80,12 +80,12 @@ export const MotionsGallerySection = () => {
         <div className="text-center mt-8">
           <button onClick={() => document.getElementById("pricing")?.scrollIntoView({
           behavior: "smooth"
-        })} className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-sm md:text-base px-6 py-2.5 rounded-lg shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300 mb-4">
+        })} className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-sm md:text-base px-6 py-2.5 rounded-lg shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300 mb-0">
             QUERO ESSAS ARTES AGORA!
           </button>
           
           {/* Compra segura badges */}
-          <div className="flex flex-wrap justify-center items-center gap-4 mt-3">
+          <div className="flex flex-wrap justify-center items-center gap-4 -mt-2">
             <img src="https://voxvisual.com.br/wp-content/uploads/2025/11/greenn-compra-segura.png" alt="Greenn Compra Segura" className="h-5 md:h-6 object-contain" />
           </div>
         </div>
