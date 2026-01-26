@@ -47,7 +47,7 @@ const motions = [{
 }];
 export const MotionsGallerySection = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-  return <section className="py-16 px-4 bg-black">
+  return <section className="py-5 px-4 bg-black">
       <div className="max-w-6xl mx-auto">
         {/* Intro Section */}
         <div className="text-center mb-12">

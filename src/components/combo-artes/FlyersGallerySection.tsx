@@ -77,7 +77,7 @@ const CategoryCarousel = ({
     </div>;
 };
 export const FlyersGallerySection = () => {
-  return <section className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">
+  return <section className="py-5 px-4 bg-gradient-to-b from-black to-[#0a0505]">
       <div className="max-w-7xl mx-auto">
         {/* Section title */}
         <div className="text-center mb-12">
