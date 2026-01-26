@@ -132,7 +132,7 @@ export const MotionsGallerySection = () => {
       
       {/* Video Modal */}
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
-        <DialogContent className="w-auto max-w-[85vw] md:max-w-[400px] bg-transparent border-none p-0 shadow-none [&>button:last-child]:hidden">
+        <DialogContent className="w-[280px] md:w-[320px] bg-transparent border-none p-0 shadow-none [&>button:last-child]:hidden">
           <VisuallyHidden>
             <DialogTitle>Vídeo do Motion</DialogTitle>
           </VisuallyHidden>
@@ -146,14 +146,16 @@ export const MotionsGallerySection = () => {
                 <X className="w-5 h-5 text-white" />
               </button>
               <div className="rounded-2xl overflow-hidden border-2 border-[#EF672C]/60 shadow-2xl shadow-orange-500/30">
-                <video
-                  src={selectedVideo}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-auto max-h-[80vh] object-cover"
-                />
+                <div className="w-full aspect-[9/16] bg-black">
+                  <video
+                    src={selectedVideo}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
             </div>
           )}
