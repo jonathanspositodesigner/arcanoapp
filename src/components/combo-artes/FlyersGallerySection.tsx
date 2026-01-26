@@ -5,7 +5,7 @@ import { useCallback } from "react";
 // URLs corretas extraídas do site https://voxvisual.com.br/combo3em1/
 const categories = [
   {
-    title: "ARTES DE PAGODE",
+    title: "Artes de pagode",
     images: [
       "https://voxvisual.com.br/wp-content/uploads/2025/11/FESTEJA-TROPICAL-ST-768x1365.webp",
       "https://voxvisual.com.br/wp-content/uploads/2025/11/MIXTURADINHO-ST.webp",
@@ -20,7 +20,7 @@ const categories = [
     ],
   },
   {
-    title: "ARTES DE FORRÓ",
+    title: "Artes de forró",
     images: [
       "https://voxvisual.com.br/wp-content/uploads/2025/11/MIXTURADINHO-ST.webp",
       "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-FORRO-DO-VILA-STORY-SOCIAL-MEDIA-1.webp",
@@ -35,7 +35,7 @@ const categories = [
     ],
   },
   {
-    title: "ARTES DE SERTANEJO",
+    title: "Artes de sertanejo",
     images: [
       "https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DOS-PAIS-CABARET.webp",
       "https://voxvisual.com.br/wp-content/uploads/2025/11/BALADA-PRIME.webp",
@@ -48,7 +48,7 @@ const categories = [
     ],
   },
   {
-    title: "ARTES DE FUNK",
+    title: "Artes de funk",
     images: [
       "https://voxvisual.com.br/wp-content/uploads/2025/11/FUNK-PARTY-ST.webp",
       "https://voxvisual.com.br/wp-content/uploads/2025/11/NOITE-IN-VEGAS-ST.webp",
@@ -63,7 +63,7 @@ const categories = [
     ],
   },
   {
-    title: "ARTES DE CAVALGADA",
+    title: "Artes de cavalgada",
     images: [
       "https://voxvisual.com.br/wp-content/uploads/2025/11/12a-CAVALGADA-DOS-AMIGOS.webp",
       "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-SEMANAL-TOCA-DO-VALE.webp",
@@ -76,7 +76,7 @@ const categories = [
     ],
   },
   {
-    title: "CATEGORIAS VARIADAS",
+    title: "Categorias variadas",
     images: [
       "https://voxvisual.com.br/wp-content/uploads/2025/11/ARRAIA-DE-SAO-JOAO.webp",
       "https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DAS-MAES.webp",
@@ -103,7 +103,7 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
   return (
     <div className="mb-8">
       <div className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-6 md:p-8 border border-zinc-800 hover:border-[#EF672C]/50 transition-all duration-300">
-        <h3 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
+        <h3 className="text-lg md:text-xl font-semibold text-white mb-5 text-center">
           {title}
         </h3>
         
@@ -153,7 +153,7 @@ export const FlyersGallerySection = () => {
       <div className="max-w-7xl mx-auto">
         {/* Section title */}
         <div className="text-center mb-12">
-          <h2 className="text-xl md:text-3xl font-bold mb-4 text-white">
+          <h2 className="text-2xl md:text-4xl font-bold mb-4 text-white">
             Veja todas as artes que você terá acesso
           </h2>
         </div>
