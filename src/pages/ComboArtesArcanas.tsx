@@ -11,7 +11,6 @@ import {
   FAQSectionCombo,
   WhatsAppSupportSection,
   FooterSection,
-  FloatingCTAMobile,
 } from "@/components/combo-artes";
 
 // Extend Window interface for Meta Pixel
@@ -74,7 +73,6 @@ const ComboArtesArcanas = () => {
       <FAQSectionCombo />
       <WhatsAppSupportSection />
       <FooterSection />
-      <FloatingCTAMobile />
     </div>
   );
 };
