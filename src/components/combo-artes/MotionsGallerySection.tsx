@@ -52,7 +52,7 @@ const motions = [
   },
   {
     thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-MC-MIRELA1.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Country-Stories-Social-Media.mp4",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-MC-MIRELA_1.mp4",
     title: "Country",
   },
 ];
