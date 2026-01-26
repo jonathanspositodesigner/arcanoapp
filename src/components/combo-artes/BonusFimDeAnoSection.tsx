@@ -38,21 +38,21 @@ export const BonusFimDeAnoSection = () => {
           <div className="inline-flex items-center gap-3 mb-6">
             <Gift className="w-10 h-10 text-[#EF672C]" />
             <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg px-6 py-2 rounded-full shadow-lg">
-              Especial de Fim de ano!
+              Bonus especial de carnaval!
             </span>
             <Gift className="w-10 h-10 text-[#EF672C]" />
           </div>
           
           <h2 className="text-2xl md:text-4xl font-black text-white mb-4">
-            Adquirindo essa semana você leva também nosso Pack
+            Adquirindo essa semana você leva também nosso
           </h2>
           <h3 className="text-3xl md:text-5xl font-black">
             <span className="bg-gradient-to-r from-[#EF672C] via-[#f89f5b] to-[#EF672C] bg-clip-text text-transparent">
-              BÔNUS ESPECIAL DE FIM DE ANO
+              Bônus especial de carnaval
             </span>
           </h3>
           <p className="text-gray-300 mt-4 text-lg">
-            +30 Artes de Reveillon e Natal prontas para você usar!
+            +35 artes de Carnaval para você faturar mais no início do ano
           </p>
         </div>
         
