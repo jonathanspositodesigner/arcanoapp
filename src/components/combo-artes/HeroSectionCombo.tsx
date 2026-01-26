@@ -35,7 +35,7 @@ export const HeroSectionCombo = () => {
         </div>
         
         {/* Main title */}
-        <h1 className="text-2xl md:text-4xl lg:text-5xl font-black mb-2 leading-tight">
+        <h1 className="text-2xl md:text-4xl lg:text-5xl font-black mb-0 leading-tight">
           <span className="text-[#EF672C]">Chega de perder</span>{" "}
           <span className="text-white">tempo criando tudo do zero!</span>
         </h1>
