@@ -132,20 +132,23 @@ export const MotionsGallerySection = () => {
       
       {/* Video Modal */}
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
-        <DialogContent className="max-w-4xl bg-black border-gray-800 p-0">
+        <DialogContent className="max-w-md md:max-w-lg bg-gradient-to-b from-gray-900 to-black border-2 border-[#EF672C]/50 rounded-2xl p-3 md:p-4 shadow-2xl shadow-orange-500/20">
           <VisuallyHidden>
             <DialogTitle>Vídeo do Motion</DialogTitle>
           </VisuallyHidden>
-          <DialogClose className="absolute right-4 top-4 z-50 bg-black/70 hover:bg-[#EF672C] p-2 rounded-full transition-colors">
-            <X className="w-6 h-6 text-white" />
+          <DialogClose className="absolute -right-2 -top-2 md:right-2 md:top-2 z-50 bg-gradient-to-r from-[#EF672C] to-[#f65928] hover:from-[#f65928] hover:to-[#EF672C] p-2 rounded-full transition-all shadow-lg">
+            <X className="w-5 h-5 text-white" />
           </DialogClose>
           {selectedVideo && (
-            <video
-              src={selectedVideo}
-              controls
-              autoPlay
-              className="w-full h-auto rounded-lg"
-            />
+            <div className="relative rounded-xl overflow-hidden border border-gray-700/50">
+              <video
+                src={selectedVideo}
+                controls
+                autoPlay
+                playsInline
+                className="w-full h-auto max-h-[70vh] md:max-h-[75vh] object-contain bg-black"
+              />
+            </div>
           )}
         </DialogContent>
       </Dialog>
