@@ -84,8 +84,10 @@ export const ForceUpdateModal = () => {
       // Mark as updated to prevent loop
       sessionStorage.setItem('force-update-completed', 'true');
       
-      // Force reload with cache bust
-      window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now();
+      // FIXED: Preserve all existing URL parameters and add cache bust
+      const url = new URL(window.location.href);
+      url.searchParams.set('v', Date.now().toString());
+      window.location.href = url.toString();
     } catch (err) {
       console.error('[ForceUpdate] Update failed:', err);
     }
