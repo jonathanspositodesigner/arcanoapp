@@ -109,17 +109,19 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
           </span>
         </div>
 
-        {/* Carousel with external navigation (no overlap) */}
-        <div className="flex items-center gap-3 md:gap-4">
+        {/* Mobile: bigger image, arrows overlay (semi-transparent). Desktop: arrows outside. */}
+        <div className="relative md:flex md:items-center md:gap-4">
+          {/* Desktop left */}
           <button
             onClick={scrollPrev}
-            className="flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors"
+            className="hidden md:inline-flex flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors"
             aria-label="Anterior"
           >
             <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
           </button>
 
-          <div className="overflow-hidden flex-1" ref={emblaRef}>
+          {/* Viewport */}
+          <div className="overflow-hidden md:flex-1" ref={emblaRef}>
             <div className="flex">
               {images.map((image, index) => (
                 <div
@@ -129,7 +131,7 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
                   <img
                     src={image}
                     alt={`${title} ${index + 1}`}
-                    className="w-full max-w-[240px] md:max-w-none h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
+                    className="w-[86vw] max-w-[380px] md:w-full md:max-w-none h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
                 </div>
@@ -137,12 +139,29 @@ const CategoryCarousel = ({ title, images }: { title: string; images: string[] }
             </div>
           </div>
 
+          {/* Desktop right */}
           <button
             onClick={scrollNext}
-            className="flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors"
+            className="hidden md:inline-flex flex-shrink-0 bg-zinc-800 hover:bg-[#EF672C] text-white p-2.5 md:p-3 rounded-full transition-colors"
             aria-label="Próximo"
           >
             <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
+
+          {/* Mobile overlay buttons */}
+          <button
+            onClick={scrollPrev}
+            className="md:hidden absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2.5 rounded-full transition-colors z-10 backdrop-blur-sm"
+            aria-label="Anterior"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={scrollNext}
+            className="md:hidden absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2.5 rounded-full transition-colors z-10 backdrop-blur-sm"
+            aria-label="Próximo"
+          >
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </div>
