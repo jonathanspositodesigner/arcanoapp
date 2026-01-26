@@ -43,6 +43,9 @@ export const FeaturesSection = () => {
   return (
     <section className="bg-black py-8 md:py-12 px-4">
       <div className="max-w-6xl mx-auto">
+        <h2 className="text-xl md:text-2xl font-bold text-white text-center mb-6 md:mb-8">
+          Pra você ganhar mais dinheiro em menos tempo
+        </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
           {features.map((feature, index) => {
             const Icon = feature.icon;
