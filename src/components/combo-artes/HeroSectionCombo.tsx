@@ -29,7 +29,7 @@ export const HeroSectionCombo = () => {
             alt="Membros"
             className="w-12 h-12 object-contain -my-1"
           />
-          <span className="text-white/90 font-medium text-sm md:text-base">
+          <span className="text-white/90 font-medium text-xs md:text-sm">
             Já são mais de <span className="text-[#EF672C] font-bold">+2.200</span> membros ativos!
           </span>
         </div>
@@ -44,7 +44,7 @@ export const HeroSectionCombo = () => {
         <img
           src="https://voxvisual.com.br/wp-content/uploads/2025/11/area-de-membros.webp"
           alt="Área de Membros"
-          className="mt-4 mb-4 max-w-3xl w-full object-contain"
+          className="-mt-8 md:mt-4 mb-4 max-w-3xl w-full object-contain"
         />
         
         {/* Subtitle */}
