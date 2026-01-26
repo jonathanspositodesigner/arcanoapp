@@ -67,7 +67,7 @@ const categories = [
     images: [
       "https://voxvisual.com.br/wp-content/uploads/2025/11/12a-CAVALGADA-DOS-AMIGOS.webp",
       "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-SEMANAL-TOCA-DO-VALE.webp",
-      "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-DOS-GIGANTES-scaled.webp",
+      "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-DOS-GIGANTES.webp",
       "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-FEST-2025.webp",
       "https://voxvisual.com.br/wp-content/uploads/2025/11/PROXIMOS-SHOWS-BIU-DO-PISEIRO.jpg",
       "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA.webp",

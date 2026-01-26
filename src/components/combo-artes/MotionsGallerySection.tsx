@@ -7,7 +7,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 const motions = [
   {
     thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-HERIQUE-E-JULIANO.webp",
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-AGENDA-HENRIQUE-E-JULIANO.mp4",
+    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-AGENDA-HERIQUE-E-JULIANO-1.mp4",
     title: "Agenda Henrique e Juliano",
   },
   {
@@ -21,37 +21,37 @@ const motions = [
     title: "Atração Confirmada MC Pedrinho",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-SERTANEJO-PREMIUM-STORIES-768x1365.webp",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Sertanejo-Stories-Social-Media.webp",
     video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Sertanejo-Stories-Social-Media.mp4",
     title: "Sertanejo Stories",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-FORRO-DO-VILA-STORY-SOCIAL-MEDIA-1.webp",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Forro-Eletronica-Stories-Social-Media.webp",
     video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Forro-Eletronica-Stories-Social-Media.mp4",
     title: "Forró Eletrônica",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-FUNK-PARTY-STORIES-768x1365.webp",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Funk-Baile-Stories-Social-Media.webp",
     video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Funk-Baile-Stories-Social-Media.mp4",
     title: "Funk Baile",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-REVEILLON-DO-SAMBA-STORIES-768x1365.webp",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Reveillon-Stories-Social-Media.webp",
     video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Reveillon-Stories-Social-Media.mp4",
     title: "Reveillon Stories",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-SAO-JOAO-DA-CIDADE-STORIES-768x1365.webp",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Sao-Joao-Stories-Social-Media.webp",
     video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Sao-Joao-Stories-Social-Media.mp4",
     title: "São João",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-HALLOWEEN-PARTY-STORIES-768x1365.webp",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Halloween-Stories-Social-Media.webp",
     video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Halloween-Stories-Social-Media.mp4",
     title: "Halloween",
   },
   {
-    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2024/11/FLYER-EVENTO-RODEIO-COUNTRY-STORIES-768x1365.webp",
+    thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Country-Stories-Social-Media.webp",
     video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-Flyer-Country-Stories-Social-Media.mp4",
     title: "Country",
   },
