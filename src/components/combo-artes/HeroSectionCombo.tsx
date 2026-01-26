@@ -1,5 +1,4 @@
 import { RefreshCw, Palette } from "lucide-react";
-import comboMembrosBadge from "@/assets/combo-membros-badge.png";
 
 export const HeroSectionCombo = () => {
   const scrollToPricing = () => {
@@ -43,8 +42,8 @@ export const HeroSectionCombo = () => {
         
         {/* Membros image below title */}
         <img
-          src={comboMembrosBadge}
-          alt="Mais de 2.750 usuários cadastrados"
+          src="https://voxvisual.com.br/wp-content/uploads/2025/11/area-de-membros.webp"
+          alt="Área de Membros"
           className="mb-6 max-w-md w-full object-contain"
         />
         
