@@ -90,7 +90,7 @@ export const BonusGridSection = () => {
                 <img 
                   src={bonus.image} 
                   alt={bonus.title}
-                  className="w-full h-auto max-w-[270px] md:max-w-[180px] -ml-1 md:ml-0 object-contain group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-auto max-w-[270px] md:max-w-[180px] -ml-3 md:ml-0 object-contain group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                 />
               </div>
