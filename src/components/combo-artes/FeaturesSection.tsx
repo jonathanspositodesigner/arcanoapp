@@ -1,30 +1,41 @@
-import { Zap, Shield, MessageCircle, Headphones, Users } from "lucide-react";
+import { Zap, Shield, MessageCircle, Headphones, Users, RefreshCw } from "lucide-react";
 
 const features = [
   {
     icon: Zap,
     title: "Acesso Imediato",
     description: "Liberação instantânea após a compra",
+    mobileOnly: false,
   },
   {
     icon: Shield,
     title: "7 Dias de Garantia",
     description: "Satisfação garantida ou seu dinheiro de volta",
+    mobileOnly: false,
   },
   {
     icon: MessageCircle,
     title: "Grupo VIP no WhatsApp",
     description: "Comunidade exclusiva de membros",
+    mobileOnly: false,
   },
   {
     icon: Headphones,
     title: "Suporte Técnico Exclusivo",
     description: "Atendimento prioritário para dúvidas",
+    mobileOnly: false,
   },
   {
     icon: Users,
     title: "Plataforma de Membros",
     description: "Área exclusiva com todo o conteúdo",
+    mobileOnly: false,
+  },
+  {
+    icon: RefreshCw,
+    title: "Atualizações Constantes",
+    description: "Novas artes adicionadas toda semana",
+    mobileOnly: true,
   },
 ];
 
@@ -38,7 +49,7 @@ export const FeaturesSection = () => {
             return (
               <div
                 key={index}
-                className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-xl p-4 md:p-5 border border-zinc-800 hover:border-[#EF672C]/50 transition-all duration-300"
+                className={`group relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-xl p-4 md:p-5 border border-zinc-800 hover:border-[#EF672C]/50 transition-all duration-300 ${feature.mobileOnly ? "md:hidden" : ""}`}
               >
                 <div className="flex flex-col items-center text-center gap-3">
                   <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#EF672C]/20 flex items-center justify-center group-hover:bg-[#EF672C]/30 transition-colors">
