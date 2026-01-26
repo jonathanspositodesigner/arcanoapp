@@ -35,7 +35,7 @@ export const HeroSectionCombo = () => {
         </div>
         
         {/* Main title */}
-        <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-white mb-4 leading-tight">
+        <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-white mb-4 leading-tight">
           Leve 3 Packs de Artes{" "}
           <span className="text-[#EF672C]">pelo Preço de 1</span>
         </h1>
@@ -44,7 +44,7 @@ export const HeroSectionCombo = () => {
         <img
           src="https://voxvisual.com.br/wp-content/uploads/2025/11/area-de-membros.webp"
           alt="Área de Membros"
-          className="mb-6 max-w-2xl w-full object-contain"
+          className="mb-6 max-w-3xl w-full object-contain"
         />
         
         {/* Subtitle */}
