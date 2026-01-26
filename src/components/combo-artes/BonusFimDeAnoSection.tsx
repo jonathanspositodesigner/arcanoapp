@@ -42,11 +42,14 @@ export const BonusFimDeAnoSection = () => {
           </div>
           
           {/* Main title */}
-          <h2 className="text-xl md:text-4xl font-bold mb-4 px-2">
-            <span className="text-white">Adquirindo hoje você leva também </span>
-            <span className="text-[#EF672C]">nosso Pack Especial de Carnaval</span>
+          <h2 className="text-2xl md:text-4xl font-bold mb-4 px-2">
+            <span className="text-white block md:inline">Adquirindo hoje você leva </span>
+            <span className="text-white block md:inline">também</span>
+            <br className="hidden md:block" />
+            <span className="text-[#EF672C] block md:inline">nosso Pack Especial de </span>
+            <span className="text-[#EF672C] block md:inline">Carnaval</span>
           </h2>
-          <p className="text-zinc-400 text-sm md:text-lg px-4">
+          <p className="text-zinc-400 text-base md:text-lg px-4">
             +35 artes de Carnaval para você faturar mais no início do ano
           </p>
         </div>
@@ -64,7 +67,7 @@ export const BonusFimDeAnoSection = () => {
 
           {/* Viewport */}
           <div className="overflow-hidden md:flex-1" ref={emblaRef}>
-            <div className="flex">
+            <div className="flex md:gap-4">
               {artesCarnaval.map((arte, index) => (
                 <div
                   key={index}
