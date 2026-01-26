@@ -68,9 +68,9 @@ export const MotionsGallerySection = () => {
           {motions.map((motion, index) => <div key={index} className="relative cursor-pointer group" onClick={() => setSelectedVideo(motion.video)}>
               <img src={motion.thumbnail} alt={motion.title} className="w-full h-auto rounded-xl shadow-lg" loading="lazy" />
               {/* Play overlay */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl flex items-center justify-center">
-                <div className="bg-[#EF672C] p-4 rounded-full">
-                  <Play className="w-8 h-8 text-white fill-white" />
+              <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center">
+                <div className="bg-[#EF672C] p-3 md:p-4 rounded-full shadow-lg">
+                  <Play className="w-6 h-6 md:w-8 md:h-8 text-white fill-white" />
                 </div>
               </div>
             </div>)}
