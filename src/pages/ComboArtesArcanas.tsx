@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import {
   HeroSectionCombo,
+  FeaturesSection,
   FlyersGallerySection,
   BonusFimDeAnoSection,
   MotionsGallerySection,
@@ -63,6 +64,7 @@ const ComboArtesArcanas = () => {
   return (
     <div className="min-h-screen bg-black">
       <HeroSectionCombo />
+      <FeaturesSection />
       <FlyersGallerySection />
       <BonusFimDeAnoSection />
       <MotionsGallerySection />
