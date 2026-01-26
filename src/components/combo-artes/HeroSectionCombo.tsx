@@ -1,11 +1,4 @@
 import { Users } from "lucide-react";
-import { proxiedMediaUrl } from "@/lib/mediaProxy";
-
-// URLs exatas do Hero extraídas do WordPress
-export const heroImages = [
-  "https://voxvisual.com.br/wp-content/uploads/2024/11/LOGO-CLLR-1.png",
-  "https://voxvisual.com.br/wp-content/uploads/2024/12/AssetAlunosIC.webp",
-];
 
 export const HeroSectionCombo = () => {
   const scrollToPricing = () => {
@@ -21,10 +14,9 @@ export const HeroSectionCombo = () => {
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         {/* Logo */}
         <img
-          src={proxiedMediaUrl(heroImages[0])}
+          src="https://voxvisual.com.br/wp-content/uploads/2024/11/LOGO-CLLR-1.png"
           alt="Biblioteca de Artes Arcanas"
           className="mx-auto mb-8 h-20 md:h-28 object-contain"
-          referrerPolicy="no-referrer"
         />
         
         {/* Main title */}
@@ -42,10 +34,9 @@ export const HeroSectionCombo = () => {
         {/* Members badge */}
         <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2.5 mb-8">
           <img
-            src={proxiedMediaUrl(heroImages[1])}
+            src="https://voxvisual.com.br/wp-content/uploads/2024/12/AssetAlunosIC.webp"
             alt="Membros"
             className="w-8 h-8 object-contain"
-            referrerPolicy="no-referrer"
           />
           <span className="text-white font-medium flex items-center gap-1">
             <Users className="w-4 h-4" />

@@ -1,11 +1,10 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Sparkles, Wand2, Download } from "lucide-react";
 import { useCallback } from "react";
-import { proxiedMediaUrl } from "@/lib/mediaProxy";
 
 // URLs exatas extraídas do HTML original do WordPress
 // selos 1-20 em /2024/12, selos 21-26 em /2025/11 com nomes diferentes
-export const selos = [
+const selos = [
   "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-1.webp",
   "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-2.webp",
   "https://voxvisual.com.br/wp-content/uploads/2024/12/selo-3d-3.webp",
@@ -92,11 +91,10 @@ export const Selos3DSection = () => {
                   className="flex-none w-[200px] md:w-[250px]"
                 >
                   <img
-                    src={proxiedMediaUrl(selo)}
+                    src={selo}
                     alt={`Selo 3D ${index + 1}`}
                     className="w-full h-auto rounded-xl shadow-lg hover:scale-110 transition-transform duration-300"
                     loading="lazy"
-                    referrerPolicy="no-referrer"
                   />
                 </div>
               ))}

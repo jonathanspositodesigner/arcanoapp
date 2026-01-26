@@ -2,10 +2,9 @@ import { useState } from "react";
 import { Play, X } from "lucide-react";
 import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { proxiedMediaUrl } from "@/lib/mediaProxy";
 
 // URLs exatas extraídas do HTML original do WordPress
-export const motions = [
+const motions = [
   {
     thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-HERIQUE-E-JULIANO.webp",
     video: "https://voxvisual.com.br/wp-content/uploads/2025/11/MOTION-AGENDA-HENRIQUE-E-JULIANO.mp4",
@@ -58,12 +57,6 @@ export const motions = [
   },
 ];
 
-// Badges de compra segura
-export const securityBadges = [
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/greenn-compra-segura.png",
-  "https://voxvisual.com.br/wp-content/uploads/2025/11/compra-Segura-vetor-branco1-1.png",
-];
-
 export const MotionsGallerySection = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
 
@@ -94,14 +87,13 @@ export const MotionsGallerySection = () => {
             <div
               key={index}
               className="relative cursor-pointer group"
-              onClick={() => setSelectedVideo(proxiedMediaUrl(motion.video))}
+              onClick={() => setSelectedVideo(motion.video)}
             >
               <img
-                src={proxiedMediaUrl(motion.thumbnail)}
+                src={motion.thumbnail}
                 alt={motion.title}
                 className="w-full h-auto rounded-xl shadow-lg"
                 loading="lazy"
-                referrerPolicy="no-referrer"
               />
               {/* Play overlay */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl flex items-center justify-center">
@@ -124,15 +116,16 @@ export const MotionsGallerySection = () => {
           
           {/* Compra segura badges */}
           <div className="flex flex-wrap justify-center items-center gap-4 mt-6">
-            {securityBadges.map((badge, index) => (
-              <img
-                key={index}
-                src={proxiedMediaUrl(badge)}
-                alt="Compra Segura"
-                className="h-10 md:h-12 object-contain"
-                referrerPolicy="no-referrer"
-              />
-            ))}
+            <img
+              src="https://voxvisual.com.br/wp-content/uploads/2025/11/greenn-compra-segura.png"
+              alt="Greenn Compra Segura"
+              className="h-10 md:h-12 object-contain"
+            />
+            <img
+              src="https://voxvisual.com.br/wp-content/uploads/2025/11/compra-Segura-vetor-branco1-1.png"
+              alt="Compra Segura"
+              className="h-8 md:h-10 object-contain"
+            />
           </div>
         </div>
       </div>
