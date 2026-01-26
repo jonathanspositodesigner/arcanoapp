@@ -6,7 +6,7 @@ export const HeroSectionCombo = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center py-12 px-4 overflow-hidden">
+    <section className="relative flex flex-col items-center justify-center py-8 md:py-12 px-4 overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a0a0a] via-[#0d0d0d] to-black" />
       
@@ -44,7 +44,7 @@ export const HeroSectionCombo = () => {
         <img
           src="https://voxvisual.com.br/wp-content/uploads/2025/11/area-de-membros.webp"
           alt="Área de Membros"
-          className="-mt-14 mb-4 max-w-3xl w-full object-contain"
+          className="mt-4 mb-4 max-w-3xl w-full object-contain"
         />
         
         {/* Subtitle */}
