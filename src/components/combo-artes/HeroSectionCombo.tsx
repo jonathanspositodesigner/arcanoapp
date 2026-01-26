@@ -1,4 +1,4 @@
-import { Users } from "lucide-react";
+import { Users, RefreshCw, Palette } from "lucide-react";
 
 export const HeroSectionCombo = () => {
   const scrollToPricing = () => {
@@ -15,11 +15,11 @@ export const HeroSectionCombo = () => {
       
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center">
-        {/* Logo */}
+        {/* Logo - smaller */}
         <img
           src="https://voxvisual.com.br/wp-content/uploads/2024/11/LOGO-CLLR-1.png"
           alt="Biblioteca de Artes Arcanas"
-          className="mb-8 h-20 md:h-28 object-contain"
+          className="mb-6 h-14 md:h-20 object-contain"
         />
         
         {/* Main title */}
@@ -29,10 +29,22 @@ export const HeroSectionCombo = () => {
         </h1>
         
         {/* Subtitle */}
-        <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl">
+        <p className="text-lg md:text-xl text-gray-300 mb-6 max-w-2xl">
           + de 200 Artes Editáveis PSD e CANVA!{" "}
           <span className="text-[#EF672C] font-semibold">Promoção por tempo limitado!</span>
         </p>
+        
+        {/* Feature badges */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+          <div className="flex items-center gap-2 bg-gradient-to-r from-[#EF672C]/20 to-[#EF672C]/10 border border-[#EF672C]/50 rounded-full px-4 py-2">
+            <RefreshCw className="w-4 h-4 text-[#EF672C]" />
+            <span className="text-white font-semibold text-sm md:text-base">ATUALIZAÇÕES SEMANAIS</span>
+          </div>
+          <div className="flex items-center gap-2 bg-gradient-to-r from-[#EF672C]/20 to-[#EF672C]/10 border border-[#EF672C]/50 rounded-full px-4 py-2">
+            <Palette className="w-4 h-4 text-[#EF672C]" />
+            <span className="text-white font-semibold text-sm md:text-base">EDITÁVEL NO CANVA E PHOTOSHOP</span>
+          </div>
+        </div>
         
         {/* CTA Button */}
         <button
