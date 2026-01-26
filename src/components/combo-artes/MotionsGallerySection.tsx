@@ -70,7 +70,7 @@ export const MotionsGallerySection = () => {
             <span className="text-[#EF672C]">+210 vídeos animados</span>
           </h2>
           <p className="text-zinc-400 text-base md:text-lg max-w-3xl mx-auto">
-            + de 200 motion flyers editáveis no Canva e After Effects
+            Editáveis no Canva e After Effects
           </p>
         </div>
 
