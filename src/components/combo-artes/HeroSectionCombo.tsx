@@ -49,7 +49,7 @@ export const HeroSectionCombo = () => {
         
         {/* Subtitle */}
         <p className="text-lg md:text-xl text-gray-300 mb-6 max-w-2xl">
-          Conheça nossa plataforma com + de 250 Artes Editáveis PSD e CANVA!
+          Conheça nossa plataforma com <span className="text-[#EF672C] font-bold">+ de 250 Artes Editáveis PSD e CANVA!</span>
         </p>
         
         {/* Feature badges */}
