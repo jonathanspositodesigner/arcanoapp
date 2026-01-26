@@ -149,9 +149,9 @@ export const FlyersGallerySection = () => {
       <div className="max-w-7xl mx-auto">
         {/* Section title */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-black mb-4">
+          <h2 className="text-xl md:text-3xl font-bold mb-4">
             <span className="bg-gradient-to-r from-[#EF672C] via-[#f89f5b] to-[#EF672C] bg-clip-text text-transparent">
-              VEJA TUDO QUE VOCÊ VAI RECEBER
+              Veja tudo que você vai receber
             </span>
           </h2>
         </div>
