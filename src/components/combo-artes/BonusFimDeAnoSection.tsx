@@ -29,25 +29,24 @@ export const BonusFimDeAnoSection = () => {
         {/* Header */}
         <div className="text-center mb-10">
           {/* Badge with icons */}
-          <div className="inline-flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 rounded-full bg-[#EF672C]/20 flex items-center justify-center">
-              <Gift className="w-6 h-6 text-[#EF672C]" />
+          <div className="inline-flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EF672C]/20 flex items-center justify-center">
+              <Gift className="w-5 h-5 md:w-6 md:h-6 text-[#EF672C]" />
             </div>
-            <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-base md:text-lg px-6 py-2.5 rounded-full shadow-lg">
+            <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-sm md:text-lg px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-lg whitespace-nowrap">
               Bônus de Carnaval
             </span>
-            <div className="w-12 h-12 rounded-full bg-[#EF672C]/20 flex items-center justify-center">
-              <Gift className="w-6 h-6 text-[#EF672C]" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EF672C]/20 flex items-center justify-center">
+              <Gift className="w-5 h-5 md:w-6 md:h-6 text-[#EF672C]" />
             </div>
           </div>
           
           {/* Main title */}
-          <h2 className="text-2xl md:text-4xl font-bold mb-4">
-            <span className="text-white">Adquirindo hoje você leva também</span>
-            <br />
+          <h2 className="text-xl md:text-4xl font-bold mb-4 px-2">
+            <span className="text-white">Adquirindo hoje você leva também </span>
             <span className="text-[#EF672C]">nosso Pack Especial de Carnaval</span>
           </h2>
-          <p className="text-zinc-400 text-base md:text-lg">
+          <p className="text-zinc-400 text-sm md:text-lg px-4">
             +35 artes de Carnaval para você faturar mais no início do ano
           </p>
         </div>
