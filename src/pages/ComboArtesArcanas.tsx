@@ -3,8 +3,11 @@ import {
   HeroSectionCombo,
   AreaMembrosSection,
   FlyersGallerySection,
+  BonusFimDeAnoSection,
   MotionsGallerySection,
   Selos3DSection,
+  BonusGridSection,
+  GuaranteeSectionCombo,
   PricingCardsSection,
   FAQSectionCombo,
   WhatsAppSupportSection,
@@ -64,8 +67,11 @@ const ComboArtesArcanas = () => {
       <HeroSectionCombo />
       <AreaMembrosSection />
       <FlyersGallerySection />
+      <BonusFimDeAnoSection />
       <MotionsGallerySection />
       <Selos3DSection />
+      <BonusGridSection />
+      <GuaranteeSectionCombo />
       <PricingCardsSection />
       <FAQSectionCombo />
       <WhatsAppSupportSection />
