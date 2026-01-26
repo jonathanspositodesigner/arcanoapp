@@ -43,9 +43,12 @@ export const BonusFimDeAnoSection = () => {
           
           {/* Main title */}
           <h2 className="text-xl md:text-4xl font-bold mb-4 px-2">
-            <span className="text-white">Adquirindo hoje você leva também</span>
+            <span className="text-white">Adquirindo hoje você leva</span>
             <br />
-            <span className="text-[#EF672C]">nosso Pack Especial de Carnaval</span>
+            <span className="text-white">também </span>
+            <span className="text-[#EF672C]">nosso Pack</span>
+            <br className="md:hidden" />
+            <span className="text-[#EF672C]"> Especial de Carnaval</span>
           </h2>
           <p className="text-zinc-400 text-base md:text-lg px-4">
             +35 artes de Carnaval para você faturar mais no início do ano
