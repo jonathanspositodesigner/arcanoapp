@@ -1,0 +1,173 @@
+import { Check, Star, Gift } from "lucide-react";
+import { appendUtmToUrl } from "@/lib/utmUtils";
+
+const plans = [
+  {
+    id: "trimestral",
+    title: "Pack arcano 1 ao 3 acesso TRIMESTRAL",
+    subtitle: "Para quem quer testar tudo sem compromisso.",
+    price: "9,90",
+    installments: "3x",
+    fullPrice: "R$ 29,90",
+    features: [
+      "3 Meses de Acesso",
+      "200 Artes Editáveis",
+      "210 Motions Editáveis",
+      "40 Selos 3D",
+      "Video Aulas Exclusivas",
+      "Bônus Exclusivos",
+      "Atualizações Semanais",
+      "Suporte via WhatsApp",
+      "Área de Membros",
+    ],
+    checkoutUrl: "https://payfast.greenn.com.br/147967/offer/e6jRLBXpJ0MkmV5",
+    highlighted: false,
+  },
+  {
+    id: "semestral",
+    title: "Pack arcano 1 ao 3 acesso SEMESTRAL",
+    subtitle: "Para quem quer mais economia e mais vantagem.",
+    price: "9,90",
+    installments: "6x",
+    fullPrice: "R$ 59,90",
+    features: [
+      "6 Meses de Acesso",
+      "200 Artes Editáveis",
+      "210 Motions Editáveis",
+      "40 Selos 3D",
+      "Video Aulas Exclusivas",
+      "Bônus Exclusivos",
+      "Atualizações Semanais",
+      "Suporte via WhatsApp",
+      "Área de Membros",
+    ],
+    checkoutUrl: "https://payfast.greenn.com.br/147968/offer/KeCO0dB4qj6kpVp",
+    highlighted: false,
+  },
+  {
+    id: "vitalicio",
+    title: "Pack arcano 1 ao 3 acesso VITALÍCIO",
+    subtitle: "O mais vendido! 🔥",
+    price: "6,66",
+    installments: "12x",
+    fullPrice: "R$ 79,90",
+    features: [
+      "Acesso Vitalício",
+      "200 Artes Editáveis",
+      "210 Motions Editáveis",
+      "40 Selos 3D",
+      "Video Aulas Exclusivas",
+      "Bônus Exclusivos",
+      "Atualizações Semanais",
+      "Suporte via WhatsApp",
+      "Área de Membros",
+    ],
+    bonus: "+30 Artes Reveillon e Natal",
+    checkoutUrl: "https://payfast.greenn.com.br/redirect/246696",
+    highlighted: true,
+  },
+];
+
+export const PricingCardsSection = () => {
+  const handlePurchase = (checkoutUrl: string) => {
+    const urlWithUtm = appendUtmToUrl(checkoutUrl);
+    
+    // Track Meta Pixel InitiateCheckout
+    if (typeof window !== "undefined" && (window as any).fbq) {
+      (window as any).fbq("track", "InitiateCheckout", {
+        content_name: "Combo Artes Arcanas",
+        content_category: "Digital Product",
+        content_type: "product",
+        currency: "BRL",
+      });
+    }
+    
+    window.open(urlWithUtm, "_blank");
+  };
+
+  return (
+    <section id="pricing" className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">
+      <div className="max-w-6xl mx-auto">
+        {/* Section title */}
+        <h2 className="text-3xl md:text-4xl font-black text-center text-white mb-4">
+          Escolha seu plano
+        </h2>
+        <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
+          Selecione o plano que melhor se adapta às suas necessidades e comece a criar artes profissionais hoje mesmo!
+        </p>
+        
+        {/* Pricing cards grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          {plans.map((plan) => (
+            <div
+              key={plan.id}
+              className={`relative rounded-3xl p-6 md:p-8 ${
+                plan.highlighted
+                  ? "bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C] scale-105"
+                  : "bg-gradient-to-br from-white/5 to-white/0 border border-white/10"
+              }`}
+            >
+              {/* Highlighted badge */}
+              {plan.highlighted && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <span className="bg-[#EF672C] text-white text-sm font-bold px-4 py-1 rounded-full flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-white" />
+                    MAIS VENDIDO
+                  </span>
+                </div>
+              )}
+              
+              {/* Plan title */}
+              <h3 className="text-xl font-bold text-white mb-2 text-center">
+                {plan.title}
+              </h3>
+              <p className="text-gray-400 text-sm text-center mb-6">
+                {plan.subtitle}
+              </p>
+              
+              {/* Price */}
+              <div className="text-center mb-6">
+                <span className="text-gray-400 text-sm">{plan.installments}</span>
+                <div className="flex items-center justify-center gap-1">
+                  <span className="text-gray-400 text-lg">R$</span>
+                  <span className="text-5xl font-black text-white">{plan.price}</span>
+                </div>
+                <span className="text-gray-500 text-sm">ou {plan.fullPrice} à vista</span>
+              </div>
+              
+              {/* Bonus badge */}
+              {plan.bonus && (
+                <div className="bg-gradient-to-r from-green-600 to-green-500 text-white text-sm font-bold px-4 py-2 rounded-lg mb-6 flex items-center justify-center gap-2">
+                  <Gift className="w-4 h-4" />
+                  {plan.bonus}
+                </div>
+              )}
+              
+              {/* Features list */}
+              <ul className="space-y-3 mb-8">
+                {plan.features.map((feature, index) => (
+                  <li key={index} className="flex items-center gap-3 text-gray-300">
+                    <Check className="w-5 h-5 text-[#EF672C] flex-shrink-0" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              
+              {/* CTA button */}
+              <button
+                onClick={() => handlePurchase(plan.checkoutUrl)}
+                className={`w-full font-bold text-lg py-4 rounded-xl transition-all duration-300 ${
+                  plan.highlighted
+                    ? "bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105"
+                    : "bg-white/10 text-white hover:bg-white/20"
+                }`}
+              >
+                QUERO ESSE PLANO
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
