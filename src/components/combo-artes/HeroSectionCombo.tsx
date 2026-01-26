@@ -23,11 +23,11 @@ export const HeroSectionCombo = () => {
         />
         
         {/* Members badge - ABOVE the title */}
-        <div className="flex items-center gap-4 bg-gradient-to-r from-[#3d1515]/80 to-[#2a0f0f]/80 backdrop-blur-sm border border-[#EF672C]/30 rounded-full px-6 py-3 mb-6">
+        <div className="flex items-center gap-3 bg-gradient-to-r from-[#3d1515]/80 to-[#2a0f0f]/80 backdrop-blur-sm border border-[#EF672C]/30 rounded-full px-4 py-1.5 mb-6">
           <img
             src="https://voxvisual.com.br/wp-content/uploads/2024/12/AssetAlunosIC.webp"
             alt="Membros"
-            className="w-20 h-20 object-contain"
+            className="w-16 h-16 object-contain -my-1"
           />
           <span className="text-white/90 font-medium text-base md:text-lg">
             Já são mais de <span className="text-[#EF672C] font-bold">+2.200</span> membros ativos!
