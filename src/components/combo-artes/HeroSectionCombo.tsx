@@ -48,7 +48,7 @@ export const HeroSectionCombo = () => {
         />
         
         {/* Subtitle */}
-        <p className="text-lg md:text-xl text-gray-300 mb-6 max-w-2xl">Conheça nossa plataforma com <span className="text-[#EF672C] font-bold">+ de 380 Artes Editáveis PSD e CANVA!</span></p>
+        <p className="text-lg md:text-xl text-gray-300 mb-6 md:whitespace-nowrap">Conheça nossa plataforma com <span className="text-[#EF672C] font-bold">+ de 380 Artes Editáveis PSD e CANVA!</span></p>
         
         {/* Feature badges */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
