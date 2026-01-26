@@ -66,7 +66,8 @@ export const MotionsGallerySection = () => {
         {/* Intro Section */}
         <div className="text-center mb-12">
           <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">
-            Você vai ter acesso também a
+            Você vai ter acesso também a{" "}
+            <span className="text-[#EF672C]">+210 vídeos animados</span>
           </h2>
           <p className="text-zinc-400 text-base md:text-lg max-w-3xl mx-auto">
             + de 200 motion flyers editáveis no Canva e After Effects
