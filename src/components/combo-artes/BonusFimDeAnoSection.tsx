@@ -33,7 +33,7 @@ export const BonusFimDeAnoSection = () => {
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EF672C]/20 flex items-center justify-center animate-pulse">
               <Gift className="w-5 h-5 md:w-6 md:h-6 text-[#EF672C]" />
             </div>
-            <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-sm md:text-lg px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-lg whitespace-nowrap animate-pulse">
+            <span className="bg-black/80 border-2 border-[#EF672C] text-[#EF672C] font-bold text-sm md:text-lg px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-lg whitespace-nowrap" style={{ backgroundColor: 'rgba(239, 103, 44, 0.15)' }}>
               Bônus de Carnaval
             </span>
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EF672C]/20 flex items-center justify-center animate-pulse">
