@@ -90,22 +90,22 @@ export const AboutSection = () => {
                 </span>
               </div>
               
+              {/* Desktop badges - positioned at top-left over the photo */}
+              <div className="hidden md:flex absolute top-8 left-4 gap-3 z-10">
+                <span className="bg-transparent border-2 border-[#EF672C] text-[#EF672C] text-xs font-bold px-4 py-2 rounded-full">
+                  EXPERT EM EVENTOS
+                </span>
+                <span className="bg-transparent border-2 border-[#EF672C] text-[#EF672C] text-xs font-bold px-4 py-2 rounded-full">
+                  +11 ANOS DE EXPERIÊNCIA
+                </span>
+              </div>
+              
               <img 
                 src="https://lp.voxvisual.com.br/wp-content/uploads/2025/09/freepik__jonathandesigner-realistic-man-with-rounded-face-l__21720.webp" 
                 alt="Jonathan Spósito - Designer e Motion Designer" 
                 className="w-full max-w-md mx-auto rounded-2xl"
                 loading="lazy"
               />
-              
-              {/* Desktop badges - at bottom */}
-              <div className="hidden md:flex flex-wrap justify-center gap-3 mt-6">
-                <span className="bg-transparent border border-cyan-400 text-cyan-400 text-xs font-bold px-4 py-2 rounded-full">
-                  EXPERT EM EVENTOS
-                </span>
-                <span className="bg-transparent border border-cyan-400 text-cyan-400 text-xs font-bold px-4 py-2 rounded-full">
-                  +11 ANOS DE EXPERIÊNCIA
-                </span>
-              </div>
             </div>
           </div>
         </div>
