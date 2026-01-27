@@ -2,7 +2,7 @@ import { ShieldCheck, Award, Lock } from "lucide-react";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 
 export const GuaranteeSectionCombo = () => {
-  const checkoutUrl = "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924&b_id_1=103023&b_offer_1=fMHdgE";
+  const checkoutUrl = "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924&b_id_1=103023";
 
   const handlePurchase = () => {
     const urlWithUtm = appendUtmToUrl(checkoutUrl);
