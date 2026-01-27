@@ -18,7 +18,17 @@ const categories = [{
   ]
 }, {
   title: "Artes de forró",
-  images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/MIXTURADINHO-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-FORRO-DO-VILA-STORY-SOCIAL-MEDIA-1.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/VIBE-FORROZEIRA-ST.jpg", "https://voxvisual.com.br/wp-content/uploads/2025/11/FORRO-DE-SAO-JOAO.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FENOMENO-DO-PISEIRO-768x1365.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/RESENHA-DO-SAMBA1.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BALADINHA-DE-SABADO-STORY-SOCIAL-MEDIA.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-BAILE-DA-FAVORITA-STORIES.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/Flyer-Furacao-Hit-Stories-Social-Media1.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/ARROCHA-DA-PATROA-ST-768x1365.webp"]
+  images: [
+    "/images/combo/forro-do-vila.webp",
+    "/images/combo/forro-vibe-forrozeira.webp",
+    "/images/combo/forro-sao-joao.webp",
+    "/images/combo/forro-fenomeno-piseiro.webp",
+    "/images/combo/forro-resenha-samba.webp",
+    "/images/combo/forro-baladinha-sabado.webp",
+    "/images/combo/forro-baile-favorita.webp",
+    "/images/combo/forro-furacao-hit.webp",
+    "/images/combo/forro-arrocha-patroa.webp"
+  ]
 }, {
   title: "Artes de sertanejo",
   images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DOS-PAIS-CABARET.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BALADA-PRIME.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/ROTA-SERTANEJA-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BALADA-PRIME1.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BOTECO-NOSSA-VIBE.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/SUNSET-FESTIVAL.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BOTECO-SERTANEJO.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/NOITE-SEM-FIM.webp"]
