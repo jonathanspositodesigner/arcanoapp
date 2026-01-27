@@ -1,5 +1,5 @@
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight, Sparkles, Wand2, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect } from "react";
 // URLs exatas extraídas do HTML original do WordPress
 // selos 1-20 em /2024/12, selos 21-26 em /2025/11 com nomes diferentes
@@ -32,24 +32,6 @@ const selos = [
   "https://voxvisual.com.br/wp-content/uploads/2025/11/26-1.webp",
 ];
 
-const resources = [
-  {
-    icon: Sparkles,
-    title: "40+ Selos 3D",
-    description: "Selos prontos para usar em suas artes",
-  },
-  {
-    icon: Wand2,
-    title: "Ferramenta IA",
-    description: "Gere selos 3D personalizados com IA",
-  },
-  {
-    icon: Download,
-    title: "Download Direto",
-    description: "Baixe em alta resolução PNG",
-  },
-];
-
 export const Selos3DSection = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
@@ -72,27 +54,10 @@ export const Selos3DSection = () => {
   }, [emblaApi]);
 
   return (
-    <section className="py-16 px-4 bg-gradient-to-b from-[#0a0505] to-black">
+    <section className="py-10 px-4 bg-gradient-to-b from-[#0a0505] to-black">
       <div className="max-w-6xl mx-auto">
-        {/* Intro text */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-4xl font-black text-white mb-4">
-            INÚMEROS BÔNUS E RECURSOS ATUALIZADOS!
-          </h2>
-          <p className="text-gray-300 text-lg md:text-xl">
-            Tenha acesso aos mais atualizados recursos de I.A e destaque seu trabalho!
-          </p>
-        </div>
-        
-        {/* Badge */}
-        <div className="flex justify-center mb-10">
-          <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-lg px-8 py-3 rounded-full shadow-lg">
-            PACK DE SELOS 3D
-          </span>
-        </div>
-        
         {/* Carousel */}
-        <div className="relative mb-12">
+        <div className="relative">
           {/* Left fade overlay - desktop only */}
           <div className="hidden md:block absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-black to-transparent z-20 pointer-events-none" />
           
@@ -130,20 +95,6 @@ export const Selos3DSection = () => {
           >
             <ChevronRight className="w-6 h-6" />
           </button>
-        </div>
-        
-        {/* Resources cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {resources.map((resource, index) => (
-            <div
-              key={index}
-              className="bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-2xl p-6 text-center hover:border-[#EF672C]/50 transition-colors duration-300"
-            >
-              <resource.icon className="w-12 h-12 mx-auto mb-4 text-[#EF672C]" />
-              <h3 className="text-white font-bold text-xl mb-2">{resource.title}</h3>
-              <p className="text-gray-400">{resource.description}</p>
-            </div>
-          ))}
         </div>
       </div>
     </section>
