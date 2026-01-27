@@ -99,8 +99,18 @@ const ComboArtesArcanas = () => {
         className="fixed bottom-0 left-0 right-0 h-52 z-50 pointer-events-none md:hidden transition-opacity duration-300" 
         style={{
           background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.85) 20%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.1) 70%, rgba(0,0,0,0.05) 85%, rgba(0,0,0,0) 100%)',
-          backdropFilter: 'blur(2px)',
-          WebkitBackdropFilter: 'blur(2px)',
+          opacity: overlayOpacity
+        }}
+        aria-hidden="true"
+      />
+      {/* Blur layer with mask - fades blur gradually */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 h-52 z-[49] pointer-events-none md:hidden transition-opacity duration-300" 
+        style={{
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+          maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%)',
+          WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%)',
           opacity: overlayOpacity
         }}
         aria-hidden="true"
