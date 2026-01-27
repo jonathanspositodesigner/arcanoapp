@@ -25,7 +25,7 @@ const plans = [
   },
   {
     id: "vitalicio",
-    title: "Pack arcano 1 ao 3 acesso VITALÍCIO",
+    title: "Pack Arcano 1 ao 3\nACESSO VITALÍCIO",
     subtitle: "O mais vendido! 🔥",
     originalPrice: "141",
     price: "79,90",
