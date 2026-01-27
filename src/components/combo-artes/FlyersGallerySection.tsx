@@ -4,7 +4,18 @@ import { useCallback, useEffect } from "react";
 // URLs corretas extraídas do site https://voxvisual.com.br/combo3em1/
 const categories = [{
   title: "Artes de pagode",
-  images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/FESTEJA-TROPICAL-ST-768x1365.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/MIXTURADINHO-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BYE-BYE-FERIAS-768x1365.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/HOJE-JONAS-ESTICADO-768x1365.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/TARDEZINHA-HAVAIANA-768x1365.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/PAGODINHO-SUNSET.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/PAGODE-SO-AS-ANTIGAS.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/SABADO-COM-PAGODE-STORIES-SOCIAL-MEDIA.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/REVOADA-DO-CHEFE.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/END-OF-SUUMER.webp"]
+  images: [
+    "/images/combo/pagode-festeja-tropical.webp",
+    "/images/combo/pagode-mixturadinho.webp",
+    "/images/combo/pagode-bye-bye-ferias.webp",
+    "/images/combo/pagode-jonas-esticado.webp",
+    "/images/combo/pagode-tardezinha-havaiana.webp",
+    "/images/combo/pagode-pagodinho-sunset.webp",
+    "/images/combo/pagode-so-as-antigas.webp",
+    "/images/combo/pagode-sabado-com-pagode.webp",
+    "/images/combo/pagode-revoada-do-chefe.webp",
+    "/images/combo/pagode-end-of-summer.webp"
+  ]
 }, {
   title: "Artes de forró",
   images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/MIXTURADINHO-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-FORRO-DO-VILA-STORY-SOCIAL-MEDIA-1.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/VIBE-FORROZEIRA-ST.jpg", "https://voxvisual.com.br/wp-content/uploads/2025/11/FORRO-DE-SAO-JOAO.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FENOMENO-DO-PISEIRO-768x1365.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/RESENHA-DO-SAMBA1.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BALADINHA-DE-SABADO-STORY-SOCIAL-MEDIA.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-BAILE-DA-FAVORITA-STORIES.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/Flyer-Furacao-Hit-Stories-Social-Media1.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/ARROCHA-DA-PATROA-ST-768x1365.webp"]
