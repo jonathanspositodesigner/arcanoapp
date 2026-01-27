@@ -67,7 +67,7 @@ const plans = [
     ],
     bonus: "+35 ARTES DE CARNAVAL",
     checkoutUrl: "https://payfast.greenn.com.br/redirect/246696",
-    buttonText: "QUERO ESSE PLANO",
+    buttonText: "QUERO OS PACKS 1 AO 3 + BONUS",
     highlighted: true,
   },
 ];
