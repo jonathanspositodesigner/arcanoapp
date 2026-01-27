@@ -1,9 +1,10 @@
 import { useEffect, lazy, Suspense } from "react";
 import { ChevronDown } from "lucide-react";
-import { HeroSectionCombo, FeaturesSection, FlyersGallerySection } from "@/components/combo-artes";
+import { HeroSectionCombo, FeaturesSection } from "@/components/combo-artes";
 import { LazySection } from "@/components/combo-artes/LazySection";
 
 // Lazy load de seções pesadas abaixo do fold
+const FlyersGallerySection = lazy(() => import("@/components/combo-artes/FlyersGallerySection").then(m => ({ default: m.FlyersGallerySection })));
 const MotionsGallerySection = lazy(() => import("@/components/combo-artes/MotionsGallerySection").then(m => ({ default: m.MotionsGallerySection })));
 const BonusFimDeAnoSection = lazy(() => import("@/components/combo-artes/BonusFimDeAnoSection").then(m => ({ default: m.BonusFimDeAnoSection })));
 
@@ -80,8 +81,11 @@ const ComboArtesArcanas = () => {
         </div>
       </div>
       
-      <FeaturesSection />
-      <FlyersGallerySection />
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <FlyersGallerySection />
+        </Suspense>
+      </LazySection>
       
       {/* Below the fold - lazy loaded com IntersectionObserver */}
       <LazySection>

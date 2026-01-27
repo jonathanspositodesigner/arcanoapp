@@ -1,6 +1,7 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
+
 // URLs corretas extraídas do site https://voxvisual.com.br/combo3em1/
 const categories = [{
   title: "Artes de pagode",
@@ -80,6 +81,53 @@ const categories = [{
     "/images/combo/variadas-play-nas-ferias.webp"
   ]
 }];
+
+// Lazy carousel that only loads when visible
+const LazyCategoryCarousel = ({
+  title,
+  images,
+  index
+}: {
+  title: string;
+  images: string[];
+  index: number;
+}) => {
+  const [isVisible, setIsVisible] = useState(index === 0); // First one loads immediately
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (index === 0 || isVisible) return; // Skip if first or already visible
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" } // Start loading 200px before visible
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [index, isVisible]);
+
+  if (!isVisible) {
+    return (
+      <div ref={containerRef} className="mb-8">
+        <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-4 md:p-8 border border-zinc-800 min-h-[400px] animate-pulse flex items-center justify-center">
+          <span className="text-zinc-600">{title}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return <CategoryCarousel title={title} images={images} />;
+};
+
 const CategoryCarousel = ({
   title,
   images
@@ -105,7 +153,9 @@ const CategoryCarousel = ({
     
     return () => clearInterval(interval);
   }, [emblaApi]);
-  return <div className="mb-8">
+
+  return (
+    <div className="mb-8">
       <div className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-4 md:p-8 border border-zinc-800 hover:border-[#EF672C]/50 transition-all duration-300">
         <div className="flex justify-center mb-5">
           <span className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-semibold text-sm md:text-base px-5 py-2 rounded-full shadow-md">
@@ -127,9 +177,17 @@ const CategoryCarousel = ({
             
             <div ref={emblaRef}>
               <div className="flex md:-ml-4">
-                {images.map((image, index) => <div key={index} className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-0 md:pl-4">
-                    <img src={image} alt={`${title} ${index + 1}`} className="w-full max-w-[360px] md:w-full md:max-w-none h-auto object-contain rounded-xl shadow-lg hover:scale-105 transition-transform duration-300" loading="lazy" />
-                  </div>)}
+                {images.map((image, idx) => (
+                  <div key={idx} className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-0 md:pl-4">
+                    <img 
+                      src={image} 
+                      alt={`${title} ${idx + 1}`} 
+                      className="w-full max-w-[360px] md:w-full md:max-w-none h-auto object-contain rounded-xl shadow-lg hover:scale-105 transition-transform duration-300" 
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
             
@@ -151,10 +209,13 @@ const CategoryCarousel = ({
           </button>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export const FlyersGallerySection = () => {
-  return <section className="py-5 px-4 bg-gradient-to-b from-black to-[#0a0505]">
+  return (
+    <section className="py-5 px-4 bg-gradient-to-b from-black to-[#0a0505]">
       <div className="max-w-7xl mx-auto">
         {/* Section title */}
         <div className="text-center mb-12">
@@ -163,12 +224,16 @@ export const FlyersGallerySection = () => {
           </h2>
         </div>
         
-        
-        {/* Category carousels */}
-        {categories.map((category, index) => <CategoryCarousel key={index} title={category.title} images={category.images} />)}
-        
-        {/* E muito mais... */}
-        
+        {/* Category carousels - lazy loaded per category */}
+        {categories.map((category, index) => (
+          <LazyCategoryCarousel 
+            key={index} 
+            title={category.title} 
+            images={category.images}
+            index={index}
+          />
+        ))}
       </div>
-    </section>;
+    </section>
+  );
 };
