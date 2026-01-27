@@ -11,8 +11,8 @@ const plans = [
     price: "59,90",
     discount: "26% OFF",
     features: [
-      "1 Ano de Acesso",
       "+55 Artes Editáveis",
+      "1 Ano de Acesso",
       "210 Motions Editáveis",
       "40 Selos 3D",
       "Video Aulas Exclusivas",
@@ -33,8 +33,8 @@ const plans = [
     price: "59,90",
     discount: "26% OFF",
     features: [
-      "1 Ano de Acesso",
       "+110 Artes Editáveis",
+      "1 Ano de Acesso",
       "210 Motions Editáveis",
       "40 Selos 3D",
       "Video Aulas Exclusivas",
@@ -55,8 +55,8 @@ const plans = [
     price: "79,90",
     discount: "43% OFF",
     features: [
-      "Acesso Vitalício",
       "+210 Artes Editáveis",
+      "Acesso Vitalício",
       "210 Motions Editáveis",
       "40 Selos 3D",
       "Video Aulas Exclusivas",
@@ -178,7 +178,7 @@ export const PricingCardsSection = () => {
                 {plan.features.map((feature, index) => (
                   <li key={index} className="flex items-center gap-3 text-gray-300">
                     <Check className="w-5 h-5 text-[#EF672C] flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
+                    <span className={`text-sm ${index === 0 ? 'font-bold text-white' : ''}`}>{feature}</span>
                   </li>
                 ))}
               </ul>
