@@ -42,13 +42,13 @@ export const TestimonialsSection = () => {
           {testimonialImages.map((image, index) => (
             <div
               key={`image-${index}`}
-              className="relative rounded-xl overflow-hidden cursor-pointer group"
+              className="relative rounded-xl overflow-hidden cursor-pointer group bg-gray-900"
               onClick={() => setSelectedImage(image)}
             >
               <img
                 src={image}
                 alt={`Depoimento ${index + 1}`}
-                className="w-full aspect-[9/16] object-cover transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-auto transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
@@ -64,10 +64,9 @@ export const TestimonialsSection = () => {
               className="relative rounded-xl overflow-hidden cursor-pointer group bg-gray-900"
               onClick={() => setSelectedVideo(video)}
             >
-              {/* Video thumbnail - show first frame */}
               <video
                 src={video}
-                className="w-full aspect-[9/16] object-cover"
+                className="w-full h-auto"
                 preload="metadata"
                 muted
                 playsInline
