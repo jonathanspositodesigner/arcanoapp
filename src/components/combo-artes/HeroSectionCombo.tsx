@@ -6,7 +6,7 @@ export const HeroSectionCombo = () => {
   };
 
   return (
-    <section className="relative flex flex-col items-center justify-center py-8 md:py-12 px-4 overflow-hidden">
+    <section className="relative flex flex-col items-center justify-center pt-10 pb-8 md:pt-16 md:pb-12 px-4 overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a0a0a] via-[#0d0d0d] to-black" />
       
