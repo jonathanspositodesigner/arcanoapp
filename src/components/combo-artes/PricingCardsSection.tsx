@@ -4,7 +4,7 @@ import { appendUtmToUrl } from "@/lib/utmUtils";
 const plans = [
   {
     id: "semestral",
-    title: "Pack arcano 1 ao 3 acesso SEMESTRAL",
+    title: "Pack Arcano 1 ao 3\nACESSO SEMESTRAL",
     subtitle: "Para quem quer mais economia e mais vantagem.",
     originalPrice: "81",
     price: "59,90",
@@ -97,7 +97,7 @@ export const PricingCardsSection = () => {
               )}
               
               {/* Plan title */}
-              <h3 className="text-xl font-bold text-white mb-2 text-center">
+              <h3 className="text-xl font-bold text-white mb-2 text-center whitespace-pre-line">
                 {plan.title}
               </h3>
               <p className="text-gray-400 text-sm text-center mb-6">
