@@ -60,7 +60,7 @@ export const BonusGridSection = () => {
     <section className="py-16 px-4 bg-black">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-2">
+        <div className="text-center mb-3">
           <h2 className="text-2xl md:text-5xl font-bold text-white mb-1 md:mb-4">
             E não é só isso...
           </h2>
