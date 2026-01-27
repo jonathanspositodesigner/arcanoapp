@@ -71,6 +71,11 @@ const ComboArtesArcanas = () => {
 
   return (
     <div className="min-h-screen bg-black">
+      {/* Bottom fade overlay - mobile only, fixed at bottom of viewport */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black via-black/70 to-transparent backdrop-blur-[3px] z-50 pointer-events-none md:hidden" 
+        aria-hidden="true"
+      />
       {/* Above the fold - carrega imediatamente */}
       <HeroSectionCombo />
       
