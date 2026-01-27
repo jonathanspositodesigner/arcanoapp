@@ -1,7 +1,6 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useCallback } from "react";
-
+import { useCallback, useEffect } from "react";
 // URLs corretas extraídas do site https://voxvisual.com.br/combo3em1/
 const categories = [{
   title: "Artes de pagode",
@@ -36,6 +35,17 @@ const CategoryCarousel = ({
   });
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  // Auto-scroll a cada 2 segundos
+  useEffect(() => {
+    if (!emblaApi) return;
+    
+    const interval = setInterval(() => {
+      emblaApi.scrollNext();
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [emblaApi]);
   return <div className="mb-8">
       <div className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-2xl p-4 md:p-8 border border-zinc-800 hover:border-[#EF672C]/50 transition-all duration-300">
         <div className="flex justify-center mb-5">

@@ -1,7 +1,6 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Gift } from "lucide-react";
-import { useCallback } from "react";
-
+import { useCallback, useEffect } from "react";
 // URLs das artes de Carnaval
 const artesCarnaval = [
   "https://voxvisual.com.br/wp-content/uploads/2026/01/AQUECIMENTO-DE-CARNAVAL-ST.webp",
@@ -22,6 +21,17 @@ export const BonusFimDeAnoSection = () => {
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  // Auto-scroll a cada 2 segundos
+  useEffect(() => {
+    if (!emblaApi) return;
+    
+    const interval = setInterval(() => {
+      emblaApi.scrollNext();
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [emblaApi]);
 
   return (
     <section className="py-16 md:py-28 px-4 bg-gradient-to-br from-[#EF672C] via-[#d4451a] to-[#8B0000] relative isolate overflow-hidden">
