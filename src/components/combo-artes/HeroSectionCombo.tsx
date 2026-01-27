@@ -41,11 +41,12 @@ export const HeroSectionCombo = () => {
         </h1>
         
         {/* Membros image below title - LCP image */}
+        {/* eslint-disable-next-line react/no-unknown-property */}
         <img
           src="/images/combo/area-de-membros-hero.webp"
           alt="Área de Membros"
           className="-mt-6 md:-mt-14 -mb-1 max-w-3xl w-full object-contain"
-          fetchPriority="high"
+          {...{ fetchpriority: "high" } as React.ImgHTMLAttributes<HTMLImageElement>}
         />
         
         {/* Subtitle */}
