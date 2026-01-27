@@ -3,33 +3,10 @@ import { appendUtmToUrl } from "@/lib/utmUtils";
 
 const plans = [
   {
-    id: "trimestral",
-    title: "Pack arcano 1 ao 3 acesso TRIMESTRAL",
-    subtitle: "Para quem quer testar tudo sem compromisso.",
-    price: "9,90",
-    installments: "3x",
-    fullPrice: "R$ 29,90",
-    features: [
-      "3 Meses de Acesso",
-      "200 Artes Editáveis",
-      "210 Motions Editáveis",
-      "40 Selos 3D",
-      "Video Aulas Exclusivas",
-      "Bônus Exclusivos",
-      "Atualizações Semanais",
-      "Suporte via WhatsApp",
-      "Área de Membros",
-    ],
-    checkoutUrl: "https://payfast.greenn.com.br/147967/offer/e6jRLBXpJ0MkmV5",
-    highlighted: false,
-  },
-  {
     id: "semestral",
     title: "Pack arcano 1 ao 3 acesso SEMESTRAL",
     subtitle: "Para quem quer mais economia e mais vantagem.",
-    price: "9,90",
-    installments: "6x",
-    fullPrice: "R$ 59,90",
+    price: "59,90",
     features: [
       "6 Meses de Acesso",
       "200 Artes Editáveis",
@@ -48,9 +25,7 @@ const plans = [
     id: "vitalicio",
     title: "Pack arcano 1 ao 3 acesso VITALÍCIO",
     subtitle: "O mais vendido! 🔥",
-    price: "6,66",
-    installments: "12x",
-    fullPrice: "R$ 79,90",
+    price: "79,90",
     features: [
       "Acesso Vitalício",
       "200 Artes Editáveis",
@@ -87,7 +62,7 @@ export const PricingCardsSection = () => {
 
   return (
     <section id="pricing" className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Section title */}
         <h2 className="text-3xl md:text-4xl font-black text-center text-white mb-4">
           Escolha seu plano
@@ -97,13 +72,13 @@ export const PricingCardsSection = () => {
         </p>
         
         {/* Pricing cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {plans.map((plan) => (
             <div
               key={plan.id}
               className={`relative rounded-3xl p-6 md:p-8 ${
                 plan.highlighted
-                  ? "bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C] scale-105"
+                  ? "bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C] md:scale-105"
                   : "bg-gradient-to-br from-white/5 to-white/0 border border-white/10"
               }`}
             >
@@ -127,12 +102,11 @@ export const PricingCardsSection = () => {
               
               {/* Price */}
               <div className="text-center mb-6">
-                <span className="text-gray-400 text-sm">{plan.installments}</span>
                 <div className="flex items-center justify-center gap-1">
                   <span className="text-gray-400 text-lg">R$</span>
                   <span className="text-5xl font-black text-white">{plan.price}</span>
                 </div>
-                <span className="text-gray-500 text-sm">ou {plan.fullPrice} à vista</span>
+                <span className="text-gray-500 text-sm">à vista</span>
               </div>
               
               {/* Bonus badge */}
