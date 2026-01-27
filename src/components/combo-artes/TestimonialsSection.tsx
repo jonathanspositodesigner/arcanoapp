@@ -51,7 +51,6 @@ export const TestimonialsSection = () => {
                 className="w-full h-auto transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
             </div>
           ))}
         </div>
