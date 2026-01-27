@@ -43,7 +43,18 @@ const categories = [{
   ]
 }, {
   title: "Artes de funk",
-  images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/FUNK-PARTY-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/NOITE-IN-VEGAS-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/B-DAY-DO-TUBARAO.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLUXO-BAILE-FUNK.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BAILE-DO-SINAL.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/B-DAY-MC-WM.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-BAILE-DO-MALVADAO-STORIES.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-GIRO-LOUCO-STORIES.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EMBRAZA-STORY-SOCIAL-MEDIA.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/MADE-IN-FUNK.webp"]
+  images: [
+    "/images/combo/funk-party.webp",
+    "/images/combo/funk-noite-vegas.webp",
+    "/images/combo/funk-bday-tubarao.webp",
+    "/images/combo/funk-fluxo-baile.webp",
+    "/images/combo/funk-baile-sinal.webp",
+    "/images/combo/funk-bday-mc-wm.webp",
+    "/images/combo/funk-baile-malvadao.webp",
+    "/images/combo/funk-giro-louco.webp",
+    "/images/combo/funk-embraza.webp",
+    "/images/combo/funk-made-in-funk.webp"
+  ]
 }, {
   title: "Artes de cavalgada",
   images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/12a-CAVALGADA-DOS-AMIGOS.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-SEMANAL-TOCA-DO-VALE.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-DOS-GIGANTES-scaled-1-768x1365.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-FEST-2025.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/PROXIMOS-SHOWS-BIU-DO-PISEIRO.jpg", "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/RODEIO-E-VAQUEJADA.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/CONTRATE-JOAO-GOMES.webp"]
