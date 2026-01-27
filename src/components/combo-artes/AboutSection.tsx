@@ -6,7 +6,7 @@ export const AboutSection = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
           {/* Left side - Content */}
-          <div className="flex-1 order-2 md:order-1">
+          <div className="flex-1 order-2 md:order-1 px-2 md:px-0">
             {/* Sobre badge */}
             <div className="mb-6">
               <span className="inline-flex items-center gap-2 bg-white/10 text-white text-sm font-medium px-4 py-2 rounded-full border border-white/20">
@@ -81,7 +81,7 @@ export const AboutSection = () => {
           <div className="flex-1 order-1 md:order-2 relative">
             <div className="relative">
               {/* Mobile badges - positioned on top of photo */}
-              <div className="md:hidden absolute top-3 left-3 right-3 flex justify-between z-10">
+              <div className="md:hidden absolute top-3 left-3 flex flex-col gap-2 z-10">
                 <span className="bg-black/70 border border-cyan-400 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-full">
                   EXPERT EM EVENTOS
                 </span>
