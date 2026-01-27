@@ -91,11 +91,11 @@ export const AboutSection = () => {
               </div>
               
               {/* Desktop badges - positioned at bottom-center over the photo */}
-              <div className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 gap-3 z-10">
-                <span className="bg-transparent border-2 border-[#EF672C] text-[#EF672C] text-xs font-bold px-4 py-2 rounded-full">
+              <div className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 gap-3 z-10 whitespace-nowrap">
+                <span className="bg-transparent border-2 border-[#EF672C] text-[#EF672C] text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap">
                   EXPERT EM EVENTOS
                 </span>
-                <span className="bg-transparent border-2 border-[#EF672C] text-[#EF672C] text-xs font-bold px-4 py-2 rounded-full">
+                <span className="bg-transparent border-2 border-[#EF672C] text-[#EF672C] text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap">
                   +11 ANOS DE EXPERIÊNCIA
                 </span>
               </div>
