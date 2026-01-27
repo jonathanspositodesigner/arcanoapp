@@ -34,13 +34,13 @@ export const BonusFimDeAnoSection = () => {
         <div className="text-center mb-10">
           {/* Badge with icons */}
           <div className="inline-flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 flex items-center justify-center animate-pulse backdrop-blur-sm">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black flex items-center justify-center animate-pulse backdrop-blur-sm">
               <Gift className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
             <span className="bg-black text-white font-bold text-sm md:text-lg px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-xl whitespace-nowrap">
               🎭 Bônus de Carnaval
             </span>
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 flex items-center justify-center animate-pulse backdrop-blur-sm">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black flex items-center justify-center animate-pulse backdrop-blur-sm">
               <Gift className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
           </div>
@@ -64,7 +64,7 @@ export const BonusFimDeAnoSection = () => {
           {/* Desktop left */}
           <button
             onClick={scrollPrev}
-            className="hidden md:inline-flex flex-shrink-0 bg-black/50 hover:bg-yellow-300 hover:text-black text-white p-2.5 md:p-3 rounded-full transition-colors backdrop-blur-sm"
+            className="hidden md:inline-flex flex-shrink-0 bg-black hover:bg-yellow-300 hover:text-black text-white p-2.5 md:p-3 rounded-full transition-colors backdrop-blur-sm"
             aria-label="Anterior"
           >
             <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
@@ -92,7 +92,7 @@ export const BonusFimDeAnoSection = () => {
           {/* Desktop right */}
           <button
             onClick={scrollNext}
-            className="hidden md:inline-flex flex-shrink-0 bg-black/50 hover:bg-yellow-300 hover:text-black text-white p-2.5 md:p-3 rounded-full transition-colors backdrop-blur-sm"
+            className="hidden md:inline-flex flex-shrink-0 bg-black hover:bg-yellow-300 hover:text-black text-white p-2.5 md:p-3 rounded-full transition-colors backdrop-blur-sm"
             aria-label="Próximo"
           >
             <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
@@ -101,14 +101,14 @@ export const BonusFimDeAnoSection = () => {
           {/* Mobile overlay buttons */}
           <button
             onClick={scrollPrev}
-            className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/65 text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
+            className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 bg-black hover:bg-black text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
             aria-label="Anterior"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={scrollNext}
-            className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 bg-black/45 hover:bg-black/65 text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
+            className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 bg-black hover:bg-black text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
             aria-label="Próximo"
           >
             <ChevronRight className="w-4 h-4" />
