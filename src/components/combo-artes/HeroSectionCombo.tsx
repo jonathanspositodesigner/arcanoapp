@@ -48,17 +48,17 @@ export const HeroSectionCombo = () => {
         />
         
         {/* Subtitle */}
-        <p className="text-lg md:text-xl text-gray-300 mb-6 md:whitespace-nowrap">Conheça nossa plataforma com <span className="text-[#EF672C] font-bold">+ de 380 Artes Editáveis PSD e CANVA!</span></p>
+        <p className="text-lg md:text-2xl text-gray-300 mb-6 md:whitespace-nowrap">Conheça nossa plataforma com <span className="text-[#EF672C] font-bold">+ de 380 Artes Editáveis PSD e CANVA!</span></p>
         
         {/* Feature badges */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-          <div className="flex items-center gap-2 bg-gradient-to-r from-[#EF672C]/20 to-[#EF672C]/10 border border-[#EF672C]/50 rounded-full px-4 py-2">
-            <RefreshCw className="w-4 h-4 text-[#EF672C]" />
-            <span className="text-white font-semibold text-sm md:text-base">ATUALIZAÇÕES SEMANAIS</span>
+        <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-8">
+          <div className="flex items-center gap-1.5 bg-gradient-to-r from-[#EF672C]/20 to-[#EF672C]/10 border border-[#EF672C]/50 rounded-full px-3 py-1.5">
+            <RefreshCw className="w-3.5 h-3.5 text-[#EF672C]" />
+            <span className="text-white font-medium text-xs md:text-sm">ATUALIZAÇÕES SEMANAIS</span>
           </div>
-          <div className="flex items-center gap-2 bg-gradient-to-r from-[#EF672C]/20 to-[#EF672C]/10 border border-[#EF672C]/50 rounded-full px-4 py-2">
-            <Palette className="w-4 h-4 text-[#EF672C]" />
-            <span className="text-white font-semibold text-sm md:text-base">EDITÁVEL NO CANVA E PHOTOSHOP</span>
+          <div className="flex items-center gap-1.5 bg-gradient-to-r from-[#EF672C]/20 to-[#EF672C]/10 border border-[#EF672C]/50 rounded-full px-3 py-1.5">
+            <Palette className="w-3.5 h-3.5 text-[#EF672C]" />
+            <span className="text-white font-medium text-xs md:text-sm">EDITÁVEL NO CANVA E PHOTOSHOP</span>
           </div>
         </div>
         
