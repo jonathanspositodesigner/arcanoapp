@@ -73,7 +73,12 @@ const ComboArtesArcanas = () => {
     <div className="min-h-screen bg-black">
       {/* Bottom fade overlay - mobile only, fixed at bottom of viewport */}
       <div 
-        className="fixed bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black via-black/70 to-transparent backdrop-blur-[3px] z-50 pointer-events-none md:hidden" 
+        className="fixed bottom-0 left-0 right-0 h-52 z-50 pointer-events-none md:hidden" 
+        style={{
+          background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 20%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.1) 80%, rgba(0,0,0,0) 100%)',
+          backdropFilter: 'blur(2px)',
+          WebkitBackdropFilter: 'blur(2px)'
+        }}
         aria-hidden="true"
       />
       {/* Above the fold - carrega imediatamente */}
