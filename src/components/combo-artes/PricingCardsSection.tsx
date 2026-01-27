@@ -4,6 +4,27 @@ import { useState, useEffect } from "react";
 
 const plans = [
   {
+    id: "1-ano",
+    title: "Pack Arcano Vol.1\nACESSO 1 ANO",
+    subtitle: "Para quem quer começar com qualidade.",
+    originalPrice: "81",
+    price: "59,90",
+    discount: "26% OFF",
+    features: [
+      "1 Ano de Acesso",
+      "+210 Artes Editáveis",
+      "210 Motions Editáveis",
+      "40 Selos 3D",
+      "Video Aulas Exclusivas",
+      "Bônus Exclusivos",
+      "Atualizações Semanais",
+      "Suporte via WhatsApp",
+      "Área de Membros",
+    ],
+    checkoutUrl: "https://payfast.greenn.com.br/147968/offer/KeCO0dB4qj6kpVp",
+    highlighted: false,
+  },
+  {
     id: "semestral",
     title: "Pack Arcano 1 ao 3\nACESSO SEMESTRAL",
     subtitle: "Para quem quer mais economia e mais vantagem.",
