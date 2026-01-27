@@ -90,8 +90,8 @@ export const AboutSection = () => {
                 </span>
               </div>
               
-              {/* Desktop badges - positioned at top-left over the photo */}
-              <div className="hidden md:flex absolute top-8 left-4 gap-3 z-10">
+              {/* Desktop badges - positioned at bottom-left over the photo */}
+              <div className="hidden md:flex absolute bottom-4 left-4 gap-3 z-10">
                 <span className="bg-transparent border-2 border-[#EF672C] text-[#EF672C] text-xs font-bold px-4 py-2 rounded-full">
                   EXPERT EM EVENTOS
                 </span>
