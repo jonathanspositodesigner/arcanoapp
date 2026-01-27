@@ -10,6 +10,9 @@ export const HeroSectionCombo = () => {
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a0a0a] via-[#0d0d0d] to-black" />
       
+      {/* Bottom fade gradient - mobile only */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black via-black/80 to-transparent backdrop-blur-[2px] md:hidden pointer-events-none" aria-hidden="true" />
+      
       {/* Glow effect - centered and non-interactive to prevent CLS */}
       <div 
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#EF672C]/15 rounded-full blur-[120px] pointer-events-none" 
