@@ -40,11 +40,12 @@ export const HeroSectionCombo = () => {
           <span className="text-white">criando tudo do zero!</span>
         </h1>
         
-        {/* Membros image below title */}
+        {/* Membros image below title - LCP image */}
         <img
           src="/images/combo/area-de-membros-hero.webp"
           alt="Área de Membros"
           className="-mt-6 md:-mt-14 -mb-1 max-w-3xl w-full object-contain"
+          fetchPriority="high"
         />
         
         {/* Subtitle */}
