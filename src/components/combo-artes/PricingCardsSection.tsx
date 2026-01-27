@@ -32,7 +32,7 @@ const plans = [
     price: "59,90",
     discount: "26% OFF",
     features: [
-      "6 Meses de Acesso",
+      "1 Ano de Acesso",
       "+110 Artes Editáveis",
       "210 Motions Editáveis",
       "40 Selos 3D",
