@@ -59,35 +59,35 @@ export const GuaranteeSectionCombo = () => {
               {/* CTA Button */}
               <button
                 onClick={handlePurchase}
-                className="w-full md:w-auto bg-green-500 hover:bg-green-600 text-white font-bold text-lg px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/30 flex items-center justify-center gap-2 mx-auto md:mx-0"
+                className="w-full md:w-auto bg-green-500 hover:bg-green-600 text-white font-bold text-base md:text-lg px-6 md:px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/30 flex items-center justify-center gap-2 mx-auto md:mx-0 whitespace-nowrap"
               >
-                <Lock className="w-5 h-5" />
+                <Lock className="w-5 h-5 flex-shrink-0" />
                 COMPRAR COM SEGURANÇA
               </button>
               
               {/* Trust badges */}
-              <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-6">
-                <div className="flex items-center gap-2 text-gray-700">
-                  <ShieldCheck className="w-6 h-6 text-gray-600" />
+              <div className="flex justify-center md:justify-start gap-3 md:gap-6 mt-6">
+                <div className="flex items-center gap-1 md:gap-2 text-gray-700">
+                  <ShieldCheck className="w-4 h-4 md:w-6 md:h-6 text-gray-600 flex-shrink-0" />
                   <div className="text-left">
-                    <p className="text-xs font-bold">Compra</p>
-                    <p className="text-xs">Segura</p>
+                    <p className="text-[10px] md:text-xs font-bold leading-tight">Compra</p>
+                    <p className="text-[10px] md:text-xs leading-tight">Segura</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 text-gray-700">
-                  <Award className="w-6 h-6 text-gray-600" />
+                <div className="flex items-center gap-1 md:gap-2 text-gray-700">
+                  <Award className="w-4 h-4 md:w-6 md:h-6 text-gray-600 flex-shrink-0" />
                   <div className="text-left">
-                    <p className="text-xs font-bold">Satisfação</p>
-                    <p className="text-xs">Garantida</p>
+                    <p className="text-[10px] md:text-xs font-bold leading-tight">Satisfação</p>
+                    <p className="text-[10px] md:text-xs leading-tight">Garantida</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 text-gray-700">
-                  <Lock className="w-6 h-6 text-gray-600" />
+                <div className="flex items-center gap-1 md:gap-2 text-gray-700">
+                  <Lock className="w-4 h-4 md:w-6 md:h-6 text-gray-600 flex-shrink-0" />
                   <div className="text-left">
-                    <p className="text-xs font-bold">Privacidade</p>
-                    <p className="text-xs">Protegida</p>
+                    <p className="text-[10px] md:text-xs font-bold leading-tight">Privacidade</p>
+                    <p className="text-[10px] md:text-xs leading-tight">Protegida</p>
                   </div>
                 </div>
               </div>
