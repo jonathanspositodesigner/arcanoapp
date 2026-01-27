@@ -1,9 +1,17 @@
 # Cache para assets com hash do Vite - 50 dias
 /assets/*
-  Cache-Control: public, max-age=4320000
+  Cache-Control: public, max-age=4320000, immutable
 
-# Cache para imagens na pasta public - 30 dias
+# Cache para imagens na pasta public/images - 30 dias
 /images/*
+  Cache-Control: public, max-age=2592000
+
+# Cache específico para imagens combo - 30 dias
+/images/combo/*
+  Cache-Control: public, max-age=2592000
+
+# Cache para arquivos webp - 30 dias
+/*.webp
   Cache-Control: public, max-age=2592000
 
 # Cache para ícones e favicons - 30 dias
