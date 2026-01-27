@@ -74,6 +74,9 @@ const ComboArtesArcanas = () => {
       {/* Above the fold - carrega imediatamente */}
       <HeroSectionCombo />
       
+      {/* Features Section - cards de benefícios */}
+      <FeaturesSection />
+      
       {/* Animated scroll indicator */}
       <div className="flex justify-center pb-4 bg-black">
         <div className="animate-bounce">

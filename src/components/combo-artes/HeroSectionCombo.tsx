@@ -10,8 +10,11 @@ export const HeroSectionCombo = () => {
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a0a0a] via-[#0d0d0d] to-black" />
       
-      {/* Glow effect */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#EF672C]/15 rounded-full blur-[120px]" />
+      {/* Glow effect - centered and non-interactive to prevent CLS */}
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#EF672C]/15 rounded-full blur-[120px] pointer-events-none" 
+        aria-hidden="true"
+      />
       
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center">
@@ -20,6 +23,8 @@ export const HeroSectionCombo = () => {
           src="https://voxvisual.com.br/wp-content/uploads/2024/11/LOGO-CLLR-1.png"
           alt="Biblioteca de Artes Arcanas"
           className="mb-6 h-14 md:h-20 object-contain"
+          width={200}
+          height={80}
         />
         
         {/* Members badge - ABOVE the title */}
@@ -40,13 +45,14 @@ export const HeroSectionCombo = () => {
           <span className="text-white">criando tudo do zero!</span>
         </h1>
         
-        {/* Membros image below title - LCP image */}
-        {/* eslint-disable-next-line react/no-unknown-property */}
+        {/* Membros image below title - LCP image with explicit dimensions to prevent CLS */}
         <img
           src="/images/combo/area-de-membros-hero.webp"
           alt="Área de Membros"
-          className="-mt-6 md:-mt-14 -mb-1 max-w-3xl w-full object-contain"
-          {...{ fetchpriority: "high" } as React.ImgHTMLAttributes<HTMLImageElement>}
+          className="-mt-6 md:-mt-14 -mb-1 max-w-3xl w-full aspect-[16/9] object-contain"
+          width={768}
+          height={432}
+          fetchPriority="high"
         />
         
         {/* Subtitle */}
