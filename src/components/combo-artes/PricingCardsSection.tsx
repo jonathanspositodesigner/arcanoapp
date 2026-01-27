@@ -1,5 +1,6 @@
-import { Check, Star, Gift } from "lucide-react";
+import { Check, Star, Gift, Clock, AlertTriangle } from "lucide-react";
 import { appendUtmToUrl } from "@/lib/utmUtils";
+import { useState, useEffect } from "react";
 
 const plans = [
   {
@@ -48,6 +49,23 @@ const plans = [
 ];
 
 export const PricingCardsSection = () => {
+  const [timeLeft, setTimeLeft] = useState(24 * 60 * 60); // 24 hours in seconds
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
   const handlePurchase = (checkoutUrl: string) => {
     const urlWithUtm = appendUtmToUrl(checkoutUrl);
     
@@ -154,6 +172,32 @@ export const PricingCardsSection = () => {
               </button>
             </div>
           ))}
+        </div>
+
+        {/* Urgency Countdown Section */}
+        <div className="mt-10 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 rounded-2xl p-6 md:p-8 text-center animate-pulse-slow">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <AlertTriangle className="w-6 h-6 text-yellow-300 animate-bounce" />
+            <span className="text-yellow-300 font-black text-lg md:text-xl uppercase tracking-wide">
+              Última Chamada!
+            </span>
+            <AlertTriangle className="w-6 h-6 text-yellow-300 animate-bounce" />
+          </div>
+          
+          <p className="text-white font-bold text-xl md:text-2xl mb-4">
+            🔥 Promoção válida somente HOJE! 🔥
+          </p>
+          
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Clock className="w-8 h-8 text-white" />
+            <span className="text-4xl md:text-5xl font-black text-white font-mono tracking-wider">
+              {formatTime(timeLeft)}
+            </span>
+          </div>
+          
+          <p className="text-white/90 text-sm md:text-base">
+            ⚠️ Após esse tempo, os preços voltam ao normal!
+          </p>
         </div>
       </div>
     </section>
