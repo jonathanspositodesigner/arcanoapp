@@ -34,13 +34,13 @@ export const BonusFimDeAnoSection = () => {
         <div className="text-center mb-10">
           {/* Badge with icons */}
           <div className="inline-flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black flex items-center justify-center animate-pulse backdrop-blur-sm">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center animate-pulse" style={{ backgroundColor: '#000000' }}>
               <Gift className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <span className="bg-black text-white font-bold text-sm md:text-lg px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-xl whitespace-nowrap">
+            <span className="text-white font-bold text-sm md:text-lg px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-xl whitespace-nowrap" style={{ backgroundColor: '#000000' }}>
               🎭 Bônus de Carnaval
             </span>
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black flex items-center justify-center animate-pulse backdrop-blur-sm">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center animate-pulse" style={{ backgroundColor: '#000000' }}>
               <Gift className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
           </div>
