@@ -99,6 +99,61 @@
     })(window, document, "clarity", "script", "qczq95ipaf");
     </script>
     <!-- End Microsoft Clarity -->
+    
+    <!-- Anti-Inspect Protection -->
+    <script>
+    (function() {
+      // 1. Bloquear clique direito
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+      });
+
+      // 2. Bloquear atalhos de teclado
+      document.addEventListener('keydown', function(e) {
+        // F12
+        if (e.key === 'F12' || e.keyCode === 123) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl+Shift+I / Cmd+Option+I
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl+Shift+J
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl+Shift+C
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl+U (ver código fonte)
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // 3. Detectar DevTools aberto
+      (function detectDevTools() {
+        const threshold = 160;
+        setInterval(function() {
+          if (window.outerWidth - window.innerWidth > threshold || 
+              window.outerHeight - window.innerHeight > threshold) {
+            console.clear();
+          }
+        }, 1000);
+      })();
+
+      // 4. Desabilitar arrastar elementos
+      document.ondragstart = function() { return false; };
+    })();
+    </script>
+    <!-- End Anti-Inspect Protection -->
   </head>
   <body>
     <noscript><img height="1" width="1" style="display:none"
