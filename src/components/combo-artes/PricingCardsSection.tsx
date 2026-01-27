@@ -44,7 +44,7 @@ const plans = [
       "Área de Membros",
     ],
     checkoutUrl: "https://payfast.greenn.com.br/147968/offer/KeCO0dB4qj6kpVp",
-    buttonText: "QUERO ESSE PLANO",
+    buttonText: "QUERO OS PACKS VOL.1 E 2",
     highlighted: false,
   },
   {
