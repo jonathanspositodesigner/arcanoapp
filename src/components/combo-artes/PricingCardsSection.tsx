@@ -69,7 +69,7 @@ export const PricingCardsSection = () => {
       <div className="max-w-4xl mx-auto">
         {/* Section title */}
         <h2 className="text-3xl md:text-4xl font-black text-center text-white mb-4">
-          Escolha seu plano
+          Promoção por tempo limitado
         </h2>
         <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
           Selecione o seu plano e comece a criar artes profissionais hoje mesmo!
