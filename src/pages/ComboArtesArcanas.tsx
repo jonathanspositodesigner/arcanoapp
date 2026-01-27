@@ -1,6 +1,6 @@
 import { useEffect, useState, lazy, Suspense } from "react";
-import { ChevronDown } from "lucide-react";
-import { HeroSectionCombo, FeaturesSection } from "@/components/combo-artes";
+import { HeroSectionCombo } from "@/components/combo-artes/HeroSectionCombo";
+import { FeaturesSection } from "@/components/combo-artes/FeaturesSection";
 import { LazySection } from "@/components/combo-artes/LazySection";
 
 // Lazy load de seções pesadas abaixo do fold
@@ -22,16 +22,27 @@ const SectionSkeleton = () => (
   <div className="min-h-[300px] bg-black animate-pulse" />
 );
 
+// SVG inline para evitar importar lucide-react no bundle inicial
+const ChevronDownIcon = () => (
+  <svg 
+    className="w-8 h-8 text-[#EF672C] drop-shadow-lg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
 // Extend Window interface for Meta Pixel
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
-    _fbq?: unknown;
   }
 }
-
-// Meta Pixel ID (same as other pages)
-const META_PIXEL_ID = "1051791498880287";
 
 const ComboArtesArcanas = () => {
   const [overlayOpacity, setOverlayOpacity] = useState(1);
@@ -57,29 +68,7 @@ const ComboArtesArcanas = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Initialize Meta Pixel
-  useEffect(() => {
-    if (typeof window !== "undefined" && !window.fbq) {
-      const script = document.createElement("script");
-      script.innerHTML = `
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '${META_PIXEL_ID}');
-        fbq('track', 'PageView');
-      `;
-      document.head.appendChild(script);
-    } else if (window.fbq) {
-      window.fbq("track", "PageView");
-    }
-  }, []);
-
-  // Track ViewContent
+  // Track ViewContent - Meta Pixel já inicializado no index.html
   useEffect(() => {
     if (window.fbq) {
       window.fbq("track", "ViewContent", {
@@ -122,7 +111,7 @@ const ComboArtesArcanas = () => {
         style={{ opacity: overlayOpacity }}
       >
         <div className="animate-bounce">
-          <ChevronDown className="w-8 h-8 text-[#EF672C] drop-shadow-lg" />
+          <ChevronDownIcon />
         </div>
       </div>
       
@@ -135,7 +124,7 @@ const ComboArtesArcanas = () => {
       {/* Animated scroll indicator - desktop only */}
       <div className="hidden md:flex justify-center pb-4 bg-black">
         <div className="animate-bounce">
-          <ChevronDown className="w-8 h-8 text-[#EF672C]" />
+          <ChevronDownIcon />
         </div>
       </div>
       
