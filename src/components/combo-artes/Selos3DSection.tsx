@@ -1,7 +1,6 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Sparkles, Wand2, Download } from "lucide-react";
-import { useCallback } from "react";
-
+import { useCallback, useEffect } from "react";
 // URLs exatas extraídas do HTML original do WordPress
 // selos 1-20 em /2024/12, selos 21-26 em /2025/11 com nomes diferentes
 const selos = [
@@ -60,6 +59,17 @@ export const Selos3DSection = () => {
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  // Auto-scroll a cada 2 segundos
+  useEffect(() => {
+    if (!emblaApi) return;
+    
+    const interval = setInterval(() => {
+      emblaApi.scrollNext();
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [emblaApi]);
 
   return (
     <section className="py-16 px-4 bg-gradient-to-b from-[#0a0505] to-black">
