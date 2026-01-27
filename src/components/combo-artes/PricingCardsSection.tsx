@@ -49,7 +49,7 @@ const plans = [
 ];
 
 export const PricingCardsSection = () => {
-  const [timeLeft, setTimeLeft] = useState(24 * 60 * 60); // 24 hours in seconds
+  const [timeLeft, setTimeLeft] = useState(3 * 60 * 60); // 3 hours in seconds
 
   useEffect(() => {
     const timer = setInterval(() => {
