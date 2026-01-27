@@ -61,13 +61,21 @@ const CategoryCarousel = ({
             <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
           </button>
 
-          {/* Viewport */}
-          <div className="overflow-hidden md:flex-1" ref={emblaRef}>
-            <div className="flex md:-ml-4">
-              {images.map((image, index) => <div key={index} className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-0 md:pl-4">
-                  <img src={image} alt={`${title} ${index + 1}`} className="w-full max-w-[360px] md:w-full md:max-w-none h-auto object-contain rounded-xl shadow-lg hover:scale-105 transition-transform duration-300" loading="lazy" />
-                </div>)}
+          {/* Viewport with edge fade effect on desktop */}
+          <div className="relative overflow-hidden md:flex-1">
+            {/* Left fade overlay - desktop only */}
+            <div className="hidden md:block absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-zinc-900 to-transparent z-10 pointer-events-none" />
+            
+            <div ref={emblaRef}>
+              <div className="flex md:-ml-4">
+                {images.map((image, index) => <div key={index} className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-0 md:pl-4">
+                    <img src={image} alt={`${title} ${index + 1}`} className="w-full max-w-[360px] md:w-full md:max-w-none h-auto object-contain rounded-xl shadow-lg hover:scale-105 transition-transform duration-300" loading="lazy" />
+                  </div>)}
+              </div>
             </div>
+            
+            {/* Right fade overlay - desktop only */}
+            <div className="hidden md:block absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-zinc-900 to-transparent z-10 pointer-events-none" />
           </div>
 
           {/* Desktop right */}

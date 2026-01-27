@@ -93,6 +93,9 @@ export const Selos3DSection = () => {
         
         {/* Carousel */}
         <div className="relative mb-12">
+          {/* Left fade overlay - desktop only */}
+          <div className="hidden md:block absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-black to-transparent z-20 pointer-events-none" />
+          
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex gap-6">
               {selos.map((selo, index) => (
@@ -110,6 +113,9 @@ export const Selos3DSection = () => {
               ))}
             </div>
           </div>
+          
+          {/* Right fade overlay - desktop only */}
+          <div className="hidden md:block absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-black to-transparent z-20 pointer-events-none" />
           
           {/* Navigation buttons */}
           <button
