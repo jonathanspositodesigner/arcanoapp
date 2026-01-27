@@ -118,11 +118,11 @@ export const PricingCardsSection = () => {
         </p>
         
         {/* Pricing cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-6 md:items-stretch">
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative rounded-3xl p-6 md:p-8 ${
+              className={`relative rounded-3xl p-6 md:p-8 flex flex-col ${
                 plan.highlighted
                   ? "bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C] md:scale-105"
                   : "bg-gradient-to-br from-white/5 to-white/0 border border-white/10"
@@ -165,16 +165,18 @@ export const PricingCardsSection = () => {
                 <span className="text-gray-500 text-sm">à vista</span>
               </div>
               
-              {/* Bonus badge */}
-              {plan.bonus && (
+              {/* Bonus badge - fixed height placeholder for cards without bonus */}
+              {plan.bonus ? (
                 <div className="bg-gradient-to-r from-yellow-600 via-yellow-500 to-amber-400 text-black text-sm font-bold px-4 py-2 rounded-lg mb-6 flex items-center justify-center gap-2">
                   <Gift className="w-4 h-4" />
                   {plan.bonus}
                 </div>
+              ) : (
+                <div className="h-[40px] mb-6" />
               )}
               
               {/* Features list */}
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-3 mb-8 flex-grow">
                 {plan.features.map((feature, index) => (
                   <li key={index} className="flex items-center gap-3 text-gray-300">
                     <Check className="w-5 h-5 text-[#EF672C] flex-shrink-0" />
