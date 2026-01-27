@@ -3,9 +3,10 @@
 export { HeroSectionCombo } from './HeroSectionCombo';
 export { FeaturesSection } from './FeaturesSection';
 export { AreaMembrosSection } from './AreaMembrosSection';
-export { FlyersGallerySection } from './FlyersGallerySection';
 
 // Componentes abaixo do fold - lazy loaded na página
+// FlyersGallerySection agora é lazy loaded
+export { FlyersGallerySection } from './FlyersGallerySection';
 // Exportados aqui para uso em outros lugares se necessário
 export { BonusFimDeAnoSection } from './BonusFimDeAnoSection';
 export { MotionsGallerySection } from './MotionsGallerySection';
