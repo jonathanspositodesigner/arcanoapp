@@ -63,8 +63,8 @@ const ComboArtesArcanas = () => {
       <BonusFimDeAnoSection />
       
       <BonusGridSection />
-      <GuaranteeSectionCombo />
       <PricingCardsSection />
+      <GuaranteeSectionCombo />
       <FAQSectionCombo />
       <WhatsAppSupportSection />
       <FooterSection />
