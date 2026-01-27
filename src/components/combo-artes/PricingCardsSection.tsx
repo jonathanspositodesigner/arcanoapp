@@ -107,8 +107,8 @@ export const PricingCardsSection = () => {
   };
 
   return (
-    <section id="pricing" className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">
-      <div className="max-w-4xl mx-auto">
+    <section id="pricing" className="py-16 px-2 md:px-4 bg-gradient-to-b from-black to-[#0a0505]">
+      <div className="max-w-6xl mx-auto">
         {/* Section title */}
         <h2 className="text-2xl md:text-3xl font-black text-center text-white mb-4">
           Seu bloqueio criativo acaba aqui
