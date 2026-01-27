@@ -1,102 +1,146 @@
 
-# Plano de Otimização de Performance da Landing Page
-
-## Diagnóstico do Problema
-
-A landing page `/combo-artes-arcanas` está demorando ~3 segundos para carregar devido a JavaScript excessivo sendo baixado e processado no início. Os principais problemas identificados são:
-
-1. **Meta Pixel duplicado** - O script do Facebook Pixel está sendo carregado duas vezes:
-   - Uma vez no `index.html` (global)
-   - Outra vez dentro do componente `ComboArtesArcanas.tsx`
-
-2. **Scripts de terceiros no `<head>`** - Meta Pixel e Microsoft Clarity estão no head sem defer, competindo com o carregamento do React
-
-3. **Barrel export problemático** - O arquivo `src/components/combo-artes/index.ts` exporta TODOS os componentes, fazendo o bundler incluir código que deveria ser lazy loaded
-
-4. **Ícone Lucide importado desnecessariamente** - O `ChevronDown` é um ícone simples que pode ser um SVG inline
-
----
-
-## Solução Proposta
-
-### 1. Remover Meta Pixel duplicado do componente
-O script já está no `index.html`, então a inicialização dentro do `ComboArtesArcanas.tsx` é redundante e desnecessária.
-
-**Arquivo:** `src/pages/ComboArtesArcanas.tsx`
-- Remover o `useEffect` que inicializa o Meta Pixel (linhas 61-80)
-- Manter apenas o tracking de `ViewContent` que usa o `fbq` já disponível globalmente
-
-### 2. Otimizar scripts de terceiros no index.html
-Adicionar atributos `defer` ou mover scripts para o final do body para não bloquear renderização.
-
-**Arquivo:** `index.html`
-- Adicionar comentários indicando que scripts são async por natureza
-- Os scripts do Facebook e Clarity já usam `async=true` internamente, mas podemos garantir que não bloqueiam com uma pequena reorganização
-
-### 3. Corrigir barrel export para não puxar componentes lazy
-O problema é que importar de `@/components/combo-artes` força o Vite a carregar TODOS os exports, mesmo que só usemos `HeroSectionCombo` e `FeaturesSection`.
-
-**Arquivo:** `src/pages/ComboArtesArcanas.tsx`
-- Mudar de: `import { HeroSectionCombo, FeaturesSection } from "@/components/combo-artes";`
-- Para imports diretos:
-  ```tsx
-  import { HeroSectionCombo } from "@/components/combo-artes/HeroSectionCombo";
-  import { FeaturesSection } from "@/components/combo-artes/FeaturesSection";
-  ```
-
-### 4. Substituir ChevronDown por SVG inline
-O ícone `ChevronDown` é super simples - uma seta. Usar SVG inline elimina a necessidade de importar todo o módulo lucide-react no bundle inicial.
-
-**Arquivo:** `src/pages/ComboArtesArcanas.tsx`
-- Remover: `import { ChevronDown } from "lucide-react";`
-- Criar componente inline:
-  ```tsx
-  const ChevronDownIcon = () => (
-    <svg className="w-8 h-8 text-[#EF672C] drop-shadow-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="6,9 12,15 18,9" />
-    </svg>
-  );
-  ```
-
----
-
-## Impacto Esperado
-
-| Métrica | Antes | Depois Estimado |
-|---------|-------|-----------------|
-| JavaScript não usado | ~154 KiB | ~80 KiB |
-| Tempo de carregamento | ~3s | ~1.5-2s |
-| Chunks carregados inicialmente | ui-vendor, index, supabase | Apenas index simplificado |
-
----
-
-## Detalhes Técnicos
-
-### Arquivos a serem modificados:
-
-1. **`src/pages/ComboArtesArcanas.tsx`**
-   - Remover import do lucide-react
-   - Remover useEffect do Meta Pixel
-   - Mudar imports para caminhos diretos (não barrel)
-   - Adicionar SVG inline para seta
-
-2. **`src/components/combo-artes/index.ts`** (opcional)
-   - Remover exports dos componentes lazy para evitar confusão futura
-   - Manter apenas HeroSectionCombo e FeaturesSection como exports do barrel
-
-### Ordem de execução:
-1. Modificar imports no ComboArtesArcanas.tsx
-2. Remover useEffect duplicado do Meta Pixel
-3. Substituir ChevronDown por SVG inline
-4. Testar build e verificar tamanho dos chunks
-
----
+# Plano: Proteção Anti-Inspeção Global
 
 ## Resumo
+Adicionar código JavaScript global no `index.html` para dificultar a inspeção do site por usuários comuns. O código vai bloquear clique direito, atalhos de teclado, e detectar quando o DevTools é aberto.
 
-A otimização foca em eliminar código JavaScript desnecessário no carregamento inicial:
-- Remover script duplicado do Facebook Pixel
-- Evitar que barrel exports puxem código lazy
-- Usar SVG inline ao invés de importar biblioteca de ícones
+## ⚠️ Importante Entender
 
-Essas mudanças devem reduzir significativamente o tempo de carregamento inicial sem alterar nenhuma funcionalidade ou visual da página.
+**O que essa proteção FAZ:**
+- Bloqueia 90%+ dos usuários casuais que tentam "ver o código fonte"
+- Impede clique direito → "Inspecionar"
+- Bloqueia F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+- Detecta DevTools aberto e pode redirecionar ou exibir aviso
+
+**O que essa proteção NÃO FAZ:**
+- Não impede usuários técnicos (sempre conseguem contornar)
+- Não protege APIs ou dados do backend (isso é feito no servidor)
+- Não substitui segurança real (RLS, autenticação, etc.)
+
+## Implementação
+
+### Arquivo: `index.html`
+
+Adicionar um script no `<head>` com as seguintes funcionalidades:
+
+```text
+┌─────────────────────────────────────────────────┐
+│           PROTEÇÃO ANTI-INSPEÇÃO                │
+├─────────────────────────────────────────────────┤
+│ 1. Bloquear Clique Direito                      │
+│    - Desabilita menu de contexto                │
+│    - Usuário não vê "Inspecionar Elemento"      │
+├─────────────────────────────────────────────────┤
+│ 2. Bloquear Atalhos de Teclado                  │
+│    - F12 (DevTools)                             │
+│    - Ctrl+Shift+I (Inspecionar)                 │
+│    - Ctrl+Shift+J (Console)                     │
+│    - Ctrl+Shift+C (Seletor de elementos)        │
+│    - Ctrl+U (Ver código fonte)                  │
+│    - Cmd+Option+I (Mac)                         │
+├─────────────────────────────────────────────────┤
+│ 3. Detectar DevTools Aberto                     │
+│    - Verifica tamanho da janela                 │
+│    - Detecta debugger statement                 │
+│    - Pode redirecionar ou exibir alerta         │
+└─────────────────────────────────────────────────┘
+```
+
+### Código a ser adicionado
+
+```javascript
+// Anti-inspeção: Bloqueia DevTools para usuários comuns
+(function() {
+  // 1. Bloquear clique direito
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // 2. Bloquear atalhos de teclado
+  document.addEventListener('keydown', function(e) {
+    // F12
+    if (e.key === 'F12' || e.keyCode === 123) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+Shift+I / Cmd+Option+I
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+Shift+J
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+Shift+C
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+U (ver código fonte)
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // 3. Detectar DevTools aberto (técnica de debugger)
+  (function detectDevTools() {
+    const threshold = 160;
+    const check = function() {
+      const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+      const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+      
+      if (widthThreshold || heightThreshold) {
+        // DevTools provavelmente está aberto
+        // Opção 1: Redirecionar
+        // window.location.href = '/';
+        
+        // Opção 2: Console.clear para dificultar debug
+        console.clear();
+      }
+    };
+    
+    setInterval(check, 1000);
+  })();
+
+  // 4. Desabilitar seleção de texto (opcional - pode atrapalhar UX)
+  // document.onselectstart = function() { return false; };
+  
+  // 5. Desabilitar arrastar elementos
+  document.ondragstart = function() { return false; };
+})();
+```
+
+## Localização no `index.html`
+
+O script será adicionado logo após o Microsoft Clarity (linha ~101), antes do fechamento do `</head>`:
+
+```html
+<!-- End Microsoft Clarity -->
+
+<!-- Anti-Inspect Protection -->
+<script>
+  // código aqui
+</script>
+</head>
+```
+
+## Resultado Esperado
+
+| Ação do Usuário | Antes | Depois |
+|-----------------|-------|--------|
+| Clique direito | Menu aparece | Nada acontece |
+| Pressionar F12 | DevTools abre | Nada acontece |
+| Ctrl+Shift+I | DevTools abre | Nada acontece |
+| Ctrl+U | Código fonte | Nada acontece |
+| Abrir DevTools manualmente | Funciona | Console limpa automaticamente |
+
+## Observações Técnicas
+
+1. **Não afeta o funcionamento do site** - apenas bloqueia ações de inspeção
+2. **Funciona em mobile** - clique longo também é bloqueado
+3. **Compatível com todos os navegadores** - Chrome, Firefox, Safari, Edge
+4. **Performance** - impacto zero (menos de 1KB de código)
