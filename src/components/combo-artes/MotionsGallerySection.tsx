@@ -85,7 +85,7 @@ export const MotionsGallerySection = () => {
           </button>
           
           {/* Compra segura badges */}
-          <div className="flex flex-wrap justify-center items-center gap-4 mt-2">
+          <div className="flex flex-wrap justify-center items-center gap-4 mt-2 mb-12">
             <img src="https://voxvisual.com.br/wp-content/uploads/2025/11/greenn-compra-segura.png" alt="Greenn Compra Segura" className="h-5 md:h-6 object-contain" />
           </div>
         </div>
