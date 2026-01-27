@@ -41,7 +41,7 @@ const plans = [
       "Suporte via WhatsApp",
       "Área de Membros",
     ],
-    bonus: "+30 Artes Reveillon e Natal",
+    bonus: "+35 ARTES DE CARNAVAL",
     checkoutUrl: "https://payfast.greenn.com.br/redirect/246696",
     highlighted: true,
   },
