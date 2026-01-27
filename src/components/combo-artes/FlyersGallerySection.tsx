@@ -57,7 +57,16 @@ const categories = [{
   ]
 }, {
   title: "Artes de cavalgada",
-  images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/12a-CAVALGADA-DOS-AMIGOS.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-SEMANAL-TOCA-DO-VALE.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-DOS-GIGANTES-scaled-1-768x1365.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA-FEST-2025.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/PROXIMOS-SHOWS-BIU-DO-PISEIRO.jpg", "https://voxvisual.com.br/wp-content/uploads/2025/11/CAVALGADA.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/RODEIO-E-VAQUEJADA.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/CONTRATE-JOAO-GOMES.webp"]
+  images: [
+    "/images/combo/cavalgada-12a-amigos.webp",
+    "/images/combo/cavalgada-agenda-toca-vale.webp",
+    "/images/combo/cavalgada-dos-gigantes.webp",
+    "/images/combo/cavalgada-fest-2025.webp",
+    "/images/combo/cavalgada-shows-biu-piseiro.webp",
+    "/images/combo/cavalgada-evento.webp",
+    "/images/combo/cavalgada-rodeio-vaquejada.webp",
+    "/images/combo/cavalgada-contrate-joao-gomes.webp"
+  ]
 }, {
   title: "Categorias variadas",
   images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/ARRAIA-DE-SAO-JOAO.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DAS-MAES.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DOS-NAMORADOS.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/ELETRO-HOUSE.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/ENCONTRO-DE-PAREDOES.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/HALLOWEEN-PARTY-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/HALLOWEEN-SURREAL-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/PLAY-NAS-FERIAS.webp"]
