@@ -31,7 +31,16 @@ const categories = [{
   ]
 }, {
   title: "Artes de sertanejo",
-  images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DOS-PAIS-CABARET.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BALADA-PRIME.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/ROTA-SERTANEJA-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BALADA-PRIME1.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BOTECO-NOSSA-VIBE.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/SUNSET-FESTIVAL.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BOTECO-SERTANEJO.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/NOITE-SEM-FIM.webp"]
+  images: [
+    "/images/combo/sertanejo-dia-pais-cabaret.webp",
+    "/images/combo/sertanejo-balada-prime.webp",
+    "/images/combo/sertanejo-rota-sertaneja.webp",
+    "/images/combo/sertanejo-balada-prime1.webp",
+    "/images/combo/sertanejo-boteco-nossa-vibe.webp",
+    "/images/combo/sertanejo-sunset-festival.webp",
+    "/images/combo/sertanejo-boteco-sertanejo.webp",
+    "/images/combo/sertanejo-noite-sem-fim.webp"
+  ]
 }, {
   title: "Artes de funk",
   images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/FUNK-PARTY-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/NOITE-IN-VEGAS-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/B-DAY-DO-TUBARAO.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLUXO-BAILE-FUNK.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/BAILE-DO-SINAL.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/B-DAY-MC-WM.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-BAILE-DO-MALVADAO-STORIES.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EVENTO-GIRO-LOUCO-STORIES.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/FLYER-EMBRAZA-STORY-SOCIAL-MEDIA.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/MADE-IN-FUNK.webp"]
