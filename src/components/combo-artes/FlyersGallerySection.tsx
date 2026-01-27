@@ -143,15 +143,23 @@ const CategoryCarousel = ({
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
-  // Auto-scroll a cada 2 segundos
+  // Auto-scroll a cada 2 segundos, mas só começa após 3s de delay
   useEffect(() => {
     if (!emblaApi) return;
     
-    const interval = setInterval(() => {
-      emblaApi.scrollNext();
-    }, 2000);
+    let intervalId: NodeJS.Timeout;
     
-    return () => clearInterval(interval);
+    // Delay de 3 segundos antes de começar o auto-scroll
+    const startDelay = setTimeout(() => {
+      intervalId = setInterval(() => {
+        emblaApi.scrollNext();
+      }, 2000);
+    }, 3000);
+    
+    return () => {
+      clearTimeout(startDelay);
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [emblaApi]);
 
   return (
