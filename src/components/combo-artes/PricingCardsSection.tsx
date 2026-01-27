@@ -72,7 +72,7 @@ export const PricingCardsSection = () => {
           Escolha seu plano
         </h2>
         <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
-          Selecione o plano que melhor se adapta às suas necessidades e comece a criar artes profissionais hoje mesmo!
+          Selecione o seu plano e comece a criar artes profissionais hoje mesmo!
         </p>
         
         {/* Pricing cards grid */}
