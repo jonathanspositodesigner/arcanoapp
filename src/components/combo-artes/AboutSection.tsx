@@ -43,7 +43,7 @@ export const AboutSection = () => {
             {/* Social icons */}
             <div className="flex items-center gap-4">
               <a 
-                href="https://instagram.com/jonathandesigner" 
+                href="https://www.instagram.com/jonathandesigner/?utm_source=organic&utm_campaign=&utm_medium=&utm_content=&utm_term=" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
@@ -54,7 +54,7 @@ export const AboutSection = () => {
               </a>
               
               <a 
-                href="https://tiktok.com/@jonathandesigner" 
+                href="https://lp.voxvisual.com.br/comboarcano/?utm_source=organic&utm_campaign=&utm_medium=&utm_content=&utm_term=" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
@@ -65,7 +65,7 @@ export const AboutSection = () => {
               </a>
               
               <a 
-                href="https://wa.me/5538999999999" 
+                href="https://api.whatsapp.com/send/?phone=%2B5533988819891&text=%E2%81%AC%E2%81%AD%E2%81%AC%E2%81%AD%E2%81%A3%E2%80%AC%E2%81%A4%E2%80%AA%E2%81%A9%E2%80%8B%E2%80%8D%E2%81%A1%E2%81%A9%E2%81%A8%E2%81%A3%E2%81%AA%E2%81%A6%E2%81%AA%E2%80%8D%E2%81%A1%E2%81%A0%E2%81%A4%E2%81%A0%E2%81%AA%E2%81%A9%E2%81%A9%E2%81%A9%E2%81%A6%E2%81%AC%E2%81%AD%E2%81%AC%E2%81%AD&type=phone_number&app_absent=0" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
