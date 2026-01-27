@@ -80,6 +80,30 @@ export default defineConfig(({ mode }) => ({
               },
             },
           },
+          // Cache para assets do WordPress (imagens)
+          {
+            urlPattern: /^https:\/\/(lp\.)?voxvisual\.com\.br\/.*\.(?:webp|jpg|jpeg|png|gif)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "wordpress-images-v1",
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 dias
+              },
+            },
+          },
+          // Cache para vídeos do WordPress (mp4)
+          {
+            urlPattern: /^https:\/\/(lp\.)?voxvisual\.com\.br\/.*\.mp4$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "wordpress-videos-v1",
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 dias
+              },
+            },
+          },
         ],
       },
     }),

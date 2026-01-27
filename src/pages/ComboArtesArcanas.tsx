@@ -1,6 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { ChevronDown } from "lucide-react";
-import { HeroSectionCombo, FeaturesSection, FlyersGallerySection, BonusFimDeAnoSection, MotionsGallerySection, Selos3DSection, BonusGridSection, TestimonialsSection, GuaranteeSectionCombo, AboutSection, PricingCardsSection, FAQSectionCombo, WhatsAppSupportSection, FooterSection } from "@/components/combo-artes";
+import { HeroSectionCombo, FeaturesSection, FlyersGallerySection } from "@/components/combo-artes";
+import { LazySection } from "@/components/combo-artes/LazySection";
+
+// Lazy load de seções pesadas abaixo do fold
+const MotionsGallerySection = lazy(() => import("@/components/combo-artes/MotionsGallerySection").then(m => ({ default: m.MotionsGallerySection })));
+const BonusFimDeAnoSection = lazy(() => import("@/components/combo-artes/BonusFimDeAnoSection").then(m => ({ default: m.BonusFimDeAnoSection })));
+const Selos3DSection = lazy(() => import("@/components/combo-artes/Selos3DSection").then(m => ({ default: m.Selos3DSection })));
+const BonusGridSection = lazy(() => import("@/components/combo-artes/BonusGridSection").then(m => ({ default: m.BonusGridSection })));
+const TestimonialsSection = lazy(() => import("@/components/combo-artes/TestimonialsSection").then(m => ({ default: m.TestimonialsSection })));
+const GuaranteeSectionCombo = lazy(() => import("@/components/combo-artes/GuaranteeSectionCombo").then(m => ({ default: m.GuaranteeSectionCombo })));
+const AboutSection = lazy(() => import("@/components/combo-artes/AboutSection").then(m => ({ default: m.AboutSection })));
+const PricingCardsSection = lazy(() => import("@/components/combo-artes/PricingCardsSection").then(m => ({ default: m.PricingCardsSection })));
+const FAQSectionCombo = lazy(() => import("@/components/combo-artes/FAQSectionCombo").then(m => ({ default: m.FAQSectionCombo })));
+const WhatsAppSupportSection = lazy(() => import("@/components/combo-artes/WhatsAppSupportSection").then(m => ({ default: m.WhatsAppSupportSection })));
+const FooterSection = lazy(() => import("@/components/combo-artes/FooterSection").then(m => ({ default: m.FooterSection })));
+
+// Skeleton de loading minimalista
+const SectionSkeleton = () => (
+  <div className="min-h-[300px] bg-black animate-pulse" />
+);
 
 // Extend Window interface for Meta Pixel
 declare global {
@@ -12,6 +31,7 @@ declare global {
 
 // Meta Pixel ID (same as other pages)
 const META_PIXEL_ID = "1051791498880287";
+
 const ComboArtesArcanas = () => {
   // Initialize Meta Pixel
   useEffect(() => {
@@ -47,7 +67,10 @@ const ComboArtesArcanas = () => {
       });
     }
   }, []);
-  return <div className="min-h-screen bg-black">
+
+  return (
+    <div className="min-h-screen bg-black">
+      {/* Above the fold - carrega imediatamente */}
       <HeroSectionCombo />
       
       {/* Animated scroll indicator */}
@@ -59,17 +82,75 @@ const ComboArtesArcanas = () => {
       
       <FeaturesSection />
       <FlyersGallerySection />
-      <MotionsGallerySection />
-      <BonusFimDeAnoSection />
       
-      <BonusGridSection />
-      <TestimonialsSection />
-      <PricingCardsSection />
-      <GuaranteeSectionCombo />
-      <AboutSection />
-      <FAQSectionCombo />
-      <WhatsAppSupportSection />
-      <FooterSection />
-    </div>;
+      {/* Below the fold - lazy loaded com IntersectionObserver */}
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <MotionsGallerySection />
+        </Suspense>
+      </LazySection>
+      
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <BonusFimDeAnoSection />
+        </Suspense>
+      </LazySection>
+      
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <Selos3DSection />
+        </Suspense>
+      </LazySection>
+      
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <BonusGridSection />
+        </Suspense>
+      </LazySection>
+      
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <TestimonialsSection />
+        </Suspense>
+      </LazySection>
+      
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <PricingCardsSection />
+        </Suspense>
+      </LazySection>
+      
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <GuaranteeSectionCombo />
+        </Suspense>
+      </LazySection>
+      
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <AboutSection />
+        </Suspense>
+      </LazySection>
+      
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <FAQSectionCombo />
+        </Suspense>
+      </LazySection>
+      
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <WhatsAppSupportSection />
+        </Suspense>
+      </LazySection>
+      
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <FooterSection />
+        </Suspense>
+      </LazySection>
+    </div>
+  );
 };
+
 export default ComboArtesArcanas;

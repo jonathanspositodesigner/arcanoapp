@@ -8,11 +8,25 @@ const testimonialImages = [
   "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/02.png",
 ];
 
+// Vídeos + posters estáticos para evitar preload="metadata"
 const testimonialVideos = [
-  "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SaveClip.App_AQP5UVtBlyMeswLfSVPOozACWuCtnhDrAdHRpsM_QlfvSvoroJXcIVsMRYxIEBo0nFRL84NP_jKnpkyAHAPPG0KXPxuZobbTzdMV9-M.mp4",
-  "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SaveClip.App_AQPV9pEIxd8EPw7z8nZ_YP-X2sfVhBeiCg07QnyDHGuVMFnypPNuM3riW1oUTb9-8vZY3111Uh4tVwTbQLlGxfGa3gXgU9WBv-EoXlE.mp4",
-  "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SaveClip.App_AQPSmbsR6KU5QIbeRaD5hXenKSRGOTx3olPZzdc46RwIc5k7F0owqBS-y2ebd4QfoDSM671XMJuGfvfwlpQLAComce3tnjFEDc6eo94.mp4",
-  "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SaveClip.App_AQN7xK3y7dNJukKGI1HXahobf1kVvJcAIjv9EQgk9gSjeArQzstachx7J3WHHTYiutgzQ8GXR7ZUzE2-IrMrcwOGEl-VWgYYDVBPqe0.mp4",
+  {
+    video: "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SaveClip.App_AQP5UVtBlyMeswLfSVPOozACWuCtnhDrAdHRpsM_QlfvSvoroJXcIVsMRYxIEBo0nFRL84NP_jKnpkyAHAPPG0KXPxuZobbTzdMV9-M.mp4",
+    // Poster estático - usa mesma thumbnail do depoimento para consistência visual
+    poster: "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/05.png",
+  },
+  {
+    video: "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SaveClip.App_AQPV9pEIxd8EPw7z8nZ_YP-X2sfVhBeiCg07QnyDHGuVMFnypPNuM3riW1oUTb9-8vZY3111Uh4tVwTbQLlGxfGa3gXgU9WBv-EoXlE.mp4",
+    poster: "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/04.png",
+  },
+  {
+    video: "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SaveClip.App_AQPSmbsR6KU5QIbeRaD5hXenKSRGOTx3olPZzdc46RwIc5k7F0owqBS-y2ebd4QfoDSM671XMJuGfvfwlpQLAComce3tnjFEDc6eo94.mp4",
+    poster: "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/03.png",
+  },
+  {
+    video: "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SaveClip.App_AQN7xK3y7dNJukKGI1HXahobf1kVvJcAIjv9EQgk9gSjeArQzstachx7J3WHHTYiutgzQ8GXR7ZUzE2-IrMrcwOGEl-VWgYYDVBPqe0.mp4",
+    poster: "https://lp.voxvisual.com.br/wp-content/uploads/2025/09/02.png",
+  },
 ];
 
 export const TestimonialsSection = () => {
@@ -55,20 +69,20 @@ export const TestimonialsSection = () => {
           ))}
         </div>
 
-        {/* Video testimonials */}
+        {/* Video testimonials - Otimizado: usa posters estáticos em vez de preload="metadata" */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {testimonialVideos.map((video, index) => (
+          {testimonialVideos.map((item, index) => (
             <div
               key={`video-${index}`}
-              className="relative rounded-xl overflow-hidden cursor-pointer group bg-gray-900"
-              onClick={() => setSelectedVideo(video)}
+              className="relative rounded-xl overflow-hidden cursor-pointer group bg-gray-900 aspect-[9/16]"
+              onClick={() => setSelectedVideo(item.video)}
             >
-              <video
-                src={video}
-                className="w-full h-auto"
-                preload="metadata"
-                muted
-                playsInline
+              {/* Poster estático - não carrega vídeo até clicar */}
+              <img
+                src={item.poster}
+                alt={`Depoimento em vídeo ${index + 1}`}
+                className="w-full h-full object-cover"
+                loading="lazy"
               />
               
               {/* Play overlay */}
@@ -102,7 +116,7 @@ export const TestimonialsSection = () => {
           </div>
         )}
 
-        {/* Video Modal */}
+        {/* Video Modal - Vídeo carrega APENAS quando modal abre */}
         {selectedVideo && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
