@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { ChevronDown } from "lucide-react";
 import { HeroSectionCombo, FeaturesSection } from "@/components/combo-artes";
 import { LazySection } from "@/components/combo-artes/LazySection";
@@ -34,6 +34,29 @@ declare global {
 const META_PIXEL_ID = "1051791498880287";
 
 const ComboArtesArcanas = () => {
+  const [overlayOpacity, setOverlayOpacity] = useState(1);
+
+  // Fade out overlay on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const fadeStart = 100;
+      const fadeEnd = 400;
+      
+      if (scrollY <= fadeStart) {
+        setOverlayOpacity(1);
+      } else if (scrollY >= fadeEnd) {
+        setOverlayOpacity(0);
+      } else {
+        const opacity = 1 - (scrollY - fadeStart) / (fadeEnd - fadeStart);
+        setOverlayOpacity(opacity);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Initialize Meta Pixel
   useEffect(() => {
     if (typeof window !== "undefined" && !window.fbq) {
@@ -71,24 +94,36 @@ const ComboArtesArcanas = () => {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Bottom fade overlay - mobile only, fixed at bottom of viewport */}
+      {/* Bottom fade overlay - mobile only, fades out on scroll */}
       <div 
-        className="fixed bottom-0 left-0 right-0 h-52 z-50 pointer-events-none md:hidden" 
+        className="fixed bottom-0 left-0 right-0 h-52 z-50 pointer-events-none md:hidden transition-opacity duration-300" 
         style={{
           background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.85) 20%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.1) 70%, rgba(0,0,0,0.05) 85%, rgba(0,0,0,0) 100%)',
           backdropFilter: 'blur(2px)',
-          WebkitBackdropFilter: 'blur(2px)'
+          WebkitBackdropFilter: 'blur(2px)',
+          opacity: overlayOpacity
         }}
         aria-hidden="true"
       />
+      
+      {/* Scroll indicator - fixed on mobile, in front of overlay */}
+      <div 
+        className="fixed bottom-56 left-1/2 -translate-x-1/2 z-[60] md:hidden transition-opacity duration-300"
+        style={{ opacity: overlayOpacity }}
+      >
+        <div className="animate-bounce">
+          <ChevronDown className="w-8 h-8 text-[#EF672C] drop-shadow-lg" />
+        </div>
+      </div>
+      
       {/* Above the fold - carrega imediatamente */}
       <HeroSectionCombo />
       
       {/* Features Section - cards de benefícios */}
       <FeaturesSection />
       
-      {/* Animated scroll indicator */}
-      <div className="flex justify-center pb-4 bg-black">
+      {/* Animated scroll indicator - desktop only */}
+      <div className="hidden md:flex justify-center pb-4 bg-black">
         <div className="animate-bounce">
           <ChevronDown className="w-8 h-8 text-[#EF672C]" />
         </div>
