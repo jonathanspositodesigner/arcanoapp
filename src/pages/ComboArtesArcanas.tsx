@@ -118,7 +118,7 @@ const ComboArtesArcanas = () => {
       
       {/* Scroll indicator - fixed on mobile, in front of overlay */}
       <div 
-        className="fixed bottom-56 left-1/2 -translate-x-1/2 z-[60] md:hidden transition-opacity duration-300"
+        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] md:hidden transition-opacity duration-300"
         style={{ opacity: overlayOpacity }}
       >
         <div className="animate-bounce">
