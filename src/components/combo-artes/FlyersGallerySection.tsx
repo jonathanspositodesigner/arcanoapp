@@ -69,7 +69,16 @@ const categories = [{
   ]
 }, {
   title: "Categorias variadas",
-  images: ["https://voxvisual.com.br/wp-content/uploads/2025/11/ARRAIA-DE-SAO-JOAO.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DAS-MAES.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/DIA-DOS-NAMORADOS.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/ELETRO-HOUSE.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/ENCONTRO-DE-PAREDOES.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/HALLOWEEN-PARTY-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/HALLOWEEN-SURREAL-ST.webp", "https://voxvisual.com.br/wp-content/uploads/2025/11/PLAY-NAS-FERIAS.webp"]
+  images: [
+    "/images/combo/variadas-arraia-sao-joao.webp",
+    "/images/combo/variadas-dia-das-maes.webp",
+    "/images/combo/variadas-dia-dos-namorados.webp",
+    "/images/combo/variadas-eletro-house.webp",
+    "/images/combo/variadas-encontro-paredoes.webp",
+    "/images/combo/variadas-halloween-party.webp",
+    "/images/combo/variadas-halloween-surreal.webp",
+    "/images/combo/variadas-play-nas-ferias.webp"
+  ]
 }];
 const CategoryCarousel = ({
   title,
