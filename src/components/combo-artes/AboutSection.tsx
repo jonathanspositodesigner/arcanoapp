@@ -80,12 +80,12 @@ export const AboutSection = () => {
           {/* Right side - Photo */}
           <div className="flex-1 order-1 md:order-2 relative">
             <div className="relative">
-              {/* Mobile badges - positioned on top of photo */}
-              <div className="md:hidden absolute top-3 left-3 flex flex-col gap-2 z-10">
-                <span className="bg-black/70 border border-cyan-400 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-full">
+              {/* Mobile badges - positioned at bottom of photo */}
+              <div className="md:hidden absolute bottom-3 left-3 flex gap-2 z-10">
+                <span className="bg-black/70 border border-orange-500 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-full">
                   EXPERT EM EVENTOS
                 </span>
-                <span className="bg-black/70 border border-cyan-400 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded-full">
+                <span className="bg-black/70 border border-orange-500 text-orange-500 text-[10px] font-bold px-2 py-1 rounded-full">
                   +11 ANOS DE EXPERIÊNCIA
                 </span>
               </div>
