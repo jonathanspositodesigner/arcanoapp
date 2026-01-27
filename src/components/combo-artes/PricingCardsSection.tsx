@@ -6,7 +6,9 @@ const plans = [
     id: "semestral",
     title: "Pack arcano 1 ao 3 acesso SEMESTRAL",
     subtitle: "Para quem quer mais economia e mais vantagem.",
+    originalPrice: "81",
     price: "59,90",
+    discount: "26% OFF",
     features: [
       "6 Meses de Acesso",
       "200 Artes Editáveis",
@@ -25,7 +27,9 @@ const plans = [
     id: "vitalicio",
     title: "Pack arcano 1 ao 3 acesso VITALÍCIO",
     subtitle: "O mais vendido! 🔥",
+    originalPrice: "141",
     price: "79,90",
+    discount: "43% OFF",
     features: [
       "Acesso Vitalício",
       "200 Artes Editáveis",
@@ -100,8 +104,18 @@ export const PricingCardsSection = () => {
                 {plan.subtitle}
               </p>
               
+              {/* Discount Badge */}
+              <div className="flex justify-center mb-3">
+                <span className="bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                  -{plan.discount}
+                </span>
+              </div>
+              
               {/* Price */}
               <div className="text-center mb-6">
+                <p className="text-gray-500 text-sm line-through mb-1">
+                  De R$ {plan.originalPrice}
+                </p>
                 <div className="flex items-center justify-center gap-1">
                   <span className="text-gray-400 text-lg">R$</span>
                   <span className="text-5xl font-black text-white">{plan.price}</span>
