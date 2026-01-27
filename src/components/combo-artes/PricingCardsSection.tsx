@@ -178,7 +178,7 @@ export const PricingCardsSection = () => {
                 {plan.features.map((feature, index) => (
                   <li key={index} className="flex items-center gap-3 text-gray-300">
                     <Check className="w-5 h-5 text-[#EF672C] flex-shrink-0" />
-                    <span className={`text-sm ${index === 0 ? 'font-bold text-white' : ''}`}>{feature}</span>
+                    <span className={`text-sm ${index === 0 || (plan.id === 'vitalicio' && index === 1) ? 'font-bold text-white' : ''}`}>{feature}</span>
                   </li>
                 ))}
               </ul>
