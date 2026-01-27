@@ -22,6 +22,7 @@ const plans = [
       "Área de Membros",
     ],
     checkoutUrl: "https://payfast.greenn.com.br/147968/offer/KeCO0dB4qj6kpVp",
+    buttonText: "QUERO SÓ O PACK VOL.1",
     highlighted: false,
   },
   {
@@ -43,6 +44,7 @@ const plans = [
       "Área de Membros",
     ],
     checkoutUrl: "https://payfast.greenn.com.br/147968/offer/KeCO0dB4qj6kpVp",
+    buttonText: "QUERO ESSE PLANO",
     highlighted: false,
   },
   {
@@ -65,6 +67,7 @@ const plans = [
     ],
     bonus: "+35 ARTES DE CARNAVAL",
     checkoutUrl: "https://payfast.greenn.com.br/redirect/246696",
+    buttonText: "QUERO ESSE PLANO",
     highlighted: true,
   },
 ];
@@ -189,7 +192,7 @@ export const PricingCardsSection = () => {
                     : "bg-white/10 text-white hover:bg-white/20"
                 }`}
               >
-                QUERO ESSE PLANO
+                {plan.buttonText}
               </button>
             </div>
           ))}
