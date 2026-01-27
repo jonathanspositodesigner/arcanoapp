@@ -1,43 +1,45 @@
 
-## Simplificação da Seção de Preços
+## Adicionar Preço Original e Badge de Desconto nos Cards de Preço
 
-Vou atualizar a seção de preços removendo o plano trimestral e modificando a exibição de preços para mostrar apenas o valor à vista.
+Vou adicionar o preço original riscado e uma badge mostrando a porcentagem de desconto em cada plano.
 
-### Mudanças a Fazer
+### Mudanças
 
-**1. Remover o plano Trimestral**
-- Deletar completamente o objeto do plano "trimestral" do array `plans`
-- Manter apenas os planos "semestral" e "vitalício"
+**1. Atualizar dados dos planos**
+- **Semestral**: Adicionar `originalPrice: "81"` → preço atual R$ 59,90
+- **Vitalício**: Adicionar `originalPrice: "141"` → preço atual R$ 79,90
 
-**2. Simplificar exibição de preços**
-- Remover a exibição de parcelamento (6x de R$9,90 e 12x de R$6,66)
-- Mostrar apenas o preço à vista como preço principal
-- Atualizar os dados dos planos:
-  - **Semestral**: R$ 59,90 à vista
-  - **Vitalício**: R$ 79,90 à vista
+**2. Calcular e exibir desconto**
+- Semestral: De R$ 81 por R$ 59,90 = **26% off**
+- Vitalício: De R$ 141 por R$ 79,90 = **43% off**
 
-**3. Ajustar o grid**
-- Mudar de `md:grid-cols-3` para `md:grid-cols-2` já que teremos apenas 2 planos
+**3. Atualizar UI do preço**
+- Mostrar preço original riscado acima do preço atual
+- Adicionar badge com porcentagem de desconto (ex: "-26% OFF")
+
+### Visual Final
+
+```text
+┌─────────────────────────────────────┐
+│         Pack Semestral              │
+│                                     │
+│    ┌─────────────┐                  │
+│    │  -26% OFF   │  ← Badge verde   │
+│    └─────────────┘                  │
+│                                     │
+│      De R$ 81  ← riscado/cinza      │
+│     R$ 59,90   ← preço destaque     │
+│      à vista                        │
+└─────────────────────────────────────┘
+```
 
 ### Detalhes Técnicos
 
-```text
-Arquivo: src/components/combo-artes/PricingCardsSection.tsx
+**Arquivo:** `src/components/combo-artes/PricingCardsSection.tsx`
 
-ANTES (3 planos com parcelamento):
-┌─────────────┬─────────────┬─────────────┐
-│  Trimestral │  Semestral  │  Vitalício  │
-│  3x R$9,90  │  6x R$9,90  │ 12x R$6,66  │
-│  (R$29,90)  │  (R$59,90)  │  (R$79,90)  │
-└─────────────┴─────────────┴─────────────┘
-
-DEPOIS (2 planos, só à vista):
-┌─────────────────┬─────────────────┐
-│    Semestral    │    Vitalício    │
-│    R$ 59,90     │    R$ 79,90     │
-└─────────────────┴─────────────────┘
-```
-
-- Remover propriedades `installments` e `price` (parcelado)
-- Usar `fullPrice` como preço principal
-- Atualizar estrutura do JSX para exibir apenas o preço à vista
+1. Adicionar propriedade `originalPrice` em cada plano
+2. Criar função para calcular porcentagem de desconto
+3. Atualizar JSX da seção de preço para incluir:
+   - Badge com desconto (estilo verde, posicionada acima do preço)
+   - Preço original com texto riscado (`line-through`)
+   - Preço atual em destaque (já existe)
