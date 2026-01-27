@@ -118,7 +118,7 @@ export const PricingCardsSection = () => {
         </p>
         
         {/* Pricing cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-6">
           {plans.map((plan) => (
             <div
               key={plan.id}
