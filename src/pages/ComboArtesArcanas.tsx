@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { ChevronDown } from "lucide-react";
-import { HeroSectionCombo, FeaturesSection, FlyersGallerySection, BonusFimDeAnoSection, MotionsGallerySection, Selos3DSection, BonusGridSection, GuaranteeSectionCombo, PricingCardsSection, FAQSectionCombo, WhatsAppSupportSection, FooterSection } from "@/components/combo-artes";
+import { HeroSectionCombo, FeaturesSection, FlyersGallerySection, BonusFimDeAnoSection, MotionsGallerySection, Selos3DSection, BonusGridSection, GuaranteeSectionCombo, AboutSection, PricingCardsSection, FAQSectionCombo, WhatsAppSupportSection, FooterSection } from "@/components/combo-artes";
 
 // Extend Window interface for Meta Pixel
 declare global {
@@ -65,6 +65,7 @@ const ComboArtesArcanas = () => {
       <BonusGridSection />
       <PricingCardsSection />
       <GuaranteeSectionCombo />
+      <AboutSection />
       <FAQSectionCombo />
       <WhatsAppSupportSection />
       <FooterSection />
