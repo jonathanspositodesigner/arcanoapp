@@ -1,61 +1,43 @@
 
-## Problema Verificado
-O preto aparece marrom **apenas no mobile** porque:
+## Simplificação da Seção de Preços
 
-1. Os glows decorativos (bolas de luz amarela/laranja com blur) são `position: absolute` **sem z-index definido**
-2. O container do conteúdo (`max-w-7xl`) também **não tem z-index**
-3. No mobile, os glows (especialmente o de 600x600px no centro) cobrem proporcionalmente mais área da tela e ficam **sobrepostos ao conteúdo**
-4. Essa sobreposição "contamina" visualmente o preto, transformando em marrom (`#533B0E`)
+Vou atualizar a seção de preços removendo o plano trimestral e modificando a exibição de preços para mostrar apenas o valor à vista.
 
-No desktop a tela é maior, então os glows não cobrem tanto o conteúdo.
+### Mudanças a Fazer
 
-## Solução
-Isolar as camadas corretamente usando `z-index`:
+**1. Remover o plano Trimestral**
+- Deletar completamente o objeto do plano "trimestral" do array `plans`
+- Manter apenas os planos "semestral" e "vitalício"
 
-### Mudanças no arquivo `src/components/combo-artes/BonusFimDeAnoSection.tsx`
+**2. Simplificar exibição de preços**
+- Remover a exibição de parcelamento (6x de R$9,90 e 12x de R$6,66)
+- Mostrar apenas o preço à vista como preço principal
+- Atualizar os dados dos planos:
+  - **Semestral**: R$ 59,90 à vista
+  - **Vitalício**: R$ 79,90 à vista
 
-1. **Adicionar `isolate` na section** (cria stacking context isolado)
+**3. Ajustar o grid**
+- Mudar de `md:grid-cols-3` para `md:grid-cols-2` já que teremos apenas 2 planos
 
-2. **Agrupar os 3 glows em um wrapper com `z-0`**
-   - Move os divs de glow para dentro de um container com `z-0`
-   - Garante que fiquem **atrás** do conteúdo
+### Detalhes Técnicos
 
-3. **Envolver o conteúdo (max-w-7xl) em um wrapper com `relative z-10`**
-   - Garante que badge, título e carrossel fiquem **na frente** dos glows
-
-4. **Remover `backdrop-blur-sm` dos botões mobile**
-   - Linhas 104 e 111: tirar `backdrop-blur-sm`
-   - Trocar `bg-black` por `style={{ backgroundColor: '#000000' }}`
-
-5. **Remover `backdrop-blur-sm` dos botões desktop também** (por consistência)
-   - Linhas 67 e 95
-
-## Estrutura Final
 ```text
-┌─────────────────────────────────────────┐
-│ section (isolate, relative)             │
-│                                         │
-│  ┌───────────────────────────────────┐  │
-│  │ div (absolute, z-0)               │  │
-│  │   - glow amarelo                  │  │
-│  │   - glow laranja                  │  │
-│  │   - glow vermelho                 │  │
-│  └───────────────────────────────────┘  │
-│                                         │
-│  ┌───────────────────────────────────┐  │
-│  │ div (relative, z-10)              │  │
-│  │   - badge "Bônus de Carnaval"     │  │
-│  │   - título                        │  │
-│  │   - carrossel + botões            │  │
-│  └───────────────────────────────────┘  │
-│                                         │
-└─────────────────────────────────────────┘
+Arquivo: src/components/combo-artes/PricingCardsSection.tsx
+
+ANTES (3 planos com parcelamento):
+┌─────────────┬─────────────┬─────────────┐
+│  Trimestral │  Semestral  │  Vitalício  │
+│  3x R$9,90  │  6x R$9,90  │ 12x R$6,66  │
+│  (R$29,90)  │  (R$59,90)  │  (R$79,90)  │
+└─────────────┴─────────────┴─────────────┘
+
+DEPOIS (2 planos, só à vista):
+┌─────────────────┬─────────────────┐
+│    Semestral    │    Vitalício    │
+│    R$ 59,90     │    R$ 79,90     │
+└─────────────────┴─────────────────┘
 ```
 
-Com isso, os glows ficam **definitivamente atrás** do conteúdo, e o preto será preto puro `#000000` tanto no mobile quanto no desktop.
-
-## Arquivo a ser alterado
-- `src/components/combo-artes/BonusFimDeAnoSection.tsx`
-
-## Validação
-Após implementar, vou tirar um screenshot da rota `/combo-artes-arcanas` para confirmar que o preto está correto no mobile.
+- Remover propriedades `installments` e `price` (parcelado)
+- Usar `fullPrice` como preço principal
+- Atualizar estrutura do JSX para exibir apenas o preço à vista
