@@ -175,29 +175,14 @@ export const PricingCardsSection = () => {
         </div>
 
         {/* Urgency Countdown Section */}
-        <div className="mt-10 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 rounded-2xl p-6 md:p-8 text-center animate-pulse-slow">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <AlertTriangle className="w-6 h-6 text-yellow-300 animate-bounce" />
-            <span className="text-yellow-300 font-black text-lg md:text-xl uppercase tracking-wide">
-              Última Chamada!
-            </span>
-            <AlertTriangle className="w-6 h-6 text-yellow-300 animate-bounce" />
-          </div>
-          
-          <p className="text-white font-bold text-xl md:text-2xl mb-4">
-            🔥 Promoção válida somente HOJE! 🔥
-          </p>
-          
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Clock className="w-8 h-8 text-white" />
-            <span className="text-4xl md:text-5xl font-black text-white font-mono tracking-wider">
+        <div className="mt-8 flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2 text-gray-400 text-sm">
+            <Clock className="w-4 h-4" />
+            <span>Oferta expira em</span>
+            <span className="text-[#EF672C] font-semibold font-mono">
               {formatTime(timeLeft)}
             </span>
           </div>
-          
-          <p className="text-white/90 text-sm md:text-base">
-            ⚠️ Após esse tempo, os preços voltam ao normal!
-          </p>
         </div>
       </div>
     </section>
