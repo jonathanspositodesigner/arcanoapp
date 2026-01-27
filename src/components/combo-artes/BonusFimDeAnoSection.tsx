@@ -24,23 +24,36 @@ export const BonusFimDeAnoSection = () => {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <section className="py-16 md:py-28 px-4 bg-gradient-to-br from-[#EF672C] via-[#d4451a] to-[#8B0000] relative overflow-hidden">
-      {/* Decorative glow effects */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-400/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange-300/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="max-w-7xl mx-auto">
+    <section className="py-16 md:py-28 px-4 bg-gradient-to-br from-[#EF672C] via-[#d4451a] to-[#8B0000] relative isolate overflow-hidden">
+      {/* Decorative glow effects - z-0 para ficar ATRÁS do conteúdo */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-400/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange-300/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/10 rounded-full blur-3xl" />
+      </div>
+
+      {/* Conteúdo principal - z-10 para ficar NA FRENTE dos glows */}
+      <div className="relative z-10 max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
           {/* Badge with icons */}
           <div className="inline-flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center animate-pulse" style={{ backgroundColor: '#000000' }}>
+            <div 
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center animate-pulse"
+              style={{ backgroundColor: '#000000' }}
+            >
               <Gift className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <span className="text-white font-bold text-sm md:text-lg px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-xl whitespace-nowrap" style={{ backgroundColor: '#000000' }}>
+            <span 
+              className="text-white font-bold text-sm md:text-lg px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-xl whitespace-nowrap"
+              style={{ backgroundColor: '#000000' }}
+            >
               🎭 Bônus de Carnaval
             </span>
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center animate-pulse" style={{ backgroundColor: '#000000' }}>
+            <div 
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center animate-pulse"
+              style={{ backgroundColor: '#000000' }}
+            >
               <Gift className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
           </div>
@@ -64,7 +77,8 @@ export const BonusFimDeAnoSection = () => {
           {/* Desktop left */}
           <button
             onClick={scrollPrev}
-            className="hidden md:inline-flex flex-shrink-0 bg-black hover:bg-yellow-300 hover:text-black text-white p-2.5 md:p-3 rounded-full transition-colors backdrop-blur-sm"
+            className="hidden md:inline-flex flex-shrink-0 hover:bg-yellow-300 hover:text-black text-white p-2.5 md:p-3 rounded-full transition-colors"
+            style={{ backgroundColor: '#000000' }}
             aria-label="Anterior"
           >
             <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
@@ -92,7 +106,8 @@ export const BonusFimDeAnoSection = () => {
           {/* Desktop right */}
           <button
             onClick={scrollNext}
-            className="hidden md:inline-flex flex-shrink-0 bg-black hover:bg-yellow-300 hover:text-black text-white p-2.5 md:p-3 rounded-full transition-colors backdrop-blur-sm"
+            className="hidden md:inline-flex flex-shrink-0 hover:bg-yellow-300 hover:text-black text-white p-2.5 md:p-3 rounded-full transition-colors"
+            style={{ backgroundColor: '#000000' }}
             aria-label="Próximo"
           >
             <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
@@ -101,14 +116,16 @@ export const BonusFimDeAnoSection = () => {
           {/* Mobile overlay buttons */}
           <button
             onClick={scrollPrev}
-            className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 bg-black hover:bg-black text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
+            className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 text-white p-2 rounded-full border border-white/10 transition-colors z-10"
+            style={{ backgroundColor: '#000000' }}
             aria-label="Anterior"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={scrollNext}
-            className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 bg-black hover:bg-black text-white p-2 rounded-full border border-white/10 transition-colors z-10 backdrop-blur-sm"
+            className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 text-white p-2 rounded-full border border-white/10 transition-colors z-10"
+            style={{ backgroundColor: '#000000' }}
             aria-label="Próximo"
           >
             <ChevronRight className="w-4 h-4" />
