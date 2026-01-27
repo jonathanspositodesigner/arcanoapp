@@ -26,7 +26,7 @@ const plans = [
   },
   {
     id: "semestral",
-    title: "Pack Arcano 1 ao 3\nACESSO SEMESTRAL",
+    title: "Pack Arcano 1 e 2\nACESSO 1 ANO",
     subtitle: "Para quem quer mais economia e mais vantagem.",
     originalPrice: "81",
     price: "59,90",
