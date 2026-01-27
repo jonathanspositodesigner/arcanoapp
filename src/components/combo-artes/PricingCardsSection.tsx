@@ -118,13 +118,13 @@ export const PricingCardsSection = () => {
         </p>
         
         {/* Pricing cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-6 md:items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-6 items-stretch">
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative rounded-3xl p-6 md:p-8 flex flex-col ${
+              className={`relative rounded-3xl p-6 md:p-8 flex flex-col h-full ${
                 plan.highlighted
-                  ? "bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C] md:scale-105"
+                  ? "bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C]"
                   : "bg-gradient-to-br from-white/5 to-white/0 border border-white/10"
               }`}
             >
@@ -172,7 +172,7 @@ export const PricingCardsSection = () => {
                   {plan.bonus}
                 </div>
               ) : (
-                <div className="h-[40px] mb-6" />
+                <div className="h-[44px] mb-6" />
               )}
               
               {/* Features list */}
