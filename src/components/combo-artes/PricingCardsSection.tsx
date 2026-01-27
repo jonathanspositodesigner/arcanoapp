@@ -173,14 +173,14 @@ export const PricingCardsSection = () => {
                 <span className="text-gray-500 text-sm">à vista</span>
               </div>
               
-              {/* Bonus badge - fixed height placeholder for cards without bonus */}
+              {/* Bonus badge - fixed height placeholder for cards without bonus (desktop only) */}
               {plan.bonus ? (
                 <div className="bg-gradient-to-r from-yellow-600 via-yellow-500 to-amber-400 text-black text-sm font-bold px-4 py-2 rounded-lg mb-6 flex items-center justify-center gap-2">
                   <Gift className="w-4 h-4" />
                   {plan.bonus}
                 </div>
               ) : (
-                <div className="h-[44px] mb-6" />
+                <div className="hidden md:block h-[44px] mb-6" />
               )}
               
               {/* Features list */}
