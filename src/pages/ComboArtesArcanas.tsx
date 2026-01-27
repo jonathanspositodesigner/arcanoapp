@@ -81,14 +81,14 @@ const ComboArtesArcanas = () => {
         </div>
       </div>
       
-      <LazySection rootMargin="200px">
+      <LazySection>
         <Suspense fallback={<SectionSkeleton />}>
           <FlyersGallerySection />
         </Suspense>
       </LazySection>
       
       {/* Below the fold - lazy loaded com IntersectionObserver */}
-      <LazySection rootMargin="200px">
+      <LazySection>
         <Suspense fallback={<SectionSkeleton />}>
           <MotionsGallerySection />
         </Suspense>
