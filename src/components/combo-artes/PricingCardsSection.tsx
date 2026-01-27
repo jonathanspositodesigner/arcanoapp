@@ -86,7 +86,7 @@ export const PricingCardsSection = () => {
     <section id="pricing" className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">
       <div className="max-w-4xl mx-auto">
         {/* Section title */}
-        <h2 className="text-3xl md:text-4xl font-black text-center text-white mb-4">
+        <h2 className="text-2xl md:text-3xl font-black text-center text-white mb-4">
           Seu bloqueio criativo acaba aqui
         </h2>
         <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
