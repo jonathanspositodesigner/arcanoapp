@@ -24,10 +24,11 @@ export const BonusFimDeAnoSection = () => {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <section className="py-16 md:py-28 px-4 bg-gradient-to-br from-[#1a0a2e] via-[#2d1b4e] to-[#0f0a1a] relative overflow-hidden">
+    <section className="py-16 md:py-28 px-4 bg-gradient-to-br from-[#EF672C] via-[#d4451a] to-[#8B0000] relative overflow-hidden">
       {/* Decorative glow effects */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#EF672C]/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-400/30 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange-300/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
