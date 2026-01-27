@@ -1,15 +1,9 @@
 export const GuaranteeSectionCombo = () => {
-  return (
-    <section className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">
+  return <section className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">
       <div className="max-w-4xl mx-auto text-center">
         {/* Guarantee icons from WordPress */}
         <div className="mb-8">
-          <img
-            src="https://voxvisual.com.br/wp-content/uploads/2024/11/ICONES-GARANTIA.png"
-            alt="Ícones de Garantia"
-            className="max-w-full h-auto mx-auto mb-6"
-            loading="lazy"
-          />
+          
         </div>
         
         {/* Title */}
@@ -38,14 +32,8 @@ export const GuaranteeSectionCombo = () => {
         
         {/* 7 dias badge from WordPress */}
         <div className="mt-8">
-          <img
-            src="https://voxvisual.com.br/wp-content/uploads/2024/11/7-DIAS-DE-GARANTIA-IC-1.png"
-            alt="7 Dias de Garantia"
-            className="h-32 md:h-40 mx-auto"
-            loading="lazy"
-          />
+          <img src="https://voxvisual.com.br/wp-content/uploads/2024/11/7-DIAS-DE-GARANTIA-IC-1.png" alt="7 Dias de Garantia" className="h-32 md:h-40 mx-auto" loading="lazy" />
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
