@@ -1,4 +1,4 @@
-import { Check, Star, Gift, Clock, AlertTriangle } from "lucide-react";
+import { Check, Star, Gift, Clock, AlertTriangle, CreditCard } from "lucide-react";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useState, useEffect } from "react";
 
@@ -109,9 +109,17 @@ export const PricingCardsSection = () => {
   return (
     <section id="pricing" className="py-16 px-2 md:px-4 bg-gradient-to-b from-black to-[#0a0505]">
       <div className="max-w-6xl mx-auto">
+        {/* Badge */}
+        <div className="flex justify-center mb-4">
+          <div className="inline-flex items-center gap-2 bg-[#EF672C]/20 text-[#EF672C] text-sm font-medium px-4 py-2 rounded-full border border-[#EF672C]/30">
+            <CreditCard className="w-4 h-4" />
+            Planos
+          </div>
+        </div>
+        
         {/* Section title */}
         <h2 className="text-2xl md:text-4xl font-black text-center text-white mb-4">
-          Seu bloqueio criativo acaba aqui
+          Seu bloqueio criativo acaba aqui!
         </h2>
         <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
           Selecione o seu plano e comece a criar artes profissionais hoje mesmo!
