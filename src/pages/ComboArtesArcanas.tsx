@@ -6,7 +6,7 @@ import { LazySection } from "@/components/combo-artes/LazySection";
 // Lazy load de seções pesadas abaixo do fold
 const MotionsGallerySection = lazy(() => import("@/components/combo-artes/MotionsGallerySection").then(m => ({ default: m.MotionsGallerySection })));
 const BonusFimDeAnoSection = lazy(() => import("@/components/combo-artes/BonusFimDeAnoSection").then(m => ({ default: m.BonusFimDeAnoSection })));
-const Selos3DSection = lazy(() => import("@/components/combo-artes/Selos3DSection").then(m => ({ default: m.Selos3DSection })));
+
 const BonusGridSection = lazy(() => import("@/components/combo-artes/BonusGridSection").then(m => ({ default: m.BonusGridSection })));
 const TestimonialsSection = lazy(() => import("@/components/combo-artes/TestimonialsSection").then(m => ({ default: m.TestimonialsSection })));
 const GuaranteeSectionCombo = lazy(() => import("@/components/combo-artes/GuaranteeSectionCombo").then(m => ({ default: m.GuaranteeSectionCombo })));
@@ -96,11 +96,6 @@ const ComboArtesArcanas = () => {
         </Suspense>
       </LazySection>
       
-      <LazySection>
-        <Suspense fallback={<SectionSkeleton />}>
-          <Selos3DSection />
-        </Suspense>
-      </LazySection>
       
       <LazySection>
         <Suspense fallback={<SectionSkeleton />}>
