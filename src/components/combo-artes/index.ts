@@ -7,6 +7,7 @@ export { BonusFimDeAnoSection } from './BonusFimDeAnoSection';
 export { MotionsGallerySection } from './MotionsGallerySection';
 export { Selos3DSection } from './Selos3DSection';
 export { BonusGridSection } from './BonusGridSection';
+export { TestimonialsSection } from './TestimonialsSection';
 export { GuaranteeSectionCombo } from './GuaranteeSectionCombo';
 export { AboutSection } from './AboutSection';
 export { PricingCardsSection } from './PricingCardsSection';
