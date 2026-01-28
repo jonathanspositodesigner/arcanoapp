@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'utm_term', 'utm_content', 'fbclid'];
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'utm_term', 'utm_content', 'fbclid', 'xcod'];
 const STORAGE_KEY = 'captured_utms';
 const CAPTURED_FLAG = 'utms_captured';
 
@@ -8,7 +8,10 @@ const DEFAULT_UTMS = {
   utm_source: 'aplicativo',
   utm_medium: 'aplicativo',
   utm_campaign: 'aplicativo',
-  utm_id: 'aplicativo'
+  utm_id: 'aplicativo',
+  utm_content: 'aplicativo',
+  utm_term: 'aplicativo',
+  xcod: 'aplicativo'
 };
 
 /**
