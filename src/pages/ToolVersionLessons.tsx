@@ -125,6 +125,9 @@ const ToolVersionLessons = () => {
   const { planType } = usePremiumStatus();
   const { locale } = useLocale();
   
+  // Video loading state
+  const [videoLoading, setVideoLoading] = useState(true);
+  
   // Locale-aware paths
   const currentPath = `/ferramenta-ia-artes/${toolSlug}/${versionSlug}`;
   const loginPath = `/login-artes?redirect=${encodeURIComponent(currentPath)}`;
@@ -188,6 +191,18 @@ const ToolVersionLessons = () => {
 
   // Tool link for the unlock button
   const toolLink = useMemo(() => getToolLinkFromLessons(lessons), [lessons]);
+
+  // Calculate embed URL with useMemo instead of IIFE
+  const currentEmbedUrl = useMemo(() => {
+    const lesson = lessons[selectedLesson];
+    if (!lesson?.videoUrl) return null;
+    return getVideoEmbedUrl(lesson.videoUrl);
+  }, [lessons, selectedLesson]);
+
+  // Reset video loading state when lesson changes
+  useEffect(() => {
+    setVideoLoading(true);
+  }, [selectedLesson]);
 
   // Check if tool is unlocked (first 4 lessons watched)
   const isToolUnlocked = useMemo(() => {
@@ -614,23 +629,27 @@ const ToolVersionLessons = () => {
                 </Card>
 
                 {/* Video */}
-                <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                  {currentLesson.videoUrl ? (
-                    (() => {
-                      const embedUrl = getVideoEmbedUrl(currentLesson.videoUrl);
-                      return embedUrl ? (
-                        <iframe
-                          src={embedUrl}
-                          className="w-full h-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                          <Play className="w-16 h-16" />
+                <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+                  {currentEmbedUrl ? (
+                    <>
+                      {/* Loading indicator */}
+                      {videoLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                         </div>
-                      );
-                    })()
+                      )}
+                      <iframe
+                        key={currentEmbedUrl}
+                        src={currentEmbedUrl}
+                        title={currentLesson?.title || 'Video'}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        onLoad={() => setVideoLoading(false)}
+                      />
+                    </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       <Play className="w-16 h-16" />
