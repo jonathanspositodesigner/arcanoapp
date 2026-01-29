@@ -1,75 +1,69 @@
 
 
-## Adicionar Pack de Carnaval na Promoção 135338 (Combo Arcano)
+## Parar o App de Atualizar Sozinho
 
-### O que vai ser feito
+### Problema Identificado
 
-A promoção **135338 (Combo Arcano)** vai passar a liberar:
-- pack-arcano-vol-1 (vitalício) ✅ já existe
-- pack-arcano-vol-2 (vitalício) ✅ já existe  
-- pack-arcano-vol-3 (vitalício) ✅ já existe
-- **pack-de-carnaval (vitalício)** 🆕 adicionar
+O hook `useServiceWorkerUpdate.ts` está causando reloads automáticos através do evento `controllerchange`:
 
-**Não mexe em nada que a pessoa já tem** - se já comprou pack-fim-de-ano antes, continua com acesso normalmente.
-
----
-
-### Implementação
-
-#### 1) Adicionar pack-de-carnaval na promoção
-
-Inserir na tabela `artes_promotion_items`:
-
-```sql
-INSERT INTO artes_promotion_items (promotion_id, pack_slug, access_type)
-VALUES ('722bf976-a558-4278-bc01-5e9b4906d935', 'pack-de-carnaval', 'vitalicio');
+```typescript
+// Linha 75-77 - ESTA É A CAUSA
+const handleControllerChange = () => {
+  window.location.reload();
+};
 ```
 
-Isso faz com que toda nova compra do 135338 já libere o carnaval automaticamente (o webhook já processa os itens da promoção).
+**Fluxo do problema:**
+1. Usuário abre o app
+2. Hook verifica se tem SW novo a cada 30 segundos OU quando:
+   - App fica visível (`visibilitychange`)
+   - Janela ganha foco (`focus`)
+   - Navegação back/forward (`pageshow`)
+3. Se detecta SW novo, manda `SKIP_WAITING`
+4. SW novo ativa → dispara `controllerchange` → **RELOAD**
 
----
-
-#### 2) Correção retroativa (3 clientes dos últimos 3 dias)
-
-Adicionar pack-de-carnaval para quem comprou recentemente:
-
-```sql
-INSERT INTO user_pack_purchases (user_id, pack_slug, access_type, has_bonus_access, is_active, product_name)
-VALUES 
-  ('8eed6705-24ee-4ff4-87f7-a4788495cf1f', 'pack-de-carnaval', 'vitalicio', true, true, 'Combo Arcano'),
-  ('096615aa-cde6-4ffe-bd50-552805b6f6ce', 'pack-de-carnaval', 'vitalicio', true, true, 'Combo Arcano'),
-  ('e04ea270-ba42-4eb8-a943-c7ac8bf2855f', 'pack-de-carnaval', 'vitalicio', true, true, 'Combo Arcano')
-ON CONFLICT (user_id, pack_slug) DO UPDATE SET 
-  access_type = 'vitalicio',
-  has_bonus_access = true,
-  is_active = true;
+Combinado com as configs do `vite.config.ts`:
+```typescript
+skipWaiting: true,    // SW novo ativa imediatamente
+clientsClaim: true,   // SW assume controle de todas as abas
 ```
 
+Isso cria um ciclo de atualizações forçadas.
+
 ---
 
-### O que NÃO vai ser feito
+### Solução
 
-- ❌ Não remove pack-fim-de-ano de ninguém
-- ❌ Não modifica o webhook
-- ❌ Não reseta senha de ninguém
-- ❌ Não mexe em outros acessos
+**Remover o listener de `controllerchange`** que força o reload. O app vai continuar funcionando normalmente e usará os novos assets no próximo carregamento natural (quando o usuário navegar ou abrir o app novamente).
+
+---
+
+### Mudanças no Código
+
+**Arquivo:** `src/hooks/useServiceWorkerUpdate.ts`
+
+Remover as linhas 74-77 e 82 e 88:
+
+```typescript
+// REMOVER ESSAS LINHAS:
+// Listen for controller change (new SW activated) - reload immediately
+const handleControllerChange = () => {
+  window.location.reload();
+};
+
+// REMOVER ESTA LINHA:
+navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
+// REMOVER ESTA LINHA DO CLEANUP:
+navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+```
 
 ---
 
 ### Resultado
 
-| Compra | Packs liberados |
-|--------|-----------------|
-| Novas compras do 135338 | vol-1, vol-2, vol-3, **carnaval** |
-| 3 clientes recentes | **carnaval** adicionado (demais acessos intactos) |
-
----
-
-### Arquivos/Mudanças
-
-| Tipo | Descrição |
-|------|-----------|
-| Migração SQL | INSERT do pack-de-carnaval na promoção + correção retroativa |
-
-Nenhuma mudança de código necessária - o webhook já processa automaticamente os packs configurados na promoção.
+- App para de recarregar sozinho
+- Service Worker continua sendo atualizado silenciosamente em background
+- Usuário só vê nova versão quando recarregar a página manualmente ou abrir o app de novo
+- Nenhum impacto na funcionalidade do PWA
 
