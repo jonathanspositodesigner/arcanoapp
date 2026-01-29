@@ -640,26 +640,32 @@ const AdminManageArtes = () => {
 
               <div>
                 <Label>Categoria</Label>
-                <Select value={editCategory} onValueChange={(value) => {
-                  if (value === '__new__') {
-                    const newCat = prompt('Nome da nova categoria:');
-                    if (newCat && newCat.trim()) {
-                      const formattedCat = newCat.trim();
-                      supabase.from('artes_categories').insert({ name: formattedCat, slug: formattedCat.toLowerCase().replace(/\s+/g, '-') })
-                        .then(() => {
-                          fetchCategories();
-                          setEditCategory(formattedCat);
-                          toast.success('Categoria criada!');
-                        });
+                <Select 
+                  key={`category-select-${editCategory}-${categories.length}`}
+                  value={editCategory} 
+                  onValueChange={(value) => {
+                    if (value === '__new__') {
+                      const newCat = prompt('Nome da nova categoria:');
+                      if (newCat && newCat.trim()) {
+                        const formattedCat = newCat.trim();
+                        supabase.from('artes_categories').insert({ name: formattedCat, slug: formattedCat.toLowerCase().replace(/\s+/g, '-') })
+                          .then(() => {
+                            fetchCategories();
+                            setEditCategory(formattedCat);
+                            toast.success('Categoria criada!');
+                          });
+                      }
+                    } else {
+                      setEditCategory(value);
                     }
-                  } else {
-                    setEditCategory(value);
-                  }
-                }}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+                  }}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Selecione a categoria" />
+                  </SelectTrigger>
                   <SelectContent className="bg-background border border-border z-50">
                     {editCategory && !categories.find(c => c.name === editCategory) && (
-                      <SelectItem value={editCategory}>{editCategory}</SelectItem>
+                      <SelectItem value={editCategory}>{editCategory} (salvo)</SelectItem>
                     )}
                     {categories.map(cat => (
                       <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
@@ -671,11 +677,18 @@ const AdminManageArtes = () => {
 
               <div>
                 <Label>Pack</Label>
-                <Select value={editPack} onValueChange={setEditPack}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione o pack" /></SelectTrigger>
+                <Select 
+                  key={`pack-select-${editPack}-${packs.length}`}
+                  value={editPack} 
+                  onValueChange={setEditPack}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Selecione o pack" />
+                  </SelectTrigger>
                   <SelectContent className="bg-background border border-border z-50">
+                    <SelectItem value="">Nenhum pack</SelectItem>
                     {editPack && !packs.find(p => p.name === editPack) && (
-                      <SelectItem value={editPack}>{editPack}</SelectItem>
+                      <SelectItem value={editPack}>{editPack} (salvo)</SelectItem>
                     )}
                     {packs.map(pack => (
                       <SelectItem key={pack.id} value={pack.name}>{pack.name}</SelectItem>
