@@ -211,8 +211,11 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
         })
       }
 
-      // Mark success BEFORE email
-      await supabase.from('webhook_logs').update({ result: 'success' }).eq('id', logId)
+      // Mark success BEFORE email + limpar payload
+      await supabase.from('webhook_logs').update({ 
+        result: 'success',
+        payload: {} // Limpar payload para sucesso
+      }).eq('id', logId)
 
       // Send email
       try {
@@ -240,12 +243,19 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
         }
       }
 
-      await supabase.from('webhook_logs').update({ result: 'success' }).eq('id', logId)
+      await supabase.from('webhook_logs').update({ 
+        result: 'success',
+        payload: {} // Limpar payload
+      }).eq('id', logId)
       return
     }
 
     // Other statuses
-    await supabase.from('webhook_logs').update({ result: 'ignored', error_message: `Status: ${status}` }).eq('id', logId)
+    await supabase.from('webhook_logs').update({ 
+      result: 'ignored', 
+      error_message: `Status: ${status}`,
+      payload: {} // Limpar payload
+    }).eq('id', logId)
 
   } catch (error) {
     console.error(`\n❌ [${requestId}] ERRO:`, error)
@@ -289,6 +299,16 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
+
+    // Limpeza automática de logs > 30 dias (async, não bloqueia)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    Promise.resolve(
+      supabase.from('webhook_logs')
+        .delete()
+        .lt('received_at', thirtyDaysAgo)
+        .limit(100)
+    ).then(() => console.log(`   🧹 Limpeza automática executada`))
+     .catch(() => {})
 
     // Log to webhook_logs (durable)
     const { data: logEntry, error: logError } = await supabase

@@ -543,8 +543,12 @@ async function processGreennArtesWebhook(supabase: any, payload: any, logId: str
         processedPacks.push(packMapping.packSlug)
       }
 
-      // Mark success BEFORE email
-      await supabase.from('webhook_logs').update({ result: 'success', mapping_type: mappingType }).eq('id', logId)
+      // Mark success BEFORE email + limpar payload (economizar espaço)
+      await supabase.from('webhook_logs').update({ 
+        result: 'success', 
+        mapping_type: mappingType,
+        payload: {} // Limpar payload para sucesso
+      }).eq('id', logId)
 
       // Send email (non-blocking failure)
       const packInfo = processedPacks.length > 1 ? `${processedPacks.length} Packs` : packMapping?.packSlug || 'Pack'
@@ -575,15 +579,24 @@ async function processGreennArtesWebhook(supabase: any, payload: any, logId: str
         })
       }
 
-      await supabase.from('webhook_logs').update({ result: 'ignored', error_message: 'waiting_payment' }).eq('id', logId)
+      await supabase.from('webhook_logs').update({ 
+        result: 'ignored', 
+        error_message: 'waiting_payment',
+        payload: {} // Limpar payload para ignored
+      }).eq('id', logId)
       return
     }
 
     // Other statuses
-    await supabase.from('webhook_logs').update({ result: 'ignored', error_message: `Status: ${status}` }).eq('id', logId)
+    await supabase.from('webhook_logs').update({ 
+      result: 'ignored', 
+      error_message: `Status: ${status}`,
+      payload: {} // Limpar payload para ignored
+    }).eq('id', logId)
 
   } catch (error) {
     console.error(`\n❌ [${requestId}] ERRO:`, error)
+    // Manter payload completo para falhas (debug)
     await supabase.from('webhook_logs').update({ 
       result: 'failed', 
       error_message: error instanceof Error ? error.message : 'Erro desconhecido' 
@@ -659,6 +672,16 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
+
+    // Limpeza automática de logs > 30 dias (async, não bloqueia)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    Promise.resolve(
+      supabase.from('webhook_logs')
+        .delete()
+        .lt('received_at', thirtyDaysAgo)
+        .limit(100)
+    ).then(() => console.log(`   🧹 Limpeza automática executada`))
+     .catch(() => {})
 
     // Log to webhook_logs (durable)
     const { data: logEntry, error: logError } = await supabase
