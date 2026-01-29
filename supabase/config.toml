@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.webhook-hotmart-artes]
 verify_jwt = false
+
+[functions.runninghub-webhook]
+verify_jwt = false

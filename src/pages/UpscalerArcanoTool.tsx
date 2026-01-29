@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ArrowLeft, Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock, MessageSquare } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Card } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
@@ -21,8 +23,7 @@ interface ErrorDetails {
   details?: any;
 }
 
-const MAX_CONCURRENT_JOBS = 3;
-const QUEUE_POLLING_INTERVAL = 10000; // 10 seconds
+const DEFAULT_PROMPT = "high quality realistic photography with extremely detailed skin texture and pores visible, realistic lighting, detailed eyes, professional photo";
 
 const UpscalerArcanoTool: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +33,8 @@ const UpscalerArcanoTool: React.FC = () => {
   // State
   const [resolution, setResolution] = useState<Resolution>(4096);
   const [detailDenoise, setDetailDenoise] = useState(0.15);
-  const [creativityDenoise, setCreativityDenoise] = useState(0.05);
+  const [useCustomPrompt, setUseCustomPrompt] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState(DEFAULT_PROMPT);
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [inputFileName, setInputFileName] = useState<string>('');
   const [outputImage, setOutputImage] = useState<string | null>(null);
@@ -45,28 +47,106 @@ const UpscalerArcanoTool: React.FC = () => {
   // Queue state
   const [isWaitingInQueue, setIsWaitingInQueue] = useState(false);
   const [queuePosition, setQueuePosition] = useState(0);
-  const [queueId, setQueueId] = useState<string | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  const queuePollingRef = useRef<NodeJS.Timeout | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const beforeTransformRef = useRef<HTMLDivElement>(null);
   const sessionIdRef = useRef<string>(crypto.randomUUID());
-  const queueEntryCreatedAtRef = useRef<string | null>(null);
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  // Cleanup polling on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-      }
-      if (queuePollingRef.current) {
-        clearInterval(queuePollingRef.current);
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
       }
     };
   }, []);
+
+  // Subscribe to Realtime updates when jobId changes
+  useEffect(() => {
+    if (!jobId) return;
+
+    console.log('[Upscaler] Subscribing to Realtime for job:', jobId);
+
+    // Remove previous channel if exists
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+    }
+
+    const channel = supabase
+      .channel(`upscaler-job-${jobId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'upscaler_jobs',
+          filter: `id=eq.${jobId}`
+        },
+        (payload) => {
+          console.log('[Upscaler] Realtime update:', payload.new);
+          const job = payload.new as any;
+
+          if (job.status === 'completed' && job.output_url) {
+            console.log('[Upscaler] Job completed! Output:', job.output_url);
+            setOutputImage(job.output_url);
+            setStatus('completed');
+            setProgress(100);
+            setIsWaitingInQueue(false);
+            setQueuePosition(0);
+            toast.success(t('upscalerTool.toast.success'));
+          } else if (job.status === 'failed') {
+            console.log('[Upscaler] Job failed:', job.error_message);
+            setStatus('error');
+            setLastError({
+              message: job.error_message || 'Processing failed',
+              code: 'TASK_FAILED',
+              solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
+            });
+            setIsWaitingInQueue(false);
+            toast.error('Erro no processamento. Tente novamente.');
+          } else if (job.status === 'running') {
+            console.log('[Upscaler] Job running');
+            setStatus('processing');
+            setIsWaitingInQueue(false);
+            setQueuePosition(0);
+            // Start progress animation
+            setProgress(prev => Math.min(prev + 5, 90));
+          } else if (job.status === 'queued') {
+            console.log('[Upscaler] Job queued at position:', job.position);
+            setIsWaitingInQueue(true);
+            setQueuePosition(job.position || 1);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('[Upscaler] Realtime subscription status:', status);
+      });
+
+    realtimeChannelRef.current = channel;
+
+    return () => {
+      console.log('[Upscaler] Cleaning up Realtime subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [jobId, t]);
+
+  // Progress animation while processing
+  useEffect(() => {
+    if (status !== 'processing') return;
+
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + 1;
+      });
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [status]);
 
   // Handle file selection
   const handleFileSelect = useCallback((file: File) => {
@@ -88,7 +168,7 @@ const UpscalerArcanoTool: React.FC = () => {
       setStatus('idle');
     };
     reader.readAsDataURL(file);
-  }, []);
+  }, [t]);
 
   // Handle drop
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -116,18 +196,42 @@ const UpscalerArcanoTool: React.FC = () => {
     return () => window.removeEventListener('paste', handlePaste);
   }, [handleFileSelect]);
 
-  // Actually process the image (called when it's our turn)
-  const actuallyProcessImage = async () => {
-    if (!inputImage) return;
+  // Process image
+  const processImage = async () => {
+    if (!inputImage) {
+      toast.error(t('upscalerTool.errors.selectFirst'));
+      return;
+    }
+
+    setLastError(null);
+    setStatus('uploading');
+    setProgress(10);
 
     try {
-      setStatus('uploading');
-      setProgress(10);
+      // Step 1: Create job in database
+      const { data: job, error: jobError } = await supabase
+        .from('upscaler_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          status: 'queued',
+          resolution,
+          detail_denoise: detailDenoise,
+          prompt: useCustomPrompt ? customPrompt : null
+        })
+        .select()
+        .single();
 
-      // Extract base64 data from data URL
+      if (jobError || !job) {
+        throw new Error('Erro ao criar job: ' + (jobError?.message || 'Unknown'));
+      }
+
+      console.log('[Upscaler] Job created:', job.id);
+      setJobId(job.id);
+      setProgress(20);
+
+      // Step 2: Upload image
       const base64Data = inputImage.split(',')[1];
-
-      // Step 1: Upload image
+      
       const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {
         body: {
           imageBase64: base64Data,
@@ -144,7 +248,6 @@ const UpscalerArcanoTool: React.FC = () => {
           message: uploadResponse.data.error,
           code: uploadResponse.data.code,
           solution: uploadResponse.data.solution,
-          details: uploadResponse.data.details
         });
         throw new Error(uploadResponse.data.error);
       }
@@ -153,18 +256,19 @@ const UpscalerArcanoTool: React.FC = () => {
       if (!fileName) {
         throw new Error('Upload não retornou nome do arquivo');
       }
-      console.log('Upload successful, fileName:', fileName);
-      setProgress(25);
-
-      // Step 2: Run workflow (only upscale mode now)
+      
+      console.log('[Upscaler] Upload successful, fileName:', fileName);
+      setProgress(35);
       setStatus('processing');
+
+      // Step 3: Start processing (with webhook callback)
       const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {
+          jobId: job.id,
           fileName,
-          mode: 'upscale',
           resolution,
-          creativityDenoise,
           detailDenoise,
+          prompt: useCustomPrompt ? customPrompt : null,
         },
       });
 
@@ -177,158 +281,25 @@ const UpscalerArcanoTool: React.FC = () => {
           message: runResponse.data.error,
           code: runResponse.data.code,
           solution: runResponse.data.solution,
-          details: runResponse.data.details
         });
         throw new Error(runResponse.data.error);
       }
 
-      const { taskId } = runResponse.data;
-      
-      if (!taskId) {
-        setLastError({
-          message: 'O servidor não retornou um ID de tarefa',
-          code: 'NO_TASK_ID',
-          solution: 'Verifique a configuração do workflow no RunningHub'
-        });
-        throw new Error('Servidor não retornou taskId');
+      console.log('[Upscaler] Run response:', runResponse.data);
+      setProgress(50);
+
+      // Check if queued or running
+      if (runResponse.data?.queued) {
+        setIsWaitingInQueue(true);
+        setQueuePosition(runResponse.data.position || 1);
+        toast.info('Servidor ocupado. Você entrou na fila de espera.');
+      } else {
+        // Processing started immediately - Realtime will notify when done
+        console.log('[Upscaler] Processing started, waiting for Realtime notification...');
       }
-      
-      console.log('Workflow started, taskId:', taskId, 'method:', runResponse.data.method);
-      setProgress(40);
-
-      // Step 3: Wait for minimum processing time, then poll for status
-      const initialDelay = 150000; // 2 minutes and 30 seconds
-      const pollingInterval = 5000; // 5 seconds
-      const maxAttempts = 120; // 10 minutes of polling after initial delay
-      let attempts = 0;
-
-      const progressPerStep = 10 / 30;
-      let progressValue = 40;
-      
-      const progressTimer = setInterval(() => {
-        progressValue = Math.min(progressValue + progressPerStep, 50);
-        setProgress(progressValue);
-      }, 5000);
-
-      setTimeout(() => {
-        clearInterval(progressTimer);
-        setProgress(50);
-        
-        pollingRef.current = setInterval(async () => {
-          attempts++;
-          
-          if (attempts > maxAttempts) {
-            clearInterval(pollingRef.current!);
-            await markJobCompleted();
-            setStatus('error');
-            setLastError({
-              message: 'Tempo limite excedido',
-              code: 'TIMEOUT',
-              solution: 'O processamento demorou mais de 12 minutos. Tente com uma imagem menor ou com menos resolução.'
-            });
-            toast.error('Tempo limite excedido. Tente novamente.');
-            return;
-          }
-
-          try {
-            const statusResponse = await supabase.functions.invoke('runninghub-upscaler/status', {
-              body: { taskId },
-            });
-
-            if (statusResponse.error) {
-              console.error('Status check error:', statusResponse.error);
-              return;
-            }
-
-            if (statusResponse.data?.error) {
-              clearInterval(pollingRef.current!);
-              await markJobCompleted();
-              setStatus('error');
-              setLastError({
-                message: statusResponse.data.error,
-                code: statusResponse.data.code,
-                solution: 'Erro ao verificar status do processamento'
-              });
-              toast.error('Erro ao verificar status');
-              return;
-            }
-
-            const taskStatus = statusResponse.data?.status;
-            
-            if (!taskStatus) {
-              console.warn('Status undefined, continuing polling...');
-              return;
-            }
-            
-            console.log('Task status:', taskStatus, 'attempt:', attempts);
-
-            if (taskStatus === 'RUNNING' || taskStatus === 'PENDING') {
-              setProgress(Math.min(50 + (attempts * 0.4), 95));
-            } else if (taskStatus === 'SUCCESS') {
-              clearInterval(pollingRef.current!);
-              setProgress(95);
-
-              const outputsResponse = await supabase.functions.invoke('runninghub-upscaler/outputs', {
-                body: { taskId },
-              });
-
-              if (outputsResponse.error) {
-                throw new Error('Erro ao obter resultado');
-              }
-
-              if (outputsResponse.data?.error) {
-                setLastError({
-                  message: outputsResponse.data.error,
-                  code: outputsResponse.data.code
-                });
-                throw new Error(outputsResponse.data.error);
-              }
-
-              const { outputs } = outputsResponse.data;
-              console.log('[Upscaler] Raw outputs:', outputs);
-
-              const validOutputs = (outputs || []).filter(
-                (url: unknown) => typeof url === 'string' && url.trim().length > 0
-              );
-              console.log('[Upscaler] Valid outputs:', validOutputs);
-
-              if (validOutputs.length > 0) {
-                const finalUrl = validOutputs[validOutputs.length - 1];
-                console.log('[Upscaler] Selected finalUrl:', finalUrl);
-                
-                await markJobCompleted();
-                setOutputImage(finalUrl);
-                setStatus('completed');
-                setProgress(100);
-                toast.success(t('upscalerTool.toast.success'));
-              } else {
-                setLastError({
-                  message: 'Nenhuma imagem válida retornada',
-                  code: 'NO_VALID_OUTPUT',
-                  solution: 'O processamento foi concluído mas não retornou URLs de imagem válidas. Tente novamente.'
-                });
-                throw new Error('Nenhuma imagem válida retornada');
-              }
-            } else if (taskStatus === 'FAILED') {
-              clearInterval(pollingRef.current!);
-              await markJobCompleted();
-              setStatus('error');
-              setLastError({
-                message: 'O processamento falhou no servidor',
-                code: 'TASK_FAILED',
-                solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
-              });
-              toast.error('Erro no processamento. Tente novamente.');
-            }
-          } catch (error) {
-            console.error('Polling error:', error);
-          }
-        }, pollingInterval);
-      }, initialDelay);
 
     } catch (error: any) {
-      console.error('Process error:', error);
-      await markJobCompleted();
+      console.error('[Upscaler] Process error:', error);
       setStatus('error');
       
       if (!lastError) {
@@ -339,183 +310,35 @@ const UpscalerArcanoTool: React.FC = () => {
       }
       
       toast.error(error.message || 'Erro ao processar imagem');
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-      }
     }
-  };
-
-  // Mark job as completed in queue
-  const markJobCompleted = async () => {
-    if (queueId) {
-      try {
-        await supabase
-          .from('upscaler_queue')
-          .update({ 
-            status: 'completed', 
-            completed_at: new Date().toISOString() 
-          })
-          .eq('id', queueId);
-      } catch (e) {
-        console.error('Error marking job completed:', e);
-      }
-      setQueueId(null);
-    }
-  };
-
-  // Start polling for queue turn
-  const startPollingForTurn = (myId: string, myCreatedAt: string) => {
-    queuePollingRef.current = setInterval(async () => {
-      try {
-        // Cleanup stale jobs first
-        await supabase.rpc('cleanup_stale_upscaler_jobs');
-
-        // Check running count
-        const { count: runningCount } = await supabase
-          .from('upscaler_queue')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'running');
-
-        // Check position in queue
-        const { count: aheadOfMe } = await supabase
-          .from('upscaler_queue')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'waiting')
-          .lt('created_at', myCreatedAt);
-
-        const newPosition = (aheadOfMe || 0) + 1;
-        setQueuePosition(newPosition);
-
-        // Is it my turn?
-        if ((runningCount || 0) < MAX_CONCURRENT_JOBS && newPosition === 1) {
-          clearInterval(queuePollingRef.current!);
-          queuePollingRef.current = null;
-          
-          // Update to running
-          await supabase
-            .from('upscaler_queue')
-            .update({ status: 'running', started_at: new Date().toISOString() })
-            .eq('id', myId);
-
-          setIsWaitingInQueue(false);
-          await actuallyProcessImage();
-        }
-      } catch (error) {
-        console.error('Queue polling error:', error);
-      }
-    }, QUEUE_POLLING_INTERVAL);
   };
 
   // Cancel queue
   const cancelQueue = async () => {
-    if (queuePollingRef.current) {
-      clearInterval(queuePollingRef.current);
-      queuePollingRef.current = null;
-    }
-    
-    if (queueId) {
+    if (jobId) {
       try {
         await supabase
-          .from('upscaler_queue')
+          .from('upscaler_jobs')
           .delete()
-          .eq('id', queueId);
+          .eq('id', jobId);
       } catch (e) {
-        console.error('Error deleting queue entry:', e);
+        console.error('[Upscaler] Error deleting job:', e);
       }
+    }
+    
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+      realtimeChannelRef.current = null;
     }
     
     setIsWaitingInQueue(false);
     setQueuePosition(0);
-    setQueueId(null);
-    queueEntryCreatedAtRef.current = null;
+    setJobId(null);
+    setStatus('idle');
+    setProgress(0);
   };
 
-  // Process image - check queue first
-  const processImage = async () => {
-    if (!inputImage) {
-      toast.error(t('upscalerTool.errors.selectFirst'));
-      return;
-    }
-
-    setLastError(null);
-
-    try {
-      // Cleanup stale jobs first
-      await supabase.rpc('cleanup_stale_upscaler_jobs');
-
-      // Check how many jobs are running
-      const { count: runningCount } = await supabase
-        .from('upscaler_queue')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'running');
-
-      if ((runningCount || 0) >= MAX_CONCURRENT_JOBS) {
-        // Enter queue as waiting
-        const { data: queueEntry, error: insertError } = await supabase
-          .from('upscaler_queue')
-          .insert({ 
-            session_id: sessionIdRef.current, 
-            status: 'waiting' 
-          })
-          .select()
-          .single();
-
-        if (insertError || !queueEntry) {
-          throw new Error('Erro ao entrar na fila');
-        }
-
-        setQueueId(queueEntry.id);
-        queueEntryCreatedAtRef.current = queueEntry.created_at;
-        setIsWaitingInQueue(true);
-
-        // Calculate initial position
-        const { count: aheadOfMe } = await supabase
-          .from('upscaler_queue')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'waiting')
-          .lt('created_at', queueEntry.created_at);
-
-        setQueuePosition((aheadOfMe || 0) + 1);
-
-        // Start polling for turn
-        startPollingForTurn(queueEntry.id, queueEntry.created_at);
-        
-        toast.info('Servidor ocupado. Você entrou na fila de espera.');
-        return;
-      }
-
-      // Slot available - register as running and process
-      const { data: runningEntry, error: runError } = await supabase
-        .from('upscaler_queue')
-        .insert({ 
-          session_id: sessionIdRef.current, 
-          status: 'running', 
-          started_at: new Date().toISOString() 
-        })
-        .select()
-        .single();
-
-      if (runError || !runningEntry) {
-        throw new Error('Erro ao registrar processamento');
-      }
-
-      setQueueId(runningEntry.id);
-      
-      // Process immediately
-      await actuallyProcessImage();
-
-    } catch (error: any) {
-      console.error('Queue check error:', error);
-      setStatus('error');
-      setLastError({
-        message: error.message || 'Erro ao verificar fila',
-        code: 'QUEUE_ERROR'
-      });
-      toast.error(error.message || 'Erro ao iniciar processamento');
-    }
-  };
-
-  // Download result - direct fetch without proxy
+  // Download result
   const downloadResult = async () => {
     if (!outputImage) return;
 
@@ -547,7 +370,7 @@ const UpscalerArcanoTool: React.FC = () => {
         toast.success(t('upscalerTool.toast.downloadStarted'));
       }
     } catch (error) {
-      console.error('Download error:', error);
+      console.error('[Upscaler] Download error:', error);
       window.open(outputImage, '_blank');
       toast.info(t('upscalerTool.toast.openedNewTab'));
     }
@@ -555,6 +378,11 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // Reset
   const resetTool = () => {
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+      realtimeChannelRef.current = null;
+    }
+    
     setInputImage(null);
     setInputFileName('');
     setOutputImage(null);
@@ -563,17 +391,10 @@ const UpscalerArcanoTool: React.FC = () => {
     setLastError(null);
     setIsWaitingInQueue(false);
     setQueuePosition(0);
-    setQueueId(null);
-    queueEntryCreatedAtRef.current = null;
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-    }
-    if (queuePollingRef.current) {
-      clearInterval(queuePollingRef.current);
-    }
+    setJobId(null);
   };
 
-  // Slider drag handling with pointer events (works at any zoom level)
+  // Slider drag handling
   const updateSliderPositionFromClientX = useCallback((clientX: number) => {
     if (sliderRef.current) {
       const rect = sliderRef.current.getBoundingClientRect();
@@ -707,7 +528,7 @@ const UpscalerArcanoTool: React.FC = () => {
             >
               {({ zoomIn, zoomOut, resetTransform }) => (
                 <div className="relative">
-                  {/* Zoom Controls - Hidden on mobile */}
+                  {/* Zoom Controls */}
                   <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
                     <button 
                       onClick={() => zoomOut()}
@@ -741,7 +562,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   <div ref={sliderRef} className="relative w-full mx-auto overflow-hidden">
                     <AspectRatio ratio={16 / 9}>
                       <div className="relative w-full h-full bg-black overflow-hidden">
-                        {/* AFTER image - inside TransformComponent (zoomable/pannable) */}
+                        {/* AFTER image */}
                         <TransformComponent 
                           wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} 
                           contentStyle={{ width: '100%', height: '100%' }}
@@ -754,19 +575,15 @@ const UpscalerArcanoTool: React.FC = () => {
                           />
                         </TransformComponent>
 
-                        {/* BEFORE image - overlay clipped to left side */}
+                        {/* BEFORE image - overlay clipped */}
                         <div 
                           className="absolute inset-0 pointer-events-none"
-                          style={{ 
-                            clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` 
-                          }}
+                          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
                         >
                           <div 
                             ref={beforeTransformRef}
                             className="w-full h-full"
-                            style={{ 
-                              transformOrigin: '0% 0%'
-                            }}
+                            style={{ transformOrigin: '0% 0%' }}
                           >
                             <img 
                               src={inputImage} 
@@ -777,7 +594,7 @@ const UpscalerArcanoTool: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Slider Line and Handle - OUTSIDE TransformComponent, doesn't scale */}
+                        {/* Slider Line and Handle */}
                         <div 
                           className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-20"
                           style={{ 
@@ -802,7 +619,7 @@ const UpscalerArcanoTool: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Labels ANTES/DEPOIS - Smaller on mobile */}
+                        {/* Labels */}
                         <div className="absolute top-2 sm:top-14 left-2 sm:left-4 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-black/90 border border-white/30 text-white text-xs sm:text-sm font-bold z-20 pointer-events-none shadow-lg">
                           {t('upscalerTool.labels.before')}
                         </div>
@@ -813,7 +630,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     </AspectRatio>
                   </div>
 
-                  {/* Zoom Hint - Hidden on mobile */}
+                  {/* Zoom Hint */}
                   <div className="hidden sm:block absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-white/20 shadow-lg">
                     🔍 {t('upscalerTool.zoomHint')}
                   </div>
@@ -852,12 +669,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        if (pollingRef.current) clearInterval(pollingRef.current);
-                        markJobCompleted();
-                        setStatus('idle');
-                        setProgress(0);
-                      }}
+                      onClick={cancelQueue}
                       className="text-purple-300 hover:text-white hover:bg-purple-500/20 mt-2"
                     >
                       {t('upscalerTool.buttons.cancel')}
@@ -869,7 +681,7 @@ const UpscalerArcanoTool: React.FC = () => {
           </Card>
         ) : null}
 
-        {/* Controls - Only show when idle with image */}
+        {/* Controls */}
         {inputImage && status === 'idle' && !isWaitingInQueue && (
           <div className="space-y-4">
             {/* Resolution */}
@@ -932,36 +744,32 @@ const UpscalerArcanoTool: React.FC = () => {
               </div>
             </Card>
 
-            {/* Creativity Denoise */}
+            {/* Custom Prompt */}
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-pink-400" />
-                  <span className="font-medium text-white">{t('upscalerTool.controls.aiCreativity')}</span>
-                  <div className="group relative">
-                    <Info className="w-4 h-4 text-purple-400/70 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                      {t('upscalerTool.controls.lowValues')}
-                    </div>
-                  </div>
+                  <MessageSquare className="w-4 h-4 text-pink-400" />
+                  <span className="font-medium text-white">{t('upscalerTool.controls.usePrompt')}</span>
                 </div>
-                <span className="text-purple-300 font-mono">{creativityDenoise.toFixed(2)}</span>
+                <Switch
+                  checked={useCustomPrompt}
+                  onCheckedChange={setUseCustomPrompt}
+                />
               </div>
-              <div className="text-xs text-pink-300 mb-3">
-                ✨ {t('upscalerTool.controls.creativityRecommended')}
-              </div>
-              <Slider
-                value={[creativityDenoise]}
-                onValueChange={([value]) => setCreativityDenoise(value)}
-                min={0}
-                max={1}
-                step={0.01}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-purple-300/70 mt-2">
-                <span>{t('upscalerTool.controls.faithful')}</span>
-                <span>{t('upscalerTool.controls.moreCreative')}</span>
-              </div>
+              
+              {useCustomPrompt && (
+                <>
+                  <p className="text-xs text-pink-300/70 mb-3">
+                    {t('upscalerTool.controls.promptHint')}
+                  </p>
+                  <Textarea
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    placeholder={t('upscalerTool.controls.promptPlaceholder')}
+                    className="min-h-[100px] bg-[#0D0221]/50 border-purple-500/30 text-white placeholder:text-purple-300/50"
+                  />
+                </>
+              )}
             </Card>
           </div>
         )}
@@ -1000,7 +808,6 @@ const UpscalerArcanoTool: React.FC = () => {
 
           {status === 'error' && (
             <>
-              {/* Error Details Card */}
               {lastError && (
                 <Card className="bg-red-950/30 border-red-500/30 p-4">
                   <div className="flex items-start gap-3">
