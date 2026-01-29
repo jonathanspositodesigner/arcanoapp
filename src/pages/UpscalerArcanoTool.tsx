@@ -13,7 +13,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 
-type Resolution = 2048 | 4096;
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
 interface ErrorDetails {
@@ -31,7 +30,6 @@ const UpscalerArcanoTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
 
   // State
-  const [resolution, setResolution] = useState<Resolution>(4096);
   const [detailDenoise, setDetailDenoise] = useState(0.15);
   const [useCustomPrompt, setUseCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState(DEFAULT_PROMPT);
@@ -291,7 +289,6 @@ const UpscalerArcanoTool: React.FC = () => {
         .insert({
           session_id: sessionIdRef.current,
           status: 'queued',
-          resolution,
           detail_denoise: detailDenoise,
           prompt: useCustomPrompt ? customPrompt : null
         })
@@ -343,7 +340,6 @@ const UpscalerArcanoTool: React.FC = () => {
         body: {
           jobId: job.id,
           fileName,
-          resolution,
           detailDenoise,
           prompt: useCustomPrompt ? customPrompt : null,
         },
@@ -771,34 +767,6 @@ const UpscalerArcanoTool: React.FC = () => {
         {/* Controls */}
         {inputImage && status === 'idle' && !isWaitingInQueue && (
           <div className="space-y-4">
-            {/* Resolution */}
-            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <ZoomIn className="w-4 h-4 text-purple-400" />
-                <span className="font-medium">{t('upscalerTool.controls.finalResolution')}</span>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={resolution === 2048 ? 'default' : 'outline'}
-                  className={resolution === 2048 
-                    ? 'flex-1 bg-purple-600 hover:bg-purple-700' 
-                    : 'flex-1 border-purple-500/30 text-purple-300 hover:bg-purple-500/20'}
-                  onClick={() => setResolution(2048)}
-                >
-                  2K (2048px)
-                </Button>
-                <Button
-                  variant={resolution === 4096 ? 'default' : 'outline'}
-                  className={resolution === 4096 
-                    ? 'flex-1 bg-purple-600 hover:bg-purple-700' 
-                    : 'flex-1 border-purple-500/30 text-purple-300 hover:bg-purple-500/20'}
-                  onClick={() => setResolution(4096)}
-                >
-                  4K (4096px)
-                </Button>
-              </div>
-            </Card>
-
             {/* Detail Denoise */}
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
               <div className="flex items-center justify-between mb-1">

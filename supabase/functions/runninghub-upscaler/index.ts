@@ -153,7 +153,6 @@ async function handleRun(req: Request) {
   const { 
     jobId,
     fileName, 
-    resolution,
     detailDenoise,
     prompt
   } = await req.json();
@@ -168,7 +167,7 @@ async function handleRun(req: Request) {
     });
   }
 
-  console.log(`[RunningHub] Processing job ${jobId} - fileName: ${fileName}, resolution: ${resolution}, detail: ${detailDenoise}`);
+  console.log(`[RunningHub] Processing job ${jobId} - fileName: ${fileName}, detail: ${detailDenoise}`);
 
   try {
     // Update job with input file name
@@ -236,8 +235,6 @@ async function handleRun(req: Request) {
     // Build node info list for RunningHub API
     const nodeInfoList: any[] = [
       { nodeId: "1", fieldName: "image", fieldValue: fileName },
-      { nodeId: "136:1", fieldName: "max_width", fieldValue: resolution || 4096 },
-      { nodeId: "136:1", fieldName: "max_height", fieldValue: resolution || 4096 },
       { nodeId: "165", fieldName: "value", fieldValue: detailDenoise || 0.15 },
     ];
 
