@@ -1,294 +1,511 @@
 
+# Plano: Migrar Upscaler para WebApp v2 + Webhook + Supabase Realtime
 
-## Remover "Remover Fundo" + Adicionar Fila Global Econômica
+## Objetivo
 
-### Análise do Problema
-
-Você está certo - sem coordenação global, os usuários 4 e 5 não têm como saber quando os primeiros terminaram. Precisa de algo que:
-1. Registre quando um job inicia
-2. Registre quando um job termina
-3. Permita outros usuários verificar se há vaga
-
----
-
-### Solução: Fila via Tabela + Polling Econômico
-
-Em vez de Realtime (que dispara em cada mudança), usarei **polling com intervalo otimizado**:
-
-| Abordagem | Custo por usuário na fila |
-|-----------|---------------------------|
-| Realtime | ~40 queries por job completado (todos recalculam) |
-| **Polling 10s** | **~6 queries/minuto** (apenas 1 query por poll) |
-
-O polling é mais previsível e controlável.
+Eliminar completamente o sistema de polling (status e fila), substituindo por:
+1. **WebApp API v2** do RunningHub (novo endpoint)
+2. **Webhook** para receber notificacao instantanea quando o upscale termina
+3. **Supabase Realtime** para notificar o frontend em tempo real
 
 ---
 
-### Como Funciona
+## Reducao de Custos Estimada
 
+| Componente | Polling Atual | Webhook + Realtime |
+|------------|---------------|-------------------|
+| Status do upscale | 18-30 chamadas/job | 1 webhook recebido |
+| Fila | 18-54 queries/job | 0 queries |
+| **Total por job** | ~40-80 operacoes | ~2 operacoes |
+| **10 usuarios simultaneos** | ~400-800 ops | ~20 ops |
+| **Reducao** | - | ~95% |
+
+---
+
+## Arquitetura Nova
+
+```text
++------------------+     +-------------------+     +------------------+
+|    FRONTEND      |     |   EDGE FUNCTION   |     |   RUNNINGHUB     |
+| UpscalerArcano   |     | runninghub-upsc   |     |   WebApp API     |
+|   Tool.tsx       |     |   aler/index.ts   |     |                  |
++------------------+     +-------------------+     +------------------+
+        |                        |                        |
+        | 1. Inicia upscale      |                        |
+        |----------------------->|                        |
+        |                        | 2. POST /run/ai-app    |
+        |                        |    + webhookUrl        |
+        |                        |----------------------->|
+        |                        |                        |
+        | 3. Retorna taskId      |<-----------------------|
+        |<-----------------------|                        |
+        |                        |                        |
+        | 4. Subscribe Realtime  |                        |
+        |   (upscaler_jobs:id)   |                        |
+        |                        |                        |
+        |                        |     (processando...)   |
+        |                        |                        |
+        |                        |                        |
+        |                        |<-----------------------|
+        |                        | 5. Webhook: TASK_END   |
+        |                        |                        |
+        |                        | 6. Update DB           |
+        |                        |    (status, results)   |
+        |                        |                        |
+        | 7. Realtime broadcast  |                        |
+        |   (status: completed,  |                        |
+        |    output_url: ...)    |                        |
+        |<-----------------------|                        |
+        |                        |                        |
+        | 8. Exibe resultado     |                        |
++------------------+     +-------------------+     +------------------+
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  FLUXO DA FILA                                              │
-├─────────────────────────────────────────────────────────────┤
-│  1. Usuário clica "Processar"                               │
-│                                                             │
-│  2. Frontend faz 1 query: COUNT(*) WHERE status='running'   │
-│                                                             │
-│  3a. Se < 3: INSERT com status='running', processa normal   │
-│                                                             │
-│  3b. Se >= 3: INSERT com status='waiting'                   │
-│      → Mostra "Posição X na fila"                           │
-│      → Polling a cada 10s:                                  │
-│         - Conta running                                     │
-│         - Conta waiting criados antes do meu                │
-│         - Se running < 3 E sou o mais antigo → iniciar      │
-│                                                             │
-│  4. Ao terminar: UPDATE status='completed'                  │
-│                                                             │
-│  5. Cleanup automático: jobs > 10min são "abandonados"      │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ---
 
-### Estimativa de Custo Cloud
+## Mudancas no Banco de Dados
 
-**Cenário: 10 usuários usando simultaneamente, 3 processando, 7 na fila**
+### Nova tabela: `upscaler_jobs`
 
-| Operação | Frequência | Custo |
-|----------|------------|-------|
-| Verificar fila (SELECT COUNT) | 1x ao clicar "Processar" | Mínimo |
-| Insert na fila | 1x por job | Mínimo |
-| Polling enquanto espera | 7 users × 6/min × ~2 min espera | ~84 queries |
-| Update ao terminar | 1x por job | Mínimo |
-
-**Total estimado: ~90-100 queries por "rodada" de 10 usuários**
-
-Comparação com Realtime: teria ~400 queries (cada mudança notifica todos)
-
----
-
-### Mudanças no Código
-
-#### 1. Nova Tabela: `upscaler_queue`
+Esta tabela substitui a `upscaler_queue` atual e armazena o estado completo de cada job.
 
 ```sql
-CREATE TABLE upscaler_queue (
+CREATE TABLE upscaler_jobs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'waiting',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  task_id TEXT,                    -- taskId do RunningHub
+  status TEXT NOT NULL DEFAULT 'queued',  -- queued, running, completed, failed
+  input_file_name TEXT,
+  resolution INTEGER DEFAULT 4096,
+  detail_denoise NUMERIC DEFAULT 0.15,
+  prompt TEXT,
+  output_url TEXT,                 -- URL da imagem processada
+  error_message TEXT,
+  position INTEGER,                -- posicao na fila (calculado)
+  created_at TIMESTAMPTZ DEFAULT now(),
   started_at TIMESTAMPTZ,
   completed_at TIMESTAMPTZ
 );
 
--- Índice para queries rápidas
-CREATE INDEX idx_upscaler_queue_status_created 
-  ON upscaler_queue(status, created_at);
+-- Habilitar Realtime
+ALTER PUBLICATION supabase_realtime ADD TABLE upscaler_jobs;
 
--- RLS permissiva (tool pública, sem auth)
-ALTER TABLE upscaler_queue ENABLE ROW LEVEL SECURITY;
+-- RLS Policies
+ALTER TABLE upscaler_jobs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view queue" 
-  ON upscaler_queue FOR SELECT USING (true);
-  
-CREATE POLICY "Anyone can insert" 
-  ON upscaler_queue FOR INSERT WITH CHECK (true);
-  
-CREATE POLICY "Anyone can update" 
-  ON upscaler_queue FOR UPDATE USING (true);
+CREATE POLICY "Anyone can insert jobs"
+  ON upscaler_jobs FOR INSERT
+  WITH CHECK (true);
 
-CREATE POLICY "Anyone can delete" 
-  ON upscaler_queue FOR DELETE USING (true);
+CREATE POLICY "Anyone can view jobs by session"
+  ON upscaler_jobs FOR SELECT
+  USING (true);
 
--- Função de cleanup (jobs > 10 min são considerados abandonados)
-CREATE OR REPLACE FUNCTION cleanup_stale_upscaler_jobs()
-RETURNS void AS $$
-BEGIN
-  UPDATE upscaler_queue 
-  SET status = 'abandoned' 
-  WHERE status IN ('running', 'waiting') 
-  AND created_at < NOW() - INTERVAL '10 minutes';
-  
-  DELETE FROM upscaler_queue 
-  WHERE created_at < NOW() - INTERVAL '1 hour';
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+CREATE POLICY "Edge functions can update jobs"
+  ON upscaler_jobs FOR UPDATE
+  USING (true);
+
+CREATE POLICY "Anyone can delete own jobs"
+  ON upscaler_jobs FOR DELETE
+  USING (true);
+```
+
+### Remover tabela antiga
+
+```sql
+DROP TABLE IF EXISTS upscaler_queue;
 ```
 
 ---
 
-#### 2. Modificar `UpscalerArcanoTool.tsx`
+## Nova Edge Function: `runninghub-webhook`
 
-**Remover:**
-- `type Mode = 'upscale' | 'rembg'` → apenas upscale
-- `const [mode, setMode] = useState<Mode>('upscale')` 
-- Toggle buttons (linhas 456-480)
-- Todas as referências a `mode === 'rembg'`
+Recebe o callback do RunningHub quando o job termina.
 
-**Adicionar:**
-- Estado de fila: `queuePosition`, `queueId`, `isWaitingInQueue`
-- Gerador de session ID único (via `crypto.randomUUID()`)
-- Funções de fila:
-  - `checkQueueAndProcess()` - verifica antes de processar
-  - `startPollingForTurn()` - polling enquanto espera
-  - `markJobCompleted()` - ao terminar
-- UI de "Aguardando na fila"
+### Endpoint
+`POST /functions/v1/runninghub-webhook`
 
-**Novo fluxo do `processImage`:**
+### Logica
 
 ```typescript
-const processImage = async () => {
-  // Gerar session ID se não existir
-  const sessionId = sessionIdRef.current || crypto.randomUUID();
-  sessionIdRef.current = sessionId;
+// supabase/functions/runninghub-webhook/index.ts
 
-  // 1. Verificar quantos jobs estão rodando
-  const { count: runningCount } = await supabase
-    .from('upscaler_queue')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'running');
-
-  if (runningCount >= 3) {
-    // 2. Entrar na fila como waiting
-    const { data: queueEntry } = await supabase
-      .from('upscaler_queue')
-      .insert({ session_id: sessionId, status: 'waiting' })
-      .select()
-      .single();
-
-    setQueueId(queueEntry.id);
-    setIsWaitingInQueue(true);
-
-    // 3. Calcular posição inicial
-    const { count: position } = await supabase
-      .from('upscaler_queue')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'waiting')
-      .lt('created_at', queueEntry.created_at);
-
-    setQueuePosition((position || 0) + 1);
-
-    // 4. Iniciar polling para verificar quando é minha vez
-    startPollingForTurn(queueEntry.id, queueEntry.created_at);
-    return;
+serve(async (req) => {
+  // 1. Parse webhook payload
+  const { event, eventData, taskId } = await req.json();
+  
+  // 2. Validar evento
+  if (event !== 'TASK_END') {
+    return new Response('OK', { status: 200 });
   }
+  
+  // 3. Extrair dados
+  const { status, results, errorMessage } = eventData;
+  const outputUrl = results?.[0]?.url || null;
+  
+  // 4. Atualizar job no banco
+  await supabase
+    .from('upscaler_jobs')
+    .update({
+      status: status === 'SUCCESS' ? 'completed' : 'failed',
+      output_url: outputUrl,
+      error_message: errorMessage || null,
+      completed_at: new Date().toISOString()
+    })
+    .eq('task_id', taskId);
+  
+  // 5. Se havia fila, iniciar proximo job
+  await processNextInQueue();
+  
+  return new Response('OK', { status: 200 });
+});
+```
 
-  // 5. Tem vaga - registrar e processar
-  const { data: runningEntry } = await supabase
-    .from('upscaler_queue')
-    .insert({ 
-      session_id: sessionId, 
-      status: 'running', 
-      started_at: new Date().toISOString() 
+---
+
+## Modificacoes na Edge Function Existente: `runninghub-upscaler`
+
+### Mudancas principais:
+
+1. **Nova API v2** - Endpoints e headers atualizados
+2. **Adicionar webhookUrl** no request
+3. **Remover endpoints /status e /outputs** - nao sao mais necessarios
+4. **Novo parametro: prompt** - opcional
+
+### Novo formato do request (API v2):
+
+```typescript
+const WEBAPP_ID = '2015865378030755841';
+const WEBHOOK_URL = `${Deno.env.get('SUPABASE_URL')}/functions/v1/runninghub-webhook`;
+
+// Endpoint: POST https://www.runninghub.ai/openapi/v2/run/ai-app/{webappId}
+// Headers: Authorization: Bearer ${API_KEY}
+
+const requestBody = {
+  nodeInfoList: [
+    { nodeId: "input", fieldName: "image", fieldValue: fileName },
+    { nodeId: "detail", fieldName: "value", fieldValue: detailDenoise },
+    { nodeId: "prompt", fieldName: "text", fieldValue: prompt || "" }
+  ],
+  instanceType: "default",
+  usePersonalQueue: false,
+  webhookUrl: WEBHOOK_URL  // NOVO: Callback quando terminar
+};
+```
+
+### Endpoints da Edge Function:
+
+| Endpoint | Acao |
+|----------|------|
+| `/upload` | Manter (upload de imagem) |
+| `/run` | Atualizar para API v2 + webhook |
+| `/status` | REMOVER (webhook substitui) |
+| `/outputs` | REMOVER (webhook substitui) |
+| `/queue-status` | NOVO: retorna posicao na fila via DB |
+
+---
+
+## Modificacoes no Frontend: `UpscalerArcanoTool.tsx`
+
+### Remover:
+- Estado `creativityDenoise` e UI relacionada
+- `pollingRef` e toda logica de polling de status
+- `queuePollingRef` e logica de polling de fila
+- Constantes `QUEUE_POLLING_INTERVAL`, `initialDelay`, `pollingInterval`
+
+### Adicionar:
+
+1. **Estados para prompt:**
+```typescript
+const [useCustomPrompt, setUseCustomPrompt] = useState(false);
+const [customPrompt, setCustomPrompt] = useState(
+  "high quality realistic photography with extremely detailed skin texture..."
+);
+```
+
+2. **Subscribe Realtime:**
+```typescript
+useEffect(() => {
+  if (!jobId) return;
+  
+  const channel = supabase
+    .channel(`job-${jobId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'upscaler_jobs',
+        filter: `id=eq.${jobId}`
+      },
+      (payload) => {
+        const job = payload.new;
+        if (job.status === 'completed') {
+          setOutputImage(job.output_url);
+          setStatus('completed');
+          toast.success(t('upscalerTool.toast.success'));
+        } else if (job.status === 'failed') {
+          setStatus('error');
+          setLastError({ message: job.error_message });
+        } else if (job.status === 'running') {
+          setStatus('processing');
+        }
+        setQueuePosition(job.position || 0);
+      }
+    )
+    .subscribe();
+  
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [jobId]);
+```
+
+3. **Novo fluxo de processamento:**
+```typescript
+const processImage = async () => {
+  // 1. Criar job no banco
+  const { data: job } = await supabase
+    .from('upscaler_jobs')
+    .insert({
+      session_id: sessionIdRef.current,
+      status: 'queued',
+      resolution,
+      detail_denoise: detailDenoise,
+      prompt: useCustomPrompt ? customPrompt : null
     })
     .select()
     .single();
-
-  setQueueId(runningEntry.id);
   
-  // Continuar com processamento normal...
-  await actuallyProcessImage();
-};
-
-// Polling econômico: 10s
-const startPollingForTurn = (myId: string, myCreatedAt: string) => {
-  queuePollingRef.current = setInterval(async () => {
-    // Limpar jobs abandonados primeiro (1 chamada RPC)
-    await supabase.rpc('cleanup_stale_upscaler_jobs');
-
-    // Verificar running count
-    const { count: runningCount } = await supabase
-      .from('upscaler_queue')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'running');
-
-    // Verificar minha posição
-    const { count: aheadOfMe } = await supabase
-      .from('upscaler_queue')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'waiting')
-      .lt('created_at', myCreatedAt);
-
-    const newPosition = (aheadOfMe || 0) + 1;
-    setQueuePosition(newPosition);
-
-    // É minha vez?
-    if (runningCount < 3 && newPosition === 1) {
-      clearInterval(queuePollingRef.current);
-      
-      // Atualizar para running
-      await supabase
-        .from('upscaler_queue')
-        .update({ status: 'running', started_at: new Date().toISOString() })
-        .eq('id', myId);
-
-      setIsWaitingInQueue(false);
-      await actuallyProcessImage();
+  setJobId(job.id);
+  
+  // 2. Upload da imagem
+  const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', { ... });
+  
+  // 3. Iniciar processamento
+  const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
+    body: {
+      jobId: job.id,
+      fileName: uploadResponse.data.fileName,
+      resolution,
+      detailDenoise,
+      prompt: useCustomPrompt ? customPrompt : null
     }
-  }, 10000); // 10 segundos
+  });
+  
+  // 4. Aguardar via Realtime (ja configurado no useEffect)
+  setStatus('processing');
 };
 ```
 
-**UI quando na fila:**
-
+4. **Nova UI de prompt:**
 ```tsx
-{isWaitingInQueue && (
-  <Card className="bg-[#1A0A2E]/50 border-yellow-500/30 p-6">
-    <div className="flex flex-col items-center gap-4 text-center">
-      <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center animate-pulse">
-        <Clock className="w-8 h-8 text-yellow-400" />
-      </div>
-      <div>
-        <p className="text-xl font-bold text-yellow-300">
-          Servidor ocupado
-        </p>
-        <p className="text-4xl font-bold text-white mt-2">
-          {queuePosition}º na fila
-        </p>
-        <p className="text-sm text-purple-300/70 mt-2">
-          Seu processamento iniciará automaticamente
-        </p>
-      </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={cancelQueue}
-        className="text-red-300 hover:text-red-100 hover:bg-red-500/20"
-      >
-        Sair da fila
-      </Button>
-    </div>
-  </Card>
-)}
+{/* Card de Prompt Personalizado */}
+<Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
+  <div className="flex items-center justify-between mb-3">
+    <label className="text-sm font-medium text-purple-200">
+      {t('upscalerTool.controls.usePrompt')}
+    </label>
+    <Switch
+      checked={useCustomPrompt}
+      onCheckedChange={setUseCustomPrompt}
+    />
+  </div>
+  
+  {useCustomPrompt && (
+    <Textarea
+      value={customPrompt}
+      onChange={(e) => setCustomPrompt(e.target.value)}
+      placeholder={t('upscalerTool.controls.promptPlaceholder')}
+      className="min-h-[100px] bg-[#0D0221]/50 border-purple-500/30"
+    />
+  )}
+</Card>
 ```
 
 ---
 
-### Arquivos Modificados
+## Gerenciamento de Fila
 
-| Arquivo | Mudança |
-|---------|---------|
-| `src/pages/UpscalerArcanoTool.tsx` | Remover rembg, adicionar lógica de fila |
-| Nova migration SQL | Criar tabela `upscaler_queue` |
+### Logica na edge function `runninghub-upscaler/run`:
+
+```typescript
+async function handleRun(req: Request) {
+  const { jobId, fileName, resolution, detailDenoise, prompt } = await req.json();
+  
+  // 1. Verificar quantos jobs estao rodando
+  const { count: runningCount } = await supabase
+    .from('upscaler_jobs')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'running');
+  
+  if (runningCount >= MAX_CONCURRENT_JOBS) {
+    // Calcular posicao na fila
+    const { count: aheadOfMe } = await supabase
+      .from('upscaler_jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'queued')
+      .lt('created_at', job.created_at);
+    
+    // Atualizar posicao no job
+    await supabase
+      .from('upscaler_jobs')
+      .update({ position: (aheadOfMe || 0) + 1 })
+      .eq('id', jobId);
+    
+    return { queued: true, position: (aheadOfMe || 0) + 1 };
+  }
+  
+  // 2. Processar imediatamente
+  await supabase
+    .from('upscaler_jobs')
+    .update({ status: 'running', started_at: new Date().toISOString() })
+    .eq('id', jobId);
+  
+  // 3. Chamar RunningHub API v2
+  const response = await fetch(
+    `https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+      },
+      body: JSON.stringify({
+        nodeInfoList: [...],
+        webhookUrl: WEBHOOK_URL,
+        instanceType: 'default'
+      })
+    }
+  );
+  
+  const data = await response.json();
+  
+  // 4. Salvar taskId
+  await supabase
+    .from('upscaler_jobs')
+    .update({ task_id: data.taskId })
+    .eq('id', jobId);
+  
+  return { success: true, taskId: data.taskId };
+}
+```
+
+### Processar proximo da fila (no webhook):
+
+```typescript
+async function processNextInQueue() {
+  // Verificar se ha vaga
+  const { count: runningCount } = await supabase
+    .from('upscaler_jobs')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'running');
+  
+  if (runningCount >= MAX_CONCURRENT_JOBS) return;
+  
+  // Buscar proximo da fila
+  const { data: nextJob } = await supabase
+    .from('upscaler_jobs')
+    .select('*')
+    .eq('status', 'queued')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .single();
+  
+  if (!nextJob) return;
+  
+  // Iniciar processamento
+  await startProcessing(nextJob);
+}
+```
 
 ---
 
-### Proteções Anti-Custo
+## Traducoes
 
-1. **Polling fixo de 10s** - Não acelera sob carga
-2. **Cleanup automático** - Jobs > 10min são marcados abandonados
-3. **Deleção após 1h** - Tabela não cresce infinitamente
-4. **Sem Realtime** - Evita cascata de queries
-5. **Queries com COUNT apenas** - Não traz dados, só contagem
+### `src/locales/pt/tools.json`
+
+```json
+{
+  "upscalerTool": {
+    "controls": {
+      "usePrompt": "Usar Prompt Personalizado",
+      "promptPlaceholder": "Descreva como a imagem deve ser melhorada...",
+      "promptHint": "Ative para guiar a IA com uma descricao",
+      "defaultPrompt": "high quality realistic photography with extremely detailed skin texture and pores visible, realistic lighting, detailed eyes, professional photo"
+    }
+  }
+}
+```
+
+### `src/locales/es/tools.json` (se existir)
+
+```json
+{
+  "upscalerTool": {
+    "controls": {
+      "usePrompt": "Usar Prompt Personalizado",
+      "promptPlaceholder": "Describe como debe mejorarse la imagen...",
+      "promptHint": "Activa para guiar la IA con una descripcion",
+      "defaultPrompt": "high quality realistic photography with extremely detailed skin texture and pores visible, realistic lighting, detailed eyes, professional photo"
+    }
+  }
+}
+```
 
 ---
 
-### Resultado Final
+## Arquivos a Modificar/Criar
 
-- ✅ Modo "Remover Fundo" removido
-- ✅ Máximo 3 processamentos simultâneos
-- ✅ Usuário vê posição na fila
-- ✅ Inicia automaticamente quando chegar a vez
-- ✅ Custo controlado (~100 queries por 10 usuários)
+| Arquivo | Acao |
+|---------|------|
+| `supabase/functions/runninghub-webhook/index.ts` | CRIAR - Nova edge function |
+| `supabase/functions/runninghub-upscaler/index.ts` | REESCREVER - API v2 + webhook |
+| `supabase/config.toml` | ADICIONAR - config webhook |
+| `src/pages/UpscalerArcanoTool.tsx` | MODIFICAR - Realtime + Prompt |
+| `src/locales/pt/tools.json` | ADICIONAR - strings prompt |
+| Database migration | CRIAR - nova tabela upscaler_jobs |
 
+---
+
+## Sequencia de Implementacao
+
+### Fase 1: Infraestrutura (sem quebrar o atual)
+1. Criar tabela `upscaler_jobs` no banco
+2. Habilitar Realtime na tabela
+3. Criar edge function `runninghub-webhook`
+4. Adicionar config no `supabase/config.toml`
+
+### Fase 2: Edge Function
+5. Atualizar `runninghub-upscaler` para API v2
+6. Adicionar webhookUrl no request
+7. Remover endpoints /status e /outputs
+
+### Fase 3: Frontend
+8. Remover polling e estados relacionados
+9. Adicionar subscribe Realtime
+10. Adicionar UI de prompt
+11. Atualizar fluxo de processamento
+
+### Fase 4: Limpeza
+12. Remover tabela `upscaler_queue` antiga
+13. Testar end-to-end
+
+---
+
+## Consideracoes de Seguranca
+
+1. **Webhook Validation**: Validar que o request vem do RunningHub (IP whitelist ou token secreto)
+2. **RLS**: Policies permissivas pois nao ha autenticacao no upscaler
+3. **Cleanup**: Criar funcao para limpar jobs antigos (>1 hora)
+
+---
+
+## Fallback
+
+Se o webhook falhar (timeout, erro de rede), implementar um job de limpeza que:
+1. Verifica jobs "running" ha mais de 10 minutos
+2. Consulta status na API do RunningHub
+3. Atualiza o banco se necessario
+
+Isso garante que nenhum job fique "preso" mesmo se o webhook falhar.
