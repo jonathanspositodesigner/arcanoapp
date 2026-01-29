@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ArrowLeft, Upload, Sparkles, Eraser, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 
-type Mode = 'upscale' | 'rembg';
 type Resolution = 2048 | 4096;
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -22,13 +21,15 @@ interface ErrorDetails {
   details?: any;
 }
 
+const MAX_CONCURRENT_JOBS = 3;
+const QUEUE_POLLING_INTERVAL = 10000; // 10 seconds
+
 const UpscalerArcanoTool: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
 
   // State
-  const [mode, setMode] = useState<Mode>('upscale');
   const [resolution, setResolution] = useState<Resolution>(4096);
   const [detailDenoise, setDetailDenoise] = useState(0.15);
   const [creativityDenoise, setCreativityDenoise] = useState(0.05);
@@ -41,17 +42,28 @@ const UpscalerArcanoTool: React.FC = () => {
   const [lastError, setLastError] = useState<ErrorDetails | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   
+  // Queue state
+  const [isWaitingInQueue, setIsWaitingInQueue] = useState(false);
+  const [queuePosition, setQueuePosition] = useState(0);
+  const [queueId, setQueueId] = useState<string | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const queuePollingRef = useRef<NodeJS.Timeout | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const beforeTransformRef = useRef<HTMLDivElement>(null);
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
+  const queueEntryCreatedAtRef = useRef<string | null>(null);
 
   // Cleanup polling on unmount
   useEffect(() => {
     return () => {
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
+      }
+      if (queuePollingRef.current) {
+        clearInterval(queuePollingRef.current);
       }
     };
   }, []);
@@ -104,15 +116,9 @@ const UpscalerArcanoTool: React.FC = () => {
     return () => window.removeEventListener('paste', handlePaste);
   }, [handleFileSelect]);
 
-  // Process image
-  const processImage = async () => {
-    if (!inputImage) {
-      toast.error(t('upscalerTool.errors.selectFirst'));
-      return;
-    }
-
-    // Clear previous error
-    setLastError(null);
+  // Actually process the image (called when it's our turn)
+  const actuallyProcessImage = async () => {
+    if (!inputImage) return;
 
     try {
       setStatus('uploading');
@@ -133,7 +139,6 @@ const UpscalerArcanoTool: React.FC = () => {
         throw new Error(uploadResponse.error.message || 'Erro ao fazer upload');
       }
 
-      // Check for API error in response data
       if (uploadResponse.data?.error) {
         setLastError({
           message: uploadResponse.data.error,
@@ -151,12 +156,12 @@ const UpscalerArcanoTool: React.FC = () => {
       console.log('Upload successful, fileName:', fileName);
       setProgress(25);
 
-      // Step 2: Run workflow
+      // Step 2: Run workflow (only upscale mode now)
       setStatus('processing');
       const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {
           fileName,
-          mode,
+          mode: 'upscale',
           resolution,
           creativityDenoise,
           detailDenoise,
@@ -167,7 +172,6 @@ const UpscalerArcanoTool: React.FC = () => {
         throw new Error(runResponse.error.message || 'Erro ao iniciar processamento');
       }
 
-      // Check for API error in run response
       if (runResponse.data?.error) {
         setLastError({
           message: runResponse.data.error,
@@ -180,7 +184,6 @@ const UpscalerArcanoTool: React.FC = () => {
 
       const { taskId } = runResponse.data;
       
-      // Validate taskId exists
       if (!taskId) {
         setLastError({
           message: 'O servidor não retornou um ID de tarefa',
@@ -199,8 +202,7 @@ const UpscalerArcanoTool: React.FC = () => {
       const maxAttempts = 120; // 10 minutes of polling after initial delay
       let attempts = 0;
 
-      // Progress animation during initial delay (0-50% over 2:30)
-      const progressPerStep = 10 / 30; // Update every 5 seconds, reach 50% in 2:30
+      const progressPerStep = 10 / 30;
       let progressValue = 40;
       
       const progressTimer = setInterval(() => {
@@ -208,7 +210,6 @@ const UpscalerArcanoTool: React.FC = () => {
         setProgress(progressValue);
       }, 5000);
 
-      // Start polling after initial delay
       setTimeout(() => {
         clearInterval(progressTimer);
         setProgress(50);
@@ -218,6 +219,7 @@ const UpscalerArcanoTool: React.FC = () => {
           
           if (attempts > maxAttempts) {
             clearInterval(pollingRef.current!);
+            await markJobCompleted();
             setStatus('error');
             setLastError({
               message: 'Tempo limite excedido',
@@ -238,9 +240,9 @@ const UpscalerArcanoTool: React.FC = () => {
               return;
             }
 
-            // Check for API error in status
             if (statusResponse.data?.error) {
               clearInterval(pollingRef.current!);
+              await markJobCompleted();
               setStatus('error');
               setLastError({
                 message: statusResponse.data.error,
@@ -253,7 +255,6 @@ const UpscalerArcanoTool: React.FC = () => {
 
             const taskStatus = statusResponse.data?.status;
             
-            // Handle undefined status
             if (!taskStatus) {
               console.warn('Status undefined, continuing polling...');
               return;
@@ -261,14 +262,12 @@ const UpscalerArcanoTool: React.FC = () => {
             
             console.log('Task status:', taskStatus, 'attempt:', attempts);
 
-            // Update progress based on status (50-95%)
             if (taskStatus === 'RUNNING' || taskStatus === 'PENDING') {
               setProgress(Math.min(50 + (attempts * 0.4), 95));
             } else if (taskStatus === 'SUCCESS') {
               clearInterval(pollingRef.current!);
               setProgress(95);
 
-              // Get outputs
               const outputsResponse = await supabase.functions.invoke('runninghub-upscaler/outputs', {
                 body: { taskId },
               });
@@ -288,17 +287,16 @@ const UpscalerArcanoTool: React.FC = () => {
               const { outputs } = outputsResponse.data;
               console.log('[Upscaler] Raw outputs:', outputs);
 
-              // Filter and validate URLs - only keep non-empty strings
               const validOutputs = (outputs || []).filter(
                 (url: unknown) => typeof url === 'string' && url.trim().length > 0
               );
               console.log('[Upscaler] Valid outputs:', validOutputs);
 
               if (validOutputs.length > 0) {
-                // Get the last valid output (usually the final processed image)
                 const finalUrl = validOutputs[validOutputs.length - 1];
                 console.log('[Upscaler] Selected finalUrl:', finalUrl);
                 
+                await markJobCompleted();
                 setOutputImage(finalUrl);
                 setStatus('completed');
                 setProgress(100);
@@ -313,6 +311,7 @@ const UpscalerArcanoTool: React.FC = () => {
               }
             } else if (taskStatus === 'FAILED') {
               clearInterval(pollingRef.current!);
+              await markJobCompleted();
               setStatus('error');
               setLastError({
                 message: 'O processamento falhou no servidor',
@@ -329,9 +328,9 @@ const UpscalerArcanoTool: React.FC = () => {
 
     } catch (error: any) {
       console.error('Process error:', error);
+      await markJobCompleted();
       setStatus('error');
       
-      // Set error details if not already set
       if (!lastError) {
         setLastError({
           message: error.message || 'Erro desconhecido ao processar imagem',
@@ -346,12 +345,181 @@ const UpscalerArcanoTool: React.FC = () => {
     }
   };
 
+  // Mark job as completed in queue
+  const markJobCompleted = async () => {
+    if (queueId) {
+      try {
+        await supabase
+          .from('upscaler_queue')
+          .update({ 
+            status: 'completed', 
+            completed_at: new Date().toISOString() 
+          })
+          .eq('id', queueId);
+      } catch (e) {
+        console.error('Error marking job completed:', e);
+      }
+      setQueueId(null);
+    }
+  };
+
+  // Start polling for queue turn
+  const startPollingForTurn = (myId: string, myCreatedAt: string) => {
+    queuePollingRef.current = setInterval(async () => {
+      try {
+        // Cleanup stale jobs first
+        await supabase.rpc('cleanup_stale_upscaler_jobs');
+
+        // Check running count
+        const { count: runningCount } = await supabase
+          .from('upscaler_queue')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'running');
+
+        // Check position in queue
+        const { count: aheadOfMe } = await supabase
+          .from('upscaler_queue')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'waiting')
+          .lt('created_at', myCreatedAt);
+
+        const newPosition = (aheadOfMe || 0) + 1;
+        setQueuePosition(newPosition);
+
+        // Is it my turn?
+        if ((runningCount || 0) < MAX_CONCURRENT_JOBS && newPosition === 1) {
+          clearInterval(queuePollingRef.current!);
+          queuePollingRef.current = null;
+          
+          // Update to running
+          await supabase
+            .from('upscaler_queue')
+            .update({ status: 'running', started_at: new Date().toISOString() })
+            .eq('id', myId);
+
+          setIsWaitingInQueue(false);
+          await actuallyProcessImage();
+        }
+      } catch (error) {
+        console.error('Queue polling error:', error);
+      }
+    }, QUEUE_POLLING_INTERVAL);
+  };
+
+  // Cancel queue
+  const cancelQueue = async () => {
+    if (queuePollingRef.current) {
+      clearInterval(queuePollingRef.current);
+      queuePollingRef.current = null;
+    }
+    
+    if (queueId) {
+      try {
+        await supabase
+          .from('upscaler_queue')
+          .delete()
+          .eq('id', queueId);
+      } catch (e) {
+        console.error('Error deleting queue entry:', e);
+      }
+    }
+    
+    setIsWaitingInQueue(false);
+    setQueuePosition(0);
+    setQueueId(null);
+    queueEntryCreatedAtRef.current = null;
+  };
+
+  // Process image - check queue first
+  const processImage = async () => {
+    if (!inputImage) {
+      toast.error(t('upscalerTool.errors.selectFirst'));
+      return;
+    }
+
+    setLastError(null);
+
+    try {
+      // Cleanup stale jobs first
+      await supabase.rpc('cleanup_stale_upscaler_jobs');
+
+      // Check how many jobs are running
+      const { count: runningCount } = await supabase
+        .from('upscaler_queue')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'running');
+
+      if ((runningCount || 0) >= MAX_CONCURRENT_JOBS) {
+        // Enter queue as waiting
+        const { data: queueEntry, error: insertError } = await supabase
+          .from('upscaler_queue')
+          .insert({ 
+            session_id: sessionIdRef.current, 
+            status: 'waiting' 
+          })
+          .select()
+          .single();
+
+        if (insertError || !queueEntry) {
+          throw new Error('Erro ao entrar na fila');
+        }
+
+        setQueueId(queueEntry.id);
+        queueEntryCreatedAtRef.current = queueEntry.created_at;
+        setIsWaitingInQueue(true);
+
+        // Calculate initial position
+        const { count: aheadOfMe } = await supabase
+          .from('upscaler_queue')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'waiting')
+          .lt('created_at', queueEntry.created_at);
+
+        setQueuePosition((aheadOfMe || 0) + 1);
+
+        // Start polling for turn
+        startPollingForTurn(queueEntry.id, queueEntry.created_at);
+        
+        toast.info('Servidor ocupado. Você entrou na fila de espera.');
+        return;
+      }
+
+      // Slot available - register as running and process
+      const { data: runningEntry, error: runError } = await supabase
+        .from('upscaler_queue')
+        .insert({ 
+          session_id: sessionIdRef.current, 
+          status: 'running', 
+          started_at: new Date().toISOString() 
+        })
+        .select()
+        .single();
+
+      if (runError || !runningEntry) {
+        throw new Error('Erro ao registrar processamento');
+      }
+
+      setQueueId(runningEntry.id);
+      
+      // Process immediately
+      await actuallyProcessImage();
+
+    } catch (error: any) {
+      console.error('Queue check error:', error);
+      setStatus('error');
+      setLastError({
+        message: error.message || 'Erro ao verificar fila',
+        code: 'QUEUE_ERROR'
+      });
+      toast.error(error.message || 'Erro ao iniciar processamento');
+    }
+  };
+
   // Download result - direct fetch without proxy
   const downloadResult = async () => {
     if (!outputImage) return;
 
     try {
-      // Direct fetch from image URL
       const response = await fetch(outputImage);
 
       if (!response.ok) {
@@ -360,21 +528,18 @@ const UpscalerArcanoTool: React.FC = () => {
 
       const blob = await response.blob();
       
-      // Detect iOS
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
       if (isIOS) {
-        // iOS: Open image in new tab (user holds to save)
         const blobUrl = URL.createObjectURL(blob);
         window.open(blobUrl, '_blank');
         toast.success(t('upscalerTool.toast.imageOpened'));
         setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
       } else {
-        // Other devices: Direct download
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = mode === 'rembg' ? 'sem-fundo.png' : 'upscaled.png';
+        a.download = 'upscaled.png';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -383,7 +548,6 @@ const UpscalerArcanoTool: React.FC = () => {
       }
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback: open URL directly
       window.open(outputImage, '_blank');
       toast.info(t('upscalerTool.toast.openedNewTab'));
     }
@@ -397,8 +561,15 @@ const UpscalerArcanoTool: React.FC = () => {
     setStatus('idle');
     setProgress(0);
     setLastError(null);
+    setIsWaitingInQueue(false);
+    setQueuePosition(0);
+    setQueueId(null);
+    queueEntryCreatedAtRef.current = null;
     if (pollingRef.current) {
       clearInterval(pollingRef.current);
+    }
+    if (queuePollingRef.current) {
+      clearInterval(queuePollingRef.current);
     }
   };
 
@@ -453,34 +624,38 @@ const UpscalerArcanoTool: React.FC = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {/* Mode Toggle */}
-        <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-2">
-          <div className="flex gap-2">
-            <Button
-              variant={mode === 'upscale' ? 'default' : 'ghost'}
-              className={`flex-1 gap-1 sm:gap-2 text-xs sm:text-sm ${mode === 'upscale' 
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' 
-                : 'text-purple-300 hover:text-white hover:bg-purple-500/20'}`}
-              onClick={() => setMode('upscale')}
-            >
-              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span className="truncate">{t('upscalerTool.modes.upscale')}</span>
-            </Button>
-            <Button
-              variant={mode === 'rembg' ? 'default' : 'ghost'}
-              className={`flex-1 gap-1 sm:gap-2 text-xs sm:text-sm ${mode === 'rembg' 
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' 
-                : 'text-purple-300 hover:text-white hover:bg-purple-500/20'}`}
-              onClick={() => setMode('rembg')}
-            >
-              <Eraser className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span className="truncate">{t('upscalerTool.modes.removeBackground')}</span>
-            </Button>
-          </div>
-        </Card>
+        {/* Queue Waiting UI */}
+        {isWaitingInQueue && (
+          <Card className="bg-[#1A0A2E]/50 border-yellow-500/30 p-6">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center animate-pulse">
+                <Clock className="w-8 h-8 text-yellow-400" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-yellow-300">
+                  Servidor ocupado
+                </p>
+                <p className="text-4xl font-bold text-white mt-2">
+                  {queuePosition}º na fila
+                </p>
+                <p className="text-sm text-purple-300/70 mt-2">
+                  Seu processamento iniciará automaticamente
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={cancelQueue}
+                className="text-red-300 hover:text-red-100 hover:bg-red-500/20"
+              >
+                Sair da fila
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Image Upload */}
-        {!inputImage ? (
+        {!inputImage && !isWaitingInQueue ? (
           <Card 
             className="bg-[#1A0A2E]/50 border-purple-500/20 border-dashed border-2 p-12 cursor-pointer hover:bg-[#1A0A2E]/70 transition-colors"
             onClick={() => fileInputRef.current?.click()}
@@ -506,176 +681,147 @@ const UpscalerArcanoTool: React.FC = () => {
             />
           </Card>
         ) : status === 'completed' && outputImage ? (
-          /* Result View */
+          /* Result View - Before/After Slider with Zoom */
           <Card className="bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden">
-            {mode === 'upscale' ? (
-              /* Before/After Slider with Zoom - Slider is OUTSIDE TransformComponent */
-              <TransformWrapper
-                initialScale={1}
-                minScale={1}
-                maxScale={100}
-                onInit={(ref) => {
-                  setZoomLevel(ref.state.scale);
-                  // Sync BEFORE layer directly via ref
-                  if (beforeTransformRef.current) {
-                    beforeTransformRef.current.style.transform = `translate(${ref.state.positionX}px, ${ref.state.positionY}px) scale(${ref.state.scale})`;
-                    beforeTransformRef.current.style.transformOrigin = '0% 0%';
-                  }
-                }}
-                onTransformed={(_, state) => {
-                  setZoomLevel(state.scale);
-                  // Sync BEFORE layer directly via ref - same transform as library
-                  if (beforeTransformRef.current) {
-                    beforeTransformRef.current.style.transform = `translate(${state.positionX}px, ${state.positionY}px) scale(${state.scale})`;
-                  }
-                }}
-                wheel={{ step: 0.2 }}
-                pinch={{ step: 5 }}
-                doubleClick={{ mode: 'toggle', step: 2 }}
-                panning={{ disabled: zoomLevel <= 1 }}
-              >
-                {({ zoomIn, zoomOut, resetTransform }) => (
-                  <div className="relative">
-                    {/* Zoom Controls - Hidden on mobile */}
-                    <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
+            <TransformWrapper
+              initialScale={1}
+              minScale={1}
+              maxScale={100}
+              onInit={(ref) => {
+                setZoomLevel(ref.state.scale);
+                if (beforeTransformRef.current) {
+                  beforeTransformRef.current.style.transform = `translate(${ref.state.positionX}px, ${ref.state.positionY}px) scale(${ref.state.scale})`;
+                  beforeTransformRef.current.style.transformOrigin = '0% 0%';
+                }
+              }}
+              onTransformed={(_, state) => {
+                setZoomLevel(state.scale);
+                if (beforeTransformRef.current) {
+                  beforeTransformRef.current.style.transform = `translate(${state.positionX}px, ${state.positionY}px) scale(${state.scale})`;
+                }
+              }}
+              wheel={{ step: 0.2 }}
+              pinch={{ step: 5 }}
+              doubleClick={{ mode: 'toggle', step: 2 }}
+              panning={{ disabled: zoomLevel <= 1 }}
+            >
+              {({ zoomIn, zoomOut, resetTransform }) => (
+                <div className="relative">
+                  {/* Zoom Controls - Hidden on mobile */}
+                  <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
+                    <button 
+                      onClick={() => zoomOut()}
+                      className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
+                      title="Diminuir zoom"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-mono min-w-[3rem] text-center">
+                      {Math.round(zoomLevel * 100)}%
+                    </span>
+                    <button 
+                      onClick={() => zoomIn()}
+                      className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
+                      title="Aumentar zoom"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+                    {zoomLevel > 1 && (
                       <button 
-                        onClick={() => zoomOut()}
-                        className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-                        title="Diminuir zoom"
+                        onClick={() => resetTransform()}
+                        className="p-1.5 hover:bg-white/20 rounded-full transition-colors ml-1"
+                        title="Resetar zoom"
                       >
-                        <ZoomOut className="w-4 h-4" />
+                        <RotateCcw className="w-4 h-4" />
                       </button>
-                      <span className="text-xs font-mono min-w-[3rem] text-center">
-                        {Math.round(zoomLevel * 100)}%
-                      </span>
-                      <button 
-                        onClick={() => zoomIn()}
-                        className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-                        title="Aumentar zoom"
-                      >
-                        <ZoomIn className="w-4 h-4" />
-                      </button>
-                      {zoomLevel > 1 && (
-                        <button 
-                          onClick={() => resetTransform()}
-                          className="p-1.5 hover:bg-white/20 rounded-full transition-colors ml-1"
-                          title="Resetar zoom"
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
-                    {/* Container with ref for slider calculations */}
-                    <div ref={sliderRef} className="relative w-full mx-auto overflow-hidden">
-                      <AspectRatio ratio={16 / 9}>
-                        <div className="relative w-full h-full bg-black overflow-hidden">
-                          {/* AFTER image - inside TransformComponent (zoomable/pannable) */}
-                          <TransformComponent 
-                            wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} 
-                            contentStyle={{ width: '100%', height: '100%' }}
+                  {/* Container with ref for slider calculations */}
+                  <div ref={sliderRef} className="relative w-full mx-auto overflow-hidden">
+                    <AspectRatio ratio={16 / 9}>
+                      <div className="relative w-full h-full bg-black overflow-hidden">
+                        {/* AFTER image - inside TransformComponent (zoomable/pannable) */}
+                        <TransformComponent 
+                          wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} 
+                          contentStyle={{ width: '100%', height: '100%' }}
+                        >
+                          <img 
+                            src={outputImage} 
+                            alt="Depois" 
+                            className="w-full h-full object-contain"
+                            draggable={false}
+                          />
+                        </TransformComponent>
+
+                        {/* BEFORE image - overlay clipped to left side */}
+                        <div 
+                          className="absolute inset-0 pointer-events-none"
+                          style={{ 
+                            clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` 
+                          }}
+                        >
+                          <div 
+                            ref={beforeTransformRef}
+                            className="w-full h-full"
+                            style={{ 
+                              transformOrigin: '0% 0%'
+                            }}
                           >
                             <img 
-                              src={outputImage} 
-                              alt="Depois" 
+                              src={inputImage} 
+                              alt="Antes" 
                               className="w-full h-full object-contain"
                               draggable={false}
                             />
-                          </TransformComponent>
-
-                          {/* BEFORE image - overlay clipped to left side */}
-                          <div 
-                            className="absolute inset-0 pointer-events-none"
-                            style={{ 
-                              clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` 
-                            }}
-                          >
-                            <div 
-                              ref={beforeTransformRef}
-                              className="w-full h-full"
-                              style={{ 
-                                transformOrigin: '0% 0%'
-                              }}
-                            >
-                              <img 
-                                src={inputImage} 
-                                alt="Antes" 
-                                className="w-full h-full object-contain"
-                                draggable={false}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Slider Line and Handle - OUTSIDE TransformComponent, doesn't scale */}
-                          <div 
-                            className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-20"
-                            style={{ 
-                              left: `${sliderPosition}%`, 
-                              transform: 'translateX(-50%)', 
-                              cursor: 'ew-resize',
-                              touchAction: 'none'
-                            }}
-                            onPointerDown={handleSliderPointerDown}
-                            onPointerMove={handleSliderPointerMove}
-                            onPointerUp={handleSliderPointerUp}
-                            onPointerCancel={handleSliderPointerUp}
-                          >
-                            <div 
-                              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center cursor-ew-resize"
-                              style={{ touchAction: 'none' }}
-                            >
-                              <div className="flex gap-0.5">
-                                <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                                <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Labels ANTES/DEPOIS - Smaller on mobile */}
-                          <div className="absolute top-2 sm:top-14 left-2 sm:left-4 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-black/90 border border-white/30 text-white text-xs sm:text-sm font-bold z-20 pointer-events-none shadow-lg">
-                            {t('upscalerTool.labels.before')}
-                          </div>
-                          <div className="absolute top-2 sm:top-14 right-2 sm:right-4 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-purple-600/90 border border-purple-400/50 text-white text-xs sm:text-sm font-bold z-20 pointer-events-none shadow-lg">
-                            {t('upscalerTool.labels.after')}
                           </div>
                         </div>
-                      </AspectRatio>
-                    </div>
 
-                    {/* Zoom Hint - Hidden on mobile */}
-                    <div className="hidden sm:block absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-white/20 shadow-lg">
-                      🔍 {t('upscalerTool.zoomHint')}
-                    </div>
+                        {/* Slider Line and Handle - OUTSIDE TransformComponent, doesn't scale */}
+                        <div 
+                          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-20"
+                          style={{ 
+                            left: `${sliderPosition}%`, 
+                            transform: 'translateX(-50%)', 
+                            cursor: 'ew-resize',
+                            touchAction: 'none'
+                          }}
+                          onPointerDown={handleSliderPointerDown}
+                          onPointerMove={handleSliderPointerMove}
+                          onPointerUp={handleSliderPointerUp}
+                          onPointerCancel={handleSliderPointerUp}
+                        >
+                          <div 
+                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center cursor-ew-resize"
+                            style={{ touchAction: 'none' }}
+                          >
+                            <div className="flex gap-0.5">
+                              <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                              <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Labels ANTES/DEPOIS - Smaller on mobile */}
+                        <div className="absolute top-2 sm:top-14 left-2 sm:left-4 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-black/90 border border-white/30 text-white text-xs sm:text-sm font-bold z-20 pointer-events-none shadow-lg">
+                          {t('upscalerTool.labels.before')}
+                        </div>
+                        <div className="absolute top-2 sm:top-14 right-2 sm:right-4 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-purple-600/90 border border-purple-400/50 text-white text-xs sm:text-sm font-bold z-20 pointer-events-none shadow-lg">
+                          {t('upscalerTool.labels.after')}
+                        </div>
+                      </div>
+                    </AspectRatio>
                   </div>
-                )}
-              </TransformWrapper>
-            ) : (
-              /* PNG Preview with checkerboard background */
-              <AspectRatio ratio={16 / 9}>
-                <div 
-                  className="w-full h-full"
-                  style={{
-                    backgroundImage: `
-                      linear-gradient(45deg, #1a1a2e 25%, transparent 25%),
-                      linear-gradient(-45deg, #1a1a2e 25%, transparent 25%),
-                      linear-gradient(45deg, transparent 75%, #1a1a2e 75%),
-                      linear-gradient(-45deg, transparent 75%, #1a1a2e 75%)
-                    `,
-                    backgroundSize: '20px 20px',
-                    backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
-                    backgroundColor: '#0d0d1a'
-                  }}
-                >
-                  <img 
-                    src={outputImage} 
-                    alt="Sem fundo" 
-                    className="w-full h-full object-contain"
-                  />
+
+                  {/* Zoom Hint - Hidden on mobile */}
+                  <div className="hidden sm:block absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-white/20 shadow-lg">
+                    🔍 {t('upscalerTool.zoomHint')}
+                  </div>
                 </div>
-              </AspectRatio>
-            )}
+              )}
+            </TransformWrapper>
           </Card>
-        ) : (
+        ) : inputImage && !isWaitingInQueue ? (
           /* Input Preview */
           <Card className="bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden">
             <AspectRatio ratio={16 / 9}>
@@ -708,6 +854,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       size="sm"
                       onClick={() => {
                         if (pollingRef.current) clearInterval(pollingRef.current);
+                        markJobCompleted();
                         setStatus('idle');
                         setProgress(0);
                       }}
@@ -720,10 +867,10 @@ const UpscalerArcanoTool: React.FC = () => {
               </div>
             </AspectRatio>
           </Card>
-        )}
+        ) : null}
 
-        {/* Controls - Only show for upscale mode */}
-        {mode === 'upscale' && inputImage && status === 'idle' && (
+        {/* Controls - Only show when idle with image */}
+        {inputImage && status === 'idle' && !isWaitingInQueue && (
           <div className="space-y-4">
             {/* Resolution */}
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
@@ -821,13 +968,13 @@ const UpscalerArcanoTool: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="space-y-3">
-          {status === 'idle' && inputImage && (
+          {status === 'idle' && inputImage && !isWaitingInQueue && (
             <Button
               className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
               onClick={processImage}
             >
               <Sparkles className="w-5 h-5 mr-2" />
-              {mode === 'upscale' ? t('upscalerTool.buttons.increaseQuality') : t('upscalerTool.buttons.removeBackground')}
+              {t('upscalerTool.buttons.increaseQuality')}
             </Button>
           )}
 
@@ -838,7 +985,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 onClick={downloadResult}
               >
                 <Download className="w-5 h-5 mr-2" />
-                {mode === 'upscale' ? t('upscalerTool.buttons.downloadHD') : t('upscalerTool.buttons.downloadPNG')}
+                {t('upscalerTool.buttons.downloadHD')}
               </Button>
               <Button
                 variant="outline"
