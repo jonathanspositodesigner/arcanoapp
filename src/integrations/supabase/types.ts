@@ -2145,6 +2145,33 @@ export type Database = {
         }
         Relationships: []
       }
+      upscaler_queue: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          session_id: string
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          session_id: string
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          session_id?: string
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       user_pack_purchases: {
         Row: {
           access_type: Database["public"]["Enums"]["artes_access_type"]
@@ -2411,6 +2438,7 @@ export type Database = {
       }
       cleanup_monthly_logs: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: undefined }
+      cleanup_stale_upscaler_jobs: { Args: never; Returns: undefined }
       get_daily_arte_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_musicos_download_count: {
