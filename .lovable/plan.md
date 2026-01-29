@@ -1,142 +1,124 @@
 
 
-## Correção do Carregamento Infinito dos Vídeos do YouTube no Upscaler
+## Correção da Pré-seleção do Pack no Modal de Edição
 
 ### Problema Identificado
 
-Os vídeos do YouTube nas aulas do Upscaler Arcano estão carregando indefinidamente. Após análise do código, identifiquei os seguintes problemas:
+O componente `Select` do Radix-UI precisa que exista um `<SelectItem>` com o mesmo `value` para exibir o texto selecionado. Quando o modal de edição abre:
 
-1. **Iframe sem atributos essenciais** - Faltam `loading`, `title`, e `key` que são importantes para o carregamento correto
-2. **Falta de indicador visual de carregamento** - Usuário não sabe se o vídeo está carregando ou travado
-3. **IIFE dentro do JSX** - Uso de função anônima invocada imediatamente pode causar re-renders
-4. **Falta de tratamento de erro** - Se o vídeo falhar em carregar, não há feedback
+1. O `handleEdit` define `editPack` com o valor do pack da arte (ex: "Pack Agendas")
+2. **MAS** os `packs` podem ainda não ter carregado (array vazio) 
+3. Sem um `<SelectItem value="Pack Agendas">` renderizado, o Select não consegue exibir o texto
+4. O Select mostra apenas o placeholder "Selecione o pack"
+
+Mesmo com o fallback existente (linhas 677-679), ele só funciona se `!packs.find(p => p.name === editPack)` - ou seja, quando o pack não está na lista. Mas há um problema de timing: se packs está vazio, `packs.find()` retorna undefined, então o fallback deveria funcionar...
+
+O problema real pode ser que o Select precisa de uma `key` para forçar re-render quando os dados mudam.
 
 ---
 
 ### Solução
 
-Refatorar o componente de vídeo no `ToolVersionLessons.tsx` para:
+Adicionar uma `key` ao componente `Select` baseada no `editPack` e no comprimento de `packs` para forçar re-render quando esses valores mudam:
 
-1. Adicionar `key` única baseada na URL do vídeo para forçar re-render quando a lição muda
-2. Adicionar atributo `loading="lazy"` para otimização de performance  
-3. Adicionar `title` para acessibilidade
-4. Mostrar indicador de carregamento enquanto o iframe está sendo carregado
-5. Usar `useMemo` para calcular embedUrl em vez de IIFE
-6. Adicionar `referrerPolicy` e `sandbox` para maior compatibilidade
+```typescript
+<Select 
+  key={`pack-${editPack}-${packs.length}`}
+  value={editPack} 
+  onValueChange={setEditPack}
+>
+```
+
+E garantir que o fallback sempre mostre o item atual:
+
+```typescript
+{/* Sempre mostrar o pack atual como primeira opção se existir */}
+{editPack && (
+  <SelectItem value={editPack} className="font-medium">
+    {editPack} {!packs.find(p => p.name === editPack) && '(salvo)'}
+  </SelectItem>
+)}
+{packs.filter(p => p.name !== editPack).map(pack => (
+  <SelectItem key={pack.id} value={pack.name}>{pack.name}</SelectItem>
+))}
+```
 
 ---
 
 ### Mudanças no Código
 
-**Arquivo:** `src/pages/ToolVersionLessons.tsx`
+**Arquivo:** `src/pages/AdminManageArtes.tsx`
 
-#### 1. Adicionar estado para controlar loading do vídeo (após linha 154):
-
-```typescript
-const [videoLoading, setVideoLoading] = useState(true);
-```
-
-#### 2. Resetar loading quando a lição muda (no useMemo de lessons, adicionar useEffect):
-
-```typescript
-// Reset video loading state when lesson changes
-useEffect(() => {
-  setVideoLoading(true);
-}, [selectedLesson]);
-```
-
-#### 3. Calcular embedUrl com useMemo (adicionar após linha 190):
-
-```typescript
-const currentEmbedUrl = useMemo(() => {
-  if (!currentLesson?.videoUrl) return null;
-  return getVideoEmbedUrl(currentLesson.videoUrl);
-}, [currentLesson?.videoUrl]);
-```
-
-#### 4. Refatorar o bloco do vídeo (linhas 616-639):
+#### Linhas 672-685 - Refatorar o Select de Pack:
 
 **De:**
 ```typescript
-{/* Video */}
-<div className="aspect-video bg-black rounded-lg overflow-hidden">
-  {currentLesson.videoUrl ? (
-    (() => {
-      const embedUrl = getVideoEmbedUrl(currentLesson.videoUrl);
-      return embedUrl ? (
-        <iframe
-          src={embedUrl}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-          <Play className="w-16 h-16" />
-        </div>
-      );
-    })()
-  ) : (
-    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-      <Play className="w-16 h-16" />
-    </div>
-  )}
+<div>
+  <Label>Pack</Label>
+  <Select value={editPack} onValueChange={setEditPack}>
+    <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione o pack" /></SelectTrigger>
+    <SelectContent className="bg-background border border-border z-50">
+      {editPack && !packs.find(p => p.name === editPack) && (
+        <SelectItem value={editPack}>{editPack}</SelectItem>
+      )}
+      {packs.map(pack => (
+        <SelectItem key={pack.id} value={pack.name}>{pack.name}</SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
 </div>
 ```
 
 **Para:**
 ```typescript
-{/* Video */}
-<div className="aspect-video bg-black rounded-lg overflow-hidden relative">
-  {currentEmbedUrl ? (
-    <>
-      {/* Loading indicator */}
-      {videoLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
+<div>
+  <Label>Pack</Label>
+  <Select 
+    key={`pack-select-${editPack}-${packs.length}`}
+    value={editPack} 
+    onValueChange={setEditPack}
+  >
+    <SelectTrigger className="mt-1">
+      <SelectValue placeholder="Selecione o pack" />
+    </SelectTrigger>
+    <SelectContent className="bg-background border border-border z-50">
+      {/* Sempre mostrar opção "Nenhum" para permitir remover pack */}
+      <SelectItem value="">Nenhum pack</SelectItem>
+      {/* Mostrar pack atual primeiro se existir e não estiver na lista carregada */}
+      {editPack && !packs.find(p => p.name === editPack) && (
+        <SelectItem value={editPack}>{editPack} (salvo)</SelectItem>
       )}
-      <iframe
-        key={currentEmbedUrl}
-        src={currentEmbedUrl}
-        title={currentLesson?.title || 'Video'}
-        className="w-full h-full"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        loading="lazy"
-        referrerPolicy="strict-origin-when-cross-origin"
-        onLoad={() => setVideoLoading(false)}
-      />
-    </>
-  ) : (
-    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-      <Play className="w-16 h-16" />
-    </div>
-  )}
+      {/* Lista de packs disponíveis */}
+      {packs.map(pack => (
+        <SelectItem key={pack.id} value={pack.name}>{pack.name}</SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
 </div>
 ```
 
 ---
 
-### Resumo Técnico das Mudanças
+### Alterações Adicionais
+
+Também aplicar a mesma correção no Select de **Categoria** para consistência (linhas 641-669).
+
+---
+
+### Resumo Técnico
 
 | Mudança | Motivo |
 |---------|--------|
-| Adicionar `key={currentEmbedUrl}` | Força re-render do iframe quando URL muda |
-| Adicionar `title` | Acessibilidade (obrigatório para iframes) |
-| Adicionar `loading="lazy"` | Performance - só carrega quando visível |
-| Adicionar `referrerPolicy` | Compatibilidade com políticas de segurança do YouTube |
-| Adicionar `onLoad` handler | Detecta quando vídeo terminou de carregar |
-| Adicionar indicador de loading | Feedback visual para o usuário |
-| Usar `useMemo` para embedUrl | Evita recalcular em cada render |
+| Adicionar `key` no Select | Força re-render quando editPack ou packs.length muda |
+| Manter fallback com "(salvo)" | Indica visualmente que é o valor salvo mesmo que pack não esteja na lista |
+| Adicionar opção "Nenhum pack" | Permite ao admin remover o pack de uma arte |
 
 ---
 
 ### Resultado Esperado
 
-- Vídeos do YouTube carregam corretamente
-- Usuário vê indicador de carregamento enquanto vídeo não está pronto
-- Ao mudar de lição, o vídeo anterior é substituído corretamente
-- Performance melhorada com lazy loading
-- Melhor compatibilidade com navegadores
+- Pack pré-selecionado aparece corretamente ao abrir modal de edição
+- Se o pack salvo não estiver na lista de packs carregados, mostra "(salvo)" ao lado
+- Admin pode selecionar "Nenhum pack" para remover associação
+- Funciona mesmo com timing issues de carregamento
 
