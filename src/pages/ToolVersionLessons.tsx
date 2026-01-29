@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
@@ -121,6 +122,7 @@ const ToolVersionLessons = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
+  const { planType } = usePremiumStatus();
   const { locale } = useLocale();
   
   // Locale-aware paths
@@ -368,7 +370,9 @@ const ToolVersionLessons = () => {
     );
   }
 
-  const hasAccess = toolSlug ? hasAccessToPack(toolSlug) : false;
+  // Check access: either has Arcano Unlimited plan OR purchased the specific pack
+  const hasUnlimitedAccess = planType === 'arcano_unlimited';
+  const hasAccess = hasUnlimitedAccess || (toolSlug ? hasAccessToPack(toolSlug) : false);
 
   if (!hasAccess) {
     return (
