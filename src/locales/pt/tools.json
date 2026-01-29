@@ -205,12 +205,11 @@
       "detailRecommended": "Recomendado: 0.10 - 0.30",
       "lessDetail": "Menos detalhe",
       "moreDetail": "Mais detalhe",
-      "aiCreativity": "Criatividade da IA",
-      "creativityRecommended": "Recomendado: 0.05 - 0.20",
-      "faithful": "Fiel à original",
-      "moreCreative": "Mais criativo",
       "controlsDetails": "Controla a quantidade de detalhes adicionados",
-      "lowValues": "Valores baixos = mais fiel à original"
+      "lowValues": "Valores baixos = mais fiel à original",
+      "usePrompt": "Usar Prompt Personalizado",
+      "promptPlaceholder": "Descreva como a imagem deve ser melhorada...",
+      "promptHint": "Ative para guiar a IA com uma descrição personalizada"
     },
     "buttons": {
       "increaseQuality": "Aumentar Qualidade",

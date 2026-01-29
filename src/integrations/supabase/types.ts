@@ -2145,30 +2145,54 @@ export type Database = {
         }
         Relationships: []
       }
-      upscaler_queue: {
+      upscaler_jobs: {
         Row: {
           completed_at: string | null
-          created_at: string
+          created_at: string | null
+          detail_denoise: number | null
+          error_message: string | null
           id: string
+          input_file_name: string | null
+          output_url: string | null
+          position: number | null
+          prompt: string | null
+          resolution: number | null
           session_id: string
           started_at: string | null
           status: string
+          task_id: string | null
         }
         Insert: {
           completed_at?: string | null
-          created_at?: string
+          created_at?: string | null
+          detail_denoise?: number | null
+          error_message?: string | null
           id?: string
+          input_file_name?: string | null
+          output_url?: string | null
+          position?: number | null
+          prompt?: string | null
+          resolution?: number | null
           session_id: string
           started_at?: string | null
           status?: string
+          task_id?: string | null
         }
         Update: {
           completed_at?: string | null
-          created_at?: string
+          created_at?: string | null
+          detail_denoise?: number | null
+          error_message?: string | null
           id?: string
+          input_file_name?: string | null
+          output_url?: string | null
+          position?: number | null
+          prompt?: string | null
+          resolution?: number | null
           session_id?: string
           started_at?: string | null
           status?: string
+          task_id?: string | null
         }
         Relationships: []
       }

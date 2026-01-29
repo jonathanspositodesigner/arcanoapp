@@ -1,27 +1,28 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// API Configuration - reads from secrets
+// API Configuration
 const RUNNINGHUB_API_KEY = (
   Deno.env.get('RUNNINGHUB_API_KEY') ||
   Deno.env.get('RUNNINGHUB_APIKEY') ||
   ''
 ).trim();
 
-// Workflow ID - now configurable via secret, with fallback to hardcoded
-const WORKFLOW_ID = (
-  Deno.env.get('RUNNINGHUB_WORKFLOW_ID') || 
-  '2008684425269219329'
-).trim();
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// Optional: AI App/WebApp ID for more stable execution
-const WEBAPP_ID = (Deno.env.get('RUNNINGHUB_WEBAPP_ID') || '').trim();
+// WebApp ID for the upscaler workflow
+const WEBAPP_ID = '2015865378030755841';
+const MAX_CONCURRENT_JOBS = 3;
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 if (!RUNNINGHUB_API_KEY) {
   console.error('[RunningHub] CRITICAL: Missing RUNNINGHUB_API_KEY secret');
 }
 
-console.log('[RunningHub] Config loaded - WORKFLOW_ID:', WORKFLOW_ID, '| WEBAPP_ID:', WEBAPP_ID || '(not set)');
+console.log('[RunningHub] Config loaded - WEBAPP_ID:', WEBAPP_ID);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -43,10 +44,8 @@ serve(async (req) => {
       return await handleUpload(req);
     } else if (path === 'run') {
       return await handleRun(req);
-    } else if (path === 'status') {
-      return await handleStatus(req);
-    } else if (path === 'outputs') {
-      return await handleOutputs(req);
+    } else if (path === 'queue-status') {
+      return await handleQueueStatus(req);
     } else {
       return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
         status: 400,
@@ -63,7 +62,7 @@ serve(async (req) => {
   }
 });
 
-// Upload image to RunningHub using multipart/form-data
+// Upload image to RunningHub
 async function handleUpload(req: Request) {
   if (!RUNNINGHUB_API_KEY) {
     console.error('[RunningHub] Upload failed: API key not configured');
@@ -138,7 +137,7 @@ async function handleUpload(req: Request) {
   }
 }
 
-// Run the workflow - tries AI App first if configured, then falls back to workflow/create
+// Run the workflow with webhook callback
 async function handleRun(req: Request) {
   if (!RUNNINGHUB_API_KEY) {
     return new Response(JSON.stringify({ 
@@ -152,120 +151,115 @@ async function handleRun(req: Request) {
   }
 
   const { 
+    jobId,
     fileName, 
-    mode,
     resolution,
-    creativityDenoise,
-    detailDenoise
+    detailDenoise,
+    prompt
   } = await req.json();
   
-  if (!fileName) {
-    return new Response(JSON.stringify({ error: 'fileName is required', code: 'MISSING_FILENAME' }), {
+  if (!fileName || !jobId) {
+    return new Response(JSON.stringify({ 
+      error: 'fileName and jobId are required', 
+      code: 'MISSING_PARAMS' 
+    }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
-  console.log(`[RunningHub] Running workflow - mode: ${mode}, resolution: ${resolution}`);
-  console.log(`[RunningHub] fileName: ${fileName}, creativity: ${creativityDenoise}, detail: ${detailDenoise}`);
+  console.log(`[RunningHub] Processing job ${jobId} - fileName: ${fileName}, resolution: ${resolution}, detail: ${detailDenoise}`);
 
-  // Build nodeInfoList based on mode
-  const nodeInfoList: any[] = [
-    { nodeId: "1", fieldName: "image", fieldValue: fileName },
-  ];
+  try {
+    // Update job with input file name
+    await supabase
+      .from('upscaler_jobs')
+      .update({ input_file_name: fileName })
+      .eq('id', jobId);
 
-  if (mode === 'upscale') {
-    // Resolution - Node 136:1 (ConstrainImage)
-    nodeInfoList.push(
-      { nodeId: "136:1", fieldName: "max_width", fieldValue: resolution || 4096 },
-      { nodeId: "136:1", fieldName: "max_height", fieldValue: resolution || 4096 },
-    );
-    
-    // Creativity denoise - Node 164
-    if (creativityDenoise !== undefined) {
-      nodeInfoList.push(
-        { nodeId: "164", fieldName: "value", fieldValue: creativityDenoise }
-      );
-    }
-    
-    // Detail denoise - Node 165
-    if (detailDenoise !== undefined) {
-      nodeInfoList.push(
-        { nodeId: "165", fieldName: "value", fieldValue: detailDenoise }
-      );
-    }
-  }
+    // Check how many jobs are currently running
+    const { count: runningCount } = await supabase
+      .from('upscaler_jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'running');
 
-  // Try AI App method first if webappId is configured (more stable)
-  if (WEBAPP_ID) {
-    console.log('[RunningHub] Trying AI App method with webappId:', WEBAPP_ID);
-    
-    const aiAppResult = await tryAiAppRun(nodeInfoList);
-    if (aiAppResult.success) {
+    console.log(`[RunningHub] Running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS}`);
+
+    // Get the job to check its created_at
+    const { data: currentJob } = await supabase
+      .from('upscaler_jobs')
+      .select('created_at')
+      .eq('id', jobId)
+      .single();
+
+    if ((runningCount || 0) >= MAX_CONCURRENT_JOBS) {
+      // Calculate queue position
+      const { count: aheadOfMe } = await supabase
+        .from('upscaler_jobs')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'queued')
+        .lt('created_at', currentJob?.created_at || new Date().toISOString());
+
+      const position = (aheadOfMe || 0) + 1;
+
+      // Update job to queued status with position
+      await supabase
+        .from('upscaler_jobs')
+        .update({ 
+          status: 'queued',
+          position: position
+        })
+        .eq('id', jobId);
+
+      console.log(`[RunningHub] Job ${jobId} queued at position ${position}`);
+
       return new Response(JSON.stringify({ 
         success: true, 
-        taskId: aiAppResult.taskId,
-        method: 'ai-app'
+        queued: true, 
+        position: position,
+        message: 'Job queued, will start when slot available'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
-    console.log('[RunningHub] AI App method failed, trying workflow/create fallback...');
-    console.log('[RunningHub] AI App error:', aiAppResult.error);
-  }
 
-  // Fallback or primary: workflow/create
-  console.log('[RunningHub] Using workflow/create with workflowId:', WORKFLOW_ID);
-  
-  const workflowResult = await tryWorkflowCreate(nodeInfoList);
-  
-  if (workflowResult.success) {
-    return new Response(JSON.stringify({ 
-      success: true, 
-      taskId: workflowResult.taskId,
-      method: 'workflow-create'
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
+    // Slot available - start processing
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        status: 'running', 
+        started_at: new Date().toISOString(),
+        position: 0
+      })
+      .eq('id', jobId);
 
-  // Both methods failed - return detailed error
-  const errorResponse = {
-    error: workflowResult.error || 'Failed to start workflow',
-    code: workflowResult.code || 'RUN_FAILED',
-    msg: workflowResult.msg,
-    details: workflowResult.details,
-    workflowId: WORKFLOW_ID,
-    webappId: WEBAPP_ID || null,
-    solution: getSolutionForError(workflowResult.code, workflowResult.msg)
-  };
+    // Build node info list for RunningHub API
+    const nodeInfoList: any[] = [
+      { nodeId: "1", fieldName: "image", fieldValue: fileName },
+      { nodeId: "136:1", fieldName: "max_width", fieldValue: resolution || 4096 },
+      { nodeId: "136:1", fieldName: "max_height", fieldValue: resolution || 4096 },
+      { nodeId: "165", fieldName: "value", fieldValue: detailDenoise || 0.15 },
+    ];
 
-  console.error('[RunningHub] Run failed:', JSON.stringify(errorResponse));
+    // Add prompt if provided
+    if (prompt) {
+      nodeInfoList.push({ nodeId: "prompt", fieldName: "text", fieldValue: prompt });
+    }
 
-  return new Response(JSON.stringify(errorResponse), {
-    status: 400,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
+    const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
 
-// Try running via AI App endpoint
-async function tryAiAppRun(nodeInfoList: any[]): Promise<{
-  success: boolean;
-  taskId?: string;
-  error?: string;
-  code?: number;
-  msg?: string;
-  details?: any;
-}> {
-  try {
     const requestBody = {
       apiKey: RUNNINGHUB_API_KEY,
       webappId: WEBAPP_ID,
       nodeInfoList: nodeInfoList,
+      webhookUrl: webhookUrl,
     };
 
-    console.log('[RunningHub] AI App request:', JSON.stringify({ ...requestBody, apiKey: '[REDACTED]' }));
+    console.log('[RunningHub] AI App request:', JSON.stringify({ 
+      ...requestBody, 
+      apiKey: '[REDACTED]',
+      webhookUrl: webhookUrl
+    }));
 
     const response = await fetch('https://www.runninghub.ai/task/openapi/ai-app/run', {
       method: 'POST',
@@ -277,138 +271,57 @@ async function tryAiAppRun(nodeInfoList: any[]): Promise<{
     console.log('[RunningHub] AI App response:', JSON.stringify(data));
 
     if (data.code === 0 && data.data?.taskId) {
-      return { success: true, taskId: data.data.taskId };
-    }
+      // Update job with taskId
+      await supabase
+        .from('upscaler_jobs')
+        .update({ task_id: data.data.taskId })
+        .eq('id', jobId);
 
-    return {
-      success: false,
-      error: data.msg || 'AI App run failed',
-      code: data.code,
-      msg: data.msg,
-      details: data
-    };
-  } catch (error) {
-    console.error('[RunningHub] AI App exception:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'AI App exception'
-    };
-  }
-}
-
-// Try running via workflow/create endpoint
-async function tryWorkflowCreate(nodeInfoList: any[]): Promise<{
-  success: boolean;
-  taskId?: string;
-  error?: string;
-  code?: number;
-  msg?: string;
-  details?: any;
-}> {
-  try {
-    const requestBody = {
-      apiKey: RUNNINGHUB_API_KEY,
-      workflowId: WORKFLOW_ID,
-      nodeInfoList: nodeInfoList,
-    };
-
-    console.log('[RunningHub] Workflow create request:', JSON.stringify({ 
-      ...requestBody, 
-      apiKey: '[REDACTED]',
-      nodeInfoList: nodeInfoList.map(n => ({ nodeId: n.nodeId, fieldName: n.fieldName }))
-    }));
-
-    const response = await fetch('https://www.runninghub.ai/task/openapi/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
-    });
-
-    const data = await response.json();
-    console.log('[RunningHub] Workflow create response:', JSON.stringify(data));
-
-    if (data.code === 0 && data.data?.taskId) {
-      return { success: true, taskId: data.data.taskId };
-    }
-
-    return {
-      success: false,
-      error: data.msg || 'Workflow create failed',
-      code: data.code,
-      msg: data.msg,
-      details: data
-    };
-  } catch (error) {
-    console.error('[RunningHub] Workflow create exception:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Workflow create exception'
-    };
-  }
-}
-
-// Get human-readable solution based on error code
-function getSolutionForError(code?: number, msg?: string): string {
-  if (msg?.includes('WORKFLOW_NOT_SAVED_OR_NOT_RUNNING') || code === 810) {
-    return 'Seu workflow não está executável via API no modo workflow/create. Solução mais garantida: publique como AI App/WebApp e configure RUNNINGHUB_WEBAPP_ID (webappId). Alternativa: salve o workflow e rode 1x no editor (Queue/Run) e aguarde 1–2 min para propagação.';
-  }
-  if (msg?.includes('API_KEY') || code === 401) {
-    return 'API Key inválida ou expirada. Verifique RUNNINGHUB_API_KEY nas configurações.';
-  }
-  if (msg?.includes('WORKFLOW_NOT_FOUND') || code === 404) {
-    return 'Workflow não encontrado. Verifique se RUNNINGHUB_WORKFLOW_ID está correto.';
-  }
-  return 'Verifique as configurações do RunningHub e tente novamente.';
-}
-
-// Check task status
-async function handleStatus(req: Request) {
-  const { taskId } = await req.json();
-  
-  if (!taskId) {
-    return new Response(JSON.stringify({ error: 'taskId is required', code: 'MISSING_TASK_ID' }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  console.log(`[RunningHub] Checking status for taskId: ${taskId}`);
-
-  try {
-    const response = await fetch('https://www.runninghub.ai/task/openapi/status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        apiKey: RUNNINGHUB_API_KEY,
-        taskId: taskId,
-      }),
-    });
-
-    const data = await response.json();
-    console.log('[RunningHub] Status response:', JSON.stringify(data));
-
-    if (data.code !== 0) {
       return new Response(JSON.stringify({ 
-        error: data.msg || 'Status check failed',
-        code: data.code,
-        details: data
+        success: true, 
+        taskId: data.data.taskId,
+        method: 'ai-app'
       }), {
-        status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      status: data.data  // data.data is already the status string like "SUCCESS", "RUNNING", etc.
+    // Failed to start - mark as failed
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        status: 'failed', 
+        error_message: data.msg || 'Failed to start workflow',
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', jobId);
+
+    return new Response(JSON.stringify({
+      error: data.msg || 'Failed to start workflow',
+      code: data.code || 'RUN_FAILED',
+      details: data
     }), {
+      status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
-    console.error('[RunningHub] Status exception:', error);
+
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[RunningHub] Run error:', error);
+
+    // Mark job as failed
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        status: 'failed', 
+        error_message: errorMessage,
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', jobId);
+
     return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Status check exception',
-      code: 'STATUS_EXCEPTION'
+      error: errorMessage, 
+      code: 'RUN_EXCEPTION' 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -416,64 +329,43 @@ async function handleStatus(req: Request) {
   }
 }
 
-// Get task outputs
-async function handleOutputs(req: Request) {
-  const { taskId } = await req.json();
-  
-  if (!taskId) {
-    return new Response(JSON.stringify({ error: 'taskId is required', code: 'MISSING_TASK_ID' }), {
+// Get queue status
+async function handleQueueStatus(req: Request) {
+  const { jobId } = await req.json();
+
+  if (!jobId) {
+    return new Response(JSON.stringify({ error: 'jobId is required' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
-  console.log(`[RunningHub] Getting outputs for taskId: ${taskId}`);
-
   try {
-    const response = await fetch('https://www.runninghub.ai/task/openapi/outputs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        apiKey: RUNNINGHUB_API_KEY,
-        taskId: taskId,
-      }),
-    });
+    const { data: job, error } = await supabase
+      .from('upscaler_jobs')
+      .select('status, position, output_url, error_message')
+      .eq('id', jobId)
+      .single();
 
-    const data = await response.json();
-    console.log('[RunningHub] Outputs response:', JSON.stringify(data));
-
-    if (data.code !== 0) {
-      return new Response(JSON.stringify({ 
-        error: data.msg || 'Failed to get outputs',
-        code: data.code,
-        details: data
-      }), {
-        status: 400,
+    if (error || !job) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const outputs = data.data || [];
-    const imageExtensions = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'image'];
-    const imageUrls = outputs
-      .filter((output: any) => imageExtensions.includes(output.fileType?.toLowerCase()))
-      .map((output: any) => output.fileUrl)
-      .filter((url: unknown) => typeof url === 'string' && url.trim().length > 0);
-    
-    console.log('[RunningHub] Filtered image URLs:', imageUrls);
-
     return new Response(JSON.stringify({ 
-      success: true, 
-      outputs: imageUrls
+      success: true,
+      status: job.status,
+      position: job.position,
+      outputUrl: job.output_url,
+      errorMessage: job.error_message
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('[RunningHub] Outputs exception:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Outputs exception',
-      code: 'OUTPUTS_EXCEPTION'
-    }), {
+    console.error('[RunningHub] Queue status error:', error);
+    return new Response(JSON.stringify({ error: 'Failed to get queue status' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
