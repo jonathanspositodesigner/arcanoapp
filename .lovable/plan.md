@@ -1,122 +1,142 @@
 
 
-## Corrigir Vídeos Mostrando "Arquivo não encontrado" Intermitentemente
+## Correção do Carregamento Infinito dos Vídeos do YouTube no Upscaler
 
 ### Problema Identificado
 
-O componente `SecureVideo` em `src/components/SecureMedia.tsx` tem lógica de retry muito restrita para vídeos:
+Os vídeos do YouTube nas aulas do Upscaler Arcano estão carregando indefinidamente. Após análise do código, identifiquei os seguintes problemas:
 
-```typescript
-// Linha 141-150
-const handleVideoError = () => {
-  // Only retry once to avoid long waits for missing files
-  if (retryCount < 1) {
-    setTimeout(() => {
-      setRetryCount(prev => prev + 1);
-    }, 500);  // Apenas 500ms de espera
-  } else {
-    setError(true);  // Mostra "Arquivo não encontrado"
-  }
-};
-```
-
-**Problemas:**
-1. **Timeout muito curto (500ms)** - Vídeos maiores ou conexões lentas não conseguem carregar metadata a tempo
-2. **Apenas 1 retry** - Se o primeiro carregamento falha, só tenta mais uma vez
-3. **preload="metadata"** pode falhar em conexões instáveis antes do vídeo realmente tentar carregar
-4. **Eventos de load conflitantes** - `onLoadedData`, `onLoadedMetadata`, `onCanPlay` podem disparar em ordens diferentes
-
-### Verificação no Banco
-
-Os vídeos existem no storage:
-- São João: `8b0efec9-5ae5-4337-8000-a8626ac1758a-1766250848461.mp4` ✓
-- Rave Cyberpunk: `fcae1799-7ab9-46c3-b345-0c3fe0c8ba75-1766250846930.mp4` ✓
-- Pizeiro: `740af081-193c-4035-bc1a-df023d099493-1766250845884.mp4` ✓
-- Noite Chuvosa: `ad2bfcc7-adde-4cfb-a084-73484bde1be1-1766250844513.mp4` ✓
-
-**Conclusão**: O problema é de carregamento/timeout, não de arquivos ausentes.
+1. **Iframe sem atributos essenciais** - Faltam `loading`, `title`, e `key` que são importantes para o carregamento correto
+2. **Falta de indicador visual de carregamento** - Usuário não sabe se o vídeo está carregando ou travado
+3. **IIFE dentro do JSX** - Uso de função anônima invocada imediatamente pode causar re-renders
+4. **Falta de tratamento de erro** - Se o vídeo falhar em carregar, não há feedback
 
 ---
 
 ### Solução
 
-Melhorar a robustez do componente `SecureVideo`:
+Refatorar o componente de vídeo no `ToolVersionLessons.tsx` para:
 
-1. **Aumentar retries para 3**
-2. **Aumentar delay entre retries para 1000ms**
-3. **Adicionar verificação se vídeo já está em cache**
-4. **Adicionar timeout para evitar loading infinito**
+1. Adicionar `key` única baseada na URL do vídeo para forçar re-render quando a lição muda
+2. Adicionar atributo `loading="lazy"` para otimização de performance  
+3. Adicionar `title` para acessibilidade
+4. Mostrar indicador de carregamento enquanto o iframe está sendo carregado
+5. Usar `useMemo` para calcular embedUrl em vez de IIFE
+6. Adicionar `referrerPolicy` e `sandbox` para maior compatibilidade
 
 ---
 
 ### Mudanças no Código
 
-**Arquivo:** `src/components/SecureMedia.tsx`
+**Arquivo:** `src/pages/ToolVersionLessons.tsx`
 
-#### Alterar handleVideoError (linhas 141-150):
+#### 1. Adicionar estado para controlar loading do vídeo (após linha 154):
 
 ```typescript
-const handleVideoError = () => {
-  // Retry up to 3 times with increasing delays for videos
-  if (retryCount < 3) {
-    const delay = 1000 * (retryCount + 1); // 1s, 2s, 3s
-    setTimeout(() => {
-      setRetryCount(prev => prev + 1);
-    }, delay);
-  } else {
-    setError(true);
-  }
-};
+const [videoLoading, setVideoLoading] = useState(true);
 ```
 
-#### Adicionar verificação de cache mais robusta (linhas 128-135):
+#### 2. Resetar loading quando a lição muda (no useMemo de lessons, adicionar useEffect):
 
 ```typescript
-// Check if video is already loaded from cache
+// Reset video loading state when lesson changes
 useEffect(() => {
-  if (videoRef.current && !videoLoaded && !error) {
-    const video = videoRef.current;
-    // readyState >= 2 means has current data
-    if (video.readyState >= 2) {
-      setVideoLoaded(true);
-    } else if (video.readyState === 0 && video.networkState === 3) {
-      // Network error - trigger retry
-      handleVideoError();
-    }
-  }
-}, [videoLoaded, error, retryCount]);
+  setVideoLoading(true);
+}, [selectedLesson]);
 ```
 
-#### Alterar preload para "auto" quando em página admin (linha 516 do AdminManageArtes):
+#### 3. Calcular embedUrl com useMemo (adicionar após linha 190):
 
 ```typescript
-<SecureVideo 
-  src={arte.image_url} 
-  className="w-full h-48 object-cover" 
-  isPremium={arte.is_premium || false} 
-  autoPlay 
-  muted 
-  loop 
-  preload="auto"  // Força carregamento completo no admin
-/>
+const currentEmbedUrl = useMemo(() => {
+  if (!currentLesson?.videoUrl) return null;
+  return getVideoEmbedUrl(currentLesson.videoUrl);
+}, [currentLesson?.videoUrl]);
+```
+
+#### 4. Refatorar o bloco do vídeo (linhas 616-639):
+
+**De:**
+```typescript
+{/* Video */}
+<div className="aspect-video bg-black rounded-lg overflow-hidden">
+  {currentLesson.videoUrl ? (
+    (() => {
+      const embedUrl = getVideoEmbedUrl(currentLesson.videoUrl);
+      return embedUrl ? (
+        <iframe
+          src={embedUrl}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+          <Play className="w-16 h-16" />
+        </div>
+      );
+    })()
+  ) : (
+    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+      <Play className="w-16 h-16" />
+    </div>
+  )}
+</div>
+```
+
+**Para:**
+```typescript
+{/* Video */}
+<div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+  {currentEmbedUrl ? (
+    <>
+      {/* Loading indicator */}
+      {videoLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      )}
+      <iframe
+        key={currentEmbedUrl}
+        src={currentEmbedUrl}
+        title={currentLesson?.title || 'Video'}
+        className="w-full h-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="strict-origin-when-cross-origin"
+        onLoad={() => setVideoLoading(false)}
+      />
+    </>
+  ) : (
+    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+      <Play className="w-16 h-16" />
+    </div>
+  )}
+</div>
 ```
 
 ---
 
-### Arquivos a Modificar
+### Resumo Técnico das Mudanças
 
-| Arquivo | Mudança |
-|---------|---------|
-| `src/components/SecureMedia.tsx` | Aumentar retries (1→3), aumentar delay (500ms→1-3s progressivo), verificação de cache melhorada |
-| `src/pages/AdminManageArtes.tsx` | Usar `preload="auto"` para vídeos no admin |
+| Mudança | Motivo |
+|---------|--------|
+| Adicionar `key={currentEmbedUrl}` | Força re-render do iframe quando URL muda |
+| Adicionar `title` | Acessibilidade (obrigatório para iframes) |
+| Adicionar `loading="lazy"` | Performance - só carrega quando visível |
+| Adicionar `referrerPolicy` | Compatibilidade com políticas de segurança do YouTube |
+| Adicionar `onLoad` handler | Detecta quando vídeo terminou de carregar |
+| Adicionar indicador de loading | Feedback visual para o usuário |
+| Usar `useMemo` para embedUrl | Evita recalcular em cada render |
 
 ---
 
 ### Resultado Esperado
 
-- Vídeos terão até 3 tentativas de carregar (com delays de 1s, 2s, 3s)
-- Total de até 6 segundos antes de mostrar erro
-- Melhor detecção de vídeos em cache
-- Menos falsos positivos de "Arquivo não encontrado"
-- Admin panel carrega vídeos de forma mais confiável
+- Vídeos do YouTube carregam corretamente
+- Usuário vê indicador de carregamento enquanto vídeo não está pronto
+- Ao mudar de lição, o vídeo anterior é substituído corretamente
+- Performance melhorada com lazy loading
+- Melhor compatibilidade com navegadores
 
