@@ -242,6 +242,11 @@
       "downloadStarted": "Download iniciado!",
       "imageOpened": "Imagem aberta! Segure a imagem para salvar.",
       "openedNewTab": "Imagem aberta em nova aba. Segure para salvar."
+    },
+    "warnings": {
+      "dontClose": "Não feche esta página! Seu upscale está sendo processado e o resultado aparecerá automaticamente aqui.",
+      "recovering": "Recuperando seu upscale em andamento...",
+      "recovered": "Seu upscale anterior foi recuperado!"
     }
   },
   "forja3D": {

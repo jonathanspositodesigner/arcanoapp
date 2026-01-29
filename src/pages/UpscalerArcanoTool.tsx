@@ -53,8 +53,20 @@ const UpscalerArcanoTool: React.FC = () => {
   const sliderRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const beforeTransformRef = useRef<HTMLDivElement>(null);
-  const sessionIdRef = useRef<string>(crypto.randomUUID());
+  const sessionIdRef = useRef<string>('');
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  // Initialize session ID from localStorage
+  useEffect(() => {
+    const savedId = localStorage.getItem('upscaler_session_id');
+    if (savedId) {
+      sessionIdRef.current = savedId;
+    } else {
+      const newId = crypto.randomUUID();
+      sessionIdRef.current = newId;
+      localStorage.setItem('upscaler_session_id', newId);
+    }
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -64,6 +76,71 @@ const UpscalerArcanoTool: React.FC = () => {
       }
     };
   }, []);
+
+  // Warning before closing page during processing
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (status === 'processing' || status === 'uploading' || isWaitingInQueue) {
+        e.preventDefault();
+        e.returnValue = 'Seu upscale está em andamento. Tem certeza que deseja sair?';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [status, isWaitingInQueue]);
+
+  // Recover pending jobs on mount
+  useEffect(() => {
+    const checkPendingJob = async () => {
+      const savedSessionId = localStorage.getItem('upscaler_session_id');
+      if (!savedSessionId) return;
+
+      // Check for pending job
+      const { data: pendingJob } = await supabase
+        .from('upscaler_jobs')
+        .select('*')
+        .eq('session_id', savedSessionId)
+        .in('status', ['queued', 'running'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (pendingJob) {
+        console.log('[Upscaler] Found pending job:', pendingJob.id);
+        setJobId(pendingJob.id);
+        setStatus('processing');
+        setIsWaitingInQueue(pendingJob.status === 'queued');
+        setQueuePosition(pendingJob.position || 0);
+        toast.info(t('upscalerTool.warnings.recovering'));
+        return;
+      }
+
+      // Check for recent completed job (last 5 min)
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { data: completedJob } = await supabase
+        .from('upscaler_jobs')
+        .select('*')
+        .eq('session_id', savedSessionId)
+        .eq('status', 'completed')
+        .gte('completed_at', fiveMinutesAgo)
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (completedJob && completedJob.output_url) {
+        console.log('[Upscaler] Found recent completed job:', completedJob.id);
+        setOutputImage(completedJob.output_url);
+        setStatus('completed');
+        toast.success(t('upscalerTool.warnings.recovered'));
+      }
+    };
+
+    // Small delay to ensure session ID is loaded
+    const timer = setTimeout(checkPendingJob, 100);
+    return () => clearTimeout(timer);
+  }, [t]);
 
   // Subscribe to Realtime updates when jobId changes
   useEffect(() => {
@@ -445,6 +522,16 @@ const UpscalerArcanoTool: React.FC = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* Warning Banner - Don't close page */}
+        {(status === 'processing' || status === 'uploading' || isWaitingInQueue) && (
+          <div className="bg-amber-500/20 border border-amber-500/50 rounded-lg p-3 flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+            <p className="text-sm text-amber-200">
+              {t('upscalerTool.warnings.dontClose')}
+            </p>
+          </div>
+        )}
+
         {/* Queue Waiting UI */}
         {isWaitingInQueue && (
           <Card className="bg-[#1A0A2E]/50 border-yellow-500/30 p-6">
