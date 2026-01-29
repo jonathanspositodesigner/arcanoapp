@@ -34,6 +34,7 @@ interface Arte {
   is_ai_generated: boolean | null;
   ai_prompt: string | null;
   ai_reference_image_url: string | null;
+  motion_type?: 'canva' | 'after_effects' | null;
 }
 
 const BibliotecaArtesMusicos = () => {
@@ -82,7 +83,7 @@ const BibliotecaArtesMusicos = () => {
       setLoadingArtes(true);
       const { data, error } = await supabase
         .from('admin_artes')
-        .select('id, title, image_url, category, is_premium, canva_link, drive_link, is_ai_generated, ai_prompt, ai_reference_image_url')
+        .select('id, title, image_url, category, is_premium, canva_link, drive_link, is_ai_generated, ai_prompt, ai_reference_image_url, motion_type')
         .eq('platform', 'musicos')
         .order('created_at', { ascending: false });
       
@@ -361,6 +362,11 @@ const BibliotecaArtesMusicos = () => {
                     {ledRestricted && (
                       <div className="absolute top-2 left-2 z-10 bg-amber-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                         <Lock className="w-3 h-3" />{t('musicos.badges.proPlus')}
+                      </div>
+                    )}
+                    {arte.motion_type && (
+                      <div className={`absolute top-2 right-2 z-10 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 ${arte.motion_type === 'canva' ? 'bg-gradient-to-r from-cyan-500 to-blue-500' : 'bg-gradient-to-r from-purple-500 to-pink-500'}`}>
+                        {arte.motion_type === 'canva' ? '🎨 Canva' : '🎬 After Effects'}
                       </div>
                     )}
                     <div className="aspect-square relative overflow-hidden">

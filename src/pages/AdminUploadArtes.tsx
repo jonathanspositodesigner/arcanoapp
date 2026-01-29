@@ -51,6 +51,7 @@ interface MediaData {
   downloadPreview: string;
   canvaLink: string;
   driveLink: string;
+  motionType: 'canva' | 'after_effects' | '';
 }
 
 interface Category {
@@ -192,7 +193,8 @@ const AdminUploadArtes = () => {
         downloadFile: null,
         downloadPreview: "",
         canvaLink: "",
-        driveLink: ""
+        driveLink: "",
+        motionType: ""
       });
     }
     
@@ -300,7 +302,8 @@ const AdminUploadArtes = () => {
         is_premium: media.isPremium,
         tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
         canva_link: media.canvaLink || null,
-        drive_link: media.driveLink || null
+        drive_link: media.driveLink || null,
+        motion_type: media.isVideo ? media.motionType || null : null
       });
       if (insertError) throw insertError;
 
@@ -380,7 +383,8 @@ const AdminUploadArtes = () => {
           is_premium: media.isPremium,
           tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
           canva_link: media.canvaLink || null,
-          drive_link: media.driveLink || null
+          drive_link: media.driveLink || null,
+          motion_type: media.isVideo ? media.motionType || null : null
         });
         if (insertError) throw insertError;
       }
@@ -580,6 +584,38 @@ const AdminUploadArtes = () => {
                   <Label htmlFor="tutorialUrl">Link do Tutorial</Label>
                   <Input id="tutorialUrl" value={currentMedia.tutorialUrl} onChange={e => updateMediaData('tutorialUrl', e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="mt-2" />
                 </div>}
+
+              {currentMedia.isVideo && (
+                <div className="p-4 rounded-lg border border-border bg-secondary/50">
+                  <Label className="text-sm font-medium mb-3 flex items-center gap-2">
+                    🎬 Tipo de Motion
+                  </Label>
+                  <div className="flex gap-4 mt-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="motionType" 
+                        value="canva" 
+                        checked={currentMedia.motionType === 'canva'} 
+                        onChange={() => updateMediaData('motionType', 'canva')}
+                        className="w-4 h-4 text-cyan-500"
+                      />
+                      <span className="text-sm">🎨 Motion Canva</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="motionType" 
+                        value="after_effects" 
+                        checked={currentMedia.motionType === 'after_effects'} 
+                        onChange={() => updateMediaData('motionType', 'after_effects')}
+                        className="w-4 h-4 text-purple-500"
+                      />
+                      <span className="text-sm">🎬 Motion After Effects</span>
+                    </label>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="canvaLink">Link Canva <span className="text-destructive">*</span></Label>

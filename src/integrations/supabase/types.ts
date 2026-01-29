@@ -163,6 +163,7 @@ export type Database = {
           image_url: string
           is_ai_generated: boolean | null
           is_premium: boolean
+          motion_type: string | null
           pack: string | null
           platform: string | null
           title: string
@@ -183,6 +184,7 @@ export type Database = {
           image_url: string
           is_ai_generated?: boolean | null
           is_premium?: boolean
+          motion_type?: string | null
           pack?: string | null
           platform?: string | null
           title: string
@@ -203,6 +205,7 @@ export type Database = {
           image_url?: string
           is_ai_generated?: boolean | null
           is_premium?: boolean
+          motion_type?: string | null
           pack?: string | null
           platform?: string | null
           title?: string
