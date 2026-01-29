@@ -23,17 +23,18 @@ serve(async (req) => {
     const payload = await req.json();
     console.log('[Webhook] Received payload:', JSON.stringify(payload));
 
-    // RunningHub webhook format based on their API v2
-    // The payload structure may vary - handle both formats
-    const event = payload.event || payload.type || 'TASK_END';
-    const taskId = payload.taskId || payload.data?.taskId || payload.task_id;
-    const taskStatus = payload.status || payload.data?.status || payload.taskStatus;
+    // RunningHub API v2 webhook format (from official documentation)
+    // Structure: { event, taskId, eventData: { status, results[], errorCode, errorMessage, usage } }
+    const event = payload.event;
+    const taskId = payload.taskId;
+    const eventData = payload.eventData || {};
+    const taskStatus = eventData.status;
     
     console.log(`[Webhook] Event: ${event}, TaskId: ${taskId}, Status: ${taskStatus}`);
 
-    // Only process TASK_END or completion events
-    if (event !== 'TASK_END' && event !== 'task.completed' && taskStatus !== 'SUCCESS' && taskStatus !== 'FAILED') {
-      console.log('[Webhook] Ignoring non-completion event');
+    // Only process TASK_END events
+    if (event !== 'TASK_END') {
+      console.log('[Webhook] Ignoring non-TASK_END event');
       return new Response(JSON.stringify({ success: true, message: 'Event ignored' }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -48,26 +49,27 @@ serve(async (req) => {
       });
     }
 
-    // Get output URL from various possible payload structures
+    // Get output URL from eventData.results (API v2 format)
+    // results[]: { url, outputType, text }
     let outputUrl: string | null = null;
     let errorMessage: string | null = null;
 
-    // Try different payload structures for outputs
-    const outputs = payload.outputs || payload.data?.outputs || payload.results || payload.data?.results || [];
+    const results = eventData.results || [];
     
-    if (Array.isArray(outputs) && outputs.length > 0) {
-      // Find image output
-      const imageOutput = outputs.find((o: any) => 
-        o.fileType?.toLowerCase().includes('image') || 
-        o.type?.toLowerCase().includes('image') ||
-        o.fileUrl || o.url
+    if (Array.isArray(results) && results.length > 0) {
+      // Find image result by outputType (png, jpg, jpeg, webp)
+      const imageResult = results.find((r: any) => 
+        r.outputType === 'png' || 
+        r.outputType === 'jpg' || 
+        r.outputType === 'jpeg' || 
+        r.outputType === 'webp'
       );
-      outputUrl = imageOutput?.fileUrl || imageOutput?.url || outputs[0]?.fileUrl || outputs[0]?.url || null;
+      outputUrl = imageResult?.url || results[0]?.url || null;
     }
 
-    // Check for error
-    if (taskStatus === 'FAILED' || payload.error) {
-      errorMessage = payload.error || payload.errorMessage || payload.data?.error || 'Processing failed';
+    // Check for error from eventData
+    if (taskStatus === 'FAILED') {
+      errorMessage = eventData.errorMessage || eventData.errorCode || 'Processing failed';
     }
 
     console.log(`[Webhook] OutputUrl: ${outputUrl}, Error: ${errorMessage}`);
@@ -186,45 +188,50 @@ async function startRunningHubJob(job: any) {
     nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: job.prompt });
   }
 
+  // API v2 format - auth via Bearer header, not in body
   const requestBody = {
-    apiKey: RUNNINGHUB_API_KEY,
-    webappId: WEBAPP_ID,
     nodeInfoList: nodeInfoList,
+    instanceType: "default",
+    usePersonalQueue: false,
     webhookUrl: webhookUrl,
   };
 
-  console.log('[Webhook] Starting RunningHub job:', JSON.stringify({ ...requestBody, apiKey: '[REDACTED]' }));
+  console.log('[Webhook] Starting RunningHub job:', JSON.stringify(requestBody));
 
   try {
-    const response = await fetch('https://www.runninghub.ai/task/openapi/ai-app/run', {
+    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+      },
       body: JSON.stringify(requestBody),
     });
 
     const data = await response.json();
     console.log('[Webhook] RunningHub response:', JSON.stringify(data));
 
-    if (data.code === 0 && data.data?.taskId) {
+    // API v2 response: { taskId, status, ... } directly (no wrapper)
+    if (data.taskId) {
       // Update job with taskId
       await supabase
         .from('upscaler_jobs')
-        .update({ task_id: data.data.taskId })
+        .update({ task_id: data.taskId })
         .eq('id', job.id);
       
-      console.log(`[Webhook] Job ${job.id} started with taskId: ${data.data.taskId}`);
+      console.log(`[Webhook] Job ${job.id} started with taskId: ${data.taskId}`);
     } else {
       // Mark as failed
       await supabase
         .from('upscaler_jobs')
         .update({ 
           status: 'failed', 
-          error_message: data.msg || 'Failed to start job',
+          error_message: data.message || data.error || 'Failed to start job',
           completed_at: new Date().toISOString()
         })
         .eq('id', job.id);
       
-      console.error('[Webhook] Failed to start job:', data.msg);
+      console.error('[Webhook] Failed to start job:', data.message || data.error);
     }
   } catch (error) {
     console.error('[Webhook] Error calling RunningHub:', error);

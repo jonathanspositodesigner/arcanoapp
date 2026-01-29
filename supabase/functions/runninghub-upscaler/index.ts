@@ -246,38 +246,41 @@ async function handleRun(req: Request) {
     const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
 
     const requestBody = {
-      apiKey: RUNNINGHUB_API_KEY,
-      webappId: WEBAPP_ID,
       nodeInfoList: nodeInfoList,
+      instanceType: "default",
+      usePersonalQueue: false,
       webhookUrl: webhookUrl,
     };
 
     console.log('[RunningHub] AI App request:', JSON.stringify({ 
-      ...requestBody, 
-      apiKey: '[REDACTED]',
+      ...requestBody,
       webhookUrl: webhookUrl
     }));
 
-    const response = await fetch('https://www.runninghub.ai/task/openapi/ai-app/run', {
+    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+      },
       body: JSON.stringify(requestBody),
     });
 
     const data = await response.json();
     console.log('[RunningHub] AI App response:', JSON.stringify(data));
 
-    if (data.code === 0 && data.data?.taskId) {
+    // API v2 response: { taskId, status, ... } directly (no wrapper)
+    if (data.taskId) {
       // Update job with taskId
       await supabase
         .from('upscaler_jobs')
-        .update({ task_id: data.data.taskId })
+        .update({ task_id: data.taskId })
         .eq('id', jobId);
 
       return new Response(JSON.stringify({ 
         success: true, 
-        taskId: data.data.taskId,
-        method: 'ai-app'
+        taskId: data.taskId,
+        method: 'ai-app-v2'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
