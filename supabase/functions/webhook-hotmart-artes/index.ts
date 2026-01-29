@@ -17,8 +17,8 @@ const CANCEL_EVENTS = [
   'PURCHASE_CHARGEBACK',
   'PURCHASE_CANCELED',
   'PURCHASE_EXPIRED',
-  'PURCHASE_PROTEST',    // Disputa - suspende acesso
-  'PURCHASE_DELAYED',    // Pagamento atrasado
+  'PURCHASE_PROTEST',
+  'PURCHASE_DELAYED',
 ]
 
 // Interface para mapeamento de produto
@@ -27,47 +27,6 @@ interface ProductMapping {
   accessType: '6_meses' | '1_ano' | 'vitalicio'
   hasBonusAccess: boolean
   isFerramentaIA: boolean
-}
-
-// Função para buscar mapeamento de produto Hotmart do banco de dados
-async function findHotmartProductMapping(supabase: any, productId: string, requestId: string): Promise<ProductMapping | null> {
-  console.log(`   ├─ [${requestId}] 🔍 Buscando pack para Hotmart Product ID: ${productId}`)
-  
-  try {
-    const { data: packs, error } = await supabase
-      .from('artes_packs')
-      .select('slug, type, tool_versions')
-    
-    if (error) {
-      console.error(`   ├─ [${requestId}] ❌ Erro buscando packs:`, error)
-      return null
-    }
-
-    for (const pack of packs || []) {
-      const isFerramentaIA = pack.type === 'ferramentas_ia'
-      
-      // Verificar em tool_versions (para ferramentas IA)
-      if (pack.tool_versions && Array.isArray(pack.tool_versions)) {
-        for (const version of pack.tool_versions) {
-          if (version.webhook?.hotmart_product_id_vitalicio === productId) {
-            console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (vitalicio) via tool_versions [Hotmart]`)
-            return { 
-              packSlug: pack.slug, 
-              accessType: 'vitalicio', 
-              hasBonusAccess: true, 
-              isFerramentaIA 
-            }
-          }
-        }
-      }
-    }
-
-    console.log(`   ├─ [${requestId}] ⚠️ Nenhum pack encontrado para Hotmart Product ID: ${productId}`)
-    return null
-  } catch (e) {
-    console.error(`   ├─ [${requestId}] ❌ Exceção buscando packs:`, e)
-    return null
-  }
 }
 
 interface HotmartWebhookPayload {
@@ -145,6 +104,46 @@ function generateRequestId(): string {
   return Math.random().toString(36).substring(2, 10).toUpperCase()
 }
 
+// Função para buscar mapeamento de produto Hotmart do banco de dados
+async function findHotmartProductMapping(supabase: any, productId: string, requestId: string): Promise<ProductMapping | null> {
+  console.log(`   ├─ [${requestId}] 🔍 Buscando pack para Hotmart Product ID: ${productId}`)
+  
+  try {
+    const { data: packs, error } = await supabase
+      .from('artes_packs')
+      .select('slug, type, tool_versions')
+    
+    if (error) {
+      console.error(`   ├─ [${requestId}] ❌ Erro buscando packs:`, error)
+      return null
+    }
+
+    for (const pack of packs || []) {
+      const isFerramentaIA = pack.type === 'ferramentas_ia'
+      
+      if (pack.tool_versions && Array.isArray(pack.tool_versions)) {
+        for (const version of pack.tool_versions) {
+          if (version.webhook?.hotmart_product_id_vitalicio === productId) {
+            console.log(`   ├─ [${requestId}] ✅ PACK encontrado: ${pack.slug} (vitalicio) via tool_versions [Hotmart]`)
+            return { 
+              packSlug: pack.slug, 
+              accessType: 'vitalicio', 
+              hasBonusAccess: true, 
+              isFerramentaIA 
+            }
+          }
+        }
+      }
+    }
+
+    console.log(`   ├─ [${requestId}] ⚠️ Nenhum pack encontrado para Hotmart Product ID: ${productId}`)
+    return null
+  } catch (e) {
+    console.error(`   ├─ [${requestId}] ❌ Exceção buscando packs:`, e)
+    return null
+  }
+}
+
 // Função para verificar se email está na lista negra
 async function isEmailBlacklisted(supabase: any, email: string): Promise<boolean> {
   const { data } = await supabase
@@ -156,7 +155,21 @@ async function isEmailBlacklisted(supabase: any, email: string): Promise<boolean
   return !!data
 }
 
-// Send welcome email via SendPulse
+// Calcula data de expiração baseado no tipo de acesso
+function calculateExpirationDate(accessType: string, startDate: Date = new Date()): Date | null {
+  switch (accessType) {
+    case '6_meses':
+      return new Date(startDate.getTime() + 180 * 24 * 60 * 60 * 1000)
+    case '1_ano':
+      return new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000)
+    case 'vitalicio':
+      return null
+    default:
+      return null
+  }
+}
+
+// Send welcome email via SendPulse (background task - não bloqueia)
 async function sendWelcomeEmail(supabase: any, email: string, name: string, packInfo: string, requestId: string): Promise<void> {
   console.log(`\n📧 [${requestId}] EMAIL DE BOAS-VINDAS (ES):`)
   console.log(`   ├─ Destinatário: ${email}`)
@@ -220,17 +233,14 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     const senderName = template?.sender_name || 'Herramientas IA Arcanas'
     const senderEmail = template?.sender_email || 'contato@voxvisual.com.br'
 
-    // Generate unique tracking ID
     const trackingId = crypto.randomUUID()
     console.log(`   ├─ Tracking ID: ${trackingId}`)
 
-    // Build tracking URLs
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
     const openTrackingPixel = `${trackingBaseUrl}?id=${trackingId}&action=open`
     const platformUrl = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-es'
     const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
 
-    // Get SendPulse access token
     const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -249,7 +259,6 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     const tokenData = await tokenResponse.json()
     const accessToken = tokenData.access_token
 
-    // Build welcome email HTML
     const welcomeHtml = `
 <!DOCTYPE html>
 <html>
@@ -314,10 +323,8 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
 </html>
 `
 
-    // Convert HTML to Base64
     const htmlBase64 = btoa(unescape(encodeURIComponent(welcomeHtml)))
 
-    // Send email via SendPulse
     const emailResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
       method: "POST",
       headers: {
@@ -340,7 +347,6 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
 
     const result = await emailResponse.json()
     
-    // Log the email send
     await supabase.from('welcome_email_logs').insert({
       email,
       name,
@@ -363,124 +369,105 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
   }
 }
 
-// Calcula data de expiração baseado no tipo de acesso
-function calculateExpirationDate(accessType: string, startDate: Date = new Date()): Date | null {
-  switch (accessType) {
-    case '6_meses':
-      return new Date(startDate.getTime() + 180 * 24 * 60 * 60 * 1000)
-    case '1_ano':
-      return new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000)
-    case 'vitalicio':
-      return null // Sem expiração
-    default:
-      return null
-  }
-}
-
-Deno.serve(async (req) => {
-  const requestId = generateRequestId()
+// ============================================================================
+// PROCESSAMENTO EM BACKGROUND (via EdgeRuntime.waitUntil)
+// ============================================================================
+async function processHotmartWebhook(
+  supabase: any,
+  payload: HotmartWebhookPayload,
+  logId: string,
+  requestId: string
+): Promise<void> {
+  const event = payload.event
+  const buyer = payload.data?.buyer
+  const product = payload.data?.product
+  const purchase = payload.data?.purchase
   
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
-
-  console.log(`\n${'='.repeat(60)}`)
-  console.log(`🔔 [${requestId}] WEBHOOK HOTMART ARTES (ES) - ${new Date().toISOString()}`)
-  console.log(`${'='.repeat(60)}`)
+  const email = buyer?.email?.toLowerCase()?.trim()
+  const name = buyer?.name || ''
+  const productId = product?.id?.toString()
+  const productName = product?.name || 'Produto Hotmart'
+  const transaction = purchase?.transaction
 
   try {
-    const payload: HotmartWebhookPayload = await req.json()
-    
-    const event = payload.event
-    const buyer = payload.data?.buyer
-    const product = payload.data?.product
-    const purchase = payload.data?.purchase
-    
-    const email = buyer?.email?.toLowerCase()?.trim()
-    const name = buyer?.name || ''
-    const productId = product?.id?.toString()
-    const productName = product?.name || 'Produto Hotmart'
-    const transaction = purchase?.transaction
-    const status = purchase?.status || event
-    
-    console.log(`📦 [${requestId}] DADOS DO WEBHOOK:`)
-    console.log(`   ├─ Evento: ${event}`)
-    console.log(`   ├─ Product ID: ${productId}`)
-    console.log(`   ├─ Product Name: ${productName}`)
-    console.log(`   ├─ Email: ${email}`)
-    console.log(`   ├─ Nome: ${name}`)
-    console.log(`   ├─ Transaction: ${transaction}`)
-    console.log(`   ├─ Status: ${status}`)
-
-    // Initialize Supabase
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-    // Check for cancel events
+    // Handle cancel events - OTIMIZADO: primeiro por transaction, depois por email
     if (event && CANCEL_EVENTS.includes(event)) {
-      console.log(`\n🚫 [${requestId}] EVENTO DE CANCELAMENTO/REEMBOLSO`)
+      console.log(`\n🚫 [${requestId}] PROCESSANDO CANCELAMENTO/REEMBOLSO`)
       
-      if (email) {
-        // Find user
-        const { data: authUsers } = await supabase.auth.admin.listUsers()
-        const authUser = authUsers?.users?.find(u => u.email?.toLowerCase() === email)
+      // PRIMEIRO: Tentar desativar por hotmart_transaction (rápido, indexado)
+      if (transaction) {
+        const { data: purchaseByTx, error: txError } = await supabase
+          .from('user_pack_purchases')
+          .update({ is_active: false, updated_at: new Date().toISOString() })
+          .eq('hotmart_transaction', transaction)
+          .eq('platform', 'hotmart-es')
+          .select('id')
         
-        if (authUser) {
-          // Deactivate access
-          await supabase
-            .from('user_pack_purchases')
-            .update({ is_active: false })
-            .eq('user_id', authUser.id)
-            .eq('pack_slug', 'upscaller-arcano')
-            .eq('platform', 'hotmart-es')
-          
-          console.log(`   └─ ✅ Acesso desativado para: ${email}`)
+        if (!txError && purchaseByTx?.length > 0) {
+          console.log(`   ├─ ✅ Acesso desativado via transaction: ${transaction}`)
+          await supabase.from('webhook_logs').update({ 
+            result: 'success', 
+            error_message: null 
+          }).eq('id', logId)
+          return
         }
       }
       
-      return new Response(JSON.stringify({ success: true, message: 'Cancellation processed' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+      // FALLBACK: buscar por email (mais lento)
+      if (email) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .ilike('email', email)
+          .maybeSingle()
+        
+        if (profile?.id) {
+          await supabase
+            .from('user_pack_purchases')
+            .update({ is_active: false, updated_at: new Date().toISOString() })
+            .eq('user_id', profile.id)
+            .eq('platform', 'hotmart-es')
+          
+          console.log(`   └─ ✅ Acesso desativado via email: ${email}`)
+        }
+      }
+      
+      await supabase.from('webhook_logs').update({ 
+        result: 'success', 
+        error_message: null 
+      }).eq('id', logId)
+      return
     }
 
-    // Check if it's an approved purchase event
-    if (!event || !APPROVED_EVENTS.includes(event)) {
-      console.log(`\n⏭️ [${requestId}] Evento ignorado: ${event}`)
-      return new Response(JSON.stringify({ success: true, message: 'Event ignored' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-
-    // Validate required data
+    // Validar dados obrigatórios
     if (!email) {
       console.log(`\n❌ [${requestId}] Email não fornecido`)
-      return new Response(JSON.stringify({ error: 'Email is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+      await supabase.from('webhook_logs').update({ 
+        result: 'failed', 
+        error_message: 'Email não fornecido' 
+      }).eq('id', logId)
+      return
     }
 
     // Check blacklist
     if (await isEmailBlacklisted(supabase, email)) {
       console.log(`\n🚫 [${requestId}] Email na blacklist: ${email}`)
-      return new Response(JSON.stringify({ success: true, message: 'Blocked email' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+      await supabase.from('webhook_logs').update({ 
+        result: 'blocked', 
+        error_message: 'Email na blacklist' 
+      }).eq('id', logId)
+      return
     }
 
-    // Buscar mapeamento do banco de dados
+    // Buscar mapeamento
     let mapping: ProductMapping | null = null
     
     if (productId) {
       mapping = await findHotmartProductMapping(supabase, productId, requestId)
     }
     
-    // Se não encontrou no banco, usar mapeamento padrão para Upscaler Arcano
     if (!mapping) {
-      console.log(`   ├─ [${requestId}] ⚠️ Mapeamento não encontrado no banco para Product ID: ${productId}`)
-      console.log(`   ├─ [${requestId}] 🎯 Usando mapeamento padrão: Upscaler Arcano (vitalício)`)
+      console.log(`   ├─ [${requestId}] ⚠️ Usando mapeamento padrão: Upscaler Arcano (vitalício)`)
       mapping = {
         packSlug: 'upscaller-arcano',
         accessType: 'vitalicio',
@@ -492,16 +479,13 @@ Deno.serve(async (req) => {
     console.log(`\n🎯 [${requestId}] MAPEAMENTO:`)
     console.log(`   ├─ Pack Slug: ${mapping.packSlug}`)
     console.log(`   ├─ Access Type: ${mapping.accessType}`)
-    console.log(`   ├─ Has Bonus: ${mapping.hasBonusAccess}`)
-    console.log(`   ├─ Is Ferramenta IA: ${mapping.isFerramentaIA}`)
 
-    // ESTRATÉGIA ROBUSTA: Tentar criar primeiro, se falhar buscar usuário existente
+    // Criar/buscar usuário
     let authUser: any = null
     let isNewUser = false
 
     console.log(`\n👤 [${requestId}] Processando usuário: ${email}`)
 
-    // Tentar criar o usuário
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email,
       password: email,
@@ -510,7 +494,6 @@ Deno.serve(async (req) => {
     })
 
     if (createError) {
-      // Verificar se é erro de email já existente
       const isEmailExists = createError.code === 'email_exists' || 
                             createError.message?.includes('already been registered') ||
                             createError.message?.includes('already exists')
@@ -518,7 +501,7 @@ Deno.serve(async (req) => {
       if (isEmailExists) {
         console.log(`   ├─ ⚠️ Email já existe, buscando usuário...`)
         
-        // Método 1: Buscar via profiles (mais rápido)
+        // Buscar via profiles (indexado agora!)
         const { data: profile } = await supabase
           .from('profiles')
           .select('id')
@@ -531,7 +514,7 @@ Deno.serve(async (req) => {
           authUser = user
         }
         
-        // Método 2: Fallback - buscar paginado em auth.users
+        // Fallback para listUsers paginado
         if (!authUser) {
           console.log(`   ├─ 🔍 Buscando em auth.users (paginado)...`)
           let page = 1
@@ -545,7 +528,7 @@ Deno.serve(async (req) => {
             
             if (!usersPage?.users?.length) break
             
-            authUser = usersPage.users.find(u => u.email?.toLowerCase() === email)
+            authUser = usersPage.users.find((u: any) => u.email?.toLowerCase() === email)
             if (authUser) {
               console.log(`   ├─ ✅ Encontrado na página ${page}: ${authUser.id}`)
             }
@@ -555,20 +538,19 @@ Deno.serve(async (req) => {
         
         if (!authUser) {
           console.error(`   └─ ❌ Usuário não encontrado após busca exaustiva`)
-          return new Response(JSON.stringify({ error: 'User exists but could not be found' }), {
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
+          await supabase.from('webhook_logs').update({ 
+            result: 'failed', 
+            error_message: 'Usuário existe mas não foi encontrado' 
+          }).eq('id', logId)
+          return
         }
-        
-        console.log(`   └─ ✅ Usuário existente encontrado: ${authUser.id}`)
       } else {
-        // Outro tipo de erro
         console.error(`   └─ ❌ Erro ao criar usuário:`, createError)
-        return new Response(JSON.stringify({ error: 'Failed to create user' }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
+        await supabase.from('webhook_logs').update({ 
+          result: 'failed', 
+          error_message: `Erro criar usuário: ${createError.message}` 
+        }).eq('id', logId)
+        return
       }
     } else {
       authUser = newUser.user
@@ -578,7 +560,7 @@ Deno.serve(async (req) => {
 
     const userId = authUser!.id
 
-    // Create/update profile with Spanish locale
+    // Create/update profile
     await supabase.from('profiles').upsert({
       id: userId,
       email,
@@ -599,7 +581,6 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (existingPack) {
-      // Update existing
       const expiresAt = calculateExpirationDate(mapping.accessType)
       
       await supabase
@@ -616,7 +597,6 @@ Deno.serve(async (req) => {
 
       console.log(`   ├─ ✅ Acesso atualizado (existente)`)
     } else {
-      // Create new pack access
       const expiresAt = calculateExpirationDate(mapping.accessType)
       
       await supabase.from('user_pack_purchases').insert({
@@ -635,42 +615,133 @@ Deno.serve(async (req) => {
       console.log(`   ├─ ✅ Novo acesso criado`)
     }
 
-    // Send welcome email when:
-    // 1. New user OR
-    // 2. New pack access (user didn't have this pack before) OR
-    // 3. Pack was reactivated (was inactive, now active)
+    // Marcar como success ANTES do email (email é "nice to have")
+    await supabase.from('webhook_logs').update({ 
+      result: 'success', 
+      error_message: null 
+    }).eq('id', logId)
+
+    // Enviar email de boas-vindas (em try/catch separado)
     const wasInactive = existingPack && !existingPack.is_active
     const shouldSendEmail = isNewUser || !existingPack || wasInactive
 
     if (shouldSendEmail) {
-      console.log(`   ├─ 📧 Enviando email de boas-vindas (isNewUser: ${isNewUser}, newAccess: ${!existingPack}, reactivated: ${wasInactive})`)
-      await sendWelcomeEmail(supabase, email, name, productName, requestId)
-    } else {
-      console.log(`   ├─ 📧 Email não enviado (usuário existente com acesso já ativo para este pack)`)
+      console.log(`   ├─ 📧 Enviando email de boas-vindas...`)
+      try {
+        await sendWelcomeEmail(supabase, email, name, productName, requestId)
+      } catch (emailError) {
+        console.log(`   ├─ ⚠️ Falha no email (acesso já liberado): ${emailError}`)
+      }
     }
 
-    console.log(`\n✅ [${requestId}] WEBHOOK PROCESSADO COM SUCESSO`)
-    console.log(`${'='.repeat(60)}\n`)
+    console.log(`\n✅ [${requestId}] PROCESSAMENTO BACKGROUND CONCLUÍDO`)
 
+  } catch (error) {
+    console.error(`\n❌ [${requestId}] ERRO NO PROCESSAMENTO:`, error)
+    await supabase.from('webhook_logs').update({ 
+      result: 'failed', 
+      error_message: error instanceof Error ? error.message : 'Erro desconhecido' 
+    }).eq('id', logId)
+  }
+}
+
+// ============================================================================
+// HANDLER PRINCIPAL - ACK RÁPIDO + BACKGROUND PROCESSING
+// ============================================================================
+Deno.serve(async (req) => {
+  const requestId = generateRequestId()
+  
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
+
+  console.log(`\n${'='.repeat(60)}`)
+  console.log(`🔔 [${requestId}] WEBHOOK HOTMART ARTES (ES) - ${new Date().toISOString()}`)
+  console.log(`${'='.repeat(60)}`)
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  try {
+    // PASSO 1: Parse do payload (rápido)
+    const payload: HotmartWebhookPayload = await req.json()
+    
+    const event = payload.event
+    const buyer = payload.data?.buyer
+    const product = payload.data?.product
+    const purchase = payload.data?.purchase
+    
+    const email = buyer?.email?.toLowerCase()?.trim()
+    const productId = product?.id?.toString()
+    const transaction = purchase?.transaction
+    const status = purchase?.status || event
+
+    console.log(`📦 [${requestId}] DADOS RÁPIDOS:`)
+    console.log(`   ├─ Evento: ${event}`)
+    console.log(`   ├─ Email: ${email || 'N/A'}`)
+    console.log(`   ├─ Product ID: ${productId}`)
+    console.log(`   └─ Transaction: ${transaction}`)
+
+    // Ignorar eventos não relevantes ANTES de gravar log
+    if (event && !APPROVED_EVENTS.includes(event) && !CANCEL_EVENTS.includes(event)) {
+      console.log(`\n⏭️ [${requestId}] Evento ignorado: ${event}`)
+      return new Response(JSON.stringify({ success: true, message: 'Event ignored' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // PASSO 2: Gravar em webhook_logs (durável - prova de recebimento)
+    const { data: logEntry, error: logError } = await supabase
+      .from('webhook_logs')
+      .insert({
+        payload,
+        platform: 'hotmart-es',
+        email: email || null,
+        product_id: productId ? parseInt(productId) : null,
+        status: event,
+        result: 'received'
+      })
+      .select('id')
+      .single()
+
+    if (logError || !logEntry) {
+      // Se falhar gravação, retornar 500 para Hotmart tentar novamente
+      console.error(`❌ [${requestId}] Falha ao gravar webhook_logs:`, logError)
+      return new Response(JSON.stringify({ error: 'Failed to log webhook' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const logId = logEntry.id
+    console.log(`   ✅ Log criado: ${logId}`)
+
+    // PASSO 3: Agendar processamento em background
+    // @ts-ignore - EdgeRuntime é disponível no Deno Deploy
+    EdgeRuntime.waitUntil(processHotmartWebhook(supabase, payload, logId, requestId))
+
+    // PASSO 4: Responder 200 IMEDIATAMENTE (< 300ms)
+    console.log(`\n🚀 [${requestId}] ACK RÁPIDO - Processamento agendado em background`)
+    
     return new Response(JSON.stringify({ 
       success: true, 
-      message: 'Access granted',
-      userId,
-      packSlug: mapping.packSlug,
-      accessType: mapping.accessType,
-      isNewUser
+      message: 'Webhook received, processing in background',
+      logId,
+      requestId
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
   } catch (error) {
-    console.error(`\n❌ [${requestId}] ERRO:`, error)
+    console.error(`\n❌ [${requestId}] ERRO NO PARSE:`, error)
     
     return new Response(JSON.stringify({ 
-      error: 'Internal server error',
+      error: 'Invalid payload',
       message: error instanceof Error ? error.message : 'Unknown error'
     }), {
-      status: 500,
+      status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }
