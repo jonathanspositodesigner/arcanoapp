@@ -71,21 +71,14 @@ export const useServiceWorkerUpdate = () => {
       }
     };
 
-    // Listen for controller change (new SW activated) - reload immediately
-    const handleControllerChange = () => {
-      window.location.reload();
-    };
-
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleFocus);
     window.addEventListener('pageshow', handlePageShow);
-    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('pageshow', handlePageShow);
-      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
   }, []);
 };
