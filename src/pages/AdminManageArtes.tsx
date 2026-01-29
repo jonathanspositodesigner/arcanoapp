@@ -69,6 +69,7 @@ const AdminManageArtes = () => {
   const [editBonusClicks, setEditBonusClicks] = useState(0);
   const [editCanvaLink, setEditCanvaLink] = useState("");
   const [editDriveLink, setEditDriveLink] = useState("");
+  const [editMotionType, setEditMotionType] = useState<'canva' | 'after_effects' | ''>('');
   const [searchTerm, setSearchTerm] = useState("");
   const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
@@ -254,6 +255,7 @@ const AdminManageArtes = () => {
     setEditBonusClicks(arte.bonus_clicks || 0);
     setEditCanvaLink(arte.canva_link || "");
     setEditDriveLink(arte.drive_link || "");
+    setEditMotionType((arte as any).motion_type || '');
     setNewMediaFile(null);
     setNewMediaPreview("");
   };
@@ -327,7 +329,8 @@ const AdminManageArtes = () => {
         image_url: newImageUrl,
         bonus_clicks: editBonusClicks,
         canva_link: editCanvaLink || null,
-        drive_link: editDriveLink || null
+        drive_link: editDriveLink || null,
+        motion_type: isVideoUrl(editingArte.image_url) ? editMotionType || null : null
       };
 
       if (editingArte.type === 'admin' || editingArte.type === 'partner') {
@@ -664,6 +667,38 @@ const AdminManageArtes = () => {
                     <div>
                       <Label>URL do Tutorial</Label>
                       <Input value={editTutorialUrl} onChange={(e) => setEditTutorialUrl(e.target.value)} className="mt-1" placeholder="https://youtube.com/..." />
+                    </div>
+                  )}
+
+                  {isVideoUrl(editingArte.image_url) && (
+                    <div className="p-4 rounded-lg border border-border bg-secondary/50">
+                      <Label className="text-sm font-medium mb-3 flex items-center gap-2">
+                        🎬 Tipo de Motion
+                      </Label>
+                      <div className="flex gap-4 mt-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="editMotionType" 
+                            value="canva" 
+                            checked={editMotionType === 'canva'} 
+                            onChange={() => setEditMotionType('canva')}
+                            className="w-4 h-4 text-cyan-500"
+                          />
+                          <span className="text-sm">🎨 Motion Canva</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="editMotionType" 
+                            value="after_effects" 
+                            checked={editMotionType === 'after_effects'} 
+                            onChange={() => setEditMotionType('after_effects')}
+                            className="w-4 h-4 text-purple-500"
+                          />
+                          <span className="text-sm">🎬 Motion After Effects</span>
+                        </label>
+                      </div>
                     </div>
                   )}
                 </>
