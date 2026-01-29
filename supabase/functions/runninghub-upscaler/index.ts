@@ -232,15 +232,15 @@ async function handleRun(req: Request) {
       })
       .eq('id', jobId);
 
-    // Build node info list for RunningHub API
+    // Build node info list for RunningHub API (correct node IDs from documentation)
     const nodeInfoList: any[] = [
-      { nodeId: "1", fieldName: "image", fieldValue: fileName },
-      { nodeId: "165", fieldName: "value", fieldValue: detailDenoise || 0.15 },
+      { nodeId: "26", fieldName: "image", fieldValue: fileName },
+      { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
     ];
 
-    // Add prompt if provided
+    // Add prompt if provided (nodeId 128 for prompt)
     if (prompt) {
-      nodeInfoList.push({ nodeId: "prompt", fieldName: "text", fieldValue: prompt });
+      nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
     }
 
     const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;

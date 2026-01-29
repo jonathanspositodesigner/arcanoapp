@@ -175,16 +175,15 @@ async function processNextInQueue() {
 async function startRunningHubJob(job: any) {
   const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
   
+  // Correct node IDs from RunningHub documentation
   const nodeInfoList: any[] = [
-    { nodeId: "1", fieldName: "image", fieldValue: job.input_file_name },
-    { nodeId: "136:1", fieldName: "max_width", fieldValue: job.resolution || 4096 },
-    { nodeId: "136:1", fieldName: "max_height", fieldValue: job.resolution || 4096 },
-    { nodeId: "165", fieldName: "value", fieldValue: job.detail_denoise || 0.15 },
+    { nodeId: "26", fieldName: "image", fieldValue: job.input_file_name },
+    { nodeId: "25", fieldName: "value", fieldValue: job.detail_denoise || 0.15 },
   ];
 
-  // Add prompt if provided
+  // Add prompt if provided (nodeId 128 for prompt)
   if (job.prompt) {
-    nodeInfoList.push({ nodeId: "prompt", fieldName: "text", fieldValue: job.prompt });
+    nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: job.prompt });
   }
 
   const requestBody = {
