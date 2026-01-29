@@ -1,141 +1,75 @@
 
 
-## Adicionar Badge "Motion Canva" ou "Motion After Effects" para Vídeos
+## Adicionar Pack de Carnaval na Promoção 135338 (Combo Arcano)
 
-### Objetivo
-Quando o admin sobe ou edita um arquivo de vídeo, ele pode escolher se é **Motion Canva** ou **Motion After Effects**. Esse tipo será exibido como um **badge** no card da arte para o usuário na biblioteca.
+### O que vai ser feito
 
----
+A promoção **135338 (Combo Arcano)** vai passar a liberar:
+- pack-arcano-vol-1 (vitalício) ✅ já existe
+- pack-arcano-vol-2 (vitalício) ✅ já existe  
+- pack-arcano-vol-3 (vitalício) ✅ já existe
+- **pack-de-carnaval (vitalício)** 🆕 adicionar
 
-### Mudanças Necessárias
-
-#### 1) Banco de Dados - Nova coluna `motion_type`
-
-Adicionar coluna na tabela `admin_artes`:
-
-| Coluna | Tipo | Padrão | Descrição |
-|--------|------|--------|-----------|
-| `motion_type` | TEXT | NULL | `canva`, `after_effects`, ou NULL (para imagens) |
+**Não mexe em nada que a pessoa já tem** - se já comprou pack-fim-de-ano antes, continua com acesso normalmente.
 
 ---
 
-#### 2) Upload de Artes (AdminUploadArtes.tsx)
+### Implementação
 
-**Interface `MediaData`** - Adicionar campo:
-```typescript
-motionType: 'canva' | 'after_effects' | '';
-```
+#### 1) Adicionar pack-de-carnaval na promoção
 
-**UI do Modal de Upload** - Quando `isVideo = true`, mostrar:
-```
-┌─────────────────────────────────────────┐
-│  🎬 Tipo de Motion                      │
-│  ┌─────────────────────────────────┐    │
-│  │ ○ Motion Canva                  │    │
-│  │ ○ Motion After Effects          │    │
-│  └─────────────────────────────────┘    │
-└─────────────────────────────────────────┘
+Inserir na tabela `artes_promotion_items`:
+
+```sql
+INSERT INTO artes_promotion_items (promotion_id, pack_slug, access_type)
+VALUES ('722bf976-a558-4278-bc01-5e9b4906d935', 'pack-de-carnaval', 'vitalicio');
 ```
 
-**Insert no banco** - Incluir:
-```typescript
-motion_type: media.isVideo ? media.motionType || null : null
-```
+Isso faz com que toda nova compra do 135338 já libere o carnaval automaticamente (o webhook já processa os itens da promoção).
 
 ---
 
-#### 3) Edição de Artes (AdminManageArtes.tsx)
+#### 2) Correção retroativa (3 clientes dos últimos 3 dias)
 
-**Estado de edição** - Adicionar:
-```typescript
-const [editMotionType, setEditMotionType] = useState<'canva' | 'after_effects' | ''>('');
-```
+Adicionar pack-de-carnaval para quem comprou recentemente:
 
-**Carregar valor ao abrir edição**:
-```typescript
-setEditMotionType(arte.motion_type || '');
-```
-
-**UI do Modal de Edição** - Quando o arquivo é vídeo, mostrar o mesmo seletor.
-
-**Update no banco** - Incluir:
-```typescript
-motion_type: isVideoUrl(editingArte.image_url) ? editMotionType || null : null
+```sql
+INSERT INTO user_pack_purchases (user_id, pack_slug, access_type, has_bonus_access, is_active, product_name)
+VALUES 
+  ('8eed6705-24ee-4ff4-87f7-a4788495cf1f', 'pack-de-carnaval', 'vitalicio', true, true, 'Combo Arcano'),
+  ('096615aa-cde6-4ffe-bd50-552805b6f6ce', 'pack-de-carnaval', 'vitalicio', true, true, 'Combo Arcano'),
+  ('e04ea270-ba42-4eb8-a943-c7ac8bf2855f', 'pack-de-carnaval', 'vitalicio', true, true, 'Combo Arcano')
+ON CONFLICT (user_id, pack_slug) DO UPDATE SET 
+  access_type = 'vitalicio',
+  has_bonus_access = true,
+  is_active = true;
 ```
 
 ---
 
-#### 4) Exibição na Biblioteca (BibliotecaArtes.tsx)
+### O que NÃO vai ser feito
 
-**Interface `ArteItem`** - Adicionar campo:
-```typescript
-motionType?: 'canva' | 'after_effects' | null;
-```
-
-**Fetch de Artes** - Mapear o campo:
-```typescript
-motionType: (item as any).motion_type || null
-```
-
-**Função `getBadgeContent`** - Adicionar badge condicional:
-```tsx
-{arte.motionType && (
-  <Badge className={arte.motionType === 'canva' 
-    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-0 text-[10px] sm:text-xs' 
-    : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 text-[10px] sm:text-xs'
-  }>
-    {arte.motionType === 'canva' ? '🎨 Canva' : '🎬 After Effects'}
-  </Badge>
-)}
-```
+- ❌ Não remove pack-fim-de-ano de ninguém
+- ❌ Não modifica o webhook
+- ❌ Não reseta senha de ninguém
+- ❌ Não mexe em outros acessos
 
 ---
 
-#### 5) Biblioteca de Músicos (BibliotecaArtesMusicos.tsx)
+### Resultado
 
-Aplicar a mesma lógica de exibição de badge para manter consistência entre as bibliotecas.
-
----
-
-### Arquivos que serão modificados
-
-| Arquivo | Mudança |
-|---------|---------|
-| **Migração SQL** | Adicionar coluna `motion_type` na tabela `admin_artes` |
-| `src/pages/AdminUploadArtes.tsx` | Adicionar campo de seleção para vídeos no modal de upload |
-| `src/pages/AdminManageArtes.tsx` | Adicionar campo de seleção para vídeos no modal de edição |
-| `src/pages/BibliotecaArtes.tsx` | Atualizar interface, fetch e badges para exibir tipo de motion |
-| `src/pages/BibliotecaArtesMusicos.tsx` | Atualizar interface, fetch e badges para exibir tipo de motion |
+| Compra | Packs liberados |
+|--------|-----------------|
+| Novas compras do 135338 | vol-1, vol-2, vol-3, **carnaval** |
+| 3 clientes recentes | **carnaval** adicionado (demais acessos intactos) |
 
 ---
 
-### Visualização do Badge na Arte
+### Arquivos/Mudanças
 
-O usuário verá na biblioteca:
+| Tipo | Descrição |
+|------|-----------|
+| Migração SQL | INSERT do pack-de-carnaval na promoção + correção retroativa |
 
-```
-┌─────────────────────────────┐
-│      [Imagem/Vídeo]         │
-│  ┌───────────┐              │
-│  │ 🎨 Canva  │ ⭐ Premium   │
-│  └───────────┘              │
-├─────────────────────────────┤
-│ Título da Arte              │
-│ [Pack Nome]                 │
-│ [Ver Detalhes]              │
-└─────────────────────────────┘
-```
-
-- **Motion Canva**: Badge azul/ciano com emoji 🎨
-- **Motion After Effects**: Badge roxo/rosa com emoji 🎬
-- Para imagens estáticas: sem badge de motion
-
----
-
-### Resultado esperado
-
-1. Admin pode marcar tipo de motion ao subir vídeos
-2. Admin pode editar tipo de motion de vídeos existentes
-3. Usuários veem badge colorido indicando se é Canva ou After Effects
-4. Imagens estáticas não mostram badge de motion
+Nenhuma mudança de código necessária - o webhook já processa automaticamente os packs configurados na promoção.
 
