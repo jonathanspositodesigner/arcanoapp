@@ -679,14 +679,14 @@ const AdminManageArtes = () => {
                 <Label>Pack</Label>
                 <Select 
                   key={`pack-select-${editPack}-${packs.length}`}
-                  value={editPack} 
-                  onValueChange={setEditPack}
+                  value={editPack || "__none__"} 
+                  onValueChange={(value) => setEditPack(value === "__none__" ? "" : value)}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Selecione o pack" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border border-border z-50">
-                    <SelectItem value="">Nenhum pack</SelectItem>
+                    <SelectItem value="__none__">Nenhum pack</SelectItem>
                     {editPack && !packs.find(p => p.name === editPack) && (
                       <SelectItem value={editPack}>{editPack} (salvo)</SelectItem>
                     )}
