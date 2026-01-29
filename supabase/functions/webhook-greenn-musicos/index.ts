@@ -277,8 +277,11 @@ async function processGreennMusicosWebhook(supabase: any, payload: any, logId: s
         console.log(`   ├─ ✅ Assinatura CRIADA`)
       }
 
-      // Mark success BEFORE email
-      await supabase.from('webhook_logs').update({ result: 'success' }).eq('id', logId)
+      // Mark success BEFORE email + limpar payload
+      await supabase.from('webhook_logs').update({ 
+        result: 'success',
+        payload: {} // Limpar payload para sucesso
+      }).eq('id', logId)
 
       // Send email
       const planInfo = `Plano ${planType.toUpperCase()} (${billingPeriod})`
@@ -310,7 +313,11 @@ async function processGreennMusicosWebhook(supabase: any, payload: any, logId: s
         })
       }
 
-      await supabase.from('webhook_logs').update({ result: 'ignored', error_message: 'waiting_payment' }).eq('id', logId)
+      await supabase.from('webhook_logs').update({ 
+        result: 'ignored', 
+        error_message: 'waiting_payment',
+        payload: {} // Limpar payload
+      }).eq('id', logId)
       return
     }
 
@@ -391,6 +398,16 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
+
+    // Limpeza automática de logs > 30 dias (async, não bloqueia)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    Promise.resolve(
+      supabase.from('webhook_logs')
+        .delete()
+        .lt('received_at', thirtyDaysAgo)
+        .limit(100)
+    ).then(() => console.log(`   🧹 Limpeza automática executada`))
+     .catch(() => {})
 
     // Log to webhook_logs (durable)
     const { data: logEntry, error: logError } = await supabase

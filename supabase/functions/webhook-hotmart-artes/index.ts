@@ -615,10 +615,11 @@ async function processHotmartWebhook(
       console.log(`   ├─ ✅ Novo acesso criado`)
     }
 
-    // Marcar como success ANTES do email (email é "nice to have")
+    // Marcar como success ANTES do email (email é "nice to have") + limpar payload (economizar espaço)
     await supabase.from('webhook_logs').update({ 
       result: 'success', 
-      error_message: null 
+      error_message: null,
+      payload: {} // Limpar payload para sucesso (economiza espaço)
     }).eq('id', logId)
 
     // Enviar email de boas-vindas (em try/catch separado)
@@ -638,6 +639,7 @@ async function processHotmartWebhook(
 
   } catch (error) {
     console.error(`\n❌ [${requestId}] ERRO NO PROCESSAMENTO:`, error)
+    // Manter payload completo para falhas (debug)
     await supabase.from('webhook_logs').update({ 
       result: 'failed', 
       error_message: error instanceof Error ? error.message : 'Erro desconhecido' 
@@ -692,7 +694,17 @@ Deno.serve(async (req) => {
       })
     }
 
-    // PASSO 2: Gravar em webhook_logs (durável - prova de recebimento)
+    // PASSO 2: Limpeza automática de logs > 30 dias (async, não bloqueia)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    Promise.resolve(
+      supabase.from('webhook_logs')
+        .delete()
+        .lt('received_at', thirtyDaysAgo)
+        .limit(100)
+    ).then(() => console.log(`   🧹 Limpeza automática executada`))
+     .catch(() => {}) // Silenciar erros de limpeza
+
+    // PASSO 3: Gravar em webhook_logs (durável - prova de recebimento)
     const { data: logEntry, error: logError } = await supabase
       .from('webhook_logs')
       .insert({
