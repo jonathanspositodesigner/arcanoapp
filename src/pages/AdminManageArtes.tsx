@@ -85,6 +85,12 @@ const AdminManageArtes = () => {
   const [brokenIds, setBrokenIds] = useState<Set<string>>(new Set());
   const [isCheckingBroken, setIsCheckingBroken] = useState(false);
 
+  // Helper function to check if URL is a video
+  const isVideoUrl = (url: string) => {
+    const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+  };
+
   useEffect(() => {
     fetchCategories();
     fetchPacks();
@@ -385,10 +391,6 @@ const AdminManageArtes = () => {
     }
   };
 
-  const isVideoUrl = (url: string) => {
-    const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
-    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
-  };
 
   if (isLoading) {
     return (
