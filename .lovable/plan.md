@@ -1,94 +1,80 @@
 
 
-# Plano: Remover Seleção de Resolução 2K/4K do Upscaler
+# Plano: Corrigir Node IDs do RunningHub
 
-## Objetivo
+## Problema
 
-Remover as opções de seleção de resolução (2K e 4K) do upscaler, já que a documentação da API não possui esses inputs.
+Os node IDs estão errados nas edge functions, causando o erro `APIKEY_INVALID_NODE_INFO`.
+
+## Node IDs Corretos (da documentação oficial)
+
+| Parâmetro | nodeId Atual (ERRADO) | nodeId Correto |
+|-----------|----------------------|----------------|
+| Imagem | "1" | **"26"** |
+| Detail Denoise | "165" | **"25"** |
+| Prompt | "prompt" | **"128"** |
 
 ## Arquivos a Modificar
 
+### 1. `supabase/functions/runninghub-upscaler/index.ts`
+
+Atualizar o `nodeInfoList` (linha ~236):
+
+```typescript
+// DE (errado):
+const nodeInfoList: any[] = [
+  { nodeId: "1", fieldName: "image", fieldValue: fileName },
+  { nodeId: "165", fieldName: "value", fieldValue: detailDenoise || 0.15 },
+];
+
+// PARA (correto):
+const nodeInfoList: any[] = [
+  { nodeId: "26", fieldName: "image", fieldValue: fileName },
+  { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
+];
+
+// E adicionar o prompt corretamente:
+if (prompt) {
+  nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
+}
+```
+
+### 2. `supabase/functions/runninghub-webhook/index.ts`
+
+Atualizar o `nodeInfoList` na função `startRunningHubJob` (linha ~178):
+
+```typescript
+// DE (errado):
+const nodeInfoList: any[] = [
+  { nodeId: "1", fieldName: "image", fieldValue: job.input_file_name },
+  { nodeId: "136:1", fieldName: "max_width", fieldValue: job.resolution || 4096 },
+  { nodeId: "136:1", fieldName: "max_height", fieldValue: job.resolution || 4096 },
+  { nodeId: "165", fieldName: "value", fieldValue: job.detail_denoise || 0.15 },
+];
+
+// PARA (correto):
+const nodeInfoList: any[] = [
+  { nodeId: "26", fieldName: "image", fieldValue: job.input_file_name },
+  { nodeId: "25", fieldName: "value", fieldValue: job.detail_denoise || 0.15 },
+];
+
+if (job.prompt) {
+  nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: job.prompt });
+}
+```
+
+## Resumo das Mudanças
+
 | Arquivo | Mudança |
 |---------|---------|
-| `src/pages/UpscalerArcanoTool.tsx` | Remover estado, tipo e UI de resolução |
-| `supabase/functions/runninghub-upscaler/index.ts` | Remover parâmetros de resolução |
-| `src/locales/pt/tools.json` | Remover string de tradução (se existir) |
+| `runninghub-upscaler/index.ts` | Corrigir nodeId: 1→26, 165→25, adicionar prompt com 128 |
+| `runninghub-webhook/index.ts` | Corrigir nodeId: 1→26, 165→25, remover resolution, adicionar prompt com 128 |
 
-## Detalhes Técnicos
+## Resultado Esperado
 
-### 1. UpscalerArcanoTool.tsx
-
-**Remover:**
-
-1. Linha 16: `type Resolution = 2048 | 4096;`
-2. Linha 34: `const [resolution, setResolution] = useState<Resolution>(4096);`
-3. Linhas 774-800: Card inteiro de seleção de resolução (2K/4K)
-4. Remover `resolution` das chamadas para:
-   - Inserção no banco (linha 294)
-   - Chamada ao edge function (linha 347)
-
-**Antes:**
-```typescript
-type Resolution = 2048 | 4096;
-const [resolution, setResolution] = useState<Resolution>(4096);
-```
-
-**Depois:**
-```typescript
-// Removido completamente
-```
-
-**UI a remover (linhas 774-800):**
-```tsx
-{/* Resolution */}
-<Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-  <div className="flex items-center gap-2 mb-3">
-    <ZoomIn className="w-4 h-4 text-purple-400" />
-    <span className="font-medium">{t('upscalerTool.controls.finalResolution')}</span>
-  </div>
-  <div className="flex gap-2">
-    <Button ... onClick={() => setResolution(2048)}>2K (2048px)</Button>
-    <Button ... onClick={() => setResolution(4096)}>4K (4096px)</Button>
-  </div>
-</Card>
-```
-
-### 2. Edge Function (runninghub-upscaler/index.ts)
-
-**Remover:**
-
-1. Linha 156: `resolution` do destructuring
-2. Linhas 239-240: `max_width` e `max_height` do `nodeInfoList`
-
-**Antes:**
-```typescript
-const { jobId, fileName, resolution, detailDenoise, prompt } = await req.json();
-
-const nodeInfoList: any[] = [
-  { nodeId: "1", fieldName: "image", fieldValue: fileName },
-  { nodeId: "136:1", fieldName: "max_width", fieldValue: resolution || 4096 },
-  { nodeId: "136:1", fieldName: "max_height", fieldValue: resolution || 4096 },
-  { nodeId: "165", fieldName: "value", fieldValue: detailDenoise || 0.15 },
-];
-```
-
-**Depois:**
-```typescript
-const { jobId, fileName, detailDenoise, prompt } = await req.json();
-
-const nodeInfoList: any[] = [
-  { nodeId: "1", fieldName: "image", fieldValue: fileName },
-  { nodeId: "165", fieldName: "value", fieldValue: detailDenoise || 0.15 },
-];
-```
-
-### 3. Banco de Dados
-
-A coluna `resolution` na tabela `upscaler_jobs` pode ser mantida por enquanto (não causa problemas), ou podemos criar uma migration para removê-la depois se desejar.
-
-## Impacto
-
-- UI mais simples e alinhada com a documentação da API
-- Menos parâmetros para gerenciar
-- A resolução final será determinada automaticamente pelo workflow do RunningHub
+Após essas correções:
+- Upload da imagem vai funcionar (nodeId 26)
+- Slider de Detail Denoise vai funcionar (nodeId 25)
+- Prompt customizado vai funcionar (nodeId 128)
+- Erro `APIKEY_INVALID_NODE_INFO` vai sumir
 
