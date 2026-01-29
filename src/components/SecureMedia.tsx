@@ -125,25 +125,36 @@ export const SecureVideo = memo(({
     setRetryCount(0);
   }, [src]);
 
-  // Check if video is already loaded from cache
+  // Check if video is already loaded from cache or has network error
   useEffect(() => {
-    if (videoRef.current && !videoLoaded) {
-      if (videoRef.current.readyState >= 1) {
+    if (videoRef.current && !videoLoaded && !error) {
+      const video = videoRef.current;
+      // readyState >= 2 means has current data
+      if (video.readyState >= 2) {
         setVideoLoaded(true);
+      } else if (video.readyState === 0 && video.networkState === 3) {
+        // Network error - trigger retry
+        if (retryCount < 3) {
+          const delay = 1000 * (retryCount + 1);
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+          }, delay);
+        }
       }
     }
-  }, [videoLoaded]);
+  }, [videoLoaded, error, retryCount]);
 
   const handleVideoLoad = () => {
     setVideoLoaded(true);
   };
 
   const handleVideoError = () => {
-    // Only retry once to avoid long waits for missing files
-    if (retryCount < 1) {
+    // Retry up to 3 times with increasing delays for videos
+    if (retryCount < 3) {
+      const delay = 1000 * (retryCount + 1); // 1s, 2s, 3s
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
-      }, 500);
+      }, delay);
     } else {
       setError(true);
     }

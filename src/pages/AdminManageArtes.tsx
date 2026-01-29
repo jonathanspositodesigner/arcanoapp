@@ -513,7 +513,7 @@ const AdminManageArtes = () => {
                       <span className="text-sm text-destructive font-medium">Imagem não encontrada</span>
                     </div>
                   ) : isVideo ? (
-                    <SecureVideo src={arte.image_url} className="w-full h-48 object-cover" isPremium={arte.is_premium || false} autoPlay muted loop />
+                    <SecureVideo src={arte.image_url} className="w-full h-48 object-cover" isPremium={arte.is_premium || false} autoPlay muted loop preload="auto" />
                   ) : (
                     <SecureImage src={arte.image_url} alt={arte.title} className="w-full h-48 object-cover" isPremium={arte.is_premium || false} />
                   )}
