@@ -446,7 +446,7 @@ const BibliotecaArtesMusicos = () => {
                 )}
                 <div className="flex gap-2">
                   {selectedArte.canva_link && (<Button className="flex-1 bg-[#00C4CC] hover:bg-[#00b3b8] text-white" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.canva_link!, '_blank'); } }}>{t('musicos.modal.openInCanva')}</Button>)}
-                  {selectedArte.drive_link && (<Button className="flex-1 bg-[#31A8FF] hover:bg-[#2997e6] text-white" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.drive_link!, '_blank'); } }}>{t('musicos.modal.downloadPsd')}</Button>)}
+                  {selectedArte.drive_link && (<Button className="flex-1 bg-[#31A8FF] hover:bg-[#2997e6] text-white" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.drive_link!, '_blank'); } }}>{selectedArte.motion_type === 'after_effects' ? 'Arquivo PSD e After' : t('musicos.modal.downloadPsd')}</Button>)}
                 </div>
                 {!selectedArte.canva_link && !selectedArte.drive_link && (<p className="text-center text-gray-400 text-sm">{t('musicos.modal.noEditLinks')}</p>)}
               </div>

@@ -1465,7 +1465,9 @@ const BibliotecaArtes = () => {
                   window.open(selectedArte.driveLink, '_blank');
                 }} className="w-full bg-[#31A8FF] hover:bg-[#2196F3] text-white">
                         <Download className="h-4 w-4 mr-2" />
-                        {t('buttons.downloadPsd')}
+                        {selectedArte.motionType === 'after_effects' 
+                          ? 'Arquivo PSD e After' 
+                          : t('buttons.downloadPsd')}
                       </Button>}
                     {selectedArte.downloadUrl && <Button onClick={() => handleDownload(selectedArte)} className="w-full" variant="outline">
                         <Download className="h-4 w-4 mr-2" />

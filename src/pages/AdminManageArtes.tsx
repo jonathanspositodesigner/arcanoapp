@@ -74,6 +74,7 @@ const AdminManageArtes = () => {
   const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<ArteType | 'all'>('all');
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<'all' | 'image' | 'video'>('all');
   const [sortBy, setSortBy] = useState<SortOption>('date');
   const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
   const [categories, setCategories] = useState<Category[]>([]);
@@ -234,7 +235,11 @@ const AdminManageArtes = () => {
       const matchesSearch = a.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = typeFilter === 'all' || a.type === typeFilter;
       const matchesBroken = !brokenFilter || brokenIds.has(a.id);
-      return matchesSearch && matchesType && matchesBroken;
+      const isVideo = isVideoUrl(a.image_url);
+      const matchesMediaType = mediaTypeFilter === 'all' || 
+        (mediaTypeFilter === 'video' && isVideo) || 
+        (mediaTypeFilter === 'image' && !isVideo);
+      return matchesSearch && matchesType && matchesBroken && matchesMediaType;
     })
     .sort((a, b) => {
       if (sortBy === 'downloads') {
@@ -438,6 +443,29 @@ const AdminManageArtes = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-4">
+            <span className="text-sm text-muted-foreground self-center mr-2">Tipo de mídia:</span>
+            <Button variant={mediaTypeFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setMediaTypeFilter('all')}>
+              Todos
+            </Button>
+            <Button 
+              variant={mediaTypeFilter === 'image' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setMediaTypeFilter('image')}
+              className={mediaTypeFilter === 'image' ? 'bg-blue-500 hover:bg-blue-600' : ''}
+            >
+              🖼️ Imagens
+            </Button>
+            <Button 
+              variant={mediaTypeFilter === 'video' ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setMediaTypeFilter('video')}
+              className={mediaTypeFilter === 'video' ? 'bg-purple-500 hover:bg-purple-600' : ''}
+            >
+              🎬 Vídeos
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-4">
             <span className="text-sm text-muted-foreground self-center mr-2">Ordenar por:</span>
             <Button variant={sortBy === 'date' ? 'default' : 'outline'} size="sm" onClick={() => setSortBy('date')}
               className={sortBy === 'date' ? 'bg-primary' : ''}>
@@ -626,8 +654,11 @@ const AdminManageArtes = () => {
                     setEditCategory(value);
                   }
                 }}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
                   <SelectContent className="bg-background border border-border z-50">
+                    {editCategory && !categories.find(c => c.name === editCategory) && (
+                      <SelectItem value={editCategory}>{editCategory}</SelectItem>
+                    )}
                     {categories.map(cat => (
                       <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                     ))}
@@ -641,6 +672,9 @@ const AdminManageArtes = () => {
                 <Select value={editPack} onValueChange={setEditPack}>
                   <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione o pack" /></SelectTrigger>
                   <SelectContent className="bg-background border border-border z-50">
+                    {editPack && !packs.find(p => p.name === editPack) && (
+                      <SelectItem value={editPack}>{editPack}</SelectItem>
+                    )}
                     {packs.map(pack => (
                       <SelectItem key={pack.id} value={pack.name}>{pack.name}</SelectItem>
                     ))}
