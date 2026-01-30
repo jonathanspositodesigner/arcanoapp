@@ -993,11 +993,11 @@ const UpscalerArcanoTool: React.FC = () => {
                   type="single" 
                   value={promptCategory} 
                   onValueChange={(value) => value && setPromptCategory(value as PromptCategory)}
-                  className="flex flex-wrap gap-2"
+                  className="grid grid-cols-5 gap-1 sm:flex sm:flex-wrap sm:gap-2"
                 >
                   <ToggleGroupItem 
                     value="pessoas" 
-                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
                       promptCategory === 'pessoas' 
                         ? 'bg-purple-600 text-white border-2 border-purple-400' 
                         : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
@@ -1007,7 +1007,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   </ToggleGroupItem>
                   <ToggleGroupItem 
                     value="comida" 
-                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
                       promptCategory === 'comida' 
                         ? 'bg-purple-600 text-white border-2 border-purple-400' 
                         : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
@@ -1017,17 +1017,17 @@ const UpscalerArcanoTool: React.FC = () => {
                   </ToggleGroupItem>
                   <ToggleGroupItem 
                     value="fotoAntiga" 
-                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
                       promptCategory === 'fotoAntiga' 
                         ? 'bg-purple-600 text-white border-2 border-purple-400' 
                         : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                     }`}
                   >
-                    Foto Antiga
+                    Antiga
                   </ToggleGroupItem>
                   <ToggleGroupItem 
                     value="logo" 
-                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
                       promptCategory === 'logo' 
                         ? 'bg-purple-600 text-white border-2 border-purple-400' 
                         : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
@@ -1037,13 +1037,13 @@ const UpscalerArcanoTool: React.FC = () => {
                   </ToggleGroupItem>
                   <ToggleGroupItem 
                     value="render3d" 
-                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
                       promptCategory === 'render3d' 
                         ? 'bg-purple-600 text-white border-2 border-purple-400' 
                         : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                     }`}
                   >
-                    Render 3D
+                    3D
                   </ToggleGroupItem>
                 </ToggleGroup>
               </Card>
