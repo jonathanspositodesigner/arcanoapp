@@ -24,7 +24,16 @@ interface ErrorDetails {
   details?: any;
 }
 
-const DEFAULT_PROMPT = "high quality realistic photography with extremely detailed skin texture and pores visible, realistic lighting, detailed eyes, professional photo";
+// Prompt categories for image types
+const PROMPT_CATEGORIES = {
+  pessoas: "Enhance the photo while maintaining 100% of the original identity and lighting. Increase hyper-realism: natural and realistic skin texture, visible micro-pores, subtle microvilli/peach fuzz, hairs corrected strand by strand, defined eyebrows with natural hairs, sharper eyes with realistic reflections, defined eyelashes without exaggeration, lips with natural texture and lines, noise reduction preserving fine details, high yet clean sharpness, balanced contrast and skin tones, PBR detail enhancement (skin with subtle subsurface scattering), realistic depth of field and 4K/8K photographic finish.",
+  comida: "Realistic food photography: boost sharpness and micro-textures, enhance ingredient detail, natural highlights, true-to-life appetizing colors, soft studio lighting, clean professional finish.",
+  fotoAntiga: "Realistic photo restoration: remove scratches/tears/stains, reduce blur, recover sharpness and fine details, fix faded colors, balanced contrast, preserve original texture and identity, natural look.",
+  logo: "Preserve exact colors, proportions, typography, spacing, outlines, and alignment. Restore clean, sharp edges; remove jaggies/blur/artifacts and noise while keeping the same visual identity.",
+  render3d: "Premium 3D detailing: sharpen edges and emboss depth, add fine surface micro-textures (metal/plastic), realistic reflections and highlights, clean shadows, consistent depth, high-end render finish."
+} as const;
+
+type PromptCategory = keyof typeof PROMPT_CATEGORIES;
 
 const UpscalerArcanoTool: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +45,8 @@ const UpscalerArcanoTool: React.FC = () => {
   const [detailDenoise, setDetailDenoise] = useState(0.15);
   const [resolution, setResolution] = useState<'2k' | '4k'>('2k');
   const [useCustomPrompt, setUseCustomPrompt] = useState(false);
-  const [customPrompt, setCustomPrompt] = useState(DEFAULT_PROMPT);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [promptCategory, setPromptCategory] = useState<PromptCategory>('pessoas');
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [inputFileName, setInputFileName] = useState<string>('');
   const [outputImage, setOutputImage] = useState<string | null>(null);
@@ -94,7 +104,20 @@ const UpscalerArcanoTool: React.FC = () => {
     };
   }, []);
 
-  // Warning before closing page during processing
+  // Reset promptCategory when custom prompt is disabled
+  useEffect(() => {
+    if (!useCustomPrompt) {
+      setPromptCategory('pessoas');
+    }
+  }, [useCustomPrompt]);
+
+  // Get the final prompt to send
+  const getFinalPrompt = (): string => {
+    if (useCustomPrompt) {
+      return customPrompt;
+    }
+    return PROMPT_CATEGORIES[promptCategory];
+  };
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (status === 'processing' || status === 'uploading' || isWaitingInQueue) {
@@ -309,7 +332,7 @@ const UpscalerArcanoTool: React.FC = () => {
           session_id: sessionIdRef.current,
           status: 'queued',
           detail_denoise: detailDenoise,
-          prompt: useCustomPrompt ? customPrompt : null
+          prompt: getFinalPrompt()
         })
         .select()
         .single();
@@ -361,7 +384,7 @@ const UpscalerArcanoTool: React.FC = () => {
           fileName,
           detailDenoise,
           resolution: resolution === '4k' ? 4096 : 2048,
-          prompt: useCustomPrompt ? customPrompt : null,
+          prompt: getFinalPrompt(),
           version: version,
         },
       });
@@ -959,7 +982,74 @@ const UpscalerArcanoTool: React.FC = () => {
               </ToggleGroup>
             </Card>
 
-            {/* Custom Prompt */}
+            {/* Image Type Category Buttons - only show when custom prompt is OFF */}
+            {!useCustomPrompt && (
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <MessageSquare className="w-4 h-4 text-pink-400" />
+                  <span className="font-medium text-white">Tipo de Imagem</span>
+                </div>
+                <ToggleGroup 
+                  type="single" 
+                  value={promptCategory} 
+                  onValueChange={(value) => value && setPromptCategory(value as PromptCategory)}
+                  className="flex flex-wrap gap-2"
+                >
+                  <ToggleGroupItem 
+                    value="pessoas" 
+                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                      promptCategory === 'pessoas' 
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    Pessoas
+                  </ToggleGroupItem>
+                  <ToggleGroupItem 
+                    value="comida" 
+                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                      promptCategory === 'comida' 
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    Comida
+                  </ToggleGroupItem>
+                  <ToggleGroupItem 
+                    value="fotoAntiga" 
+                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                      promptCategory === 'fotoAntiga' 
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    Foto Antiga
+                  </ToggleGroupItem>
+                  <ToggleGroupItem 
+                    value="logo" 
+                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                      promptCategory === 'logo' 
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    Logo
+                  </ToggleGroupItem>
+                  <ToggleGroupItem 
+                    value="render3d" 
+                    className={`px-3 py-2 text-sm rounded-lg transition-all ${
+                      promptCategory === 'render3d' 
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    Render 3D
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </Card>
+            )}
+
+            {/* Custom Prompt Toggle */}
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
