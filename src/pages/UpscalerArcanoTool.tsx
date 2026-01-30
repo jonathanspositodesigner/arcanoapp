@@ -32,7 +32,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
 
   // State
-  const [version, setVersion] = useState<'standard' | 'pro'>('pro');
+  const [version, setVersion] = useState<'standard' | 'pro'>('standard');
   const [detailDenoise, setDetailDenoise] = useState(0.15);
   const [resolution, setResolution] = useState<'2k' | '4k'>('2k');
   const [useCustomPrompt, setUseCustomPrompt] = useState(false);
@@ -553,7 +553,11 @@ const UpscalerArcanoTool: React.FC = () => {
                 <TooltipTrigger asChild>
                   <ToggleGroupItem 
                     value="standard" 
-                    className="w-full py-3 px-4 text-sm sm:text-base rounded-lg border-2 border-transparent text-purple-300 transition-all font-medium hover:!bg-purple-500/10 hover:!text-purple-200 data-[state=on]:!bg-purple-600/80 data-[state=on]:!text-white data-[state=on]:!shadow-lg data-[state=on]:!border-purple-200 data-[state=on]:!ring-2 data-[state=on]:!ring-purple-200/70"
+                    className={`w-full py-3 px-4 text-sm sm:text-base rounded-lg transition-all font-medium ${
+                      version === 'standard' 
+                        ? 'bg-purple-600/80 text-white border-2 border-cyan-400 ring-2 ring-cyan-400/50 shadow-lg shadow-cyan-500/20' 
+                        : 'border-2 border-transparent text-purple-300 hover:bg-purple-500/10 hover:text-purple-200'
+                    }`}
                   >
                     Upscaler Arcano
                   </ToggleGroupItem>
@@ -569,7 +573,11 @@ const UpscalerArcanoTool: React.FC = () => {
                 <TooltipTrigger asChild>
                   <ToggleGroupItem 
                     value="pro" 
-                    className="w-full py-3 px-4 text-sm sm:text-base rounded-lg border-2 border-transparent text-purple-300 transition-all font-medium flex items-center justify-center gap-2 hover:!bg-purple-500/10 hover:!text-purple-200 data-[state=on]:!bg-gradient-to-r data-[state=on]:!from-blue-600 data-[state=on]:!to-purple-600 data-[state=on]:!text-white data-[state=on]:!shadow-lg data-[state=on]:!border-purple-200 data-[state=on]:!ring-2 data-[state=on]:!ring-purple-200/70"
+                    className={`w-full py-3 px-4 text-sm sm:text-base rounded-lg transition-all font-medium flex items-center justify-center gap-2 ${
+                      version === 'pro' 
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white border-2 border-cyan-400 ring-2 ring-cyan-400/50 shadow-lg shadow-cyan-500/20' 
+                        : 'border-2 border-transparent text-purple-300 hover:bg-purple-500/10 hover:text-purple-200'
+                    }`}
                   >
                     Upscaler Arcano
                     <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30">
