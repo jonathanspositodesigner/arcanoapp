@@ -61,23 +61,23 @@ const ChangePassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 shadow-hover">
+    <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
+      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Lock className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">
+            <Lock className="h-8 w-8 text-purple-400" />
+            <h1 className="text-2xl font-bold text-white">
               {t('createNewPassword')}
             </h1>
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-purple-300">
             {t('createNewPasswordDescription')}
           </p>
         </div>
 
         <form onSubmit={handleChangePassword} className="space-y-6">
           <div>
-            <Label htmlFor="newPassword">{t('newPassword')}</Label>
+            <Label htmlFor="newPassword" className="text-purple-200">{t('newPassword')}</Label>
             <div className="relative mt-2">
               <Input
                 id="newPassword"
@@ -87,11 +87,12 @@ const ChangePassword = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
+                className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -99,7 +100,7 @@ const ChangePassword = () => {
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword">{t('confirmNewPassword')}</Label>
+            <Label htmlFor="confirmPassword" className="text-purple-200">{t('confirmNewPassword')}</Label>
             <div className="relative mt-2">
               <Input
                 id="confirmPassword"
@@ -109,11 +110,12 @@ const ChangePassword = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
+                className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -123,7 +125,7 @@ const ChangePassword = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
           >
             {isLoading ? t('saving') : t('saveNewPassword')}
           </Button>

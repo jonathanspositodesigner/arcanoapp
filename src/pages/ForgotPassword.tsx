@@ -38,19 +38,19 @@ const ForgotPassword = () => {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 shadow-hover text-center">
+      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20 text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+          <h1 className="text-2xl font-bold text-white mb-4">
             {t('emailSent.title')}
           </h1>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-purple-300 mb-6">
             {t('emailSent.checkInboxInstructions')}
           </p>
           <Button
             onClick={() => navigate("/login")}
             variant="outline"
-            className="w-full"
+            className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('emailSent.backToLogin')}
@@ -61,12 +61,12 @@ const ForgotPassword = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 shadow-hover">
+    <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
+      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20">
         <Button
           variant="ghost"
           onClick={() => navigate("/login")}
-          className="mb-6"
+          className="mb-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}
@@ -74,26 +74,26 @@ const ForgotPassword = () => {
 
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Mail className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">
+            <Mail className="h-8 w-8 text-purple-400" />
+            <h1 className="text-2xl font-bold text-white">
               {t('recoverPassword')}
             </h1>
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-purple-300">
             {t('recoverPasswordDescription')}
           </p>
         </div>
 
         <form onSubmit={handleResetPassword} className="space-y-6">
           <div>
-            <Label htmlFor="email">{t('email')}</Label>
+            <Label htmlFor="email" className="text-purple-200">{t('email')}</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu-email@exemplo.com"
-              className="mt-2"
+              className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
               required
             />
           </div>
@@ -101,7 +101,7 @@ const ForgotPassword = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
           >
             {isLoading ? t('sending') : t('sendRecoveryLink')}
           </Button>

@@ -221,55 +221,55 @@ const UserLogin = () => {
   const displayEmail = email.trim() || "seuemail@exemplo.com";
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
       {/* First Access Modal */}
       <Dialog open={showFirstAccessModal} onOpenChange={setShowFirstAccessModal}>
-        <DialogContent className="max-w-md bg-gradient-to-br from-amber-50 to-orange-50 dark:from-[#1a1a2e] dark:to-[#0f0f1a] border-2 border-amber-500/50 p-0 overflow-hidden">
-          <div className="bg-amber-500/20 p-6 text-center border-b border-amber-500/30">
-            <div className="w-20 h-20 mx-auto bg-amber-500/30 rounded-full flex items-center justify-center mb-4 animate-pulse">
-              <KeyRound className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+        <DialogContent className="max-w-md bg-[#1A0A2E] border-purple-500/20 p-0 overflow-hidden">
+          <div className="bg-purple-500/20 p-6 text-center border-b border-purple-500/30">
+            <div className="w-20 h-20 mx-auto bg-purple-500/30 rounded-full flex items-center justify-center mb-4 animate-pulse">
+              <KeyRound className="w-10 h-10 text-purple-400" />
             </div>
-            <h2 className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+            <h2 className="text-2xl font-bold text-purple-400">
               {t('firstAccessModal.title')}
             </h2>
           </div>
           
           <div className="p-6 space-y-4">
-            <p className="text-foreground/90 text-center text-lg">
+            <p className="text-purple-200 text-center text-lg">
               {t('firstAccessModal.explanation')}
             </p>
             
-            <div className="bg-background rounded-xl p-5 border-2 border-amber-500/40 space-y-3">
+            <div className="bg-[#0D0221] rounded-xl p-5 border-2 border-purple-500/40 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">{t('firstAccessModal.emailLabel')}</p>
-                  <p className="font-mono text-amber-600 dark:text-amber-300 text-sm break-all">{displayEmail}</p>
+                  <p className="text-xs text-purple-400">{t('firstAccessModal.emailLabel')}</p>
+                  <p className="font-mono text-purple-300 text-sm break-all">{displayEmail}</p>
                 </div>
               </div>
               
-              <div className="h-px bg-amber-500/30" />
+              <div className="h-px bg-purple-500/30" />
               
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">{t('firstAccessModal.passwordLabel')}</p>
-                  <p className="font-mono text-amber-600 dark:text-amber-300 text-sm break-all">{displayEmail}</p>
+                  <p className="text-xs text-purple-400">{t('firstAccessModal.passwordLabel')}</p>
+                  <p className="font-mono text-purple-300 text-sm break-all">{displayEmail}</p>
                 </div>
               </div>
             </div>
             
-            <p className="text-muted-foreground text-center text-sm">
+            <p className="text-purple-400 text-center text-sm">
               {t('firstAccessModal.sameEmailTip')}
             </p>
             
             <Button
               onClick={() => setShowFirstAccessModal(false)}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-6 text-lg"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-6 text-lg"
             >
               {t('firstAccessModal.understood')}
             </Button>
@@ -279,77 +279,77 @@ const UserLogin = () => {
 
       {/* Signup Modal */}
       <Dialog open={showSignupModal} onOpenChange={setShowSignupModal}>
-        <DialogContent className="max-w-md bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-[#1a1a2e] dark:to-[#0f0f1a] border-2 border-emerald-500/50 p-0 overflow-hidden">
-          <div className="bg-emerald-500/20 p-6 text-center border-b border-emerald-500/30">
-            <div className="w-20 h-20 mx-auto bg-emerald-500/30 rounded-full flex items-center justify-center mb-4">
-              <UserPlus className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+        <DialogContent className="max-w-md bg-[#1A0A2E] border-purple-500/20 p-0 overflow-hidden">
+          <div className="bg-green-500/20 p-6 text-center border-b border-green-500/30">
+            <div className="w-20 h-20 mx-auto bg-green-500/30 rounded-full flex items-center justify-center mb-4">
+              <UserPlus className="w-10 h-10 text-green-400" />
             </div>
-            <h2 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            <h2 className="text-2xl font-bold text-green-400">
               {t('signupModal.title')}
             </h2>
-            <p className="text-foreground/70 text-sm mt-2">
+            <p className="text-purple-300 text-sm mt-2">
               {t('signupModal.subtitle')}
             </p>
           </div>
           
           <form onSubmit={handleSignup} className="p-6 space-y-4">
             <div>
-              <Label className="text-foreground/80">{t('email')}</Label>
+              <Label className="text-purple-200">{t('email')}</Label>
               <Input
                 type="email"
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
                 placeholder={t('signupModal.emailPlaceholder')}
-                className="mt-1"
+                className="mt-1 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
                 required
               />
             </div>
             
             <div>
-              <Label className="text-foreground/80">{t('signupModal.nameOptional')}</Label>
+              <Label className="text-purple-200">{t('signupModal.nameOptional')}</Label>
               <Input
                 type="text"
                 value={signupName}
                 onChange={(e) => setSignupName(e.target.value)}
                 placeholder={t('signupModal.namePlaceholder')}
-                className="mt-1"
+                className="mt-1 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
               />
             </div>
             
             <div className="relative">
-              <Label className="text-foreground/80">{t('password')}</Label>
+              <Label className="text-purple-200">{t('password')}</Label>
               <Input
                 type={showSignupPassword ? "text" : "password"}
                 value={signupPassword}
                 onChange={(e) => setSignupPassword(e.target.value)}
                 placeholder={t('signupModal.minCharacters')}
-                className="mt-1 pr-10"
+                className="mt-1 pr-10 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowSignupPassword(!showSignupPassword)}
-                className="absolute right-3 top-[calc(50%+4px)] text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-[calc(50%+4px)] text-purple-400 hover:text-white"
               >
                 {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             
             <div>
-              <Label className="text-foreground/80">{t('confirmPassword')}</Label>
+              <Label className="text-purple-200">{t('confirmPassword')}</Label>
               <Input
                 type="password"
                 value={signupConfirmPassword}
                 onChange={(e) => setSignupConfirmPassword(e.target.value)}
                 placeholder={t('signupModal.confirmPasswordPlaceholder')}
-                className="mt-1"
+                className="mt-1 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
                 required
               />
             </div>
             
-            <Alert className="bg-amber-500/10 border-amber-500/30">
-              <AlertCircle className="h-4 w-4 text-amber-500" />
-              <AlertDescription className="text-amber-600 dark:text-amber-200 text-xs">
+            <Alert className="bg-yellow-500/10 border-yellow-500/30">
+              <AlertCircle className="h-4 w-4 text-yellow-500" />
+              <AlertDescription className="text-yellow-400 text-xs">
                 {t('signupModal.afterSignupWarning')}
               </AlertDescription>
             </Alert>
@@ -357,7 +357,7 @@ const UserLogin = () => {
             <Button
               type="submit"
               disabled={isSigningUp}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-6 text-lg"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-6 text-lg"
             >
               {isSigningUp ? t('creatingAccount') : t('signupModal.createMyAccount')}
             </Button>
@@ -366,7 +366,7 @@ const UserLogin = () => {
               type="button"
               variant="ghost"
               onClick={() => setShowSignupModal(false)}
-              className="w-full text-muted-foreground hover:text-foreground"
+              className="w-full text-purple-400 hover:text-white hover:bg-purple-500/20"
             >
               {t('signupModal.backToLogin')}
             </Button>
@@ -374,11 +374,11 @@ const UserLogin = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="w-full max-w-md p-8 shadow-hover">
+      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6"
+          className="mb-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}
@@ -387,11 +387,11 @@ const UserLogin = () => {
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Star className="h-8 w-8 text-yellow-500" fill="currentColor" />
-            <h1 className="text-3xl font-bold text-foreground">
+            <h1 className="text-3xl font-bold text-white">
               {t('premiumArea')}
             </h1>
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-purple-300">
             {t('premiumAreaDescription')}
           </p>
         </div>
@@ -399,34 +399,34 @@ const UserLogin = () => {
         {/* First access notice */}
         <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
           <Info className="h-4 w-4 text-yellow-500" />
-          <AlertDescription className="text-sm text-yellow-600 dark:text-yellow-400">
+          <AlertDescription className="text-sm text-yellow-400">
             <strong>{t('firstAccess.title')}?</strong> {t('loginCard.firstAccessHint')}
           </AlertDescription>
         </Alert>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <Label htmlFor="email">{t('email')}</Label>
+            <Label htmlFor="email" className="text-purple-200">{t('email')}</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu-email@exemplo.com"
-              className="mt-2"
+              className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="password">{t('password')}</Label>
+            <Label htmlFor="password" className="text-purple-200">{t('password')}</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="mt-2"
+              className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
               required
             />
           </div>
@@ -434,7 +434,7 @@ const UserLogin = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
           >
             {isLoading ? t('signingIn') : t('login')}
           </Button>
@@ -442,22 +442,22 @@ const UserLogin = () => {
           <div className="text-center">
             <Link 
               to="/forgot-password" 
-              className="text-sm text-primary hover:underline"
+              className="text-sm text-purple-400 hover:text-purple-300"
             >
               {t('forgotPassword')}
             </Link>
           </div>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-border text-center">
-          <p className="text-sm text-muted-foreground mb-4">
+        <div className="mt-6 pt-6 border-t border-purple-500/20 text-center">
+          <p className="text-sm text-purple-400 mb-4">
             {t('noAccount')}
           </p>
           <div className="flex flex-col gap-3">
             <Button
               type="button"
               variant="outline"
-              className="w-full border-emerald-500/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+              className="w-full border-green-500/50 text-green-400 hover:bg-green-500/10"
               onClick={() => setShowSignupModal(true)}
             >
               <UserPlus className="h-4 w-4 mr-2" />
@@ -466,7 +466,7 @@ const UserLogin = () => {
             <Button 
               onClick={() => navigate("/planos")} 
               variant="outline" 
-              className="w-full border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+              className="w-full border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10"
             >
               <Star className="h-4 w-4 mr-2" />
               {t('becomePremium')}

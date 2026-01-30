@@ -219,77 +219,77 @@ const ContributePrompts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0D0221]">
       <div className="container max-w-4xl mx-auto py-8 px-4">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6"
+          className="mb-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('contribute.back')}
         </Button>
 
-        <Card className="p-4 sm:p-8 shadow-hover">
+        <Card className="p-4 sm:p-8 bg-[#1A0A2E] border-purple-500/20">
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
               {t('contribute.title')}
             </h1>
-            <p className="text-muted-foreground text-base sm:text-lg">
+            <p className="text-purple-300 text-base sm:text-lg">
               {t('contribute.subtitle')}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="contributorName">{t('contribute.yourName')}</Label>
+              <Label htmlFor="contributorName" className="text-purple-200">{t('contribute.yourName')}</Label>
               <Input
                 id="contributorName"
                 value={contributorName}
                 onChange={(e) => setContributorName(e.target.value.slice(0, 20))}
                 placeholder={t('contribute.yourNamePlaceholder')}
                 maxLength={20}
-                className="mt-2"
+                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-purple-400 mt-1">
                 {contributorName.length}/20
               </p>
             </div>
 
             <div>
-              <Label htmlFor="title">{t('contribute.fileTitle')}</Label>
+              <Label htmlFor="title" className="text-purple-200">{t('contribute.fileTitle')}</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('contribute.fileTitlePlaceholder')}
-                className="mt-2"
+                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
               />
             </div>
 
             <div>
-              <Label htmlFor="category">{t('contribute.category')}</Label>
+              <Label htmlFor="category" className="text-purple-200">{t('contribute.category')}</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="mt-2">
+                <SelectTrigger className="mt-2 bg-[#0D0221] border-purple-500/30 text-white">
                   <SelectValue placeholder={t('contribute.selectCategory')} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#1A0A2E] border-purple-500/30">
                   {categories.map(cat => (
-                    <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                    <SelectItem key={cat.id} value={cat.name} className="text-purple-200 hover:bg-purple-500/20">{cat.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="txtFile">{t('contribute.loadFromTxt')}</Label>
+              <Label htmlFor="txtFile" className="text-purple-200">{t('contribute.loadFromTxt')}</Label>
               <div className="mt-2 flex items-center gap-3">
                 <label
                   htmlFor="txtFile"
-                  className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg cursor-pointer hover:border-primary transition-colors bg-muted/50"
+                  className="flex items-center gap-2 px-4 py-2 border border-purple-500/30 rounded-lg cursor-pointer hover:border-purple-400 transition-colors bg-[#0D0221]"
                 >
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
+                  <FileText className="h-5 w-5 text-purple-400" />
+                  <span className="text-sm text-purple-300">
                     {txtFileName || t('contribute.selectTxtFile')}
                   </span>
                 </label>
@@ -309,35 +309,36 @@ const ContributePrompts = () => {
                       setTxtFileName("");
                       setPrompt("");
                     }}
+                    className="text-purple-400 hover:text-white hover:bg-purple-500/20"
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-purple-400 mt-1">
                 {t('contribute.txtHint')}
               </p>
             </div>
 
             <div>
-              <Label htmlFor="prompt">{t('contribute.prompt')}</Label>
+              <Label htmlFor="prompt" className="text-purple-200">{t('contribute.prompt')}</Label>
               <Textarea
                 id="prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={t('contribute.promptPlaceholder')}
-                className="mt-2 min-h-32"
+                className="mt-2 min-h-32 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
               />
             </div>
 
             <div>
-              <Label htmlFor="media">{t('contribute.referenceMedia')}</Label>
+              <Label htmlFor="media" className="text-purple-200">{t('contribute.referenceMedia')}</Label>
               <div className="mt-2">
                 <label
                   htmlFor="media"
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className="flex flex-col items-center justify-center w-full h-32 sm:h-48 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors"
+                  className="flex flex-col items-center justify-center w-full h-32 sm:h-48 border-2 border-dashed border-purple-500/30 rounded-lg cursor-pointer hover:border-purple-400 transition-colors bg-[#0D0221]"
                 >
                   {mediaPreview ? (
                     isVideo ? (
@@ -358,8 +359,8 @@ const ContributePrompts = () => {
                     )
                   ) : (
                     <div className="flex flex-col items-center">
-                      <Upload className="h-12 w-12 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">
+                      <Upload className="h-12 w-12 text-purple-400 mb-2" />
+                      <p className="text-sm text-purple-300">
                         {t('contribute.dragOrClick')}
                       </p>
                     </div>
@@ -378,7 +379,7 @@ const ContributePrompts = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-lg py-6"
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-opacity text-lg py-6 text-white"
             >
               {isSubmitting ? t('contribute.submitting') : t('contribute.submit')}
             </Button>
