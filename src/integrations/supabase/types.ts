@@ -2145,6 +2145,60 @@ export type Database = {
         }
         Relationships: []
       }
+      upscaler_credit_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          created_at: string | null
+          description: string | null
+          id: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      upscaler_credits: {
+        Row: {
+          balance: number
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       upscaler_jobs: {
         Row: {
           completed_at: string | null
@@ -2453,6 +2507,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_upscaler_credits: {
+        Args: { _amount: number; _description?: string; _user_id: string }
+        Returns: {
+          new_balance: number
+          success: boolean
+        }[]
+      }
       check_profile_exists: {
         Args: { check_email: string }
         Returns: {
@@ -2463,6 +2524,14 @@ export type Database = {
       cleanup_monthly_logs: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: undefined }
       cleanup_stale_upscaler_jobs: { Args: never; Returns: undefined }
+      consume_upscaler_credits: {
+        Args: { _amount: number; _description?: string; _user_id: string }
+        Returns: {
+          error_message: string
+          new_balance: number
+          success: boolean
+        }[]
+      }
       get_daily_arte_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_musicos_download_count: {
@@ -2476,6 +2545,7 @@ export type Database = {
           prompt_id: string
         }[]
       }
+      get_upscaler_credits: { Args: { _user_id: string }; Returns: number }
       get_user_expired_packs: {
         Args: { _user_id: string }
         Returns: {
