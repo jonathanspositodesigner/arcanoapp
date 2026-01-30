@@ -628,7 +628,7 @@ const BibliotecaPrompts = () => {
 
           {/* Premium button for logged-in non-premium users */}
           {user && !isPremium && (
-            <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2">
+            <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-semibold mb-2">
               <Star className="h-4 w-4 mr-2" fill="currentColor" />
               {t('sidebar.becomePremium')}
             </Button>
@@ -637,11 +637,11 @@ const BibliotecaPrompts = () => {
           {/* Login button only for non-logged users */}
           {!user && (
             <>
-              <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold mb-2">
+              <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-semibold mb-2">
                 <Star className="h-4 w-4 mr-2" fill="currentColor" />
                 {t('sidebar.becomePremium')}
               </Button>
-              <Button onClick={() => navigate("/login")} variant="outline" className="w-full border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white font-semibold mb-4">
+              <Button onClick={() => navigate("/login")} variant="outline" className="w-full bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-semibold mb-4">
                 <LogIn className="h-4 w-4 mr-2" />
                 {t('sidebar.makeLogin')}
               </Button>
@@ -651,23 +651,23 @@ const BibliotecaPrompts = () => {
           <h2 className="text-xl font-bold text-white mb-6">{t('sidebar.generateWithAI')}</h2>
           <div data-tutorial="ai-tools" className="space-y-3">
           {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
-              <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-purple-500/20 hover:scale-105 transition-all duration-300 border-purple-500/30 text-purple-200 hover:text-white">
+              <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30 hover:scale-105 transition-all duration-300">
                 <span className="font-medium">{link.name}</span>
-                <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0 text-purple-400" />
+                <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0 text-purple-300" />
               </Button>
             </a>)}
           </div>
           <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block mt-3">
-            <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-purple-500/20 hover:scale-105 transition-all duration-300 border-purple-500/30 text-purple-200 hover:text-white">
+            <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30 hover:scale-105 transition-all duration-300">
               <span className="font-medium">{t('sidebar.generateVideoVEO3')}</span>
-              <Video className="h-5 w-5 ml-2 flex-shrink-0 text-purple-400" />
+              <Video className="h-5 w-5 ml-2 flex-shrink-0 text-purple-300" />
             </Button>
           </a>
 
           {/* Botão Ferramentas de IA destacado */}
           <Button 
             onClick={() => navigate("/ferramentas-ia")} 
-            className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold h-auto py-4 px-4"
+            className="w-full mt-6 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-semibold h-auto py-4 px-4"
           >
             <Zap className="h-5 w-5 mr-2" />
             {t('sidebar.aiTools')}
@@ -755,7 +755,7 @@ const BibliotecaPrompts = () => {
               <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => {
               setContentType("community");
               handleCategorySelect("Ver Tudo");
-            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "community" ? "bg-purple-600 hover:bg-purple-700 text-white" : "hover:bg-purple-500/20 border-purple-500/30 text-purple-300"}`}>
+            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "community" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/30 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
                 <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 {t('library.community')}
               </Button>
@@ -871,7 +871,7 @@ const BibliotecaPrompts = () => {
       <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
         <DialogContent className="max-w-lg bg-[#1A0A2E] border-purple-500/30 text-white">
           <div className="text-center p-6">
-            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mb-4">
+            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
               <Star className="h-10 w-10 text-white" fill="currentColor" />
             </div>
             <h2 className="text-2xl font-bold mb-2">{t('premiumModal.title')}</h2>
@@ -893,7 +893,7 @@ const BibliotecaPrompts = () => {
             
             <Button 
               onClick={() => navigate("/planos")} 
-              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white py-6 text-lg"
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white py-6 text-lg"
             >
               <Star className="h-5 w-5 mr-2" fill="currentColor" />
               {t('premiumModal.becomePremium')}
