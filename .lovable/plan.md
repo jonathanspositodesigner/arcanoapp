@@ -1,54 +1,106 @@
 
-## Objetivo
-Fazer o vídeo aparecer sempre no modal ao clicar no item, em loop e mutado, sem mostrar “Arquivo não encontrado”.
+# Plano: Evitar Duplicação de Emails de Boas-vindas
 
-## Diagnóstico (por que acontece)
-No `src/pages/BibliotecaPrompts.tsx`, o **Premium Modal** (quando você clica em um item premium estando sem acesso) está renderizando **sempre**:
+## Situação Atual
 
-```tsx
-<SecureImage src={premiumModalItem.imageUrl} ... />
+Analisando os dados de hoje, encontrei **duplicações significativas**:
+- 1 pessoa recebeu **4 emails** (hellyelclaudinofotografia@gmail.com)  
+- 1 pessoa recebeu **3 emails** (arquivosprivwill@gmail.com)
+- 12 pessoas receberam **2 emails** cada
+
+As duplicações acontecem em **milissegundos** de diferença (ex: `01:39:45.436` e `01:39:45.830`), indicando que múltiplas requisições de webhook chegam quase simultaneamente.
+
+### Por que acontece?
+
+Plataformas de pagamento (Greenn, Hotmart) frequentemente reenviam webhooks quando não recebem confirmação rápida, ou disparam múltiplas vezes durante o processamento de uma mesma compra.
+
+### Status das Proteções por Webhook
+
+| Webhook | Proteção Anti-Duplicação |
+|---------|:------------------------:|
+| `webhook-greenn` (PromptClub) | ❌ Não tem |
+| `webhook-greenn-artes` | ✅ Já tem |
+| `webhook-greenn-musicos` | ❌ Não tem |
+| `webhook-hotmart-artes` | ✅ Já tem |
+
+---
+
+## Solução Proposta
+
+Adicionar a **mesma proteção simples** que já funciona nos webhooks que têm, nos que faltam:
+
+### Lógica de Deduplicação (já testada e funcionando)
+
+Antes de enviar qualquer email, verificar se já existe um registro `sent` para o mesmo `email + product_info` nos **últimos 5 minutos**:
+
+```text
+Se enviou email para (email + produto) nos últimos 5 minutos:
+  → Ignorar (não envia duplicado)
+Senão:
+  → Envia normalmente
 ```
 
-Só que, quando `imageUrl` é um `.mp4`, o `<img>` sempre falha (vídeo não é imagem) e o `SecureImage` entra no estado de erro e mostra “Arquivo não encontrado” — mesmo com o vídeo existindo e funcionando no grid (onde o preview usa `LazyVideo`/`SecureVideo`).
+### O que NÃO muda (garantia de funcionamento)
 
-Ou seja: o vídeo está OK; o componente usado no modal é que está errado para `.mp4`.
+1. **Todo o fluxo de processamento** continua igual
+2. **Criação de usuário** não é afetada
+3. **Liberação de acesso** não é afetada
+4. **Primeiro email sempre é enviado** normalmente
+5. Apenas duplicatas dentro de 5 minutos são ignoradas
 
-## O que será feito (sem thumbnail, como você pediu)
-### 1) Corrigir o Premium Modal para renderizar vídeo quando for .mp4
-Arquivo: `src/pages/BibliotecaPrompts.tsx`  
-Trecho atual (linhas ~877–889): trocar o `SecureImage` fixo por um render condicional:
+---
 
-- Se `isVideoUrl(premiumModalItem.imageUrl)`:
-  - Renderizar **`SecureVideo`** (não thumbnail)
-  - Props: `autoPlay`, `muted`, `loop`, `playsInline`, `controls={false}` (ou `true` se quisermos permitir controle manual)
-  - Manter o mesmo visual de “preview bloqueado”: `opacity-50` e `h-48`
+## Arquivos a Modificar
 
-- Senão (imagem):
-  - Mantém `SecureImage` como hoje
+### 1. `supabase/functions/webhook-greenn/index.ts`
+Na função `sendWelcomeEmail` (linhas ~49-113), adicionar verificação antes de enviar.
 
-Exemplo do comportamento final (idéia do código):
-- Vídeo: `<SecureVideo src=... autoPlay muted loop playsInline ... />`
-- Imagem: `<SecureImage src=... />`
+### 2. `supabase/functions/webhook-greenn-musicos/index.ts`  
+Na função `sendWelcomeEmail` (linhas ~52-114), adicionar a mesma verificação.
 
-### 2) Garantir consistência no modal de detalhes (quando o usuário tem acesso)
-Arquivo: `src/pages/BibliotecaPrompts.tsx`  
-No **Prompt Detail Modal** já existe `SecureVideo` para vídeos (linhas ~918+). Vou alinhar para ficar igual ao que você quer:
-- adicionar `muted`
-- adicionar `playsInline`
-- manter `loop`
-- manter `autoPlay` (já está)
-Isso evita bloqueio de autoplay em alguns celulares e melhora a consistência.
+---
 
-## Critérios de aceite (o que você vai ver)
-1) Clicar num item que é vídeo abre o modal e o vídeo aparece (não some, não fica branco, não vira thumbnail).
-2) O vídeo fica **mutado** e em **loop**.
-3) O texto “Arquivo não encontrado” deixa de aparecer nesse caso (porque não vamos mais tentar carregar `.mp4` como imagem).
+## Código a Adicionar (em cada webhook)
 
-## Arquivos que serão alterados
-- `src/pages/BibliotecaPrompts.tsx`
+Dentro da função `sendWelcomeEmail`, logo no início do `try`:
 
-## Teste end-to-end (bem direto)
-- Em `/biblioteca-prompts`, clique em um card que seja vídeo:
-  - Testar como usuário sem acesso (abre Premium Modal): vídeo deve aparecer mutado/loop.
-  - Testar como usuário com acesso (abre Detail Modal): vídeo deve aparecer mutado/loop.
-- Testar no mobile (principalmente iOS/Chrome Android) para confirmar autoplay com `muted + playsInline`.
+```typescript
+// Verificar se já enviou email para este email+produto nos últimos 5 minutos
+const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+const { data: recentEmail } = await supabase
+  .from('welcome_email_logs')
+  .select('id, sent_at')
+  .eq('email', email)
+  .eq('product_info', planDisplayName)  // ou planInfo
+  .eq('status', 'sent')
+  .gte('sent_at', fiveMinutesAgo)
+  .maybeSingle()
+
+if (recentEmail) {
+  console.log(`   ├─ [${requestId}] ⏭️ Email já enviado - IGNORANDO duplicata`)
+  return
+}
+```
+
+---
+
+## Resultado Esperado
+
+| Antes | Depois |
+|-------|--------|
+| Pessoa compra → recebe 2-4 emails | Pessoa compra → recebe **1 email** |
+| Custo de envio multiplicado | Custo de envio normal |
+| Logs de email duplicados | Logs limpos, sem duplicatas |
+
+---
+
+## Testes
+
+Após implementar:
+1. Fazer uma compra teste
+2. Verificar na tabela `welcome_email_logs` que só tem 1 registro
+3. Verificar que o email chegou normalmente
+
+## Observação Importante
+
+Esta é uma solução **segura e conservadora** - se por algum motivo a verificação falhar, o email é enviado normalmente (fail-open). O funcionamento atual nunca será prejudicado.
