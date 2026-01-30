@@ -796,8 +796,8 @@ const UpscalerArcanoTool: React.FC = () => {
           </Card>
         ) : null}
 
-        {/* Controls - Only show for PRO version */}
-        {inputImage && status === 'idle' && !isWaitingInQueue && version === 'pro' && (
+        {/* Controls - Show for both versions */}
+        {inputImage && status === 'idle' && !isWaitingInQueue && (
           <div className="space-y-4">
             {/* Detail Denoise */}
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
@@ -885,15 +885,6 @@ const UpscalerArcanoTool: React.FC = () => {
               )}
             </Card>
           </div>
-        )}
-
-        {/* Standard version info */}
-        {inputImage && status === 'idle' && !isWaitingInQueue && version === 'standard' && (
-          <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-            <p className="text-sm text-purple-300 text-center">
-              ✨ Modo básico - Configurações otimizadas automaticamente
-            </p>
-          </Card>
         )}
 
         {/* Action Buttons */}
