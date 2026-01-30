@@ -79,10 +79,10 @@ const Planos2 = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.changeClothesAI'), included: false },
-        { text: t('planos.features.changePoseAI'), included: false },
-        { text: t('planos.features.upscaleArcano'), included: false },
-        { text: t('planos.features.forja3D'), included: false }
+        { text: t('planos.features.changeClothesAI'), included: true },
+        { text: t('planos.features.changePoseAI'), included: true },
+        { text: t('planos.features.upscaleArcano'), included: true },
+        { text: t('planos.features.forja3D'), included: true }
       ],
       popular: false,
       promo: false
@@ -101,8 +101,8 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.changeClothesAI'), included: true },
         { text: t('planos.features.changePoseAI'), included: true },
-        { text: t('planos.features.upscaleArcano'), included: false },
-        { text: t('planos.features.forja3D'), included: false }
+        { text: t('planos.features.upscaleArcano'), included: true },
+        { text: t('planos.features.forja3D'), included: true }
       ],
       popular: false,
       promo: false,
@@ -165,10 +165,10 @@ const Planos2 = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.changeClothesAI'), included: false },
-        { text: t('planos.features.changePoseAI'), included: false },
-        { text: t('planos.features.upscaleArcano'), included: false },
-        { text: t('planos.features.forja3D'), included: false }
+        { text: t('planos.features.changeClothesAI'), included: true },
+        { text: t('planos.features.changePoseAI'), included: true },
+        { text: t('planos.features.upscaleArcano'), included: true },
+        { text: t('planos.features.forja3D'), included: true }
       ],
       popular: false,
       promo: false
@@ -189,8 +189,8 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.changeClothesAI'), included: true },
         { text: t('planos.features.changePoseAI'), included: true },
-        { text: t('planos.features.upscaleArcano'), included: false },
-        { text: t('planos.features.forja3D'), included: false }
+        { text: t('planos.features.upscaleArcano'), included: true },
+        { text: t('planos.features.forja3D'), included: true }
       ],
       popular: false,
       promo: false,
