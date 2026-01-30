@@ -64,6 +64,11 @@
     "signupSuccessInstruction": "Clique no link do e-mail para ativar sua conta e fazer login.",
     "signupSuccessSpam": "Não encontrou? Verifique a pasta de spam.",
     "backToLogin": "Voltar para Login",
-    "firstAccessSetPassword": "Primeiro acesso detectado! Por favor, cadastre sua senha."
+    "firstAccessSetPassword": "Primeiro acesso detectado! Por favor, cadastre sua senha.",
+    "continue": "Continuar",
+    "changeEmail": "Trocar",
+    "emailNotFoundSignup": "E-mail não encontrado. Crie uma conta!",
+    "emailRequired": "Digite seu e-mail",
+    "forgotPassword": "Esqueceu sua senha?"
   }
 }
