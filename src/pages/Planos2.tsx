@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -174,12 +174,13 @@ const Planos2 = () => {
       promo: false
     }, {
       name: "Pro",
-      price: "29,90",
+      price: "17,90",
       originalPrice: null,
       perMonth: true,
-      yearlyTotal: "358,80",
+      yearlyTotal: "214,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
       credits: "4.400 créditos de IA",
+      savings: "R$144",
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -196,12 +197,13 @@ const Planos2 = () => {
       hasTrial: false
     }, {
       name: "Ultimate",
-      price: "39,90",
+      price: "29,90",
       originalPrice: "49,90",
       perMonth: true,
-      yearlyTotal: "478,80",
+      yearlyTotal: "358,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "10.800 créditos de IA",
+      savings: "R$120",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -219,12 +221,13 @@ const Planos2 = () => {
       bestSeller: true
     }, {
       name: "IA Unlimited",
-      price: "99,90",
+      price: "79,90",
       originalPrice: "149,90",
       perMonth: true,
-      yearlyTotal: "1198,80",
+      yearlyTotal: "958,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
       credits: "Créditos Ilimitados",
+      savings: "R$240",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -356,10 +359,41 @@ const Planos2 = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-3 text-sm h-9 ${isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
+                className={`w-full mb-2 text-sm h-9 ${isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
+
+              {/* Savings Badge - only on annual */}
+              {billingPeriod === "anual" && (
+                <div className="mb-3">
+                  {plan.name === "Starter" ? (
+                    <div className="flex items-center justify-center gap-1.5 bg-gray-800/50 border border-gray-600/30 rounded-full px-3 py-1">
+                      <Tag className="w-3 h-3 text-gray-400" />
+                      <span className="text-[10px] text-gray-400">Sem diferença comparado ao mensal</span>
+                    </div>
+                  ) : (
+                    <div className={`flex items-center justify-center gap-1.5 rounded-full px-3 py-1 ${
+                      plan.name === "Pro" ? "bg-yellow-900/30 border border-yellow-600/40" :
+                      plan.name === "Ultimate" ? "bg-lime-900/30 border border-lime-500/40" :
+                      "bg-purple-900/30 border border-purple-500/40"
+                    }`}>
+                      <Tag className={`w-3 h-3 ${
+                        plan.name === "Pro" ? "text-yellow-400" :
+                        plan.name === "Ultimate" ? "text-lime-400" :
+                        "text-purple-400"
+                      }`} />
+                      <span className={`text-[10px] font-medium ${
+                        plan.name === "Pro" ? "text-yellow-400" :
+                        plan.name === "Ultimate" ? "text-lime-400" :
+                        "text-purple-400"
+                      }`}>
+                        Economize {(plan as any).savings} comparado ao mensal
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Badge de Créditos */}
               <div className="flex flex-col items-center mb-4">
