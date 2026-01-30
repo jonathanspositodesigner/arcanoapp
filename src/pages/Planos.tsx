@@ -82,7 +82,8 @@ const Planos = () => {
         { text: t('planos.features.forja3D'), included: true }
       ],
       popular: false,
-      promo: false
+      promo: false,
+      bestSeller: true
     }],
     anual: [{
       name: "Starter",
@@ -144,7 +145,8 @@ const Planos = () => {
         { text: t('planos.features.forja3D'), included: true }
       ],
       popular: false,
-      promo: true
+      promo: true,
+      bestSeller: true
     }]
   };
 
@@ -200,9 +202,16 @@ const Planos = () => {
           staggerDelay={150}
           animation="fade-up"
         >
-          {currentPlans.map((plan, index) => (
-            <Card key={plan.name} className={`relative bg-[#1A0A2E] border-purple-500/20 p-6 flex flex-col rounded-xl lg:rounded-none ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${plan.popular ? "border-2 border-purple-500" : ""}`}>
-              {(plan.promo || plan.popular) && (
+          {currentPlans.map((plan, index) => {
+            const isBestSeller = (plan as any).bestSeller;
+            return (
+            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-purple-500 bg-gradient-to-b from-purple-900/60 to-[#1A0A2E] lg:scale-105 lg:z-10 shadow-xl shadow-purple-500/20" : "bg-[#1A0A2E] border-purple-500/20"} ${plan.popular && !isBestSeller ? "border-2 border-purple-500" : ""}`}>
+              {isBestSeller && (
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1">
+                  {t('planos.bestSeller')}
+                </Badge>
+              )}
+              {(plan.promo || plan.popular) && !isBestSeller && (
                 <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-green-500 text-white"}`}>
                   {plan.promo ? t('planos.launchPromo') : t('planos.popular')}
                 </Badge>
@@ -232,7 +241,7 @@ const Planos = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-6 ${plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
+                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
@@ -264,7 +273,8 @@ const Planos = () => {
                 </div>
               )}
             </Card>
-          ))}
+          );
+          })}
         </StaggeredAnimation>
       </div>
 
