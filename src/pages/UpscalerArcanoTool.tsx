@@ -553,7 +553,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 <TooltipTrigger asChild>
                   <ToggleGroupItem 
                     value="standard" 
-                    className="w-full py-3 px-4 text-sm sm:text-base rounded-lg data-[state=on]:bg-purple-600/80 data-[state=on]:text-white data-[state=on]:shadow-lg text-purple-300 hover:text-white transition-all font-medium"
+                    className="w-full py-3 px-4 text-sm sm:text-base rounded-lg data-[state=on]:bg-purple-600/80 data-[state=on]:text-white data-[state=on]:shadow-lg text-purple-300 hover:text-white hover:bg-transparent transition-all font-medium"
                   >
                     Upscaler Arcano
                   </ToggleGroupItem>
@@ -569,7 +569,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 <TooltipTrigger asChild>
                   <ToggleGroupItem 
                     value="pro" 
-                    className="w-full py-3 px-4 text-sm sm:text-base rounded-lg data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white data-[state=on]:shadow-lg text-purple-300 hover:text-white transition-all font-medium flex items-center justify-center gap-2"
+                    className="w-full py-3 px-4 text-sm sm:text-base rounded-lg data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white data-[state=on]:shadow-lg text-purple-300 hover:text-white hover:bg-transparent transition-all font-medium flex items-center justify-center gap-2"
                   >
                     Upscaler Arcano
                     <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30">
