@@ -261,6 +261,17 @@ const Planos = () => {
                 ))}
               </ul>
 
+              {plan.name === "IA Unlimited" && (
+                <div className="mt-6 pt-4 border-t border-purple-500/20">
+                  <p className="text-xs text-purple-400 mb-2 uppercase tracking-wide">
+                    {t('planos.extraBenefits')}
+                  </p>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <span className="text-purple-200">{t('planos.allAIFeatures')}</span>
+                  </div>
+                </div>
+              )}
             </Card>
           );
           })}
