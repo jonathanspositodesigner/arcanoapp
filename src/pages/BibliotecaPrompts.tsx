@@ -505,7 +505,7 @@ const BibliotecaPrompts = () => {
                 <LogIn className="h-4 w-4 mr-2" />
                 {t('header.login')}
               </Button>
-              <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+              <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white">
                 <Star className="h-3 w-3 mr-2" fill="currentColor" />
                 {t('header.becomePremium')}
               </Button>
@@ -513,7 +513,7 @@ const BibliotecaPrompts = () => {
           )}
           {user && !isPremium && (
             <>
-              <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+              <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white">
                 <Star className="h-3 w-3 mr-2" fill="currentColor" />
                 {t('header.becomePremium')}
               </Button>
@@ -557,7 +557,7 @@ const BibliotecaPrompts = () => {
               <LogIn className="h-4 w-4 mr-1" />
               {t('header.login')}
             </Button>
-            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
+            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white text-xs">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Button>
@@ -565,7 +565,7 @@ const BibliotecaPrompts = () => {
         )}
         {user && !isPremium && (
           <div className="flex items-center gap-2">
-            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs">
+            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white text-xs">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Button>
@@ -628,7 +628,7 @@ const BibliotecaPrompts = () => {
 
           {/* Premium button for logged-in non-premium users */}
           {user && !isPremium && (
-            <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-semibold mb-2">
+            <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-semibold mb-2">
               <Star className="h-4 w-4 mr-2" fill="currentColor" />
               {t('sidebar.becomePremium')}
             </Button>
@@ -637,7 +637,7 @@ const BibliotecaPrompts = () => {
           {/* Login button only for non-logged users */}
           {!user && (
             <>
-              <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-semibold mb-2">
+              <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-semibold mb-2">
                 <Star className="h-4 w-4 mr-2" fill="currentColor" />
                 {t('sidebar.becomePremium')}
               </Button>
@@ -748,14 +748,14 @@ const BibliotecaPrompts = () => {
               <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => {
               setContentType("exclusive");
               handleCategorySelect("Ver Tudo");
-            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "exclusive" ? "bg-purple-600 hover:bg-purple-700 text-white" : "hover:bg-purple-500/20 border-purple-500/30 text-purple-300"}`}>
+            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "exclusive" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
                 <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 {t('library.exclusiveFiles')}
               </Button>
               <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => {
               setContentType("community");
               handleCategorySelect("Ver Tudo");
-            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "community" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/30 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
+            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "community" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
                 <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 {t('library.community')}
               </Button>
@@ -763,7 +763,7 @@ const BibliotecaPrompts = () => {
 
             {/* Category Filters */}
             <div className="flex gap-1.5 sm:gap-2 flex-wrap">
-              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => handleCategorySelect(cat)} size="sm" className={`text-[11px] sm:text-xs px-2 sm:px-3 ${selectedCategory === cat ? "bg-purple-600 hover:bg-purple-700 text-white" : "hover:bg-purple-500/10 border-purple-500/30 text-purple-300/70"}`}>
+              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => handleCategorySelect(cat)} size="sm" className={`text-[11px] sm:text-xs px-2 sm:px-3 ${selectedCategory === cat ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
                   {getCategoryIcon(cat)}
                   {getCategoryDisplayName(cat)}
                 </Button>)}
@@ -829,7 +829,7 @@ const BibliotecaPrompts = () => {
                         onClick={() => handleItemClick(item)}
                         variant="outline"
                         size="sm"
-                        className="text-xs border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+                        className="text-xs bg-purple-900/40 border-purple-400/50 text-purple-100 hover:bg-purple-500/20 hover:text-white"
                       >
                         {t('card.details')}
                       </Button>
@@ -846,18 +846,18 @@ const BibliotecaPrompts = () => {
                 variant="outline"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white disabled:opacity-50"
+                className="bg-purple-900/40 border-purple-400/50 text-purple-100 hover:bg-purple-500/20 hover:text-white disabled:opacity-50"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-purple-300">
+              <span className="text-purple-200">
                 {currentPage} / {totalPages}
               </span>
               <Button
                 variant="outline"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white disabled:opacity-50"
+                className="bg-purple-900/40 border-purple-400/50 text-purple-100 hover:bg-purple-500/20 hover:text-white disabled:opacity-50"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -871,7 +871,7 @@ const BibliotecaPrompts = () => {
       <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
         <DialogContent className="max-w-lg bg-[#1A0A2E] border-purple-500/30 text-white">
           <div className="text-center p-6">
-            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
+            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-purple-600 to-blue-500 rounded-full flex items-center justify-center mb-4">
               <Star className="h-10 w-10 text-white" fill="currentColor" />
             </div>
             <h2 className="text-2xl font-bold mb-2">{t('premiumModal.title')}</h2>
@@ -893,7 +893,7 @@ const BibliotecaPrompts = () => {
             
             <Button 
               onClick={() => navigate("/planos")} 
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white py-6 text-lg"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white py-6 text-lg"
             >
               <Star className="h-5 w-5 mr-2" fill="currentColor" />
               {t('premiumModal.becomePremium')}
@@ -982,7 +982,7 @@ const BibliotecaPrompts = () => {
                     selectedPrompt.thumbnailUrl
                   )}
                   variant="outline"
-                  className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+                  className="bg-purple-900/40 border-purple-400/50 text-purple-100 hover:bg-purple-500/20 hover:text-white"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   {t('modal.download')}
