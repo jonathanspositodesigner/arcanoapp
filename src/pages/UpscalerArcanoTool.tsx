@@ -641,6 +641,8 @@ const UpscalerArcanoTool: React.FC = () => {
               smooth={true}
               onInit={(ref) => {
                 setZoomLevel(ref.state.scale);
+                // Store ref for custom wheel zoom
+                (window as any).__upscalerTransformRef = ref;
                 if (beforeTransformRef.current) {
                   beforeTransformRef.current.style.transform = `translate(${ref.state.positionX}px, ${ref.state.positionY}px) scale(${ref.state.scale})`;
                   beforeTransformRef.current.style.transformOrigin = '0% 0%';
@@ -652,9 +654,9 @@ const UpscalerArcanoTool: React.FC = () => {
                   beforeTransformRef.current.style.transform = `translate(${state.positionX}px, ${state.positionY}px) scale(${state.scale})`;
                 }
               }}
-              wheel={{ smoothStep: 0.08 }}
+              wheel={{ disabled: true }}
               pinch={{ step: 3 }}
-              doubleClick={{ mode: 'zoomIn', step: 1.5 }}
+              doubleClick={{ mode: 'zoomIn', step: 0.14 }}
               panning={{ disabled: zoomLevel <= 1 }}
             >
               {({ zoomIn, zoomOut, resetTransform }) => (
@@ -662,7 +664,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   {/* Zoom Controls */}
                   <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
                     <button 
-                      onClick={() => zoomOut(0.3)}
+                      onClick={() => zoomOut(0.14)}
                       className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
                       title="Diminuir zoom"
                     >
@@ -672,7 +674,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       {Math.round(zoomLevel * 100)}%
                     </span>
                     <button 
-                      onClick={() => zoomIn(0.3)}
+                      onClick={() => zoomIn(0.14)}
                       className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
                       title="Aumentar zoom"
                     >
@@ -689,8 +691,55 @@ const UpscalerArcanoTool: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Container with ref for slider calculations */}
-                  <div ref={sliderRef} className="relative w-full mx-auto overflow-hidden">
+                  {/* Container with ref for slider calculations and custom wheel zoom */}
+                  <div 
+                    ref={sliderRef} 
+                    className="relative w-full mx-auto overflow-hidden"
+                    onWheel={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      
+                      const transformRef = (window as any).__upscalerTransformRef;
+                      if (!transformRef) return;
+                      
+                      const MIN_ZOOM = 1;
+                      const MAX_ZOOM = 6;
+                      const WHEEL_FACTOR = 1.15;
+                      
+                      const { scale, positionX, positionY } = transformRef.state;
+                      const wrapperComponent = transformRef.instance?.wrapperComponent;
+                      
+                      if (!wrapperComponent) return;
+                      
+                      const rect = wrapperComponent.getBoundingClientRect();
+                      const mouseX = e.clientX - rect.left;
+                      const mouseY = e.clientY - rect.top;
+                      
+                      // Calculate new scale (multiplicative)
+                      let newScale: number;
+                      if (e.deltaY < 0) {
+                        // Zoom in
+                        newScale = scale * WHEEL_FACTOR;
+                      } else {
+                        // Zoom out
+                        newScale = scale / WHEEL_FACTOR;
+                      }
+                      
+                      // Clamp to min/max
+                      newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newScale));
+                      
+                      // If no change, skip
+                      if (newScale === scale) return;
+                      
+                      // Calculate new position to keep mouse point stable
+                      const scaleDiff = newScale - scale;
+                      const newPosX = positionX - mouseX * scaleDiff;
+                      const newPosY = positionY - mouseY * scaleDiff;
+                      
+                      // Apply transform
+                      transformRef.setTransform(newPosX, newPosY, newScale, 200, 'easeOut');
+                    }}
+                  >
                     <AspectRatio ratio={16 / 9}>
                       <div className="relative w-full h-full bg-black overflow-hidden">
                         {/* AFTER image */}
