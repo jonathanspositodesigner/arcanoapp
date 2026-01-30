@@ -49,6 +49,21 @@ const UpscalerArcanoTool: React.FC = () => {
   const [isWaitingInQueue, setIsWaitingInQueue] = useState(false);
   const [queuePosition, setQueuePosition] = useState(0);
   const [jobId, setJobId] = useState<string | null>(null);
+  const [currentQueueCombo, setCurrentQueueCombo] = useState(0);
+
+  // Queue message combos for friendly waiting experience
+  const queueMessageCombos = [
+    { emoji: "🔥", title: "Tá bombando!", position: (n: number) => `Você é o ${n}º da fila`, subtitle: "Relaxa que já já é sua vez!" },
+    { emoji: "☕", title: "Hora do cafezinho", position: (n: number) => `Posição: ${n}`, subtitle: "Aproveita pra dar aquela relaxada" },
+    { emoji: "🎨", title: "Artistas trabalhando...", position: (n: number) => `${n > 1 ? n - 1 : 0} pessoas na sua frente`, subtitle: "Grandes obras levam tempo, confia!" },
+    { emoji: "🚀", title: "Decolagem em breve", position: (n: number) => `Você é o ${n}º na pista`, subtitle: "Preparando sua foto para o espaço!" },
+    { emoji: "⚡", title: "Alta demanda agora", position: (n: number) => `Posição ${n} na fila`, subtitle: "Isso aqui tá voando, já já chega sua vez!" },
+    { emoji: "🤖", title: "Robôzinhos a mil!", position: (n: number) => `Faltam ${n > 1 ? n - 1 : 0} na sua frente`, subtitle: "Eles tão trabalhando pesado pra você" },
+    { emoji: "✨", title: "Preparando sua mágica", position: (n: number) => `${n}º lugar na fila VIP`, subtitle: "Magia de qualidade leva um tempinho" },
+    { emoji: "🎮", title: "Loading...", position: (n: number) => `Player ${n} na fila`, subtitle: "Próxima fase desbloqueando em breve!" },
+    { emoji: "🌟", title: "Sucesso gera fila", position: (n: number) => `Você é o ${n}º`, subtitle: "Todo mundo quer essa qualidade, né?" },
+    { emoji: "😎", title: "Fica tranquilo", position: (n: number) => `${n}º da galera esperando`, subtitle: "Vale a pena esperar, resultado top vem aí!" },
+  ];
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -370,7 +385,8 @@ const UpscalerArcanoTool: React.FC = () => {
       if (runResponse.data?.queued) {
         setIsWaitingInQueue(true);
         setQueuePosition(runResponse.data.position || 1);
-        toast.info('Servidor ocupado. Você entrou na fila de espera.');
+        setCurrentQueueCombo(Math.floor(Math.random() * queueMessageCombos.length));
+        toast.info('Você entrou na fila de espera!');
       } else {
         // Processing started immediately - Realtime will notify when done
         console.log('[Upscaler] Processing started, waiting for Realtime notification...');
@@ -568,13 +584,13 @@ const UpscalerArcanoTool: React.FC = () => {
               </div>
               <div>
                 <p className="text-xl font-bold text-yellow-300">
-                  Servidor ocupado
+                  {queueMessageCombos[currentQueueCombo].emoji} {queueMessageCombos[currentQueueCombo].title}
                 </p>
                 <p className="text-4xl font-bold text-white mt-2">
-                  {queuePosition}º na fila
+                  {queueMessageCombos[currentQueueCombo].position(queuePosition)}
                 </p>
                 <p className="text-sm text-purple-300/70 mt-2">
-                  Seu processamento iniciará automaticamente
+                  {queueMessageCombos[currentQueueCombo].subtitle}
                 </p>
               </div>
               <Button
