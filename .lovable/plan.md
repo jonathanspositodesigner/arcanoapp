@@ -1,105 +1,128 @@
 
-# Plano: Adicionar Seletor de Resolução 2K/4K
+# Plano: Switcher Upscaler Arcano / Upscaler Arcano Pro
 
-## O que será feito
+## Visão Geral
 
-Adicionar dois botões de seleção para resolução de saída:
-- **2K (2048px)** - Padrão, já selecionado ao abrir
-- **4K (4096px)** - Para alta resolução
+Implementar um seletor no topo da ferramenta para alternar entre duas versões:
+- **Upscaler Arcano** - versão básica (usará um WEBAPP_ID diferente)
+- **Upscaler Arcano Pro** - versão atual com todas as configurações (badge com gradiente azul/roxo)
 
-O valor será enviado para a API via `nodeId: "73"` conforme especificado.
+O switch alterna entre as versões na mesma página sem recarregar.
 
-## Mudanças na Interface
+## Design Visual do Header
 
-Na seção de controles (após o slider de Detail Denoise), adicionar um novo card com dois botões lado a lado usando ToggleGroup:
-
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│  ←   Upscaler Arcano  [ Arcano ]  [ Arcano Pro ✨ ]             │
+│                           ↑             ↑                        │
+│                        básico     badge gradiente azul→roxo      │
+└──────────────────────────────────────────────────────────────────┘
 ```
-┌──────────────────────────────────────────────────┐
-│ 📐 Resolução                                     │
-│                                                  │
-│    [ 2K (2048) ]  [ 4K (4096) ]                  │
-│    ^^^^selecionado por padrão                    │
-└──────────────────────────────────────────────────┘
-```
+
+O badge "PRO" terá:
+- Gradiente moderno azul (#3b82f6) para roxo (#8b5cf6)
+- Ícone de estrela/sparkles
+- Bordas arredondadas e efeito brilhante
 
 ## Arquivos a Modificar
 
 ### 1. `src/pages/UpscalerArcanoTool.tsx`
 
-**Adicionar state para resolução:**
+**Adicionar state para versão:**
 ```typescript
-const [resolution, setResolution] = useState<'2k' | '4k'>('2k');
+const [version, setVersion] = useState<'standard' | 'pro'>('pro');
 ```
 
-**Adicionar UI do seletor** (linha ~800, após o card de Detail Denoise):
+**Modificar header (linhas 506-521):**
 ```typescript
-<Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-  <div className="flex items-center gap-2 mb-3">
-    <span className="font-medium text-white">Resolução</span>
+<div className="sticky top-0 z-50 bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20">
+  <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+    <Button variant="ghost" size="icon" onClick={goBack}>
+      <ArrowLeft className="w-5 h-5" />
+    </Button>
+    
+    <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+      Upscaler Arcano
+    </h1>
+    
+    {/* Version Switcher */}
+    <ToggleGroup type="single" value={version} onValueChange={(v) => v && setVersion(v)}>
+      <ToggleGroupItem value="standard" className="...">
+        Arcano
+      </ToggleGroupItem>
+      <ToggleGroupItem value="pro" className="...">
+        Arcano 
+        <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+          PRO
+        </span>
+      </ToggleGroupItem>
+    </ToggleGroup>
   </div>
-  <ToggleGroup 
-    type="single" 
-    value={resolution} 
-    onValueChange={(val) => val && setResolution(val as '2k' | '4k')}
-    className="justify-start"
-  >
-    <ToggleGroupItem value="2k" className="...">
-      2K (2048px)
-    </ToggleGroupItem>
-    <ToggleGroupItem value="4k" className="...">
-      4K (4096px)
-    </ToggleGroupItem>
-  </ToggleGroup>
-</Card>
+</div>
 ```
 
-**Adicionar resolução na chamada da edge function:**
+**Enviar versão para edge function:**
 ```typescript
 const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
   body: {
     jobId: job.id,
     fileName,
     detailDenoise,
-    resolution: resolution === '4k' ? 4096 : 2048, // NOVO
+    resolution: resolution === '4k' ? 4096 : 2048,
     prompt: useCustomPrompt ? customPrompt : null,
+    version: version,  // NOVO: 'standard' ou 'pro'
   },
 });
 ```
 
+**Mostrar/ocultar controles avançados baseado na versão:**
+- Versão Pro: mostra todos os controles (resolução, denoise, prompt)
+- Versão Standard: mostra apenas controles básicos ou nenhum
+
 ### 2. `supabase/functions/runninghub-upscaler/index.ts`
 
-**Extrair o parâmetro resolution:**
+**Adicionar constante para WEBAPP_ID alternativo:**
+```typescript
+const WEBAPP_ID_PRO = '2015865378030755841';     // Atual
+const WEBAPP_ID_STANDARD = 'ID_DA_VERSAO_BASICA'; // A definir
+```
+
+**Extrair parâmetro version:**
 ```typescript
 const { 
   jobId,
   fileName, 
   detailDenoise,
-  resolution,  // NOVO
-  prompt
+  resolution,
+  prompt,
+  version  // NOVO
 } = await req.json();
 ```
 
-**Adicionar ao nodeInfoList:**
+**Selecionar WEBAPP_ID baseado na versão:**
 ```typescript
-const nodeInfoList: any[] = [
-  { nodeId: "26", fieldName: "image", fieldValue: fileName },
-  { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
-  { nodeId: "73", fieldName: "value", fieldValue: String(resolution || 2048) }, // NOVO
-];
+const webappId = version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD;
+
+const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`, {
+  // ...
+});
 ```
 
-## Resumo
+## Comportamento
 
-| Mudança | Arquivo |
-|---------|---------|
-| State `resolution` (2k padrão) | UpscalerArcanoTool.tsx |
-| UI com ToggleGroup 2K/4K | UpscalerArcanoTool.tsx |
-| Enviar resolution no body | UpscalerArcanoTool.tsx |
-| Extrair resolution | runninghub-upscaler |
-| Adicionar node 73 | runninghub-upscaler |
+| Versão | Controles Visíveis | WEBAPP_ID |
+|--------|-------------------|-----------|
+| Arcano (básico) | Apenas upload/download | A definir |
+| Arcano Pro | Resolução, Denoise, Prompt | 2015865378030755841 |
 
 ## Resultado
 
-- Usuário vê dois botões: 2K e 4K
-- 2K já vem marcado por padrão
-- Ao processar, envia o valor correto para nodeId "73"
+- Switch elegante no header
+- Badge PRO com gradiente azul→roxo moderno
+- Troca instantânea sem reload
+- Cada versão usa seu próprio motor/webapp no RunningHub
+- Controles ajustados conforme a versão selecionada
+
+## Nota
+
+Preciso saber qual será o **WEBAPP_ID da versão básica** do Upscaler Arcano. Se ainda não tem, posso deixar como placeholder e você me passa depois.
