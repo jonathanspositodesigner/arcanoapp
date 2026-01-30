@@ -48,8 +48,26 @@ async function findUserByEmail(supabase: any, email: string, requestId: string):
 
 async function sendWelcomeEmail(supabase: any, email: string, name: string, planType: string, requestId: string, locale: 'pt' | 'es' = 'pt'): Promise<void> {
   const t = emailTexts[locale]
+  const planNames: Record<string, string> = { 'arcano_basico': 'Arcano Básico', 'arcano_pro': 'Arcano Pro', 'arcano_unlimited': 'Arcano Unlimited' }
+  const planDisplayName = planNames[planType] || planType
   
   try {
+    // Verificar se já enviou email para este email+produto nos últimos 5 minutos
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    const { data: recentEmail } = await supabase
+      .from('welcome_email_logs')
+      .select('id, sent_at')
+      .eq('email', email)
+      .eq('product_info', planDisplayName)
+      .eq('status', 'sent')
+      .gte('sent_at', fiveMinutesAgo)
+      .maybeSingle()
+
+    if (recentEmail) {
+      console.log(`   ├─ [${requestId}] ⏭️ Email já enviado há ${Math.round((Date.now() - new Date(recentEmail.sent_at).getTime()) / 1000)}s - IGNORANDO duplicata`)
+      return
+    }
+
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
     const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
     const supabaseUrl = Deno.env.get("SUPABASE_URL")
@@ -64,8 +82,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       .eq('is_active', true)
       .maybeSingle()
 
-    const planNames: Record<string, string> = { 'arcano_basico': 'Arcano Básico', 'arcano_pro': 'Arcano Pro', 'arcano_unlimited': 'Arcano Unlimited' }
-    const planDisplayName = planNames[planType] || planType
+    // planDisplayName já definido no início da função
     const trackingId = crypto.randomUUID()
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
     const platformUrl = 'https://arcanolab.voxvisual.com.br/login'
