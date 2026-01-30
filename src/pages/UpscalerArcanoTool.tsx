@@ -37,7 +37,8 @@ interface ErrorDetails {
 
 // Prompt categories for image types
 const PROMPT_CATEGORIES = {
-  pessoas: "Enhance the photo while maintaining 100% of the original identity and lighting. Increase hyper-realism: natural and realistic skin texture, visible micro-pores, subtle microvilli/peach fuzz, hairs corrected strand by strand, defined eyebrows with natural hairs, sharper eyes with realistic reflections, defined eyelashes without exaggeration, lips with natural texture and lines, noise reduction preserving fine details, high yet clean sharpness, balanced contrast and skin tones, PBR detail enhancement (skin with subtle subsurface scattering), realistic depth of field and 4K/8K photographic finish.",
+  pessoas_perto: "Enhance the close-up portrait photo while maintaining 100% of the original identity and lighting. Increase hyper-realism: natural and realistic skin texture, visible micro-pores, subtle microvilli/peach fuzz, hairs corrected strand by strand, defined eyebrows with natural hairs, sharper eyes with realistic reflections, defined eyelashes without exaggeration, lips with natural texture and lines, noise reduction preserving fine details, high yet clean sharpness, balanced contrast and skin tones, PBR detail enhancement (skin with subtle subsurface scattering), realistic depth of field and 4K/8K photographic finish.",
+  pessoas_longe: "Enhance the full-body or wide-angle photo of people while maintaining 100% of the original identity and lighting. Focus on overall sharpness, clean silhouettes, natural body proportions, clothing texture enhancement, hair definition, balanced skin tones across the entire figure, environmental context clarity, noise reduction while preserving fine details, and 4K/8K photographic finish.",
   comida: "Realistic food photography: boost sharpness and micro-textures, enhance ingredient detail, natural highlights, true-to-life appetizing colors, soft studio lighting, clean professional finish.",
   fotoAntiga: "Realistic photo restoration: remove scratches/tears/stains, reduce blur, recover sharpness and fine details, fix faded colors, balanced contrast, preserve original texture and identity, natural look.",
   logo: "Preserve exact colors, proportions, typography, spacing, outlines, and alignment. Restore clean, sharp edges; remove jaggies/blur/artifacts and noise while keeping the same visual identity.",
@@ -45,6 +46,7 @@ const PROMPT_CATEGORIES = {
 } as const;
 
 type PromptCategory = keyof typeof PROMPT_CATEGORIES;
+type PessoasFraming = 'perto' | 'longe';
 
 const UpscalerArcanoTool: React.FC = () => {
   const navigate = useNavigate();
@@ -74,7 +76,8 @@ const UpscalerArcanoTool: React.FC = () => {
   const [resolution, setResolution] = useState<'2k' | '4k'>('2k');
   const [useCustomPrompt, setUseCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
-  const [promptCategory, setPromptCategory] = useState<PromptCategory>('pessoas');
+  const [promptCategory, setPromptCategory] = useState<PromptCategory>('pessoas_perto');
+  const [pessoasFraming, setPessoasFraming] = useState<PessoasFraming>('perto');
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [inputFileName, setInputFileName] = useState<string>('');
   const [outputImage, setOutputImage] = useState<string | null>(null);
@@ -135,9 +138,17 @@ const UpscalerArcanoTool: React.FC = () => {
   // Reset promptCategory when custom prompt is disabled
   useEffect(() => {
     if (!useCustomPrompt) {
-      setPromptCategory('pessoas');
+      setPromptCategory('pessoas_perto');
+      setPessoasFraming('perto');
     }
   }, [useCustomPrompt]);
+
+  // Disable custom prompt when switching to standard version
+  useEffect(() => {
+    if (version === 'standard') {
+      setUseCustomPrompt(false);
+    }
+  }, [version]);
 
   // Get the final prompt to send
   const getFinalPrompt = (): string => {
@@ -1062,7 +1073,129 @@ const UpscalerArcanoTool: React.FC = () => {
         {/* Controls - Show for both versions */}
         {inputImage && status === 'idle' && !isWaitingInQueue && (
           <div className="space-y-4">
-            {/* Detail Denoise */}
+            {/* Image Type Category Buttons - FIRST - only show when custom prompt is OFF */}
+            {!useCustomPrompt && (
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <MessageSquare className="w-4 h-4 text-pink-400" />
+                  <span className="font-medium text-white">Tipo de Imagem</span>
+                </div>
+                <ToggleGroup 
+                  type="single" 
+                  value={promptCategory.startsWith('pessoas') ? 'pessoas' : promptCategory} 
+                  onValueChange={(value) => {
+                    if (value) {
+                      if (value === 'pessoas') {
+                        setPromptCategory(`pessoas_${pessoasFraming}` as PromptCategory);
+                      } else {
+                        setPromptCategory(value as PromptCategory);
+                      }
+                    }
+                  }}
+                  className="flex justify-start flex-wrap gap-1 sm:gap-2"
+                >
+                  <ToggleGroupItem 
+                    value="pessoas" 
+                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
+                      promptCategory.startsWith('pessoas')
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    Pessoas
+                  </ToggleGroupItem>
+                  <ToggleGroupItem 
+                    value="comida" 
+                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
+                      promptCategory === 'comida' 
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    Comida
+                  </ToggleGroupItem>
+                  <ToggleGroupItem 
+                    value="fotoAntiga" 
+                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
+                      promptCategory === 'fotoAntiga' 
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    Antiga
+                  </ToggleGroupItem>
+                  <ToggleGroupItem 
+                    value="logo" 
+                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
+                      promptCategory === 'logo' 
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    Logo
+                  </ToggleGroupItem>
+                  <ToggleGroupItem 
+                    value="render3d" 
+                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
+                      promptCategory === 'render3d' 
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                    }`}
+                  >
+                    3D
+                  </ToggleGroupItem>
+                </ToggleGroup>
+
+                {/* Pessoas Framing Selector - only show when pessoas is selected */}
+                {promptCategory.startsWith('pessoas') && (
+                  <div className="mt-4 pt-4 border-t border-purple-500/20">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-sm text-purple-300">Enquadramento da foto:</span>
+                    </div>
+                    <ToggleGroup 
+                      type="single" 
+                      value={pessoasFraming} 
+                      onValueChange={(value) => {
+                        if (value) {
+                          setPessoasFraming(value as PessoasFraming);
+                          setPromptCategory(`pessoas_${value}` as PromptCategory);
+                        }
+                      }}
+                      className="flex justify-start gap-2"
+                    >
+                      <ToggleGroupItem 
+                        value="perto" 
+                        className={`flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all ${
+                          pessoasFraming === 'perto'
+                            ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                            : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                        }`}
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-purple-900/50 flex items-center justify-center overflow-hidden">
+                          <div className="w-8 h-8 rounded-full bg-purple-300/30 border-2 border-purple-400/50" />
+                        </div>
+                        <span className="text-xs">De Perto</span>
+                      </ToggleGroupItem>
+                      <ToggleGroupItem 
+                        value="longe" 
+                        className={`flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all ${
+                          pessoasFraming === 'longe'
+                            ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                            : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                        }`}
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-purple-900/50 flex items-center justify-center overflow-hidden">
+                          <div className="w-3 h-6 rounded-full bg-purple-300/30 border border-purple-400/50" />
+                        </div>
+                        <span className="text-xs">De Longe</span>
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                )}
+              </Card>
+            )}
+
+            {/* Detail Denoise - SECOND */}
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
@@ -1128,100 +1261,35 @@ const UpscalerArcanoTool: React.FC = () => {
               </ToggleGroup>
             </Card>
 
-            {/* Image Type Category Buttons - only show when custom prompt is OFF */}
-            {!useCustomPrompt && (
+            {/* Custom Prompt Toggle - ONLY FOR PRO VERSION */}
+            {version === 'pro' && (
               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <MessageSquare className="w-4 h-4 text-pink-400" />
-                  <span className="font-medium text-white">Tipo de Imagem</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-pink-400" />
+                    <span className="font-medium text-white">{t('upscalerTool.controls.usePrompt')}</span>
+                  </div>
+                  <Switch
+                    checked={useCustomPrompt}
+                    onCheckedChange={setUseCustomPrompt}
+                  />
                 </div>
-                <ToggleGroup 
-                  type="single" 
-                  value={promptCategory} 
-                  onValueChange={(value) => value && setPromptCategory(value as PromptCategory)}
-                  className="flex justify-start flex-wrap gap-1 sm:gap-2"
-                >
-                  <ToggleGroupItem 
-                    value="pessoas" 
-                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
-                      promptCategory === 'pessoas' 
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    Pessoas
-                  </ToggleGroupItem>
-                  <ToggleGroupItem 
-                    value="comida" 
-                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
-                      promptCategory === 'comida' 
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    Comida
-                  </ToggleGroupItem>
-                  <ToggleGroupItem 
-                    value="fotoAntiga" 
-                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
-                      promptCategory === 'fotoAntiga' 
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    Antiga
-                  </ToggleGroupItem>
-                  <ToggleGroupItem 
-                    value="logo" 
-                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
-                      promptCategory === 'logo' 
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    Logo
-                  </ToggleGroupItem>
-                  <ToggleGroupItem 
-                    value="render3d" 
-                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
-                      promptCategory === 'render3d' 
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    3D
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                
+                {useCustomPrompt && (
+                  <>
+                    <p className="text-xs text-pink-300/70 mb-3">
+                      {t('upscalerTool.controls.promptHint')}
+                    </p>
+                    <Textarea
+                      value={customPrompt}
+                      onChange={(e) => setCustomPrompt(e.target.value)}
+                      placeholder={t('upscalerTool.controls.promptPlaceholder')}
+                      className="min-h-[100px] bg-[#0D0221]/50 border-purple-500/30 text-white placeholder:text-purple-300/50"
+                    />
+                  </>
+                )}
               </Card>
             )}
-
-            {/* Custom Prompt Toggle */}
-            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-pink-400" />
-                  <span className="font-medium text-white">{t('upscalerTool.controls.usePrompt')}</span>
-                </div>
-                <Switch
-                  checked={useCustomPrompt}
-                  onCheckedChange={setUseCustomPrompt}
-                />
-              </div>
-              
-              {useCustomPrompt && (
-                <>
-                  <p className="text-xs text-pink-300/70 mb-3">
-                    {t('upscalerTool.controls.promptHint')}
-                  </p>
-                  <Textarea
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder={t('upscalerTool.controls.promptPlaceholder')}
-                    className="min-h-[100px] bg-[#0D0221]/50 border-purple-500/30 text-white placeholder:text-purple-300/50"
-                  />
-                </>
-              )}
-            </Card>
           </div>
         )}
 
