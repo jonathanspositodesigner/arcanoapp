@@ -268,7 +268,7 @@ const Planos2 = () => {
 
         {/* Plans Grid */}
         <StaggeredAnimation 
-          className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-5 max-w-6xl mx-auto"
+          className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-0 max-w-6xl mx-auto"
           itemClassName="flex"
           staggerDelay={150}
           animation="fade-up"
