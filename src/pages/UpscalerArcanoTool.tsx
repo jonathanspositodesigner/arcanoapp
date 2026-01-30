@@ -507,50 +507,48 @@ const UpscalerArcanoTool: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] text-white">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={goBack}
-            className="text-purple-300 hover:text-white hover:bg-purple-500/20 flex-shrink-0"
+            className="text-purple-300 hover:text-white hover:bg-purple-500/20"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          
-          <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent whitespace-nowrap">
-            Upscaler Arcano
+          <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            {t('upscalerTool.title')}
           </h1>
-
-          {/* Version Switcher */}
-          <div className="flex-1 flex justify-end">
-            <ToggleGroup 
-              type="single" 
-              value={version} 
-              onValueChange={(val) => val && setVersion(val as 'standard' | 'pro')}
-              className="bg-[#0D0221]/50 border border-purple-500/30 rounded-lg p-1"
-            >
-              <ToggleGroupItem 
-                value="standard" 
-                className="px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=on]:bg-purple-600/80 data-[state=on]:text-white text-purple-300 hover:text-white transition-all"
-              >
-                Arcano
-              </ToggleGroupItem>
-              <ToggleGroupItem 
-                value="pro" 
-                className="px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white text-purple-300 hover:text-white transition-all flex items-center gap-1.5"
-              >
-                Arcano
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30">
-                  <Crown className="w-2.5 h-2.5" />
-                  PRO
-                </span>
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* Version Switcher - Full Width */}
+        <div className="w-full">
+          <ToggleGroup 
+            type="single" 
+            value={version} 
+            onValueChange={(val) => val && setVersion(val as 'standard' | 'pro')}
+            className="w-full grid grid-cols-2 gap-0 bg-[#1A0A2E]/50 border border-purple-500/30 rounded-xl p-1"
+          >
+            <ToggleGroupItem 
+              value="standard" 
+              className="w-full py-3 px-4 text-sm sm:text-base rounded-lg data-[state=on]:bg-purple-600/80 data-[state=on]:text-white data-[state=on]:shadow-lg text-purple-300 hover:text-white transition-all font-medium"
+            >
+              Upscaler Arcano
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="pro" 
+              className="w-full py-3 px-4 text-sm sm:text-base rounded-lg data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white data-[state=on]:shadow-lg text-purple-300 hover:text-white transition-all font-medium flex items-center justify-center gap-2"
+            >
+              Upscaler Arcano
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30">
+                <Crown className="w-3 h-3" />
+                PRO
+              </span>
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
         {/* Warning Banner - Don't close page */}
         {(status === 'processing' || status === 'uploading' || isWaitingInQueue) && (
           <div className="bg-amber-500/20 border border-amber-500/50 rounded-lg p-3 flex items-center gap-2">
