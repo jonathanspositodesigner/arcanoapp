@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ArrowLeft, Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock, MessageSquare, Crown } from 'lucide-react';
+import { ArrowLeft, Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock, MessageSquare, Crown, Coins } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
@@ -541,29 +542,51 @@ const UpscalerArcanoTool: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Version Switcher - Full Width */}
         <div className="w-full">
-          <ToggleGroup 
-            type="single" 
-            value={version} 
-            onValueChange={(val) => val && setVersion(val as 'standard' | 'pro')}
-            className="w-full grid grid-cols-2 gap-0 bg-[#1A0A2E]/50 border border-purple-500/30 rounded-xl p-1"
-          >
-            <ToggleGroupItem 
-              value="standard" 
-              className="w-full py-3 px-4 text-sm sm:text-base rounded-lg data-[state=on]:bg-purple-600/80 data-[state=on]:text-white data-[state=on]:shadow-lg text-purple-300 hover:text-white transition-all font-medium"
+          <TooltipProvider>
+            <ToggleGroup 
+              type="single" 
+              value={version} 
+              onValueChange={(val) => val && setVersion(val as 'standard' | 'pro')}
+              className="w-full grid grid-cols-2 gap-0 bg-[#1A0A2E]/50 border border-purple-500/30 rounded-xl p-1"
             >
-              Upscaler Arcano
-            </ToggleGroupItem>
-            <ToggleGroupItem 
-              value="pro" 
-              className="w-full py-3 px-4 text-sm sm:text-base rounded-lg data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white data-[state=on]:shadow-lg text-purple-300 hover:text-white transition-all font-medium flex items-center justify-center gap-2"
-            >
-              Upscaler Arcano
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30">
-                <Crown className="w-3 h-3" />
-                PRO
-              </span>
-            </ToggleGroupItem>
-          </ToggleGroup>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ToggleGroupItem 
+                    value="standard" 
+                    className="w-full py-3 px-4 text-sm sm:text-base rounded-lg data-[state=on]:bg-purple-600/80 data-[state=on]:text-white data-[state=on]:shadow-lg text-purple-300 hover:text-white transition-all font-medium"
+                  >
+                    Upscaler Arcano
+                  </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent className="bg-black/90 border-purple-500/30">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Clock className="w-3.5 h-3.5 text-purple-400" />
+                    <span>~2m 20s</span>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ToggleGroupItem 
+                    value="pro" 
+                    className="w-full py-3 px-4 text-sm sm:text-base rounded-lg data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white data-[state=on]:shadow-lg text-purple-300 hover:text-white transition-all font-medium flex items-center justify-center gap-2"
+                  >
+                    Upscaler Arcano
+                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30">
+                      <Crown className="w-3 h-3" />
+                      PRO
+                    </span>
+                  </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent className="bg-black/90 border-purple-500/30">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Clock className="w-3.5 h-3.5 text-purple-400" />
+                    <span>~3m 30s</span>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </ToggleGroup>
+          </TooltipProvider>
         </div>
         {/* Warning Banner - Don't close page */}
         {(status === 'processing' || status === 'uploading' || isWaitingInQueue) && (
@@ -961,6 +984,10 @@ const UpscalerArcanoTool: React.FC = () => {
             >
               <Sparkles className="w-5 h-5 mr-2" />
               {t('upscalerTool.buttons.increaseQuality')}
+              <span className="ml-2 flex items-center gap-1 text-sm opacity-90">
+                <Coins className="w-4 h-4" />
+                {version === 'pro' ? '60' : '40'}
+              </span>
             </Button>
           )}
 
