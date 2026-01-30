@@ -1,131 +1,96 @@
 
-## Objetivo (correção direta, sem firula)
-Consertar o zoom no **resultado do upscale** em `/upscaler-arcano-tool` para:
 
-- **Não** pular de **100% direto para 600%**
-- Fazer zoom **aos poucos (progressivo)** até o máximo
-- Manter **máximo = 600% (6x)**, sem travar em “só 100 ou 600”
-- Garantir que isso funcione igual tanto no **Standard** quanto no **PRO** (mesmo resultado/mesmo componente)
+# Plano: Tooltips de Tempo e Custo de Créditos
+
+## O que vou fazer
+
+1. **Adicionar tooltips com tempo de espera** nos botões do switcher Standard/PRO
+2. **Mostrar custo de créditos no botão "Aumentar Qualidade"** baseado na versão selecionada
 
 ---
 
-## Diagnóstico (por que está pulando 100% → 600%)
-No `src/pages/UpscalerArcanoTool.tsx`, o `TransformWrapper` está assim:
+## Mudanças no Arquivo
 
-```ts
-smooth={true}
-wheel={{ smoothStep: 0.08 }}
-maxScale={6}
+### `src/pages/UpscalerArcanoTool.tsx`
+
+#### 1. Importar componente Tooltip e ícone Coins
+```typescript
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+// Adicionar Coins ao import do lucide-react
+import { ..., Coins } from 'lucide-react';
 ```
 
-No `react-zoom-pan-pinch`, quando `smooth={true}`, ele calcula o passo do wheel assim:
+#### 2. Envolver o ToggleGroup com TooltipProvider e adicionar tooltips
 
-- `zoomStep = smoothStep * Math.abs(event.deltaY)`
-- e o zoom de wheel é **linear**: `newScale = scale + delta * zoomStep`
-
-Como `event.deltaY` normalmente é ~100 por “notch” do mouse:
-- `zoomStep = 0.08 * 100 = 8`
-- então `scale` vai de `1` para `1 + 8 = 9`
-- e aí **clampa** em `maxScale = 6`
-Resultado: **pula de 100% para 600% em 1 scroll**.
-
-Ou seja: não é “função limitando a 600” dando bug; é o `smoothStep` alto demais que força o clamp instantâneo.
-
----
-
-## Correção proposta (simples e robusta)
-### Estratégia
-1. **Desligar o wheel zoom interno** do `react-zoom-pan-pinch` (porque o `smoothStep` é a origem do pulo).
-2. Implementar um **wheel zoom próprio** com fator multiplicativo fixo (ex.: 15% por passo), clampando em `[1..6]`:
-   - zoom in: `scale *= 1.15`
-   - zoom out: `scale /= 1.15`
-   - clamp final: `scale = min(max(scale, 1), 6)`
-3. Aplicar o zoom mantendo o ponto do mouse estável (mesma matemática que a lib usa):
-   - `newPosX = positionX - mouseX * (newScale - oldScale)`
-   - `newPosY = positionY - mouseY * (newScale - oldScale)`
-4. Ajustar também **double click** e botões `zoomIn/zoomOut` para um step pequeno (sem saltar).
-
-Isso entrega exatamente o que você pediu: **zoom gradual/“exponencial”** (multiplicativo) até 600%.
-
----
-
-## Mudanças no código (arquivo único)
-### Arquivo: `src/pages/UpscalerArcanoTool.tsx`
-
-#### 1) Adicionar refs/constantes para controlar zoom
-- Criar um `transformRef` para guardar o `ref` do `TransformWrapper` via `onInit`.
-- Criar constantes:
-  - `MIN_ZOOM = 1`
-  - `MAX_ZOOM = 6`
-  - `WHEEL_FACTOR = 1.15` (15% por passo)
-
-#### 2) Atualizar `onInit` e `onTransformed`
-- Em `onInit`, salvar `ref` no `transformRef.current = ref`
-- Manter o que já existe (setZoomLevel e sync do `beforeTransformRef`)
-
-#### 3) Desativar wheel interno do TransformWrapper
-Trocar:
+**Botão Standard (linhas 550-555):**
 ```tsx
-wheel={{ smoothStep: 0.08 }}
+<Tooltip>
+  <TooltipTrigger asChild>
+    <ToggleGroupItem 
+      value="standard" 
+      className="..."
+    >
+      Upscaler Arcano
+    </ToggleGroupItem>
+  </TooltipTrigger>
+  <TooltipContent className="bg-black/90 border-purple-500/30">
+    <div className="flex items-center gap-1.5 text-sm">
+      <Clock className="w-3.5 h-3.5 text-purple-400" />
+      <span>~2m 20s</span>
+    </div>
+  </TooltipContent>
+</Tooltip>
 ```
-por:
+
+**Botão PRO (linhas 556-565):**
 ```tsx
-wheel={{ disabled: true }}
+<Tooltip>
+  <TooltipTrigger asChild>
+    <ToggleGroupItem 
+      value="pro" 
+      className="..."
+    >
+      Upscaler Arcano
+      <span className="...">
+        <Crown className="w-3 h-3" />
+        PRO
+      </span>
+    </ToggleGroupItem>
+  </TooltipTrigger>
+  <TooltipContent className="bg-black/90 border-purple-500/30">
+    <div className="flex items-center gap-1.5 text-sm">
+      <Clock className="w-3.5 h-3.5 text-purple-400" />
+      <span>~3m 30s</span>
+    </div>
+  </TooltipContent>
+</Tooltip>
 ```
 
-(Assim a lib não intercepta o wheel e não cria o salto para o maxScale.)
+#### 3. Atualizar botão "Aumentar Qualidade" com custo de créditos (linhas 958-964)
 
-#### 4) Implementar `onWheel` no container do resultado
-Adicionar `onWheel` no container que envolve a área do preview (ex.: o `div ref={sliderRef} ...` ou o wrapper do preview) para:
-
-- `preventDefault()` e `stopPropagation()`
-- Ler estado atual:
-  - `scale`, `positionX`, `positionY` de `transformRef.current.state`
-- Calcular mouseX/mouseY em coordenadas do conteúdo:
-  - usando `wrapperRect` do `transformRef.current.instance.wrapperComponent`
-- Calcular novo scale multiplicativo e clamp:
-  - `scale * 1.15` ou `scale / 1.15`
-  - clamp em `[1..6]`
-- Calcular novas posições com a fórmula
-- Aplicar com:
-  - `transformRef.current.instance.setTransformState(newScale, newPosX, newPosY)`
-    - (isso atualiza UI, dispara `onTransformed`, e mantém o before/after sincronizado)
-
-#### 5) Ajustar double click e botões para não darem “saltos”
-Hoje está:
 ```tsx
-doubleClick={{ mode: 'zoomIn', step: 1.5 }}
-onClick={() => zoomIn(0.3)}
-onClick={() => zoomOut(0.3)}
+<Button
+  className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
+  onClick={processImage}
+>
+  <Sparkles className="w-5 h-5 mr-2" />
+  {t('upscalerTool.buttons.increaseQuality')}
+  <span className="ml-2 flex items-center gap-1 text-sm opacity-90">
+    <Coins className="w-4 h-4" />
+    {version === 'pro' ? '60' : '40'}
+  </span>
+</Button>
 ```
 
-- `doubleClick step 1.5` é agressivo (pode ir muito alto em poucos cliques).
-- Vamos reduzir para um step pequeno e consistente com o wheel.
-- Para manter coerência com o fator 1.15:
-  - `STEP = Math.log(1.15)` ≈ `0.14` (porque o zoom do botão usa `scale * exp(step)` quando `smooth=true`)
-
-Então:
-- `zoomIn(0.14)` / `zoomOut(0.14)`
-- `doubleClick step: 0.14`
-
 ---
 
-## Critérios de pronto (checklist)
-1. No resultado do upscale, scroll do mouse:
-   - 100% → 115% → 132%… (progressivo)
-   - nunca mais 100% → 600% em 1 scroll
-2. Zoom máximo continua **600%** (clamp).
-3. Botões +/− também sobem/descem progressivamente (sem pulo).
-4. Double click não dá salto absurdo.
-5. Testar com:
-   - Standard e PRO (toggle) com resultado renderizado
-   - Mouse wheel
-   - Trackpad/pinch (se possível)
+## Resultado Visual
 
----
+**Switcher:**
+- Ao passar o mouse no "Upscaler Arcano" (Standard): tooltip com `🕐 ~2m 20s`
+- Ao passar o mouse no "Upscaler Arcano PRO": tooltip com `🕐 ~3m 30s`
 
-## Risco / Observação
-- A única “mudança de comportamento” é que a gente para de usar o wheel interno da lib (porque ele é o causador do pulo com `smoothStep` alto) e passa a usar wheel controlado com fator fixo.
-- Isso é a forma mais direta de garantir “zoom progressivo até 600” sem voltar o bug.
+**Botão de Ação:**
+- Standard selecionado: `✨ Aumentar Qualidade 🪙 40`
+- PRO selecionado: `✨ Aumentar Qualidade 🪙 60`
 
----
