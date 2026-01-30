@@ -1,65 +1,118 @@
 
-# Plano: Corrigir Botões com Nomes Estranhos na Biblioteca de Prompts
+# Plano: Corrigir Contraste e Unificar Cores da Biblioteca de Prompts
 
 ## Problema Identificado
 
-Os botões nos cards da Biblioteca de Prompts estão mostrando as **chaves de tradução literalmente** (como `card.copyPrompt` e `card.details`) porque durante o redesign, foram usadas chaves que não existem no arquivo de traduções.
+A Biblioteca de Prompts tem vários elementos com cores que não combinam com a identidade visual roxa ou possuem baixo contraste:
 
-## Chaves Com Problema
+| Elemento | Cor Atual | Problema |
+|----------|----------|----------|
+| Botões da sidebar (Gerar no ChatGPT, etc) | Texto branco/roxo claro | Baixíssimo contraste, quase ilegível |
+| Botão "Torne-se Premium" | Gradiente amarelo/laranja | Não combina com a paleta roxa |
+| Botão "Ferramentas de IA" | Verde (`bg-green-600`) | Cor destoante da identidade |
+| Botão "Fazer Login" | Borda roxa clara | Baixo contraste |
+| Aba "Comunidade" | Borda roxa clara | Baixo contraste |
 
-| Chave usada no código | O que aparece | O que deveria ser |
-|----------------------|---------------|-------------------|
-| `t('card.copyPrompt')` | card.copyPrompt | Copiar Prompt |
-| `t('card.details')` | card.details | Detalhes |
-| `t('modal.referenceImages')` | modal.referenceImages | Imagens de Referência |
-| `t('modal.prompt')` | modal.prompt | Prompt |
-| `t('modal.copyPrompt')` | modal.copyPrompt | Copiar Prompt |
-| `t('modal.download')` | modal.download | Baixar |
-| `t('modal.watchTutorial')` | modal.watchTutorial | Ver Tutorial |
-| `t('premiumModal.title')` | premiumModal.title | Conteúdo Premium |
-| `t('premiumModal.description')` | premiumModal.description | Este conteúdo está disponível... |
-| `t('premiumModal.becomePremium')` | premiumModal.becomePremium | Torne-se Premium |
-| `t('limitModal.title')` | limitModal.title | Limite Diário Atingido |
-| `t('limitModal.description')` | limitModal.description | Você atingiu o limite diário... |
-| `t('limitModal.upgrade')` | limitModal.upgrade | Fazer Upgrade |
+## Solução: Nova Paleta de Cores
 
-## Solução
+Todas as cores serão unificadas para combinar com a identidade visual roxa:
 
-Adicionar as chaves faltantes no arquivo `src/locales/pt/prompts.json`:
+### 1. Botões da Sidebar (Gerar com IA)
+**De:** `border-purple-500/30 text-purple-200` (baixo contraste)
+**Para:** `bg-[#1A0A2E] border-purple-500/50 text-white` + hover mais vibrante
 
-```json
-{
-  "card": {
-    "copyPrompt": "Copiar Prompt",
-    "details": "Detalhes"
-  },
-  "modal": {
-    "referenceImages": "Imagens de Referência",
-    "prompt": "Prompt",
-    "copyPrompt": "Copiar Prompt",
-    "download": "Baixar",
-    "watchTutorial": "Ver Tutorial"
-  },
-  "premiumModal": {
-    "title": "Conteúdo Premium",
-    "description": "Este conteúdo está disponível apenas para usuários premium. Adquira um plano para ter acesso ilimitado!",
-    "becomePremium": "Torne-se Premium"
-  },
-  "limitModal": {
-    "title": "Limite Diário Atingido",
-    "description": "Você atingiu o limite diário de {{limit}} prompts premium.",
-    "upgrade": "Fazer Upgrade"
-  }
-}
+### 2. Botão "Torne-se Premium"  
+**De:** `bg-gradient-to-r from-yellow-500 to-orange-500` (amarelo)
+**Para:** `bg-gradient-to-r from-purple-500 to-pink-500` (roxo/rosa - combina com identidade)
+
+### 3. Botão "Ferramentas de IA"
+**De:** `bg-green-600` (verde destoante)
+**Para:** `bg-gradient-to-r from-fuchsia-500 to-purple-600` (fúcsia/roxo - destaque moderno)
+
+### 4. Botão "Fazer Login"
+**De:** `border-purple-500/30 text-purple-200`
+**Para:** `bg-purple-900/50 border-purple-400/50 text-white`
+
+### 5. Aba "Comunidade" (não selecionada)
+**De:** `border-purple-500/30 text-purple-300`
+**Para:** `bg-purple-900/30 border-purple-400/50 text-purple-200`
+
+## Mudanças Específicas no Código
+
+### Arquivo: `src/pages/BibliotecaPrompts.tsx`
+
+#### Botões da Sidebar (linhas 653-664)
+```tsx
+// ANTES
+className="w-full h-auto py-4 px-4 ... border-purple-500/30 text-purple-200 hover:text-white"
+
+// DEPOIS  
+className="w-full h-auto py-4 px-4 ... bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30"
+```
+
+#### Botão "Torne-se Premium" (múltiplas ocorrências)
+```tsx
+// ANTES
+className="bg-gradient-to-r from-yellow-500 to-orange-500 ..."
+
+// DEPOIS
+className="bg-gradient-to-r from-purple-500 to-pink-500 ..."
+```
+
+#### Botão "Ferramentas de IA" (linha 668-674)
+```tsx
+// ANTES
+className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white ..."
+
+// DEPOIS
+className="w-full mt-6 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white ..."
+```
+
+#### Botão "Fazer Login" (linha 644)
+```tsx
+// ANTES
+className="w-full border-purple-500/30 text-purple-200 hover:bg-purple-500/20 ..."
+
+// DEPOIS
+className="w-full bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 ..."
+```
+
+## Resumo Visual da Nova Paleta
+
+```text
+┌─────────────────────────────────────────────┐
+│  SIDEBAR                                     │
+│  ┌─────────────────────────────────────────┐│
+│  │ Instalar App     (gradiente roxo/rosa)  ││
+│  └─────────────────────────────────────────┘│
+│  ┌─────────────────────────────────────────┐│
+│  │ Torne-se Premium (gradiente roxo/rosa)  ││
+│  └─────────────────────────────────────────┘│
+│  ┌─────────────────────────────────────────┐│
+│  │ Fazer Login      (roxo escuro sólido)   ││
+│  └─────────────────────────────────────────┘│
+│                                              │
+│  Gere com IA                                 │
+│  ┌─────────────────────────────────────────┐│
+│  │ Gerar no ChatGPT (fundo roxo escuro)    ││
+│  └─────────────────────────────────────────┘│
+│  ┌─────────────────────────────────────────┐│
+│  │ Gerar no Whisk   (fundo roxo escuro)    ││
+│  └─────────────────────────────────────────┘│
+│                                              │
+│  ┌─────────────────────────────────────────┐│
+│  │ Ferramentas IA   (gradiente fúcsia)     ││
+│  └─────────────────────────────────────────┘│
+└─────────────────────────────────────────────┘
 ```
 
 ## Arquivo a Modificar
 
-- `src/locales/pt/prompts.json` - Adicionar as chaves faltantes
+- `src/pages/BibliotecaPrompts.tsx` - Atualizar classes de cores dos botões
 
 ## Resultado Esperado
 
-Após a correção:
-- Botão "card.copyPrompt" → **Copiar Prompt**
-- Botão "card.details" → **Detalhes**  
-- Todos os textos nos modais aparecerão corretamente em português
+- Todos os botões terão contraste adequado
+- Cores unificadas na paleta roxa/rosa/fúcsia
+- Identidade visual consistente e moderna
+- Sem amarelo, laranja ou verde destoantes
