@@ -277,8 +277,8 @@ const Planos2 = () => {
             const isBestSeller = (plan as any).bestSeller;
             const hasCountdown = (plan as any).hasCountdown;
             return (
-            <div key={plan.name} className="flex flex-col">
-              <Card className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full flex-1 ${index === 0 ? "lg:rounded-l-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-r-xl" : ""} ${isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
+            <div key={plan.name} className="flex flex-col h-full">
+              <Card className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full h-full ${index === 0 ? "lg:rounded-l-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-r-xl" : ""} ${isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-4 py-1">
                   {t('planos.bestSeller')}
@@ -299,7 +299,7 @@ const Planos2 = () => {
                 <h2 className="text-xl font-bold text-white">{plan.name}</h2>
               </div>
 
-              <div className="text-center mb-6 min-h-[80px]">
+              <div className="text-center mb-6 min-h-[120px]">
                 {plan.originalPrice && (
                   <p className="text-purple-400 line-through text-sm">
                     R${plan.originalPrice}{t('planos.perMonth')}
