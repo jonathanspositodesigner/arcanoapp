@@ -1,58 +1,131 @@
 
-# Plano: Mensagens de Fila Aleatórias
+## Objetivo (correção direta, sem firula)
+Consertar o zoom no **resultado do upscale** em `/upscaler-arcano-tool` para:
 
-## O que vou fazer
+- **Não** pular de **100% direto para 600%**
+- Fazer zoom **aos poucos (progressivo)** até o máximo
+- Manter **máximo = 600% (6x)**, sem travar em “só 100 ou 600”
+- Garantir que isso funcione igual tanto no **Standard** quanto no **PRO** (mesmo resultado/mesmo componente)
 
-Criar um array com os 10 combos de mensagens e selecionar um aleatoriamente cada vez que o usuário entrar na fila.
+---
 
-## Mudanças no Arquivo
+## Diagnóstico (por que está pulando 100% → 600%)
+No `src/pages/UpscalerArcanoTool.tsx`, o `TransformWrapper` está assim:
 
-### `src/pages/UpscalerArcanoTool.tsx`
-
-**1. Adicionar array de combos (início do componente):**
-
-```typescript
-const queueMessageCombos = [
-  { emoji: "🔥", title: "Tá bombando!", position: (n: number) => `Você é o ${n}º da fila`, subtitle: "Relaxa que já já é sua vez!" },
-  { emoji: "☕", title: "Hora do cafezinho", position: (n: number) => `Posição: ${n}`, subtitle: "Aproveita pra dar aquela relaxada" },
-  { emoji: "🎨", title: "Artistas trabalhando...", position: (n: number) => `${n > 1 ? n - 1 : 0} pessoas na sua frente`, subtitle: "Grandes obras levam tempo, confia!" },
-  { emoji: "🚀", title: "Decolagem em breve", position: (n: number) => `Você é o ${n}º na pista`, subtitle: "Preparando sua foto para o espaço!" },
-  { emoji: "⚡", title: "Alta demanda agora", position: (n: number) => `Posição ${n} na fila`, subtitle: "Isso aqui tá voando, já já chega sua vez!" },
-  { emoji: "🤖", title: "Robôzinhos a mil!", position: (n: number) => `Faltam ${n > 1 ? n - 1 : 0} na sua frente`, subtitle: "Eles tão trabalhando pesado pra você" },
-  { emoji: "✨", title: "Preparando sua mágica", position: (n: number) => `${n}º lugar na fila VIP`, subtitle: "Magia de qualidade leva um tempinho" },
-  { emoji: "🎮", title: "Loading...", position: (n: number) => `Player ${n} na fila`, subtitle: "Próxima fase desbloqueando em breve!" },
-  { emoji: "🌟", title: "Sucesso gera fila", position: (n: number) => `Você é o ${n}º`, subtitle: "Todo mundo quer essa qualidade, né?" },
-  { emoji: "😎", title: "Fica tranquilo", position: (n: number) => `${n}º da galera esperando`, subtitle: "Vale a pena esperar, resultado top vem aí!" },
-];
+```ts
+smooth={true}
+wheel={{ smoothStep: 0.08 }}
+maxScale={6}
 ```
 
-**2. Adicionar state para guardar o combo selecionado:**
+No `react-zoom-pan-pinch`, quando `smooth={true}`, ele calcula o passo do wheel assim:
 
-```typescript
-const [currentQueueCombo, setCurrentQueueCombo] = useState<number>(0);
+- `zoomStep = smoothStep * Math.abs(event.deltaY)`
+- e o zoom de wheel é **linear**: `newScale = scale + delta * zoomStep`
+
+Como `event.deltaY` normalmente é ~100 por “notch” do mouse:
+- `zoomStep = 0.08 * 100 = 8`
+- então `scale` vai de `1` para `1 + 8 = 9`
+- e aí **clampa** em `maxScale = 6`
+Resultado: **pula de 100% para 600% em 1 scroll**.
+
+Ou seja: não é “função limitando a 600” dando bug; é o `smoothStep` alto demais que força o clamp instantâneo.
+
+---
+
+## Correção proposta (simples e robusta)
+### Estratégia
+1. **Desligar o wheel zoom interno** do `react-zoom-pan-pinch` (porque o `smoothStep` é a origem do pulo).
+2. Implementar um **wheel zoom próprio** com fator multiplicativo fixo (ex.: 15% por passo), clampando em `[1..6]`:
+   - zoom in: `scale *= 1.15`
+   - zoom out: `scale /= 1.15`
+   - clamp final: `scale = min(max(scale, 1), 6)`
+3. Aplicar o zoom mantendo o ponto do mouse estável (mesma matemática que a lib usa):
+   - `newPosX = positionX - mouseX * (newScale - oldScale)`
+   - `newPosY = positionY - mouseY * (newScale - oldScale)`
+4. Ajustar também **double click** e botões `zoomIn/zoomOut` para um step pequeno (sem saltar).
+
+Isso entrega exatamente o que você pediu: **zoom gradual/“exponencial”** (multiplicativo) até 600%.
+
+---
+
+## Mudanças no código (arquivo único)
+### Arquivo: `src/pages/UpscalerArcanoTool.tsx`
+
+#### 1) Adicionar refs/constantes para controlar zoom
+- Criar um `transformRef` para guardar o `ref` do `TransformWrapper` via `onInit`.
+- Criar constantes:
+  - `MIN_ZOOM = 1`
+  - `MAX_ZOOM = 6`
+  - `WHEEL_FACTOR = 1.15` (15% por passo)
+
+#### 2) Atualizar `onInit` e `onTransformed`
+- Em `onInit`, salvar `ref` no `transformRef.current = ref`
+- Manter o que já existe (setZoomLevel e sync do `beforeTransformRef`)
+
+#### 3) Desativar wheel interno do TransformWrapper
+Trocar:
+```tsx
+wheel={{ smoothStep: 0.08 }}
+```
+por:
+```tsx
+wheel={{ disabled: true }}
 ```
 
-**3. Selecionar combo aleatório quando entrar na fila:**
+(Assim a lib não intercepta o wheel e não cria o salto para o maxScale.)
 
-Onde a fila é ativada, adicionar:
-```typescript
-setCurrentQueueCombo(Math.floor(Math.random() * queueMessageCombos.length));
+#### 4) Implementar `onWheel` no container do resultado
+Adicionar `onWheel` no container que envolve a área do preview (ex.: o `div ref={sliderRef} ...` ou o wrapper do preview) para:
+
+- `preventDefault()` e `stopPropagation()`
+- Ler estado atual:
+  - `scale`, `positionX`, `positionY` de `transformRef.current.state`
+- Calcular mouseX/mouseY em coordenadas do conteúdo:
+  - usando `wrapperRect` do `transformRef.current.instance.wrapperComponent`
+- Calcular novo scale multiplicativo e clamp:
+  - `scale * 1.15` ou `scale / 1.15`
+  - clamp em `[1..6]`
+- Calcular novas posições com a fórmula
+- Aplicar com:
+  - `transformRef.current.instance.setTransformState(newScale, newPosX, newPosY)`
+    - (isso atualiza UI, dispara `onTransformed`, e mantém o before/after sincronizado)
+
+#### 5) Ajustar double click e botões para não darem “saltos”
+Hoje está:
+```tsx
+doubleClick={{ mode: 'zoomIn', step: 1.5 }}
+onClick={() => zoomIn(0.3)}
+onClick={() => zoomOut(0.3)}
 ```
 
-**4. Atualizar o JSX da fila (linhas 570-578):**
+- `doubleClick step 1.5` é agressivo (pode ir muito alto em poucos cliques).
+- Vamos reduzir para um step pequeno e consistente com o wheel.
+- Para manter coerência com o fator 1.15:
+  - `STEP = Math.log(1.15)` ≈ `0.14` (porque o zoom do botão usa `scale * exp(step)` quando `smooth=true`)
 
-```typescript
-<p className="text-xl font-bold text-yellow-300">
-  {queueMessageCombos[currentQueueCombo].emoji} {queueMessageCombos[currentQueueCombo].title}
-</p>
-<p className="text-4xl font-bold text-white mt-2">
-  {queueMessageCombos[currentQueueCombo].position(queuePosition)}
-</p>
-<p className="text-sm text-purple-300/70 mt-2">
-  {queueMessageCombos[currentQueueCombo].subtitle}
-</p>
-```
+Então:
+- `zoomIn(0.14)` / `zoomOut(0.14)`
+- `doubleClick step: 0.14`
 
-## Resultado
+---
 
-Cada vez que o usuário entrar na fila, vai ver uma mensagem diferente e divertida aleatória dos 10 combos!
+## Critérios de pronto (checklist)
+1. No resultado do upscale, scroll do mouse:
+   - 100% → 115% → 132%… (progressivo)
+   - nunca mais 100% → 600% em 1 scroll
+2. Zoom máximo continua **600%** (clamp).
+3. Botões +/− também sobem/descem progressivamente (sem pulo).
+4. Double click não dá salto absurdo.
+5. Testar com:
+   - Standard e PRO (toggle) com resultado renderizado
+   - Mouse wheel
+   - Trackpad/pinch (se possível)
+
+---
+
+## Risco / Observação
+- A única “mudança de comportamento” é que a gente para de usar o wheel interno da lib (porque ele é o causador do pulo com `smoothStep` alto) e passa a usar wheel controlado com fator fixo.
+- Isso é a forma mais direta de garantir “zoom progressivo até 600” sem voltar o bug.
+
+---
