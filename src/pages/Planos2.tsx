@@ -220,14 +220,14 @@ const Planos2 = () => {
       hasTrial: false,
       bestSeller: true
     }, {
-      name: "IA Unlimited",
-      price: "79,90",
+    name: "IA Unlimited",
+      price: "73,90",
       originalPrice: "149,90",
       perMonth: true,
-      yearlyTotal: "958,80",
+      yearlyTotal: "886,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
       credits: "Créditos Ilimitados",
-      savings: "R$240",
+      savings: "R$312",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
