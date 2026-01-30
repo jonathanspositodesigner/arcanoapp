@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +32,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // State
   const [detailDenoise, setDetailDenoise] = useState(0.15);
+  const [resolution, setResolution] = useState<'2k' | '4k'>('2k');
   const [useCustomPrompt, setUseCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState(DEFAULT_PROMPT);
   const [inputImage, setInputImage] = useState<string | null>(null);
@@ -341,6 +343,7 @@ const UpscalerArcanoTool: React.FC = () => {
           jobId: job.id,
           fileName,
           detailDenoise,
+          resolution: resolution === '4k' ? 4096 : 2048,
           prompt: useCustomPrompt ? customPrompt : null,
         },
       });
@@ -798,6 +801,32 @@ const UpscalerArcanoTool: React.FC = () => {
                 <span>{t('upscalerTool.controls.lessDetail')}</span>
                 <span>{t('upscalerTool.controls.moreDetail')}</span>
               </div>
+            </Card>
+
+            {/* Resolution Selector */}
+            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="font-medium text-white">📐 Resolução</span>
+              </div>
+              <ToggleGroup 
+                type="single" 
+                value={resolution} 
+                onValueChange={(val) => val && setResolution(val as '2k' | '4k')}
+                className="justify-start"
+              >
+                <ToggleGroupItem 
+                  value="2k" 
+                  className="data-[state=on]:bg-purple-600 data-[state=on]:text-white border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                >
+                  2K (2048px)
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="4k" 
+                  className="data-[state=on]:bg-purple-600 data-[state=on]:text-white border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                >
+                  4K (4096px)
+                </ToggleGroupItem>
+              </ToggleGroup>
             </Card>
 
             {/* Custom Prompt */}
