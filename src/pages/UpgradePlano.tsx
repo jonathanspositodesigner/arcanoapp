@@ -69,7 +69,6 @@ const UpgradePlano = () => {
         features: [
           { text: t('features.premiumPromptsDay', { count: 10 }), included: true },
           { text: t('features.allPremiumContent'), included: true },
-          { text: t('features.arcanoAcademy'), included: true },
           { text: t('features.dailyUpdates'), included: true },
           { text: t('features.whatsappSupport'), included: true },
           { text: t('features.aiClothesChange'), included: false },
@@ -88,7 +87,6 @@ const UpgradePlano = () => {
         features: [
           { text: t('features.premiumPromptsDay', { count: 24 }), included: true },
           { text: t('features.allPremiumContent'), included: true },
-          { text: t('features.arcanoAcademy'), included: true },
           { text: t('features.dailyUpdates'), included: true },
           { text: t('features.immediateRelease'), included: true },
           { text: t('features.exclusiveWhatsappSupport'), included: true },
@@ -103,13 +101,10 @@ const UpgradePlano = () => {
         id: "arcano_unlimited",
         name: "Arcano IA Unlimited",
         slug: "unlimited",
-        price: "24,90",
-        originalPrice: "29,90",
-        isPromo: true,
+        price: "29,90",
         features: [
           { text: t('features.unlimitedPremiumPrompts'), included: true },
           { text: t('features.allPremiumContent'), included: true },
-          { text: t('features.arcanoAcademy'), included: true },
           { text: t('features.dailyUpdates'), included: true },
           { text: t('features.immediateRelease'), included: true },
           { text: t('features.vipWhatsappSupport'), included: true },
@@ -132,7 +127,6 @@ const UpgradePlano = () => {
         features: [
           { text: t('features.premiumPromptsDay', { count: 10 }), included: true },
           { text: t('features.allPremiumContent'), included: true },
-          { text: t('features.arcanoAcademy'), included: true },
           { text: t('features.dailyUpdates'), included: true },
           { text: t('features.whatsappSupport'), included: true },
           { text: t('features.aiClothesChange'), included: false },
@@ -153,7 +147,6 @@ const UpgradePlano = () => {
         features: [
           { text: t('features.premiumPromptsDay', { count: 24 }), included: true },
           { text: t('features.allPremiumContent'), included: true },
-          { text: t('features.arcanoAcademy'), included: true },
           { text: t('features.dailyUpdates'), included: true },
           { text: t('features.immediateRelease'), included: true },
           { text: t('features.exclusiveWhatsappSupport'), included: true },
@@ -171,11 +164,9 @@ const UpgradePlano = () => {
         price: "19,90",
         originalPrice: "29,90",
         yearlyTotal: "238,80",
-        isPromo: true,
         features: [
           { text: t('features.unlimitedPremiumPrompts'), included: true },
           { text: t('features.allPremiumContent'), included: true },
-          { text: t('features.arcanoAcademy'), included: true },
           { text: t('features.dailyUpdates'), included: true },
           { text: t('features.immediateRelease'), included: true },
           { text: t('features.vipWhatsappSupport'), included: true },
