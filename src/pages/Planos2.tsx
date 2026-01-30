@@ -322,7 +322,7 @@ const Planos2 = () => {
                 <h2 className="text-base font-bold text-white">{plan.name}</h2>
               </div>
 
-              <div className="text-center mb-4 min-h-[100px]">
+              <div className="text-center mb-2 min-h-[70px]">
                 {plan.originalPrice && (
                   <p className="text-purple-400 line-through text-xs">
                     R${plan.originalPrice}{t('planos.perMonth')}
