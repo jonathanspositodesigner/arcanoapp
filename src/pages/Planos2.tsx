@@ -180,7 +180,7 @@ const Planos2 = () => {
       yearlyTotal: "286,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
       credits: "4.400 créditos de IA",
-      savings: "R$144",
+      savings: "R$72",
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -373,17 +373,17 @@ const Planos2 = () => {
               <div className="h-[28px] mb-2 flex items-center justify-center">
                 {billingPeriod === "anual" ? (
                   plan.name === "Starter" ? (
-                    <div className="flex items-center justify-center gap-1.5 bg-gray-800/50 border border-gray-600/30 rounded-full px-3 py-1">
-                      <Tag className="w-3 h-3 text-gray-400" />
+                    <div className="flex items-center justify-center gap-1.5 bg-gray-800/50 border border-gray-600/30 rounded-full px-3 py-1 whitespace-nowrap">
+                      <Tag className="w-3 h-3 text-gray-400 flex-shrink-0" />
                       <span className="text-[10px] text-gray-400">Sem diferença comparado ao mensal</span>
                     </div>
                   ) : (
-                    <div className={`flex items-center justify-center gap-1.5 rounded-full px-3 py-1 ${
+                    <div className={`flex items-center justify-center gap-1.5 rounded-full px-3 py-1 whitespace-nowrap ${
                       plan.name === "Pro" ? "bg-yellow-900/30 border border-yellow-600/40" :
                       plan.name === "Ultimate" ? "bg-lime-900/30 border border-lime-500/40" :
                       "bg-purple-900/30 border border-purple-500/40"
                     }`}>
-                      <Tag className={`w-3 h-3 ${
+                      <Tag className={`w-3 h-3 flex-shrink-0 ${
                         plan.name === "Pro" ? "text-yellow-400" :
                         plan.name === "Ultimate" ? "text-lime-400" :
                         "text-purple-400"
