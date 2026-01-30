@@ -615,7 +615,7 @@ const BibliotecaPrompts = () => {
           </div>
 
           {/* Install App Button */}
-          <Button onClick={() => navigate("/install-app")} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-semibold mb-2">
+          <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-semibold mb-2">
             <Smartphone className="h-4 w-4 mr-2" />
             {t('sidebar.installApp')}
           </Button>
@@ -677,7 +677,7 @@ const BibliotecaPrompts = () => {
         {/* Main Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-[#0D0221] pb-24 lg:pb-8 overflow-x-hidden max-w-full">
           {/* Mobile Install App Button */}
-          <Button onClick={() => navigate("/install-app")} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-semibold mb-4 lg:hidden">
+          <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-semibold mb-4 lg:hidden">
             <Smartphone className="h-4 w-4 mr-2" />
             {t('sidebar.installApp')}
           </Button>
