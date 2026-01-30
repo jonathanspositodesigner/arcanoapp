@@ -1,106 +1,62 @@
 
-# Plano: Evitar Duplicação de Emails de Boas-vindas
 
-## Situação Atual
+# Correção: Alterações na Página /planos
 
-Analisando os dados de hoje, encontrei **duplicações significativas**:
-- 1 pessoa recebeu **4 emails** (hellyelclaudinofotografia@gmail.com)  
-- 1 pessoa recebeu **3 emails** (arquivosprivwill@gmail.com)
-- 12 pessoas receberam **2 emails** cada
+## Problema Identificado
 
-As duplicações acontecem em **milissegundos** de diferença (ex: `01:39:45.436` e `01:39:45.830`), indicando que múltiplas requisições de webhook chegam quase simultaneamente.
+Você está na página `/planos`, que usa o arquivo `src/pages/Planos.tsx`. Eu editei o arquivo errado (`src/pages/UpgradePlano.tsx` = rota `/upgrade`).
 
-### Por que acontece?
+A página `/planos` também usa o namespace de tradução `prompts` (`t('planos.features.xxx')`), não o namespace `plans`.
 
-Plataformas de pagamento (Greenn, Hotmart) frequentemente reenviam webhooks quando não recebem confirmação rápida, ou disparam múltiplas vezes durante o processamento de uma mesma compra.
+## Arquivos a Modificar (Corretos)
 
-### Status das Proteções por Webhook
+### 1. `src/pages/Planos.tsx`
 
-| Webhook | Proteção Anti-Duplicação |
-|---------|:------------------------:|
-| `webhook-greenn` (PromptClub) | ❌ Não tem |
-| `webhook-greenn-artes` | ✅ Já tem |
-| `webhook-greenn-musicos` | ❌ Não tem |
-| `webhook-hotmart-artes` | ✅ Já tem |
+**Alterações nos planos MENSAIS:**
 
----
+| Plano | Mudança |
+|-------|---------|
+| Starter | Remover linha `arcanoAcademy` |
+| Pro | Remover linha `arcanoAcademy` |
+| **IA Unlimited** | Remover `arcanoAcademy` + **mudar preço para 29,90** + **remover originalPrice** + **remover promo: true** |
 
-## Solução Proposta
+**Alterações nos planos ANUAIS:**
 
-Adicionar a **mesma proteção simples** que já funciona nos webhooks que têm, nos que faltam:
+| Plano | Mudança |
+|-------|---------|
+| Starter | Remover linha `arcanoAcademy` |
+| Pro | Remover linha `arcanoAcademy` |
+| IA Unlimited | Remover linha `arcanoAcademy` (manter 19,90 com promo) |
 
-### Lógica de Deduplicação (já testada e funcionando)
+### 2. `src/locales/pt/prompts.json` (linhas ~144-157)
 
-Antes de enviar qualquer email, verificar se já existe um registro `sent` para o mesmo `email + product_info` nos **últimos 5 minutos**:
+Atualizar a tradução dentro de `planos.features`:
+- `upscaleArcano`: "Upscale Arcano" → **"Upscale Arcano v2.0"**
+
+### 3. `src/locales/es/prompts.json` (linhas ~123-136)
+
+Mesma atualização para espanhol:
+- `upscaleArcano`: já está v2.0 ✅ (editado antes)
+
+## Resumo das Mudanças
 
 ```text
-Se enviou email para (email + produto) nos últimos 5 minutos:
-  → Ignorar (não envia duplicado)
-Senão:
-  → Envia normalmente
+/planos (Planos.tsx)
+├── MENSAL
+│   ├── Starter: remove arcanoAcademy
+│   ├── Pro: remove arcanoAcademy
+│   └── IA Unlimited: remove arcanoAcademy + preço 29,90 (sem promo)
+│
+└── ANUAL
+    ├── Starter: remove arcanoAcademy
+    ├── Pro: remove arcanoAcademy
+    └── IA Unlimited: remove arcanoAcademy (mantém 19,90 com promo)
 ```
-
-### O que NÃO muda (garantia de funcionamento)
-
-1. **Todo o fluxo de processamento** continua igual
-2. **Criação de usuário** não é afetada
-3. **Liberação de acesso** não é afetada
-4. **Primeiro email sempre é enviado** normalmente
-5. Apenas duplicatas dentro de 5 minutos são ignoradas
-
----
-
-## Arquivos a Modificar
-
-### 1. `supabase/functions/webhook-greenn/index.ts`
-Na função `sendWelcomeEmail` (linhas ~49-113), adicionar verificação antes de enviar.
-
-### 2. `supabase/functions/webhook-greenn-musicos/index.ts`  
-Na função `sendWelcomeEmail` (linhas ~52-114), adicionar a mesma verificação.
-
----
-
-## Código a Adicionar (em cada webhook)
-
-Dentro da função `sendWelcomeEmail`, logo no início do `try`:
-
-```typescript
-// Verificar se já enviou email para este email+produto nos últimos 5 minutos
-const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-const { data: recentEmail } = await supabase
-  .from('welcome_email_logs')
-  .select('id, sent_at')
-  .eq('email', email)
-  .eq('product_info', planDisplayName)  // ou planInfo
-  .eq('status', 'sent')
-  .gte('sent_at', fiveMinutesAgo)
-  .maybeSingle()
-
-if (recentEmail) {
-  console.log(`   ├─ [${requestId}] ⏭️ Email já enviado - IGNORANDO duplicata`)
-  return
-}
-```
-
----
 
 ## Resultado Esperado
 
-| Antes | Depois |
-|-------|--------|
-| Pessoa compra → recebe 2-4 emails | Pessoa compra → recebe **1 email** |
-| Custo de envio multiplicado | Custo de envio normal |
-| Logs de email duplicados | Logs limpos, sem duplicatas |
+- Nenhum plano mostrará "Arcano Academy – Mini curso de IA"
+- IA Unlimited MENSAL: R$29,90 normal (sem badge de promoção, sem preço riscado)
+- IA Unlimited ANUAL: mantém R$19,90 com desconto de R$29,90
+- Texto "Upscale Arcano" vira "Upscale Arcano v2.0"
 
----
-
-## Testes
-
-Após implementar:
-1. Fazer uma compra teste
-2. Verificar na tabela `welcome_email_logs` que só tem 1 registro
-3. Verificar que o email chegou normalmente
-
-## Observação Importante
-
-Esta é uma solução **segura e conservadora** - se por algum motivo a verificação falhar, o email é enviado normalmente (fail-open). O funcionamento atual nunca será prejudicado.
