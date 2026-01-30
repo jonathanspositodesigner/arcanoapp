@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Star, Info, KeyRound, Mail, Lock, UserPlus, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { ArrowLeft, Star, Info, KeyRound, Mail, Lock, UserPlus, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,8 +16,15 @@ const UserLogin = () => {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/';
   const { t } = useTranslation('auth');
+  
+  // Two-step login states
+  const [loginStep, setLoginStep] = useState<'email' | 'password'>('email');
+  const [verifiedEmail, setVerifiedEmail] = useState("");
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
@@ -54,44 +61,87 @@ const UserLogin = () => {
     checkPremiumStatus();
   }, [navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  // Step 1: Check email
+  const handleEmailCheck = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email.trim()) {
+      toast.error(t('errors.enterEmail'));
+      return;
+    }
+    
+    setIsCheckingEmail(true);
+    
+    try {
+      const { data: profileCheck, error } = await supabase
+        .rpc('check_profile_exists', { check_email: email.trim() });
+      
+      if (error) throw error;
+      
+      const profileExists = profileCheck?.[0]?.exists_in_db || false;
+      const passwordChanged = profileCheck?.[0]?.password_changed || false;
+      
+      if (!profileExists) {
+        // Email not found - offer signup
+        toast.info(t('errors.emailNotFoundSignup'));
+        setSignupEmail(email.trim());
+        setShowSignupModal(true);
+        return;
+      }
+      
+      if (profileExists && !passwordChanged) {
+        // First access - auto-login with email as password and redirect
+        const { error: autoLoginError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: email.trim()
+        });
+        
+        if (!autoLoginError) {
+          toast.success(t('errors.firstAccessSetPassword'));
+          navigate(`/change-password?redirect=${redirectTo}`);
+        } else {
+          // Show first access modal as fallback
+          setShowFirstAccessModal(true);
+        }
+        return;
+      }
+      
+      // Email exists and has password - go to step 2
+      setVerifiedEmail(email.trim());
+      setLoginStep('password');
+      
+    } catch (error) {
+      console.error('Erro ao verificar email:', error);
+      toast.error(t('errors.checkRegisterError'));
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
+
+  // Step 2: Login with password
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!password) {
+      toast.error(t('errors.enterEmail'));
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: verifiedEmail,
         password,
       });
 
       if (error) {
-        const { data: profileCheck, error: rpcError } = await supabase
-          .rpc('check_profile_exists', { check_email: email.trim() });
-
-        if (rpcError) {
-          console.error('Erro ao verificar perfil:', rpcError);
-          toast.error(t('errors.checkRegisterError'));
-          setIsLoading(false);
-          return;
-        }
-
-        const profileExists = profileCheck?.[0]?.exists_in_db || false;
-        const passwordChanged = profileCheck?.[0]?.password_changed || false;
-
-        if (profileExists && !passwordChanged) {
-          toast.error(t('errors.firstAccessUseEmail'));
-          setShowFirstAccessModal(true);
-        } else if (!profileExists) {
-          toast.info(t('errors.emailNotFoundSignup'));
-          setShowSignupModal(true);
-        } else {
-          const newAttempts = failedAttempts + 1;
-          setFailedAttempts(newAttempts);
-          toast.error(t('errors.invalidCredentials'));
-          
-          if (newAttempts >= 2) {
-            setShowFirstAccessModal(true);
-          }
+        const newAttempts = failedAttempts + 1;
+        setFailedAttempts(newAttempts);
+        toast.error(t('errors.invalidCredentials'));
+        
+        if (newAttempts >= 3) {
+          toast.info(t('errors.multipleFailedAttempts'));
         }
         
         setIsLoading(false);
@@ -139,6 +189,12 @@ const UserLogin = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleChangeEmail = () => {
+    setLoginStep('email');
+    setPassword('');
+    setFailedAttempts(0);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -396,83 +452,138 @@ const UserLogin = () => {
           </p>
         </div>
 
-        {/* First access notice */}
-        <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
-          <Info className="h-4 w-4 text-yellow-500" />
-          <AlertDescription className="text-sm text-yellow-400">
-            <strong>{t('firstAccess.title')}?</strong> {t('loginCard.firstAccessHint')}
-          </AlertDescription>
-        </Alert>
+        {/* Step 1: Email only */}
+        {loginStep === 'email' && (
+          <>
+            {/* First access notice */}
+            <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
+              <Info className="h-4 w-4 text-yellow-500" />
+              <AlertDescription className="text-sm text-yellow-400">
+                <strong>{t('firstAccess.title')}?</strong> {t('loginCard.firstAccessHint')}
+              </AlertDescription>
+            </Alert>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <Label htmlFor="email" className="text-purple-200">{t('email')}</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu-email@exemplo.com"
-              className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
-              required
-            />
-          </div>
+            <form onSubmit={handleEmailCheck} className="space-y-6">
+              <div>
+                <Label htmlFor="email" className="text-purple-200">{t('email')}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu-email@exemplo.com"
+                  className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                  required
+                  autoFocus
+                />
+              </div>
 
-          <div>
-            <Label htmlFor="password" className="text-purple-200">{t('password')}</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
-              required
-            />
-          </div>
+              <Button
+                type="submit"
+                disabled={isCheckingEmail}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
+              >
+                {isCheckingEmail ? t('checking') : t('continue')}
+              </Button>
+            </form>
 
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
-          >
-            {isLoading ? t('signingIn') : t('login')}
-          </Button>
+            <div className="mt-6 pt-6 border-t border-purple-500/20 text-center">
+              <p className="text-sm text-purple-400 mb-4">
+                {t('noAccountYet')}
+              </p>
+              <div className="flex flex-col gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-green-500/50 text-green-400 hover:bg-green-500/10"
+                  onClick={() => setShowSignupModal(true)}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  {t('createAccountButton')}
+                </Button>
+                <Button 
+                  onClick={() => navigate("/planos")} 
+                  variant="outline" 
+                  className="w-full border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10"
+                >
+                  <Star className="h-4 w-4 mr-2" />
+                  {t('becomePremium')}
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
 
-          <div className="text-center">
-            <Link 
-              to="/forgot-password" 
-              className="text-sm text-purple-400 hover:text-purple-300"
-            >
-              {t('forgotPassword')}
-            </Link>
-          </div>
-        </form>
+        {/* Step 2: Password */}
+        {loginStep === 'password' && (
+          <form onSubmit={handlePasswordLogin} className="space-y-6">
+            {/* Email verified indicator */}
+            <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-400" />
+                <span className="text-sm text-purple-200 truncate max-w-[200px]">{verifiedEmail}</span>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleChangeEmail}
+                className="text-purple-400 hover:text-white text-xs px-2"
+              >
+                {t('changeEmail')}
+              </Button>
+            </div>
 
-        <div className="mt-6 pt-6 border-t border-purple-500/20 text-center">
-          <p className="text-sm text-purple-400 mb-4">
-            {t('noAccount')}
-          </p>
-          <div className="flex flex-col gap-3">
+            <div>
+              <Label htmlFor="password" className="text-purple-200">{t('enterPasswordToLogin')}</Label>
+              <div className="relative mt-2">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400 pr-10"
+                  required
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
             <Button
-              type="button"
-              variant="outline"
-              className="w-full border-green-500/50 text-green-400 hover:bg-green-500/10"
-              onClick={() => setShowSignupModal(true)}
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
             >
-              <UserPlus className="h-4 w-4 mr-2" />
-              {t('createAccount')}
+              {isLoading ? t('signingIn') : t('login')}
             </Button>
-            <Button 
-              onClick={() => navigate("/planos")} 
-              variant="outline" 
-              className="w-full border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10"
-            >
-              <Star className="h-4 w-4 mr-2" />
-              {t('becomePremium')}
-            </Button>
-          </div>
-        </div>
+
+            <div className="text-center">
+              <Link 
+                to={`/forgot-password?email=${encodeURIComponent(verifiedEmail)}`}
+                className="text-sm text-purple-400 hover:text-purple-300"
+              >
+                {t('forgotPassword')}
+              </Link>
+            </div>
+
+            {failedAttempts >= 2 && (
+              <Alert className="border-yellow-500/50 bg-yellow-500/10">
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
+                <AlertDescription className="text-sm text-yellow-400">
+                  {t('errors.tryPasswordReset')}
+                </AlertDescription>
+              </Alert>
+            )}
+          </form>
+        )}
       </Card>
     </div>
   );
