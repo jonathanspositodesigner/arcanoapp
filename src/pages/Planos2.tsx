@@ -174,10 +174,10 @@ const Planos2 = () => {
       promo: false
     }, {
       name: "Pro",
-      price: "17,90",
+      price: "23,90",
       originalPrice: null,
       perMonth: true,
-      yearlyTotal: "214,80",
+      yearlyTotal: "286,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
       credits: "4.400 créditos de IA",
       savings: "R$144",
