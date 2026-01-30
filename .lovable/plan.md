@@ -1,62 +1,33 @@
 
+# Plano: Duplicar Página de Planos
 
-# Correção: Alterações na Página /planos
+## Objetivo
+Criar uma cópia da página de planos atual (`Planos.tsx`) em um novo arquivo (`Planos2.tsx`) com uma rota separada (`/planos-2`), permitindo que você faça alterações livremente sem afetar a navegação e a página de planos atual.
 
-## Problema Identificado
+## O que será feito
 
-Você está na página `/planos`, que usa o arquivo `src/pages/Planos.tsx`. Eu editei o arquivo errado (`src/pages/UpgradePlano.tsx` = rota `/upgrade`).
+### 1. Criar novo arquivo de página
+- Criar `src/pages/Planos2.tsx` como uma cópia exata de `src/pages/Planos.tsx`
+- Manter todo o código idêntico (planos, preços, estilos, badges, etc.)
 
-A página `/planos` também usa o namespace de tradução `prompts` (`t('planos.features.xxx')`), não o namespace `plans`.
+### 2. Adicionar rota no App.tsx
+- Importar o novo componente `Planos2` com lazy loading
+- Adicionar a rota `/planos-2` apontando para o novo componente
 
-## Arquivos a Modificar (Corretos)
+## Resultado
+- A página atual `/planos` continua funcionando normalmente
+- A nova página `/planos-2` estará disponível para edições futuras
+- Nenhum link ou navegação será alterado - a nova página só é acessível via URL direta
 
-### 1. `src/pages/Planos.tsx`
+## Detalhes Técnicos
 
-**Alterações nos planos MENSAIS:**
+**Arquivo a ser criado:**
+- `src/pages/Planos2.tsx` - Cópia completa do `Planos.tsx`
 
-| Plano | Mudança |
-|-------|---------|
-| Starter | Remover linha `arcanoAcademy` |
-| Pro | Remover linha `arcanoAcademy` |
-| **IA Unlimited** | Remover `arcanoAcademy` + **mudar preço para 29,90** + **remover originalPrice** + **remover promo: true** |
+**Arquivo a ser modificado:**
+- `src/App.tsx` - Adicionar import lazy e nova rota
 
-**Alterações nos planos ANUAIS:**
-
-| Plano | Mudança |
-|-------|---------|
-| Starter | Remover linha `arcanoAcademy` |
-| Pro | Remover linha `arcanoAcademy` |
-| IA Unlimited | Remover linha `arcanoAcademy` (manter 19,90 com promo) |
-
-### 2. `src/locales/pt/prompts.json` (linhas ~144-157)
-
-Atualizar a tradução dentro de `planos.features`:
-- `upscaleArcano`: "Upscale Arcano" → **"Upscale Arcano v2.0"**
-
-### 3. `src/locales/es/prompts.json` (linhas ~123-136)
-
-Mesma atualização para espanhol:
-- `upscaleArcano`: já está v2.0 ✅ (editado antes)
-
-## Resumo das Mudanças
-
-```text
-/planos (Planos.tsx)
-├── MENSAL
-│   ├── Starter: remove arcanoAcademy
-│   ├── Pro: remove arcanoAcademy
-│   └── IA Unlimited: remove arcanoAcademy + preço 29,90 (sem promo)
-│
-└── ANUAL
-    ├── Starter: remove arcanoAcademy
-    ├── Pro: remove arcanoAcademy
-    └── IA Unlimited: remove arcanoAcademy (mantém 19,90 com promo)
+**Nova rota:**
 ```
-
-## Resultado Esperado
-
-- Nenhum plano mostrará "Arcano Academy – Mini curso de IA"
-- IA Unlimited MENSAL: R$29,90 normal (sem badge de promoção, sem preço riscado)
-- IA Unlimited ANUAL: mantém R$19,90 com desconto de R$29,90
-- Texto "Upscale Arcano" vira "Upscale Arcano v2.0"
-
+/planos-2 → Planos2 (sem link na navegação)
+```
