@@ -1,53 +1,58 @@
 
+# Plano: Mensagens de Fila Aleatórias
 
-# Plano: Configurar Motor Light do Upscaler
+## O que vou fazer
 
-## O que descobri na documentação
+Criar um array com os 10 combos de mensagens e selecionar um aleatoriamente cada vez que o usuário entrar na fila.
 
-A versão Light tem os **mesmos campos** da PRO, só muda:
-1. O **WEBAPP_ID**: `2017030861371219969`
-2. O **nodeId da Resolução**: `75` (na PRO é `73`)
+## Mudanças no Arquivo
 
-| Campo | PRO | Light |
-|-------|-----|-------|
-| WEBAPP_ID | 2015865378030755841 | 2017030861371219969 |
-| Image | nodeId: 26 | nodeId: 26 |
-| Detail Denoise | nodeId: 25 | nodeId: 25 |
-| Prompt | nodeId: 128 | nodeId: 128 |
-| **Resolução** | **nodeId: 73** | **nodeId: 75** |
+### `src/pages/UpscalerArcanoTool.tsx`
 
-## Mudanças no Edge Function
+**1. Adicionar array de combos (início do componente):**
 
-### Arquivo: `supabase/functions/runninghub-upscaler/index.ts`
-
-**1. Linha 17 - Atualizar WEBAPP_ID_STANDARD:**
 ```typescript
-const WEBAPP_ID_STANDARD = '2017030861371219969';
-```
-
-**2. Linhas 241-245 - Ajustar nodeId da resolução baseado na versão:**
-```typescript
-// Build node info list - resolution nodeId differs between versions
-const resolutionNodeId = version === 'pro' ? "73" : "75";
-
-const nodeInfoList: any[] = [
-  { nodeId: "26", fieldName: "image", fieldValue: fileName },
-  { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
-  { nodeId: resolutionNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
+const queueMessageCombos = [
+  { emoji: "🔥", title: "Tá bombando!", position: (n: number) => `Você é o ${n}º da fila`, subtitle: "Relaxa que já já é sua vez!" },
+  { emoji: "☕", title: "Hora do cafezinho", position: (n: number) => `Posição: ${n}`, subtitle: "Aproveita pra dar aquela relaxada" },
+  { emoji: "🎨", title: "Artistas trabalhando...", position: (n: number) => `${n > 1 ? n - 1 : 0} pessoas na sua frente`, subtitle: "Grandes obras levam tempo, confia!" },
+  { emoji: "🚀", title: "Decolagem em breve", position: (n: number) => `Você é o ${n}º na pista`, subtitle: "Preparando sua foto para o espaço!" },
+  { emoji: "⚡", title: "Alta demanda agora", position: (n: number) => `Posição ${n} na fila`, subtitle: "Isso aqui tá voando, já já chega sua vez!" },
+  { emoji: "🤖", title: "Robôzinhos a mil!", position: (n: number) => `Faltam ${n > 1 ? n - 1 : 0} na sua frente`, subtitle: "Eles tão trabalhando pesado pra você" },
+  { emoji: "✨", title: "Preparando sua mágica", position: (n: number) => `${n}º lugar na fila VIP`, subtitle: "Magia de qualidade leva um tempinho" },
+  { emoji: "🎮", title: "Loading...", position: (n: number) => `Player ${n} na fila`, subtitle: "Próxima fase desbloqueando em breve!" },
+  { emoji: "🌟", title: "Sucesso gera fila", position: (n: number) => `Você é o ${n}º`, subtitle: "Todo mundo quer essa qualidade, né?" },
+  { emoji: "😎", title: "Fica tranquilo", position: (n: number) => `${n}º da galera esperando`, subtitle: "Vale a pena esperar, resultado top vem aí!" },
 ];
 ```
 
-## Resumo
+**2. Adicionar state para guardar o combo selecionado:**
 
-| Mudança | De | Para |
-|---------|-----|------|
-| WEBAPP_ID_STANDARD | PLACEHOLDER_STANDARD_ID | 2017030861371219969 |
-| Resolution nodeId PRO | 73 | 73 (mantém) |
-| Resolution nodeId Light | 73 | 75 (corrigido) |
+```typescript
+const [currentQueueCombo, setCurrentQueueCombo] = useState<number>(0);
+```
+
+**3. Selecionar combo aleatório quando entrar na fila:**
+
+Onde a fila é ativada, adicionar:
+```typescript
+setCurrentQueueCombo(Math.floor(Math.random() * queueMessageCombos.length));
+```
+
+**4. Atualizar o JSX da fila (linhas 570-578):**
+
+```typescript
+<p className="text-xl font-bold text-yellow-300">
+  {queueMessageCombos[currentQueueCombo].emoji} {queueMessageCombos[currentQueueCombo].title}
+</p>
+<p className="text-4xl font-bold text-white mt-2">
+  {queueMessageCombos[currentQueueCombo].position(queuePosition)}
+</p>
+<p className="text-sm text-purple-300/70 mt-2">
+  {queueMessageCombos[currentQueueCombo].subtitle}
+</p>
+```
 
 ## Resultado
 
-- Versão PRO: usa webapp `2015865378030755841` com nodeId `73` para resolução
-- Versão Light: usa webapp `2017030861371219969` com nodeId `75` para resolução
-- Todos os outros campos iguais nas duas versões
-
+Cada vez que o usuário entrar na fila, vai ver uma mensagem diferente e divertida aleatória dos 10 combos!
