@@ -61,7 +61,7 @@ const Planos = () => {
         { text: t('planos.features.upscaleArcano'), included: false },
         { text: t('planos.features.forja3D'), included: false }
       ],
-      popular: true,
+      popular: false,
       promo: false,
       hasTrial: false
     }, {
@@ -123,7 +123,7 @@ const Planos = () => {
         { text: t('planos.features.upscaleArcano'), included: false },
         { text: t('planos.features.forja3D'), included: false }
       ],
-      popular: true,
+      popular: false,
       promo: false,
       hasTrial: true
     }, {
