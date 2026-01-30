@@ -389,7 +389,7 @@ const BibliotecaPrompts = () => {
   const getBadgeContent = (item: PromptItem) => {
     return <div className="flex flex-wrap gap-1">
         {/* Premium or Grátis badge - always show one */}
-        {item.isPremium ? <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px] sm:text-xs">
+        {item.isPremium ? <Badge className="bg-gradient-to-r from-purple-600 to-blue-500 text-white border-0 text-[10px] sm:text-xs">
             <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
             {t('badges.premium')}
           </Badge> : <Badge variant="outline" className="border-green-500 text-green-400 text-[10px] sm:text-xs">
@@ -400,10 +400,7 @@ const BibliotecaPrompts = () => {
             <Youtube className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
             {t('badges.tutorial')}
           </Badge>}
-        {/* Category badge */}
-        {item.isExclusive && <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 text-[10px] sm:text-xs">
-            {item.category === "Fotos" ? t('badges.exclusivePhoto') : item.category === "Cenários" ? t('badges.exclusiveScenario') : item.category === "Controles de Câmera" ? t('badges.cameraControl') : item.category === "Movies para Telão" ? t('badges.exclusiveMovie') : t('badges.exclusiveSeal')}
-          </Badge>}
+        {/* Community badge */}
         {item.isCommunity && <Badge variant="secondary" className="bg-purple-900/50 text-purple-200 text-[10px] sm:text-xs">
             {t('badges.community')}
           </Badge>}
