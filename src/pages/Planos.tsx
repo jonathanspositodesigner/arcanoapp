@@ -198,14 +198,15 @@ const Planos = () => {
 
         {/* Plans Grid */}
         <StaggeredAnimation 
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-0 max-w-5xl mx-auto lg:items-stretch"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-0 max-w-5xl mx-auto"
+          itemClassName="flex"
           staggerDelay={150}
           animation="fade-up"
         >
           {currentPlans.map((plan, index) => {
             const isBestSeller = (plan as any).bestSeller;
             return (
-            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] lg:min-h-[580px] ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
+            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1">
                   {t('planos.bestSeller')}

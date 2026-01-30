@@ -171,6 +171,7 @@ export const AnimatedElement = ({
 interface StaggeredAnimationProps {
   children: ReactNode[];
   className?: string;
+  itemClassName?: string;
   staggerDelay?: number;
   animation?: AnimationType;
   duration?: number;
@@ -179,6 +180,7 @@ interface StaggeredAnimationProps {
 export const StaggeredAnimation = ({
   children,
   className = '',
+  itemClassName = '',
   staggerDelay = 100,
   animation = 'fade-up',
   duration = 500,
@@ -203,7 +205,7 @@ export const StaggeredAnimation = ({
       {children.map((child, index) => (
         <div
           key={index}
-          className={`transition-all ease-out h-full ${
+          className={`transition-all ease-out h-full ${itemClassName} ${
             isVisible 
               ? 'opacity-100 translate-y-0 translate-x-0 scale-100' 
               : `opacity-0 ${baseTransform[animation]}`
