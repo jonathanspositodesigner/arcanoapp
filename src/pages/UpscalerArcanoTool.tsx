@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ArrowLeft, Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock, MessageSquare, Crown } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
 
   // State
+  const [version, setVersion] = useState<'standard' | 'pro'>('pro');
   const [detailDenoise, setDetailDenoise] = useState(0.15);
   const [resolution, setResolution] = useState<'2k' | '4k'>('2k');
   const [useCustomPrompt, setUseCustomPrompt] = useState(false);
@@ -345,6 +346,7 @@ const UpscalerArcanoTool: React.FC = () => {
           detailDenoise,
           resolution: resolution === '4k' ? 4096 : 2048,
           prompt: useCustomPrompt ? customPrompt : null,
+          version: version,
         },
       });
 
@@ -505,18 +507,46 @@ const UpscalerArcanoTool: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] text-white">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={goBack}
-            className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+            className="text-purple-300 hover:text-white hover:bg-purple-500/20 flex-shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            {t('upscalerTool.title')}
+          
+          <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent whitespace-nowrap">
+            Upscaler Arcano
           </h1>
+
+          {/* Version Switcher */}
+          <div className="flex-1 flex justify-end">
+            <ToggleGroup 
+              type="single" 
+              value={version} 
+              onValueChange={(val) => val && setVersion(val as 'standard' | 'pro')}
+              className="bg-[#0D0221]/50 border border-purple-500/30 rounded-lg p-1"
+            >
+              <ToggleGroupItem 
+                value="standard" 
+                className="px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=on]:bg-purple-600/80 data-[state=on]:text-white text-purple-300 hover:text-white transition-all"
+              >
+                Arcano
+              </ToggleGroupItem>
+              <ToggleGroupItem 
+                value="pro" 
+                className="px-3 py-1.5 text-xs sm:text-sm rounded-md data-[state=on]:bg-gradient-to-r data-[state=on]:from-blue-600 data-[state=on]:to-purple-600 data-[state=on]:text-white text-purple-300 hover:text-white transition-all flex items-center gap-1.5"
+              >
+                Arcano
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30">
+                  <Crown className="w-2.5 h-2.5" />
+                  PRO
+                </span>
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
         </div>
       </div>
 
@@ -768,8 +798,8 @@ const UpscalerArcanoTool: React.FC = () => {
           </Card>
         ) : null}
 
-        {/* Controls */}
-        {inputImage && status === 'idle' && !isWaitingInQueue && (
+        {/* Controls - Only show for PRO version */}
+        {inputImage && status === 'idle' && !isWaitingInQueue && version === 'pro' && (
           <div className="space-y-4">
             {/* Detail Denoise */}
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
@@ -857,6 +887,15 @@ const UpscalerArcanoTool: React.FC = () => {
               )}
             </Card>
           </div>
+        )}
+
+        {/* Standard version info */}
+        {inputImage && status === 'idle' && !isWaitingInQueue && version === 'standard' && (
+          <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
+            <p className="text-sm text-purple-300 text-center">
+              ✨ Modo básico - Configurações otimizadas automaticamente
+            </p>
+          </Card>
         )}
 
         {/* Action Buttons */}
