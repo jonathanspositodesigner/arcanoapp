@@ -68,7 +68,7 @@ const Planos2 = () => {
   const plans = {
     mensal: [{
       name: "Starter",
-      price: "19,90",
+      price: "9,90",
       originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
@@ -106,12 +106,33 @@ const Planos2 = () => {
       ],
       popular: false,
       promo: false,
+      hasTrial: false
+    }, {
+      name: "Ultimate",
+      price: "39,90",
+      originalPrice: null,
+      perMonth: true,
+      paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
+      credits: "Créditos Ilimitados",
+      features: [
+        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.changeClothesAI'), included: true },
+        { text: t('planos.features.changePoseAI'), included: true },
+        { text: t('planos.features.upscaleArcano'), included: true },
+        { text: t('planos.features.forja3D'), included: true }
+      ],
+      popular: false,
+      promo: false,
       hasTrial: false,
       bestSeller: true
     }, {
       name: "IA Unlimited",
-      price: "59,90",
-      originalPrice: "99,90",
+      price: "99,90",
+      originalPrice: "149,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "Créditos Ilimitados",
@@ -247,7 +268,7 @@ const Planos2 = () => {
 
         {/* Plans Grid */}
         <StaggeredAnimation 
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-0 max-w-5xl mx-auto"
+          className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-0 max-w-6xl mx-auto"
           itemClassName="flex"
           staggerDelay={150}
           animation="fade-up"
@@ -257,7 +278,7 @@ const Planos2 = () => {
             const hasCountdown = (plan as any).hasCountdown;
             return (
             <div key={plan.name} className="flex flex-col">
-              <Card className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full flex-1 ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
+              <Card className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full flex-1 ${index === 0 ? "lg:rounded-l-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-r-xl" : ""} ${isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-4 py-1">
                   {t('planos.bestSeller')}
