@@ -336,6 +336,13 @@ const Planos2 = () => {
                 )}
               </div>
 
+              <Button 
+                onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
+                className={`w-full mb-4 ${isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
+              >
+                {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
+              </Button>
+
               {/* Badge de Créditos */}
               <div className="flex flex-col items-center mb-6">
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
@@ -366,7 +373,7 @@ const Planos2 = () => {
               </ul>
 
               {plan.name === "IA Unlimited" && (
-                <div className="mt-4 pt-4 border-t border-purple-500/20">
+                <div className="mt-6 pt-4 border-t border-purple-500/20">
                   <p className="text-xs text-purple-400 mb-2 uppercase tracking-wide">
                     {t('planos.extraBenefits')}
                   </p>
@@ -376,13 +383,6 @@ const Planos2 = () => {
                   </div>
                 </div>
               )}
-
-              <Button 
-                onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mt-6 ${isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
-              >
-                {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
-              </Button>
               </Card>
             </div>
           );
