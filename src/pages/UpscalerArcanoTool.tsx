@@ -596,8 +596,8 @@ const UpscalerArcanoTool: React.FC = () => {
             </ToggleGroup>
           </TooltipProvider>
           
-          {/* Mobile: Show estimated time below switcher */}
-          <div className="flex items-center justify-center gap-1.5 text-sm text-white/80 sm:hidden">
+          {/* Show estimated time below switcher */}
+          <div className="flex items-center justify-center gap-1.5 text-sm text-white/80">
             <Clock className="w-3.5 h-3.5 text-purple-400" />
             <span>Tempo estimado: {version === 'pro' ? '~3m 30s' : '~2m 20s'}</span>
           </div>
