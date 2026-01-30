@@ -541,7 +541,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Version Switcher - Full Width */}
-        <div className="w-full">
+        <div className="w-full space-y-2">
           <TooltipProvider>
             <ToggleGroup 
               type="single" 
@@ -558,8 +558,8 @@ const UpscalerArcanoTool: React.FC = () => {
                     Upscaler Arcano
                   </ToggleGroupItem>
                 </TooltipTrigger>
-                <TooltipContent className="bg-black/90 border-purple-500/30">
-                  <div className="flex items-center gap-1.5 text-sm">
+                <TooltipContent className="bg-black/90 border-purple-500/30 hidden sm:block">
+                  <div className="flex items-center gap-1.5 text-sm text-white">
                     <Clock className="w-3.5 h-3.5 text-purple-400" />
                     <span>~2m 20s</span>
                   </div>
@@ -578,8 +578,8 @@ const UpscalerArcanoTool: React.FC = () => {
                     </span>
                   </ToggleGroupItem>
                 </TooltipTrigger>
-                <TooltipContent className="bg-black/90 border-purple-500/30">
-                  <div className="flex items-center gap-1.5 text-sm">
+                <TooltipContent className="bg-black/90 border-purple-500/30 hidden sm:block">
+                  <div className="flex items-center gap-1.5 text-sm text-white">
                     <Clock className="w-3.5 h-3.5 text-purple-400" />
                     <span>~3m 30s</span>
                   </div>
@@ -587,6 +587,12 @@ const UpscalerArcanoTool: React.FC = () => {
               </Tooltip>
             </ToggleGroup>
           </TooltipProvider>
+          
+          {/* Mobile: Show estimated time below switcher */}
+          <div className="flex items-center justify-center gap-1.5 text-sm text-white/80 sm:hidden">
+            <Clock className="w-3.5 h-3.5 text-purple-400" />
+            <span>Tempo estimado: {version === 'pro' ? '~3m 30s' : '~2m 20s'}</span>
+          </div>
         </div>
         {/* Warning Banner - Don't close page */}
         {(status === 'processing' || status === 'uploading' || isWaitingInQueue) && (
