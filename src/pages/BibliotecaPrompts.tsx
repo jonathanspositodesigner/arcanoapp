@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, LogOut, Settings } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, LogOut, Settings, User, Phone, Coins } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
 import { trackPromptClick } from "@/hooks/usePromptClickTracker";
+import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
 import promptclubLogo from "@/assets/promptclub_horizontal.png";
 import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
@@ -16,6 +17,15 @@ import LazyVideo from "@/components/LazyVideo";
 import { useTranslation } from "react-i18next";
 import ExpiredSubscriptionModal from "@/components/ExpiredSubscriptionModal";
 import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
@@ -55,6 +65,8 @@ const BibliotecaPrompts = () => {
     expiredPlanType,
     expiringStatus
   } = usePremiumStatus();
+  const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
+  const [userProfile, setUserProfile] = useState<{name?: string; phone?: string} | null>(null);
   const {
     copiesUsed,
     remainingCopies,
@@ -81,6 +93,20 @@ const BibliotecaPrompts = () => {
 
   // Use optimized hook for fetching prompts
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
+
+  // Fetch user profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('name, phone')
+        .eq('id', user.id)
+        .single();
+      if (data) setUserProfile(data);
+    };
+    fetchProfile();
+  }, [user]);
 
   // Open modal from URL parameter
   useEffect(() => {
@@ -366,7 +392,7 @@ const BibliotecaPrompts = () => {
         {item.isPremium ? <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px] sm:text-xs">
             <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
             {t('badges.premium')}
-          </Badge> : <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] sm:text-xs">
+          </Badge> : <Badge variant="outline" className="border-green-500 text-green-400 text-[10px] sm:text-xs">
             {t('badges.free')}
           </Badge>}
         {/* Tutorial badge */}
@@ -375,48 +401,132 @@ const BibliotecaPrompts = () => {
             {t('badges.tutorial')}
           </Badge>}
         {/* Category badge */}
-        {item.isExclusive && <Badge className="bg-gradient-primary text-white border-0 text-[10px] sm:text-xs">
+        {item.isExclusive && <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 text-[10px] sm:text-xs">
             {item.category === "Fotos" ? t('badges.exclusivePhoto') : item.category === "Cenários" ? t('badges.exclusiveScenario') : item.category === "Controles de Câmera" ? t('badges.cameraControl') : item.category === "Movies para Telão" ? t('badges.exclusiveMovie') : t('badges.exclusiveSeal')}
           </Badge>}
-        {item.isCommunity && <Badge variant="secondary" className="bg-secondary text-foreground text-[10px] sm:text-xs">
+        {item.isCommunity && <Badge variant="secondary" className="bg-purple-900/50 text-purple-200 text-[10px] sm:text-xs">
             {t('badges.community')}
           </Badge>}
       </div>;
   };
-  return <div className="min-h-screen bg-background">
+
+  // Profile Dropdown Component
+  const ProfileDropdown = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`${isMobile ? 'text-white hover:bg-white/20' : 'text-purple-300 hover:text-white hover:bg-purple-500/20'} rounded-full`}
+        >
+          <User className="w-5 h-5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent 
+        align="end" 
+        className="w-56 bg-[#1A0A2E] border-purple-500/30 text-white"
+      >
+        <DropdownMenuLabel className="text-purple-200">
+          <div className="flex flex-col gap-1">
+            <span className="font-medium">
+              {userProfile?.name || user?.email?.split('@')[0] || 'Meu Perfil'}
+            </span>
+            <span className="text-xs text-purple-400 font-normal">
+              {user?.email}
+            </span>
+          </div>
+        </DropdownMenuLabel>
+        
+        {userProfile?.phone && (
+          <div className="px-2 py-1.5 text-sm text-purple-300 flex items-center gap-2">
+            <Phone className="w-3.5 h-3.5" />
+            {userProfile.phone}
+          </div>
+        )}
+        
+        <DropdownMenuSeparator className="bg-purple-500/20" />
+        
+        <div className="px-2 py-2 flex items-center justify-between">
+          <span className="text-sm text-purple-300 flex items-center gap-2">
+            <Coins className="w-4 h-4 text-yellow-400" />
+            Créditos
+          </span>
+          <Badge className="bg-purple-600 text-white">
+            {creditsLoading ? '...' : credits}
+          </Badge>
+        </div>
+        
+        <DropdownMenuSeparator className="bg-purple-500/20" />
+        
+        <DropdownMenuItem 
+          onClick={() => navigate('/change-password')}
+          className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
+        >
+          <Lock className="w-4 h-4 mr-2" />
+          Alterar Senha
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem 
+          onClick={() => navigate('/profile-settings')}
+          className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
+        >
+          <Settings className="w-4 h-4 mr-2" />
+          Configurações
+        </DropdownMenuItem>
+        
+        <DropdownMenuSeparator className="bg-purple-500/20" />
+        
+        <DropdownMenuItem 
+          onClick={logout}
+          className="cursor-pointer text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 focus:text-red-400"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Sair
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  return <div className="min-h-screen bg-[#0D0221]">
       {/* Mobile Top Header */}
       {/* Top Bar - Desktop */}
-      <header className="hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between">
+      <header className="hidden lg:flex bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20 px-6 py-3 items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-4">
           <img alt="PromptClub" onClick={() => navigate('/')} src={promptclubLogo} className="h-8 cursor-pointer hover:opacity-80 transition-opacity" />
         </div>
         <div className="flex items-center gap-3">
-          <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+          <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
             <Users className="h-4 w-4 mr-2" />
             {t('header.partnerArea')}
           </Button>
           {!user && (
-            <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} variant="ghost" size="sm">
-              <LogIn className="h-4 w-4 mr-2" />
-              {t('header.login')}
-            </Button>
-          )}
-          {user && !isPremium && (
-            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
-              <Star className="h-3 w-3 mr-2" fill="currentColor" />
-              {t('header.becomePremium')}
-            </Button>
+            <>
+              <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
+                <LogIn className="h-4 w-4 mr-2" />
+                {t('header.login')}
+              </Button>
+              <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                <Star className="h-3 w-3 mr-2" fill="currentColor" />
+                {t('header.becomePremium')}
+              </Button>
+            </>
           )}
           {user && !isPremium && (
             <>
-              <Button onClick={() => navigate("/profile-settings")} variant="ghost" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                {t('header.myProfile')}
+              <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
+                <Star className="h-3 w-3 mr-2" fill="currentColor" />
+                {t('header.becomePremium')}
               </Button>
-              <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                <LogOut className="h-4 w-4 mr-2" />
-                {t('header.logout')}
-              </Button>
+              <Badge 
+                variant="outline" 
+                className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
+              >
+                <Coins className="w-3.5 h-3.5 text-yellow-400" />
+                <span className="font-medium">
+                  {creditsLoading ? '...' : credits}
+                </span>
+              </Badge>
+              <ProfileDropdown />
             </>
           )}
           {isPremium && <>
@@ -424,24 +534,26 @@ const BibliotecaPrompts = () => {
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               {t('header.premiumActive')}
             </Badge>
-            <Button onClick={() => navigate("/profile-settings")} variant="ghost" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              {t('header.myProfile')}
-            </Button>
-            <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              <LogOut className="h-4 w-4 mr-2" />
-              {t('header.logout')}
-            </Button>
+            <Badge 
+              variant="outline" 
+              className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
+            >
+              <Coins className="w-3.5 h-3.5 text-yellow-400" />
+              <span className="font-medium">
+                {creditsLoading ? '...' : credits}
+              </span>
+            </Badge>
+            <ProfileDropdown />
           </>}
         </div>
       </header>
 
       {/* Top Bar - Mobile */}
-      <header className="lg:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg">
+      <header className="lg:hidden bg-[#0D0221]/95 backdrop-blur-lg px-4 py-3 flex items-center justify-between shadow-lg border-b border-purple-500/20 sticky top-0 z-50">
         <img alt="ArcanoApp" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" />
         {!user && (
           <div className="flex items-center gap-2">
-            <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
+            <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-purple-300 hover:bg-purple-500/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
               {t('header.login')}
             </Button>
@@ -457,12 +569,11 @@ const BibliotecaPrompts = () => {
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Button>
-            <Button onClick={() => navigate("/profile-settings")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
-              <Settings className="h-4 w-4" />
-            </Button>
-            <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <Badge className="bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1">
+              <Coins className="w-3 h-3 text-yellow-400" />
+              {creditsLoading ? '...' : credits}
+            </Badge>
+            <ProfileDropdown isMobile />
           </div>
         )}
         {isPremium && <div className="flex items-center gap-2">
@@ -470,18 +581,17 @@ const BibliotecaPrompts = () => {
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Badge>
-            <Button onClick={() => navigate("/profile-settings")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
-              <Settings className="h-4 w-4" />
-            </Button>
-            <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <Badge className="bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1">
+              <Coins className="w-3 h-3 text-yellow-400" />
+              {creditsLoading ? '...' : credits}
+            </Badge>
+            <ProfileDropdown isMobile />
           </div>}
       </header>
 
       {/* Mobile Bottom Menu Button */}
       <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50" data-tutorial="mobile-menu">
-        <Button onClick={() => setSidebarOpen(!sidebarOpen)} className="bg-primary hover:bg-primary/90 text-white shadow-xl px-6 py-6 rounded-full">
+        <Button onClick={() => setSidebarOpen(!sidebarOpen)} className="bg-purple-600 hover:bg-purple-700 text-white shadow-xl px-6 py-6 rounded-full">
           <Menu className="h-6 w-6 mr-2" />
           <span className="font-semibold">{t('mobileMenu.generateImage')}    </span>
         </Button>
@@ -494,7 +604,7 @@ const BibliotecaPrompts = () => {
         {/* Sidebar */}
         <aside className={`
           fixed lg:static inset-y-0 left-0 z-40
-          w-72 min-h-screen bg-card border-r border-border p-6 space-y-4
+          w-72 min-h-screen bg-[#1A0A2E] border-r border-purple-500/20 p-6 space-y-4
           transform transition-transform duration-300 ease-in-out
           lg:pt-4
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -505,7 +615,7 @@ const BibliotecaPrompts = () => {
           </div>
 
           {/* Install App Button */}
-          <Button onClick={() => navigate("/install-app")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-2">
+          <Button onClick={() => navigate("/install-app")} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-semibold mb-2">
             <Smartphone className="h-4 w-4 mr-2" />
             {t('sidebar.installApp')}
           </Button>
@@ -513,7 +623,7 @@ const BibliotecaPrompts = () => {
           {/* Premium Badge - only show badge, buttons moved to top bar */}
           {isPremium && <div className="flex items-center justify-center gap-2 mb-4 p-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30">
               <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
-              <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">{t('sidebar.premiumActive')}</span>
+              <span className="text-sm font-semibold text-yellow-400">{t('sidebar.premiumActive')}</span>
             </div>}
 
           {/* Premium button for logged-in non-premium users */}
@@ -531,26 +641,26 @@ const BibliotecaPrompts = () => {
                 <Star className="h-4 w-4 mr-2" fill="currentColor" />
                 {t('sidebar.becomePremium')}
               </Button>
-              <Button onClick={() => navigate("/login")} variant="outline" className="w-full border-border hover:bg-secondary font-semibold mb-4">
+              <Button onClick={() => navigate("/login")} variant="outline" className="w-full border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white font-semibold mb-4">
                 <LogIn className="h-4 w-4 mr-2" />
                 {t('sidebar.makeLogin')}
               </Button>
             </>
           )}
 
-          <h2 className="text-xl font-bold text-foreground mb-6">{t('sidebar.generateWithAI')}</h2>
+          <h2 className="text-xl font-bold text-white mb-6">{t('sidebar.generateWithAI')}</h2>
           <div data-tutorial="ai-tools" className="space-y-3">
           {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
-              <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
-                <span className="font-medium text-foreground">{link.name}</span>
-                <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
+              <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-purple-500/20 hover:scale-105 transition-all duration-300 border-purple-500/30 text-purple-200 hover:text-white">
+                <span className="font-medium">{link.name}</span>
+                <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0 text-purple-400" />
               </Button>
             </a>)}
           </div>
           <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block mt-3">
-            <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-secondary hover:scale-105 transition-all duration-300 border-border">
-              <span className="font-medium text-foreground">{t('sidebar.generateVideoVEO3')}</span>
-              <Video className="h-5 w-5 ml-2 flex-shrink-0 text-muted-foreground" />
+            <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left hover:bg-purple-500/20 hover:scale-105 transition-all duration-300 border-purple-500/30 text-purple-200 hover:text-white">
+              <span className="font-medium">{t('sidebar.generateVideoVEO3')}</span>
+              <Video className="h-5 w-5 ml-2 flex-shrink-0 text-purple-400" />
             </Button>
           </a>
 
@@ -565,15 +675,15 @@ const BibliotecaPrompts = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background pb-24 lg:pb-8 overflow-x-hidden max-w-full">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-[#0D0221] pb-24 lg:pb-8 overflow-x-hidden max-w-full">
           {/* Mobile Install App Button */}
-          <Button onClick={() => navigate("/install-app")} className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold mb-4 lg:hidden">
+          <Button onClick={() => navigate("/install-app")} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-semibold mb-4 lg:hidden">
             <Smartphone className="h-4 w-4 mr-2" />
             {t('sidebar.installApp')}
           </Button>
 
           {/* Banner Upscaler Arcano com Vídeo */}
-          <div className="mb-6 sm:mb-8 relative w-full rounded-2xl overflow-hidden">
+          <div className="mb-6 sm:mb-8 relative w-full rounded-2xl overflow-hidden border border-purple-500/20">
             <div className="relative w-full aspect-[4/3] sm:aspect-[16/5]">
               {/* Vídeo Desktop */}
               <video 
@@ -630,22 +740,22 @@ const BibliotecaPrompts = () => {
 
           {/* Page Title and Content Type Tabs */}
           <div className="mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-foreground">{t('library.title')}</h2>
-            <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">{t('library.description')}</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{t('library.title')}</h2>
+            <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-purple-300/80">{t('library.description')}</p>
             
             {/* Content Type Tabs */}
             <div className="flex flex-wrap gap-2 mb-4">
               <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => {
               setContentType("exclusive");
               handleCategorySelect("Ver Tudo");
-            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "exclusive" ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary border-border"}`}>
+            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "exclusive" ? "bg-purple-600 hover:bg-purple-700 text-white" : "hover:bg-purple-500/20 border-purple-500/30 text-purple-300"}`}>
                 <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 {t('library.exclusiveFiles')}
               </Button>
               <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => {
               setContentType("community");
               handleCategorySelect("Ver Tudo");
-            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "community" ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary border-border"}`}>
+            }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "community" ? "bg-purple-600 hover:bg-purple-700 text-white" : "hover:bg-purple-500/20 border-purple-500/30 text-purple-300"}`}>
                 <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 {t('library.community')}
               </Button>
@@ -653,7 +763,7 @@ const BibliotecaPrompts = () => {
 
             {/* Category Filters */}
             <div className="flex gap-1.5 sm:gap-2 flex-wrap">
-              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => handleCategorySelect(cat)} size="sm" className={`text-[11px] sm:text-xs px-2 sm:px-3 ${selectedCategory === cat ? "bg-gradient-primary hover:opacity-90 text-white" : "hover:bg-secondary hover:text-primary border-border"}`}>
+              {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => handleCategorySelect(cat)} size="sm" className={`text-[11px] sm:text-xs px-2 sm:px-3 ${selectedCategory === cat ? "bg-purple-600 hover:bg-purple-700 text-white" : "hover:bg-purple-500/10 border-purple-500/30 text-purple-300/70"}`}>
                   {getCategoryIcon(cat)}
                   {getCategoryDisplayName(cat)}
                 </Button>)}
@@ -665,9 +775,9 @@ const BibliotecaPrompts = () => {
             {paginatedPrompts.map(item => {
             const isVideo = isVideoUrl(item.imageUrl);
             const canAccess = !item.isPremium || isPremium;
-            return <Card key={item.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 hover:scale-[1.02] bg-card border-border">
+            return <Card key={item.id} className="overflow-hidden hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.02] bg-[#1A0A2E] border-purple-500/20">
                   {/* Media Preview - Videos use lightweight thumbnail, actual video loads in modal */}
-                  <div className="aspect-square overflow-hidden bg-secondary relative">
+                  <div className="aspect-square overflow-hidden bg-[#0D0221] relative">
                     {isVideo ? (
                       <LazyVideo 
                         src={item.imageUrl}
@@ -695,235 +805,254 @@ const BibliotecaPrompts = () => {
                   <div className="p-3 sm:p-5 space-y-2 sm:space-y-4">
                     <div className="flex justify-between items-start gap-2">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-sm sm:text-lg text-foreground mb-1 sm:mb-2 line-clamp-2">{item.title}</h3>
+                        <h3 className="font-bold text-sm sm:text-lg text-white mb-1 sm:mb-2 line-clamp-2">{item.title}</h3>
                         {getBadgeContent(item)}
                       </div>
-                      <Badge variant="secondary" className={`bg-primary/10 text-primary flex items-center gap-1 shrink-0 text-[10px] sm:text-xs transition-transform duration-300 ${animatingClicks.has(String(item.id)) ? 'scale-125' : ''}`}>
-                        <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                        {(item.clickCount || 0) + (item.bonusClicks || 0) + (clickIncrements[String(item.id)] || 0)}
-                      </Badge>
+                      {/* Click counter */}
+                      <div className={`flex items-center gap-1 text-xs text-purple-400 ${animatingClicks.has(String(item.id)) ? 'scale-125' : ''} transition-transform`}>
+                        <Copy className="h-3 w-3" />
+                        <span>{(item.bonusClicks || 0) + (clickIncrements[String(item.id)] || 0)}</span>
+                      </div>
                     </div>
 
-                    {/* Prompt Box - Hidden for premium items when user is not premium */}
-                    {canAccess && <div className="bg-secondary p-2 sm:p-3 rounded-lg">
-                        <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-3">{item.prompt}</p>
-                      </div>}
-
                     {/* Action Buttons */}
-                    <div className="flex flex-col gap-2">
-                      {canAccess ?
-                  // Check if user has reached daily limit for premium items
-                  item.isPremium && hasReachedLimit && hasLimitPlan ? <Button onClick={() => setShowLimitModal(true)} size="sm" className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white text-xs sm:text-sm">
-                            <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                            {t('buttons.dailyLimitReached')}
-                          </Button> : <>
-                            <Button onClick={() => copyToClipboard(item)} size="sm" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-white text-xs sm:text-sm" data-tutorial="copy-prompt">
-                              <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                              {t('buttons.copyPrompt')} {item.isPremium && hasLimitPlan && `(${remainingCopies} ${t('buttons.remaining')})`}
-                            </Button>
-                            <Button onClick={() => downloadMedia(item.imageUrl, item.title, item.referenceImages, item.isPremium, item.thumbnailUrl)} variant="outline" size="sm" className="w-full border-border hover:bg-secondary text-xs sm:text-sm">
-                              <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                              {t('buttons.downloadReference')}
-                            </Button>
-                            {item.tutorialUrl && (
-                              <Button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openTutorial(item.tutorialUrl);
-                                }} 
-                                variant="outline" 
-                                size="sm" 
-                                className="w-full border-red-500 text-red-500 hover:bg-red-500/10 text-xs sm:text-sm"
-                              >
-                                <Youtube className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                                {t('buttons.watchTutorial')}
-                              </Button>
-                            )}
-                          </> : <Button onClick={() => navigate("/planos")} size="sm" className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs sm:text-sm">
-                          <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" fill="currentColor" />
-                          {t('buttons.becomePremium')}
-                        </Button>}
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => canAccess ? copyToClipboard(item) : handleItemClick(item)}
+                        size="sm"
+                        className={`flex-1 text-xs ${canAccess ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-purple-900/50 text-purple-300'}`}
+                      >
+                        <Copy className="h-3 w-3 mr-1" />
+                        {t('card.copyPrompt')}
+                      </Button>
+                      <Button
+                        onClick={() => handleItemClick(item)}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+                      >
+                        {t('card.details')}
+                      </Button>
                     </div>
                   </div>
                 </Card>;
           })}
           </div>
 
-          {/* Pagination Controls */}
-          {totalPages > 1 && <div className="flex items-center justify-center gap-2 sm:gap-4 mt-6 sm:mt-8">
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="border-border hover:bg-secondary">
-                <ChevronLeft className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">{t('pagination.previous')}</span>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white disabled:opacity-50"
+              >
+                <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-purple-300">
                 {currentPage} / {totalPages}
               </span>
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="border-border hover:bg-secondary">
-                <span className="hidden sm:inline">{t('pagination.next')}</span>
-                <ChevronRight className="h-4 w-4 sm:ml-2" />
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white disabled:opacity-50"
+              >
+                <ChevronRight className="h-4 w-4" />
               </Button>
-            </div>}
-
-          {/* Media Preview Modal */}
-          <Dialog open={!!selectedPrompt} onOpenChange={() => handleCloseModal()}>
-            <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden bg-card">
-              <button onClick={() => handleCloseModal()} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
-                <X className="h-4 w-4" />
-              </button>
-              {selectedPrompt && <div className="flex flex-col max-h-[90vh]">
-                  <div className="flex-shrink-0">
-                    {isVideoUrl(selectedPrompt.imageUrl) ? <SecureVideo src={selectedPrompt.imageUrl} isPremium={false} className="w-full h-auto max-h-[50vh] object-contain bg-black" controls preload="metadata" playsInline /> : <SecureImage src={selectedPrompt.imageUrl} alt={selectedPrompt.title} isPremium={false} className="w-full h-auto max-h-[50vh] object-contain bg-black" />}
-                  </div>
-                  <div className="p-4 space-y-3 flex-shrink-0">
-                    <h3 className="font-bold text-lg text-foreground">{selectedPrompt.title}</h3>
-                    <div className="bg-secondary p-3 rounded-lg max-h-24 overflow-y-auto">
-                      <p className="text-xs text-muted-foreground">{selectedPrompt.prompt}</p>
-                    </div>
-                    <div className="flex gap-3 flex-wrap">
-                      {selectedPrompt.isPremium && hasReachedLimit && hasLimitPlan ? <Button onClick={() => {
-                    handleCloseModal();
-                    setShowLimitModal(true);
-                  }} className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white" size="sm">
-                          <AlertTriangle className="h-4 w-4 mr-2" />
-                          {t('buttons.limitReached')}
-                        </Button> : <>
-                          <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-gradient-primary hover:opacity-90 text-white" size="sm">
-                            <Copy className="h-4 w-4 mr-2" />
-                            {t('buttons.copyPrompt')}
-                          </Button>
-                          <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="flex-1 border-border hover:bg-secondary" size="sm">
-                            <Download className="h-4 w-4 mr-2" />
-                            {t('buttons.downloadReference')}
-                          </Button>
-                        </>}
-                      {selectedPrompt.tutorialUrl && <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} variant="outline" className="w-full border-red-500 text-red-500 hover:bg-red-500/10" size="sm">
-                          <Youtube className="h-4 w-4 mr-2" />
-                          {t('badges.tutorial')}
-                        </Button>}
-                      {selectedPrompt.category === "Movies para Telão" && (
-                        <Button 
-                          onClick={() => {
-                            handleCloseModal();
-                            handleCategorySelect("Movies para Telão");
-                          }} 
-                          variant="outline" 
-                          className="w-full border-primary text-primary hover:bg-primary/10" 
-                          size="sm"
-                        >
-                          <Video className="h-4 w-4 mr-2" />
-                          {t('buttons.seeMoreMovies')}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>}
-            </DialogContent>
-          </Dialog>
-
-          {/* Premium Access Modal */}
-          <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
-            <DialogContent className="max-w-lg p-0 overflow-hidden bg-card">
-              <button onClick={() => handleClosePremiumModal(false)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
-                <X className="h-4 w-4" />
-              </button>
-              <div className="flex flex-col max-h-[90vh]">
-                {/* Media Preview */}
-                {premiumModalItem && <div className="flex-shrink-0">
-                    {isVideoUrl(premiumModalItem.imageUrl) ? <SecureVideo src={premiumModalItem.imageUrl} isPremium={false} className="w-full h-auto max-h-[40vh] object-contain bg-black" controls playsInline /> : <SecureImage src={premiumModalItem.imageUrl} alt={premiumModalItem.title} isPremium={false} className="w-full h-auto max-h-[40vh] object-contain bg-black" />}
-                  </div>}
-                
-                <div className="text-center space-y-4 p-6">
-                  <div className="flex justify-center">
-                    <div className="p-3 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20">
-                      <Star className="h-10 w-10 text-yellow-500" fill="currentColor" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground mb-2">{t('modals.premiumContent.title')}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t('modals.premiumContent.description')}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <Button onClick={() => {
-                    setShowPremiumModal(false);
-                    navigate("/login");
-                  }} variant="outline" className="w-full">
-                      <LogIn className="h-4 w-4 mr-2" />
-                      {t('sidebar.makeLogin')}
-                    </Button>
-                    <Button onClick={() => {
-                    setShowPremiumModal(false);
-                    navigate("/planos");
-                  }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
-                      <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                      {t('buttons.becomePremium')}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          {/* Tutorial Modal */}
-          <Dialog open={showTutorialModal} onOpenChange={setShowTutorialModal}>
-            <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black">
-              <button onClick={() => setShowTutorialModal(false)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
-                <X className="h-4 w-4" />
-              </button>
-              {tutorialUrl && <div className="aspect-video">
-                  <iframe src={tutorialUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-                </div>}
-            </DialogContent>
-          </Dialog>
-
-          {/* Daily Limit Reached Modal */}
-          <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-            <DialogContent className="max-w-md p-0 overflow-hidden bg-card">
-              <button onClick={() => setShowLimitModal(false)} className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors">
-                <X className="h-4 w-4" />
-              </button>
-              <div className="text-center space-y-4 p-6">
-                <div className="flex justify-center">
-                  <div className="p-3 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20">
-                    <AlertTriangle className="h-10 w-10 text-orange-500" />
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">{t('modals.dailyLimit.title')}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t('modals.dailyLimit.description', { limit: copiesUsed })}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {t('modals.dailyLimit.nextLevel')}
-                  </p>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <Button onClick={() => {
-                  setShowLimitModal(false);
-                  navigate("/upgrade");
-                }} className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white">
-                    <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                    {t('modals.dailyLimit.upgradePlan')}
-                  </Button>
-                  <Button onClick={() => setShowLimitModal(false)} variant="outline" className="w-full">
-                    {t('modals.dailyLimit.understood')}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+            </div>
+          )}
         </main>
       </div>
 
+      {/* Modals */}
+      {/* Premium Modal */}
+      <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
+        <DialogContent className="max-w-lg bg-[#1A0A2E] border-purple-500/30 text-white">
+          <div className="text-center p-6">
+            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mb-4">
+              <Star className="h-10 w-10 text-white" fill="currentColor" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">{t('premiumModal.title')}</h2>
+            <p className="text-purple-300 mb-6">{t('premiumModal.description')}</p>
+            
+            {premiumModalItem && (
+              <div className="mb-6 rounded-lg overflow-hidden border border-purple-500/30">
+                <SecureImage 
+                  src={premiumModalItem.imageUrl} 
+                  alt={premiumModalItem.title} 
+                  isPremium={false}
+                  className="w-full h-48 object-cover opacity-50"
+                />
+                <div className="p-3 bg-[#0D0221]">
+                  <p className="font-semibold text-white">{premiumModalItem.title}</p>
+                </div>
+              </div>
+            )}
+            
+            <Button 
+              onClick={() => navigate("/planos")} 
+              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white py-6 text-lg"
+            >
+              <Star className="h-5 w-5 mr-2" fill="currentColor" />
+              {t('premiumModal.becomePremium')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Prompt Detail Modal */}
+      <Dialog open={!!selectedPrompt} onOpenChange={() => handleCloseModal()}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#1A0A2E] border-purple-500/30 text-white">
+          {selectedPrompt && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">{selectedPrompt.title}</h2>
+                  <div className="mt-2">{getBadgeContent(selectedPrompt)}</div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-purple-300 hover:text-white hover:bg-purple-500/20">
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {/* Media */}
+              <div className="rounded-lg overflow-hidden border border-purple-500/30">
+                {isVideoUrl(selectedPrompt.imageUrl) ? (
+                  <SecureVideo 
+                    src={selectedPrompt.imageUrl}
+                    isPremium={selectedPrompt.isPremium}
+                    className="w-full"
+                    controls
+                    autoPlay
+                    loop
+                  />
+                ) : (
+                  <SecureImage 
+                    src={selectedPrompt.imageUrl}
+                    alt={selectedPrompt.title}
+                    isPremium={selectedPrompt.isPremium}
+                    className="w-full"
+                  />
+                )}
+              </div>
+
+              {/* Reference Images */}
+              {selectedPrompt.referenceImages && selectedPrompt.referenceImages.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2 text-purple-200">{t('modal.referenceImages')}</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {selectedPrompt.referenceImages.map((img, idx) => (
+                      <SecureImage 
+                        key={idx}
+                        src={img}
+                        alt={`Reference ${idx + 1}`}
+                        isPremium={selectedPrompt.isPremium}
+                        className="w-full h-24 object-cover rounded-lg border border-purple-500/30"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Prompt Text */}
+              <div>
+                <h3 className="font-semibold mb-2 text-purple-200">{t('modal.prompt')}</h3>
+                <div className="bg-[#0D0221] border border-purple-500/30 rounded-lg p-4">
+                  <p className="text-purple-100 whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-3">
+                <Button 
+                  onClick={() => copyToClipboard(selectedPrompt)}
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  {t('modal.copyPrompt')}
+                </Button>
+                <Button 
+                  onClick={() => downloadMedia(
+                    selectedPrompt.imageUrl, 
+                    selectedPrompt.title, 
+                    selectedPrompt.referenceImages,
+                    selectedPrompt.isPremium,
+                    selectedPrompt.thumbnailUrl
+                  )}
+                  variant="outline"
+                  className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  {t('modal.download')}
+                </Button>
+                {selectedPrompt.tutorialUrl && (
+                  <Button 
+                    onClick={() => openTutorial(selectedPrompt.tutorialUrl!)}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    {t('modal.watchTutorial')}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Tutorial Modal */}
+      <Dialog open={showTutorialModal} onOpenChange={setShowTutorialModal}>
+        <DialogContent className="max-w-4xl bg-[#1A0A2E] border-purple-500/30 p-0 overflow-hidden">
+          <div className="aspect-video w-full">
+            {tutorialUrl && (
+              <iframe 
+                src={tutorialUrl}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Daily Limit Modal */}
+      <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
+        <DialogContent className="max-w-md bg-[#1A0A2E] border-purple-500/30 text-white">
+          <div className="text-center p-6">
+            <div className="w-20 h-20 mx-auto bg-orange-500/20 rounded-full flex items-center justify-center mb-4">
+              <AlertTriangle className="h-10 w-10 text-orange-500" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">{t('limitModal.title')}</h2>
+            <p className="text-purple-300 mb-6">
+              {t('limitModal.description', { limit: planType === 'arcano_basico' ? 10 : 24 })}
+            </p>
+            <Button 
+              onClick={() => {
+                setShowLimitModal(false);
+                navigate("/planos");
+              }} 
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white py-6"
+            >
+              {t('limitModal.upgrade')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Collection Modal */}
-      {collectionSlug && <CollectionModal slug={collectionSlug} onClose={() => {
-      setCollectionSlug(null);
-      searchParams.delete("colecao");
-      setSearchParams(searchParams);
-    }} />}
-      {/* Push Notification Prompt */}
-      <PushNotificationPrompt />
+      {collectionSlug && (
+        <CollectionModal 
+          slug={collectionSlug} 
+          onClose={() => {
+            setCollectionSlug(null);
+            searchParams.delete("colecao");
+            setSearchParams(searchParams);
+          }}
+        />
+      )}
 
       {/* Expired Subscription Modal */}
       <ExpiredSubscriptionModal 
@@ -932,13 +1061,17 @@ const BibliotecaPrompts = () => {
         planType={expiredPlanType}
       />
 
-      {/* Expiring Subscription Modal (today/tomorrow) */}
-      <ExpiringSubscriptionModal
+      {/* Expiring Subscription Modal */}
+      <ExpiringSubscriptionModal 
         isOpen={showExpiringModal}
         onClose={() => setShowExpiringModal(false)}
         expiringStatus={expiringStatus}
         planType={planType}
       />
+
+      {/* Push Notification Prompt */}
+      <PushNotificationPrompt />
     </div>;
 };
+
 export default BibliotecaPrompts;
