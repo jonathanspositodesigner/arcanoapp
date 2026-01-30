@@ -1,65 +1,213 @@
 
-# Plano: Consertar Indicador Visual do Switch de Versão
+# Plano: Adicionar Botões de Prompt por Categoria
 
-## Problema Identificado
+## Resumo
 
-O switch de versão (Standard vs PRO) na página `/upscaler-arcano-tool` não mostra visualmente qual opção está selecionada. Ambos os botões aparecem iguais, sem borda ou destaque no botão ativo.
+Adicionar 5 botões de categorias de prompt (Pessoas, Comida, Foto Antiga, Logo, Render 3D) que ficam acima do toggle de "Prompt Personalizado". Cada botão tem um prompt específico que será enviado automaticamente.
 
-**Causa raiz:** O componente `ToggleGroupItem` usa o `toggleVariants` que aplica estilos padrão (`data-[state=on]:bg-accent`) que estão conflitando com os estilos customizados, mesmo usando `!important`. O `tailwind-merge` pode estar removendo ou ignorando as classes customizadas.
+## Layout Visual
 
-## Solução
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  💬 Tipo de Imagem                                          │
+│                                                             │
+│  ┌──────────┐ ┌─────────┐ ┌────────────┐ ┌──────┐ ┌───────┐│
+│  │ Pessoas  │ │ Comida  │ │ Foto Antiga│ │ Logo │ │Render │ │
+│  │(selected)│ │         │ │            │ │      │ │  3D   │ │
+│  └──────────┘ └─────────┘ └────────────┘ └──────┘ └───────┘│
+│                                                             │
+│  ☐ Usar prompt personalizado                         [OFF] │
+│                                                             │
+│  (se ON: botões somem e textarea aparece)                  │
+└─────────────────────────────────────────────────────────────┘
+```
 
-Não depender das classes via `className` que estão sendo sobrescritas. Usar **renderização condicional baseada no estado `version`** para aplicar estilos diferentes diretamente.
+## Comportamento
 
-### Mudanças Técnicas
+1. **Padrão**: Botão "Pessoas" vem pré-selecionado
+2. **Ao clicar num botão**: O prompt daquele botão será enviado (nenhum outro prompt)
+3. **Ao ativar "Prompt Personalizado"**: Os 5 botões desaparecem, usuário usa seu próprio prompt
+4. **Ao desativar "Prompt Personalizado"**: Botões voltam, "Pessoas" fica selecionado
+
+## Prompts por Botão
+
+| Botão | Prompt |
+|-------|--------|
+| **Pessoas** | "Enhance the photo while maintaining 100% of the original identity and lighting. Increase hyper-realism: natural and realistic skin texture, visible micro-pores, subtle microvilli/peach fuzz, hairs corrected strand by strand, defined eyebrows with natural hairs, sharper eyes with realistic reflections, defined eyelashes without exaggeration, lips with natural texture and lines, noise reduction preserving fine details, high yet clean sharpness, balanced contrast and skin tones, PBR detail enhancement (skin with subtle subsurface scattering), realistic depth of field and 4K/8K photographic finish." |
+| **Comida** | "Realistic food photography: boost sharpness and micro-textures, enhance ingredient detail, natural highlights, true-to-life appetizing colors, soft studio lighting, clean professional finish." |
+| **Foto Antiga** | "Realistic photo restoration: remove scratches/tears/stains, reduce blur, recover sharpness and fine details, fix faded colors, balanced contrast, preserve original texture and identity, natural look." |
+| **Logo** | "Preserve exact colors, proportions, typography, spacing, outlines, and alignment. Restore clean, sharp edges; remove jaggies/blur/artifacts and noise while keeping the same visual identity." |
+| **Render 3D** | "Premium 3D detailing: sharpen edges and emboss depth, add fine surface micro-textures (metal/plastic), realistic reflections and highlights, clean shadows, consistent depth, high-end render finish." |
+
+---
+
+## Detalhes Técnicos
 
 **Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
 
-1. **Mudar valor padrão do state `version`** de `'pro'` para `'standard'`
+### 1. Adicionar constante com os prompts (após linha 27)
 
-2. **Substituir as classes condicionais `data-[state=on]`** por classes diretas baseadas no estado React (`version === 'standard'` ou `version === 'pro'`)
+```tsx
+const PROMPT_CATEGORIES = {
+  pessoas: "Enhance the photo while maintaining 100% of the original identity and lighting. Increase hyper-realism: natural and realistic skin texture, visible micro-pores, subtle microvilli/peach fuzz, hairs corrected strand by strand, defined eyebrows with natural hairs, sharper eyes with realistic reflections, defined eyelashes without exaggeration, lips with natural texture and lines, noise reduction preserving fine details, high yet clean sharpness, balanced contrast and skin tones, PBR detail enhancement (skin with subtle subsurface scattering), realistic depth of field and 4K/8K photographic finish.",
+  comida: "Realistic food photography: boost sharpness and micro-textures, enhance ingredient detail, natural highlights, true-to-life appetizing colors, soft studio lighting, clean professional finish.",
+  fotoAntiga: "Realistic photo restoration: remove scratches/tears/stains, reduce blur, recover sharpness and fine details, fix faded colors, balanced contrast, preserve original texture and identity, natural look.",
+  logo: "Preserve exact colors, proportions, typography, spacing, outlines, and alignment. Restore clean, sharp edges; remove jaggies/blur/artifacts and noise while keeping the same visual identity.",
+  render3d: "Premium 3D detailing: sharpen edges and emboss depth, add fine surface micro-textures (metal/plastic), realistic reflections and highlights, clean shadows, consistent depth, high-end render finish."
+} as const;
 
-3. **Aplicar borda contrastante** (cor cyan/ciano brilhante) no botão selecionado usando lógica condicional:
+type PromptCategory = keyof typeof PROMPT_CATEGORIES;
+```
+
+### 2. Adicionar novo estado (após linha 38)
+
+```tsx
+const [promptCategory, setPromptCategory] = useState<PromptCategory>('pessoas');
+```
+
+### 3. Resetar para "pessoas" quando desativar prompt personalizado
+
+Adicionar `useEffect` para quando `useCustomPrompt` mudar de `true` para `false`:
+
+```tsx
+useEffect(() => {
+  if (!useCustomPrompt) {
+    setPromptCategory('pessoas');
+  }
+}, [useCustomPrompt]);
+```
+
+### 4. Função para obter o prompt final
+
+```tsx
+const getFinalPrompt = (): string => {
+  if (useCustomPrompt) {
+    return customPrompt;
+  }
+  return PROMPT_CATEGORIES[promptCategory];
+};
+```
+
+### 5. Atualizar lógica de envio (linhas 312 e 364)
+
+**Antes:**
+```tsx
+prompt: useCustomPrompt ? customPrompt : null
+```
+
+**Depois:**
+```tsx
+prompt: getFinalPrompt()
+```
+
+Agora SEMPRE envia um prompt - ou o da categoria selecionada, ou o personalizado.
+
+### 6. Adicionar UI dos botões de categoria (antes do Card do prompt personalizado, linha 962)
+
+```tsx
+{/* Image Type Category Buttons - only show when custom prompt is OFF */}
+{!useCustomPrompt && (
+  <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
+    <div className="flex items-center gap-2 mb-3">
+      <MessageSquare className="w-4 h-4 text-pink-400" />
+      <span className="font-medium text-white">Tipo de Imagem</span>
+    </div>
+    <ToggleGroup 
+      type="single" 
+      value={promptCategory} 
+      onValueChange={(value) => value && setPromptCategory(value as PromptCategory)}
+      className="flex flex-wrap gap-2"
+    >
+      <ToggleGroupItem 
+        value="pessoas" 
+        className={`px-3 py-2 text-sm ${
+          promptCategory === 'pessoas' 
+            ? 'bg-purple-600 text-white border-2 border-purple-400' 
+            : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10'
+        }`}
+      >
+        Pessoas
+      </ToggleGroupItem>
+      <ToggleGroupItem 
+        value="comida" 
+        className={`px-3 py-2 text-sm ${
+          promptCategory === 'comida' 
+            ? 'bg-purple-600 text-white border-2 border-purple-400' 
+            : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10'
+        }`}
+      >
+        Comida
+      </ToggleGroupItem>
+      <ToggleGroupItem 
+        value="fotoAntiga" 
+        className={`px-3 py-2 text-sm ${
+          promptCategory === 'fotoAntiga' 
+            ? 'bg-purple-600 text-white border-2 border-purple-400' 
+            : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10'
+        }`}
+      >
+        Foto Antiga
+      </ToggleGroupItem>
+      <ToggleGroupItem 
+        value="logo" 
+        className={`px-3 py-2 text-sm ${
+          promptCategory === 'logo' 
+            ? 'bg-purple-600 text-white border-2 border-purple-400' 
+            : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10'
+        }`}
+      >
+        Logo
+      </ToggleGroupItem>
+      <ToggleGroupItem 
+        value="render3d" 
+        className={`px-3 py-2 text-sm ${
+          promptCategory === 'render3d' 
+            ? 'bg-purple-600 text-white border-2 border-purple-400' 
+            : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10'
+        }`}
+      >
+        Render 3D
+      </ToggleGroupItem>
+    </ToggleGroup>
+  </Card>
+)}
+```
+
+---
+
+## Fluxo do Prompt
 
 ```text
-+-------------------------------------------+-------------------------------------------+
-|  Upscaler Arcano                          |  Upscaler Arcano PRO                      |
-|  (se selecionado: borda cyan + fundo)     |  (se selecionado: borda cyan + fundo)     |
-+-------------------------------------------+-------------------------------------------+
+┌─────────────────────────────────────────────────────┐
+│              Usuário ativa "Processar"              │
+└─────────────────────────────────────────────────────┘
+                         │
+                         ▼
+            ┌────────────────────────┐
+            │  useCustomPrompt = ON? │
+            └────────────────────────┘
+                   │           │
+                  SIM         NÃO
+                   │           │
+                   ▼           ▼
+        ┌──────────────┐  ┌────────────────────────┐
+        │ customPrompt │  │ PROMPT_CATEGORIES[cat] │
+        └──────────────┘  └────────────────────────┘
+                   │           │
+                   └─────┬─────┘
+                         ▼
+              ┌────────────────────┐
+              │  Envia para API    │
+              │  (apenas 1 prompt) │
+              └────────────────────┘
 ```
 
-### Código Antes (problemático):
-```tsx
-<ToggleGroupItem 
-  value="standard" 
-  className="... data-[state=on]:!border-purple-200 ..."
->
-```
+## Resumo das Mudanças
 
-### Código Depois (solução):
-```tsx
-<ToggleGroupItem 
-  value="standard" 
-  className={`w-full py-3 px-4 ... ${
-    version === 'standard' 
-      ? 'bg-purple-600/80 text-white border-2 border-cyan-400 ring-2 ring-cyan-400/50 shadow-lg' 
-      : 'border-2 border-transparent text-purple-300 hover:bg-purple-500/10'
-  }`}
->
-```
-
-### Resultados Esperados
-
-- **Botão selecionado:** Borda CYAN brilhante (alta visibilidade), fundo colorido, texto branco
-- **Botão não selecionado:** Sem borda, texto roxo claro, hover sutil
-- **Contraste:** Cyan contra fundo roxo escuro = máxima visibilidade
-
-### Passos de Implementação
-
-1. Alterar `useState<'standard' | 'pro'>('pro')` para `useState<'standard' | 'pro'>('standard')`
-
-2. Substituir a classe do `ToggleGroupItem` de "standard" usando renderização condicional com `version === 'standard'`
-
-3. Substituir a classe do `ToggleGroupItem` de "pro" usando renderização condicional com `version === 'pro'`
-
-4. Remover todas as referências a `data-[state=on]` que não estão funcionando
+1. Adicionar constante `PROMPT_CATEGORIES` com os 5 prompts
+2. Adicionar estado `promptCategory` iniciando com `'pessoas'`
+3. Adicionar `useEffect` para resetar para `'pessoas'` quando desativar prompt personalizado
+4. Criar função `getFinalPrompt()` que retorna o prompt correto
+5. Atualizar 2 lugares que enviam o prompt para usar `getFinalPrompt()`
+6. Adicionar seção de botões de categoria (só aparece quando `!useCustomPrompt`)
+7. Remover `DEFAULT_PROMPT` que não será mais usado
