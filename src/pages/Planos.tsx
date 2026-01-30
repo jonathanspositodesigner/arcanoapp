@@ -34,7 +34,6 @@ const Planos = () => {
       features: [
         { text: t('planos.features.10PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: t('planos.features.arcanoAcademy'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
@@ -54,7 +53,6 @@ const Planos = () => {
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: t('planos.features.arcanoAcademy'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
@@ -68,14 +66,13 @@ const Planos = () => {
       hasTrial: false
     }, {
       name: "IA Unlimited",
-      price: "24,90",
-      originalPrice: "29,90",
+      price: "29,90",
+      originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/CiCenB",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: t('planos.features.arcanoAcademy'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
@@ -85,7 +82,7 @@ const Planos = () => {
         { text: t('planos.features.forja3D'), included: true }
       ],
       popular: false,
-      promo: true
+      promo: false
     }],
     anual: [{
       name: "Starter",
@@ -97,7 +94,6 @@ const Planos = () => {
       features: [
         { text: t('planos.features.10PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: t('planos.features.arcanoAcademy'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
@@ -118,7 +114,6 @@ const Planos = () => {
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: t('planos.features.arcanoAcademy'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
@@ -140,7 +135,6 @@ const Planos = () => {
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: t('planos.features.arcanoAcademy'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
