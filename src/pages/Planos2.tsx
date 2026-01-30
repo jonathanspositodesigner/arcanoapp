@@ -106,7 +106,8 @@ const Planos2 = () => {
       ],
       popular: false,
       promo: false,
-      hasTrial: false
+      hasTrial: false,
+      bestSeller: true
     }, {
       name: "IA Unlimited",
       price: "59,90",
@@ -127,7 +128,7 @@ const Planos2 = () => {
       ],
       popular: false,
       promo: false,
-      bestSeller: true
+      hasCountdown: true
     }],
     anual: [{
       name: "Starter",
@@ -171,7 +172,8 @@ const Planos2 = () => {
       ],
       popular: false,
       promo: false,
-      hasTrial: true
+      hasTrial: true,
+      bestSeller: true
     }, {
       name: "IA Unlimited",
       price: "19,90",
@@ -193,7 +195,7 @@ const Planos2 = () => {
       ],
       popular: false,
       promo: true,
-      bestSeller: true
+      hasCountdown: true
     }]
   };
 
@@ -252,11 +254,12 @@ const Planos2 = () => {
         >
           {currentPlans.map((plan, index) => {
             const isBestSeller = (plan as any).bestSeller;
+            const hasCountdown = (plan as any).hasCountdown;
             return (
             <div key={plan.name} className="flex flex-col">
-              <Card className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full flex-1 ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
+              <Card className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full flex-1 ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-green-500 shadow-lg shadow-green-500/30" : "border border-purple-500/20"}`}>
               {isBestSeller && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-1">
                   {t('planos.bestSeller')}
                 </Badge>
               )}
@@ -287,7 +290,7 @@ const Planos2 = () => {
                   </p>
                 )}
                 {/* Countdown Timer below price for IA Unlimited */}
-                {isBestSeller && (
+                {hasCountdown && (
                   <div className="flex items-center justify-center gap-1.5 mt-3">
                     <Clock className="w-3 h-3 text-red-500" />
                     <div className="flex items-center gap-1">
@@ -309,7 +312,7 @@ const Planos2 = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-4 ${isBestSeller ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
+                className={`w-full mb-4 ${isBestSeller ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
