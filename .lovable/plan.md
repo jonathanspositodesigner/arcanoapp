@@ -1,344 +1,86 @@
 
-# Plano: Login em Dois Passos com Verificação de Senha
+# Plano: Completar Implementação do Login em Dois Passos
 
-## Resumo
+## Problema Identificado
 
-Transformar o fluxo de login em todas as plataformas para um processo de dois passos:
+O arquivo `UserLogin.tsx` (página de login da Biblioteca de Prompts - `/login`) ainda está usando o fluxo antigo onde email e senha aparecem juntos. Precisa ser atualizado para o fluxo de dois passos.
 
-1. **Passo 1**: Usuário insere apenas o email e clica em "Continuar"
-2. **Passo 2**: 
-   - Se o usuário **tem senha cadastrada** (`password_changed = true`): Mostra campo de senha + link "Esqueceu sua senha?"
-   - Se o usuário **não tem senha** (`password_changed = false`): Redireciona para criar senha
-   - Se o email **não existe**: Oferece opção de criar conta
+## Status Atual
 
----
+| Componente | Status |
+|------------|--------|
+| ✅ HomeAuthModal.tsx | Já implementado |
+| ✅ UserLoginArtes.tsx | Já implementado |
+| ✅ UserLoginArtesMusicos.tsx | Já implementado |
+| ❌ **UserLogin.tsx** | Precisa atualizar |
 
-## Fluxo Visual
+## O Que Será Feito
 
-```text
-┌──────────────────────────────────────────────┐
-│            PASSO 1: Email                     │
-│                                               │
-│   Email: [________________________]           │
-│                                               │
-│          [     Continuar →     ]              │
-│                                               │
-│   ────────── ou ──────────                    │
-│   [ Criar conta ]                             │
-└──────────────────────────────────────────────┘
-                    │
-                    ▼
-     ┌──────────────────────────────┐
-     │  check_profile_exists(email) │
-     └──────────────────────────────┘
-                    │
-        ┌───────────┼───────────┐
-        ▼           ▼           ▼
-    [Existe e    [Existe e    [Não 
-     tem senha]   SEM senha]   existe]
-        │           │           │
-        ▼           ▼           ▼
-   ┌─────────┐  ┌─────────┐  ┌─────────┐
-   │ Passo 2 │  │ Redireciona│ │ Modal de│
-   │ Senha   │  │/change-   │ │ Signup  │
-   │         │  │password   │ └─────────┘
-   └─────────┘  └─────────┘
+### Atualizar UserLogin.tsx
 
-┌──────────────────────────────────────────────┐
-│            PASSO 2: Senha                     │
-│                                               │
-│   Logando como: usuario@email.com  [Trocar]   │
-│                                               │
-│   Senha: [________________________]           │
-│                                               │
-│          [ Esqueceu sua senha? ]              │
-│                                               │
-│          [      Entrar →      ]               │
-└──────────────────────────────────────────────┘
-```
+Transformar o formulário de login para usar dois passos:
 
----
+**Passo 1 (Email):**
+- Campo de email apenas
+- Botão "Continuar"
+- Opção "Criar conta"
 
-## Arquivos a Modificar
+**Passo 2 (Senha) - após verificação:**
+- Mostra email verificado com botão "Trocar"
+- Campo de senha
+- Link "Esqueci minha senha"
+- Botão "Entrar"
 
-| Arquivo | Plataforma | Alteração |
-|---------|------------|-----------|
-| `src/pages/UserLogin.tsx` | Biblioteca de Prompts | Fluxo dois passos completo |
-| `src/pages/UserLoginArtes.tsx` | Biblioteca de Artes | Fluxo dois passos completo |
-| `src/pages/UserLoginArtesMusicos.tsx` | Biblioteca de Artes Músicos | Fluxo dois passos completo |
-| `src/components/HomeAuthModal.tsx` | Modal página inicial | Fluxo dois passos na aba login |
-| `src/pages/BibliotecaArtes.tsx` | Primeiro acesso inline | Adaptar para novo fluxo |
-| `src/pages/FerramentasIA.tsx` | Primeiro acesso inline | Adaptar para novo fluxo |
-| `src/pages/FerramentasIAES.tsx` | Primeiro acesso inline ES | Adaptar para novo fluxo |
-
----
-
-## Implementação Técnica
-
-### Novos Estados para Cada Componente de Login
+### Novos Estados Necessários
 
 ```tsx
-// Estado do fluxo
 const [loginStep, setLoginStep] = useState<'email' | 'password'>('email');
 const [verifiedEmail, setVerifiedEmail] = useState("");
 const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 ```
 
-### Função de Verificação de Email (Passo 1)
+### Lógica de Verificação
 
-```tsx
-const handleEmailCheck = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  if (!email.trim()) {
-    toast.error(t('errors.enterEmail'));
-    return;
-  }
-  
-  setIsCheckingEmail(true);
-  
-  try {
-    // Verificar se email existe e status de senha
-    const { data: profileCheck, error } = await supabase
-      .rpc('check_profile_exists', { check_email: email.trim() });
-    
-    if (error) throw error;
-    
-    const profileExists = profileCheck?.[0]?.exists_in_db || false;
-    const passwordChanged = profileCheck?.[0]?.password_changed || false;
-    
-    if (!profileExists) {
-      // Email não encontrado - oferecer signup
-      toast.info(t('errors.emailNotFoundSignup'));
-      setSignupEmail(email.trim());
-      setShowSignupModal(true);
-      return;
-    }
-    
-    if (profileExists && !passwordChanged) {
-      // Primeiro acesso - redirecionar para criar senha
-      // Fazer login automático com email=password
-      const { error: autoLoginError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: email.trim()
-      });
-      
-      if (!autoLoginError) {
-        toast.success(t('errors.firstAccessSetPassword'));
-        navigate(`/change-password?redirect=${redirectTo}`);
-      } else {
-        // Fallback caso login automático falhe
-        toast.error(t('errors.firstAccessContactSupport'));
-      }
-      return;
-    }
-    
-    // Email existe e tem senha - ir para passo 2
-    setVerifiedEmail(email.trim());
-    setLoginStep('password');
-    
-  } catch (error) {
-    console.error('Erro ao verificar email:', error);
-    toast.error(t('errors.checkRegisterError'));
-  } finally {
-    setIsCheckingEmail(false);
-  }
-};
-```
+1. Usuário insere email → clica Continuar
+2. Sistema verifica com `check_profile_exists`:
+   - Email não existe → abre modal de signup
+   - Email existe, sem senha (`password_changed = false`) → auto-login e redireciona para `/change-password`
+   - Email existe, com senha → mostra campo de senha
 
-### Função de Login com Senha (Passo 2)
-
-```tsx
-const handlePasswordLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  if (!password) {
-    toast.error(t('errors.passwordRequired'));
-    return;
-  }
-  
-  setIsLoading(true);
-  
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: verifiedEmail,
-      password,
-    });
-    
-    if (error) {
-      toast.error(t('errors.invalidCredentials'));
-      return;
-    }
-    
-    toast.success(t('success.loginSuccess'));
-    navigate(redirectTo);
-    
-  } catch (error) {
-    toast.error(t('errors.loginError'));
-  } finally {
-    setIsLoading(false);
-  }
-};
-```
-
-### Função para Voltar ao Passo 1
-
-```tsx
-const handleChangeEmail = () => {
-  setLoginStep('email');
-  setPassword('');
-};
-```
-
----
-
-## UI do Passo 1 (Email)
+### UI do Passo 1
 
 ```tsx
 {loginStep === 'email' && (
-  <form onSubmit={handleEmailCheck} className="space-y-6">
-    <div>
-      <Label htmlFor="email">{t('email')}</Label>
-      <Input
-        id="email"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="seu-email@exemplo.com"
-        className="mt-2 bg-[#0D0221] border-purple-500/30 text-white"
-        required
-        autoFocus
-      />
-    </div>
-    
-    <Button
-      type="submit"
-      disabled={isCheckingEmail}
-      className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
-    >
-      {isCheckingEmail ? t('checking') : t('continue')}
-    </Button>
+  <form onSubmit={handleEmailCheck}>
+    <Input type="email" value={email} ... />
+    <Button>{isCheckingEmail ? 'Verificando...' : 'Continuar'}</Button>
+    <Button onClick={() => setShowSignupModal(true)}>Criar conta</Button>
   </form>
 )}
 ```
 
----
-
-## UI do Passo 2 (Senha)
+### UI do Passo 2
 
 ```tsx
 {loginStep === 'password' && (
-  <form onSubmit={handlePasswordLogin} className="space-y-6">
-    {/* Indicador de email verificado */}
-    <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
-      <div className="flex items-center gap-2">
-        <Mail className="h-4 w-4 text-purple-400" />
-        <span className="text-sm text-purple-200">{verifiedEmail}</span>
-      </div>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={handleChangeEmail}
-        className="text-purple-400 hover:text-white text-xs"
-      >
-        {t('changeEmail')}
-      </Button>
+  <form onSubmit={handlePasswordLogin}>
+    <div className="email-indicator">
+      {verifiedEmail} <Button onClick={handleChangeEmail}>Trocar</Button>
     </div>
-    
-    <div>
-      <Label htmlFor="password">{t('password')}</Label>
-      <div className="relative mt-2">
-        <Input
-          id="password"
-          type={showPassword ? "text" : "password"}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          className="bg-[#0D0221] border-purple-500/30 text-white"
-          required
-          autoFocus
-        />
-        <button
-          type="button"
-          onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400"
-        >
-          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </button>
-      </div>
-    </div>
-    
-    <Button
-      type="submit"
-      disabled={isLoading}
-      className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
-    >
-      {isLoading ? t('signingIn') : t('login')}
-    </Button>
-    
-    <div className="text-center">
-      <Link 
-        to={`/forgot-password?email=${encodeURIComponent(verifiedEmail)}`}
-        className="text-sm text-purple-400 hover:text-purple-300"
-      >
-        {t('forgotPassword')}
-      </Link>
-    </div>
+    <Input type="password" value={password} ... />
+    <Link to="/forgot-password">Esqueci minha senha</Link>
+    <Button>Entrar</Button>
   </form>
 )}
 ```
 
----
+## Arquivo a Modificar
 
-## Adaptações por Plataforma
+- `src/pages/UserLogin.tsx` - Refatorar para fluxo de dois passos
 
-### UserLogin.tsx (Prompts)
-- Redirect: `/change-password`
-- Forgot Password: `/forgot-password`
-- Tema: roxo escuro (#0D0221)
+## Resultado Esperado
 
-### UserLoginArtes.tsx (Artes)
-- Redirect: `/change-password-artes`
-- Forgot Password: `/forgot-password-artes`
-- Tema: azul/âmbar
-
-### UserLoginArtesMusicos.tsx (Músicos)
-- Redirect: `/change-password-artes-musicos`
-- Forgot Password: `/forgot-password-artes-musicos`
-- Tema: violeta
-
-### HomeAuthModal.tsx
-- Fluxo inline na aba de login
-- Redirect: `/change-password?redirect=/`
-- Fecha modal e redireciona
-
-### BibliotecaArtes, FerramentasIA, FerramentasIAES
-- Adaptar modais de primeiro acesso existentes
-- Manter consistência com novo fluxo
-
----
-
-## Textos i18n a Adicionar
-
-```json
-{
-  "continue": "Continuar",
-  "checking": "Verificando...",
-  "changeEmail": "Trocar email",
-  "emailVerified": "Email verificado",
-  "enterPasswordToLogin": "Digite sua senha para entrar",
-  "firstAccessCreatePassword": "Primeiro acesso detectado! Vamos criar sua senha.",
-  "errors.passwordRequired": "Digite sua senha"
-}
-```
-
----
-
-## Benefícios do Novo Fluxo
-
-1. **UX Simplificada**: Usuário não precisa lembrar se tem senha ou não
-2. **Primeiro Acesso Automático**: Sistema detecta automaticamente e redireciona
-3. **Menos Erros**: Reduz tentativas de login com senha errada
-4. **Feedback Claro**: Usuário sabe exatamente o status da conta
-5. **Recuperação Fácil**: Link de "esqueci senha" aparece apenas quando relevante
+Todas as páginas de login da plataforma terão o mesmo fluxo consistente:
+1. Digita email → Continuar
+2. Sistema detecta status da conta
+3. Mostra campo de senha ou redireciona apropriadamente
