@@ -25,9 +25,12 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupSuccessEmail, setSignupSuccessEmail] = useState("");
 
-  // Login state
+  // Two-step login state
+  const [loginStep, setLoginStep] = useState<'email' | 'password'>('email');
   const [loginEmail, setLoginEmail] = useState("");
+  const [verifiedEmail, setVerifiedEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   // Signup state
   const [signupEmail, setSignupEmail] = useState("");
@@ -37,11 +40,6 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
   const [signupPhone, setSignupPhone] = useState("");
 
   // Validation schemas
-  const loginSchema = z.object({
-    email: z.string().email(t('auth.invalidEmail')),
-    password: z.string().min(1, t('auth.passwordRequired')),
-  });
-
   const signupSchema = z.object({
     email: z.string().email(t('auth.invalidEmail')),
     password: z.string().min(6, t('auth.passwordMinLength')),
@@ -66,49 +64,80 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
     setSignupPhone(formatted);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  // Step 1: Check email
+  const handleEmailCheck = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!loginEmail.trim()) {
+      toast.error(t('auth.emailRequired'));
+      return;
+    }
+    
+    setIsCheckingEmail(true);
+    
     try {
-      loginSchema.parse({ email: loginEmail, password: loginPassword });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message);
+      const { data: profileCheck, error } = await supabase
+        .rpc('check_profile_exists', { check_email: loginEmail.trim() });
+      
+      if (error) throw error;
+      
+      const profileExists = profileCheck?.[0]?.exists_in_db || false;
+      const passwordChanged = profileCheck?.[0]?.password_changed || false;
+      
+      if (!profileExists) {
+        // Email not found - switch to signup tab
+        toast.info(t('auth.emailNotFoundSignup'));
+        setSignupEmail(loginEmail.trim());
+        setActiveTab('signup');
         return;
       }
+      
+      if (profileExists && !passwordChanged) {
+        // First access - auto login with email as password
+        const { error: autoLoginError } = await supabase.auth.signInWithPassword({
+          email: loginEmail.trim().toLowerCase(),
+          password: loginEmail.trim().toLowerCase(),
+        });
+        
+        if (!autoLoginError) {
+          toast.success(t('auth.firstAccessSetPassword'));
+          onClose();
+          window.location.href = '/change-password?redirect=/';
+        } else {
+          toast.error(t('auth.loginError'));
+        }
+        return;
+      }
+      
+      // Email exists and has password - go to step 2
+      setVerifiedEmail(loginEmail.trim());
+      setLoginStep('password');
+      
+    } catch (error) {
+      console.error('Error checking email:', error);
+      toast.error(t('auth.loginError'));
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
+
+  // Step 2: Login with password
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!loginPassword) {
+      toast.error(t('auth.passwordRequired'));
+      return;
     }
 
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginEmail.trim().toLowerCase(),
+        email: verifiedEmail.toLowerCase(),
         password: loginPassword,
       });
 
       if (error) {
-        // Check if this is a first-time access (purchased but never set password)
-        const { data: profileCheck } = await supabase
-          .rpc('check_profile_exists', { check_email: loginEmail.trim() });
-
-        const profileExists = profileCheck?.[0]?.exists_in_db || false;
-        const passwordChanged = profileCheck?.[0]?.password_changed || false;
-
-        if (profileExists && !passwordChanged) {
-          // FIRST ACCESS: try login with email as default password
-          const { error: autoLoginError } = await supabase.auth.signInWithPassword({
-            email: loginEmail.trim().toLowerCase(),
-            password: loginEmail.trim().toLowerCase(),
-          });
-
-          if (!autoLoginError) {
-            toast.success(t('auth.firstAccessSetPassword'));
-            onClose();
-            window.location.href = '/change-password?redirect=/';
-            return;
-          }
-        }
-
-        // Normal credentials error
         if (error.message.includes("Invalid login credentials")) {
           toast.error(t('auth.invalidCredentials'));
         } else if (error.message.includes("Email not confirmed")) {
@@ -140,6 +169,12 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleChangeEmail = () => {
+    setLoginStep('email');
+    setLoginPassword('');
+    setVerifiedEmail('');
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -178,7 +213,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
 
       if (error) {
         if (error.message.includes("already registered")) {
-          // Check if this is a first-time access (purchased but never set password)
+          // Check if this is a first-time access
           const { data: profileCheck } = await supabase
             .rpc('check_profile_exists', { check_email: signupEmail.trim() });
 
@@ -186,7 +221,6 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
           const passwordChanged = profileCheck?.[0]?.password_changed || false;
 
           if (profileExists && !passwordChanged) {
-            // Try auto-login with email as default password
             const { error: autoLoginError } = await supabase.auth.signInWithPassword({
               email: signupEmail.trim().toLowerCase(),
               password: signupEmail.trim().toLowerCase(),
@@ -222,7 +256,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
         }
       }
 
-      // Show success screen instead of switching to login
+      // Show success screen
       setSignupSuccessEmail(signupEmail.trim().toLowerCase());
       setSignupSuccess(true);
       
@@ -237,6 +271,14 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Reset state when modal closes or tab changes
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab as "login" | "signup");
+    setLoginStep('email');
+    setLoginPassword('');
+    setVerifiedEmail('');
   };
 
   return (
@@ -279,6 +321,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                 onClick={() => {
                   setSignupSuccess(false);
                   setActiveTab("login");
+                  setLoginStep('email');
                 }}
                 className="w-full"
               >
@@ -296,64 +339,111 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                 </p>
               </div>
 
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "signup")}>
+              <Tabs value={activeTab} onValueChange={handleTabChange}>
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
                   <TabsTrigger value="signup">{t('auth.signup')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="login">
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">{t('auth.email')}</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="login-email"
-                          type="email"
-                          placeholder={t('auth.emailPlaceholder')}
-                          value={loginEmail}
-                          onChange={(e) => setLoginEmail(e.target.value)}
-                          className="pl-10"
-                          disabled={isLoading}
-                        />
+                  {/* Step 1: Email */}
+                  {loginStep === 'email' && (
+                    <form onSubmit={handleEmailCheck} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="login-email">{t('auth.email')}</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="login-email"
+                            type="email"
+                            placeholder={t('auth.emailPlaceholder')}
+                            value={loginEmail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
+                            className="pl-10"
+                            disabled={isCheckingEmail}
+                            autoFocus
+                          />
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password">{t('auth.password')}</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="login-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder={t('auth.passwordPlaceholder')}
-                          value={loginPassword}
-                          onChange={(e) => setLoginPassword(e.target.value)}
-                          className="pl-10 pr-10"
-                          disabled={isLoading}
-                        />
-                        <button
+                      <Button type="submit" className="w-full" disabled={isCheckingEmail}>
+                        {isCheckingEmail ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {t('auth.loading')}
+                          </>
+                        ) : (
+                          t('auth.continue') || 'Continuar'
+                        )}
+                      </Button>
+                    </form>
+                  )}
+
+                  {/* Step 2: Password */}
+                  {loginStep === 'password' && (
+                    <form onSubmit={handlePasswordLogin} className="space-y-4">
+                      {/* Email indicator */}
+                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-foreground">{verifiedEmail}</span>
+                        </div>
+                        <Button
                           type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleChangeEmail}
+                          className="text-xs h-auto py-1 px-2"
                         >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
+                          {t('auth.changeEmail') || 'Trocar'}
+                        </Button>
                       </div>
-                    </div>
 
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          {t('auth.loading')}
-                        </>
-                      ) : (
-                        t('auth.loginButton')
-                      )}
-                    </Button>
-                  </form>
+                      <div className="space-y-2">
+                        <Label htmlFor="login-password">{t('auth.password')}</Label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="login-password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder={t('auth.passwordPlaceholder')}
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            className="pl-10 pr-10"
+                            disabled={isLoading}
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <a 
+                          href={`/forgot-password?email=${encodeURIComponent(verifiedEmail)}`}
+                          className="text-sm text-primary hover:underline"
+                        >
+                          {t('auth.forgotPassword')}
+                        </a>
+                      </div>
+
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {t('auth.loading')}
+                          </>
+                        ) : (
+                          t('auth.loginButton')
+                        )}
+                      </Button>
+                    </form>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="signup">
@@ -462,10 +552,6 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                         t('auth.signupButton')
                       )}
                     </Button>
-
-                    <p className="text-xs text-center text-muted-foreground">
-                      {t('auth.signupDisclaimer')}
-                    </p>
                   </form>
                 </TabsContent>
               </Tabs>
