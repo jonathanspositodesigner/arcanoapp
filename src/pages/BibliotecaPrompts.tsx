@@ -876,12 +876,25 @@ const BibliotecaPrompts = () => {
             
             {premiumModalItem && (
               <div className="mb-6 rounded-lg overflow-hidden border border-purple-500/30">
-                <SecureImage 
-                  src={premiumModalItem.imageUrl} 
-                  alt={premiumModalItem.title} 
-                  isPremium={false}
-                  className="w-full h-48 object-cover opacity-50"
-                />
+                {isVideoUrl(premiumModalItem.imageUrl) ? (
+                  <SecureVideo 
+                    src={premiumModalItem.imageUrl}
+                    isPremium={false}
+                    className="w-full h-48 object-cover opacity-50"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    controls={false}
+                  />
+                ) : (
+                  <SecureImage 
+                    src={premiumModalItem.imageUrl} 
+                    alt={premiumModalItem.title} 
+                    isPremium={false}
+                    className="w-full h-48 object-cover opacity-50"
+                  />
+                )}
                 <div className="p-3 bg-[#0D0221]">
                   <p className="font-semibold text-white">{premiumModalItem.title}</p>
                 </div>
@@ -923,7 +936,9 @@ const BibliotecaPrompts = () => {
                     className="w-full"
                     controls
                     autoPlay
+                    muted
                     loop
+                    playsInline
                   />
                 ) : (
                   <SecureImage 
