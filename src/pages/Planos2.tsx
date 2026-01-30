@@ -365,16 +365,16 @@ const Planos2 = () => {
               <div className="flex flex-col items-center mb-4">
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
                   <Sparkles className="w-2.5 h-2.5" />
-                  {(plan as any).credits}
+                  {(plan as any).credits}/mês
                 </span>
                 {plan.name === "Starter" && (
-                  <span className="text-[9px] text-purple-400 mt-0.5">= 30 imagens</span>
+                  <span className="text-[9px] text-purple-400 mt-0.5">= 30 imagens/mês</span>
                 )}
                 {plan.name === "Pro" && (
-                  <span className="text-[9px] text-purple-400 mt-0.5">= 120 imagens</span>
+                  <span className="text-[9px] text-purple-400 mt-0.5">= 120 imagens/mês</span>
                 )}
                 {plan.name === "Ultimate" && (
-                  <span className="text-[9px] text-purple-400 mt-0.5">= 300 imagens</span>
+                  <span className="text-[9px] text-purple-400 mt-0.5">= 300 imagens/mês</span>
                 )}
               </div>
 
