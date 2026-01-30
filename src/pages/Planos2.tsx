@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Check, X, Sparkles, Clock, LogIn } from "lucide-react";
@@ -23,6 +23,45 @@ const Planos2 = () => {
   const { locale } = useLocale();
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
+  
+  // Countdown timer state - starting at 48 minutes
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('planos2-countdown');
+    if (saved) {
+      const remaining = parseInt(saved, 10) - Date.now();
+      if (remaining > 0) return remaining;
+    }
+    const initial = 48 * 60 * 1000; // 48 minutes in ms
+    localStorage.setItem('planos2-countdown', String(Date.now() + initial));
+    return initial;
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1000) {
+          // Reset to 48 minutes when it reaches 0
+          const newTime = 48 * 60 * 1000;
+          localStorage.setItem('planos2-countdown', String(Date.now() + newTime));
+          return newTime;
+        }
+        return prev - 1000;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return {
+      minutes: String(minutes).padStart(2, '0'),
+      seconds: String(seconds).padStart(2, '0')
+    };
+  };
+
+  const countdown = formatTime(timeLeft);
   
   const plans = {
     mensal: [{
@@ -69,7 +108,7 @@ const Planos2 = () => {
     }, {
       name: "IA Unlimited",
       price: "59,90",
-      originalPrice: null,
+      originalPrice: "99,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "Créditos Ilimitados",
@@ -212,7 +251,26 @@ const Planos2 = () => {
           {currentPlans.map((plan, index) => {
             const isBestSeller = (plan as any).bestSeller;
             return (
-            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
+            <div key={plan.name} className="flex flex-col">
+              {/* Countdown Timer for IA Unlimited */}
+              {isBestSeller && (
+                <div className="flex items-center justify-center gap-2 mb-3 py-2">
+                  <Clock className="w-4 h-4 text-red-500" />
+                  <div className="flex items-center gap-1">
+                    <div className="bg-red-950/80 border border-red-500/30 rounded px-2 py-1 min-w-[36px] text-center">
+                      <span className="text-red-400 font-mono font-bold text-sm">{countdown.minutes}</span>
+                    </div>
+                    <span className="text-red-400 font-bold">:</span>
+                    <div className="bg-red-950/80 border border-red-500/30 rounded px-2 py-1 min-w-[36px] text-center">
+                      <span className="text-red-400 font-mono font-bold text-sm">{countdown.seconds}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* Spacer for non-bestSeller cards to align */}
+              {!isBestSeller && <div className="h-[52px] mb-3" />}
+              
+              <Card className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full flex-1 ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1">
                   {t('planos.bestSeller')}
@@ -287,7 +345,8 @@ const Planos2 = () => {
                   </div>
                 </div>
               )}
-            </Card>
+              </Card>
+            </div>
           );
           })}
         </StaggeredAnimation>
