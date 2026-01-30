@@ -339,21 +339,26 @@ const Planos2 = () => {
                 <h2 className="text-base font-bold text-white">{plan.name}</h2>
               </div>
 
-              <div className="text-center mb-2 min-h-[70px]">
-                {plan.originalPrice && (
+              {/* Price Section - fixed height */}
+              <div className="text-center mb-2 h-[75px] flex flex-col justify-center">
+                {plan.originalPrice ? (
                   <p className="text-purple-400 line-through text-xs">
                     R${plan.originalPrice}{t('planos.perMonth')}
                   </p>
+                ) : (
+                  <p className="text-transparent text-xs">.</p>
                 )}
                 <div className="flex items-baseline justify-center gap-0.5">
                   <span className="text-purple-400 text-sm">R$</span>
                   <span className="text-3xl font-bold text-white">{plan.price}</span>
                   <span className="text-purple-400 text-xs">{t('planos.perMonth')}</span>
                 </div>
-                {billingPeriod === "anual" && (plan as any).yearlyTotal && (
+                {billingPeriod === "anual" && (plan as any).yearlyTotal ? (
                   <p className="text-purple-400 text-xs mt-1">
                     R${(plan as any).yearlyTotal}{t('planos.perYear')}
                   </p>
+                ) : (
+                  <p className="text-transparent text-xs mt-1">.</p>
                 )}
               </div>
 
@@ -364,10 +369,10 @@ const Planos2 = () => {
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
 
-              {/* Savings Badge - only on annual */}
-              {billingPeriod === "anual" && (
-                <div className="mb-3">
-                  {plan.name === "Starter" ? (
+              {/* Savings Badge - fixed height container */}
+              <div className="h-[28px] mb-2 flex items-center justify-center">
+                {billingPeriod === "anual" ? (
+                  plan.name === "Starter" ? (
                     <div className="flex items-center justify-center gap-1.5 bg-gray-800/50 border border-gray-600/30 rounded-full px-3 py-1">
                       <Tag className="w-3 h-3 text-gray-400" />
                       <span className="text-[10px] text-gray-400">Sem diferença comparado ao mensal</span>
@@ -391,12 +396,12 @@ const Planos2 = () => {
                         Economize {(plan as any).savings} comparado ao mensal
                       </span>
                     </div>
-                  )}
-                </div>
-              )}
+                  )
+                ) : null}
+              </div>
 
-              {/* Badge de Créditos */}
-              <div className="flex flex-col items-center mb-4">
+              {/* Badge de Créditos - fixed height */}
+              <div className="flex flex-col items-center mb-4 h-[36px]">
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
                   <Sparkles className="w-2.5 h-2.5" />
                   {(plan as any).credits}/mês
