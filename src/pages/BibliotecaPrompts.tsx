@@ -489,7 +489,7 @@ const BibliotecaPrompts = () => {
       {/* Top Bar - Desktop */}
       <header className="hidden lg:flex bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20 px-6 py-3 items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-4">
-          <img alt="PromptClub" onClick={() => navigate('/')} src={promptclubLogo} className="h-8 cursor-pointer hover:opacity-80 transition-opacity" />
+          <img alt="PromptClub" onClick={() => navigate('/')} src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-7 cursor-pointer hover:opacity-80 transition-opacity" />
         </div>
         <div className="flex items-center gap-3">
           <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
