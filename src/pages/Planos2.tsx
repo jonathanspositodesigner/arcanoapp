@@ -154,7 +154,7 @@ const Planos2 = () => {
     anual: [{
       name: "Starter",
       price: "9,90",
-      originalPrice: "19,90",
+      originalPrice: null,
       perMonth: true,
       yearlyTotal: "118,80",
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/RaLcc5",
@@ -174,10 +174,10 @@ const Planos2 = () => {
       promo: false
     }, {
       name: "Pro",
-      price: "14,90",
-      originalPrice: "29,90",
+      price: "29,90",
+      originalPrice: null,
       perMonth: true,
-      yearlyTotal: "178,80",
+      yearlyTotal: "358,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
       credits: "4.400 créditos de IA",
       features: [
@@ -193,14 +193,36 @@ const Planos2 = () => {
       ],
       popular: false,
       promo: false,
-      hasTrial: true,
+      hasTrial: false
+    }, {
+      name: "Ultimate",
+      price: "39,90",
+      originalPrice: "49,90",
+      perMonth: true,
+      yearlyTotal: "478,80",
+      paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
+      credits: "10.800 créditos de IA",
+      features: [
+        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.changeClothesAI'), included: true },
+        { text: t('planos.features.changePoseAI'), included: true },
+        { text: t('planos.features.upscaleArcano'), included: true },
+        { text: t('planos.features.forja3D'), included: true }
+      ],
+      popular: false,
+      promo: false,
+      hasTrial: false,
       bestSeller: true
     }, {
       name: "IA Unlimited",
-      price: "19,90",
-      originalPrice: "59,90",
+      price: "99,90",
+      originalPrice: "149,90",
       perMonth: true,
-      yearlyTotal: "238,80",
+      yearlyTotal: "1198,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
       credits: "Créditos Ilimitados",
       features: [
@@ -215,7 +237,7 @@ const Planos2 = () => {
         { text: t('planos.features.forja3D'), included: true }
       ],
       popular: false,
-      promo: true,
+      promo: false,
       hasCountdown: true
     }]
   };
@@ -280,14 +302,6 @@ const Planos2 = () => {
           </div>
         </AnimatedSection>
 
-        {/* Discount Banner - only show on annual */}
-        {billingPeriod === "anual" && (
-          <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]" as="div">
-            <span className="text-white font-semibold tracking-wide">
-              {t('planos.upToDiscount', { percent: "33" })}
-            </span>
-          </AnimatedSection>
-        )}
 
         {/* Plans Grid */}
         <StaggeredAnimation 
