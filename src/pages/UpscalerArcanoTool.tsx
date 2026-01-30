@@ -591,6 +591,7 @@ const UpscalerArcanoTool: React.FC = () => {
               initialScale={1}
               minScale={1}
               maxScale={100}
+              smooth={true}
               onInit={(ref) => {
                 setZoomLevel(ref.state.scale);
                 if (beforeTransformRef.current) {
@@ -604,7 +605,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   beforeTransformRef.current.style.transform = `translate(${state.positionX}px, ${state.positionY}px) scale(${state.scale})`;
                 }
               }}
-              wheel={{ step: 0.2 }}
+              wheel={{ smoothStep: 0.15 }}
               pinch={{ step: 5 }}
               doubleClick={{ mode: 'toggle', step: 2 }}
               panning={{ disabled: zoomLevel <= 1 }}
