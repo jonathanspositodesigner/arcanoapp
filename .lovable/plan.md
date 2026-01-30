@@ -1,128 +1,53 @@
 
-# Plano: Switcher Upscaler Arcano / Upscaler Arcano Pro
 
-## Visão Geral
+# Plano: Configurar Motor Light do Upscaler
 
-Implementar um seletor no topo da ferramenta para alternar entre duas versões:
-- **Upscaler Arcano** - versão básica (usará um WEBAPP_ID diferente)
-- **Upscaler Arcano Pro** - versão atual com todas as configurações (badge com gradiente azul/roxo)
+## O que descobri na documentação
 
-O switch alterna entre as versões na mesma página sem recarregar.
+A versão Light tem os **mesmos campos** da PRO, só muda:
+1. O **WEBAPP_ID**: `2017030861371219969`
+2. O **nodeId da Resolução**: `75` (na PRO é `73`)
 
-## Design Visual do Header
+| Campo | PRO | Light |
+|-------|-----|-------|
+| WEBAPP_ID | 2015865378030755841 | 2017030861371219969 |
+| Image | nodeId: 26 | nodeId: 26 |
+| Detail Denoise | nodeId: 25 | nodeId: 25 |
+| Prompt | nodeId: 128 | nodeId: 128 |
+| **Resolução** | **nodeId: 73** | **nodeId: 75** |
 
-```text
-┌──────────────────────────────────────────────────────────────────┐
-│  ←   Upscaler Arcano  [ Arcano ]  [ Arcano Pro ✨ ]             │
-│                           ↑             ↑                        │
-│                        básico     badge gradiente azul→roxo      │
-└──────────────────────────────────────────────────────────────────┘
-```
+## Mudanças no Edge Function
 
-O badge "PRO" terá:
-- Gradiente moderno azul (#3b82f6) para roxo (#8b5cf6)
-- Ícone de estrela/sparkles
-- Bordas arredondadas e efeito brilhante
+### Arquivo: `supabase/functions/runninghub-upscaler/index.ts`
 
-## Arquivos a Modificar
-
-### 1. `src/pages/UpscalerArcanoTool.tsx`
-
-**Adicionar state para versão:**
+**1. Linha 17 - Atualizar WEBAPP_ID_STANDARD:**
 ```typescript
-const [version, setVersion] = useState<'standard' | 'pro'>('pro');
+const WEBAPP_ID_STANDARD = '2017030861371219969';
 ```
 
-**Modificar header (linhas 506-521):**
+**2. Linhas 241-245 - Ajustar nodeId da resolução baseado na versão:**
 ```typescript
-<div className="sticky top-0 z-50 bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20">
-  <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-    <Button variant="ghost" size="icon" onClick={goBack}>
-      <ArrowLeft className="w-5 h-5" />
-    </Button>
-    
-    <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-      Upscaler Arcano
-    </h1>
-    
-    {/* Version Switcher */}
-    <ToggleGroup type="single" value={version} onValueChange={(v) => v && setVersion(v)}>
-      <ToggleGroupItem value="standard" className="...">
-        Arcano
-      </ToggleGroupItem>
-      <ToggleGroupItem value="pro" className="...">
-        Arcano 
-        <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-          PRO
-        </span>
-      </ToggleGroupItem>
-    </ToggleGroup>
-  </div>
-</div>
+// Build node info list - resolution nodeId differs between versions
+const resolutionNodeId = version === 'pro' ? "73" : "75";
+
+const nodeInfoList: any[] = [
+  { nodeId: "26", fieldName: "image", fieldValue: fileName },
+  { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
+  { nodeId: resolutionNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
+];
 ```
 
-**Enviar versão para edge function:**
-```typescript
-const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
-  body: {
-    jobId: job.id,
-    fileName,
-    detailDenoise,
-    resolution: resolution === '4k' ? 4096 : 2048,
-    prompt: useCustomPrompt ? customPrompt : null,
-    version: version,  // NOVO: 'standard' ou 'pro'
-  },
-});
-```
+## Resumo
 
-**Mostrar/ocultar controles avançados baseado na versão:**
-- Versão Pro: mostra todos os controles (resolução, denoise, prompt)
-- Versão Standard: mostra apenas controles básicos ou nenhum
-
-### 2. `supabase/functions/runninghub-upscaler/index.ts`
-
-**Adicionar constante para WEBAPP_ID alternativo:**
-```typescript
-const WEBAPP_ID_PRO = '2015865378030755841';     // Atual
-const WEBAPP_ID_STANDARD = 'ID_DA_VERSAO_BASICA'; // A definir
-```
-
-**Extrair parâmetro version:**
-```typescript
-const { 
-  jobId,
-  fileName, 
-  detailDenoise,
-  resolution,
-  prompt,
-  version  // NOVO
-} = await req.json();
-```
-
-**Selecionar WEBAPP_ID baseado na versão:**
-```typescript
-const webappId = version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD;
-
-const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`, {
-  // ...
-});
-```
-
-## Comportamento
-
-| Versão | Controles Visíveis | WEBAPP_ID |
-|--------|-------------------|-----------|
-| Arcano (básico) | Apenas upload/download | A definir |
-| Arcano Pro | Resolução, Denoise, Prompt | 2015865378030755841 |
+| Mudança | De | Para |
+|---------|-----|------|
+| WEBAPP_ID_STANDARD | PLACEHOLDER_STANDARD_ID | 2017030861371219969 |
+| Resolution nodeId PRO | 73 | 73 (mantém) |
+| Resolution nodeId Light | 73 | 75 (corrigido) |
 
 ## Resultado
 
-- Switch elegante no header
-- Badge PRO com gradiente azul→roxo moderno
-- Troca instantânea sem reload
-- Cada versão usa seu próprio motor/webapp no RunningHub
-- Controles ajustados conforme a versão selecionada
+- Versão PRO: usa webapp `2015865378030755841` com nodeId `73` para resolução
+- Versão Light: usa webapp `2017030861371219969` com nodeId `75` para resolução
+- Todos os outros campos iguais nas duas versões
 
-## Nota
-
-Preciso saber qual será o **WEBAPP_ID da versão básica** do Upscaler Arcano. Se ainda não tem, posso deixar como placeholder e você me passa depois.
