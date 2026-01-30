@@ -255,7 +255,7 @@ const Planos2 = () => {
 
               {/* Badge de Créditos */}
               <div className="flex justify-center mb-6">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-slate-500 to-slate-700">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-gray-400 via-blue-500 to-blue-700">
                   <Sparkles className="w-3 h-3" />
                   {(plan as any).credits}
                 </span>
