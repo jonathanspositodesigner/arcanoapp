@@ -1165,29 +1165,55 @@ const UpscalerArcanoTool: React.FC = () => {
                     >
                       <ToggleGroupItem 
                         value="perto" 
-                        className={`flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all ${
+                        className={`flex flex-col items-center gap-2 px-4 py-3 rounded-lg transition-all ${
                           pessoasFraming === 'perto'
                             ? 'bg-purple-600 text-white border-2 border-purple-400' 
                             : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
-                        <div className="w-10 h-10 rounded-lg bg-purple-900/50 flex items-center justify-center overflow-hidden">
-                          <div className="w-8 h-8 rounded-full bg-purple-300/30 border-2 border-purple-400/50" />
+                        {/* Close-up portrait icon - face fills the frame */}
+                        <div className="w-12 h-12 rounded-lg bg-purple-900/50 flex items-center justify-center overflow-hidden border border-purple-500/30 relative">
+                          {/* Frame border */}
+                          <div className="absolute inset-1 border-2 border-dashed border-purple-400/40 rounded" />
+                          {/* Large head filling frame */}
+                          <svg viewBox="0 0 40 40" className="w-10 h-10">
+                            {/* Head - large, filling most of frame */}
+                            <circle cx="20" cy="18" r="12" fill="currentColor" opacity="0.4" />
+                            {/* Shoulders barely visible at bottom */}
+                            <ellipse cx="20" cy="42" rx="16" ry="10" fill="currentColor" opacity="0.3" />
+                          </svg>
                         </div>
-                        <span className="text-xs">De Perto</span>
+                        <span className="text-xs font-medium">De Perto</span>
                       </ToggleGroupItem>
                       <ToggleGroupItem 
                         value="longe" 
-                        className={`flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all ${
+                        className={`flex flex-col items-center gap-2 px-4 py-3 rounded-lg transition-all ${
                           pessoasFraming === 'longe'
                             ? 'bg-purple-600 text-white border-2 border-purple-400' 
                             : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
-                        <div className="w-10 h-10 rounded-lg bg-purple-900/50 flex items-center justify-center overflow-hidden">
-                          <div className="w-3 h-6 rounded-full bg-purple-300/30 border border-purple-400/50" />
+                        {/* Full body icon - person small in frame */}
+                        <div className="w-12 h-12 rounded-lg bg-purple-900/50 flex items-center justify-center overflow-hidden border border-purple-500/30 relative">
+                          {/* Frame border */}
+                          <div className="absolute inset-1 border-2 border-dashed border-purple-400/40 rounded" />
+                          {/* Small full body person */}
+                          <svg viewBox="0 0 40 40" className="w-10 h-10">
+                            {/* Small head */}
+                            <circle cx="20" cy="10" r="4" fill="currentColor" opacity="0.4" />
+                            {/* Body */}
+                            <rect x="17" y="14" width="6" height="10" rx="2" fill="currentColor" opacity="0.35" />
+                            {/* Left leg */}
+                            <rect x="17" y="23" width="2.5" height="10" rx="1" fill="currentColor" opacity="0.3" />
+                            {/* Right leg */}
+                            <rect x="20.5" y="23" width="2.5" height="10" rx="1" fill="currentColor" opacity="0.3" />
+                            {/* Left arm */}
+                            <rect x="13" y="15" width="4" height="2" rx="1" fill="currentColor" opacity="0.3" />
+                            {/* Right arm */}
+                            <rect x="23" y="15" width="4" height="2" rx="1" fill="currentColor" opacity="0.3" />
+                          </svg>
                         </div>
-                        <span className="text-xs">De Longe</span>
+                        <span className="text-xs font-medium">De Longe</span>
                       </ToggleGroupItem>
                     </ToggleGroup>
                   </div>
