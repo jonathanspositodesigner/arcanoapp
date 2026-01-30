@@ -1165,55 +1165,68 @@ const UpscalerArcanoTool: React.FC = () => {
                     >
                       <ToggleGroupItem 
                         value="perto" 
-                        className={`flex flex-col items-center gap-2 px-4 py-3 rounded-lg transition-all ${
+                        className={`flex flex-col items-center gap-2 px-6 py-4 rounded-xl transition-all min-w-[100px] ${
                           pessoasFraming === 'perto'
                             ? 'bg-purple-600 text-white border-2 border-purple-400' 
                             : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
                         {/* Close-up portrait icon - face fills the frame */}
-                        <div className="w-12 h-12 rounded-lg bg-purple-900/50 flex items-center justify-center overflow-hidden border border-purple-500/30 relative">
-                          {/* Frame border */}
-                          <div className="absolute inset-1 border-2 border-dashed border-purple-400/40 rounded" />
-                          {/* Large head filling frame */}
-                          <svg viewBox="0 0 40 40" className="w-10 h-10">
-                            {/* Head - large, filling most of frame */}
-                            <circle cx="20" cy="18" r="12" fill="currentColor" opacity="0.4" />
-                            {/* Shoulders barely visible at bottom */}
-                            <ellipse cx="20" cy="42" rx="16" ry="10" fill="currentColor" opacity="0.3" />
+                        <div className="w-16 h-16 rounded-lg bg-purple-900/80 flex items-center justify-center border-2 border-purple-400/50 relative">
+                          {/* Frame corners to show cropping */}
+                          <div className="absolute top-1 left-1 w-2 h-2 border-l-2 border-t-2 border-purple-300/60" />
+                          <div className="absolute top-1 right-1 w-2 h-2 border-r-2 border-t-2 border-purple-300/60" />
+                          <div className="absolute bottom-1 left-1 w-2 h-2 border-l-2 border-b-2 border-purple-300/60" />
+                          <div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-purple-300/60" />
+                          {/* Large head filling frame - close-up */}
+                          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            {/* Head - large, close-up portrait */}
+                            <circle cx="24" cy="20" r="14" className="fill-purple-300" />
+                            {/* Eyes */}
+                            <circle cx="19" cy="18" r="2" className="fill-purple-900" />
+                            <circle cx="29" cy="18" r="2" className="fill-purple-900" />
+                            {/* Mouth */}
+                            <path d="M20 26 Q24 30 28 26" stroke="currentColor" strokeWidth="1.5" fill="none" className="stroke-purple-900" />
+                            {/* Shoulders cropped at bottom */}
+                            <ellipse cx="24" cy="48" rx="18" ry="14" className="fill-purple-400/60" />
                           </svg>
                         </div>
-                        <span className="text-xs font-medium">De Perto</span>
+                        <span className="text-xs font-semibold">De Perto</span>
                       </ToggleGroupItem>
                       <ToggleGroupItem 
                         value="longe" 
-                        className={`flex flex-col items-center gap-2 px-4 py-3 rounded-lg transition-all ${
+                        className={`flex flex-col items-center gap-2 px-6 py-4 rounded-xl transition-all min-w-[100px] ${
                           pessoasFraming === 'longe'
                             ? 'bg-purple-600 text-white border-2 border-purple-400' 
                             : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
-                        {/* Full body icon - person small in frame */}
-                        <div className="w-12 h-12 rounded-lg bg-purple-900/50 flex items-center justify-center overflow-hidden border border-purple-500/30 relative">
-                          {/* Frame border */}
-                          <div className="absolute inset-1 border-2 border-dashed border-purple-400/40 rounded" />
-                          {/* Small full body person */}
-                          <svg viewBox="0 0 40 40" className="w-10 h-10">
+                        {/* Full body icon - person small in frame with environment */}
+                        <div className="w-16 h-16 rounded-lg bg-purple-900/80 flex items-center justify-center border-2 border-purple-400/50 relative">
+                          {/* Frame corners */}
+                          <div className="absolute top-1 left-1 w-2 h-2 border-l-2 border-t-2 border-purple-300/60" />
+                          <div className="absolute top-1 right-1 w-2 h-2 border-r-2 border-t-2 border-purple-300/60" />
+                          <div className="absolute bottom-1 left-1 w-2 h-2 border-l-2 border-b-2 border-purple-300/60" />
+                          <div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-purple-300/60" />
+                          {/* Small full body person with space around */}
+                          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            {/* Ground line */}
+                            <line x1="8" y1="44" x2="40" y2="44" className="stroke-purple-400/40" strokeWidth="1" />
                             {/* Small head */}
-                            <circle cx="20" cy="10" r="4" fill="currentColor" opacity="0.4" />
-                            {/* Body */}
-                            <rect x="17" y="14" width="6" height="10" rx="2" fill="currentColor" opacity="0.35" />
-                            {/* Left leg */}
-                            <rect x="17" y="23" width="2.5" height="10" rx="1" fill="currentColor" opacity="0.3" />
-                            {/* Right leg */}
-                            <rect x="20.5" y="23" width="2.5" height="10" rx="1" fill="currentColor" opacity="0.3" />
+                            <circle cx="24" cy="14" r="5" className="fill-purple-300" />
+                            {/* Body/torso */}
+                            <rect x="20" y="19" width="8" height="12" rx="3" className="fill-purple-300" />
                             {/* Left arm */}
-                            <rect x="13" y="15" width="4" height="2" rx="1" fill="currentColor" opacity="0.3" />
+                            <rect x="12" y="20" width="8" height="3" rx="1.5" className="fill-purple-300/80" />
                             {/* Right arm */}
-                            <rect x="23" y="15" width="4" height="2" rx="1" fill="currentColor" opacity="0.3" />
+                            <rect x="28" y="20" width="8" height="3" rx="1.5" className="fill-purple-300/80" />
+                            {/* Left leg */}
+                            <rect x="20" y="30" width="3.5" height="13" rx="1.5" className="fill-purple-300/70" />
+                            {/* Right leg */}
+                            <rect x="24.5" y="30" width="3.5" height="13" rx="1.5" className="fill-purple-300/70" />
                           </svg>
                         </div>
-                        <span className="text-xs font-medium">De Longe</span>
+                        <span className="text-xs font-semibold">De Longe</span>
                       </ToggleGroupItem>
                     </ToggleGroup>
                   </div>
