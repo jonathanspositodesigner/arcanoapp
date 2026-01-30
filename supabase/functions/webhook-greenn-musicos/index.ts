@@ -53,6 +53,22 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
   const t = emailTexts[locale]
   
   try {
+    // Verificar se já enviou email para este email+produto nos últimos 5 minutos
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    const { data: recentEmail } = await supabase
+      .from('welcome_email_logs')
+      .select('id, sent_at')
+      .eq('email', email)
+      .eq('product_info', planInfo)
+      .eq('status', 'sent')
+      .gte('sent_at', fiveMinutesAgo)
+      .maybeSingle()
+
+    if (recentEmail) {
+      console.log(`   ├─ [${requestId}] ⏭️ Email já enviado há ${Math.round((Date.now() - new Date(recentEmail.sent_at).getTime()) / 1000)}s - IGNORANDO duplicata`)
+      return
+    }
+
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
     const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
     const supabaseUrl = Deno.env.get("SUPABASE_URL")
