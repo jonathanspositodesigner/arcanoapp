@@ -249,11 +249,11 @@ const Planos2 = () => {
               <TabsTrigger value="mensal" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-300 px-6">
                 {t('planos.monthly')}
               </TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-300 px-6 relative">
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-400 font-medium whitespace-nowrap">
-                  {t('planos.discount')}
-                </span>
+              <TabsTrigger value="anual" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-300 px-6 relative flex items-center gap-2">
                 {t('planos.annualInstallments')}
+                <span className="bg-gradient-to-r from-purple-600 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  52% OFF
+                </span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
