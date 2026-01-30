@@ -268,7 +268,7 @@ const Planos2 = () => {
 
         {/* Plans Grid */}
         <StaggeredAnimation 
-          className="grid grid-cols-1 lg:grid-cols-4 gap-1 max-w-6xl mx-auto"
+          className="grid grid-cols-1 lg:grid-cols-4 gap-4 max-w-6xl mx-auto"
           itemClassName="flex"
           staggerDelay={150}
           animation="fade-up"
@@ -278,7 +278,7 @@ const Planos2 = () => {
             const hasCountdown = (plan as any).hasCountdown;
             return (
             <div key={plan.name} className="flex flex-col">
-              <Card className={`relative p-4 flex flex-col rounded-xl w-full h-full ${isBestSeller ? "bg-[#1a2e1a] border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "bg-[#1A0A2E] border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "bg-[#1A0A2E] border border-purple-500/20"}`}>
+              <Card className={`relative p-5 flex flex-col rounded-xl w-full flex-1 ${isBestSeller ? "bg-[#1a2e1a] border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "bg-[#1A0A2E] border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "bg-[#1A0A2E] border border-purple-500/20"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-3 py-0.5">
                   {t('planos.bestSeller')}
@@ -295,41 +295,41 @@ const Planos2 = () => {
                 </Badge>
               )}
 
-              <div className="text-center mb-2 h-[28px] flex items-center justify-center">
-                <h2 className={`text-sm font-bold ${isBestSeller ? "text-lime-400" : "text-white"}`}>{plan.name}</h2>
+              <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
+                <h2 className={`text-base font-bold ${isBestSeller ? "text-lime-400" : "text-white"}`}>{plan.name}</h2>
               </div>
 
-              <div className="text-center mb-3 h-[85px] flex flex-col justify-center">
+              <div className="text-center mb-4 min-h-[70px]">
                 {plan.originalPrice && (
                   <p className={`${isBestSeller ? "text-lime-600" : "text-purple-400"} line-through text-xs`}>
                     R${plan.originalPrice}{t('planos.perMonth')}
                   </p>
                 )}
                 <div className="flex items-baseline justify-center gap-0.5">
-                  <span className={`${isBestSeller ? "text-lime-500" : "text-purple-400"} text-xs`}>R$</span>
-                  <span className={`text-xl font-bold ${isBestSeller ? "text-lime-400" : "text-white"}`}>{plan.price}</span>
-                  <span className={`${isBestSeller ? "text-lime-500" : "text-purple-400"} text-[10px]`}>{t('planos.perMonth')}</span>
+                  <span className={`${isBestSeller ? "text-lime-500" : "text-purple-400"} text-sm`}>R$</span>
+                  <span className={`text-2xl font-bold ${isBestSeller ? "text-lime-400" : "text-white"}`}>{plan.price}</span>
+                  <span className={`${isBestSeller ? "text-lime-500" : "text-purple-400"} text-xs`}>{t('planos.perMonth')}</span>
                 </div>
                 {billingPeriod === "anual" && (plan as any).yearlyTotal && (
-                  <p className={`${isBestSeller ? "text-lime-500" : "text-purple-400"} text-[10px] mt-0.5`}>
+                  <p className={`${isBestSeller ? "text-lime-500" : "text-purple-400"} text-xs mt-1`}>
                     R${(plan as any).yearlyTotal}{t('planos.perYear')}
                   </p>
                 )}
                 {/* Countdown Timer below price for IA Unlimited */}
                 {hasCountdown && (
-                  <div className="flex items-center justify-center gap-1 mt-1">
-                    <Clock className="w-2 h-2 text-red-500" />
+                  <div className="flex items-center justify-center gap-1 mt-2">
+                    <Clock className="w-2.5 h-2.5 text-red-500" />
                     <div className="flex items-center gap-0.5">
-                      <div className="bg-red-950/80 border border-red-500/30 rounded px-1 py-0.5 min-w-[18px] text-center">
-                        <span className="text-red-400 font-mono font-bold text-[9px]">{countdown.hours}</span>
+                      <div className="bg-red-950/80 border border-red-500/30 rounded px-1 py-0.5 min-w-[22px] text-center">
+                        <span className="text-red-400 font-mono font-bold text-[10px]">{countdown.hours}</span>
                       </div>
-                      <span className="text-red-400 font-bold text-[9px]">:</span>
-                      <div className="bg-red-950/80 border border-red-500/30 rounded px-1 py-0.5 min-w-[18px] text-center">
-                        <span className="text-red-400 font-mono font-bold text-[9px]">{countdown.minutes}</span>
+                      <span className="text-red-400 font-bold text-[10px]">:</span>
+                      <div className="bg-red-950/80 border border-red-500/30 rounded px-1 py-0.5 min-w-[22px] text-center">
+                        <span className="text-red-400 font-mono font-bold text-[10px]">{countdown.minutes}</span>
                       </div>
-                      <span className="text-red-400 font-bold text-[9px]">:</span>
-                      <div className="bg-red-950/80 border border-red-500/30 rounded px-1 py-0.5 min-w-[18px] text-center">
-                        <span className="text-red-400 font-mono font-bold text-[9px]">{countdown.seconds}</span>
+                      <span className="text-red-400 font-bold text-[10px]">:</span>
+                      <div className="bg-red-950/80 border border-red-500/30 rounded px-1 py-0.5 min-w-[22px] text-center">
+                        <span className="text-red-400 font-mono font-bold text-[10px]">{countdown.seconds}</span>
                       </div>
                     </div>
                   </div>
@@ -338,7 +338,7 @@ const Planos2 = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-2 text-[10px] py-1.5 h-auto ${isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
+                className={`w-full mb-3 text-xs py-2 h-auto ${isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
