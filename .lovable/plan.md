@@ -1,86 +1,65 @@
 
-# Plano: Completar Implementação do Login em Dois Passos
+# Plano: Corrigir Botões com Nomes Estranhos na Biblioteca de Prompts
 
 ## Problema Identificado
 
-O arquivo `UserLogin.tsx` (página de login da Biblioteca de Prompts - `/login`) ainda está usando o fluxo antigo onde email e senha aparecem juntos. Precisa ser atualizado para o fluxo de dois passos.
+Os botões nos cards da Biblioteca de Prompts estão mostrando as **chaves de tradução literalmente** (como `card.copyPrompt` e `card.details`) porque durante o redesign, foram usadas chaves que não existem no arquivo de traduções.
 
-## Status Atual
+## Chaves Com Problema
 
-| Componente | Status |
-|------------|--------|
-| ✅ HomeAuthModal.tsx | Já implementado |
-| ✅ UserLoginArtes.tsx | Já implementado |
-| ✅ UserLoginArtesMusicos.tsx | Já implementado |
-| ❌ **UserLogin.tsx** | Precisa atualizar |
+| Chave usada no código | O que aparece | O que deveria ser |
+|----------------------|---------------|-------------------|
+| `t('card.copyPrompt')` | card.copyPrompt | Copiar Prompt |
+| `t('card.details')` | card.details | Detalhes |
+| `t('modal.referenceImages')` | modal.referenceImages | Imagens de Referência |
+| `t('modal.prompt')` | modal.prompt | Prompt |
+| `t('modal.copyPrompt')` | modal.copyPrompt | Copiar Prompt |
+| `t('modal.download')` | modal.download | Baixar |
+| `t('modal.watchTutorial')` | modal.watchTutorial | Ver Tutorial |
+| `t('premiumModal.title')` | premiumModal.title | Conteúdo Premium |
+| `t('premiumModal.description')` | premiumModal.description | Este conteúdo está disponível... |
+| `t('premiumModal.becomePremium')` | premiumModal.becomePremium | Torne-se Premium |
+| `t('limitModal.title')` | limitModal.title | Limite Diário Atingido |
+| `t('limitModal.description')` | limitModal.description | Você atingiu o limite diário... |
+| `t('limitModal.upgrade')` | limitModal.upgrade | Fazer Upgrade |
 
-## O Que Será Feito
+## Solução
 
-### Atualizar UserLogin.tsx
+Adicionar as chaves faltantes no arquivo `src/locales/pt/prompts.json`:
 
-Transformar o formulário de login para usar dois passos:
-
-**Passo 1 (Email):**
-- Campo de email apenas
-- Botão "Continuar"
-- Opção "Criar conta"
-
-**Passo 2 (Senha) - após verificação:**
-- Mostra email verificado com botão "Trocar"
-- Campo de senha
-- Link "Esqueci minha senha"
-- Botão "Entrar"
-
-### Novos Estados Necessários
-
-```tsx
-const [loginStep, setLoginStep] = useState<'email' | 'password'>('email');
-const [verifiedEmail, setVerifiedEmail] = useState("");
-const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-```
-
-### Lógica de Verificação
-
-1. Usuário insere email → clica Continuar
-2. Sistema verifica com `check_profile_exists`:
-   - Email não existe → abre modal de signup
-   - Email existe, sem senha (`password_changed = false`) → auto-login e redireciona para `/change-password`
-   - Email existe, com senha → mostra campo de senha
-
-### UI do Passo 1
-
-```tsx
-{loginStep === 'email' && (
-  <form onSubmit={handleEmailCheck}>
-    <Input type="email" value={email} ... />
-    <Button>{isCheckingEmail ? 'Verificando...' : 'Continuar'}</Button>
-    <Button onClick={() => setShowSignupModal(true)}>Criar conta</Button>
-  </form>
-)}
-```
-
-### UI do Passo 2
-
-```tsx
-{loginStep === 'password' && (
-  <form onSubmit={handlePasswordLogin}>
-    <div className="email-indicator">
-      {verifiedEmail} <Button onClick={handleChangeEmail}>Trocar</Button>
-    </div>
-    <Input type="password" value={password} ... />
-    <Link to="/forgot-password">Esqueci minha senha</Link>
-    <Button>Entrar</Button>
-  </form>
-)}
+```json
+{
+  "card": {
+    "copyPrompt": "Copiar Prompt",
+    "details": "Detalhes"
+  },
+  "modal": {
+    "referenceImages": "Imagens de Referência",
+    "prompt": "Prompt",
+    "copyPrompt": "Copiar Prompt",
+    "download": "Baixar",
+    "watchTutorial": "Ver Tutorial"
+  },
+  "premiumModal": {
+    "title": "Conteúdo Premium",
+    "description": "Este conteúdo está disponível apenas para usuários premium. Adquira um plano para ter acesso ilimitado!",
+    "becomePremium": "Torne-se Premium"
+  },
+  "limitModal": {
+    "title": "Limite Diário Atingido",
+    "description": "Você atingiu o limite diário de {{limit}} prompts premium.",
+    "upgrade": "Fazer Upgrade"
+  }
+}
 ```
 
 ## Arquivo a Modificar
 
-- `src/pages/UserLogin.tsx` - Refatorar para fluxo de dois passos
+- `src/locales/pt/prompts.json` - Adicionar as chaves faltantes
 
 ## Resultado Esperado
 
-Todas as páginas de login da plataforma terão o mesmo fluxo consistente:
-1. Digita email → Continuar
-2. Sistema detecta status da conta
-3. Mostra campo de senha ou redireciona apropriadamente
+Após a correção:
+- Botão "card.copyPrompt" → **Copiar Prompt**
+- Botão "card.details" → **Detalhes**  
+- Todos os textos nos modais aparecerão corretamente em português
