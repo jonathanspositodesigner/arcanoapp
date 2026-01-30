@@ -14,7 +14,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 // WebApp IDs for the upscaler workflows
 const WEBAPP_ID_PRO = '2015865378030755841';
-const WEBAPP_ID_STANDARD = 'PLACEHOLDER_STANDARD_ID'; // TODO: Replace with actual standard version ID
+const WEBAPP_ID_STANDARD = '2017030861371219969';
 const MAX_CONCURRENT_JOBS = 3;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -237,11 +237,14 @@ async function handleRun(req: Request) {
       })
       .eq('id', jobId);
 
-    // Build node info list for RunningHub API (correct node IDs from documentation)
+    // Build node info list for RunningHub API
+    // Resolution nodeId differs between versions: PRO uses "73", Light uses "75"
+    const resolutionNodeId = version === 'pro' ? "73" : "75";
+    
     const nodeInfoList: any[] = [
       { nodeId: "26", fieldName: "image", fieldValue: fileName },
       { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
-      { nodeId: "73", fieldName: "value", fieldValue: String(resolution || 2048) },
+      { nodeId: resolutionNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
     ];
 
     // Add prompt if provided (nodeId 128 for prompt)
