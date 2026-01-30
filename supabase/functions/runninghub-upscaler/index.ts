@@ -12,8 +12,9 @@ const RUNNINGHUB_API_KEY = (
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// WebApp ID for the upscaler workflow
-const WEBAPP_ID = '2015865378030755841';
+// WebApp IDs for the upscaler workflows
+const WEBAPP_ID_PRO = '2015865378030755841';
+const WEBAPP_ID_STANDARD = 'PLACEHOLDER_STANDARD_ID'; // TODO: Replace with actual standard version ID
 const MAX_CONCURRENT_JOBS = 3;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -22,7 +23,7 @@ if (!RUNNINGHUB_API_KEY) {
   console.error('[RunningHub] CRITICAL: Missing RUNNINGHUB_API_KEY secret');
 }
 
-console.log('[RunningHub] Config loaded - WEBAPP_ID:', WEBAPP_ID);
+console.log('[RunningHub] Config loaded - PRO:', WEBAPP_ID_PRO, 'STANDARD:', WEBAPP_ID_STANDARD);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -155,7 +156,8 @@ async function handleRun(req: Request) {
     fileName, 
     detailDenoise,
     resolution,
-    prompt
+    prompt,
+    version
   } = await req.json();
   
   if (!fileName || !jobId) {
@@ -168,7 +170,9 @@ async function handleRun(req: Request) {
     });
   }
 
-  console.log(`[RunningHub] Processing job ${jobId} - fileName: ${fileName}, detail: ${detailDenoise}`);
+  // Select WebApp ID based on version
+  const webappId = version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD;
+  console.log(`[RunningHub] Processing job ${jobId} - version: ${version}, webappId: ${webappId}, fileName: ${fileName}`);
 
   try {
     // Update job with input file name
@@ -259,7 +263,7 @@ async function handleRun(req: Request) {
       webhookUrl: webhookUrl
     }));
 
-    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID}`, {
+    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
