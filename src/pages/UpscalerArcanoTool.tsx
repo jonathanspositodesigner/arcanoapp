@@ -783,7 +783,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
                     <div className="text-center">
-                      <p className="text-lg font-medium">
+                      <p className="text-lg font-medium text-white">
                         {status === 'uploading' ? t('upscalerTool.status.uploading') : t('upscalerTool.status.processing')}
                       </p>
                       <p className="text-sm text-purple-300/70">
