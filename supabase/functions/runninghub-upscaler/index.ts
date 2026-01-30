@@ -154,6 +154,7 @@ async function handleRun(req: Request) {
     jobId,
     fileName, 
     detailDenoise,
+    resolution,
     prompt
   } = await req.json();
   
@@ -236,6 +237,7 @@ async function handleRun(req: Request) {
     const nodeInfoList: any[] = [
       { nodeId: "26", fieldName: "image", fieldValue: fileName },
       { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
+      { nodeId: "73", fieldName: "value", fieldValue: String(resolution || 2048) },
     ];
 
     // Add prompt if provided (nodeId 128 for prompt)
