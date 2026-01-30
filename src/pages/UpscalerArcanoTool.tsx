@@ -965,7 +965,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 type="single" 
                 value={resolution} 
                 onValueChange={(val) => val && setResolution(val as '2k' | '4k')}
-                className="flex gap-1 sm:gap-2"
+                className="flex justify-start gap-1 sm:gap-2"
               >
                 <ToggleGroupItem 
                   value="2k" 
@@ -1001,7 +1001,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   type="single" 
                   value={promptCategory} 
                   onValueChange={(value) => value && setPromptCategory(value as PromptCategory)}
-                  className="grid grid-cols-5 gap-1 sm:flex sm:flex-wrap sm:gap-2"
+                  className="flex justify-start flex-wrap gap-1 sm:gap-2"
                 >
                   <ToggleGroupItem 
                     value="pessoas" 
