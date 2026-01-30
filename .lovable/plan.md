@@ -1,96 +1,65 @@
 
+# Plano: Consertar Indicador Visual do Switch de Versão
 
-# Plano: Tooltips de Tempo e Custo de Créditos
+## Problema Identificado
 
-## O que vou fazer
+O switch de versão (Standard vs PRO) na página `/upscaler-arcano-tool` não mostra visualmente qual opção está selecionada. Ambos os botões aparecem iguais, sem borda ou destaque no botão ativo.
 
-1. **Adicionar tooltips com tempo de espera** nos botões do switcher Standard/PRO
-2. **Mostrar custo de créditos no botão "Aumentar Qualidade"** baseado na versão selecionada
+**Causa raiz:** O componente `ToggleGroupItem` usa o `toggleVariants` que aplica estilos padrão (`data-[state=on]:bg-accent`) que estão conflitando com os estilos customizados, mesmo usando `!important`. O `tailwind-merge` pode estar removendo ou ignorando as classes customizadas.
 
----
+## Solução
 
-## Mudanças no Arquivo
+Não depender das classes via `className` que estão sendo sobrescritas. Usar **renderização condicional baseada no estado `version`** para aplicar estilos diferentes diretamente.
 
-### `src/pages/UpscalerArcanoTool.tsx`
+### Mudanças Técnicas
 
-#### 1. Importar componente Tooltip e ícone Coins
-```typescript
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-// Adicionar Coins ao import do lucide-react
-import { ..., Coins } from 'lucide-react';
+**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
+
+1. **Mudar valor padrão do state `version`** de `'pro'` para `'standard'`
+
+2. **Substituir as classes condicionais `data-[state=on]`** por classes diretas baseadas no estado React (`version === 'standard'` ou `version === 'pro'`)
+
+3. **Aplicar borda contrastante** (cor cyan/ciano brilhante) no botão selecionado usando lógica condicional:
+
+```text
++-------------------------------------------+-------------------------------------------+
+|  Upscaler Arcano                          |  Upscaler Arcano PRO                      |
+|  (se selecionado: borda cyan + fundo)     |  (se selecionado: borda cyan + fundo)     |
++-------------------------------------------+-------------------------------------------+
 ```
 
-#### 2. Envolver o ToggleGroup com TooltipProvider e adicionar tooltips
-
-**Botão Standard (linhas 550-555):**
+### Código Antes (problemático):
 ```tsx
-<Tooltip>
-  <TooltipTrigger asChild>
-    <ToggleGroupItem 
-      value="standard" 
-      className="..."
-    >
-      Upscaler Arcano
-    </ToggleGroupItem>
-  </TooltipTrigger>
-  <TooltipContent className="bg-black/90 border-purple-500/30">
-    <div className="flex items-center gap-1.5 text-sm">
-      <Clock className="w-3.5 h-3.5 text-purple-400" />
-      <span>~2m 20s</span>
-    </div>
-  </TooltipContent>
-</Tooltip>
-```
-
-**Botão PRO (linhas 556-565):**
-```tsx
-<Tooltip>
-  <TooltipTrigger asChild>
-    <ToggleGroupItem 
-      value="pro" 
-      className="..."
-    >
-      Upscaler Arcano
-      <span className="...">
-        <Crown className="w-3 h-3" />
-        PRO
-      </span>
-    </ToggleGroupItem>
-  </TooltipTrigger>
-  <TooltipContent className="bg-black/90 border-purple-500/30">
-    <div className="flex items-center gap-1.5 text-sm">
-      <Clock className="w-3.5 h-3.5 text-purple-400" />
-      <span>~3m 30s</span>
-    </div>
-  </TooltipContent>
-</Tooltip>
-```
-
-#### 3. Atualizar botão "Aumentar Qualidade" com custo de créditos (linhas 958-964)
-
-```tsx
-<Button
-  className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
-  onClick={processImage}
+<ToggleGroupItem 
+  value="standard" 
+  className="... data-[state=on]:!border-purple-200 ..."
 >
-  <Sparkles className="w-5 h-5 mr-2" />
-  {t('upscalerTool.buttons.increaseQuality')}
-  <span className="ml-2 flex items-center gap-1 text-sm opacity-90">
-    <Coins className="w-4 h-4" />
-    {version === 'pro' ? '60' : '40'}
-  </span>
-</Button>
 ```
 
----
+### Código Depois (solução):
+```tsx
+<ToggleGroupItem 
+  value="standard" 
+  className={`w-full py-3 px-4 ... ${
+    version === 'standard' 
+      ? 'bg-purple-600/80 text-white border-2 border-cyan-400 ring-2 ring-cyan-400/50 shadow-lg' 
+      : 'border-2 border-transparent text-purple-300 hover:bg-purple-500/10'
+  }`}
+>
+```
 
-## Resultado Visual
+### Resultados Esperados
 
-**Switcher:**
-- Ao passar o mouse no "Upscaler Arcano" (Standard): tooltip com `🕐 ~2m 20s`
-- Ao passar o mouse no "Upscaler Arcano PRO": tooltip com `🕐 ~3m 30s`
+- **Botão selecionado:** Borda CYAN brilhante (alta visibilidade), fundo colorido, texto branco
+- **Botão não selecionado:** Sem borda, texto roxo claro, hover sutil
+- **Contraste:** Cyan contra fundo roxo escuro = máxima visibilidade
 
-**Botão de Ação:**
-- Standard selecionado: `✨ Aumentar Qualidade 🪙 40`
-- PRO selecionado: `✨ Aumentar Qualidade 🪙 60`
+### Passos de Implementação
 
+1. Alterar `useState<'standard' | 'pro'>('pro')` para `useState<'standard' | 'pro'>('standard')`
+
+2. Substituir a classe do `ToggleGroupItem` de "standard" usando renderização condicional com `version === 'standard'`
+
+3. Substituir a classe do `ToggleGroupItem` de "pro" usando renderização condicional com `version === 'pro'`
+
+4. Remover todas as referências a `data-[state=on]` que não estão funcionando
