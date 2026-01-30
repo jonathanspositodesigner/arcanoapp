@@ -1,213 +1,471 @@
 
-# Plano: Adicionar Botões de Prompt por Categoria
+# Plano: Adicionar Botão de Perfil e Sistema de Créditos no Upscaler
 
 ## Resumo
 
-Adicionar 5 botões de categorias de prompt (Pessoas, Comida, Foto Antiga, Logo, Render 3D) que ficam acima do toggle de "Prompt Personalizado". Cada botão tem um prompt específico que será enviado automaticamente.
+Adicionar na barra superior do Upscaler Arcano:
+1. Um badge mostrando os créditos restantes do usuário
+2. Um botão de perfil com menu dropdown contendo opções para configurar perfil, mudar senha, ver telefone e créditos
+
+A ordem será: **Nome da ferramenta** → **Badge de créditos** → **Ícone de perfil**
 
 ## Layout Visual
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  💬 Tipo de Imagem                                          │
-│                                                             │
-│  ┌──────────┐ ┌─────────┐ ┌────────────┐ ┌──────┐ ┌───────┐│
-│  │ Pessoas  │ │ Comida  │ │ Foto Antiga│ │ Logo │ │Render │ │
-│  │(selected)│ │         │ │            │ │      │ │  3D   │ │
-│  └──────────┘ └─────────┘ └────────────┘ └──────┘ └───────┘│
-│                                                             │
-│  ☐ Usar prompt personalizado                         [OFF] │
-│                                                             │
-│  (se ON: botões somem e textarea aparece)                  │
-└─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│  ← Voltar  │  Upscaler Arcano  │           [💰 150]  [👤]             │
+│            │                   │           (badge)  (perfil)          │
+└────────────────────────────────────────────────────────────────────────┘
+                                                      │
+                                                      ▼
+                                          ┌─────────────────────┐
+                                          │ 👤 Meu Perfil       │
+                                          │ 📱 (11) 99999-9999  │
+                                          ├─────────────────────┤
+                                          │ 💰 Créditos: 150    │
+                                          ├─────────────────────┤
+                                          │ 🔒 Alterar Senha    │
+                                          │ ⚙️ Configurações    │
+                                          ├─────────────────────┤
+                                          │ 🚪 Sair             │
+                                          └─────────────────────┘
 ```
 
 ## Comportamento
 
-1. **Padrão**: Botão "Pessoas" vem pré-selecionado
-2. **Ao clicar num botão**: O prompt daquele botão será enviado (nenhum outro prompt)
-3. **Ao ativar "Prompt Personalizado"**: Os 5 botões desaparecem, usuário usa seu próprio prompt
-4. **Ao desativar "Prompt Personalizado"**: Botões voltam, "Pessoas" fica selecionado
-
-## Prompts por Botão
-
-| Botão | Prompt |
-|-------|--------|
-| **Pessoas** | "Enhance the photo while maintaining 100% of the original identity and lighting. Increase hyper-realism: natural and realistic skin texture, visible micro-pores, subtle microvilli/peach fuzz, hairs corrected strand by strand, defined eyebrows with natural hairs, sharper eyes with realistic reflections, defined eyelashes without exaggeration, lips with natural texture and lines, noise reduction preserving fine details, high yet clean sharpness, balanced contrast and skin tones, PBR detail enhancement (skin with subtle subsurface scattering), realistic depth of field and 4K/8K photographic finish." |
-| **Comida** | "Realistic food photography: boost sharpness and micro-textures, enhance ingredient detail, natural highlights, true-to-life appetizing colors, soft studio lighting, clean professional finish." |
-| **Foto Antiga** | "Realistic photo restoration: remove scratches/tears/stains, reduce blur, recover sharpness and fine details, fix faded colors, balanced contrast, preserve original texture and identity, natural look." |
-| **Logo** | "Preserve exact colors, proportions, typography, spacing, outlines, and alignment. Restore clean, sharp edges; remove jaggies/blur/artifacts and noise while keeping the same visual identity." |
-| **Render 3D** | "Premium 3D detailing: sharpen edges and emboss depth, add fine surface micro-textures (metal/plastic), realistic reflections and highlights, clean shadows, consistent depth, high-end render finish." |
+1. **Badge de Créditos**: Mostra quantidade atual de créditos restantes com ícone de moeda
+2. **Botão de Perfil**: Ícone de usuário que abre um dropdown menu
+3. **Menu Dropdown**: 
+   - Mostra nome do usuário no topo
+   - Exibe telefone cadastrado (se houver)
+   - Mostra créditos restantes
+   - Opção para alterar senha (navega para /change-password ou abre modal)
+   - Opção de configurações (navega para /profile-settings)
+   - Botão de logout
 
 ---
 
-## Detalhes Técnicos
+## Etapa 1: Criar Sistema de Créditos no Banco de Dados
 
-**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
+### 1.1 Criar tabela `upscaler_credits`
 
-### 1. Adicionar constante com os prompts (após linha 27)
+```sql
+CREATE TABLE public.upscaler_credits (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  balance INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id)
+);
 
-```tsx
-const PROMPT_CATEGORIES = {
-  pessoas: "Enhance the photo while maintaining 100% of the original identity and lighting. Increase hyper-realism: natural and realistic skin texture, visible micro-pores, subtle microvilli/peach fuzz, hairs corrected strand by strand, defined eyebrows with natural hairs, sharper eyes with realistic reflections, defined eyelashes without exaggeration, lips with natural texture and lines, noise reduction preserving fine details, high yet clean sharpness, balanced contrast and skin tones, PBR detail enhancement (skin with subtle subsurface scattering), realistic depth of field and 4K/8K photographic finish.",
-  comida: "Realistic food photography: boost sharpness and micro-textures, enhance ingredient detail, natural highlights, true-to-life appetizing colors, soft studio lighting, clean professional finish.",
-  fotoAntiga: "Realistic photo restoration: remove scratches/tears/stains, reduce blur, recover sharpness and fine details, fix faded colors, balanced contrast, preserve original texture and identity, natural look.",
-  logo: "Preserve exact colors, proportions, typography, spacing, outlines, and alignment. Restore clean, sharp edges; remove jaggies/blur/artifacts and noise while keeping the same visual identity.",
-  render3d: "Premium 3D detailing: sharpen edges and emboss depth, add fine surface micro-textures (metal/plastic), realistic reflections and highlights, clean shadows, consistent depth, high-end render finish."
-} as const;
+-- Enable RLS
+ALTER TABLE public.upscaler_credits ENABLE ROW LEVEL SECURITY;
 
-type PromptCategory = keyof typeof PROMPT_CATEGORIES;
+-- Policies
+CREATE POLICY "Users can view their own credits" 
+  ON public.upscaler_credits 
+  FOR SELECT 
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Admins can manage all credits" 
+  ON public.upscaler_credits 
+  FOR ALL 
+  USING (has_role(auth.uid(), 'admin'::app_role))
+  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
 ```
 
-### 2. Adicionar novo estado (após linha 38)
+### 1.2 Criar tabela `upscaler_credit_transactions` (histórico)
 
-```tsx
-const [promptCategory, setPromptCategory] = useState<PromptCategory>('pessoas');
+```sql
+CREATE TABLE public.upscaler_credit_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  amount INTEGER NOT NULL,
+  balance_after INTEGER NOT NULL,
+  transaction_type TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE public.upscaler_credit_transactions ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+CREATE POLICY "Users can view their own transactions" 
+  ON public.upscaler_credit_transactions 
+  FOR SELECT 
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Admins can manage all transactions" 
+  ON public.upscaler_credit_transactions 
+  FOR ALL 
+  USING (has_role(auth.uid(), 'admin'::app_role))
+  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
 ```
 
-### 3. Resetar para "pessoas" quando desativar prompt personalizado
+### 1.3 Criar função para consumir créditos
 
-Adicionar `useEffect` para quando `useCustomPrompt` mudar de `true` para `false`:
-
-```tsx
-useEffect(() => {
-  if (!useCustomPrompt) {
-    setPromptCategory('pessoas');
-  }
-}, [useCustomPrompt]);
+```sql
+CREATE OR REPLACE FUNCTION public.consume_upscaler_credits(
+  _user_id UUID,
+  _amount INTEGER,
+  _description TEXT DEFAULT 'Upscaler usage'
+)
+RETURNS TABLE(success BOOLEAN, new_balance INTEGER, error_message TEXT)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  current_balance INTEGER;
+  updated_balance INTEGER;
+BEGIN
+  -- Get current balance (or create if not exists)
+  INSERT INTO upscaler_credits (user_id, balance)
+  VALUES (_user_id, 0)
+  ON CONFLICT (user_id) DO NOTHING;
+  
+  SELECT balance INTO current_balance
+  FROM upscaler_credits
+  WHERE user_id = _user_id
+  FOR UPDATE;
+  
+  IF current_balance < _amount THEN
+    RETURN QUERY SELECT FALSE, current_balance, 'Saldo insuficiente'::TEXT;
+    RETURN;
+  END IF;
+  
+  updated_balance := current_balance - _amount;
+  
+  UPDATE upscaler_credits
+  SET balance = updated_balance, updated_at = now()
+  WHERE user_id = _user_id;
+  
+  INSERT INTO upscaler_credit_transactions 
+    (user_id, amount, balance_after, transaction_type, description)
+  VALUES 
+    (_user_id, -_amount, updated_balance, 'consumption', _description);
+  
+  RETURN QUERY SELECT TRUE, updated_balance, NULL::TEXT;
+END;
+$$;
 ```
 
-### 4. Função para obter o prompt final
+### 1.4 Criar função para obter saldo
+
+```sql
+CREATE OR REPLACE FUNCTION public.get_upscaler_credits(_user_id UUID)
+RETURNS INTEGER
+LANGUAGE sql
+STABLE SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+  SELECT COALESCE(
+    (SELECT balance FROM upscaler_credits WHERE user_id = _user_id),
+    0
+  )
+$$;
+```
+
+---
+
+## Etapa 2: Criar Hook para Gerenciar Créditos
+
+**Novo arquivo:** `src/hooks/useUpscalerCredits.tsx`
 
 ```tsx
-const getFinalPrompt = (): string => {
-  if (useCustomPrompt) {
-    return customPrompt;
-  }
-  return PROMPT_CATEGORIES[promptCategory];
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+export const useUpscalerCredits = (userId: string | undefined) => {
+  const [balance, setBalance] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchBalance = async () => {
+    if (!userId) {
+      setBalance(0);
+      setIsLoading(false);
+      return;
+    }
+
+    const { data, error } = await supabase.rpc('get_upscaler_credits', {
+      _user_id: userId
+    });
+
+    if (!error && data !== null) {
+      setBalance(data);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchBalance();
+  }, [userId]);
+
+  const consumeCredits = async (amount: number, description?: string) => {
+    if (!userId) return { success: false, error: 'Not authenticated' };
+    
+    const { data, error } = await supabase.rpc('consume_upscaler_credits', {
+      _user_id: userId,
+      _amount: amount,
+      _description: description || 'Upscaler usage'
+    });
+
+    if (error || !data?.[0]?.success) {
+      return { 
+        success: false, 
+        error: data?.[0]?.error_message || error?.message 
+      };
+    }
+
+    setBalance(data[0].new_balance);
+    return { success: true, newBalance: data[0].new_balance };
+  };
+
+  return { balance, isLoading, refetch: fetchBalance, consumeCredits };
 };
 ```
 
-### 5. Atualizar lógica de envio (linhas 312 e 364)
+---
 
-**Antes:**
+## Etapa 3: Modificar Header do Upscaler
+
+**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
+
+### 3.1 Adicionar imports
+
 ```tsx
-prompt: useCustomPrompt ? customPrompt : null
+import { User, Settings, Lock, LogOut, Phone } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 ```
 
-**Depois:**
+### 3.2 Adicionar hooks e estados
+
 ```tsx
-prompt: getFinalPrompt()
+const { user, logout } = usePremiumStatus();
+const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
+const [userProfile, setUserProfile] = useState<{name?: string; phone?: string} | null>(null);
+
+// Fetch user profile
+useEffect(() => {
+  const fetchProfile = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('name, phone')
+      .eq('id', user.id)
+      .single();
+    if (data) setUserProfile(data);
+  };
+  fetchProfile();
+}, [user]);
 ```
 
-Agora SEMPRE envia um prompt - ou o da categoria selecionada, ou o personalizado.
-
-### 6. Adicionar UI dos botões de categoria (antes do Card do prompt personalizado, linha 962)
+### 3.3 Modificar o Header
 
 ```tsx
-{/* Image Type Category Buttons - only show when custom prompt is OFF */}
-{!useCustomPrompt && (
-  <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-    <div className="flex items-center gap-2 mb-3">
-      <MessageSquare className="w-4 h-4 text-pink-400" />
-      <span className="font-medium text-white">Tipo de Imagem</span>
+<div className="sticky top-0 z-50 bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20">
+  <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+    {/* Left side: Back button + Title */}
+    <div className="flex items-center gap-4">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={goBack}
+        className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </Button>
+      <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+        {t('upscalerTool.title')}
+      </h1>
     </div>
-    <ToggleGroup 
-      type="single" 
-      value={promptCategory} 
-      onValueChange={(value) => value && setPromptCategory(value as PromptCategory)}
-      className="flex flex-wrap gap-2"
-    >
-      <ToggleGroupItem 
-        value="pessoas" 
-        className={`px-3 py-2 text-sm ${
-          promptCategory === 'pessoas' 
-            ? 'bg-purple-600 text-white border-2 border-purple-400' 
-            : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10'
-        }`}
+
+    {/* Right side: Credits Badge + Profile Dropdown */}
+    <div className="flex items-center gap-2">
+      {/* Credits Badge */}
+      <Badge 
+        variant="outline" 
+        className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
       >
-        Pessoas
-      </ToggleGroupItem>
-      <ToggleGroupItem 
-        value="comida" 
-        className={`px-3 py-2 text-sm ${
-          promptCategory === 'comida' 
-            ? 'bg-purple-600 text-white border-2 border-purple-400' 
-            : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10'
-        }`}
-      >
-        Comida
-      </ToggleGroupItem>
-      <ToggleGroupItem 
-        value="fotoAntiga" 
-        className={`px-3 py-2 text-sm ${
-          promptCategory === 'fotoAntiga' 
-            ? 'bg-purple-600 text-white border-2 border-purple-400' 
-            : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10'
-        }`}
-      >
-        Foto Antiga
-      </ToggleGroupItem>
-      <ToggleGroupItem 
-        value="logo" 
-        className={`px-3 py-2 text-sm ${
-          promptCategory === 'logo' 
-            ? 'bg-purple-600 text-white border-2 border-purple-400' 
-            : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10'
-        }`}
-      >
-        Logo
-      </ToggleGroupItem>
-      <ToggleGroupItem 
-        value="render3d" 
-        className={`px-3 py-2 text-sm ${
-          promptCategory === 'render3d' 
-            ? 'bg-purple-600 text-white border-2 border-purple-400' 
-            : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10'
-        }`}
-      >
-        Render 3D
-      </ToggleGroupItem>
-    </ToggleGroup>
-  </Card>
-)}
+        <Coins className="w-3.5 h-3.5 text-yellow-400" />
+        <span className="font-medium">
+          {creditsLoading ? '...' : credits}
+        </span>
+      </Badge>
+
+      {/* Profile Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-purple-300 hover:text-white hover:bg-purple-500/20 rounded-full"
+          >
+            <User className="w-5 h-5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent 
+          align="end" 
+          className="w-56 bg-[#1A0A2E] border-purple-500/30 text-white"
+        >
+          {/* User Info */}
+          <DropdownMenuLabel className="text-purple-200">
+            <div className="flex flex-col gap-1">
+              <span className="font-medium">
+                {userProfile?.name || user?.email?.split('@')[0] || 'Meu Perfil'}
+              </span>
+              <span className="text-xs text-purple-400 font-normal">
+                {user?.email}
+              </span>
+            </div>
+          </DropdownMenuLabel>
+          
+          {userProfile?.phone && (
+            <div className="px-2 py-1.5 text-sm text-purple-300 flex items-center gap-2">
+              <Phone className="w-3.5 h-3.5" />
+              {userProfile.phone}
+            </div>
+          )}
+          
+          <DropdownMenuSeparator className="bg-purple-500/20" />
+          
+          {/* Credits Display */}
+          <div className="px-2 py-2 flex items-center justify-between">
+            <span className="text-sm text-purple-300 flex items-center gap-2">
+              <Coins className="w-4 h-4 text-yellow-400" />
+              Créditos
+            </span>
+            <Badge className="bg-purple-600 text-white">
+              {creditsLoading ? '...' : credits}
+            </Badge>
+          </div>
+          
+          <DropdownMenuSeparator className="bg-purple-500/20" />
+          
+          {/* Actions */}
+          <DropdownMenuItem 
+            onClick={() => navigate('/change-password')}
+            className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
+          >
+            <Lock className="w-4 h-4 mr-2" />
+            Alterar Senha
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem 
+            onClick={() => navigate('/profile-settings')}
+            className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Configurações
+          </DropdownMenuItem>
+          
+          <DropdownMenuSeparator className="bg-purple-500/20" />
+          
+          <DropdownMenuItem 
+            onClick={logout}
+            className="cursor-pointer text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 focus:text-red-400"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sair
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  </div>
+</div>
 ```
 
 ---
 
-## Fluxo do Prompt
+## Etapa 4: Integrar Consumo de Créditos no Processamento
 
-```text
-┌─────────────────────────────────────────────────────┐
-│              Usuário ativa "Processar"              │
-└─────────────────────────────────────────────────────┘
-                         │
-                         ▼
-            ┌────────────────────────┐
-            │  useCustomPrompt = ON? │
-            └────────────────────────┘
-                   │           │
-                  SIM         NÃO
-                   │           │
-                   ▼           ▼
-        ┌──────────────┐  ┌────────────────────────┐
-        │ customPrompt │  │ PROMPT_CATEGORIES[cat] │
-        └──────────────┘  └────────────────────────┘
-                   │           │
-                   └─────┬─────┘
-                         ▼
-              ┌────────────────────┐
-              │  Envia para API    │
-              │  (apenas 1 prompt) │
-              └────────────────────┘
+Atualizar a função `processImage()` para verificar e consumir créditos antes de processar:
+
+```tsx
+const processImage = async () => {
+  if (!inputImage) {
+    toast.error(t('upscalerTool.errors.selectFirst'));
+    return;
+  }
+
+  const creditCost = version === 'pro' ? 60 : 40;
+  
+  // Check if user has enough credits
+  if (credits < creditCost) {
+    toast.error(`Créditos insuficientes. Necessário: ${creditCost}, Disponível: ${credits}`);
+    return;
+  }
+
+  // Consume credits
+  const result = await consumeCredits(creditCost, `Upscaler ${version} - ${resolution}`);
+  if (!result.success) {
+    toast.error(result.error || 'Erro ao consumir créditos');
+    return;
+  }
+
+  // Continue with processing...
+  setLastError(null);
+  setStatus('uploading');
+  // ... rest of the code
+};
 ```
+
+---
 
 ## Resumo das Mudanças
 
-1. Adicionar constante `PROMPT_CATEGORIES` com os 5 prompts
-2. Adicionar estado `promptCategory` iniciando com `'pessoas'`
-3. Adicionar `useEffect` para resetar para `'pessoas'` quando desativar prompt personalizado
-4. Criar função `getFinalPrompt()` que retorna o prompt correto
-5. Atualizar 2 lugares que enviam o prompt para usar `getFinalPrompt()`
-6. Adicionar seção de botões de categoria (só aparece quando `!useCustomPrompt`)
-7. Remover `DEFAULT_PROMPT` que não será mais usado
+| Arquivo | Alteração |
+|---------|-----------|
+| **Migração SQL** | Criar tabelas `upscaler_credits` e `upscaler_credit_transactions` |
+| **Migração SQL** | Criar funções `get_upscaler_credits` e `consume_upscaler_credits` |
+| `src/hooks/useUpscalerCredits.tsx` | Novo hook para gerenciar créditos |
+| `src/pages/UpscalerArcanoTool.tsx` | Adicionar badge de créditos e dropdown de perfil no header |
+| `src/pages/UpscalerArcanoTool.tsx` | Integrar verificação e consumo de créditos no processamento |
+
+---
+
+## Fluxo de Créditos
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                   Usuário clica "Processar"                  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+              ┌────────────────────────────┐
+              │  Créditos >= Custo?        │
+              │  (Standard=40, Pro=60)     │
+              └────────────────────────────┘
+                    │              │
+                   SIM            NÃO
+                    │              │
+                    ▼              ▼
+           ┌──────────────┐  ┌─────────────────┐
+           │ Consume RPC  │  │ Toast de erro   │
+           │ -40 ou -60   │  │ "Créditos       │
+           └──────────────┘  │  insuficientes" │
+                    │        └─────────────────┘
+                    ▼
+           ┌──────────────┐
+           │ Atualiza UI  │
+           │ balance -= X │
+           └──────────────┘
+                    │
+                    ▼
+           ┌──────────────┐
+           │ Processa     │
+           │ imagem       │
+           └──────────────┘
+```
