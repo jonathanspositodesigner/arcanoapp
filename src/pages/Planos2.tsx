@@ -323,11 +323,17 @@ const Planos2 = () => {
               </Button>
 
               {/* Badge de Créditos */}
-              <div className="flex justify-center mb-6">
+              <div className="flex flex-col items-center mb-6">
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
                   <Sparkles className="w-3 h-3" />
                   {(plan as any).credits}
                 </span>
+                {plan.name === "Starter" && (
+                  <span className="text-[10px] text-purple-400 mt-1">= 50 imagens</span>
+                )}
+                {plan.name === "Pro" && (
+                  <span className="text-[10px] text-purple-400 mt-1">= 120 imagens</span>
+                )}
               </div>
 
               <ul className="space-y-3 flex-1">
