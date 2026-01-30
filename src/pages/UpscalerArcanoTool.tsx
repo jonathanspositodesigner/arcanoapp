@@ -965,17 +965,25 @@ const UpscalerArcanoTool: React.FC = () => {
                 type="single" 
                 value={resolution} 
                 onValueChange={(val) => val && setResolution(val as '2k' | '4k')}
-                className="justify-start"
+                className="flex gap-1 sm:gap-2"
               >
                 <ToggleGroupItem 
                   value="2k" 
-                  className="data-[state=on]:bg-purple-600 data-[state=on]:text-white border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                  className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
+                    resolution === '2k' 
+                      ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                      : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                  }`}
                 >
                   2K (2048px)
                 </ToggleGroupItem>
                 <ToggleGroupItem 
                   value="4k" 
-                  className="data-[state=on]:bg-purple-600 data-[state=on]:text-white border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                  className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
+                    resolution === '4k' 
+                      ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                      : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                  }`}
                 >
                   4K (4096px)
                 </ToggleGroupItem>
