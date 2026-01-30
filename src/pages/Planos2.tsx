@@ -110,7 +110,7 @@ const Planos2 = () => {
     }, {
       name: "Ultimate",
       price: "39,90",
-      originalPrice: null,
+      originalPrice: "49,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "Créditos Ilimitados",
@@ -278,7 +278,7 @@ const Planos2 = () => {
             const hasCountdown = (plan as any).hasCountdown;
             return (
             <div key={plan.name} className="flex flex-col h-full">
-              <Card className={`relative p-4 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full h-full ${index === 0 ? "lg:rounded-l-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-r-xl" : ""} ${isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
+              <Card className={`relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] w-full h-full ${isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-3 py-0.5">
                   {t('planos.bestSeller')}
