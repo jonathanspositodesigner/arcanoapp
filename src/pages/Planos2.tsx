@@ -268,7 +268,7 @@ const Planos2 = () => {
 
         {/* Plans Grid */}
         <StaggeredAnimation 
-          className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-2 max-w-6xl mx-auto"
+          className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-5 max-w-6xl mx-auto"
           itemClassName="flex"
           staggerDelay={150}
           animation="fade-up"
@@ -295,17 +295,17 @@ const Planos2 = () => {
                 </Badge>
               )}
 
-              <div className="text-left mb-3 min-h-[32px] flex items-center">
+              <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
                 <h2 className="text-base font-bold text-white">{plan.name}</h2>
               </div>
 
-              <div className="text-left mb-4 min-h-[100px]">
+              <div className="text-center mb-4 min-h-[100px]">
                 {plan.originalPrice && (
                   <p className="text-purple-400 line-through text-xs">
                     R${plan.originalPrice}{t('planos.perMonth')}
                   </p>
                 )}
-                <div className="flex items-baseline gap-0.5">
+                <div className="flex items-baseline justify-center gap-0.5">
                   <span className="text-purple-400 text-sm">R$</span>
                   <span className="text-3xl font-bold text-white">{plan.price}</span>
                   <span className="text-purple-400 text-xs">{t('planos.perMonth')}</span>
@@ -317,7 +317,7 @@ const Planos2 = () => {
                 )}
                 {/* Countdown Timer below price for IA Unlimited */}
                 {hasCountdown && (
-                  <div className="flex items-center gap-1 mt-2">
+                  <div className="flex items-center justify-center gap-1 mt-2">
                     <Clock className="w-2.5 h-2.5 text-red-500" />
                     <div className="flex items-center gap-0.5">
                       <div className="bg-red-950/80 border border-red-500/30 rounded px-1 py-0.5 min-w-[22px] text-center">
