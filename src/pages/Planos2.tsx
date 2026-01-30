@@ -27,10 +27,11 @@ const Planos2 = () => {
   const plans = {
     mensal: [{
       name: "Starter",
-      price: "14,90",
+      price: "19,90",
       originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
+      credits: "1.800 créditos de IA",
       features: [
         { text: t('planos.features.10PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -46,10 +47,11 @@ const Planos2 = () => {
       promo: false
     }, {
       name: "Pro",
-      price: "20,90",
+      price: "29,90",
       originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/kbgwmH",
+      credits: "4.400 créditos de IA",
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -66,10 +68,11 @@ const Planos2 = () => {
       hasTrial: false
     }, {
       name: "IA Unlimited",
-      price: "29,90",
+      price: "59,90",
       originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
+      credits: "Créditos Ilimitados",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -88,10 +91,11 @@ const Planos2 = () => {
     anual: [{
       name: "Starter",
       price: "9,90",
-      originalPrice: "14,90",
+      originalPrice: "19,90",
       perMonth: true,
       yearlyTotal: "118,80",
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/RaLcc5",
+      credits: "1.800 créditos de IA",
       features: [
         { text: t('planos.features.10PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -108,10 +112,11 @@ const Planos2 = () => {
     }, {
       name: "Pro",
       price: "14,90",
-      originalPrice: "20,90",
+      originalPrice: "29,90",
       perMonth: true,
       yearlyTotal: "178,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
+      credits: "4.400 créditos de IA",
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -129,10 +134,11 @@ const Planos2 = () => {
     }, {
       name: "IA Unlimited",
       price: "19,90",
-      originalPrice: "29,90",
+      originalPrice: "59,90",
       perMonth: true,
       yearlyTotal: "238,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
+      credits: "Créditos Ilimitados",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -242,10 +248,18 @@ const Planos2 = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
+                className={`w-full mb-4 ${isBestSeller ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
+
+              {/* Badge de Créditos */}
+              <div className="flex justify-center mb-6">
+                <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-gray-400 via-blue-500 to-blue-700">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {(plan as any).credits}
+                </span>
+              </div>
 
               <ul className="space-y-3 flex-1">
                 {plan.features.map((feature, fIndex) => (
