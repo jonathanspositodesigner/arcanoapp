@@ -652,9 +652,9 @@ const UpscalerArcanoTool: React.FC = () => {
                   beforeTransformRef.current.style.transform = `translate(${state.positionX}px, ${state.positionY}px) scale(${state.scale})`;
                 }
               }}
-              wheel={{ smoothStep: 0.15 }}
-              pinch={{ step: 5 }}
-              doubleClick={{ mode: 'toggle', step: 2 }}
+              wheel={{ smoothStep: 0.08 }}
+              pinch={{ step: 3 }}
+              doubleClick={{ mode: 'zoomIn', step: 1.5 }}
               panning={{ disabled: zoomLevel <= 1 }}
             >
               {({ zoomIn, zoomOut, resetTransform }) => (
@@ -662,21 +662,21 @@ const UpscalerArcanoTool: React.FC = () => {
                   {/* Zoom Controls */}
                   <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
                     <button 
-                      onClick={() => zoomOut()}
+                      onClick={() => zoomOut(0.3)}
                       className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
                       title="Diminuir zoom"
                     >
-                      <ZoomOut className="w-4 h-4" />
+                      <ZoomOut className="w-4 h-4 text-white" />
                     </button>
-                    <span className="text-xs font-mono min-w-[3rem] text-center">
+                    <span className="text-xs font-mono min-w-[3rem] text-center text-white">
                       {Math.round(zoomLevel * 100)}%
                     </span>
                     <button 
-                      onClick={() => zoomIn()}
+                      onClick={() => zoomIn(0.3)}
                       className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
                       title="Aumentar zoom"
                     >
-                      <ZoomIn className="w-4 h-4" />
+                      <ZoomIn className="w-4 h-4 text-white" />
                     </button>
                     {zoomLevel > 1 && (
                       <button 
@@ -684,7 +684,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         className="p-1.5 hover:bg-white/20 rounded-full transition-colors ml-1"
                         title="Resetar zoom"
                       >
-                        <RotateCcw className="w-4 h-4" />
+                        <RotateCcw className="w-4 h-4 text-white" />
                       </button>
                     )}
                   </div>
