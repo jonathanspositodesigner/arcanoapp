@@ -53,9 +53,11 @@ const Planos2 = () => {
 
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
     return {
+      hours: String(hours).padStart(2, '0'),
       minutes: String(minutes).padStart(2, '0'),
       seconds: String(seconds).padStart(2, '0')
     };
@@ -252,24 +254,6 @@ const Planos2 = () => {
             const isBestSeller = (plan as any).bestSeller;
             return (
             <div key={plan.name} className="flex flex-col">
-              {/* Countdown Timer for IA Unlimited */}
-              {isBestSeller && (
-                <div className="flex items-center justify-center gap-2 mb-3 py-2">
-                  <Clock className="w-4 h-4 text-red-500" />
-                  <div className="flex items-center gap-1">
-                    <div className="bg-red-950/80 border border-red-500/30 rounded px-2 py-1 min-w-[36px] text-center">
-                      <span className="text-red-400 font-mono font-bold text-sm">{countdown.minutes}</span>
-                    </div>
-                    <span className="text-red-400 font-bold">:</span>
-                    <div className="bg-red-950/80 border border-red-500/30 rounded px-2 py-1 min-w-[36px] text-center">
-                      <span className="text-red-400 font-mono font-bold text-sm">{countdown.seconds}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* Spacer for non-bestSeller cards to align */}
-              {!isBestSeller && <div className="h-[52px] mb-3" />}
-              
               <Card className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full flex-1 ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1">
@@ -301,6 +285,25 @@ const Planos2 = () => {
                   <p className="text-purple-400 text-sm mt-1">
                     R${(plan as any).yearlyTotal}{t('planos.perYear')}
                   </p>
+                )}
+                {/* Countdown Timer below price for IA Unlimited */}
+                {isBestSeller && (
+                  <div className="flex items-center justify-center gap-1.5 mt-3">
+                    <Clock className="w-3 h-3 text-red-500" />
+                    <div className="flex items-center gap-1">
+                      <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[28px] text-center">
+                        <span className="text-red-400 font-mono font-bold text-xs">{countdown.hours}</span>
+                      </div>
+                      <span className="text-red-400 font-bold text-xs">:</span>
+                      <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[28px] text-center">
+                        <span className="text-red-400 font-mono font-bold text-xs">{countdown.minutes}</span>
+                      </div>
+                      <span className="text-red-400 font-bold text-xs">:</span>
+                      <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[28px] text-center">
+                        <span className="text-red-400 font-mono font-bold text-xs">{countdown.seconds}</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
