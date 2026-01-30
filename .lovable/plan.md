@@ -1,243 +1,301 @@
 
-# Plano: Adicionar Botão de Perfil e Sistema de Créditos no Upscaler
+# Plano: Redesign da Biblioteca de Prompts com Tema do Upscaler
 
 ## Resumo
 
-Adicionar na barra superior do Upscaler Arcano:
-1. Um badge mostrando os créditos restantes do usuário
-2. Um botão de perfil com menu dropdown contendo opções para configurar perfil, mudar senha, ver telefone e créditos
+Aplicar o mesmo esquema de cores roxo escuro (estilo Upscaler Arcano) em todas as paginas da Biblioteca de Prompts, incluindo:
+1. Adicionar botao de perfil com dropdown e badge de creditos no header (igual ao Upscaler)
+2. Redesenhar todas as paginas relacionadas com o tema escuro/roxo consistente
+3. Manter hierarquia visual, contraste e tipografia padronizada
 
-A ordem será: **Nome da ferramenta** → **Badge de créditos** → **Ícone de perfil**
+## Paginas Afetadas
 
-## Layout Visual
+| Pagina | Arquivo |
+|--------|---------|
+| Biblioteca de Prompts | `src/pages/BibliotecaPrompts.tsx` |
+| Contribuir | `src/pages/ContributePrompts.tsx` |
+| Login do Usuario | `src/pages/UserLogin.tsx` |
+| Planos | `src/pages/Planos.tsx` |
+| Alterar Senha | `src/pages/ChangePassword.tsx` |
+| Esqueci Senha | `src/pages/ForgotPassword.tsx` |
+| Configuracoes de Perfil | `src/pages/ProfileSettings.tsx` |
+| Promptverso (Home) | `src/pages/Promptverso.tsx` |
+
+---
+
+## Novo Esquema de Cores
+
+### Paleta Base (Estilo Upscaler)
+```text
+Background Principal:   #0D0221 (roxo muito escuro)
+Background Secundario:  #1A0A2E (roxo escuro)
+Card/Container:         #1A0A2E com bordas purple-500/20
+Bordas:                 purple-500/20 ou purple-500/30
+Texto Principal:        white
+Texto Secundario:       purple-200, purple-300
+Texto Terciario:        purple-400
+Accent/Highlight:       purple-500, purple-600
+Gradiente Primario:     from-purple-400 to-pink-400
+Badge de Creditos:      bg-purple-900/50 border-purple-500/30
+```
+
+### Classes Tailwind Padronizadas
+```text
+Pagina:         min-h-screen bg-[#0D0221]
+Header:         bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20
+Card:           bg-[#1A0A2E] border border-purple-500/20
+Texto H1:       text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent
+Botao Primario: bg-purple-600 hover:bg-purple-700 text-white
+Botao Ghost:    text-purple-300 hover:text-white hover:bg-purple-500/20
+Input:          bg-[#1A0A2E] border-purple-500/30 text-white placeholder:text-purple-400
+```
+
+---
+
+## Etapa 1: Criar Componente Reutilizavel de Header com Creditos
+
+**Novo arquivo:** `src/components/PromptsHeader.tsx`
+
+Este componente sera reutilizado em todas as paginas da plataforma Prompts para garantir consistencia.
 
 ```text
-┌────────────────────────────────────────────────────────────────────────┐
-│  ← Voltar  │  Upscaler Arcano  │           [💰 150]  [👤]             │
-│            │                   │           (badge)  (perfil)          │
-└────────────────────────────────────────────────────────────────────────┘
-                                                      │
-                                                      ▼
-                                          ┌─────────────────────┐
-                                          │ 👤 Meu Perfil       │
-                                          │ 📱 (11) 99999-9999  │
-                                          ├─────────────────────┤
-                                          │ 💰 Créditos: 150    │
-                                          ├─────────────────────┤
-                                          │ 🔒 Alterar Senha    │
-                                          │ ⚙️ Configurações    │
-                                          ├─────────────────────┤
-                                          │ 🚪 Sair             │
-                                          └─────────────────────┘
+Estrutura do Header:
++-----------------------------------------------------------------+
+| [<- Voltar]  [Logo/Titulo]        [Badge Creditos] [Avatar ▼]   |
++-----------------------------------------------------------------+
 ```
 
-## Comportamento
-
-1. **Badge de Créditos**: Mostra quantidade atual de créditos restantes com ícone de moeda
-2. **Botão de Perfil**: Ícone de usuário que abre um dropdown menu
-3. **Menu Dropdown**: 
-   - Mostra nome do usuário no topo
-   - Exibe telefone cadastrado (se houver)
-   - Mostra créditos restantes
-   - Opção para alterar senha (navega para /change-password ou abre modal)
-   - Opção de configurações (navega para /profile-settings)
-   - Botão de logout
+### Funcionalidades do Header:
+- Logo PromptClub clicavel (volta para home)
+- Badge de creditos com icone de moeda (usando `useUpscalerCredits`)
+- Dropdown de perfil com:
+  - Nome do usuario e email
+  - Telefone (se cadastrado)
+  - Creditos restantes
+  - Links: Alterar Senha, Configuracoes
+  - Botao de Logout
+- Estados diferentes para:
+  - Usuario nao logado (mostra login/premium)
+  - Usuario logado nao-premium (mostra upgrade)
+  - Usuario premium (mostra badge + dropdown)
 
 ---
 
-## Etapa 1: Criar Sistema de Créditos no Banco de Dados
+## Etapa 2: Redesenhar BibliotecaPrompts.tsx
 
-### 1.1 Criar tabela `upscaler_credits`
-
-```sql
-CREATE TABLE public.upscaler_credits (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  balance INTEGER NOT NULL DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(user_id)
-);
-
--- Enable RLS
-ALTER TABLE public.upscaler_credits ENABLE ROW LEVEL SECURITY;
-
--- Policies
-CREATE POLICY "Users can view their own credits" 
-  ON public.upscaler_credits 
-  FOR SELECT 
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Admins can manage all credits" 
-  ON public.upscaler_credits 
-  FOR ALL 
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
-```
-
-### 1.2 Criar tabela `upscaler_credit_transactions` (histórico)
-
-```sql
-CREATE TABLE public.upscaler_credit_transactions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  amount INTEGER NOT NULL,
-  balance_after INTEGER NOT NULL,
-  transaction_type TEXT NOT NULL,
-  description TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Enable RLS
-ALTER TABLE public.upscaler_credit_transactions ENABLE ROW LEVEL SECURITY;
-
--- Policies
-CREATE POLICY "Users can view their own transactions" 
-  ON public.upscaler_credit_transactions 
-  FOR SELECT 
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Admins can manage all transactions" 
-  ON public.upscaler_credit_transactions 
-  FOR ALL 
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
-```
-
-### 1.3 Criar função para consumir créditos
-
-```sql
-CREATE OR REPLACE FUNCTION public.consume_upscaler_credits(
-  _user_id UUID,
-  _amount INTEGER,
-  _description TEXT DEFAULT 'Upscaler usage'
-)
-RETURNS TABLE(success BOOLEAN, new_balance INTEGER, error_message TEXT)
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-DECLARE
-  current_balance INTEGER;
-  updated_balance INTEGER;
-BEGIN
-  -- Get current balance (or create if not exists)
-  INSERT INTO upscaler_credits (user_id, balance)
-  VALUES (_user_id, 0)
-  ON CONFLICT (user_id) DO NOTHING;
-  
-  SELECT balance INTO current_balance
-  FROM upscaler_credits
-  WHERE user_id = _user_id
-  FOR UPDATE;
-  
-  IF current_balance < _amount THEN
-    RETURN QUERY SELECT FALSE, current_balance, 'Saldo insuficiente'::TEXT;
-    RETURN;
-  END IF;
-  
-  updated_balance := current_balance - _amount;
-  
-  UPDATE upscaler_credits
-  SET balance = updated_balance, updated_at = now()
-  WHERE user_id = _user_id;
-  
-  INSERT INTO upscaler_credit_transactions 
-    (user_id, amount, balance_after, transaction_type, description)
-  VALUES 
-    (_user_id, -_amount, updated_balance, 'consumption', _description);
-  
-  RETURN QUERY SELECT TRUE, updated_balance, NULL::TEXT;
-END;
-$$;
-```
-
-### 1.4 Criar função para obter saldo
-
-```sql
-CREATE OR REPLACE FUNCTION public.get_upscaler_credits(_user_id UUID)
-RETURNS INTEGER
-LANGUAGE sql
-STABLE SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-  SELECT COALESCE(
-    (SELECT balance FROM upscaler_credits WHERE user_id = _user_id),
-    0
-  )
-$$;
-```
-
----
-
-## Etapa 2: Criar Hook para Gerenciar Créditos
-
-**Novo arquivo:** `src/hooks/useUpscalerCredits.tsx`
-
+### 2.1 Background e Estrutura Principal
 ```tsx
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// DE:
+<div className="min-h-screen bg-background">
 
-export const useUpscalerCredits = (userId: string | undefined) => {
-  const [balance, setBalance] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
+// PARA:
+<div className="min-h-screen bg-[#0D0221]">
+```
 
-  const fetchBalance = async () => {
-    if (!userId) {
-      setBalance(0);
-      setIsLoading(false);
-      return;
-    }
-
-    const { data, error } = await supabase.rpc('get_upscaler_credits', {
-      _user_id: userId
-    });
-
-    if (!error && data !== null) {
-      setBalance(data);
-    }
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    fetchBalance();
-  }, [userId]);
-
-  const consumeCredits = async (amount: number, description?: string) => {
-    if (!userId) return { success: false, error: 'Not authenticated' };
+### 2.2 Header Desktop
+```tsx
+// Novo header com tema escuro
+<header className="hidden lg:flex bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20 px-6 py-3 items-center justify-between sticky top-0 z-50">
+  <div className="flex items-center gap-4">
+    <img src={promptclubLogo} className="h-8 cursor-pointer" />
+  </div>
+  <div className="flex items-center gap-3">
+    {/* Badge de Creditos */}
+    <Badge className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5">
+      <Coins className="w-3.5 h-3.5 text-yellow-400" />
+      {credits}
+    </Badge>
     
-    const { data, error } = await supabase.rpc('consume_upscaler_credits', {
-      _user_id: userId,
-      _amount: amount,
-      _description: description || 'Upscaler usage'
-    });
+    {/* Dropdown de Perfil */}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="text-purple-300 hover:text-white hover:bg-purple-500/20 rounded-full">
+          <User className="w-5 h-5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 bg-[#1A0A2E] border-purple-500/30 text-white">
+        {/* ... menu items ... */}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
+</header>
+```
 
-    if (error || !data?.[0]?.success) {
-      return { 
-        success: false, 
-        error: data?.[0]?.error_message || error?.message 
-      };
-    }
+### 2.3 Header Mobile
+```tsx
+<header className="lg:hidden bg-[#0D0221]/95 backdrop-blur-lg px-4 py-3 flex items-center justify-between shadow-lg border-b border-purple-500/20 sticky top-0 z-50">
+  <img src={promptclubLogo} className="h-6" />
+  <div className="flex items-center gap-2">
+    {/* Badge Creditos compacto */}
+    <Badge className="bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5">
+      <Coins className="w-3 h-3 text-yellow-400 mr-1" />
+      {credits}
+    </Badge>
+    {/* Icone Perfil */}
+    <DropdownMenu>
+      {/* ... */}
+    </DropdownMenu>
+  </div>
+</header>
+```
 
-    setBalance(data[0].new_balance);
-    return { success: true, newBalance: data[0].new_balance };
-  };
+### 2.4 Sidebar
+```tsx
+<aside className="... bg-[#1A0A2E] border-r border-purple-500/20 ...">
+  {/* Titulos */}
+  <h2 className="text-xl font-bold text-white mb-6">Gerar com IA</h2>
+  
+  {/* Botoes */}
+  <Button variant="outline" className="border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white">
+    ...
+  </Button>
+</aside>
+```
 
-  return { balance, isLoading, refetch: fetchBalance, consumeCredits };
-};
+### 2.5 Area Principal de Conteudo
+```tsx
+<main className="flex-1 p-4 sm:p-6 lg:p-8 bg-[#0D0221] ...">
+  {/* Titulos */}
+  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-white">
+    Biblioteca de Prompts
+  </h2>
+  <p className="text-purple-300/80">Descricao...</p>
+  
+  {/* Cards */}
+  <Card className="bg-[#1A0A2E] border-purple-500/20 hover:border-purple-400/40 ...">
+    <h3 className="text-white font-bold">Titulo</h3>
+    <p className="text-purple-300">Descricao</p>
+  </Card>
+</main>
+```
+
+### 2.6 Filtros de Categoria
+```tsx
+<Button 
+  className={selectedCategory === cat 
+    ? "bg-purple-600 text-white border-purple-400" 
+    : "border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10"
+  }
+>
+  {cat}
+</Button>
 ```
 
 ---
 
-## Etapa 3: Modificar Header do Upscaler
+## Etapa 3: Redesenhar ContributePrompts.tsx
 
-**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
+### Mudancas:
+- Background: `bg-[#0D0221]`
+- Card container: `bg-[#1A0A2E] border-purple-500/20`
+- Inputs: `bg-[#0D0221] border-purple-500/30 text-white`
+- Labels: `text-purple-200`
+- Botao de enviar: `bg-purple-600 hover:bg-purple-700`
 
-### 3.1 Adicionar imports
+---
+
+## Etapa 4: Redesenhar UserLogin.tsx
+
+### Mudancas:
+- Background: `bg-[#0D0221]` com gradiente sutil
+- Card: `bg-[#1A0A2E] border-purple-500/20`
+- Icone Star: Manter amarelo para destaque premium
+- Inputs: Tema escuro com bordas roxas
+- Botao login: `bg-gradient-to-r from-purple-500 to-pink-500`
+- Links: `text-purple-400 hover:text-purple-300`
+
+---
+
+## Etapa 5: Redesenhar Planos.tsx
+
+### Mudancas:
+- Background: `bg-[#0D0221]`
+- Cards de planos: `bg-[#1A0A2E] border-purple-500/20`
+- Card destacado (popular): `border-2 border-purple-500`
+- Tabs de billing: Tema roxo
+- Badges de promocao: Manter cores distintas (laranja, verde)
+- Check icons: `text-purple-400`
+- Precos: `text-white`
+
+---
+
+## Etapa 6: Redesenhar ChangePassword.tsx
+
+### Mudancas:
+- Background: `bg-[#0D0221]`
+- Card: `bg-[#1A0A2E] border-purple-500/20`
+- Icone Lock: `text-purple-400`
+- Inputs: Tema escuro
+- Botao: `bg-gradient-to-r from-purple-500 to-pink-500`
+
+---
+
+## Etapa 7: Redesenhar ProfileSettings.tsx
+
+### Mudancas:
+- Background: `bg-[#0D0221]`
+- Cards de secao: `bg-[#1A0A2E] border-purple-500/20`
+- Titulos: `text-white`
+- Labels: `text-purple-200`
+- Inputs: Tema escuro
+- Avatar placeholder: `bg-purple-900/50`
+- Botao de voltar: `text-purple-300 hover:text-white`
+
+---
+
+## Etapa 8: Redesenhar Promptverso.tsx (Home)
+
+### Mudancas:
+- Background: `bg-gradient-to-br from-[#0D0221] to-[#1A0A2E]`
+- Titulo com gradiente: `from-purple-400 to-pink-400`
+- Botoes principais: `bg-purple-600 hover:bg-purple-700`
+- Botoes secundarios: `border-purple-500 text-purple-300`
+- Texto: `text-white` e `text-purple-300`
+
+---
+
+## Etapa 9: Atualizar ForgotPassword.tsx e ResetPassword.tsx
+
+Aplicar mesmo padrao de cores escuras consistente.
+
+---
+
+## Resumo Visual
+
+```text
+ANTES (Tema Claro)              APOS (Tema Escuro/Roxo)
++------------------------+      +------------------------+
+| bg-background (branco) |  ->  | bg-[#0D0221] (escuro)  |
+| bg-card (branco)       |  ->  | bg-[#1A0A2E] (roxo)    |
+| text-foreground        |  ->  | text-white             |
+| text-muted-foreground  |  ->  | text-purple-300        |
+| border-border          |  ->  | border-purple-500/20   |
+| bg-primary             |  ->  | bg-purple-600          |
++------------------------+      +------------------------+
+```
+
+---
+
+## Arquivos a Serem Modificados
+
+| Arquivo | Tipo de Mudanca |
+|---------|-----------------|
+| `src/pages/BibliotecaPrompts.tsx` | Redesign completo + header com creditos |
+| `src/pages/ContributePrompts.tsx` | Redesign de cores |
+| `src/pages/UserLogin.tsx` | Redesign de cores |
+| `src/pages/Planos.tsx` | Redesign de cores |
+| `src/pages/ChangePassword.tsx` | Redesign de cores |
+| `src/pages/ForgotPassword.tsx` | Redesign de cores |
+| `src/pages/ProfileSettings.tsx` | Redesign de cores + adicionar secao de creditos |
+| `src/pages/Promptverso.tsx` | Redesign de cores |
+
+---
+
+## Imports Necessarios em BibliotecaPrompts.tsx
 
 ```tsx
-import { User, Settings, Lock, LogOut, Phone } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+// Novos imports
+import { User, Settings, Lock, LogOut, Phone, Coins } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -246,226 +304,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 ```
 
-### 3.2 Adicionar hooks e estados
-
-```tsx
-const { user, logout } = usePremiumStatus();
-const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
-const [userProfile, setUserProfile] = useState<{name?: string; phone?: string} | null>(null);
-
-// Fetch user profile
-useEffect(() => {
-  const fetchProfile = async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from('profiles')
-      .select('name, phone')
-      .eq('id', user.id)
-      .single();
-    if (data) setUserProfile(data);
-  };
-  fetchProfile();
-}, [user]);
-```
-
-### 3.3 Modificar o Header
-
-```tsx
-<div className="sticky top-0 z-50 bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20">
-  <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-    {/* Left side: Back button + Title */}
-    <div className="flex items-center gap-4">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={goBack}
-        className="text-purple-300 hover:text-white hover:bg-purple-500/20"
-      >
-        <ArrowLeft className="w-5 h-5" />
-      </Button>
-      <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-        {t('upscalerTool.title')}
-      </h1>
-    </div>
-
-    {/* Right side: Credits Badge + Profile Dropdown */}
-    <div className="flex items-center gap-2">
-      {/* Credits Badge */}
-      <Badge 
-        variant="outline" 
-        className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
-      >
-        <Coins className="w-3.5 h-3.5 text-yellow-400" />
-        <span className="font-medium">
-          {creditsLoading ? '...' : credits}
-        </span>
-      </Badge>
-
-      {/* Profile Dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-purple-300 hover:text-white hover:bg-purple-500/20 rounded-full"
-          >
-            <User className="w-5 h-5" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          align="end" 
-          className="w-56 bg-[#1A0A2E] border-purple-500/30 text-white"
-        >
-          {/* User Info */}
-          <DropdownMenuLabel className="text-purple-200">
-            <div className="flex flex-col gap-1">
-              <span className="font-medium">
-                {userProfile?.name || user?.email?.split('@')[0] || 'Meu Perfil'}
-              </span>
-              <span className="text-xs text-purple-400 font-normal">
-                {user?.email}
-              </span>
-            </div>
-          </DropdownMenuLabel>
-          
-          {userProfile?.phone && (
-            <div className="px-2 py-1.5 text-sm text-purple-300 flex items-center gap-2">
-              <Phone className="w-3.5 h-3.5" />
-              {userProfile.phone}
-            </div>
-          )}
-          
-          <DropdownMenuSeparator className="bg-purple-500/20" />
-          
-          {/* Credits Display */}
-          <div className="px-2 py-2 flex items-center justify-between">
-            <span className="text-sm text-purple-300 flex items-center gap-2">
-              <Coins className="w-4 h-4 text-yellow-400" />
-              Créditos
-            </span>
-            <Badge className="bg-purple-600 text-white">
-              {creditsLoading ? '...' : credits}
-            </Badge>
-          </div>
-          
-          <DropdownMenuSeparator className="bg-purple-500/20" />
-          
-          {/* Actions */}
-          <DropdownMenuItem 
-            onClick={() => navigate('/change-password')}
-            className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
-          >
-            <Lock className="w-4 h-4 mr-2" />
-            Alterar Senha
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem 
-            onClick={() => navigate('/profile-settings')}
-            className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Configurações
-          </DropdownMenuItem>
-          
-          <DropdownMenuSeparator className="bg-purple-500/20" />
-          
-          <DropdownMenuItem 
-            onClick={logout}
-            className="cursor-pointer text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 focus:text-red-400"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sair
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  </div>
-</div>
-```
-
 ---
 
-## Etapa 4: Integrar Consumo de Créditos no Processamento
+## Observacoes Importantes
 
-Atualizar a função `processImage()` para verificar e consumir créditos antes de processar:
-
-```tsx
-const processImage = async () => {
-  if (!inputImage) {
-    toast.error(t('upscalerTool.errors.selectFirst'));
-    return;
-  }
-
-  const creditCost = version === 'pro' ? 60 : 40;
-  
-  // Check if user has enough credits
-  if (credits < creditCost) {
-    toast.error(`Créditos insuficientes. Necessário: ${creditCost}, Disponível: ${credits}`);
-    return;
-  }
-
-  // Consume credits
-  const result = await consumeCredits(creditCost, `Upscaler ${version} - ${resolution}`);
-  if (!result.success) {
-    toast.error(result.error || 'Erro ao consumir créditos');
-    return;
-  }
-
-  // Continue with processing...
-  setLastError(null);
-  setStatus('uploading');
-  // ... rest of the code
-};
-```
-
----
-
-## Resumo das Mudanças
-
-| Arquivo | Alteração |
-|---------|-----------|
-| **Migração SQL** | Criar tabelas `upscaler_credits` e `upscaler_credit_transactions` |
-| **Migração SQL** | Criar funções `get_upscaler_credits` e `consume_upscaler_credits` |
-| `src/hooks/useUpscalerCredits.tsx` | Novo hook para gerenciar créditos |
-| `src/pages/UpscalerArcanoTool.tsx` | Adicionar badge de créditos e dropdown de perfil no header |
-| `src/pages/UpscalerArcanoTool.tsx` | Integrar verificação e consumo de créditos no processamento |
-
----
-
-## Fluxo de Créditos
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                   Usuário clica "Processar"                  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-              ┌────────────────────────────┐
-              │  Créditos >= Custo?        │
-              │  (Standard=40, Pro=60)     │
-              └────────────────────────────┘
-                    │              │
-                   SIM            NÃO
-                    │              │
-                    ▼              ▼
-           ┌──────────────┐  ┌─────────────────┐
-           │ Consume RPC  │  │ Toast de erro   │
-           │ -40 ou -60   │  │ "Créditos       │
-           └──────────────┘  │  insuficientes" │
-                    │        └─────────────────┘
-                    ▼
-           ┌──────────────┐
-           │ Atualiza UI  │
-           │ balance -= X │
-           └──────────────┘
-                    │
-                    ▼
-           ┌──────────────┐
-           │ Processa     │
-           │ imagem       │
-           └──────────────┘
-```
+1. **Consistencia**: Todas as paginas terao o mesmo visual dark/purple do Upscaler
+2. **Creditos**: O badge de creditos usara o mesmo hook `useUpscalerCredits` ja criado
+3. **Responsividade**: Manter todos os breakpoints mobile/desktop existentes
+4. **Internacionalizacao**: Manter todos os textos usando `t()` do i18next
+5. **Acessibilidade**: Garantir contraste adequado (texto claro em fundo escuro)
+6. **Hierarquia**: 
+   - H1: Branco com gradiente purple/pink
+   - H2: Branco solido
+   - Texto: purple-200/300
+   - Muted: purple-400
