@@ -58,6 +58,27 @@
     "exclusiveSeal": "Selo Exclusivo",
     "community": "Comunidade"
   },
+  "card": {
+    "copyPrompt": "Copiar Prompt",
+    "details": "Detalhes"
+  },
+  "modal": {
+    "referenceImages": "Imagens de Referência",
+    "prompt": "Prompt",
+    "copyPrompt": "Copiar Prompt",
+    "download": "Baixar",
+    "watchTutorial": "Ver Tutorial"
+  },
+  "premiumModal": {
+    "title": "Conteúdo Premium",
+    "description": "Este conteúdo está disponível apenas para usuários premium. Adquira um plano para ter acesso ilimitado!",
+    "becomePremium": "Torne-se Premium"
+  },
+  "limitModal": {
+    "title": "Limite Diário Atingido",
+    "description": "Você atingiu o limite diário de {{limit}} prompts premium.",
+    "upgrade": "Fazer Upgrade"
+  },
   "buttons": {
     "copyPrompt": "Copiar Prompt",
     "remaining": "restantes",
