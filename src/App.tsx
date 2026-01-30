@@ -52,6 +52,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
 const Planos = lazy(() => import("./pages/Planos"));
+const Planos2 = lazy(() => import("./pages/Planos2"));
 const UpgradePlano = lazy(() => import("./pages/UpgradePlano"));
 const AdminInstallStats = lazy(() => import("./pages/AdminInstallStats"));
 const AdminManagePremium = lazy(() => import("./pages/AdminManagePremium"));
@@ -199,7 +200,8 @@ const AppContent = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile-settings" element={<ProfileSettings />} />
           <Route path="/install-app" element={<InstallApp />} />
-          <Route path="/planos" element={<Planos />} />
+<Route path="/planos" element={<Planos />} />
+          <Route path="/planos-2" element={<Planos2 />} />
           <Route path="/upgrade" element={<UpgradePlano />} />
           <Route path="/admin-install-stats" element={<AdminInstallStats />} />
           <Route path="/admin-manage-premium" element={<AdminManagePremium />} />
