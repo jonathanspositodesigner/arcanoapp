@@ -555,8 +555,8 @@ const UpscalerArcanoTool: React.FC = () => {
                     value="standard" 
                     className={`w-full py-3 px-4 text-sm sm:text-base rounded-lg transition-all font-medium ${
                       version === 'standard' 
-                        ? 'bg-purple-600/80 text-white border-2 border-cyan-400 ring-2 ring-cyan-400/50 shadow-lg shadow-cyan-500/20' 
-                        : 'border-2 border-transparent text-purple-300 hover:bg-purple-500/10 hover:text-purple-200'
+                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10 hover:text-purple-200'
                     }`}
                   >
                     Upscaler Arcano
@@ -575,8 +575,8 @@ const UpscalerArcanoTool: React.FC = () => {
                     value="pro" 
                     className={`w-full py-3 px-4 text-sm sm:text-base rounded-lg transition-all font-medium flex items-center justify-center gap-2 ${
                       version === 'pro' 
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white border-2 border-cyan-400 ring-2 ring-cyan-400/50 shadow-lg shadow-cyan-500/20' 
-                        : 'border-2 border-transparent text-purple-300 hover:bg-purple-500/10 hover:text-purple-200'
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-2 border-purple-400' 
+                        : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10 hover:text-purple-200'
                     }`}
                   >
                     Upscaler Arcano
