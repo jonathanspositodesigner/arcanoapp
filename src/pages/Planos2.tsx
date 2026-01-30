@@ -72,7 +72,7 @@ const Planos2 = () => {
       originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
-      credits: "1.800 créditos de IA",
+      credits: "1.000 créditos de IA",
       features: [
         { text: t('planos.features.10PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -113,7 +113,7 @@ const Planos2 = () => {
       originalPrice: "49,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
-      credits: "Créditos Ilimitados",
+      credits: "10.800 créditos de IA",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -158,7 +158,7 @@ const Planos2 = () => {
       perMonth: true,
       yearlyTotal: "118,80",
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/RaLcc5",
-      credits: "1.800 créditos de IA",
+      credits: "1.000 créditos de IA",
       features: [
         { text: t('planos.features.10PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -354,10 +354,13 @@ const Planos2 = () => {
                   {(plan as any).credits}
                 </span>
                 {plan.name === "Starter" && (
-                  <span className="text-[9px] text-purple-400 mt-0.5">= 50 imagens</span>
+                  <span className="text-[9px] text-purple-400 mt-0.5">= 30 imagens</span>
                 )}
                 {plan.name === "Pro" && (
                   <span className="text-[9px] text-purple-400 mt-0.5">= 120 imagens</span>
+                )}
+                {plan.name === "Ultimate" && (
+                  <span className="text-[9px] text-purple-400 mt-0.5">= 300 imagens</span>
                 )}
               </div>
 
