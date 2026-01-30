@@ -259,12 +259,14 @@ const Planos2 = () => {
           </Tabs>
         </AnimatedSection>
 
-        {/* Discount Banner */}
-        <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]" as="div">
-          <span className="text-white font-semibold tracking-wide">
-            {t('planos.upToDiscount', { percent: billingPeriod === "anual" ? "33" : "25" })}
-          </span>
-        </AnimatedSection>
+        {/* Discount Banner - only show on annual */}
+        {billingPeriod === "anual" && (
+          <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]" as="div">
+            <span className="text-white font-semibold tracking-wide">
+              {t('planos.upToDiscount', { percent: "33" })}
+            </span>
+          </AnimatedSection>
+        )}
 
         {/* Plans Grid */}
         <StaggeredAnimation 
