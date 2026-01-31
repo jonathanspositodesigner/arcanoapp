@@ -50,6 +50,7 @@ const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
+const CreditHistory = lazy(() => import("./pages/CreditHistory"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
 const Planos = lazy(() => import("./pages/Planos"));
 const Planos2 = lazy(() => import("./pages/Planos2"));
@@ -199,6 +200,7 @@ const AppContent = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile-settings" element={<ProfileSettings />} />
+          <Route path="/credit-history" element={<CreditHistory />} />
           <Route path="/install-app" element={<InstallApp />} />
 <Route path="/planos" element={<Planos />} />
           <Route path="/planos-2" element={<Planos2 />} />

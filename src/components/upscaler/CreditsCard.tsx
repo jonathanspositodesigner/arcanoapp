@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Coins, History, TrendingDown, TrendingUp, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Coins, History, TrendingDown, TrendingUp, Loader2, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -20,11 +22,12 @@ interface CreditsCardProps {
 }
 
 export const CreditsCard = ({ credits, creditsLoading, userId }: CreditsCardProps) => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const navigate = useNavigate();
+  const [latestTransaction, setLatestTransaction] = useState<Transaction | null>(null);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
+    const fetchLatestTransaction = async () => {
       if (!userId) {
         setTransactionsLoading(false);
         return;
@@ -36,21 +39,22 @@ export const CreditsCard = ({ credits, creditsLoading, userId }: CreditsCardProp
           .select('amount, transaction_type, description, created_at')
           .eq('user_id', userId)
           .order('created_at', { ascending: false })
-          .limit(10);
+          .limit(1)
+          .maybeSingle();
 
         if (error) {
-          console.error('Error fetching transactions:', error);
+          console.error('Error fetching transaction:', error);
         } else if (data) {
-          setTransactions(data);
+          setLatestTransaction(data);
         }
       } catch (err) {
-        console.error('Error fetching transactions:', err);
+        console.error('Error fetching transaction:', err);
       } finally {
         setTransactionsLoading(false);
       }
     };
 
-    fetchTransactions();
+    fetchLatestTransaction();
   }, [userId]);
 
   const formatDate = (dateString: string) => {
@@ -65,14 +69,14 @@ export const CreditsCard = ({ credits, creditsLoading, userId }: CreditsCardProp
       </h2>
       
       {/* Current Balance */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <p className="text-purple-300">Saldo atual</p>
         <Badge className="bg-purple-600 text-white text-lg px-4 py-1">
           {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
         </Badge>
       </div>
 
-      {/* Transaction History */}
+      {/* Latest Transaction */}
       <div className="border-t border-purple-500/20 pt-4">
         <h3 className="text-sm font-medium text-purple-300 flex items-center gap-2 mb-3">
           <History className="h-4 w-4" />
@@ -80,41 +84,47 @@ export const CreditsCard = ({ credits, creditsLoading, userId }: CreditsCardProp
         </h3>
 
         {transactionsLoading ? (
-          <div className="flex items-center justify-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+          <div className="flex items-center justify-center py-3">
+            <Loader2 className="h-4 w-4 animate-spin text-purple-400" />
           </div>
-        ) : transactions.length === 0 ? (
-          <p className="text-sm text-purple-400 text-center py-4">
+        ) : latestTransaction ? (
+          <div className="space-y-3">
+            <div 
+              className="flex items-center justify-between py-2 px-3 rounded-lg bg-purple-900/20"
+            >
+              <div className="flex items-center gap-3">
+                {latestTransaction.amount < 0 ? (
+                  <TrendingDown className="h-4 w-4 text-red-400" />
+                ) : (
+                  <TrendingUp className="h-4 w-4 text-green-400" />
+                )}
+                <div>
+                  <p className="text-sm text-white">
+                    {latestTransaction.description || (latestTransaction.transaction_type === 'consumption' ? 'Uso do Upscaler' : 'Recarga de créditos')}
+                  </p>
+                  <p className="text-xs text-purple-400">
+                    {formatDate(latestTransaction.created_at)}
+                  </p>
+                </div>
+              </div>
+              <span className={`text-sm font-medium ${latestTransaction.amount < 0 ? 'text-red-400' : 'text-green-400'}`}>
+                {latestTransaction.amount > 0 ? '+' : ''}{latestTransaction.amount.toLocaleString('pt-BR')}
+              </span>
+            </div>
+
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/credit-history')}
+              className="w-full text-purple-300 hover:text-white hover:bg-purple-500/20 justify-between"
+            >
+              Ver todas as transações
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <p className="text-sm text-purple-400 text-center py-3">
             Nenhuma transação encontrada
           </p>
-        ) : (
-          <div className="space-y-2 max-h-[300px] overflow-y-auto">
-            {transactions.map((tx, index) => (
-              <div 
-                key={index} 
-                className="flex items-center justify-between py-2 px-3 rounded-lg bg-purple-900/20 hover:bg-purple-900/30 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  {tx.amount < 0 ? (
-                    <TrendingDown className="h-4 w-4 text-red-400" />
-                  ) : (
-                    <TrendingUp className="h-4 w-4 text-green-400" />
-                  )}
-                  <div>
-                    <p className="text-sm text-white">
-                      {tx.description || (tx.transaction_type === 'consumption' ? 'Uso do Upscaler' : 'Recarga de créditos')}
-                    </p>
-                    <p className="text-xs text-purple-400">
-                      {formatDate(tx.created_at)}
-                    </p>
-                  </div>
-                </div>
-                <span className={`text-sm font-medium ${tx.amount < 0 ? 'text-red-400' : 'text-green-400'}`}>
-                  {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('pt-BR')}
-                </span>
-              </div>
-            ))}
-          </div>
         )}
       </div>
     </Card>
