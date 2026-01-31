@@ -1,140 +1,78 @@
 
-# Plano: Modal de Bônus RunningHub (250 créditos)
+# Plano: Atualização do Saldo em Tempo Real após Bônus
 
-## Resumo
-Substituir o modal de notificações push por um novo modal que oferece **250 créditos** para usuários que criarem uma conta no RunningHub. O sistema usa um countdown de 15 segundos após clicar no link e confia no usuário para confirmar a criação da conta.
+## Problema Identificado
+Os créditos **foram adicionados corretamente** no banco de dados (saldo atual: 900.210 com a transação do bônus registrada). Porém, a interface não atualiza porque:
 
----
+1. O hook `useUpscalerCredits` na página `BibliotecaPrompts.tsx` busca o saldo apenas uma vez no carregamento
+2. O modal `RunningHubBonusModal` adiciona os créditos mas não comunica à página que o saldo mudou
+3. Não há mecanismo de sincronização entre o modal e o hook de créditos
 
-## Fluxo do Usuário
+## Solução Proposta
 
-1. Usuário **logado** acessa a Biblioteca de Prompts
-2. Após 3 segundos, aparece o modal de bônus RunningHub
-3. Usuário clica em "Criar conta no RunningHub" → abre link com referral
-4. Inicia countdown de 15 segundos
-5. Após countdown, aparece botão "Já criei minha conta" habilitado
-6. Ao clicar, usuário recebe 250 créditos instantaneamente
-7. Modal fecha com mensagem de sucesso (toast)
-
----
-
-## Regras de Exibição
-
-- Modal **SÓ aparece** para usuários **LOGADOS**
-- Modal **NÃO aparece** se usuário já recebeu o bônus (verificação no banco)
-- Modal aparece apenas **1x por sessão** (sessionStorage)
+Passar a função `refetch` do hook para o modal, e chamar essa função após adicionar os créditos com sucesso.
 
 ---
 
 ## Mudanças Necessárias
 
-### 1. Banco de Dados - Nova Coluna
+### 1. Modificar `src/pages/BibliotecaPrompts.tsx`
 
-Adicionar coluna na tabela `profiles`:
-
-```sql
-ALTER TABLE profiles 
-ADD COLUMN runninghub_bonus_claimed BOOLEAN DEFAULT false;
-```
-
-Essa coluna rastreia se o usuário já resgatou o bônus, impedindo múltiplos resgates.
-
----
-
-### 2. Novo Componente: `src/components/RunningHubBonusModal.tsx`
-
-Componente que gerencia todo o fluxo:
-- Verifica se usuário está logado (recebe userId como prop)
-- Verifica se já resgatou o bônus (query ao banco)
-- Exibe modal com countdown de 15 segundos
-- Adiciona créditos via RPC `add_upscaler_credits`
-- Marca `runninghub_bonus_claimed = true` no perfil
-
-**Estados do modal:**
-1. **Inicial**: Mostra oferta + botão para ir ao RunningHub
-2. **Countdown**: Timer de 15s após clicar no link
-3. **Confirmação**: Botão "Já criei minha conta" habilitado
-4. **Processando**: Adicionando créditos...
-
----
-
-### 3. Modificar: `src/pages/BibliotecaPrompts.tsx`
-
-- **Remover** import e uso do `PushNotificationPrompt` (linha 30 e 1085)
-- **Adicionar** import e uso do novo `RunningHubBonusModal`
-- **Passar** `userId` para o componente (só renderiza se user existir)
-
----
-
-## Link de Referral RunningHub
-
-```
-https://www.runninghub.ai/?inviteCode=p93i9z36
-```
-
----
-
-## Detalhes Técnicos
-
-### Verificação de bônus já resgatado:
+**Linha 68** - Extrair também o `refetch`:
 ```typescript
-const { data } = await supabase
-  .from('profiles')
-  .select('runninghub_bonus_claimed')
-  .eq('id', userId)
-  .single();
-
-if (data?.runninghub_bonus_claimed) return; // Não mostra modal
+const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
 ```
 
-### Adicionar créditos (250):
+**Linha 1085** - Passar `refetch` como prop para o modal:
 ```typescript
-await supabase.rpc('add_upscaler_credits', {
-  _user_id: userId,
-  _amount: 250,
-  _description: 'Bônus RunningHub - Criação de conta'
-});
+{user && <RunningHubBonusModal userId={user.id} onCreditsAdded={refetchCredits} />}
 ```
 
-### Marcar bônus como resgatado:
+---
+
+### 2. Modificar `src/components/RunningHubBonusModal.tsx`
+
+**Adicionar prop `onCreditsAdded`**:
 ```typescript
-await supabase
-  .from('profiles')
-  .update({ runninghub_bonus_claimed: true })
-  .eq('id', userId);
+interface RunningHubBonusModalProps {
+  userId: string;
+  onCreditsAdded?: () => void;  // Nova prop
+}
+```
+
+**Na função `handleClaimBonus`**, após sucesso, chamar a callback:
+```typescript
+toast.success(`🎉 Parabéns! ${BONUS_CREDITS} créditos foram adicionados!`);
+onCreditsAdded?.();  // Atualiza o saldo na UI
+setShowModal(false);
 ```
 
 ---
 
-## UI do Modal
+## Fluxo Após Implementação
 
-- **Ícone**: Presente animado ou logo
-- **Título**: "Crie sua conta no RunningHub e ganhe 250 créditos!"
-- **Subtítulo**: "Precisamos dessa ferramenta para processar suas imagens"
-- **Botão principal**: "Criar conta no RunningHub" (abre nova aba)
-- **Contador**: Círculo animado com números (15...14...13...)
-- **Botão confirmação**: "Já criei minha conta" (aparece após countdown)
-- **Botão fechar**: "Agora não" (discreto)
-
----
-
-## Arquivos Afetados
-
-| Arquivo | Ação |
-|---------|------|
-| `profiles` (banco) | Adicionar coluna `runninghub_bonus_claimed` |
-| `src/components/RunningHubBonusModal.tsx` | **CRIAR** novo componente |
-| `src/pages/BibliotecaPrompts.tsx` | Trocar `PushNotificationPrompt` pelo novo modal |
+```text
+1. Usuário clica "Já criei minha conta"
+2. Modal chama RPC para adicionar 250 créditos
+3. Modal chama onCreditsAdded() 
+4. Hook refetch() busca novo saldo do banco
+5. UI atualiza instantaneamente com novo saldo
+```
 
 ---
 
-## Verificação Pós-Implementação
+## Arquivos a Modificar
 
-1. Acessar Biblioteca de Prompts **LOGADO**
-2. Modal deve aparecer após 3 segundos
-3. Clicar em "Criar conta" → abre RunningHub em nova aba
-4. Countdown de 15 segundos
-5. Clicar em "Já criei" → recebe 250 créditos
-6. Verificar saldo aumentou (no dropdown de perfil)
-7. Recarregar página → modal **NÃO** deve aparecer novamente
-8. Acessar **DESLOGADO** → modal **NÃO** deve aparecer
+| Arquivo | Mudança |
+|---------|---------|
+| `src/pages/BibliotecaPrompts.tsx` | Extrair `refetch` e passar como prop |
+| `src/components/RunningHubBonusModal.tsx` | Adicionar prop `onCreditsAdded` e chamar após sucesso |
+
+---
+
+## Benefícios
+
+- **Zero custo de Cloud**: Não usa realtime/subscriptions
+- **Simples**: Apenas passa uma callback como prop
+- **Confiável**: O saldo é buscado novamente do banco após adicionar
+- **Extensível**: Mesmo padrão pode ser usado em outras páginas se necessário
