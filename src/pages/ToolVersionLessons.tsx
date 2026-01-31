@@ -505,19 +505,19 @@ const ToolVersionLessons = () => {
 
         {/* Master's Journey Progress Bar - Only for upscaler tools */}
         {toolSlug === 'upscaller-arcano' && lessons.length >= 4 && (
-          <div className="mb-6 p-4 bg-card border border-border rounded-lg">
+          <div className="mb-6 p-4 bg-[#1A0A2E]/50 border border-purple-500/20 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-foreground flex items-center gap-2">
+              <span className="text-sm font-medium text-white flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-yellow-500" />
                 {t('toolLessons.mastersJourney')}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-purple-300">
                 {t('toolLessons.lessonsProgress', { current: progressCount })}
               </span>
             </div>
             
             {/* Progress Bar */}
-            <div className="h-3 bg-muted rounded-full overflow-hidden">
+            <div className="h-3 bg-purple-900/30 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-purple-600 via-violet-500 to-purple-400 
                            transition-all duration-700 ease-out rounded-full"
@@ -591,15 +591,15 @@ const ToolVersionLessons = () => {
                     </Button>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-card border-border p-3 max-w-xs">
-                  <p className="text-sm">{tooltipMessage}</p>
+                <TooltipContent side="bottom" className="bg-[#1A0A2E] border-purple-500/20 p-3 max-w-xs">
+                  <p className="text-sm text-purple-300">{tooltipMessage}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
             {/* Unlock message below button */}
             {!isToolUnlocked && (
-              <p className="text-xs text-center text-muted-foreground mt-2">
+              <p className="text-xs text-center text-purple-300/70 mt-2">
                 {t('toolLessons.watchToUnlock')}
               </p>
             )}
@@ -613,9 +613,9 @@ const ToolVersionLessons = () => {
             {currentLesson && (
               <>
                 {/* Lesson Info - ABOVE video */}
-                <Card className="p-4">
-                  <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap">
-                    <Play className="h-5 w-5 text-primary" />
+                <Card className="p-4 bg-[#1A0A2E]/50 border-purple-500/20">
+                  <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-white">
+                    <Play className="h-5 w-5 text-purple-400" />
                     {currentLesson.title}
                     {watchedLessons.includes(selectedLesson + 1) && (
                       <span className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full ml-2">
@@ -624,7 +624,7 @@ const ToolVersionLessons = () => {
                     )}
                   </h2>
                   {currentLesson.description && (
-                    <p className="text-muted-foreground">{currentLesson.description}</p>
+                    <p className="text-purple-300">{currentLesson.description}</p>
                   )}
                 </Card>
 
@@ -665,7 +665,7 @@ const ToolVersionLessons = () => {
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'hover:bg-green-600/10 hover:text-green-600 hover:border-green-600'
+                      : 'border-purple-500/30 text-purple-300 hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
                   }`}
                 >
                   <Check className="h-4 w-4 mr-2" />
@@ -687,7 +687,7 @@ const ToolVersionLessons = () => {
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="gap-2"
+                        className="gap-2 border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white hover:border-purple-400"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {button.text}
@@ -701,12 +701,12 @@ const ToolVersionLessons = () => {
 
           {/* Lesson List */}
           <div className="space-y-2">
-            <h3 className="font-semibold text-lg mb-4">{t('toolLessons.lessons')}</h3>
+            <h3 className="font-semibold text-lg mb-4 text-white">{t('toolLessons.lessons')}</h3>
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
-                className={`p-3 cursor-pointer transition-all hover:bg-accent ${
-                  selectedLesson === index ? 'border-primary bg-primary/5' : ''
+                className={`p-3 cursor-pointer transition-all bg-[#1A0A2E]/50 border-purple-500/20 hover:bg-purple-500/10 ${
+                  selectedLesson === index ? 'border-purple-400 bg-purple-500/10' : ''
                 }`}
                 onClick={() => handleLessonClick(index)}
               >
@@ -716,8 +716,8 @@ const ToolVersionLessons = () => {
                     watchedLessons.includes(index + 1)
                       ? 'bg-green-500 text-white'
                       : selectedLesson === index 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted text-muted-foreground'
+                        ? 'bg-purple-600 text-white' 
+                        : 'bg-purple-900/40 text-purple-400'
                   }`}>
                     {watchedLessons.includes(index + 1) ? (
                       <Check className="h-4 w-4" />
@@ -729,7 +729,7 @@ const ToolVersionLessons = () => {
                   <div className="flex-1 min-w-0">
                     <p className={`font-medium truncate ${
                       watchedLessons.includes(index + 1) ? 'text-green-500' :
-                      selectedLesson === index ? 'text-primary' : ''
+                      selectedLesson === index ? 'text-purple-300' : 'text-purple-300/70'
                     }`}>
                       {lesson.title || `${t('toolLessons.lesson')} ${index + 1}`}
                     </p>
