@@ -15,6 +15,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // WebApp IDs for the upscaler workflows
 const WEBAPP_ID_PRO = '2015865378030755841';
 const WEBAPP_ID_STANDARD = '2017030861371219969';
+const WEBAPP_ID_LONGE = '2017343414227963905'; // WebApp for full-body/wide-angle photos
 const MAX_CONCURRENT_JOBS = 3;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -157,7 +158,8 @@ async function handleRun(req: Request) {
     detailDenoise,
     resolution,
     prompt,
-    version
+    version,
+    framingMode // 'longe' or 'perto'
   } = await req.json();
   
   if (!fileName || !jobId) {
@@ -170,9 +172,11 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Select WebApp ID based on version
-  const webappId = version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD;
-  console.log(`[RunningHub] Processing job ${jobId} - version: ${version}, webappId: ${webappId}, fileName: ${fileName}`);
+  // Select WebApp ID based on version and framing mode
+  // "De Longe" mode uses a specialized WebApp that only needs image + resolution
+  const isLongeMode = framingMode === 'longe';
+  const webappId = isLongeMode ? WEBAPP_ID_LONGE : (version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD);
+  console.log(`[RunningHub] Processing job ${jobId} - version: ${version}, framingMode: ${framingMode}, webappId: ${webappId}, fileName: ${fileName}`);
 
   try {
     // Update job with input file name
@@ -238,18 +242,30 @@ async function handleRun(req: Request) {
       .eq('id', jobId);
 
     // Build node info list for RunningHub API
-    // Resolution nodeId differs between versions: PRO uses "73", Light uses "75"
-    const resolutionNodeId = version === 'pro' ? "73" : "75";
+    // "De Longe" mode uses different nodeIds and only needs image + resolution
+    let nodeInfoList: any[];
     
-    const nodeInfoList: any[] = [
-      { nodeId: "26", fieldName: "image", fieldValue: fileName },
-      { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
-      { nodeId: resolutionNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
-    ];
+    if (isLongeMode) {
+      // WebApp "De Longe" - only image (nodeId: 1) and resolution (nodeId: 7)
+      nodeInfoList = [
+        { nodeId: "1", fieldName: "image", fieldValue: fileName },
+        { nodeId: "7", fieldName: "value", fieldValue: String(resolution || 2048) },
+      ];
+      console.log(`[RunningHub] Using "De Longe" WebApp with simplified nodeInfoList`);
+    } else {
+      // Standard/PRO WebApps - Resolution nodeId differs: PRO uses "73", Light uses "75"
+      const resolutionNodeId = version === 'pro' ? "73" : "75";
+      
+      nodeInfoList = [
+        { nodeId: "26", fieldName: "image", fieldValue: fileName },
+        { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
+        { nodeId: resolutionNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
+      ];
 
-    // Add prompt if provided (nodeId 128 for prompt)
-    if (prompt) {
-      nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
+      // Add prompt if provided (nodeId 128 for prompt)
+      if (prompt) {
+        nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
+      }
     }
 
     const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
