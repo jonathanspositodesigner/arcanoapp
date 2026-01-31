@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
+import imageCompression from 'browser-image-compression';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -307,8 +308,8 @@ const UpscalerArcanoTool: React.FC = () => {
     return () => clearInterval(interval);
   }, [status]);
 
-  // Handle file selection
-  const handleFileSelect = useCallback((file: File) => {
+  // Handle file selection with aggressive compression
+  const handleFileSelect = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error(t('upscalerTool.errors.selectImage'));
       return;
@@ -319,14 +320,39 @@ const UpscalerArcanoTool: React.FC = () => {
       return;
     }
 
+    // Aggressive compression before upload to reduce bandwidth costs
+    let processedFile = file;
+    const originalSize = file.size;
+    
+    if (file.size > 500 * 1024) { // Compress if > 500KB
+      try {
+        toast.info('Otimizando imagem...');
+        processedFile = await imageCompression(file, {
+          maxSizeMB: 2, // Max 2MB after compression
+          maxWidthOrHeight: 4096, // Keep high res for upscaling quality
+          useWebWorker: true,
+          fileType: 'image/webp',
+          initialQuality: 0.9,
+        });
+        
+        const savedKB = Math.round((originalSize - processedFile.size) / 1024);
+        if (savedKB > 100) {
+          console.log(`[Upscaler] Image compressed: ${Math.round(originalSize/1024)}KB → ${Math.round(processedFile.size/1024)}KB (saved ${savedKB}KB)`);
+        }
+      } catch (compressionError) {
+        console.warn('[Upscaler] Compression failed, using original:', compressionError);
+        // Continue with original file if compression fails - no retry
+      }
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       setInputImage(e.target?.result as string);
-      setInputFileName(file.name);
+      setInputFileName(processedFile.name || file.name);
       setOutputImage(null);
       setStatus('idle');
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(processedFile);
   }, [t]);
 
   // Handle drop
