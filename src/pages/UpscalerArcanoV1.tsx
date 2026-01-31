@@ -166,8 +166,8 @@ const UpscalerArcanoV1 = () => {
 
   if (isLoading || promptsLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     );
   }
@@ -179,7 +179,7 @@ const UpscalerArcanoV1 = () => {
   const currentLesson = lessons[selectedLesson];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-[#0D0221] flex flex-col">
       <div className="container mx-auto px-4 py-8 max-w-6xl flex-1">
         {/* Confetti Animation */}
         {showConfetti && (
@@ -196,28 +196,28 @@ const UpscalerArcanoV1 = () => {
             variant="ghost"
             size="icon"
             onClick={goBack}
-            className="shrink-0"
+            className="shrink-0 text-purple-300 hover:text-white hover:bg-purple-500/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-lg md:text-3xl font-bold text-foreground">
+            <h1 className="text-lg md:text-3xl font-bold text-white">
               Upscaler Arcano v1.0
             </h1>
-            <p className="text-muted-foreground text-sm md:text-base">
+            <p className="text-purple-300 text-sm md:text-base">
               {t('upscalerLessons.description')}
             </p>
           </div>
         </div>
 
         {/* Master's Journey Progress Bar */}
-        <div className="mb-6 p-4 bg-card border border-border rounded-lg">
+        <div className="mb-6 p-4 bg-[#1A0A2E]/50 border border-purple-500/20 rounded-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground flex items-center gap-2">
+            <span className="text-sm font-medium text-white flex items-center gap-2">
               <Trophy className="h-4 w-4 text-yellow-500" />
               {t('toolLessons.mastersJourney')}
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-purple-300">
               {progressCount}/{requiredLessons} {t('toolLessons.lessons').toLowerCase()}
             </span>
           </div>
