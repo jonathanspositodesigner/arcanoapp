@@ -53,8 +53,8 @@ const MudarRoupa = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     );
   }
@@ -64,7 +64,7 @@ const MudarRoupa = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0D0221]">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -72,15 +72,15 @@ const MudarRoupa = () => {
             variant="ghost"
             size="icon"
             onClick={goBack}
-            className="shrink-0"
+            className="shrink-0 text-purple-300 hover:text-white hover:bg-purple-500/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            <h1 className="text-2xl md:text-3xl font-bold text-white">
               {t('mudarRoupa.title')}
             </h1>
-            <p className="text-muted-foreground text-sm md:text-base">
+            <p className="text-purple-300 text-sm md:text-base">
               {t('mudarRoupa.description')}
             </p>
           </div>
@@ -89,14 +89,14 @@ const MudarRoupa = () => {
         {/* Video Lessons */}
         <div className="space-y-8">
           {lessons.map((lesson, index) => (
-            <Card key={index} className="p-4 md:p-6 bg-card border-border">
-              <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Play className="h-5 w-5 text-primary" />
+            <Card key={index} className="p-4 md:p-6 bg-[#1A0A2E]/50 border-purple-500/20">
+              <h2 className="text-lg md:text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                <Play className="h-5 w-5 text-purple-400" />
                 {t(lesson.titleKey)}
               </h2>
               
               {/* Video Player */}
-              <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted mb-4">
+              <div className="aspect-video w-full rounded-lg overflow-hidden bg-black/50 mb-4">
                 <iframe
                   src={lesson.videoUrl}
                   title={t(lesson.titleKey)}

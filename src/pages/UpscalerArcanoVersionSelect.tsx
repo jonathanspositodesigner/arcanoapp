@@ -192,8 +192,8 @@ const UpscalerArcanoVersionSelect = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     );
   }
@@ -201,11 +201,11 @@ const UpscalerArcanoVersionSelect = () => {
   // Não redireciona silenciosamente (isso parecia que "não saiu da página")
   if (!user) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#0D0221]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">{t('upscaler.title')}</h1>
-          <p className="text-muted-foreground">{t('versionSelect.loginRequired')}</p>
-          <Button onClick={() => navigate(loginPath)}>
+          <h1 className="text-2xl font-bold text-white">{t('upscaler.title')}</h1>
+          <p className="text-purple-300">{t('versionSelect.loginRequired')}</p>
+          <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
             {t('ferramentas.login')}
           </Button>
         </div>
@@ -215,11 +215,11 @@ const UpscalerArcanoVersionSelect = () => {
 
   if (!hasAccess) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#0D0221]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">{t('upscaler.title')}</h1>
-          <p className="text-muted-foreground">{t('versionSelect.noAccess')}</p>
-          <Button onClick={() => navigate(upscalerPlansPath)}>
+          <h1 className="text-2xl font-bold text-white">{t('upscaler.title')}</h1>
+          <p className="text-purple-300">{t('versionSelect.noAccess')}</p>
+          <Button onClick={() => navigate(upscalerPlansPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
             {t('ferramentas.seePlans')}
           </Button>
         </div>
@@ -317,7 +317,7 @@ const UpscalerArcanoVersionSelect = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0D0221]">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -325,15 +325,15 @@ const UpscalerArcanoVersionSelect = () => {
             variant="ghost"
             size="icon"
             onClick={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
-            className="shrink-0"
+            className="shrink-0 text-purple-300 hover:text-white hover:bg-purple-500/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            <h1 className="text-2xl md:text-3xl font-bold text-white">
               {t('upscaler.title')}
             </h1>
-            <p className="text-muted-foreground text-sm md:text-base">
+            <p className="text-purple-300 text-sm md:text-base">
               {t('versionSelect.chooseVersion')}
             </p>
           </div>

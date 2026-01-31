@@ -365,19 +365,19 @@ const ToolVersionLessons = () => {
 
   if (loading || premiumLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#0D0221]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">{toolName}</h1>
-          <p className="text-muted-foreground">{t('versionSelect.loginRequired')}</p>
-          <Button onClick={() => navigate(loginPath)}>
+          <h1 className="text-2xl font-bold text-white">{toolName}</h1>
+          <p className="text-purple-300">{t('versionSelect.loginRequired')}</p>
+          <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
             {t('ferramentas.login')}
           </Button>
         </div>
@@ -391,11 +391,11 @@ const ToolVersionLessons = () => {
 
   if (!hasAccess) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#0D0221]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">{toolName}</h1>
-          <p className="text-muted-foreground">{t('versionSelect.noAccess')}</p>
-          <Button onClick={() => navigate(plansPath)}>
+          <h1 className="text-2xl font-bold text-white">{toolName}</h1>
+          <p className="text-purple-300">{t('versionSelect.noAccess')}</p>
+          <Button onClick={() => navigate(plansPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
             {t('ferramentas.seePlans')}
           </Button>
         </div>
@@ -430,11 +430,11 @@ const ToolVersionLessons = () => {
 
   if (!version) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#0D0221]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">{t('toolLessons.versionNotFound')}</h1>
-          <p className="text-muted-foreground">{t('toolLessons.versionNotFoundDesc')}</p>
-          <Button onClick={() => navigate(toolSelectPath)}>
+          <h1 className="text-2xl font-bold text-white">{t('toolLessons.versionNotFound')}</h1>
+          <p className="text-purple-300">{t('toolLessons.versionNotFoundDesc')}</p>
+          <Button onClick={() => navigate(toolSelectPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
             {t('upscaler.back')}
           </Button>
         </div>
@@ -453,15 +453,15 @@ const ToolVersionLessons = () => {
     const formattedDate = unlockDate.toLocaleDateString(locale === 'es' ? 'es-ES' : 'pt-BR');
 
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#0D0221]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <Lock className="w-16 h-16 mx-auto text-muted-foreground" />
-          <h1 className="text-2xl font-bold text-foreground">{toolName} - {versionName}</h1>
-          <p className="text-muted-foreground">{t('toolLessons.versionLocked')}</p>
+          <Lock className="w-16 h-16 mx-auto text-purple-400" />
+          <h1 className="text-2xl font-bold text-white">{toolName} - {versionName}</h1>
+          <p className="text-purple-300">{t('toolLessons.versionLocked')}</p>
           <p className="text-yellow-500 font-medium">
             {t('toolLessons.unlocksOn', { date: formattedDate, days: daysRemaining })}
           </p>
-          <Button variant="outline" onClick={locale === 'es' ? () => navigate(toolSelectPath) : goBack}>
+          <Button variant="outline" onClick={locale === 'es' ? () => navigate(toolSelectPath) : goBack} className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20">
             {t('upscaler.back')}
           </Button>
         </div>
@@ -472,7 +472,7 @@ const ToolVersionLessons = () => {
   const currentLesson = lessons[selectedLesson];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-[#0D0221] flex flex-col">
       <div className="container mx-auto px-4 py-8 max-w-6xl flex-1">
         {/* Confetti Animation */}
         {showConfetti && (
@@ -489,15 +489,15 @@ const ToolVersionLessons = () => {
             variant="ghost"
             size="icon"
             onClick={locale === 'es' ? () => navigate(toolSelectPath) : goBack}
-            className="shrink-0"
+            className="shrink-0 text-purple-300 hover:text-white hover:bg-purple-500/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-lg md:text-3xl font-bold text-foreground">
+            <h1 className="text-lg md:text-3xl font-bold text-white">
               {toolName} - {versionName}
             </h1>
-            <p className="text-muted-foreground text-sm md:text-base">
+            <p className="text-purple-300 text-sm md:text-base">
               {t('toolLessons.lessonsAvailable', { count: lessons.length })}
             </p>
           </div>
