@@ -1,106 +1,207 @@
 
-# Plano: Integrar WebApp "De Longe" para Upscaler Arcano
+# Plano: Histórico de Créditos + Consumo no Backend
 
 ## Resumo
-Quando o usuário selecionar "De Longe" no enquadramento de pessoas, vamos usar um WebApp diferente do RunningHub que é otimizado para fotos de corpo inteiro/distantes. Este WebApp só precisa de imagem e resolução (sem nível de detalhe e sem prompt).
+Implementar duas melhorias:
+1. **Histórico de Transações**: Mostrar as últimas transações de créditos na página de perfil
+2. **Consumo no Backend**: Mover a cobrança de créditos para o backend (edge function), garantindo que só cobre se o upscaler iniciar com sucesso
+
+---
+
+## Problema Atual
+
+O consumo de créditos acontece **antes** do processamento iniciar:
+```typescript
+// No frontend (UpscalerArcanoTool.tsx linha 374)
+const creditResult = await consumeCredits(creditCost, ...);
+if (!creditResult.success) return;
+
+// Só depois cria o job e faz upload...
+```
+
+Se o upload ou o início do job falhar, o usuário **já perdeu os créditos**.
+
+---
+
+## Solução
+
+### 1. Histórico de Transações (ProfileSettings.tsx)
+
+Adicionar uma seção "Histórico de Créditos" que mostra as últimas 10 transações:
+- Data/hora
+- Valor (+X ou -X)
+- Tipo (consumo/recarga)
+- Descrição
+
+A consulta já está protegida por RLS - cada usuário só vê suas próprias transações.
+
+### 2. Consumo no Backend (Edge Function)
+
+Mover a lógica de consumo para a função `runninghub-upscaler/run`:
+- Receber o `userId` e `creditCost` do frontend
+- **Primeiro**: Verificar se o job pode iniciar (slot disponível ou entrar na fila)
+- **Segundo**: Consumir créditos via RPC `consume_upscaler_credits`
+- Se consumo falhar → retornar erro, não criar job
+- Se consumo OK → criar job e processar
+
+O frontend passa a apenas verificar se tem saldo suficiente (otimista) e delega o débito real para o backend.
+
+---
 
 ## Arquivos a Modificar
 
-### 1. Frontend: `src/pages/UpscalerArcanoTool.tsx`
+### 1. `src/pages/ProfileSettings.tsx`
+- Adicionar estado para transações
+- Buscar últimas 10 transações do usuário
+- Renderizar lista com data, valor e descrição
 
-**Mudanças na UI:**
-- Esconder o card "Nível de Detalhes" quando `pessoasFraming === 'longe'`
-- O card de "Tipo de Imagem" e "Resolução" continuam visíveis
-- O card de prompt personalizado também fica escondido quando "De Longe" (já que não envia prompt)
+### 2. `src/pages/UpscalerArcanoTool.tsx`
+- Remover chamada `consumeCredits()` antes do processamento
+- Passar `userId` e `creditCost` para a edge function
+- Apenas verificação local de saldo (para UX, não para segurança)
+- Atualizar saldo local após resposta de sucesso do backend
 
-**Mudanças na lógica:**
-- Adicionar flag `isLongeMode` para facilitar as verificações
-- Na função `processImage()`, passar um novo parâmetro `framingMode` para a edge function
+### 3. `supabase/functions/runninghub-upscaler/index.ts`
+- Adicionar `userId` e `creditCost` nos parâmetros
+- Antes de criar/iniciar job, consumir créditos via RPC
+- Se falhar consumo, retornar erro sem processar
+- Se upscale falhar, considerar se deve reembolsar ou não (opcional)
 
-### 2. Backend: `supabase/functions/runninghub-upscaler/index.ts`
-
-**Adicionar novo WebApp ID:**
-```text
-WEBAPP_ID_LONGE = '2017343414227963905'
-```
-
-**Lógica condicional no `handleRun()`:**
-- Se `framingMode === 'longe'`, usar o WebApp "de longe" com apenas:
-  - nodeId: "1" → imagem
-  - nodeId: "7" → resolução
-- Caso contrário, manter lógica atual com detailDenoise e prompt
+---
 
 ## Detalhes Técnicos
 
-### Novo WebApp "De Longe"
-- **WebApp ID:** `2017343414227963905`
-- **Node IDs:**
-  - `1` (fieldName: "image") → Caminho da imagem
-  - `7` (fieldName: "value") → Resolução (2048 ou 4096)
-- **Não envia:** detailDenoise, prompt
-
-### Mudanças no Frontend
-
+### Histórico no ProfileSettings
 ```tsx
-// Nova flag para verificar modo "de longe"
-const isLongeMode = promptCategory === 'pessoas_longe' || pessoasFraming === 'longe';
+// Novo estado
+const [transactions, setTransactions] = useState<any[]>([]);
+const [transactionsLoading, setTransactionsLoading] = useState(true);
 
-// Esconder Nível de Detalhes quando "de longe"
-{!isLongeMode && (
-  <Card>
-    {/* Slider de Nível de Detalhes */}
-  </Card>
-)}
+// Buscar transações
+useEffect(() => {
+  const fetchTransactions = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('upscaler_credit_transactions')
+      .select('amount, transaction_type, description, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    if (data) setTransactions(data);
+    setTransactionsLoading(false);
+  };
+  fetchTransactions();
+}, [user]);
 
-// Na chamada processImage(), adicionar framingMode
-body: {
-  jobId: job.id,
-  fileName,
-  detailDenoise: isLongeMode ? null : detailDenoise,
-  resolution: resolution === '4k' ? 4096 : 2048,
-  prompt: isLongeMode ? null : getFinalPrompt(),
-  version: version,
-  framingMode: isLongeMode ? 'longe' : 'perto',
-}
+// Renderização
+<Card>
+  <h2>Histórico de Créditos</h2>
+  {transactions.map((tx, i) => (
+    <div key={i} className="flex justify-between">
+      <span>{format(new Date(tx.created_at), 'dd/MM HH:mm')}</span>
+      <span className={tx.amount < 0 ? 'text-red-400' : 'text-green-400'}>
+        {tx.amount > 0 ? '+' : ''}{tx.amount}
+      </span>
+      <span className="text-sm text-gray-400">{tx.description}</span>
+    </div>
+  ))}
+</Card>
 ```
 
-### Mudanças no Backend
-
+### Consumo no Backend (handleRun)
 ```typescript
-// Novo WebApp ID
-const WEBAPP_ID_LONGE = '2017343414227963905';
-
-// Em handleRun(), verificar framingMode
-if (framingMode === 'longe') {
-  // Usar WebApp específico para fotos de longe
-  const nodeInfoList = [
-    { nodeId: "1", fieldName: "image", fieldValue: fileName },
-    { nodeId: "7", fieldName: "value", fieldValue: String(resolution || 2048) },
-  ];
-  // Chamar WEBAPP_ID_LONGE
-} else {
-  // Manter lógica atual (PRO/Standard com detailDenoise e prompt)
+async function handleRun(req: Request) {
+  const { 
+    jobId, fileName, detailDenoise, resolution, 
+    prompt, version, framingMode,
+    userId, creditCost  // NOVOS PARÂMETROS
+  } = await req.json();
+  
+  // Validar parâmetros obrigatórios
+  if (!userId || !creditCost) {
+    return new Response(JSON.stringify({ 
+      error: 'userId e creditCost são obrigatórios', 
+      code: 'MISSING_AUTH'
+    }), { status: 400, headers: corsHeaders });
+  }
+  
+  // PRIMEIRO: Consumir créditos
+  const { data: creditResult, error: creditError } = await supabase.rpc(
+    'consume_upscaler_credits', 
+    {
+      _user_id: userId,
+      _amount: creditCost,
+      _description: `Upscaler ${version} - ${resolution}`
+    }
+  );
+  
+  if (creditError || !creditResult?.[0]?.success) {
+    return new Response(JSON.stringify({ 
+      error: creditResult?.[0]?.error_message || 'Saldo insuficiente',
+      code: 'INSUFFICIENT_CREDITS',
+      currentBalance: creditResult?.[0]?.new_balance
+    }), { status: 400, headers: corsHeaders });
+  }
+  
+  // DEPOIS: Atualizar job e processar...
+  // (resto da lógica existente)
 }
 ```
 
-## Fluxo Resumido
+### Frontend Simplificado
+```typescript
+const processImage = async () => {
+  const creditCost = version === 'pro' ? 60 : 40;
+  
+  // Verificação otimista (só UX, backend valida de verdade)
+  if (credits < creditCost) {
+    toast.error(`Créditos insuficientes. Necessário: ${creditCost}`);
+    return;
+  }
+  
+  // NÃO CONSOME AQUI MAIS - backend vai consumir
+  setStatus('uploading');
+  // ... resto do código
+  
+  // Na chamada run, passar userId e creditCost
+  const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
+    body: {
+      jobId: job.id,
+      fileName,
+      // ... outros params
+      userId: user?.id,      // NOVO
+      creditCost: creditCost // NOVO
+    },
+  });
+  
+  // Se sucesso, atualizar saldo local
+  if (runResponse.data?.success) {
+    refetch(); // Busca saldo atualizado do servidor
+  }
+};
+```
+
+---
+
+## Fluxo Atualizado
 
 ```text
-Usuário seleciona "Pessoas" → Aparece seletor De Perto / De Longe
+ANTES (problemático):
+Frontend → consumeCredits() → Se OK → createJob → upload → run
+   ❌ Se upload falhar, créditos já foram cobrados!
 
-Se "De Perto":
-├── Mostra: Tipo de Imagem, Nível de Detalhes, Resolução, Prompt (PRO)
-├── WebApp: PRO (2015865378030755841) ou Standard (2017030861371219969)
-└── Envia: image, detailDenoise, resolution, prompt
-
-Se "De Longe":
-├── Mostra: Tipo de Imagem, Resolução (ESCONDE Nível de Detalhes e Prompt)
-├── WebApp: LONGE (2017343414227963905)
-└── Envia: APENAS image + resolution
+DEPOIS (seguro):
+Frontend → createJob → upload → run(userId, creditCost)
+   └→ Backend: consumeCredits → Se OK → processar
+       ❌ Se falhar upload ou run, créditos NÃO são cobrados
+       ✅ Só cobra quando o job efetivamente inicia
 ```
+
+---
 
 ## Validações
 
-- "De Longe" funciona em ambas as versões (Standard e PRO)
-- Custo de créditos permanece igual (40 Standard / 60 PRO)
-- UI adapta automaticamente escondendo controles não utilizados
+- Histórico mostra todas as transações do usuário
+- Créditos só são debitados após upload + início do job com sucesso
+- Se qualquer etapa falhar antes do `run`, não há cobrança
+- Saldo é atualizado no frontend após confirmação do backend
