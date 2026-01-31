@@ -367,7 +367,7 @@ const UpscalerArcanoTool: React.FC = () => {
       return;
     }
 
-    const creditCost = version === 'pro' ? 60 : 40;
+    const creditCost = version === 'pro' ? 80 : 60;
     
     // Optimistic check - backend will validate for real
     if (credits < creditCost) {
@@ -1362,7 +1362,7 @@ const UpscalerArcanoTool: React.FC = () => {
               {t('upscalerTool.buttons.increaseQuality')}
               <span className="ml-2 flex items-center gap-1 text-sm opacity-90">
                 <Coins className="w-4 h-4" />
-                {version === 'pro' ? '60' : '40'}
+                {version === 'pro' ? '80' : '60'}
               </span>
             </Button>
           )}

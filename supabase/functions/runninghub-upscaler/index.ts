@@ -161,7 +161,7 @@ async function handleRun(req: Request) {
     version,
     framingMode, // 'longe' or 'perto'
     userId,      // NEW: user ID for credit consumption
-    creditCost   // NEW: credit cost (40 standard, 60 pro)
+    creditCost   // NEW: credit cost (60 standard, 80 pro)
   } = await req.json();
   
   if (!fileName || !jobId) {
