@@ -143,7 +143,7 @@ const RunningHubBonusModal = ({ userId }: RunningHubBonusModalProps) => {
 
           {/* Title */}
           <h2 className="text-2xl font-bold text-foreground">
-            Crie sua conta no RunningHub e ganhe 250 créditos!
+            Ganhe 250 créditos de IA na nossa plataforma!
           </h2>
 
           {/* Subtitle */}
