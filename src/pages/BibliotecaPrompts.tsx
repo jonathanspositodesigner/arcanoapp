@@ -65,7 +65,7 @@ const BibliotecaPrompts = () => {
     expiredPlanType,
     expiringStatus
   } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
   const [userProfile, setUserProfile] = useState<{name?: string; phone?: string} | null>(null);
   const {
     copiesUsed,
@@ -1082,7 +1082,7 @@ const BibliotecaPrompts = () => {
       />
 
       {/* RunningHub Bonus Modal - only for logged in users */}
-      {user && <RunningHubBonusModal userId={user.id} />}
+      {user && <RunningHubBonusModal userId={user.id} onCreditsAdded={refetchCredits} />}
     </div>;
 };
 

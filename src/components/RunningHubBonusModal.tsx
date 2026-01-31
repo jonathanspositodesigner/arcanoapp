@@ -13,11 +13,12 @@ const BONUS_CREDITS = 250;
 
 interface RunningHubBonusModalProps {
   userId: string;
+  onCreditsAdded?: () => void;
 }
 
 type ModalState = "offer" | "countdown" | "confirm" | "processing";
 
-const RunningHubBonusModal = ({ userId }: RunningHubBonusModalProps) => {
+const RunningHubBonusModal = ({ userId, onCreditsAdded }: RunningHubBonusModalProps) => {
   const [showModal, setShowModal] = useState(false);
   const [modalState, setModalState] = useState<ModalState>("offer");
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
@@ -112,6 +113,7 @@ const RunningHubBonusModal = ({ userId }: RunningHubBonusModalProps) => {
       }
 
       toast.success(`🎉 Parabéns! ${BONUS_CREDITS} créditos foram adicionados à sua conta!`);
+      onCreditsAdded?.();
       setShowModal(false);
       setHasClaimed(true);
     } catch (error) {
