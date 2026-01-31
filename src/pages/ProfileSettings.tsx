@@ -5,15 +5,15 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, User, Camera, Lock, Eye, EyeOff, Save, Bell, BellOff, Coins } from "lucide-react";
+import { ArrowLeft, User, Camera, Lock, Eye, EyeOff, Save, Bell, BellOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
 import { useTranslation } from "react-i18next";
+import { CreditsCard } from "@/components/upscaler/CreditsCard";
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
@@ -208,18 +208,11 @@ const ProfileSettings = () => {
         </h1>
 
         {/* Credits Card */}
-        <Card className="p-6 bg-[#1A0A2E] border-purple-500/20">
-          <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
-            <Coins className="h-5 w-5 text-yellow-400" />
-            Créditos Upscaler
-          </h2>
-          <div className="flex items-center justify-between">
-            <p className="text-purple-300">Saldo atual</p>
-            <Badge className="bg-purple-600 text-white text-lg px-4 py-1">
-              {creditsLoading ? '...' : credits}
-            </Badge>
-          </div>
-        </Card>
+        <CreditsCard 
+          credits={credits} 
+          creditsLoading={creditsLoading} 
+          userId={user?.id} 
+        />
 
         {/* Profile Information */}
         <Card className="p-6 bg-[#1A0A2E] border-purple-500/20">

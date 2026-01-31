@@ -159,7 +159,9 @@ async function handleRun(req: Request) {
     resolution,
     prompt,
     version,
-    framingMode // 'longe' or 'perto'
+    framingMode, // 'longe' or 'perto'
+    userId,      // NEW: user ID for credit consumption
+    creditCost   // NEW: credit cost (40 standard, 60 pro)
   } = await req.json();
   
   if (!fileName || !jobId) {
@@ -171,6 +173,55 @@ async function handleRun(req: Request) {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
+
+  // Validate credit parameters
+  if (!userId || !creditCost) {
+    return new Response(JSON.stringify({ 
+      error: 'userId e creditCost são obrigatórios', 
+      code: 'MISSING_AUTH'
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // FIRST: Consume credits before processing
+  console.log(`[RunningHub] Consuming ${creditCost} credits for user ${userId}`);
+  const { data: creditResult, error: creditError } = await supabase.rpc(
+    'consume_upscaler_credits', 
+    {
+      _user_id: userId,
+      _amount: creditCost,
+      _description: `Upscaler ${version} - ${resolution}`
+    }
+  );
+
+  if (creditError) {
+    console.error('[RunningHub] Credit consumption error:', creditError);
+    return new Response(JSON.stringify({ 
+      error: 'Erro ao processar créditos',
+      code: 'CREDIT_ERROR',
+      details: creditError.message
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
+    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+    console.log('[RunningHub] Insufficient credits:', errorMsg);
+    return new Response(JSON.stringify({ 
+      error: errorMsg,
+      code: 'INSUFFICIENT_CREDITS',
+      currentBalance: creditResult?.[0]?.new_balance
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  console.log(`[RunningHub] Credits consumed successfully. New balance: ${creditResult[0].new_balance}`);
 
   // Select WebApp ID based on version and framing mode
   // "De Longe" mode uses a specialized WebApp that only needs image + resolution

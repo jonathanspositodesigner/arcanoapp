@@ -53,7 +53,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const { t } = useTranslation('tools');
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
   const { user, logout } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading, consumeCredits } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
   const [userProfile, setUserProfile] = useState<{name?: string; phone?: string} | null>(null);
 
   // Fetch user profile
@@ -362,20 +362,20 @@ const UpscalerArcanoTool: React.FC = () => {
       return;
     }
 
+    if (!user?.id) {
+      toast.error('Você precisa estar logado para usar o upscaler');
+      return;
+    }
+
     const creditCost = version === 'pro' ? 60 : 40;
     
-    // Check if user has enough credits
+    // Optimistic check - backend will validate for real
     if (credits < creditCost) {
       toast.error(`Créditos insuficientes. Necessário: ${creditCost}, Disponível: ${credits}`);
       return;
     }
 
-    // Consume credits before processing
-    const creditResult = await consumeCredits(creditCost, `Upscaler ${version} - ${resolution}`);
-    if (!creditResult.success) {
-      toast.error(creditResult.error || 'Erro ao consumir créditos');
-      return;
-    }
+    // Credits will be consumed by the backend after successful job start
 
     setLastError(null);
     setStatus('uploading');
@@ -444,6 +444,9 @@ const UpscalerArcanoTool: React.FC = () => {
           prompt: isLongeMode ? null : getFinalPrompt(),
           version: version,
           framingMode: isLongeMode ? 'longe' : 'perto',
+          // Credit consumption moved to backend
+          userId: user.id,
+          creditCost: creditCost,
         },
       });
 
@@ -452,6 +455,13 @@ const UpscalerArcanoTool: React.FC = () => {
       }
 
       if (runResponse.data?.error) {
+        // Handle insufficient credits error from backend
+        if (runResponse.data.code === 'INSUFFICIENT_CREDITS') {
+          toast.error(runResponse.data.error);
+          setStatus('idle');
+          refetchCredits(); // Sync credits from server
+          return;
+        }
         setLastError({
           message: runResponse.data.error,
           code: runResponse.data.code,
@@ -462,6 +472,9 @@ const UpscalerArcanoTool: React.FC = () => {
 
       console.log('[Upscaler] Run response:', runResponse.data);
       setProgress(50);
+      
+      // Credits were consumed by backend - refresh local balance
+      refetchCredits();
 
       // Check if queued or running
       if (runResponse.data?.queued) {
