@@ -1,215 +1,114 @@
 
-# Plano: Unificar Identidade Visual das Ferramentas de IA
+# Plano: Correção de Contraste dos Botões e Cards nas Páginas de Aulas
 
-## Objetivo
-Aplicar a mesma identidade visual roxa escura da Biblioteca de Prompts em todas as páginas de Ferramentas de IA e suas sub-páginas, preservando contraste, hierarquia visual e design limpo.
+## Problema Identificado
+Os botões e cards nas páginas de aulas do Upscaler (v1, v2) e ToolVersionLessons estão usando classes genéricas do Tailwind (`bg-card`, `bg-muted`, `border-border`, `variant="outline"`) que resultam em elementos brancos/claros que não combinam com o fundo escuro roxo (`#0D0221`).
 
----
-
-## Paleta de Cores (Referência: BibliotecaPrompts)
-
-| Elemento | Classe/Valor |
-|----------|-------------|
-| Fundo principal | `bg-[#0D0221]` |
-| Cards/containers | `bg-[#1A0A2E]/50` ou `bg-[#1A0A2E]` |
-| Bordas | `border-purple-500/20` |
-| Texto principal | `text-white` |
-| Texto secundário | `text-purple-300` ou `text-purple-300/70` |
-| Botões ghost | `text-purple-300 hover:text-white hover:bg-purple-500/20` |
-| Header | `bg-[#0D0221]/95 backdrop-blur-lg border-b border-purple-500/20` |
-| Loaders | `border-purple-500` ou `text-purple-400` |
+Além disso, a página **TutorialArtes.tsx** ainda está com o tema light completo e precisa ser migrada.
 
 ---
 
-## Páginas a Modificar (10 arquivos)
+## Arquivos a Modificar
 
-### 1. `src/pages/FerramentasIA.tsx` (MAIOR MUDANÇA)
+### 1. `src/pages/UpscalerArcanoV1.tsx`
 
-**Classes atuais light mode:**
-- `bg-gray-50` → `bg-[#0D0221]`
-- `bg-white/90` (header) → `bg-[#0D0221]/95 backdrop-blur-lg border-purple-500/20`
-- `bg-white` (cards) → `bg-[#1A0A2E]/50 border-purple-500/20`
-- `text-gray-900` → `text-white`
-- `text-gray-600`/`text-gray-800` → `text-purple-300`
-- `text-purple-600` (loader) → `text-purple-400`
-- `border-gray-200` → `border-purple-500/20`
-- `bg-emerald-50/teal-50` → `bg-[#1A0A2E] border-purple-500/20`
+**Problemas:**
+- Linha 214: `bg-[#1A0A2E]/50 border border-purple-500/20` está OK ✓
+- Linha 226: `bg-muted` (barra de progresso vazia) → branco no dark mode
+- Linha 298: `bg-card border-border` (tooltip) → branco no dark mode
+- Linha 319: `<Card className="p-4">` (lesson info) → sem estilos dark
+- Linha 332: `bg-muted` (video placeholder)
+- Linhas 343-358: Botão "Marcar como assistido" com `variant="outline"` → branco no dark mode
+- Linhas 387-426: Cards de lista de aulas com `bg-accent`, `bg-muted`, etc. → brancos
 
-**Mudanças específicas:**
-- Header: fundo escuro com blur
-- Cards de ferramentas: borda roxa sutil
-- Seções: títulos em branco
-- Modais: adaptar para tema escuro
-- Loader central: cor roxa clara
+**Correções:**
+- `bg-muted` → `bg-purple-900/30`
+- `bg-card border-border` → `bg-[#1A0A2E] border-purple-500/20`
+- Cards sem classes → `bg-[#1A0A2E]/50 border-purple-500/20`
+- Botão outline não-marcado → `border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white hover:border-purple-400`
 
 ---
 
-### 2. `src/pages/FerramentasIAES.tsx` (Versão Espanhol)
+### 2. `src/pages/UpscalerArcanoV2.tsx`
 
-**Mesmas mudanças que FerramentasIA.tsx:**
-- `bg-gray-50` → `bg-[#0D0221]`
-- `bg-white/90` (header) → `bg-[#0D0221]/95 backdrop-blur-lg border-purple-500/20`
-- Cards e textos adaptados para tema escuro
-- Modais com fundo escuro
+**Problemas idênticos ao V1:**
+- Linha 269: `bg-card border border-border` (progress bar container)
+- Linha 281: `bg-muted` (barra vazia)
+- Linha 355: `bg-card border-border` (tooltip)
+- Linha 379: `<Card className="p-4">` (lesson info)
+- Linha 392: `bg-muted` (video placeholder)
+- Linhas 403-418: Botão "Marcar como assistido" outline
+- Linhas 447-486: Cards de lista de aulas
+- Linha 511: `bg-card border-border` (mensagem "em breve")
 
----
-
-### 3. `src/pages/FerramentaIAArtes.tsx` (Página dinâmica de ferramentas)
-
-**Classes atuais:**
-- `bg-background` → `bg-[#0D0221]`
-- `bg-card border-border` (header) → `bg-[#1A0A2E] border-b border-purple-500/20`
-- Cards genéricos → `bg-[#1A0A2E]/50 border-purple-500/20`
-- `text-foreground` → `text-white`
-- `text-muted-foreground` → `text-purple-300`
+**Correções:** Mesmas do V1
 
 ---
 
-### 4. `src/pages/MudarPose.tsx`
+### 3. `src/pages/ToolVersionLessons.tsx`
 
-**Classes atuais:**
-- `bg-background` → `bg-[#0D0221]`
-- `bg-card border-border` → `bg-[#1A0A2E]/50 border-purple-500/20`
-- `text-foreground` → `text-white`
-- `text-muted-foreground` → `text-purple-300`
-- `text-primary` (ícone Play) → `text-purple-400`
-- Loader: `border-primary` → `border-purple-500`
-- Botão voltar: adicionar hover roxo
+**Problemas:**
+- Linha 508: `bg-card border border-border` (progress bar)
+- Linha 520: `bg-muted` (barra vazia)
+- Linha 594: `bg-card border-border` (tooltip)
+- Linha 616: `<Card className="p-4">` (lesson info)
+- Linhas 661-676: Botão "Marcar como assistido" outline
+- Linhas 682-695: Botões de ação com `variant="outline"` e `className="gap-2"` → BRANCOS
+- Linhas 706-745: Cards de lista de aulas
 
----
-
-### 5. `src/pages/MudarRoupa.tsx`
-
-**Mesmas mudanças que MudarPose.tsx** (estrutura idêntica)
+**Correções:**
+- Botões de ação (linhas 682-695): `variant="outline"` + `className="gap-2 border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"`
 
 ---
 
-### 6. `src/pages/ForjaSelos3D.tsx`
+### 4. `src/pages/TutorialArtes.tsx`
 
-**Mesmas mudanças que MudarPose.tsx** (estrutura idêntica)
+**Problema: Página inteira com tema light**
 
----
-
-### 7. `src/pages/ForjaSelos3DArtes.tsx`
-
-**Classes atuais:**
-- `bg-background` → `bg-[#0D0221]`
-- `bg-card border-border` (header) → `bg-[#1A0A2E] border-b border-purple-500/20`
-- Cards genéricos → `bg-[#1A0A2E]/50 border-purple-500/20`
-
----
-
-### 8. `src/pages/UpscalerArcanoVersionSelect.tsx`
-
-**Classes atuais (parcialmente dark):**
-- `bg-background` → `bg-[#0D0221]`
-- Telas de login/sem acesso: adaptar para tema escuro
-- Textos: `text-foreground` → `text-white`
-- `text-muted-foreground` → `text-purple-300`
-- Loader: `border-primary` → `border-purple-500`
-
-**Nota:** Os cards de versão já têm gradientes escuros, manter.
+**Correções:**
+- Linha 94, 105: `bg-background` → `bg-[#0D0221]`
+- Linha 107: `bg-card border-b border-border` → `bg-[#1A0A2E] border-b border-purple-500/20`
+- Linha 109-115: Botão ghost sem classes → adicionar `text-purple-300 hover:text-white hover:bg-purple-500/20`
+- Linha 117, 133: `text-foreground` → `text-white`
+- Linha 120, 136, 148: `text-muted-foreground` → `text-purple-300`
+- Linha 130, 144: `<Card>` sem classes → `bg-[#1A0A2E]/50 border-purple-500/20`
+- Linha 132: `text-muted-foreground` (ícone Play) → `text-purple-400`
 
 ---
 
-### 9. `src/pages/UpscalerArcanoV1.tsx` (Aulas v1)
+## Padrão de Cores Unificado
 
-**Classes atuais:**
-- `bg-background` → `bg-[#0D0221]`
-- `bg-card border-border` → `bg-[#1A0A2E]/50 border-purple-500/20`
-- `text-foreground` → `text-white`
-- `text-muted-foreground` → `text-purple-300`
-- Progress bar: manter gradiente roxo existente
-- Botão ghost: adicionar hover roxo
-
----
-
-### 10. `src/pages/UpscalerArcanoV2.tsx` (Aulas v2)
-
-**Mesmas mudanças que UpscalerArcanoV1.tsx** (estrutura similar)
-
----
-
-### 11. `src/pages/ToolVersionLessons.tsx` (Aulas dinâmicas)
-
-**Classes atuais:**
-- `bg-background` → `bg-[#0D0221]`
-- `bg-card border-border` → `bg-[#1A0A2E]/50 border-purple-500/20`
-- `text-foreground` → `text-white`
-- `text-muted-foreground` → `text-purple-300`
-- AlertDialogs: adaptar cores de fundo
+| Elemento | Classe Antes | Classe Depois |
+|----------|-------------|---------------|
+| Fundo página | `bg-background` | `bg-[#0D0221]` |
+| Cards | `bg-card border-border` | `bg-[#1A0A2E]/50 border-purple-500/20` |
+| Progress bar vazia | `bg-muted` | `bg-purple-900/30` |
+| Tooltips | `bg-card border-border` | `bg-[#1A0A2E] border-purple-500/20` |
+| Texto título | `text-foreground` | `text-white` |
+| Texto secundário | `text-muted-foreground` | `text-purple-300` |
+| Botão outline (padrão) | `variant="outline"` | `border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white` |
+| Hover em cards | `hover:bg-accent` | `hover:bg-purple-500/10` |
+| Card selecionado | `border-primary bg-primary/5` | `border-purple-400 bg-purple-500/10` |
+| Número de aula inativo | `bg-muted text-muted-foreground` | `bg-purple-900/40 text-purple-400` |
 
 ---
 
-## Padrões de Componentes Unificados
+## Resumo das Mudanças
 
-### Header Padrão (dark)
-```jsx
-<header className="sticky top-0 z-50 bg-[#0D0221]/95 backdrop-blur-lg border-b border-purple-500/20">
-```
-
-### Card Padrão (dark)
-```jsx
-<Card className="bg-[#1A0A2E]/50 border-purple-500/20">
-```
-
-### Botão Ghost (dark)
-```jsx
-<Button variant="ghost" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
-```
-
-### Badge "Liberado" (dark)
-```jsx
-<Badge className="bg-green-500/30 text-green-300 border-0">
-```
-
-### Loader (dark)
-```jsx
-<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500" />
-```
-
-### Ícones secundários
-```jsx
-<Play className="h-5 w-5 text-purple-400" />
-```
-
----
-
-## Elementos Preservados
-
-- Gradientes de botões de ação (amarelo/laranja para CTAs externos)
-- Gradiente verde para "Primeiro Acesso"
-- Badge verde para "Liberado" (adaptado para dark mode)
-- Hierarquia visual existente
-- Layout responsivo
-- **NÃO MEXER EM:** `src/pages/UpscalerArcanoTool.tsx` (já possui tema correto)
-
----
-
-## Resumo de Arquivos
-
-| Arquivo | Complexidade | Principal Mudança |
-|---------|-------------|-------------------|
-| `FerramentasIA.tsx` | Alta | Refazer todo o tema light para dark |
-| `FerramentasIAES.tsx` | Alta | Mesmo que FerramentasIA |
-| `FerramentaIAArtes.tsx` | Média | Header, cards, textos |
-| `MudarPose.tsx` | Baixa | Fundo, cards, textos |
-| `MudarRoupa.tsx` | Baixa | Fundo, cards, textos |
-| `ForjaSelos3D.tsx` | Baixa | Fundo, cards, textos |
-| `ForjaSelos3DArtes.tsx` | Baixa | Fundo, cards, textos |
-| `UpscalerArcanoVersionSelect.tsx` | Média | Telas de estado, fundo |
-| `UpscalerArcanoV1.tsx` | Média | Fundo, cards, progress bar |
-| `UpscalerArcanoV2.tsx` | Média | Fundo, cards, progress bar |
-| `ToolVersionLessons.tsx` | Média | Fundo, cards, modais |
+| Arquivo | Mudanças Principais |
+|---------|---------------------|
+| `UpscalerArcanoV1.tsx` | Cards, botão outline, barra de progresso, tooltips |
+| `UpscalerArcanoV2.tsx` | Mesmas do V1 |
+| `ToolVersionLessons.tsx` | Cards, botões outline (incluindo os de ação), barra de progresso |
+| `TutorialArtes.tsx` | Migração completa para tema escuro roxo |
 
 ---
 
 ## Resultado Esperado
 
-Todas as páginas terão:
-- Fundo escuro roxo (`#0D0221`) consistente
-- Cards com bordas sutis roxas (`border-purple-500/20`)
-- Textos em branco/roxo claro com alto contraste
-- Headers com backdrop blur e borda sutil
-- Transição visual suave entre Biblioteca de Prompts e Ferramentas
-- Experiência visual unificada e premium
+- Todos os botões terão bordas roxas sutis em vez de brancas
+- Todos os cards terão fundo roxo escuro transparente
+- Barra de progresso terá fundo roxo escuro
+- Tooltips terão fundo escuro
+- Alto contraste entre texto branco/roxo claro e fundo escuro
+- Experiência visual consistente com a Biblioteca de Prompts
