@@ -1,53 +1,59 @@
 
-# Plano: Histórico de Créditos + Consumo no Backend
+# Plano: Atualizar Preços de Créditos do Upscaler
 
-## ✅ IMPLEMENTADO
-
----
-
-## Mudanças Realizadas
-
-### 1. Histórico de Transações (ProfileSettings.tsx)
-- ✅ Criado componente `CreditsCard` em `src/components/upscaler/CreditsCard.tsx`
-- ✅ Mostra as últimas 10 transações do usuário
-- ✅ Exibe data/hora, valor (+/-) e descrição
-- ✅ RLS protege os dados - cada usuário só vê suas próprias transações
-
-### 2. Consumo no Backend (Edge Function)
-- ✅ Modificado `supabase/functions/runninghub-upscaler/index.ts`
-- ✅ Recebe `userId` e `creditCost` do frontend
-- ✅ Consome créditos via RPC `consume_upscaler_credits` ANTES de iniciar o job
-- ✅ Se créditos insuficientes, retorna erro sem processar
-
-### 3. Frontend Atualizado (UpscalerArcanoTool.tsx)
-- ✅ Removida chamada `consumeCredits()` antes do processamento
-- ✅ Passa `userId` e `creditCost` para a edge function
-- ✅ Verificação local de saldo apenas para UX (backend valida de verdade)
-- ✅ Atualiza saldo local via `refetchCredits()` após resposta de sucesso
+## Resumo
+Alterar os custos de créditos do upscaler:
+- **Standard/Básico**: 40 → **60 créditos**
+- **PRO**: 60 → **80 créditos**
 
 ---
 
-## Fluxo Atualizado
+## Arquivos a Modificar
 
-```text
-ANTES (problemático):
-Frontend → consumeCredits() → Se OK → createJob → upload → run
-   ❌ Se upload falhar, créditos já foram cobrados!
+### 1. `src/pages/UpscalerArcanoTool.tsx`
 
-DEPOIS (seguro):
-Frontend → createJob → upload → run(userId, creditCost)
-   └→ Backend: consumeCredits → Se OK → processar
-       ❌ Se falhar upload ou run, créditos NÃO são cobrados
-       ✅ Só cobra quando o job efetivamente inicia
+**Linha 370** - Cálculo do custo:
+```typescript
+// ANTES
+const creditCost = version === 'pro' ? 60 : 40;
+
+// DEPOIS
+const creditCost = version === 'pro' ? 80 : 60;
+```
+
+**Linha 1365** - Exibição no botão:
+```typescript
+// ANTES
+{version === 'pro' ? '60' : '40'}
+
+// DEPOIS
+{version === 'pro' ? '80' : '60'}
+```
+
+### 2. `supabase/functions/runninghub-upscaler/index.ts`
+
+**Linha 164** - Comentário de documentação:
+```typescript
+// ANTES
+creditCost   // NEW: credit cost (40 standard, 60 pro)
+
+// DEPOIS
+creditCost   // NEW: credit cost (60 standard, 80 pro)
 ```
 
 ---
 
-## Arquivos Modificados
+## Impacto
 
-| Arquivo | Mudança |
-|---------|---------|
-| `src/components/upscaler/CreditsCard.tsx` | **NOVO** - Componente de histórico |
-| `src/pages/ProfileSettings.tsx` | Usa CreditsCard |
-| `src/pages/UpscalerArcanoTool.tsx` | Remove consumo local, passa params |
-| `supabase/functions/runninghub-upscaler/index.ts` | Consome créditos no backend |
+- Nenhuma mudança de lógica, apenas valores
+- O backend recebe o custo do frontend e debita corretamente
+- A validação do backend usa o valor recebido, então não precisa de alteração na lógica
+
+---
+
+## Verificação Pós-Implementação
+
+1. Abrir o Upscaler Arcano
+2. Verificar se o botão Standard mostra "60" créditos
+3. Verificar se o botão PRO mostra "80" créditos
+4. Fazer um upscale teste e confirmar no histórico se debitou o valor correto
