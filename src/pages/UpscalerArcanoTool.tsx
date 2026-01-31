@@ -150,6 +150,9 @@ const UpscalerArcanoTool: React.FC = () => {
     }
   }, [version]);
 
+  // Flag to check if we're in "De Longe" mode (full body photos use different WebApp)
+  const isLongeMode = pessoasFraming === 'longe' && promptCategory.startsWith('pessoas');
+
   // Get the final prompt to send
   const getFinalPrompt = (): string => {
     if (useCustomPrompt) {
@@ -436,10 +439,11 @@ const UpscalerArcanoTool: React.FC = () => {
         body: {
           jobId: job.id,
           fileName,
-          detailDenoise,
+          detailDenoise: isLongeMode ? null : detailDenoise,
           resolution: resolution === '4k' ? 4096 : 2048,
-          prompt: getFinalPrompt(),
+          prompt: isLongeMode ? null : getFinalPrompt(),
           version: version,
+          framingMode: isLongeMode ? 'longe' : 'perto',
         },
       });
 
@@ -1234,37 +1238,39 @@ const UpscalerArcanoTool: React.FC = () => {
               </Card>
             )}
 
-            {/* Detail Denoise - SECOND */}
-            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
-                  <span className="font-medium text-white">{t('upscalerTool.controls.detailLevel')}</span>
-                  <div className="group relative">
-                    <Info className="w-4 h-4 text-purple-400/70 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                      {t('upscalerTool.controls.controlsDetails')}
+            {/* Detail Denoise - SECOND - ONLY show when NOT in "De Longe" mode */}
+            {!isLongeMode && (
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <span className="font-medium text-white">{t('upscalerTool.controls.detailLevel')}</span>
+                    <div className="group relative">
+                      <Info className="w-4 h-4 text-purple-400/70 cursor-help" />
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                        {t('upscalerTool.controls.controlsDetails')}
+                      </div>
                     </div>
                   </div>
+                  <span className="text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
                 </div>
-                <span className="text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
-              </div>
-              <div className="text-xs text-purple-300 mb-3">
-                ✨ {t('upscalerTool.controls.detailRecommended')}
-              </div>
-              <Slider
-                value={[detailDenoise]}
-                onValueChange={([value]) => setDetailDenoise(value)}
-                min={0}
-                max={1}
-                step={0.01}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-purple-300/70 mt-2">
-                <span>{t('upscalerTool.controls.lessDetail')}</span>
-                <span>{t('upscalerTool.controls.moreDetail')}</span>
-              </div>
-            </Card>
+                <div className="text-xs text-purple-300 mb-3">
+                  ✨ {t('upscalerTool.controls.detailRecommended')}
+                </div>
+                <Slider
+                  value={[detailDenoise]}
+                  onValueChange={([value]) => setDetailDenoise(value)}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-purple-300/70 mt-2">
+                  <span>{t('upscalerTool.controls.lessDetail')}</span>
+                  <span>{t('upscalerTool.controls.moreDetail')}</span>
+                </div>
+              </Card>
+            )}
 
             {/* Resolution Selector */}
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
@@ -1300,8 +1306,8 @@ const UpscalerArcanoTool: React.FC = () => {
               </ToggleGroup>
             </Card>
 
-            {/* Custom Prompt Toggle - ONLY FOR PRO VERSION */}
-            {version === 'pro' && (
+            {/* Custom Prompt Toggle - ONLY FOR PRO VERSION and NOT in "De Longe" mode */}
+            {version === 'pro' && !isLongeMode && (
               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
