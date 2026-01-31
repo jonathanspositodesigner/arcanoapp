@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import PushNotificationPrompt from "@/components/PushNotificationPrompt";
+import RunningHubBonusModal from "@/components/RunningHubBonusModal";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -1081,8 +1081,8 @@ const BibliotecaPrompts = () => {
         planType={planType}
       />
 
-      {/* Push Notification Prompt */}
-      <PushNotificationPrompt />
+      {/* RunningHub Bonus Modal - only for logged in users */}
+      {user && <RunningHubBonusModal userId={user.id} />}
     </div>;
 };
 

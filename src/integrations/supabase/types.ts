@@ -1865,6 +1865,7 @@ export type Database = {
           name: string | null
           password_changed: boolean | null
           phone: string | null
+          runninghub_bonus_claimed: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -1877,6 +1878,7 @@ export type Database = {
           name?: string | null
           password_changed?: boolean | null
           phone?: string | null
+          runninghub_bonus_claimed?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -1889,6 +1891,7 @@ export type Database = {
           name?: string | null
           password_changed?: boolean | null
           phone?: string | null
+          runninghub_bonus_claimed?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
