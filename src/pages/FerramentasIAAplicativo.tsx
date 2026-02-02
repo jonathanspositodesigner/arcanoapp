@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
-import { Sparkles, Loader2, Play, ShoppingCart } from "lucide-react";
+import { Sparkles, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -116,18 +116,8 @@ const FerramentasIAAplicativo = () => {
   };
 
   const handleToolClick = (tool: ToolData) => {
-    const hasAccess = checkToolAccess(tool.slug);
-    
-    if (hasAccess) {
-      navigate(getAccessRoute(tool.slug));
-    } else {
-      const route = getPurchaseRoute(tool);
-      if (route.startsWith("http")) {
-        window.open(route, "_blank");
-      } else {
-        navigate(route);
-      }
-    }
+    // Always navigate to the tool
+    navigate(getAccessRoute(tool.slug));
   };
 
   if (loading || isPremiumLoading || isPromptsLoading) {
@@ -177,17 +167,8 @@ const FerramentasIAAplicativo = () => {
                   : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
               } text-white`}
             >
-              {hasAccess ? (
-                <>
-                  <Play className="h-4 w-4 mr-2" />
-                  {t('ferramentas.accessTool')}
-                </>
-              ) : (
-                <>
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  {t('ferramentas.seePlans')}
-                </>
-              )}
+              <Play className="h-4 w-4 mr-2" />
+              {t('ferramentas.accessTool')}
             </Button>
           </div>
         </div>
