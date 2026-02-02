@@ -47,8 +47,8 @@ const creditPlans = [
     credits: "+1.500", 
     description: "~25 imagens", 
     price: "29,90",
-    originalPrice: null,
-    savings: null,
+    originalPrice: "39,90",
+    savings: "25",
     link: "https://payfast.greenn.com.br/9trhhb9",
     icon: Coins,
     color: "from-purple-500 to-fuchsia-500"
@@ -208,8 +208,11 @@ const PlanosCreditos = () => {
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
               Recarregue seus Créditos
             </h2>
-            <p className="text-purple-300 max-w-md mx-auto mb-4">
+            <p className="text-purple-300 max-w-md mx-auto mb-2">
               Créditos <span className="text-green-400 font-semibold">vitalícios</span> que nunca expiram — use quando quiser!
+            </p>
+            <p className="text-fuchsia-400 font-medium text-sm mb-4">
+              🎉 Promoção na primeira recarga de créditos!
             </p>
 
             {/* Compact Countdown Timer */}
