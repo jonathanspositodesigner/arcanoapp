@@ -117,7 +117,7 @@ const PlanosUpscalerArcano590ES = lazy(() => import("./pages/PlanosUpscalerArcan
 const PlanosForjaSelos3D = lazy(() => import("./pages/PlanosForjaSelos3D"));
 const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
 const UpscalerRunpod = lazy(() => import("./pages/UpscalerRunpod"));
-const UpscalerArcanoV3 = lazy(() => import("./pages/UpscalerArcanoV3"));
+
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
 const PackAgendas = lazy(() => import("./pages/PackAgendas"));
 const ComboArtesArcanas = lazy(() => import("./pages/ComboArtesArcanas"));
@@ -278,7 +278,7 @@ const AppContent = () => {
           <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
           <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
           <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
-          <Route path="/upscaler-arcano-v3" element={<UpscalerArcanoV3 />} />
+          
           <Route path="/pack-agendas" element={<PackAgendas />} />
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
