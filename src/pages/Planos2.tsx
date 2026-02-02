@@ -68,7 +68,7 @@ const Planos2 = () => {
   const plans = {
     mensal: [{
       name: "Starter",
-      price: "9,90",
+      price: "19,90",
       originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
@@ -88,7 +88,7 @@ const Planos2 = () => {
       promo: false
     }, {
       name: "Pro",
-      price: "29,90",
+      price: "39,90",
       originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/kbgwmH",
@@ -109,8 +109,8 @@ const Planos2 = () => {
       hasTrial: false
     }, {
       name: "Ultimate",
-      price: "39,90",
-      originalPrice: "49,90",
+      price: "49,90",
+      originalPrice: "59,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "10.000 créditos de IA",
@@ -131,7 +131,7 @@ const Planos2 = () => {
       bestSeller: true
     }, {
       name: "IA Unlimited",
-      price: "99,90",
+      price: "119,90",
       originalPrice: "149,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
