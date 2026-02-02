@@ -104,9 +104,9 @@ const PoseChangerTool: React.FC = () => {
     <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
       <ToolsHeader title="Pose Changer" onBack={goBack} />
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-hidden">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden">
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-3 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 lg:h-full">
           
           {/* Left Side - Inputs (2/7 on desktop ~28%) */}
           <div className="lg:col-span-2 flex flex-col gap-2">
@@ -150,8 +150,8 @@ const PoseChangerTool: React.FC = () => {
           </div>
 
           {/* Right Side - Result Viewer (5/7 on desktop ~72%) */}
-          <div className="lg:col-span-5 flex flex-col min-h-0">
-            <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col">
+          <div className="lg:col-span-5 flex flex-col min-h-[300px] lg:min-h-0">
+            <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
               {/* Header */}
               <div className="px-3 py-2 border-b border-purple-500/20 flex items-center justify-between flex-shrink-0">
                 <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
