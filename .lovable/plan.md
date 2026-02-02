@@ -1,97 +1,86 @@
 
-
-# Plano: Adicionar Botão de Recarga de Créditos + Página de Planos
+# Plano: Atualizar Página de Créditos com Preços e Apresentação das Ferramentas
 
 ## Resumo
 
-Adicionar um ícone de "+" clicável próximo ao saldo de créditos que levará os usuários para uma nova página de venda de pacotes de créditos vitalícios.
+Transformar a página de créditos em uma mini landing page que apresenta as ferramentas de IA disponíveis antes de mostrar os planos de recarga.
 
-## Pacotes de Créditos
+## Mudanças a Implementar
 
-| Pacote | Créditos | Uso Aproximado |
-|--------|----------|----------------|
-| Básico | 1.500 | ~25 upscales Standard |
-| Popular | 4.200 | ~70 upscales Standard |
-| Profissional | 10.800 | ~180 upscales Standard |
+### 1. Atualizar Preços
+```tsx
+const creditPlans = [
+  { credits: 1500, price: "29,90", ... },
+  { credits: 4200, price: "39,90", ... },
+  { credits: 10800, price: "99,90", ... },
+];
+```
 
-## Arquivos a Modificar/Criar
+### 2. Adicionar Seção de Apresentação das Ferramentas
 
-### 1. `src/components/ToolsHeader.tsx`
-- Adicionar ícone `PlusCircle` verde ao lado do badge de créditos
-- Ao clicar, navega para `/planos-creditos`
+**Ferramentas Disponíveis:**
+- **Upscaler Arcano** - Aumente a qualidade das suas imagens com IA
+- **Forja de Selos 3D** - Crie selos e emblemas 3D profissionais
+- **Mudar Roupa** - Troque a roupa de pessoas em fotos
+- **Mudar Pose** - Altere a pose de pessoas em imagens
 
-### 2. `src/components/upscaler/CreditsCard.tsx`
-- Adicionar botão "Comprar Créditos" abaixo do breakdown
-- Navega para `/planos-creditos`
+**Em Breve:**
+- Upscaler de Vídeo
+- Remoção de Fundo
+- Edição Automática de Fotos
+- Remover Objeto
+- Gerar Telões de LED
+- Gerar Narração e Música
 
-### 3. `src/pages/PlanosCreditos.tsx` (CRIAR)
-Nova página com:
-- Header com botão voltar e título
-- Descrição sobre créditos vitalícios
-- 3 cards de planos (1500, 4200, 10800 créditos)
-- Botões de checkout (links placeholder por enquanto)
-- Visual consistente com tema roxo escuro
-
-### 4. `src/App.tsx`
-- Adicionar lazy import da página
-- Registrar rota `/planos-creditos`
-
-## Layout da Página
+### 3. Estrutura Visual da Página
 
 ```text
 +------------------------------------------+
 |  ← Voltar         Comprar Créditos       |
 +------------------------------------------+
 |                                          |
-|    💎 Recarregue seus Créditos de IA     |
-|    "Créditos vitalícios que nunca        |
-|     expiram - use quando quiser!"        |
+|    🚀 Ferramentas de IA Integradas       |
+|    "Tudo em forma de aplicativo,         |
+|     mais fácil e prático!"               |
 |                                          |
-|  +------------+  +------------+          |
-|  |   1.500    |  |   4.200    |          |
-|  |  créditos  |  |  créditos  |          |
-|  |  ~25 usos  |  |  ~70 usos  |          |
-|  |  R$ XX,XX  |  |  R$ XX,XX  |          |
-|  |  [Comprar] |  |  [Comprar] |          |
-|  +------------+  +------------+          |
+|  [Grid 2x2 de Ferramentas Disponíveis]   |
+|  +----------+  +----------+              |
+|  | Upscaler |  | Forja 3D |              |
+|  +----------+  +----------+              |
+|  +----------+  +----------+              |
+|  | Roupa IA |  | Pose IA  |              |
+|  +----------+  +----------+              |
 |                                          |
-|         +----------------+               |
-|         |    10.800      |               |
-|         |   créditos     |               |
-|         |   ~180 usos    |               |
-|         |   R$ XX,XX     |               |
-|         | ⭐ MELHOR VALOR |               |
-|         |   [Comprar]    |               |
-|         +----------------+               |
+|    🔮 Em Breve                           |
+|  [Lista de ferramentas futuras]          |
+|                                          |
++------------------------------------------+
+|                                          |
+|    💎 Recarregue seus Créditos           |
+|    "Créditos vitalícios!"                |
+|                                          |
+|  [Cards de planos: 29,90 / 39,90 / 99,90]|
 |                                          |
 +------------------------------------------+
 ```
 
-## Detalhes Técnicos
+## Arquivo a Modificar
 
-### Ícone no Header
-```tsx
-// Ao lado do badge de créditos
-<Button
-  variant="ghost"
-  size="icon"
-  onClick={() => navigate('/planos-creditos')}
-  className="h-7 w-7 text-green-400 hover:text-green-300"
->
-  <PlusCircle className="w-4 h-4" />
-</Button>
-```
+| Arquivo | Mudanças |
+|---------|----------|
+| `src/pages/PlanosCreditos.tsx` | Adicionar seção de ferramentas, atualizar preços |
 
-### Estrutura dos Planos
-```tsx
-const creditPlans = [
-  { credits: 1500, description: "~25 upscales Standard", price: "XX,XX", link: "#" },
-  { credits: 4200, description: "~70 upscales Standard", price: "XX,XX", link: "#", popular: true },
-  { credits: 10800, description: "~180 upscales Standard", price: "XX,XX", link: "#", bestValue: true },
-];
-```
+## Ícones a Usar
 
-## Observação
+- `Wand2` - Upscaler Arcano
+- `Box` - Forja de Selos 3D  
+- `Shirt` - Mudar Roupa
+- `PersonStanding` - Mudar Pose
+- `Clock` ou `Sparkles` - Em Breve
 
-Os preços e links de checkout da Greenn serão placeholder por enquanto. Você pode me informar os valores e links reais posteriormente para eu atualizar.
+## Observações
 
+- Layout será responsivo (2 colunas no mobile, 4 no desktop para ferramentas)
+- Seção "Em Breve" terá badges sutis para cada ferramenta futura
+- Mantém o visual roxo escuro consistente com a plataforma
+- Texto conciso e objetivo, estilo landing page mas compacto
