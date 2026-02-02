@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreditsBreakdown {
@@ -11,6 +11,7 @@ export const useUpscalerCredits = (userId: string | undefined) => {
   const [balance, setBalance] = useState<number>(0);
   const [breakdown, setBreakdown] = useState<CreditsBreakdown>({ total: 0, monthly: 0, lifetime: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const fetchBalance = useCallback(async () => {
     if (!userId) {
@@ -55,6 +56,42 @@ export const useUpscalerCredits = (userId: string | undefined) => {
   useEffect(() => {
     fetchBalance();
   }, [fetchBalance]);
+
+  // Realtime subscription for credit changes
+  useEffect(() => {
+    if (!userId) return;
+
+    // Cleanup previous channel if exists
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+    }
+
+    const channel = supabase
+      .channel(`credits-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'upscaler_credit_transactions',
+          filter: `user_id=eq.${userId}`
+        },
+        () => {
+          // Refetch balance when a new transaction is inserted
+          fetchBalance();
+        }
+      )
+      .subscribe();
+
+    channelRef.current = channel;
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [userId, fetchBalance]);
 
   const consumeCredits = async (amount: number, description?: string) => {
     if (!userId) return { success: false, error: 'Não autenticado' };

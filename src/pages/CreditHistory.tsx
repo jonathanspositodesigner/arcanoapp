@@ -9,6 +9,7 @@ import { ptBR } from "date-fns/locale";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
 import { Badge } from "@/components/ui/badge";
+import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
 
 interface Transaction {
   amount: number;
@@ -95,9 +96,13 @@ const CreditHistory = () => {
               <span className="text-purple-300">Saldo atual</span>
             </div>
             <div className="flex items-center gap-2">
-              <Badge className="bg-purple-600 text-white text-lg px-4 py-1">
-                {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
-              </Badge>
+              <AnimatedCreditsDisplay 
+                credits={credits} 
+                isLoading={creditsLoading}
+                size="lg"
+                showCoin={false}
+                variant="badge"
+              />
               <button
                 onClick={() => navigate('/planos-creditos')}
                 className="h-8 w-8 flex items-center justify-center rounded hover:bg-purple-500/10"

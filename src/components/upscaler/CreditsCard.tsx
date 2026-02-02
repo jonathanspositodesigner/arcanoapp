@@ -7,6 +7,7 @@ import { Coins, History, TrendingDown, TrendingUp, Loader2, ChevronRight, PlusCi
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
 
 interface Transaction {
   amount: number;
@@ -80,9 +81,13 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown }: Cred
       {/* Current Balance */}
       <div className="flex items-center justify-between mb-2">
         <p className="text-purple-300">Saldo total</p>
-        <Badge className="bg-purple-600 text-white text-lg px-4 py-1">
-          {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
-        </Badge>
+        <AnimatedCreditsDisplay 
+          credits={credits} 
+          isLoading={creditsLoading}
+          size="lg"
+          showCoin={false}
+          variant="badge"
+        />
       </div>
 
       {/* Breakdown (if has both types) */}

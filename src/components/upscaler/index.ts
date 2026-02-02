@@ -8,6 +8,7 @@ export { LazyImage } from './LazyImage';
 export { SectionSkeleton } from './SectionSkeleton';
 export { SectionErrorBoundary } from './SectionErrorBoundary';
 export { LazySocialProofWrapper } from './LazySocialProofWrapper';
+export { AnimatedCreditsDisplay } from './AnimatedCreditsDisplay';
 
 // Section components (use with React.lazy for code splitting)
 export { BeforeAfterGalleryPT } from './sections/BeforeAfterGalleryPT';
