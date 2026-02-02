@@ -64,6 +64,7 @@
     "signupSuccessInstruction": "Haz clic en el enlace del e-mail para activar tu cuenta e iniciar sesión.",
     "signupSuccessSpam": "¿No lo encontraste? Revisa la carpeta de spam.",
     "backToLogin": "Volver a Login",
-    "firstAccessSetPassword": "¡Primer acceso detectado! Por favor, registre su contraseña."
+    "firstAccessSetPassword": "¡Primer acceso detectado! Por favor, registre su contraseña.",
+    "browseWithoutLogin": "Navegar sin login"
   }
 }
