@@ -1,200 +1,252 @@
 
-# Plano: Corrigir Sistema de Emails Hotmart + Reenvio
+# Plano: Prévia de Email + Mover Monitor para Sidebar
 
-## Problemas Identificados
+## Resumo
 
-### 1. Template Faltando
-**Causa raiz do erro de reenvio**
-```
-⚠️ Template não encontrado para ferramentas_ia/es
-```
-A tabela `welcome_email_templates` não tem um registro para `platform='ferramentas_ia'` + `locale='es'`.
-
-### 2. Incompatibilidade de Formato
-- **Webhook Hotmart**: Usa HTML hardcoded com template literals (`${name}`)
-- **Resend-pending-emails**: Espera HTML com placeholders (`{{name}}`)
-
-### 3. Provider Diferente
-- **Webhooks**: SendPulse
-- **Reenvio**: Resend
-
-Suas respostas indicam padronizar tudo em SendPulse.
+Duas alterações solicitadas:
+1. **Prévia do email**: Ao clicar em um email enviado na tabela, mostrar um modal com a prévia HTML do email recebido
+2. **Mover para sidebar**: Retirar o monitor da home e adicionar como item na barra lateral
 
 ---
 
-## Solução em 3 Partes
+## Mudanças no Banco de Dados
 
-### Parte 1: Criar Template ES para Ferramentas IA
+### Nova coluna `email_content`
 
-Inserir template compatível com a nova lógica:
+A tabela `welcome_email_logs` atualmente não armazena o HTML do email enviado. Preciso adicionar:
+
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `email_content` | `TEXT` | HTML completo do email enviado |
 
 ```sql
-INSERT INTO welcome_email_templates (
-  platform, locale, subject, sender_name, sender_email, 
-  content, is_active
-) VALUES (
-  'ferramentas_ia',
-  'es', 
-  '🤖 ¡Bienvenido! Tu compra fue confirmada',
-  'Herramientas IA Arcanas',
-  'contato@voxvisual.com.br',
-  -- HTML completo com placeholders {{name}}, {{email}}, {{product}}
-  '<html>...</html>',
-  true
-);
+ALTER TABLE welcome_email_logs 
+ADD COLUMN IF NOT EXISTS email_content TEXT;
 ```
-
-### Parte 2: Atualizar `resend-pending-emails` para Usar SendPulse
-
-Trocar de Resend para SendPulse, replicando a mesma lógica do `webhook-hotmart-artes`:
-
-```typescript
-// ANTES (Resend)
-const emailResponse = await fetch("https://api.resend.com/emails", {...})
-
-// DEPOIS (SendPulse)
-const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {...})
-const emailResponse = await fetch("https://api.sendpulse.com/smtp/emails", {...})
-```
-
-**Também ajustar a lógica de template:**
-- Para clientes NOVOS: Email com dados de acesso (senha = email)
-- Para clientes ANTIGOS: Email sem senha (você escolheu "Sem senha")
-
-### Parte 3: Implementar Deduplicação por Transação no Webhook Hotmart
-
-Você escolheu "1 email por compra", então:
-
-```typescript
-// Antes de enviar, verificar se já enviou para esta transaction
-const { data: existing } = await supabase
-  .from('welcome_email_logs')
-  .select('id')
-  .eq('product_info', `Hotmart:${transaction}`)
-  .eq('status', 'sent')
-  .maybeSingle()
-
-if (existing) {
-  console.log('Email já enviado para esta transação')
-  return
-}
-```
-
-### Parte 4: Atualizar Monitor para Mostrar Motivo Real
-
-O componente `WelcomeEmailsMonitor` vai mostrar:
-- "Template não encontrado" quando for o caso
-- "Recompra (cliente antigo)" quando aplicável
-- Link para verificar logs da transação
 
 ---
 
 ## Arquivos a Modificar
 
-| Arquivo | Mudança |
-|---------|---------|
-| `welcome_email_templates` (DB) | Inserir template ES |
-| `resend-pending-emails/index.ts` | Trocar Resend→SendPulse, ajustar lógica |
-| `webhook-hotmart-artes/index.ts` | Adicionar dedup por transaction, usar dedup_key |
-| `WelcomeEmailsMonitor.tsx` | Melhorar mensagens de erro |
+### 1. `supabase/functions/resend-pending-emails/index.ts`
+
+Salvar o HTML gerado na nova coluna `email_content`:
+
+```typescript
+await supabaseAdmin.from("welcome_email_logs").insert({
+  // ... campos existentes
+  email_content: emailHtml, // ← NOVO: salvar HTML
+});
+```
+
+### 2. `supabase/functions/webhook-greenn-artes/index.ts` (e outros webhooks)
+
+Também precisam salvar o conteúdo do email para compras novas.
+
+### 3. `src/components/AdminHubSidebar.tsx`
+
+Adicionar novo item no menu:
+
+```typescript
+{
+  id: "emails" as const,
+  label: "EMAILS DE BOAS-VINDAS",
+  icon: Mail,
+  description: "Monitoramento de envios"
+}
+```
+
+Atualizar o tipo `HubViewType`:
+
+```typescript
+export type HubViewType = "home" | "dashboard" | "marketing" | "email-marketing" | 
+                          "push-notifications" | "partners" | "abandoned-checkouts" | 
+                          "admins" | "emails"; // ← NOVO
+```
+
+### 4. `src/pages/AdminHub.tsx`
+
+**Remover** o `WelcomeEmailsMonitor` da view "home":
+
+```tsx
+case "home":
+  return (
+    <div className="max-w-6xl mx-auto space-y-8">
+      {/* REMOVIDO: WelcomeEmailsMonitor */}
+      
+      {/* Platform Selection */}
+      <div className="text-center">...
+```
+
+**Adicionar** case para a nova view:
+
+```tsx
+case "emails":
+  return <WelcomeEmailsMonitor />;
+```
+
+### 5. `src/components/WelcomeEmailsMonitor.tsx`
+
+Adicionar funcionalidade de prévia:
+
+**Novos estados:**
+```typescript
+const [selectedEmail, setSelectedEmail] = useState<PurchaseEmailStatus | null>(null);
+const [emailContent, setEmailContent] = useState<string | null>(null);
+const [isLoadingContent, setIsLoadingContent] = useState(false);
+```
+
+**Atualizar query para buscar `email_content`:**
+```typescript
+const { data: emailLogs } = await supabase
+  .from('welcome_email_logs')
+  .select('email, platform, status, sent_at, error_message, email_content') // ← adicionar
+```
+
+**Handler de clique na linha:**
+```typescript
+const handleEmailClick = async (purchase: PurchaseEmailStatus) => {
+  if (purchase.email_status !== 'sent') return;
+  
+  setSelectedEmail(purchase);
+  setIsLoadingContent(true);
+  
+  // Buscar conteúdo do email
+  const { data } = await supabase
+    .from('welcome_email_logs')
+    .select('email_content')
+    .eq('email', purchase.email.toLowerCase())
+    .eq('status', 'sent')
+    .order('sent_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  
+  setEmailContent(data?.email_content || null);
+  setIsLoadingContent(false);
+};
+```
+
+**Modal de prévia:**
+```tsx
+<Dialog open={!!selectedEmail} onOpenChange={() => setSelectedEmail(null)}>
+  <DialogContent className="max-w-4xl max-h-[90vh]">
+    <DialogHeader>
+      <DialogTitle className="flex items-center gap-2">
+        <Mail className="h-5 w-5" />
+        Prévia do Email Enviado
+      </DialogTitle>
+      <DialogDescription>
+        Enviado para: {selectedEmail?.email}
+      </DialogDescription>
+    </DialogHeader>
+    
+    <div className="border rounded-lg overflow-hidden bg-white">
+      {isLoadingContent ? (
+        <div className="p-8 text-center">
+          <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+          <p className="mt-2 text-muted-foreground">Carregando...</p>
+        </div>
+      ) : emailContent ? (
+        <iframe 
+          srcDoc={emailContent}
+          className="w-full h-[500px] border-0"
+          title="Prévia do email"
+        />
+      ) : (
+        <div className="p-8 text-center text-muted-foreground">
+          <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+          <p>Conteúdo do email não disponível</p>
+          <p className="text-sm mt-1">
+            Emails enviados antes desta atualização não têm o conteúdo salvo.
+          </p>
+        </div>
+      )}
+    </div>
+  </DialogContent>
+</Dialog>
+```
+
+**Tornar linha clicável (apenas para enviados):**
+```tsx
+<tr 
+  key={purchase.id} 
+  className={cn(
+    "hover:bg-muted/30",
+    purchase.email_status === 'sent' && "cursor-pointer hover:bg-muted/50"
+  )}
+  onClick={() => handleEmailClick(purchase)}
+>
+```
+
+---
+
+## Fluxo Visual
+
+```text
++------------------------------------------+
+|           BARRA LATERAL                   |
++------------------------------------------+
+| HOME                                      |
+| DASHBOARD GERAL                           |
+| MARKETING GERAL                           |
+| GERENCIAR PARCEIROS                       |
+| REMARKETING                               |
+| ADMINISTRADORES                           |
+| ▶ EMAILS DE BOAS-VINDAS  ← NOVO          |
++------------------------------------------+
+```
+
+Ao clicar em "EMAILS DE BOAS-VINDAS", o monitor aparece na área de conteúdo.
+
+---
+
+## Modal de Prévia (Wireframe)
+
+```text
++--------------------------------------------------+
+|  ✉️ Prévia do Email Enviado              [X]     |
+|  Enviado para: cliente@email.com                 |
++--------------------------------------------------+
+|                                                  |
+|   +------------------------------------------+   |
+|   |                                          |   |
+|   |   🤖 ¡Tu Herramienta de IA está         |   |
+|   |         Activada!                        |   |
+|   |                                          |   |
+|   |   Hola Cliente!                          |   |
+|   |   Tu compra fue confirmada...            |   |
+|   |                                          |   |
+|   |   📋 Datos de acceso:                    |   |
+|   |   Email: cliente@email.com               |   |
+|   |   Contraseña: cliente@email.com          |   |
+|   |                                          |   |
+|   |   [🚀 Acceder Ahora]                     |   |
+|   |                                          |   |
+|   +------------------------------------------+   |
+|                                                  |
++--------------------------------------------------+
+```
+
+---
+
+## Resumo de Arquivos
+
+| Arquivo | Ação |
+|---------|------|
+| `welcome_email_logs` (DB) | Adicionar coluna `email_content` |
+| `resend-pending-emails/index.ts` | Salvar `email_content` ao enviar |
+| `webhook-greenn-artes/index.ts` | Salvar `email_content` ao enviar |
+| `webhook-greenn-musicos/index.ts` | Salvar `email_content` ao enviar |
+| `webhook-hotmart-artes/index.ts` | Salvar `email_content` ao enviar |
+| `AdminHubSidebar.tsx` | Adicionar item "EMAILS DE BOAS-VINDAS" |
+| `AdminHub.tsx` | Remover monitor da home, adicionar case "emails" |
+| `WelcomeEmailsMonitor.tsx` | Adicionar modal de prévia e handler de clique |
 
 ---
 
 ## Resultado Esperado
 
-1. Hotmart emails funcionarão no webhook (com dedup)
-2. Botão "Reenviar" funcionará usando SendPulse
-3. Clientes antigos receberão email sem senha temporária
-4. Monitor mostrará motivos reais das falhas
-
----
-
-## Detalhes Técnicos
-
-### Template HTML para Hotmart ES (Clientes Novos)
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
-    .container { max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; }
-    h1 { color: #d4af37; text-align: center; }
-    .cta-button { display: block; background: linear-gradient(135deg, #d4af37, #b8962e); color: white; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; margin: 20px 0; }
-    .credentials { background: #fefce8; padding: 20px; border-radius: 8px; border: 1px solid #fde68a; margin: 20px 0; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🤖 ¡Tu Herramienta de IA está Activada!</h1>
-    <p>Hola {{name}},</p>
-    <p>Tu compra de <strong>{{product}}</strong> fue confirmada. ¡Ya puedes usar tu herramienta!</p>
-    <div class="credentials">
-      <h3>📋 Datos de acceso:</h3>
-      <p><strong>Email:</strong> {{email}}</p>
-      <p><strong>Contraseña temporal:</strong> {{email}}</p>
-      <p>⚠️ Por seguridad, deberás cambiar tu contraseña en el primer acceso.</p>
-    </div>
-    <a href="https://arcanoapp.voxvisual.com.br/ferramentas-ia-es" class="cta-button">🚀 Acceder Ahora</a>
-  </div>
-</body>
-</html>
-```
-
-### Template HTML para Clientes Antigos (Sem Senha)
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>...</style>
-</head>
-<body>
-  <div class="container">
-    <h1>🎉 ¡Compra Confirmada!</h1>
-    <p>Hola {{name}},</p>
-    <p>Tu compra de <strong>{{product}}</strong> fue confirmada exitosamente.</p>
-    <p>Ya tienes acceso en tu cuenta. Usa tu email y contraseña actuales para ingresar.</p>
-    <a href="https://arcanoapp.voxvisual.com.br/ferramentas-ia-es" class="cta-button">🚀 Acceder Ahora</a>
-    <p style="text-align:center;color:#666;font-size:13px;">¿Olvidaste tu contraseña? <a href="https://arcanoapp.voxvisual.com.br/forgot-password">Recuperar aquí</a></p>
-  </div>
-</body>
-</html>
-```
-
-### Estrutura da Função de Reenvio Atualizada
-
-```typescript
-// resend-pending-emails/index.ts
-
-// 1. Detectar se é cliente novo ou antigo
-const isNewUser = await checkIfNewUser(supabase, customer.email)
-
-// 2. Buscar template correto
-const templateSuffix = isNewUser ? '' : '_returning'
-const { data: template } = await supabase
-  .from('welcome_email_templates')
-  .select('*')
-  .eq('platform', templateConfig.platform)
-  .eq('locale', templateConfig.locale)
-  .eq('is_active', true)
-  .maybeSingle()
-
-// 3. Substituir placeholders
-let html = template.content
-  .replace(/\{\{name\}\}/g, customer.name)
-  .replace(/\{\{email\}\}/g, customer.email)
-  .replace(/\{\{product\}\}/g, productName)
-
-// 4. Se cliente antigo, remover seção de credenciais
-if (!isNewUser) {
-  html = removeCredentialsSection(html)
-}
-
-// 5. Enviar via SendPulse
-const token = await getSendPulseToken()
-await sendViaSendPulse(token, customer.email, template.subject, html)
-```
+1. O monitor de emails fica acessível pela sidebar (não mais na home)
+2. Ao clicar em um email ENVIADO, abre um modal com a prévia do HTML
+3. Emails antigos (sem `email_content`) mostram mensagem informativa
+4. Novos emails terão o conteúdo salvo automaticamente
