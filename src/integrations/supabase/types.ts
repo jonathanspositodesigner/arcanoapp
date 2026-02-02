@@ -2446,6 +2446,7 @@ export type Database = {
         Row: {
           click_count: number | null
           clicked_at: string | null
+          dedup_key: string | null
           email: string
           error_message: string | null
           id: string
@@ -2463,6 +2464,7 @@ export type Database = {
         Insert: {
           click_count?: number | null
           clicked_at?: string | null
+          dedup_key?: string | null
           email: string
           error_message?: string | null
           id?: string
@@ -2480,6 +2482,7 @@ export type Database = {
         Update: {
           click_count?: number | null
           clicked_at?: string | null
+          dedup_key?: string | null
           email?: string
           error_message?: string | null
           id?: string
