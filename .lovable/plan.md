@@ -1,238 +1,282 @@
 
-# Plano Completo: Correção do Consumo Excessivo de Cloud ($17+ em 2 dias)
 
-## Diagnóstico Detalhado
+# Plano Completo: Otimização de Upload de Imagens e Redução de Consumo Cloud
+
+## Diagnóstico Final
 
 ### 🚨 Problemas Críticos Identificados
 
-| # | Problema | Arquivo(s) | Impacto Estimado |
-|---|----------|------------|------------------|
-| 1 | **Polling Bugado V3** | `UpscalerArcanoV3.tsx` | ~$4-6 (milhares de 400 errors) |
-| 2 | **Polling Runpod** | `UpscalerRunpod.tsx` | ~$2-4 (invocações a cada 5s) |
-| 3 | **Upload Base64** | Todas as ferramentas | ~$3-5 (bandwidth 33% overhead) |
-| 4 | **Loop N+1 Webhook** | `runninghub-webhook/index.ts` | ~$1-2 (múltiplos UPDATEs) |
-| 5 | **Polling Redundante** | `AguardandoPagamentoMusicos.tsx` | ~$0.50-1 (leituras desnecessárias) |
+| # | Problema | Arquivo(s) | Status Atual | Impacto |
+|---|----------|------------|--------------|---------|
+| 1 | **Upload Base64 para Edge Function** | `UpscalerArcanoTool.tsx` | ATIVO | ~$3-5 (bandwidth + compute) |
+| 2 | **Upload DUPLO no V3** | `UpscalerArcanoV3.tsx` | ATIVO | ~$2-4 (bandwidth duplicado) |
+| 3 | **Runpod Upscaler Base64** | `runpod-upscaler/index.ts` | DESATIVADO | $0 (página desabilitada) |
+
+### ✅ Já Corrigidos (sessão anterior)
+- Polling V3 → Migrado para Realtime
+- Polling Runpod → Página desativada
+- Loop N+1 Webhook → Usa `update_queue_positions()`
+- Polling Pagamento → Removido completamente
+
+### ✅ Já Otimizados
+- `AdminUploadArtes.tsx` → Usa `uploadToStorage` + `optimizeImage`
+- `useStorageUpload.ts` → Upload binário direto (sem Edge Function)
+- `MudarPose.tsx`, `MudarRoupa.tsx`, `ForjaSelos3D.tsx` → Apenas tutoriais YouTube (sem uploads)
 
 ---
 
 ## Correções a Implementar
 
-### 1. Migrar UpscalerArcanoV3 para Realtime (CRÍTICO)
-
-**Problema:** O V3 faz polling a cada 5 segundos chamando a Edge Function com `action: 'status'`, mas a função não reconhece essa action → erros 400 constantes.
-
-**Solução:** Migrar para o mesmo padrão do `UpscalerArcanoTool.tsx`:
-- Salvar job na tabela `upscaler_jobs`
-- Usar Supabase Realtime para monitorar mudanças
-- Eliminar completamente o `setInterval`
-
-**Arquivo:** `src/pages/UpscalerArcanoV3.tsx`
-
-**Mudanças:**
-```typescript
-// REMOVER: Polling loop (linhas 168-267)
-pollingRef.current = setInterval(async () => { ... }, 5000);
-
-// ADICIONAR: Realtime subscription (mesmo padrão do UpscalerArcanoTool)
-useEffect(() => {
-  if (!jobId) return;
-  
-  const channel = supabase
-    .channel(`upscaler-job-${jobId}`)
-    .on('postgres_changes', {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'upscaler_jobs',
-      filter: `id=eq.${jobId}`
-    }, (payload) => {
-      // Processar update
-    })
-    .subscribe();
-    
-  return () => supabase.removeChannel(channel);
-}, [jobId]);
-```
-
----
-
-### 2. Migrar UpscalerRunpod para Realtime
-
-**Problema:** Idêntico ao V3 - polling a cada 5 segundos.
-
-**Solução:** Se o Runpod for mantido:
-- Implementar webhook callback no Runpod
-- Usar tabela `upscaler_jobs` com campo `provider = 'runpod'`
-- Realtime para atualizar UI
-
-**Arquivo:** `src/pages/UpscalerRunpod.tsx` + nova edge function `runpod-webhook`
-
-**Ou solução alternativa:** Se Runpod não estiver em uso ativo, **desativar/remover** a página para evitar custos.
-
----
-
-### 3. Upload Direto ao Supabase Storage (ALTA ECONOMIA)
+### Fase 1: UpscalerArcanoTool - Eliminar Base64
 
 **Problema Atual:**
 ```
-Usuário → Base64 (1.33x maior) → Edge Function → Processa → RunningHub
+Usuário → Compressão local (bom) → Base64 (ruim: +33%) → Edge Function → RunningHub
 ```
 
 **Solução:**
 ```
-Usuário → Upload direto ao Storage (binário) → Edge Function recebe apenas URL
+Usuário → Compressão local → Upload direto Storage → URL para Edge Function → RunningHub
 ```
 
-**Arquivos a modificar:**
-- `src/pages/UpscalerArcanoTool.tsx`
-- `src/pages/UpscalerArcanoV3.tsx`
-- `src/pages/UpscalerRunpod.tsx`
-- `supabase/functions/runninghub-upscaler/index.ts`
+**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
 
-**Mudança no Frontend:**
+**Mudanças na função `processImage` (linhas 420-460):**
+
 ```typescript
-// ANTES (processImage function)
+// REMOVER (linha 432-454):
 const base64Data = inputImage.split(',')[1];
 const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {
-  body: { imageBase64: base64Data, fileName }
+  body: { imageBase64: base64Data, fileName: inputFileName || 'image.png' },
 });
+// ... código de tratamento de erro do upload
 
-// DEPOIS
-// 1. Converter base64 para File
-const blob = await fetch(inputImage).then(r => r.blob());
-const file = new File([blob], inputFileName, { type: blob.type });
+// SUBSTITUIR POR:
+// 1. Converter base64 para blob
+const base64Data = inputImage.split(',')[1];
+const binaryStr = atob(base64Data);
+const bytes = new Uint8Array(binaryStr.length);
+for (let i = 0; i < binaryStr.length; i++) {
+  bytes[i] = binaryStr.charCodeAt(i);
+}
 
-// 2. Upload direto ao Supabase Storage (GRÁTIS, sem Edge Function)
-const path = `upscaler/${crypto.randomUUID()}.${fileName.split('.').pop()}`;
-const { data, error } = await supabase.storage
+const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
+const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 
+                 ext === 'webp' ? 'image/webp' : 'image/png';
+const blob = new Blob([bytes], { type: mimeType });
+const storagePath = `upscaler/${job.id}.${ext}`;
+
+// 2. Upload direto ao Storage (GRÁTIS)
+const { error: storageError } = await supabase.storage
   .from('artes-cloudinary')
-  .upload(path, file, { contentType: file.type });
+  .upload(storagePath, blob, { contentType: mimeType, upsert: true });
+
+if (storageError) {
+  throw new Error('Erro no upload: ' + storageError.message);
+}
 
 // 3. Obter URL pública
 const { data: urlData } = supabase.storage
   .from('artes-cloudinary')
-  .getPublicUrl(path);
+  .getPublicUrl(storagePath);
 
-// 4. Enviar apenas URL para a Edge Function
+console.log('[Upscaler] Image uploaded to storage:', urlData.publicUrl);
+```
+
+**Mudança na chamada de `/run` (linha 464-477):**
+```typescript
+// ADICIONAR imageUrl ao body:
 const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
-  body: { imageUrl: urlData.publicUrl, jobId, ... }
+  body: {
+    jobId: job.id,
+    imageUrl: urlData.publicUrl,  // NOVO: URL em vez de fileName
+    // fileName removido - não mais necessário
+    detailDenoise: isLongeMode ? null : detailDenoise,
+    resolution: resolution === '4k' ? 4096 : 2048,
+    prompt: isLongeMode ? null : getFinalPrompt(),
+    version: version,
+    framingMode: isLongeMode ? 'longe' : 'perto',
+    userId: user.id,
+    creditCost: creditCost,
+  },
 });
 ```
 
-**Economia:** Reduz bandwidth em ~33% e elimina tempo de computação na Edge Function para processamento de Base64.
-
 ---
 
-### 4. Otimizar Loop N+1 no Webhook
+### Fase 2: UpscalerArcanoV3 - Remover Upload Duplicado
 
-**Problema Atual (linhas 258-263):**
+**Problema Atual (linhas 232-265):**
 ```typescript
-for (let i = 0; i < queuedJobs.length; i++) {
-  await supabase.from('upscaler_jobs').update({ position: i + 1 }).eq('id', queuedJobs[i].id);
-}
-// 10 jobs na fila = 10 queries separadas
+// Passo 1: Upload para Storage (CORRETO)
+const { error: uploadError } = await supabase.storage.from('artes-cloudinary').upload(...);
+const { data: urlData } = supabase.storage.from('artes-cloudinary').getPublicUrl(...);
+
+// Passo 2: Upload DUPLICADO para Edge Function (ERRADO - remove!)
+const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {
+  body: { imageBase64: base64Data, fileName: inputFileName || 'image.png' },
+});
 ```
 
-**Solução:** Uma única query SQL com `ROW_NUMBER()`
+**Solução:** Remover linhas 263-271 e modificar a chamada de `/run`:
 
-**Arquivo:** `supabase/functions/runninghub-webhook/index.ts`
-
-**Nova implementação:**
 ```typescript
-async function updateQueuePositions() {
-  // Uma única query que atualiza todas as posições de uma vez
-  const { error } = await supabase.rpc('update_queue_positions');
-  if (error) console.error('[Webhook] Error updating positions:', error);
-}
-```
+// REMOVER (linhas 262-272):
+// Step 3: Upload to RunningHub (they need their own file reference)
+const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {...});
+if (uploadResponse.error || !uploadResponse.data?.fileName) {...}
+console.log('[UpscalerV3] RunningHub file:', uploadResponse.data.fileName);
 
-**Nova Database Function (migration):**
-```sql
-CREATE OR REPLACE FUNCTION update_queue_positions()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-BEGIN
-  UPDATE upscaler_jobs AS uj
-  SET position = ranked.new_position
-  FROM (
-    SELECT id, ROW_NUMBER() OVER (ORDER BY created_at ASC) AS new_position
-    FROM upscaler_jobs
-    WHERE status = 'queued'
-  ) AS ranked
-  WHERE uj.id = ranked.id AND uj.status = 'queued';
-END;
-$$;
+// MANTER apenas a chamada de /run com imageUrl:
+const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
+  body: {
+    jobId: job.id,
+    imageUrl: urlData.publicUrl,  // Usar URL do Storage
+    // fileName: uploadResponse.data.fileName, // REMOVER
+    mode,
+    resolution,
+    creativityDenoise,
+    detailDenoise,
+    version: 'standard',
+    userId: null,
+    creditCost: 0
+  },
+});
 ```
 
 ---
 
-### 5. Remover Polling Redundante na Página de Pagamento
+### Fase 3: Edge Function - Aceitar imageUrl
 
-**Problema:** A página já usa Realtime (linhas 31-38), mas também tem um `setInterval` de 10 segundos (linha 45).
+**Arquivo:** `supabase/functions/runninghub-upscaler/index.ts`
 
-**Arquivo:** `src/pages/AguardandoPagamentoMusicos.tsx`
-
-**Solução:** Remover o polling ou aumentar para 60 segundos (fallback apenas)
+**Mudanças na função `handleRun` (linha 143+):**
 
 ```typescript
-// REMOVER ou MODIFICAR (linha 43-47):
-useEffect(() => {
-  if (!user?.id) return;
-  // ANTES: 10 segundos
-  // const interval = setInterval(() => { refetch(); }, 10000);
+async function handleRun(req: Request) {
+  // ...existing validation...
   
-  // DEPOIS: 60 segundos como fallback apenas
-  const interval = setInterval(() => { refetch(); }, 60000);
-  return () => clearInterval(interval);
-}, [user?.id, refetch]);
+  const { 
+    jobId, 
+    imageUrl,        // NOVO: URL da imagem no Storage
+    fileName,        // DEPRECADO: manter para compatibilidade temporária
+    detailDenoise,
+    resolution,
+    prompt,
+    version,
+    framingMode,
+    userId,
+    creditCost
+  } = await req.json();
+  
+  // Determinar qual usar: imageUrl (novo) ou fileName (legado)
+  let rhFileName = fileName;
+  
+  if (imageUrl && !fileName) {
+    // NOVO: Baixar imagem da URL e fazer upload para RunningHub
+    console.log('[RunningHub] Downloading image from:', imageUrl);
+    
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error('Failed to download image from storage');
+    }
+    
+    const imageBlob = await imageResponse.blob();
+    const imageName = imageUrl.split('/').pop() || 'image.png';
+    
+    const formData = new FormData();
+    formData.append('apiKey', RUNNINGHUB_API_KEY);
+    formData.append('fileType', 'image');
+    formData.append('file', imageBlob, imageName);
+    
+    const uploadResponse = await fetch('https://www.runninghub.ai/task/openapi/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    const uploadData = await uploadResponse.json();
+    if (uploadData.code !== 0) {
+      throw new Error('RunningHub upload failed: ' + uploadData.msg);
+    }
+    
+    rhFileName = uploadData.data.fileName;
+    console.log('[RunningHub] Uploaded to RH, fileName:', rhFileName);
+  }
+  
+  // Continuar com o processamento usando rhFileName...
+}
+```
+
+---
+
+### Fase 4: Remover Endpoint /upload (Opcional - Limpeza)
+
+Após migração completa, o endpoint `/upload` pode ser removido ou simplificado:
+
+```typescript
+if (path === 'upload') {
+  // DEPRECADO: Retornar erro informativo
+  return new Response(JSON.stringify({ 
+    error: 'Endpoint deprecated. Use direct storage upload + imageUrl.',
+    code: 'DEPRECATED'
+  }), {
+    status: 400,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
 ```
 
 ---
 
 ## Arquivos a Modificar
 
-| Arquivo | Tipo de Mudança | Prioridade |
-|---------|-----------------|------------|
-| `src/pages/UpscalerArcanoV3.tsx` | Migrar polling → Realtime | 🔴 CRÍTICA |
-| `src/pages/UpscalerRunpod.tsx` | Migrar polling → Realtime ou desativar | 🔴 CRÍTICA |
-| `src/pages/UpscalerArcanoTool.tsx` | Upload direto ao Storage | 🟠 ALTA |
-| `supabase/functions/runninghub-upscaler/index.ts` | Receber URL em vez de Base64 | 🟠 ALTA |
-| `supabase/functions/runninghub-webhook/index.ts` | Otimizar loop N+1 | 🟡 MÉDIA |
-| `src/pages/AguardandoPagamentoMusicos.tsx` | Aumentar intervalo de polling | 🟢 BAIXA |
+| Arquivo | Mudança | Prioridade |
+|---------|---------|------------|
+| `src/pages/UpscalerArcanoTool.tsx` | Upload direto Storage + enviar imageUrl | 🔴 CRÍTICA |
+| `src/pages/UpscalerArcanoV3.tsx` | Remover upload duplicado, usar imageUrl | 🔴 CRÍTICA |
+| `supabase/functions/runninghub-upscaler/index.ts` | Aceitar imageUrl, baixar internamente | 🔴 CRÍTICA |
 
 ---
 
-## Economia Estimada Após Correções
+## Economia Estimada
 
-| Problema | Custo Atual (2 dias) | Custo Após Correção |
-|----------|---------------------|---------------------|
-| Polling V3 bugado | ~$4-6 | $0 |
-| Polling Runpod | ~$2-4 | $0 |
-| Bandwidth Base64 | ~$3-5 | ~$1-2 |
-| Loop N+1 webhook | ~$1-2 | ~$0.10 |
-| Polling pagamento | ~$0.50-1 | ~$0.05 |
-| **TOTAL** | **~$17+** | **~$1-3** |
+| Problema | Custo Atual | Custo Após |
+|----------|-------------|------------|
+| Base64 UpscalerTool | ~$3-5/2dias | ~$0.50 |
+| Upload Duplo V3 | ~$2-4/2dias | $0 |
+| **TOTAL ADICIONAL** | **~$5-9/2dias** | **~$0.50** |
 
-**Economia projetada: 85-95% de redução no consumo de Cloud**
+**Combinado com correções anteriores (polling):**
+- Custo original: ~$17/2dias
+- Após correções de polling: ~$8-10/2dias
+- Após correções de upload: ~$1-3/2dias
 
----
-
-## Ordem de Implementação
-
-1. **Fase 1 (Emergencial):** Corrigir polling bugado V3 e Runpod
-2. **Fase 2 (Alto Impacto):** Migrar uploads para Storage direto
-3. **Fase 3 (Otimização):** Webhook batch update + polling pagamento
-4. **Fase 4 (Monitoramento):** Verificar métricas após 24h
+**Economia total projetada: 85-95%**
 
 ---
 
-## Decisão Necessária
+## Fluxo Otimizado Final
 
-Antes de implementar, preciso saber:
+```
+ANTES (caro):
+┌─────────────────────────────────────────────────────────────────┐
+│ Usuário → Base64 (+33%) → Edge Function → Decodifica → RunningHub │
+│           $$$  bandwidth    $$ compute                           │
+└─────────────────────────────────────────────────────────────────┘
 
-1. **UpscalerRunpod** está em uso ativo ou pode ser desativado/removido?
-2. **UpscalerArcanoV3** está em uso ou é apenas experimental?
+DEPOIS (econômico):
+┌─────────────────────────────────────────────────────────────────┐
+│ Usuário → Storage (binário) → Edge Function → fetch URL → RH    │
+│           GRÁTIS              $ mínimo                          │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-Se ambos forem experimentais/não-ativos, a correção mais rápida é simplesmente **desativar essas páginas** (remover rotas) enquanto mantemos apenas o `UpscalerArcanoTool.tsx` que já usa Realtime corretamente.
+---
+
+## Validação Pós-Implementação
+
+1. Testar upload no UpscalerArcanoTool
+2. Testar upload no UpscalerArcanoV3
+3. Verificar logs de Edge Function (devem mostrar "Downloading image from:")
+4. Monitorar consumo Cloud por 24h
+
