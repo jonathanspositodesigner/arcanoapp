@@ -131,25 +131,25 @@ const RunningHubBonusModal = ({ userId, onCreditsAdded }: RunningHubBonusModalPr
 
   return (
     <Dialog open={showModal} onOpenChange={setShowModal}>
-      <DialogContent className="sm:max-w-md bg-gradient-to-br from-background via-background to-emerald-500/10 border-emerald-500/20">
+      <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-purple-500/30">
         <div className="flex flex-col items-center text-center space-y-4 py-4">
           {/* Animated Gift Icon */}
           <div className="relative">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center animate-pulse">
-              <Gift className="w-10 h-10 text-emerald-500 animate-bounce" />
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-600/10 flex items-center justify-center animate-pulse">
+              <Gift className="w-10 h-10 text-purple-400 animate-bounce" />
             </div>
-            <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-sm font-bold text-black">
+            <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white">
               +250
             </div>
           </div>
 
           {/* Title */}
-          <h2 className="text-2xl font-bold text-foreground">
+          <h2 className="text-2xl font-bold text-white">
             Ganhe 250 créditos de IA na nossa plataforma!
           </h2>
 
           {/* Subtitle */}
-          <p className="text-muted-foreground text-sm">
+          <p className="text-purple-300 text-sm">
             Precisamos dessa ferramenta para processar suas imagens no Upscaler Arcano.
           </p>
 
@@ -158,29 +158,29 @@ const RunningHubBonusModal = ({ userId, onCreditsAdded }: RunningHubBonusModalPr
               {/* Benefits */}
               <div className="w-full space-y-2 text-left px-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-4 h-4 text-emerald-500" />
+                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-4 h-4 text-purple-400" />
                   </div>
-                  <span className="text-sm text-foreground">Conta gratuita no RunningHub</span>
+                  <span className="text-sm text-purple-200">Conta gratuita no RunningHub</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-4 h-4 text-emerald-500" />
+                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-4 h-4 text-purple-400" />
                   </div>
-                  <span className="text-sm text-foreground">250 créditos para usar no Upscaler</span>
+                  <span className="text-sm text-purple-200">250 créditos para usar no Upscaler</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-4 h-4 text-emerald-500" />
+                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-4 h-4 text-purple-400" />
                   </div>
-                  <span className="text-sm text-foreground">Processamento de imagens em alta qualidade</span>
+                  <span className="text-sm text-purple-200">Processamento de imagens em alta qualidade</span>
                 </div>
               </div>
 
               {/* CTA Button */}
               <Button
                 onClick={handleOpenRunningHub}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold py-6 text-lg shadow-lg shadow-emerald-500/30"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-6 text-lg shadow-lg shadow-purple-500/30"
               >
                 <ExternalLink className="w-5 h-5 mr-2" />
                 Criar conta no RunningHub
@@ -200,7 +200,7 @@ const RunningHubBonusModal = ({ userId, onCreditsAdded }: RunningHubBonusModalPr
                     stroke="currentColor"
                     strokeWidth="4"
                     fill="none"
-                    className="text-muted/20"
+                    className="text-purple-900/40"
                   />
                   <circle
                     cx="48"
@@ -209,24 +209,24 @@ const RunningHubBonusModal = ({ userId, onCreditsAdded }: RunningHubBonusModalPr
                     stroke="currentColor"
                     strokeWidth="4"
                     fill="none"
-                    className="text-emerald-500"
+                    className="text-purple-500"
                     strokeDasharray={276.46}
                     strokeDashoffset={276.46 * (1 - countdown / COUNTDOWN_SECONDS)}
                     strokeLinecap="round"
                     style={{ transition: "stroke-dashoffset 1s linear" }}
                   />
                 </svg>
-                <span className="absolute text-3xl font-bold text-emerald-500">{countdown}</span>
+                <span className="absolute text-3xl font-bold text-purple-400">{countdown}</span>
               </div>
 
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-purple-300">
                 Crie sua conta no RunningHub...
               </p>
 
               {/* Disabled Button */}
               <Button
                 disabled
-                className="w-full bg-gray-600 text-gray-400 font-semibold py-6 text-lg cursor-not-allowed"
+                className="w-full bg-purple-900/50 text-purple-400 font-semibold py-6 text-lg cursor-not-allowed border border-purple-500/20"
               >
                 Aguarde {countdown}s...
               </Button>
@@ -235,14 +235,14 @@ const RunningHubBonusModal = ({ userId, onCreditsAdded }: RunningHubBonusModalPr
 
           {modalState === "confirm" && (
             <>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-purple-300">
                 Criou sua conta no RunningHub?
               </p>
 
               {/* Confirm Button */}
               <Button
                 onClick={handleClaimBonus}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold py-6 text-lg shadow-lg shadow-emerald-500/30"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-6 text-lg shadow-lg shadow-purple-500/30"
               >
                 <Check className="w-5 h-5 mr-2" />
                 Já criei minha conta
@@ -252,7 +252,7 @@ const RunningHubBonusModal = ({ userId, onCreditsAdded }: RunningHubBonusModalPr
 
           {modalState === "processing" && (
             <>
-              <div className="flex items-center gap-2 text-emerald-500">
+              <div className="flex items-center gap-2 text-purple-400">
                 <Loader2 className="w-6 h-6 animate-spin" />
                 <span className="text-lg">Adicionando créditos...</span>
               </div>
@@ -263,7 +263,7 @@ const RunningHubBonusModal = ({ userId, onCreditsAdded }: RunningHubBonusModalPr
           {modalState !== "processing" && (
             <button
               onClick={handleDismiss}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
+              className="text-sm text-purple-400 hover:text-purple-200 transition-colors underline-offset-4 hover:underline"
             >
               Agora não
             </button>
