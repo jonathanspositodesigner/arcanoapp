@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Coins, Sparkles, Star, Zap, Wand2, Box, Shirt, PersonStanding, Clock, Video, Eraser, Image, Trash2, Monitor, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,16 +44,20 @@ const comingSoonTools = [
 const creditPlans = [
   { 
     credits: 1500, 
-    description: "~25 upscales Standard", 
-    price: "29,90", 
+    description: "~25 imagens", 
+    price: "29,90",
+    originalPrice: null,
+    savings: null,
     link: "#",
     icon: Coins,
     color: "from-purple-500 to-fuchsia-500"
   },
   { 
     credits: 4200, 
-    description: "~70 upscales Standard", 
-    price: "39,90", 
+    description: "~70 imagens", 
+    price: "39,90",
+    originalPrice: "49,90",
+    savings: "40%",
     link: "#", 
     popular: true,
     icon: Zap,
@@ -60,8 +65,10 @@ const creditPlans = [
   },
   { 
     credits: 10800, 
-    description: "~180 upscales Standard", 
-    price: "99,90", 
+    description: "~180 imagens", 
+    price: "99,90",
+    originalPrice: "149,90",
+    savings: "54%",
     link: "#", 
     bestValue: true,
     icon: Star,
@@ -71,6 +78,46 @@ const creditPlans = [
 
 const PlanosCreditos = () => {
   const navigate = useNavigate();
+
+  // Countdown timer - 47 minutes (persisted in localStorage)
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('planos-creditos-countdown');
+    if (saved) {
+      const remaining = parseInt(saved, 10) - Date.now();
+      if (remaining > 0) return remaining;
+    }
+    const initial = 47 * 60 * 1000; // 47 minutos
+    localStorage.setItem('planos-creditos-countdown', String(Date.now() + initial));
+    return initial;
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1000) {
+          const newTime = 47 * 60 * 1000;
+          localStorage.setItem('planos-creditos-countdown', String(Date.now() + newTime));
+          return newTime;
+        }
+        return prev - 1000;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return {
+      hours: hours.toString().padStart(2, '0'),
+      minutes: minutes.toString().padStart(2, '0'),
+      seconds: seconds.toString().padStart(2, '0')
+    };
+  };
+
+  const time = formatTime(timeLeft);
 
   const handleBack = () => {
     navigate(-1);
@@ -176,6 +223,27 @@ const PlanosCreditos = () => {
             </p>
           </div>
 
+          {/* Countdown Timer */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Clock className="w-5 h-5 text-red-400" />
+              <span className="text-red-400 font-medium">Essa oferta expira em</span>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <div className="bg-red-900/60 border border-red-500/40 rounded-lg px-4 py-2 min-w-[60px]">
+                <span className="text-2xl sm:text-3xl font-bold text-white">{time.hours}</span>
+              </div>
+              <span className="text-2xl font-bold text-red-400">:</span>
+              <div className="bg-red-900/60 border border-red-500/40 rounded-lg px-4 py-2 min-w-[60px]">
+                <span className="text-2xl sm:text-3xl font-bold text-white">{time.minutes}</span>
+              </div>
+              <span className="text-2xl font-bold text-red-400">:</span>
+              <div className="bg-red-900/60 border border-red-500/40 rounded-lg px-4 py-2 min-w-[60px]">
+                <span className="text-2xl sm:text-3xl font-bold text-white">{time.seconds}</span>
+              </div>
+            </div>
+          </div>
+
           {/* Plans Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {creditPlans.map((plan) => {
@@ -222,8 +290,20 @@ const PlanosCreditos = () => {
                     ♾️ Vitalício
                   </Badge>
 
+                  {/* Savings Badge */}
+                  {plan.savings && (
+                    <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/40 rounded-lg px-4 py-2 mb-4">
+                      <span className="text-green-400 font-bold text-sm">ECONOMIZE {plan.savings}</span>
+                    </div>
+                  )}
+
                   {/* Price */}
                   <div className="mb-4">
+                    {plan.originalPrice && (
+                      <div className="mb-1">
+                        <span className="text-sm text-purple-500 line-through">de R$ {plan.originalPrice}</span>
+                      </div>
+                    )}
                     <span className="text-sm text-purple-400">R$ </span>
                     <span className="text-2xl font-bold text-white">{plan.price}</span>
                   </div>
