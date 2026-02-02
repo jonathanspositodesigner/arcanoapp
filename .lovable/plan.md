@@ -1,127 +1,111 @@
 
 
-# Plano: Webhook Greenn para Recarga de Créditos Vitalícios
+# Plano: Integrar Créditos no webhook-greenn-artes
 
 ## Resumo
 
-Criar uma nova Edge Function `webhook-greenn-creditos` que processa compras de pacotes de créditos da Greenn e adiciona créditos **permanentes (lifetime)** à conta do usuário. Se o usuário não existir, a conta é criada automaticamente com a senha igual ao email (mesmo padrão dos outros webhooks).
+Modificar o `webhook-greenn-artes` para detectar produtos de créditos no início do processamento e tratá-los de forma especial, sem interferir no fluxo normal de artes.
 
-## Mapeamento de Produtos
+## Mapeamento de Produtos de Créditos
 
-| Product ID | Créditos | Pacote |
-|------------|----------|--------|
-| 156946 | +1.500 | R$ 29,90 |
-| 156948 | +4.200 | R$ 39,90 |
-| 156952 | +10.800 | R$ 99,90 |
+| Product ID | Créditos |
+|------------|----------|
+| 156946 | +1.500 |
+| 156948 | +4.200 |
+| 156952 | +10.800 |
 
-## Fluxo Principal
+## Mudanças Necessárias
+
+### Arquivo: `supabase/functions/webhook-greenn-artes/index.ts`
+
+**1. Adicionar constante de mapeamento de créditos (linha ~37)**
+```typescript
+// Mapeamento de produtos de CRÉDITOS
+const CREDITS_PRODUCT_MAPPING: Record<number, { amount: number; name: string }> = {
+  156946: { amount: 1500, name: 'Pacote +1.500 Créditos' },
+  156948: { amount: 4200, name: 'Pacote +4.200 Créditos' },
+  156952: { amount: 10800, name: 'Pacote +10.800 Créditos' }
+}
+```
+
+**2. Adicionar função `processCreditsWebhook` (~linha 385)**
+
+Nova função para processar compras de créditos:
+- Verificar blacklist
+- Criar usuário se não existe (email = senha)
+- Upsert profile
+- Chamar `add_lifetime_credits` RPC
+- Enviar email de boas-vindas com template específico para créditos
+- Atualizar log com sucesso
+
+**3. Modificar `processGreennArtesWebhook` (dentro do bloco `paid/approved`)**
+
+No início do bloco `if (status === 'paid' || status === 'approved')` (linha ~446), adicionar verificação:
+
+```typescript
+// VERIFICAR SE É PRODUTO DE CRÉDITOS
+const creditsProduct = productId ? CREDITS_PRODUCT_MAPPING[productId] : null
+if (creditsProduct) {
+  console.log(`   ├─ 🎫 PRODUTO DE CRÉDITOS DETECTADO: ${creditsProduct.amount} créditos`)
+  await processCreditsWebhook(supabase, payload, logId, requestId, creditsProduct)
+  return  // Não continuar para processamento de artes
+}
+```
+
+**4. Modificar logging na entrada (linha ~722)**
+
+Ajustar plataforma no log inicial para identificar créditos:
+```typescript
+platform: creditsProduct ? 'creditos' : (fromApp ? 'app' : 'artes-eventos')
+```
+
+## Fluxo de Decisão
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         GREENN CHECKOUT                             │
+│                    webhook-greenn-artes                             │
 └─────────────────────────────────────────────────────────────────────┘
                                   │
-                                  ▼ POST (webhook)
-┌─────────────────────────────────────────────────────────────────────┐
-│              webhook-greenn-creditos (Edge Function)                │
-│                                                                     │
-│   1. Recebe payload (< 100ms ACK)                                   │
-│   2. Log em webhook_logs com platform='creditos'                    │
-│   3. Background: processar créditos                                 │
-│      ├─ Mapeia product_id → quantidade de créditos                  │
-│      ├─ Busca usuário por email                                     │
-│      ├─ SE NÃO EXISTE: Cria conta (email = senha)                   │
-│      ├─ Upsert profile                                              │
-│      ├─ Chama add_lifetime_credits() RPC                            │
-│      ├─ Envia email de boas-vindas (com dados de acesso)            │
-│      └─ Atualiza log com resultado                                  │
-└─────────────────────────────────────────────────────────────────────┘
+                          ┌───────┴───────┐
+                          │ product_id em │
+                          │ CREDITS_MAP?  │
+                          └───────┬───────┘
+                                  │
+                     ┌────────────┴────────────┐
+                     │                         │
+                    SIM                       NÃO
+                     │                         │
+                     ▼                         ▼
+          ┌─────────────────┐      ┌─────────────────────┐
+          │ Processar como  │      │ Processar como      │
+          │ CRÉDITOS        │      │ ARTES (fluxo atual) │
+          │                 │      │                     │
+          │ - Criar/buscar  │      │ - Pack/Promoção     │
+          │   usuário       │      │ - user_pack_        │
+          │ - add_lifetime_ │      │   purchases         │
+          │   credits()     │      │                     │
+          │ - Email créditos│      │                     │
+          └─────────────────┘      └─────────────────────┘
 ```
 
-## Fluxo Detalhado
+## Email para Créditos
 
-### 1. Status `paid` / `approved`
-1. Verificar blacklist
-2. Mapear `product_id` para quantidade de créditos
-3. Buscar usuário por email (profiles → auth.users paginado)
-4. **Se não existe:** Criar usuário com `password: email`, `email_confirm: true`
-5. Upsert profile com `password_changed: false`
-6. Chamar `add_lifetime_credits(_user_id, _amount, _description)`
-7. Enviar email de boas-vindas com dados de acesso
-8. Atualizar `webhook_logs` com sucesso
+Template diferenciado:
+- Título: "🎫 Seus Créditos foram Adicionados!"
+- Corpo: quantidade de créditos + ferramentas disponíveis (Upscaler, Forja 3D, etc)
+- CTA: Link para página de ferramentas IA
 
-### 2. Status `refunded` / `chargeback`
-- Apenas logar o evento (créditos lifetime não são removidos)
-- Em caso de chargeback: adicionar email à blacklist
+## Vantagens desta Abordagem
 
-### 3. Outros status
-- Ignorar (`pending`, `waiting_payment`, etc.)
+1. **Sem duplicação de código**: Reutiliza toda a infraestrutura existente (logging, blacklist, criação de usuário, email)
+2. **Mesma URL**: Não precisa mudar nada na Greenn
+3. **Fácil manutenção**: Toda a lógica de webhook em um só lugar
+4. **Isolado**: O fluxo de créditos retorna cedo, não interfere em nada do fluxo de artes
+5. **Logs separados**: Platform = 'creditos' no webhook_logs
 
-## Arquivos a Criar/Modificar
+## Arquivos Modificados
 
 | Arquivo | Ação |
 |---------|------|
-| `supabase/functions/webhook-greenn-creditos/index.ts` | **CRIAR** |
-| `supabase/config.toml` | **MODIFICAR** - Adicionar `[functions.webhook-greenn-creditos]` |
-
----
-
-## Detalhes Técnicos
-
-### Estrutura do webhook-greenn-creditos
-
-```typescript
-// Mapeamento de produtos
-const PRODUCT_CREDITS: Record<number, number> = {
-  156946: 1500,   // Pacote +1.500
-  156948: 4200,   // Pacote +4.200  
-  156952: 10800   // Pacote +10.800
-}
-
-// Criação de usuário (mesmo padrão dos outros webhooks)
-const { data: newUser, error } = await supabase.auth.admin.createUser({
-  email,
-  password: email,        // Senha = email
-  email_confirm: true     // Já confirmado
-})
-
-// Upsert profile
-await supabase.from('profiles').upsert({
-  id: userId,
-  name: clientName,
-  phone: clientPhone,
-  email,
-  password_changed: false,  // Força troca de senha no primeiro acesso
-  updated_at: new Date().toISOString()
-}, { onConflict: 'id' })
-
-// Adicionar créditos lifetime
-await supabase.rpc('add_lifetime_credits', {
-  _user_id: userId,
-  _amount: creditAmount,
-  _description: `Compra pacote +${creditAmount} créditos`
-})
-```
-
-### Email de Boas-Vindas
-
-O email incluirá:
-- Dados de acesso (email e senha temporária = email)
-- Aviso para trocar senha no primeiro acesso
-- Quantidade de créditos adquiridos
-- Botão CTA para acessar a plataforma
-
-### Padrões Seguidos
-- **Fast Acknowledgment**: Retorna 200 OK imediatamente (< 100ms)
-- **Background Processing**: `EdgeRuntime.waitUntil()` para tarefas pesadas
-- **Logging**: Tabela `webhook_logs` com `platform='creditos'`
-- **Blacklist**: Verifica antes de processar, adiciona em chargebacks
-- **Criação de Conta**: Email = senha, `password_changed: false`
-
-### URL do Webhook para Greenn
-
-Após deploy:
-```
-https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-greenn-creditos
-```
+| `supabase/functions/webhook-greenn-artes/index.ts` | **MODIFICAR** |
 
