@@ -1,282 +1,193 @@
 
 
-# Plano Completo: Otimização de Upload de Imagens e Redução de Consumo Cloud
+# Plano de Eliminação Total de Custos Cloud
 
-## Diagnóstico Final
+## Diagnóstico Atual
 
 ### 🚨 Problemas Críticos Identificados
 
-| # | Problema | Arquivo(s) | Status Atual | Impacto |
-|---|----------|------------|--------------|---------|
-| 1 | **Upload Base64 para Edge Function** | `UpscalerArcanoTool.tsx` | ATIVO | ~$3-5 (bandwidth + compute) |
-| 2 | **Upload DUPLO no V3** | `UpscalerArcanoV3.tsx` | ATIVO | ~$2-4 (bandwidth duplicado) |
-| 3 | **Runpod Upscaler Base64** | `runpod-upscaler/index.ts` | DESATIVADO | $0 (página desabilitada) |
-
-### ✅ Já Corrigidos (sessão anterior)
-- Polling V3 → Migrado para Realtime
-- Polling Runpod → Página desativada
-- Loop N+1 Webhook → Usa `update_queue_positions()`
-- Polling Pagamento → Removido completamente
-
-### ✅ Já Otimizados
-- `AdminUploadArtes.tsx` → Usa `uploadToStorage` + `optimizeImage`
-- `useStorageUpload.ts` → Upload binário direto (sem Edge Function)
-- `MudarPose.tsx`, `MudarRoupa.tsx`, `ForjaSelos3D.tsx` → Apenas tutoriais YouTube (sem uploads)
+| # | Problema | Impacto Estimado | Status |
+|---|----------|------------------|--------|
+| 1 | **Watchdog Email Marketing (Frontend)** | ~$2-3/dia | REMOVER - você não usa |
+| 2 | **Watchdog Importação CSV (Frontend)** | ~$1-2/dia | REMOVER - você não usa |
+| 3 | **Cron Remarketing (a cada 10min)** | ~$3-5/dia | REMOVER - função não existe |
+| 4 | **process-sending-campaigns (Edge)** | ~$1-2/dia | REMOVER - você não usa |
+| 5 | **Push Notification Loop Sequencial** | ~$1-2/por envio | OTIMIZAR - você usa |
+| 6 | **Upscaler Double Download** | ~$0.50/upscale | OTIMIZAR - você usa |
 
 ---
 
 ## Correções a Implementar
 
-### Fase 1: UpscalerArcanoTool - Eliminar Base64
+### FASE 1: Remoção Completa (Economia Imediata)
 
-**Problema Atual:**
-```
-Usuário → Compressão local (bom) → Base64 (ruim: +33%) → Edge Function → RunningHub
-```
+#### 1.1 Desativar Watchdog de Email Marketing
+**Arquivo:** `src/hooks/useEmailCampaignProgress.ts`
 
-**Solução:**
-```
-Usuário → Compressão local → Upload direto Storage → URL para Edge Function → RunningHub
-```
+**Ação:** Remover completamente o `setInterval` de 15 segundos que verifica se campanhas estão "travadas" e invoca a Edge Function.
 
-**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
-
-**Mudanças na função `processImage` (linhas 420-460):**
-
+**Código a remover (linhas 87-99):**
 ```typescript
-// REMOVER (linha 432-454):
-const base64Data = inputImage.split(',')[1];
-const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {
-  body: { imageBase64: base64Data, fileName: inputFileName || 'image.png' },
-});
-// ... código de tratamento de erro do upload
-
-// SUBSTITUIR POR:
-// 1. Converter base64 para blob
-const base64Data = inputImage.split(',')[1];
-const binaryStr = atob(base64Data);
-const bytes = new Uint8Array(binaryStr.length);
-for (let i = 0; i < binaryStr.length; i++) {
-  bytes[i] = binaryStr.charCodeAt(i);
-}
-
-const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
-const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 
-                 ext === 'webp' ? 'image/webp' : 'image/png';
-const blob = new Blob([bytes], { type: mimeType });
-const storagePath = `upscaler/${job.id}.${ext}`;
-
-// 2. Upload direto ao Storage (GRÁTIS)
-const { error: storageError } = await supabase.storage
-  .from('artes-cloudinary')
-  .upload(storagePath, blob, { contentType: mimeType, upsert: true });
-
-if (storageError) {
-  throw new Error('Erro no upload: ' + storageError.message);
-}
-
-// 3. Obter URL pública
-const { data: urlData } = supabase.storage
-  .from('artes-cloudinary')
-  .getPublicUrl(storagePath);
-
-console.log('[Upscaler] Image uploaded to storage:', urlData.publicUrl);
+// REMOVER TODO ESTE BLOCO:
+watchdogIntervalRef.current = setInterval(() => {
+  if (activeCampaign && activeCampaign.status === 'sending' && !activeCampaign.is_paused) {
+    const timeSinceLastUpdate = Date.now() - lastUpdateRef.current;
+    if (timeSinceLastUpdate > 45000) {
+      triggerRecovery(activeCampaign.id);
+      lastUpdateRef.current = Date.now();
+    }
+  }
+}, 15000);
 ```
 
-**Mudança na chamada de `/run` (linha 464-477):**
+#### 1.2 Desativar Watchdog de Importação CSV
+**Arquivo:** `src/hooks/useImportProgress.ts`
+
+**Ação:** Remover completamente o watchdog de 15 segundos que reinvoca `process-import-job`.
+
+**Código a remover (linhas 194-201):**
 ```typescript
-// ADICIONAR imageUrl ao body:
-const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
-  body: {
-    jobId: job.id,
-    imageUrl: urlData.publicUrl,  // NOVO: URL em vez de fileName
-    // fileName removido - não mais necessário
-    detailDenoise: isLongeMode ? null : detailDenoise,
-    resolution: resolution === '4k' ? 4096 : 2048,
-    prompt: isLongeMode ? null : getFinalPrompt(),
-    version: version,
-    framingMode: isLongeMode ? 'longe' : 'perto',
-    userId: user.id,
-    creditCost: creditCost,
-  },
-});
+// REMOVER TODO ESTE BLOCO:
+const initialCheck = setTimeout(() => {
+  checkAndReconnect(importProgress.jobId!);
+}, 5000);
+
+watchdogRef.current = setInterval(() => {
+  checkAndReconnect(importProgress.jobId!);
+}, WATCHDOG_INTERVAL_MS);
 ```
+
+#### 1.3 Desativar Cron Job de Remarketing
+**Novo arquivo SQL a executar:** Desagendar o job que roda a cada 10 minutos e chama uma função que não existe.
+
+```sql
+SELECT cron.unschedule('process-remarketing-emails-job');
+```
+
+#### 1.4 Remover Edge Function de Campanhas
+**Arquivo:** `supabase/functions/process-sending-campaigns/` (pasta inteira)
+
+**Ação:** Deletar a Edge Function que verifica campanhas "travadas" - você não usa email marketing.
 
 ---
 
-### Fase 2: UpscalerArcanoV3 - Remover Upload Duplicado
+### FASE 2: Otimização de Push Notifications
 
-**Problema Atual (linhas 232-265):**
+#### 2.1 Processamento em Lotes (Batch)
+**Arquivo:** `supabase/functions/send-push-notification/index.ts`
+
+**Problema atual (linhas 344-364):** Loop sequencial - processa 1 subscriber por vez.
+
+**Solução:** Processar em lotes paralelos de 10 usando `Promise.all`.
+
+**Código atual:**
 ```typescript
-// Passo 1: Upload para Storage (CORRETO)
-const { error: uploadError } = await supabase.storage.from('artes-cloudinary').upload(...);
-const { data: urlData } = supabase.storage.from('artes-cloudinary').getPublicUrl(...);
-
-// Passo 2: Upload DUPLICADO para Edge Function (ERRADO - remove!)
-const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {
-  body: { imageBase64: base64Data, fileName: inputFileName || 'image.png' },
-});
+for (const sub of subscriptions) {
+  const result = await sendPushNotification(...);
+  // ...
+}
 ```
 
-**Solução:** Remover linhas 263-271 e modificar a chamada de `/run`:
-
+**Novo código:**
 ```typescript
-// REMOVER (linhas 262-272):
-// Step 3: Upload to RunningHub (they need their own file reference)
-const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {...});
-if (uploadResponse.error || !uploadResponse.data?.fileName) {...}
-console.log('[UpscalerV3] RunningHub file:', uploadResponse.data.fileName);
-
-// MANTER apenas a chamada de /run com imageUrl:
-const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
-  body: {
-    jobId: job.id,
-    imageUrl: urlData.publicUrl,  // Usar URL do Storage
-    // fileName: uploadResponse.data.fileName, // REMOVER
-    mode,
-    resolution,
-    creativityDenoise,
-    detailDenoise,
-    version: 'standard',
-    userId: null,
-    creditCost: 0
-  },
-});
+// Processar em lotes de 10 para evitar timeout
+const BATCH_SIZE = 10;
+for (let i = 0; i < subscriptions.length; i += BATCH_SIZE) {
+  const batch = subscriptions.slice(i, i + BATCH_SIZE);
+  const results = await Promise.all(
+    batch.map(sub => sendPushNotification(
+      { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
+      notificationPayload,
+      VAPID_PUBLIC_KEY,
+      VAPID_PRIVATE_KEY,
+      "mailto:contato@voxvisual.com"
+    ))
+  );
+  
+  for (let j = 0; j < results.length; j++) {
+    const result = results[j];
+    const sub = batch[j];
+    if (result.success) {
+      sentCount++;
+    } else {
+      failedCount++;
+      if (result.statusCode === 404 || result.statusCode === 410) {
+        expiredEndpoints.push(sub.endpoint);
+      }
+    }
+  }
+}
 ```
+
+**Economia:** Reduz tempo de execução em ~80% (de 100s para ~20s para 100 subscribers).
 
 ---
 
-### Fase 3: Edge Function - Aceitar imageUrl
+### FASE 3: Otimização do Upscaler
 
+#### 3.1 Eliminar Double Download na Edge Function
 **Arquivo:** `supabase/functions/runninghub-upscaler/index.ts`
 
-**Mudanças na função `handleRun` (linha 143+):**
+**Problema atual:** A Edge Function baixa a imagem do Supabase Storage e faz upload para o RunningHub. Isso consome bandwidth de entrada E saída.
 
-```typescript
-async function handleRun(req: Request) {
-  // ...existing validation...
-  
-  const { 
-    jobId, 
-    imageUrl,        // NOVO: URL da imagem no Storage
-    fileName,        // DEPRECADO: manter para compatibilidade temporária
-    detailDenoise,
-    resolution,
-    prompt,
-    version,
-    framingMode,
-    userId,
-    creditCost
-  } = await req.json();
-  
-  // Determinar qual usar: imageUrl (novo) ou fileName (legado)
-  let rhFileName = fileName;
-  
-  if (imageUrl && !fileName) {
-    // NOVO: Baixar imagem da URL e fazer upload para RunningHub
-    console.log('[RunningHub] Downloading image from:', imageUrl);
-    
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      throw new Error('Failed to download image from storage');
-    }
-    
-    const imageBlob = await imageResponse.blob();
-    const imageName = imageUrl.split('/').pop() || 'image.png';
-    
-    const formData = new FormData();
-    formData.append('apiKey', RUNNINGHUB_API_KEY);
-    formData.append('fileType', 'image');
-    formData.append('file', imageBlob, imageName);
-    
-    const uploadResponse = await fetch('https://www.runninghub.ai/task/openapi/upload', {
-      method: 'POST',
-      body: formData,
-    });
-    
-    const uploadData = await uploadResponse.json();
-    if (uploadData.code !== 0) {
-      throw new Error('RunningHub upload failed: ' + uploadData.msg);
-    }
-    
-    rhFileName = uploadData.data.fileName;
-    console.log('[RunningHub] Uploaded to RH, fileName:', rhFileName);
-  }
-  
-  // Continuar com o processamento usando rhFileName...
-}
-```
+**Solução alternativa:** Verificar se o RunningHub aceita URL direta. Se sim, passar apenas a URL pública sem baixar.
 
----
-
-### Fase 4: Remover Endpoint /upload (Opcional - Limpeza)
-
-Após migração completa, o endpoint `/upload` pode ser removido ou simplificado:
-
-```typescript
-if (path === 'upload') {
-  // DEPRECADO: Retornar erro informativo
-  return new Response(JSON.stringify({ 
-    error: 'Endpoint deprecated. Use direct storage upload + imageUrl.',
-    code: 'DEPRECATED'
-  }), {
-    status: 400,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
-```
+**Investigação necessária:** Preciso verificar se a API do RunningHub pode aceitar uma URL de imagem em vez de um arquivo.
 
 ---
 
 ## Arquivos a Modificar
 
-| Arquivo | Mudança | Prioridade |
-|---------|---------|------------|
-| `src/pages/UpscalerArcanoTool.tsx` | Upload direto Storage + enviar imageUrl | 🔴 CRÍTICA |
-| `src/pages/UpscalerArcanoV3.tsx` | Remover upload duplicado, usar imageUrl | 🔴 CRÍTICA |
-| `supabase/functions/runninghub-upscaler/index.ts` | Aceitar imageUrl, baixar internamente | 🔴 CRÍTICA |
+| Arquivo | Ação | Prioridade |
+|---------|------|------------|
+| `src/hooks/useEmailCampaignProgress.ts` | Remover watchdog | CRÍTICA |
+| `src/hooks/useImportProgress.ts` | Remover watchdog | CRÍTICA |
+| `supabase/functions/process-sending-campaigns/` | DELETAR pasta | CRÍTICA |
+| SQL Query | Desagendar cron job | CRÍTICA |
+| `supabase/functions/send-push-notification/index.ts` | Batch processing | ALTA |
 
 ---
 
-## Economia Estimada
+## Economia Projetada
 
-| Problema | Custo Atual | Custo Após |
-|----------|-------------|------------|
-| Base64 UpscalerTool | ~$3-5/2dias | ~$0.50 |
-| Upload Duplo V3 | ~$2-4/2dias | $0 |
-| **TOTAL ADICIONAL** | **~$5-9/2dias** | **~$0.50** |
+| Problema | Custo Atual/dia | Custo Após |
+|----------|-----------------|------------|
+| Watchdog Email (não usa) | ~$2-3 | $0 |
+| Watchdog Import (não usa) | ~$1-2 | $0 |
+| Cron Remarketing (não existe) | ~$3-5 | $0 |
+| process-sending-campaigns | ~$1-2 | $0 |
+| Push sequencial | ~$1-2/envio | ~$0.20/envio |
+| **TOTAL** | **~$8-14/dia** | **~$0.50/dia** |
 
-**Combinado com correções anteriores (polling):**
-- Custo original: ~$17/2dias
-- Após correções de polling: ~$8-10/2dias
-- Após correções de upload: ~$1-3/2dias
-
-**Economia total projetada: 85-95%**
+**Economia mensal estimada: $200-400**
 
 ---
 
-## Fluxo Otimizado Final
+## Resumo Visual
 
 ```
-ANTES (caro):
-┌─────────────────────────────────────────────────────────────────┐
-│ Usuário → Base64 (+33%) → Edge Function → Decodifica → RunningHub │
-│           $$$  bandwidth    $$ compute                           │
-└─────────────────────────────────────────────────────────────────┘
+ANTES (Sangria de Dinheiro):
+┌─────────────────────────────────────────────────────────┐
+│ Cron 10min → Função inexistente → Erro 404 → $$$       │
+│ Watchdog 15s → Invoca Edge Function → $$$               │
+│ Push 1 por vez → Timeout longo → $$$                    │
+└─────────────────────────────────────────────────────────┘
 
-DEPOIS (econômico):
-┌─────────────────────────────────────────────────────────────────┐
-│ Usuário → Storage (binário) → Edge Function → fetch URL → RH    │
-│           GRÁTIS              $ mínimo                          │
-└─────────────────────────────────────────────────────────────────┘
+DEPOIS (Custo Mínimo):
+┌─────────────────────────────────────────────────────────┐
+│ Cron removido → $0                                      │
+│ Watchdogs removidos → $0                                │
+│ Push em lote → Execução 5x mais rápida → $              │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Validação Pós-Implementação
+## Ordem de Implementação
 
-1. Testar upload no UpscalerArcanoTool
-2. Testar upload no UpscalerArcanoV3
-3. Verificar logs de Edge Function (devem mostrar "Downloading image from:")
-4. Monitorar consumo Cloud por 24h
+1. **Imediato:** Remover watchdogs (useEmailCampaignProgress, useImportProgress)
+2. **Imediato:** Desagendar cron job de remarketing
+3. **Imediato:** Deletar process-sending-campaigns
+4. **Alta prioridade:** Otimizar send-push-notification com batch
+5. **Monitorar:** Verificar consumo após 24h
 
