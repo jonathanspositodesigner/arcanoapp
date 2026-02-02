@@ -88,10 +88,11 @@ const RunningHubBonusModal = ({ userId, onCreditsAdded }: RunningHubBonusModalPr
 
     try {
       // Add credits
-      const { error: rpcError } = await supabase.rpc("add_upscaler_credits", {
+      // Usar add_lifetime_credits para créditos vitalícios
+      const { error: rpcError } = await supabase.rpc("add_lifetime_credits", {
         _user_id: userId,
         _amount: BONUS_CREDITS,
-        _description: "Bônus RunningHub - Criação de conta",
+        _description: "Bônus RunningHub - Créditos vitalícios",
       });
 
       if (rpcError) {

@@ -15,13 +15,20 @@ interface Transaction {
   created_at: string;
 }
 
+interface CreditsBreakdown {
+  total: number;
+  monthly: number;
+  lifetime: number;
+}
+
 interface CreditsCardProps {
   credits: number;
   creditsLoading: boolean;
   userId: string | undefined;
+  breakdown?: CreditsBreakdown;
 }
 
-export const CreditsCard = ({ credits, creditsLoading, userId }: CreditsCardProps) => {
+export const CreditsCard = ({ credits, creditsLoading, userId, breakdown }: CreditsCardProps) => {
   const navigate = useNavigate();
   const [latestTransaction, setLatestTransaction] = useState<Transaction | null>(null);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
@@ -61,20 +68,38 @@ export const CreditsCard = ({ credits, creditsLoading, userId }: CreditsCardProp
     return format(new Date(dateString), "dd/MM HH:mm", { locale: ptBR });
   };
 
+  const hasBreakdown = breakdown && (breakdown.monthly > 0 || breakdown.lifetime > 0);
+
   return (
     <Card className="p-6 bg-[#1A0A2E] border-purple-500/20">
       <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
         <Coins className="h-5 w-5 text-yellow-400" />
-        Créditos Upscaler
+        Créditos de IA
       </h2>
       
       {/* Current Balance */}
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-purple-300">Saldo atual</p>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-purple-300">Saldo total</p>
         <Badge className="bg-purple-600 text-white text-lg px-4 py-1">
           {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
         </Badge>
       </div>
+
+      {/* Breakdown (if has both types) */}
+      {hasBreakdown && !creditsLoading && (
+        <div className="flex flex-wrap gap-2 mb-4 text-xs">
+          {breakdown.monthly > 0 && (
+            <span className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+              📅 {breakdown.monthly.toLocaleString('pt-BR')} mensais
+            </span>
+          )}
+          {breakdown.lifetime > 0 && (
+            <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">
+              ♾️ {breakdown.lifetime.toLocaleString('pt-BR')} vitalícios
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Latest Transaction */}
       <div className="border-t border-purple-500/20 pt-4">
