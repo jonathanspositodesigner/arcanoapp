@@ -47,7 +47,7 @@ const creditPlans = [
     description: "~25 imagens", 
     price: "29,90",
     originalPrice: null,
-    pricePerImage: "1,20",
+    savings: null,
     link: "#",
     icon: Coins,
     color: "from-purple-500 to-fuchsia-500"
@@ -57,7 +57,7 @@ const creditPlans = [
     description: "~70 imagens", 
     price: "39,90",
     originalPrice: "49,90",
-    pricePerImage: "0,57",
+    savings: "52",
     link: "#", 
     popular: true,
     icon: Zap,
@@ -68,7 +68,7 @@ const creditPlans = [
     description: "~180 imagens", 
     price: "99,90",
     originalPrice: "149,90",
-    pricePerImage: "0,55",
+    savings: "54",
     link: "#", 
     bestValue: true,
     icon: Star,
@@ -223,10 +223,10 @@ const PlanosCreditos = () => {
             </p>
 
             {/* Compact Countdown Timer */}
-            <div className="inline-flex items-center gap-2 bg-purple-900/30 border border-purple-500/20 rounded-full px-4 py-2">
-              <Clock className="w-4 h-4 text-purple-400" />
-              <span className="text-purple-300 text-sm">Oferta expira em</span>
-              <span className="text-white font-mono font-medium text-sm">
+            <div className="inline-flex items-center gap-2 bg-red-900/30 border border-red-500/30 rounded-full px-4 py-2">
+              <Clock className="w-4 h-4 text-red-400" />
+              <span className="text-red-300 text-sm">Oferta expira em</span>
+              <span className="text-red-100 font-mono font-medium text-sm">
                 {time.hours}:{time.minutes}:{time.seconds}
               </span>
             </div>
@@ -273,11 +273,13 @@ const PlanosCreditos = () => {
                     {plan.description}
                   </p>
 
-                  {/* Price per Image Badge */}
-                  <Badge className="bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs mb-2 gap-1">
-                    <Tag className="w-3 h-3" />
-                    R$ {plan.pricePerImage}/imagem
-                  </Badge>
+                  {/* Savings Badge */}
+                  {plan.savings && (
+                    <Badge className="bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs mb-2 gap-1">
+                      <Tag className="w-3 h-3" />
+                      Economize {plan.savings}%
+                    </Badge>
+                  )}
 
                   {/* Lifetime Badge */}
                   <Badge variant="outline" className="bg-green-500/10 border-green-500/30 text-green-400 text-xs mb-3">
