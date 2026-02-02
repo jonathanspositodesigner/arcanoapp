@@ -132,7 +132,7 @@ const Planos2 = () => {
     }, {
       name: "IA Unlimited",
       price: "119,90",
-      originalPrice: "149,90",
+      originalPrice: "189,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "Créditos Ilimitados",
@@ -225,7 +225,7 @@ const Planos2 = () => {
     }, {
     name: "IA Unlimited",
       price: "99,90",
-      originalPrice: "149,90",
+      originalPrice: "189,90",
       perMonth: true,
       yearlyTotal: "1198,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
