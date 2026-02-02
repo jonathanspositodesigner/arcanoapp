@@ -269,7 +269,7 @@ const Planos = () => {
                   </p>
                   <div className="flex items-center gap-2 text-sm">
                     <Coins className="w-4 h-4 text-yellow-400" />
-                    <span className="text-purple-200">{t('planos.features.bonusCredits900')}</span>
+                    <span className="text-purple-200">{t('features.bonusCredits900', { ns: 'plans' })}</span>
                   </div>
                 </div>
               )}
@@ -285,7 +285,7 @@ const Planos = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Coins className="w-4 h-4 text-yellow-400" />
-                    <span className="text-purple-200">{t('planos.features.bonusCredits1800')}</span>
+                    <span className="text-purple-200">{t('features.bonusCredits1800', { ns: 'plans' })}</span>
                   </div>
                 </div>
               )}
