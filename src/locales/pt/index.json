@@ -69,6 +69,7 @@
     "changeEmail": "Trocar",
     "emailNotFoundSignup": "E-mail não encontrado. Crie uma conta!",
     "emailRequired": "Digite seu e-mail",
-    "forgotPassword": "Esqueceu sua senha?"
+    "forgotPassword": "Esqueceu sua senha?",
+    "browseWithoutLogin": "Navegar sem login"
   }
 }
