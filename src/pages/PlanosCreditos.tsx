@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Coins, Sparkles, Star, Zap, Wand2, Box, Shirt, PersonStanding, Clock, Video, Eraser, Image, Trash2, Monitor, Music, Tag } from "lucide-react";
+import { Coins, Sparkles, Star, Zap, Wand2, Box, Shirt, PersonStanding, Clock, Video, Eraser, Image, Trash2, Monitor, Music, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import ToolsHeader from "@/components/ToolsHeader";
 
 const availableTools = [
   {
@@ -131,22 +132,11 @@ const PlanosCreditos = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#0D0221]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0D0221]/95 backdrop-blur-lg border-b border-purple-500/20">
-        <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBack}
-            className="text-purple-300 hover:text-white hover:bg-purple-500/20"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Comprar Créditos
-          </h1>
-        </div>
-      </header>
+      <ToolsHeader
+        title="Comprar Créditos"
+        onBack={handleBack}
+        showBackButton={true}
+      />
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8 space-y-12">
