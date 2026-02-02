@@ -1,58 +1,76 @@
 
+# Plano: Corrigir Erro de RLS no Upload do Upscaler Arcano
 
-# Plano: Banner de Promoção na Página de Ferramentas IA
+## Problema Identificado
 
-## Objetivo
-Adicionar uma tarja promocional abaixo do header na página `/ferramentas-ia-aplicativo` seguindo o estilo da imagem de referência (fundo rosa/magenta) com:
-- Badge "OFERTA LIMITADA" no início
-- Texto: "comece agora mesmo a usar nossas ferramentas de ia com 30% de desconto"
-- Opção de fechar (X)
+O erro "new row violates row-level security policy" ocorre porque:
+
+1. O bucket de storage `artes-cloudinary` só permite **admins** fazerem upload (INSERT)
+2. O Upscaler Arcano Tool tenta fazer upload de imagens para `artes-cloudinary/upscaler/` com usuários autenticados normais
+3. Como o usuário não é admin, o upload falha com erro de RLS
+
+### Política Atual (Restritiva)
+```sql
+-- Apenas admins podem fazer upload
+CREATE POLICY "Admins can upload to artes-cloudinary"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'artes-cloudinary' 
+  AND has_role(auth.uid(), 'admin'::app_role)
+);
+```
 
 ---
 
-## Mudanças Planejadas
+## Solução Proposta
 
-### 1. Criar Componente `PromoToolsBanner`
-**Arquivo:** `src/components/PromoToolsBanner.tsx` (novo)
+Adicionar uma nova política RLS que permite usuários autenticados fazerem upload **apenas na pasta `upscaler/`** do bucket `artes-cloudinary`.
 
-Estrutura do componente:
-- Fundo com gradiente rosa/magenta similar à imagem de referência
-- Badge destacado com ícone de tag e texto "OFERTA LIMITADA"
-- Texto promocional à direita do badge
-- Botão X para fechar o banner
-- Responsivo para mobile e desktop
-- Efeito shimmer animado (igual ao PromoNatalBanner)
+### Migração SQL
 
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│ [Tag] OFERTA LIMITADA   comece agora mesmo a usar nossas...  30% OFF  X │
-└─────────────────────────────────────────────────────────────────────────┘
+```sql
+-- Permitir usuários autenticados fazer upload na pasta upscaler/
+CREATE POLICY "Authenticated users can upload to upscaler folder"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'artes-cloudinary' 
+  AND (storage.foldername(name))[1] = 'upscaler'
+);
 ```
 
-### 2. Integrar na Página `FerramentasIAAplicativo`
-**Arquivo:** `src/pages/FerramentasIAAplicativo.tsx`
+Esta política:
+- Aplica-se apenas a usuários **autenticados**
+- Permite upload **apenas** na pasta `upscaler/`
+- Não afeta outras pastas do bucket (admin-only)
+- Mantém a segurança do restante do bucket
 
-- Importar o novo componente `PromoToolsBanner`
-- Inserir logo abaixo do `<ToolsHeader>`
-- O banner será exibido apenas nesta página específica
+---
+
+## Arquivos a Modificar
+
+| Arquivo | Ação |
+|---------|------|
+| Nova migração SQL | Criar política de storage para pasta upscaler |
 
 ---
 
 ## Detalhes Técnicos
 
-### Estilo Visual
-- **Fundo:** Gradiente rosa/magenta (`from-pink-600 via-pink-500 to-pink-600`)
-- **Badge:** Fundo escuro semi-transparente com borda, ícone de tag (Lucide `Tag`)
-- **Texto:** Branco com peso médio
-- **Botão fechar:** Ícone X com hover state
+### Fluxo Atual do Upscaler
+1. Frontend cria job em `upscaler_jobs` ✅
+2. Frontend faz upload da imagem para `artes-cloudinary/upscaler/{job.id}.ext` ❌ **FALHA AQUI**
+3. Edge function processa o job com RunningHub
+4. Webhook atualiza o resultado
 
-### Comportamento
-- Banner pode ser fechado (estado local com `useState`)
-- Não persiste após refresh (fecha temporariamente na sessão)
-- Layout responsivo:
-  - Desktop: Linha única centralizada
-  - Mobile: Duas linhas (badge em cima, texto embaixo)
+### Após a Correção
+O passo 2 funcionará porque usuários autenticados terão permissão de upload na pasta específica `upscaler/`.
 
-### Animação
-- Efeito shimmer sutil no background (reutilizando estilo do PromoNatalBanner)
+---
 
+## Considerações de Segurança
+
+- A nova política é **restritiva** - só permite uploads na pasta `upscaler/`
+- Outras pastas do bucket continuam protegidas (apenas admins)
+- Usuários anônimos (não logados) não podem fazer upload
+- O path inclui o job ID, dificultando conflitos/abuso
