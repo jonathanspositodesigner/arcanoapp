@@ -9,6 +9,9 @@ verify_jwt = false
 [functions.webhook-greenn-musicos]
 verify_jwt = false
 
+[functions.webhook-greenn-creditos]
+verify_jwt = false
+
 [functions.create-partner]
 verify_jwt = false
 
