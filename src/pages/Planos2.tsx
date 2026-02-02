@@ -159,6 +159,7 @@ const Planos2 = () => {
       yearlyTotal: "238,80",
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/RaLcc5",
       credits: "1.800 créditos de IA",
+      images: 30,
       features: [
         { text: t('planos.features.10PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -180,6 +181,7 @@ const Planos2 = () => {
       yearlyTotal: "406,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
       credits: "5.000 créditos de IA",
+      images: 83,
       savings: "R$72",
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
@@ -203,6 +205,7 @@ const Planos2 = () => {
       yearlyTotal: "478,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "10.000 créditos de IA",
+      images: 166,
       savings: "R$120",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
@@ -406,14 +409,8 @@ const Planos2 = () => {
                   <Sparkles className="w-2.5 h-2.5" />
                   {(plan as any).credits}/mês
                 </span>
-                {plan.name === "Starter" && (
-                  <span className="text-[9px] text-purple-400 mt-0.5">= 30 imagens/mês</span>
-                )}
-                {plan.name === "Pro" && (
-                  <span className="text-[9px] text-purple-400 mt-0.5">= 100 imagens/mês</span>
-                )}
-                {plan.name === "Ultimate" && (
-                  <span className="text-[9px] text-purple-400 mt-0.5">= 200 imagens/mês</span>
+                {(plan as any).images && (
+                  <span className="text-[9px] text-purple-400 mt-0.5">= {(plan as any).images} imagens/mês</span>
                 )}
               </div>
 
