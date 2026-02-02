@@ -13,21 +13,62 @@ Deno.serve(async (req) => {
   try {
     const { user_id, email, device_fingerprint, device_name } = await req.json();
 
-    if (!user_id || !email || !device_fingerprint) {
+    // ========== INPUT VALIDATION ==========
+    // Validate user_id is a valid UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!user_id || typeof user_id !== 'string' || !uuidRegex.test(user_id)) {
       return new Response(
-        JSON.stringify({ error: "user_id, email e device_fingerprint são obrigatórios" }),
+        JSON.stringify({ error: "user_id inválido" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Mapeamento de emails alternativos para 2FA
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || typeof email !== 'string' || !emailRegex.test(email) || email.length > 320) {
+      return new Response(
+        JSON.stringify({ error: "Email inválido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate device_fingerprint (should be a reasonable string)
+    if (!device_fingerprint || typeof device_fingerprint !== 'string' || 
+        device_fingerprint.length < 10 || device_fingerprint.length > 500) {
+      return new Response(
+        JSON.stringify({ error: "device_fingerprint inválido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate device_name if provided
+    if (device_name !== undefined && (typeof device_name !== 'string' || device_name.length > 200)) {
+      return new Response(
+        JSON.stringify({ error: "device_name inválido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Mapeamento de emails alternativos para 2FA (admin-only allowed emails)
     const alternateEmails: Record<string, string> = {
       "jonathan@admin.com": "jonathan.lifecazy@gmail.com",
       "david@admin.com": "davidsposito64@gmail.com",
     };
 
+    // Validate this is an admin email
+    const normalizedEmail = email.toLowerCase().trim();
+    const isKnownAdminEmail = Object.keys(alternateEmails).includes(normalizedEmail);
+    
+    if (!isKnownAdminEmail) {
+      console.warn(`[2FA] Attempt from unknown admin email: ${normalizedEmail}`);
+      return new Response(
+        JSON.stringify({ error: "Email não autorizado para 2FA" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Usa email alternativo se existir, senão usa o email original
-    const targetEmail = alternateEmails[email.toLowerCase()] || email;
+    const targetEmail = alternateEmails[normalizedEmail] || email;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

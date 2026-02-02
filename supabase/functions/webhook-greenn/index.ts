@@ -374,17 +374,46 @@ Deno.serve(async (req) => {
   try {
     const payload = await req.json()
     
-    const email = payload.client?.email?.toLowerCase().trim()
+    const rawEmail = payload.client?.email
     const productId = payload.product?.id
     const status = payload.currentStatus
 
-    console.log(`📦 [${requestId}] Dados: email=${email}, productId=${productId}, status=${status}`)
-
-    if (!email) {
+    // ========== INPUT VALIDATION ==========
+    // Validate email format
+    if (!rawEmail || typeof rawEmail !== 'string') {
       return new Response(JSON.stringify({ error: 'Email is required' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
+    
+    const email = rawEmail.toLowerCase().trim()
+    
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email) || email.length > 320) {
+      console.log(`📦 [${requestId}] Invalid email format: ${email.slice(0, 50)}...`)
+      return new Response(JSON.stringify({ error: 'Invalid email format' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    
+    // Validate productId is a number if present
+    if (productId !== undefined && (typeof productId !== 'number' || productId <= 0 || productId > 999999999)) {
+      console.log(`📦 [${requestId}] Invalid productId: ${productId}`)
+      return new Response(JSON.stringify({ error: 'Invalid product ID' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    
+    // Validate status is a non-empty string
+    if (status && (typeof status !== 'string' || status.length > 100)) {
+      console.log(`📦 [${requestId}] Invalid status format`)
+      return new Response(JSON.stringify({ error: 'Invalid status format' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    console.log(`📦 [${requestId}] Dados: email=${email}, productId=${productId}, status=${status}`)
 
     // Limpeza automática de logs > 30 dias (async, não bloqueia)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
