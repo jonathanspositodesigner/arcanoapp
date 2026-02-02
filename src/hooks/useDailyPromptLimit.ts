@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 
-const BASIC_PLAN_DAILY_LIMIT = 10;
-const PRO_PLAN_DAILY_LIMIT = 24;
+const BASIC_PLAN_DAILY_LIMIT = 5;
+const PRO_PLAN_DAILY_LIMIT = 10;
 
 interface DailyPromptLimitResult {
   copiesUsed: number;
