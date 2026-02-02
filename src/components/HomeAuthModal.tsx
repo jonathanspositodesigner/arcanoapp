@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { X, Loader2, Eye, EyeOff, Mail, Lock, User, Phone, CheckCircle2 } from "lucide-react";
+import { X, Loader2, Eye, EyeOff, Mail, Lock, User, Phone, CheckCircle2, MousePointerClick } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -561,9 +561,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                  className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
                 >
-                  {t('auth.browseWithoutLogin') || 'Navegar sem login'}
+                  <MousePointerClick className="h-4 w-4" />
+                  <span>{t('auth.browseWithoutLogin')}</span>
                 </button>
               </div>
             </>
