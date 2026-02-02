@@ -1156,7 +1156,7 @@ const UpscalerArcanoTool: React.FC = () => {
             )}
 
             {/* Detail Denoise - SECOND - ONLY show when NOT in "De Longe" mode */}
-            {!isLongeMode && (
+            {version === 'pro' && !isLongeMode && (
               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
