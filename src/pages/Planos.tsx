@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -262,14 +262,30 @@ const Planos = () => {
                 ))}
               </ul>
 
-              {plan.name === "IA Unlimited" && (
+              {plan.name === "Pro" && (
                 <div className="mt-6 pt-4 border-t border-purple-500/20">
                   <p className="text-xs text-purple-400 mb-2 uppercase tracking-wide">
                     {t('planos.extraBenefits')}
                   </p>
                   <div className="flex items-center gap-2 text-sm">
+                    <Coins className="w-4 h-4 text-yellow-400" />
+                    <span className="text-purple-200">{t('planos.features.bonusCredits900')}</span>
+                  </div>
+                </div>
+              )}
+
+              {plan.name === "IA Unlimited" && (
+                <div className="mt-6 pt-4 border-t border-purple-500/20">
+                  <p className="text-xs text-purple-400 mb-2 uppercase tracking-wide">
+                    {t('planos.extraBenefits')}
+                  </p>
+                  <div className="flex items-center gap-2 text-sm mb-2">
                     <Sparkles className="w-4 h-4 text-purple-400" />
                     <span className="text-purple-200">{t('planos.allAIFeatures')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Coins className="w-4 h-4 text-yellow-400" />
+                    <span className="text-purple-200">{t('planos.features.bonusCredits1800')}</span>
                   </div>
                 </div>
               )}

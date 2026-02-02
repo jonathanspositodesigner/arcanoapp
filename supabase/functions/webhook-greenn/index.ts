@@ -259,6 +259,33 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
         })
       }
 
+      // Reset subscription credits based on plan
+      const planCredits: Record<string, number> = {
+        'arcano_pro': 900,
+        'arcano_unlimited': 1800
+      }
+
+      const creditsToReset = planCredits[planType]
+      if (creditsToReset && creditsToReset > 0) {
+        try {
+          const creditDescription = `Créditos do plano ${planType === 'arcano_pro' ? 'Pro' : 'IA Unlimited'} - ${billingPeriod === 'yearly' ? 'Renovação Anual' : 'Renovação Mensal'}`
+          
+          const { error: creditError } = await supabase.rpc('reset_upscaler_credits', {
+            _user_id: userId,
+            _amount: creditsToReset,
+            _description: creditDescription
+          })
+          
+          if (creditError) {
+            console.log(`   ├─ ⚠️ Erro ao resetar créditos: ${creditError.message}`)
+          } else {
+            console.log(`   ├─ ✅ Créditos resetados para ${creditsToReset}`)
+          }
+        } catch (creditError) {
+          console.log(`   ├─ ⚠️ Falha ao resetar créditos: ${creditError}`)
+        }
+      }
+
       // Mark success BEFORE email + limpar payload
       await supabase.from('webhook_logs').update({ 
         result: 'success',
@@ -282,7 +309,18 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
 
       if (userId) {
         await supabase.from('premium_users').update({ is_active: false }).eq('user_id', userId)
-        console.log(`   ├─ ✅ Premium desativado`)
+        
+        // Zero out credits when subscription ends
+        try {
+          await supabase.rpc('reset_upscaler_credits', {
+            _user_id: userId,
+            _amount: 0,
+            _description: `Créditos zerados - ${status}`
+          })
+          console.log(`   ├─ ✅ Premium desativado + créditos zerados`)
+        } catch (creditError) {
+          console.log(`   ├─ ✅ Premium desativado (falha ao zerar créditos)`)
+        }
         
         if (status === 'chargeback') {
           await supabase.from('blacklisted_emails').upsert({

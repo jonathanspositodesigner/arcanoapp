@@ -2632,6 +2632,13 @@ export type Database = {
       is_premium: { Args: never; Returns: boolean }
       is_premium_artes: { Args: never; Returns: boolean }
       is_premium_musicos: { Args: never; Returns: boolean }
+      reset_upscaler_credits: {
+        Args: { _amount: number; _description?: string; _user_id: string }
+        Returns: {
+          new_balance: number
+          success: boolean
+        }[]
+      }
       update_queue_positions: { Args: never; Returns: undefined }
     }
     Enums: {
