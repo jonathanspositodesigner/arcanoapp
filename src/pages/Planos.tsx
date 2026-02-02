@@ -111,7 +111,7 @@ const Planos = () => {
       originalPrice: "20,90",
       perMonth: true,
       yearlyTotal: "226,80",
-      paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
+      paymentUrl: "https://payfast.greenn.com.br/148936/offer/2wrEY3",
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
