@@ -18,6 +18,7 @@ import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import imageCompression from 'browser-image-compression';
 import ToolsHeader from '@/components/ToolsHeader';
+import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -69,6 +70,10 @@ const UpscalerArcanoTool: React.FC = () => {
   const [isWaitingInQueue, setIsWaitingInQueue] = useState(false);
   const [queuePosition, setQueuePosition] = useState(0);
   const [jobId, setJobId] = useState<string | null>(null);
+  
+  // No credits modal state
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
+  const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
   const [currentQueueCombo, setCurrentQueueCombo] = useState(0);
 
   // Queue message combos for friendly waiting experience
@@ -366,7 +371,8 @@ const UpscalerArcanoTool: React.FC = () => {
     }
 
     if (!user?.id) {
-      toast.error('Você precisa estar logado para usar o upscaler');
+      setNoCreditsReason('not_logged');
+      setShowNoCreditsModal(true);
       return;
     }
 
@@ -374,7 +380,8 @@ const UpscalerArcanoTool: React.FC = () => {
     
     // Optimistic check - backend will validate for real
     if (credits < creditCost) {
-      toast.error(`Créditos insuficientes. Necessário: ${creditCost}, Disponível: ${credits}`);
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
       return;
     }
 
@@ -459,7 +466,8 @@ const UpscalerArcanoTool: React.FC = () => {
       if (runResponse.data?.error) {
         // Handle insufficient credits error from backend
         if (runResponse.data.code === 'INSUFFICIENT_CREDITS') {
-          toast.error(runResponse.data.error);
+          setNoCreditsReason('insufficient');
+          setShowNoCreditsModal(true);
           setStatus('idle');
           refetchCredits(); // Sync credits from server
           return;
@@ -1319,6 +1327,13 @@ const UpscalerArcanoTool: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* No Credits Modal */}
+      <NoCreditsModal
+        isOpen={showNoCreditsModal}
+        onClose={() => setShowNoCreditsModal(false)}
+        reason={noCreditsReason}
+      />
     </div>
   );
 };
