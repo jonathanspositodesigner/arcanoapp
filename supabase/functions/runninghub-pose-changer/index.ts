@@ -413,13 +413,20 @@ async function handleRun(req: Request) {
       })
       .eq('id', jobId);
 
-    // Check concurrent jobs
-    const { count: runningCount } = await supabase
+    // Count running jobs across ALL AI tools (global queue)
+    const { count: upscalerRunning } = await supabase
+      .from('upscaler_jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'running');
+
+    const { count: poseRunning } = await supabase
       .from('pose_changer_jobs')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'running');
 
-    console.log(`[PoseChanger] Running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS}`);
+    const runningCount = (upscalerRunning || 0) + (poseRunning || 0);
+
+    console.log(`[PoseChanger] Global running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS} (upscaler: ${upscalerRunning || 0}, pose: ${poseRunning || 0})`);
 
     const { data: currentJob } = await supabase
       .from('pose_changer_jobs')

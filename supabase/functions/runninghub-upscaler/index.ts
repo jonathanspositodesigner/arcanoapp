@@ -465,13 +465,20 @@ async function handleRun(req: Request) {
       .update({ input_file_name: rhFileName })
       .eq('id', jobId);
 
-    // Check how many jobs are currently running
-    const { count: runningCount } = await supabase
+    // Count running jobs across ALL AI tools (global queue)
+    const { count: upscalerRunning } = await supabase
       .from('upscaler_jobs')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'running');
 
-    console.log(`[RunningHub] Running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS}`);
+    const { count: poseRunning } = await supabase
+      .from('pose_changer_jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'running');
+
+    const runningCount = (upscalerRunning || 0) + (poseRunning || 0);
+
+    console.log(`[RunningHub] Global running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS} (upscaler: ${upscalerRunning || 0}, pose: ${poseRunning || 0})`);
 
     // Get the job to check its created_at
     const { data: currentJob } = await supabase
