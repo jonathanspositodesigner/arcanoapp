@@ -85,8 +85,7 @@ const BibliotecaPrompts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collectionSlug, setCollectionSlug] = useState<string | null>(colecaoParam);
-  const [clickIncrements, setClickIncrements] = useState<Record<string, number>>({});
-  const [animatingClicks, setAnimatingClicks] = useState<Set<string>>(new Set());
+  const [revealedPrompts, setRevealedPrompts] = useState<Set<string>>(new Set());
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [showExpiringModal, setShowExpiringModal] = useState(false);
   
@@ -240,26 +239,12 @@ const BibliotecaPrompts = () => {
       await navigator.clipboard.writeText(promptItem.prompt);
       toast.success(t('toast.promptCopied', { title: promptItem.title }));
 
-      // Track the click and increment counter locally if it's a new click
+      // Reveal the prompt in modal after copying
       const promptId = String(promptItem.id);
-      const wasTracked = await trackPromptClick(promptId, promptItem.title, !!promptItem.isExclusive);
-      if (wasTracked) {
-        // Increment local counter with animation
-        setClickIncrements(prev => ({
-          ...prev,
-          [promptId]: (prev[promptId] || 0) + 1
-        }));
+      setRevealedPrompts(prev => new Set(prev).add(promptId));
 
-        // Trigger animation
-        setAnimatingClicks(prev => new Set(prev).add(promptId));
-        setTimeout(() => {
-          setAnimatingClicks(prev => {
-            const next = new Set(prev);
-            next.delete(promptId);
-            return next;
-          });
-        }, 300);
-      }
+      // Track the click
+      await trackPromptClick(promptId, promptItem.title, !!promptItem.isExclusive);
     } catch (error) {
       console.error("Failed to copy:", error);
       toast.error(t('toast.copyError'));
@@ -805,11 +790,6 @@ const BibliotecaPrompts = () => {
                         <h3 className="font-bold text-sm sm:text-lg text-white mb-1 sm:mb-2 line-clamp-2">{item.title}</h3>
                         {getBadgeContent(item)}
                       </div>
-                      {/* Click counter */}
-                      <div className={`flex items-center gap-1 text-xs text-purple-400 ${animatingClicks.has(String(item.id)) ? 'scale-125' : ''} transition-transform`}>
-                        <Copy className="h-3 w-3" />
-                        <span>{(item.bonusClicks || 0) + (clickIncrements[String(item.id)] || 0)}</span>
-                      </div>
                     </div>
 
                     {/* Action Buttons */}
@@ -971,8 +951,22 @@ const BibliotecaPrompts = () => {
               {/* Prompt Text */}
               <div>
                 <h3 className="font-semibold mb-2 text-purple-200">{t('modal.prompt')}</h3>
-                <div className="bg-[#0D0221] border border-purple-500/30 rounded-lg p-4">
-                  <p className="text-purple-100 whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
+                <div className="bg-[#0D0221] border border-purple-500/30 rounded-lg p-4 relative">
+                  {revealedPrompts.has(String(selectedPrompt.id)) ? (
+                    <p className="text-purple-100 whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
+                  ) : (
+                    <>
+                      <p className="text-purple-100 whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">
+                        {selectedPrompt.prompt}
+                      </p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-[#0D0221]/60 rounded-lg">
+                        <div className="text-center">
+                          <Lock className="h-6 w-6 text-purple-400 mx-auto mb-2" />
+                          <p className="text-purple-300 text-sm">{t('modal.clickToCopy')}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 

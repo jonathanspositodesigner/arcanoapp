@@ -58,6 +58,18 @@
     "exclusiveSeal": "Sello Exclusivo",
     "community": "Comunidad"
   },
+  "card": {
+    "copyPrompt": "Copiar Prompt",
+    "details": "Detalles"
+  },
+  "modal": {
+    "referenceImages": "Imágenes de Referencia",
+    "prompt": "Prompt",
+    "copyPrompt": "Copiar Prompt",
+    "download": "Descargar",
+    "watchTutorial": "Ver Tutorial",
+    "clickToCopy": "Haz clic en \"Copiar Prompt\" para visualizar"
+  },
   "buttons": {
     "copyPrompt": "Copiar Prompt",
     "remaining": "restantes",
