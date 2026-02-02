@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
+import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
 import { Sparkles, CheckCircle, Loader2, Play, ShoppingCart, UserCheck, AlertTriangle, ChevronRight, ChevronLeft, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -30,19 +31,22 @@ const FerramentasIA = () => {
   const [searchParams] = useSearchParams();
   const from = searchParams.get("from");
   
-  // Redirect logic: users without Upscaler Arcano pack go to new app page
+  // Redirect logic: users without Upscaler Arcano pack AND no credits go to new app page
   const { user, hasAccessToPack, isLoading: isPremiumLoading } = usePremiumArtesStatus();
+  const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
   const hasUpscalerArcano = hasAccessToPack('upscaller-arcano');
   
   useEffect(() => {
-    // Only redirect if:
-    // 1. Not loading
-    // 2. User is logged in
-    // 3. Does NOT have access to Upscaler Arcano pack
-    if (!isPremiumLoading && user && !hasUpscalerArcano) {
+    // Wait for both loading states
+    if (isPremiumLoading || creditsLoading) return;
+    
+    // Redirect to new page if:
+    // 1. User is NOT logged in, OR
+    // 2. User is logged in but has NO upscaler-arcano AND NO credits
+    if (!user || (!hasUpscalerArcano && credits === 0)) {
       navigate('/ferramentas-ia-aplicativo', { replace: true });
     }
-  }, [isPremiumLoading, user, hasUpscalerArcano, navigate]);
+  }, [isPremiumLoading, creditsLoading, user, hasUpscalerArcano, credits, navigate]);
 
   const toolDescriptions: Record<string, string> = {
     "upscaller-arcano": t('ferramentas.descriptions.upscaler'),
