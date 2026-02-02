@@ -40,9 +40,10 @@ const AguardandoPagamentoMusicos = () => {
 
   useEffect(() => { if (isPremium) { navigate('/sucesso-artes-musicos'); } }, [isPremium, navigate]);
 
+  // Fallback polling every 60s (Realtime is primary, this is backup only)
   useEffect(() => {
     if (!user?.id) return;
-    const interval = setInterval(() => { refetch(); }, 10000);
+    const interval = setInterval(() => { refetch(); }, 60000); // 60s instead of 10s
     return () => clearInterval(interval);
   }, [user?.id, refetch]);
 

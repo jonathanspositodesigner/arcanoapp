@@ -2582,6 +2582,7 @@ export type Database = {
       is_premium: { Args: never; Returns: boolean }
       is_premium_artes: { Args: never; Returns: boolean }
       is_premium_musicos: { Args: never; Returns: boolean }
+      update_queue_positions: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "partner"

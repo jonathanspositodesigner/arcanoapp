@@ -166,7 +166,7 @@ async function processNextInQueue() {
     // Start processing via RunningHub API v2
     await startRunningHubJob(nextJob);
 
-    // Update positions of remaining queued jobs
+    // Update positions of remaining queued jobs using batch SQL function
     await updateQueuePositions();
 
   } catch (error) {
@@ -246,21 +246,17 @@ async function startRunningHubJob(job: any) {
   }
 }
 
+// OPTIMIZED: Uses single SQL function instead of N+1 loop
 async function updateQueuePositions() {
   try {
-    const { data: queuedJobs } = await supabase
-      .from('upscaler_jobs')
-      .select('id')
-      .eq('status', 'queued')
-      .order('created_at', { ascending: true });
-
-    if (queuedJobs) {
-      for (let i = 0; i < queuedJobs.length; i++) {
-        await supabase
-          .from('upscaler_jobs')
-          .update({ position: i + 1 })
-          .eq('id', queuedJobs[i].id);
-      }
+    // Single RPC call to update all positions at once
+    const { error } = await supabase.rpc('update_queue_positions');
+    
+    if (error) {
+      console.error('[Webhook] Error updating queue positions via RPC:', error);
+      // Fallback: don't crash if function doesn't exist
+    } else {
+      console.log('[Webhook] Queue positions updated via batch SQL');
     }
   } catch (error) {
     console.error('[Webhook] Error updating queue positions:', error);
