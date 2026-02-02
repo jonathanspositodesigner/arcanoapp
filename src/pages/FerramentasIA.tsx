@@ -29,6 +29,20 @@ const FerramentasIA = () => {
   const { t } = useTranslation('tools');
   const [searchParams] = useSearchParams();
   const from = searchParams.get("from");
+  
+  // Redirect logic: users without Upscaler Arcano pack go to new app page
+  const { user, hasAccessToPack, isLoading: isPremiumLoading } = usePremiumArtesStatus();
+  const hasUpscalerArcano = hasAccessToPack('upscaller-arcano');
+  
+  useEffect(() => {
+    // Only redirect if:
+    // 1. Not loading
+    // 2. User is logged in
+    // 3. Does NOT have access to Upscaler Arcano pack
+    if (!isPremiumLoading && user && !hasUpscalerArcano) {
+      navigate('/ferramentas-ia-aplicativo', { replace: true });
+    }
+  }, [isPremiumLoading, user, hasUpscalerArcano, navigate]);
 
   const toolDescriptions: Record<string, string> = {
     "upscaller-arcano": t('ferramentas.descriptions.upscaler'),
@@ -51,7 +65,7 @@ const FerramentasIA = () => {
     return t('ferramentas.back');
   };
 
-  const { user, hasAccessToPack, isPremium, isLoading: isPremiumLoading } = usePremiumArtesStatus();
+  const { isPremium } = usePremiumArtesStatus();
   const { planType: promptsPlanType, isLoading: isPromptsLoading } = usePremiumStatus();
   const [tools, setTools] = useState<ToolData[]>([]);
   const [loading, setLoading] = useState(true);
