@@ -439,10 +439,10 @@ const BibliotecaPrompts = () => {
             </Badge>
             <button
               onClick={() => navigate('/planos-creditos')}
-              className="p-1 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded"
+              className="p-1 rounded hover:bg-purple-500/10"
               title="Comprar créditos"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-4 h-4 text-fuchsia-400" />
             </button>
           </div>
         </div>
@@ -519,15 +519,13 @@ const BibliotecaPrompts = () => {
                     {creditsLoading ? '...' : credits}
                   </span>
                 </Badge>
-                <Button
-                  variant="ghost"
-                  size="icon"
+                <button
                   onClick={() => navigate('/planos-creditos')}
-                  className="h-7 w-7 text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-purple-500/10"
                   title="Comprar créditos"
                 >
-                  <PlusCircle className="w-4 h-4" />
-                </Button>
+                  <PlusCircle className="w-4 h-4 text-fuchsia-400" style={{ filter: 'drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))' }} />
+                </button>
               </div>
               <ProfileDropdown />
             </>
@@ -548,15 +546,13 @@ const BibliotecaPrompts = () => {
                   {creditsLoading ? '...' : credits}
                 </span>
               </Badge>
-              <Button
-                variant="ghost"
-                size="icon"
+              <button
                 onClick={() => navigate('/planos-creditos')}
-                className="h-7 w-7 text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                className="h-7 w-7 flex items-center justify-center rounded hover:bg-purple-500/10"
                 title="Comprar créditos"
               >
-                <PlusCircle className="w-4 h-4" />
-              </Button>
+                <PlusCircle className="w-4 h-4 text-fuchsia-400" style={{ filter: 'drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))' }} />
+              </button>
             </div>
             <ProfileDropdown />
           </>}
@@ -594,10 +590,10 @@ const BibliotecaPrompts = () => {
               </Badge>
               <button
                 onClick={() => navigate('/planos-creditos')}
-                className="p-0.5 text-green-400 hover:text-green-300"
+                className="p-0.5 rounded hover:bg-purple-500/10"
                 title="Comprar créditos"
               >
-                <PlusCircle className="w-3.5 h-3.5" />
+                <PlusCircle className="w-3.5 h-3.5 text-fuchsia-400" />
               </button>
             </div>
             <ProfileDropdown isMobile />
@@ -618,10 +614,10 @@ const BibliotecaPrompts = () => {
               </Badge>
               <button
                 onClick={() => navigate('/planos-creditos')}
-                className="p-0.5 text-green-400 hover:text-green-300"
+                className="p-0.5 rounded hover:bg-purple-500/10"
                 title="Comprar créditos"
               >
-                <PlusCircle className="w-3.5 h-3.5" />
+                <PlusCircle className="w-3.5 h-3.5 text-fuchsia-400" />
               </button>
             </div>
             <ProfileDropdown isMobile />

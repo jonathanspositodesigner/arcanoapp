@@ -98,15 +98,13 @@ const CreditHistory = () => {
               <Badge className="bg-purple-600 text-white text-lg px-4 py-1">
                 {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
               </Badge>
-              <Button
-                variant="ghost"
-                size="icon"
+              <button
                 onClick={() => navigate('/planos-creditos')}
-                className="h-8 w-8 text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                className="h-8 w-8 flex items-center justify-center rounded hover:bg-purple-500/10"
                 title="Comprar créditos"
               >
-                <PlusCircle className="w-5 h-5" />
-              </Button>
+                <PlusCircle className="w-5 h-5 text-fuchsia-400" style={{ filter: 'drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))' }} />
+              </button>
             </div>
           </div>
         </Card>
