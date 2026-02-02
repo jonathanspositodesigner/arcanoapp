@@ -1,103 +1,127 @@
 
 
-# Plano: Substituir Badges de Desconto por Custo por Imagem
+# Plano: Webhook Greenn para Recarga de Créditos Vitalícios
 
 ## Resumo
 
-Trocar os badges de percentual de desconto (-40%, -54%) por badges mostrando o custo por imagem em reais, com ícone de desconto.
+Criar uma nova Edge Function `webhook-greenn-creditos` que processa compras de pacotes de créditos da Greenn e adiciona créditos **permanentes (lifetime)** à conta do usuário. Se o usuário não existir, a conta é criada automaticamente com a senha igual ao email (mesmo padrão dos outros webhooks).
 
-## Mudanças Específicas
+## Mapeamento de Produtos
 
-### 1. Atualizar Estrutura de Dados
+| Product ID | Créditos | Pacote |
+|------------|----------|--------|
+| 156946 | +1.500 | R$ 29,90 |
+| 156948 | +4.200 | R$ 39,90 |
+| 156952 | +10.800 | R$ 99,90 |
 
-```tsx
-const creditPlans = [
-  { 
-    credits: 1500, 
-    description: "~25 imagens", 
-    price: "29,90",
-    pricePerImage: "1,20", // R$ 29,90 / 25 = R$ 1,20
-    // ...
-  },
-  { 
-    credits: 4200, 
-    description: "~70 imagens", 
-    price: "39,90",
-    originalPrice: "49,90",
-    pricePerImage: "0,57", // R$ 39,90 / 70 = R$ 0,57
-    // ...
-  },
-  { 
-    credits: 10800, 
-    description: "~180 imagens", 
-    price: "99,90",
-    originalPrice: "149,90",
-    pricePerImage: "0,55", // R$ 99,90 / 180 = R$ 0,55
-    // ...
-  },
-];
-```
-
-### 2. Novo Badge Visual
-
-Layout do badge:
+## Fluxo Principal
 
 ```text
-┌──────────────────────┐
-│ 🏷️ R$ 0,55/imagem!  │
-└──────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         GREENN CHECKOUT                             │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼ POST (webhook)
+┌─────────────────────────────────────────────────────────────────────┐
+│              webhook-greenn-creditos (Edge Function)                │
+│                                                                     │
+│   1. Recebe payload (< 100ms ACK)                                   │
+│   2. Log em webhook_logs com platform='creditos'                    │
+│   3. Background: processar créditos                                 │
+│      ├─ Mapeia product_id → quantidade de créditos                  │
+│      ├─ Busca usuário por email                                     │
+│      ├─ SE NÃO EXISTE: Cria conta (email = senha)                   │
+│      ├─ Upsert profile                                              │
+│      ├─ Chama add_lifetime_credits() RPC                            │
+│      ├─ Envia email de boas-vindas (com dados de acesso)            │
+│      └─ Atualiza log com resultado                                  │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-- Ícone: `Tag` do lucide-react (🏷️ de desconto)
-- Estilo: Badge com fundo gradiente sutil (fuchsia/purple) ou outline colorido
-- Posicionado abaixo da descrição, antes do badge "Vitalício"
+## Fluxo Detalhado
 
-### 3. Código do Badge
+### 1. Status `paid` / `approved`
+1. Verificar blacklist
+2. Mapear `product_id` para quantidade de créditos
+3. Buscar usuário por email (profiles → auth.users paginado)
+4. **Se não existe:** Criar usuário com `password: email`, `email_confirm: true`
+5. Upsert profile com `password_changed: false`
+6. Chamar `add_lifetime_credits(_user_id, _amount, _description)`
+7. Enviar email de boas-vindas com dados de acesso
+8. Atualizar `webhook_logs` com sucesso
 
-```tsx
-{/* Price Per Image Badge */}
-<Badge className="bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs mb-3 gap-1">
-  <Tag className="w-3 h-3" />
-  R$ {plan.pricePerImage}/imagem!
-</Badge>
+### 2. Status `refunded` / `chargeback`
+- Apenas logar o evento (créditos lifetime não são removidos)
+- Em caso de chargeback: adicionar email à blacklist
+
+### 3. Outros status
+- Ignorar (`pending`, `waiting_payment`, etc.)
+
+## Arquivos a Criar/Modificar
+
+| Arquivo | Ação |
+|---------|------|
+| `supabase/functions/webhook-greenn-creditos/index.ts` | **CRIAR** |
+| `supabase/config.toml` | **MODIFICAR** - Adicionar `[functions.webhook-greenn-creditos]` |
+
+---
+
+## Detalhes Técnicos
+
+### Estrutura do webhook-greenn-creditos
+
+```typescript
+// Mapeamento de produtos
+const PRODUCT_CREDITS: Record<number, number> = {
+  156946: 1500,   // Pacote +1.500
+  156948: 4200,   // Pacote +4.200  
+  156952: 10800   // Pacote +10.800
+}
+
+// Criação de usuário (mesmo padrão dos outros webhooks)
+const { data: newUser, error } = await supabase.auth.admin.createUser({
+  email,
+  password: email,        // Senha = email
+  email_confirm: true     // Já confirmado
+})
+
+// Upsert profile
+await supabase.from('profiles').upsert({
+  id: userId,
+  name: clientName,
+  phone: clientPhone,
+  email,
+  password_changed: false,  // Força troca de senha no primeiro acesso
+  updated_at: new Date().toISOString()
+}, { onConflict: 'id' })
+
+// Adicionar créditos lifetime
+await supabase.rpc('add_lifetime_credits', {
+  _user_id: userId,
+  _amount: creditAmount,
+  _description: `Compra pacote +${creditAmount} créditos`
+})
 ```
 
-### 4. Remover Elementos Antigos
+### Email de Boas-Vindas
 
-- Remover a propriedade `savings` dos planos
-- Remover o `<span>` com `-{plan.savings}` da seção de preços
+O email incluirá:
+- Dados de acesso (email e senha temporária = email)
+- Aviso para trocar senha no primeiro acesso
+- Quantidade de créditos adquiridos
+- Botão CTA para acessar a plataforma
 
-## Arquivo a Modificar
+### Padrões Seguidos
+- **Fast Acknowledgment**: Retorna 200 OK imediatamente (< 100ms)
+- **Background Processing**: `EdgeRuntime.waitUntil()` para tarefas pesadas
+- **Logging**: Tabela `webhook_logs` com `platform='creditos'`
+- **Blacklist**: Verifica antes de processar, adiciona em chargebacks
+- **Criação de Conta**: Email = senha, `password_changed: false`
 
-| Arquivo | Mudanças |
-|---------|----------|
-| `src/pages/PlanosCreditos.tsx` | Adicionar `pricePerImage` aos planos, trocar badge de desconto por custo por imagem, importar ícone `Tag` |
+### URL do Webhook para Greenn
 
-## Imports Necessários
-
-```tsx
-import { ..., Tag } from "lucide-react";
+Após deploy:
 ```
-
-## Layout Final dos Cards
-
-```text
-┌─────────────────────┐
-│    🔥 POPULAR       │
-│                     │
-│       ⚡            │
-│    4.200 créditos   │
-│    ~70 imagens      │
-│                     │
-│  ┌───────────────┐  │
-│  │🏷️ R$0,57/img!│  │
-│  └───────────────┘  │
-│   ♾️ Vitalício      │
-│                     │
-│   de R$ 49,90       │
-│   R$ 39,90          │
-│                     │
-│  [Comprar Agora]    │
-└─────────────────────┘
+https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-greenn-creditos
 ```
 
