@@ -256,29 +256,54 @@ async function processPackPurchase(
 
 async function sendWelcomeEmail(supabase: any, email: string, name: string, packInfo: string, requestId: string, isFerramentaIA: boolean = false, locale: 'pt' | 'es' = 'pt'): Promise<void> {
   const t = emailTexts[locale]
+  const platform = isFerramentaIA ? 'ferramentas_ia' : 'artes'
+  
+  // Gerar dedup_key: email|product|YYYYMMDDHHMM
+  const now = new Date()
+  const dedupMinute = now.toISOString().slice(0, 16).replace(/[-T:]/g, '') // YYYYMMDDHHMM
+  const dedupKey = `${email}|${packInfo}|${dedupMinute}`
+  const trackingId = crypto.randomUUID()
   
   try {
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-    const { data: recentEmail } = await supabase
+    // PASSO 1: Tentar INSERT primeiro (atômico) - quem conseguir primeiro ganha
+    const { data: inserted, error: insertError } = await supabase
       .from('welcome_email_logs')
-      .select('id')
-      .eq('email', email)
-      .eq('product_info', packInfo)
-      .eq('status', 'sent')
-      .gte('sent_at', fiveMinutesAgo)
-      .maybeSingle()
+      .insert({
+        email,
+        name,
+        platform,
+        product_info: packInfo,
+        status: 'pending',
+        tracking_id: trackingId,
+        template_used: 'default',
+        locale,
+        dedup_key: dedupKey
+      })
+      .select('id, tracking_id')
+      .single()
     
-    if (recentEmail) {
-      console.log(`   ├─ [${requestId}] ⏭️ Email já enviado recentemente`)
+    // Se falhou por duplicata (unique constraint), ignorar silenciosamente
+    if (insertError?.code === '23505') {
+      console.log(`   ├─ [${requestId}] ⏭️ Email duplicado bloqueado por constraint`)
       return
     }
     
+    if (insertError) {
+      console.log(`   ├─ [${requestId}] ❌ Erro ao inserir log: ${insertError.message}`)
+      return
+    }
+    
+    const logId = inserted.id
+    console.log(`   ├─ [${requestId}] 🔒 Lock obtido (dedup_key: ${dedupKey.slice(-20)})`)
+    
+    // PASSO 2: Enviar email (apenas quem conseguiu o INSERT)
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
     const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
     const supabaseUrl = Deno.env.get("SUPABASE_URL")
     
     if (!clientId || !clientSecret) {
       console.log(`   ├─ [${requestId}] ⚠️ SendPulse não configurado`)
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: 'SendPulse não configurado' }).eq('id', logId)
       return
     }
 
@@ -303,7 +328,6 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     const subject = template?.subject || '🎨 Bem-vindo - Seu acesso está pronto!'
     const senderName = template?.sender_name || 'Biblioteca de Artes'
     const senderEmail = template?.sender_email || 'contato@voxvisual.com.br'
-    const trackingId = crypto.randomUUID()
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
     const platformUrl = isFerramentaIA ? 'https://arcanoapp.voxvisual.com.br/ferramentas-ia' : 'https://arcanolab.voxvisual.com.br/login-artes'
     const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
@@ -314,7 +338,10 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
       body: JSON.stringify({ grant_type: "client_credentials", client_id: clientId, client_secret: clientSecret }),
     })
 
-    if (!tokenResponse.ok) return
+    if (!tokenResponse.ok) {
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: 'Falha ao obter token SendPulse' }).eq('id', logId)
+      return
+    }
 
     const { access_token } = await tokenResponse.json()
 
@@ -336,16 +363,20 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
 
     const result = await emailResponse.json()
     
-    await supabase.from('welcome_email_logs').insert({
-      email, name, platform: isFerramentaIA ? 'ferramentas_ia' : 'artes',
-      tracking_id: trackingId, template_used: template?.id || 'default', product_info: packInfo,
+    // PASSO 3: Atualizar status para sent ou failed
+    await supabase.from('welcome_email_logs').update({
       status: result.result === true ? 'sent' : 'failed',
-      error_message: result.result !== true ? JSON.stringify(result) : null, locale
-    })
+      error_message: result.result !== true ? JSON.stringify(result) : null,
+      template_used: template?.id || 'default'
+    }).eq('id', logId)
     
     console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email enviado' : '❌ Falha no email'}`)
   } catch (error) {
     console.log(`   ├─ [${requestId}] ❌ Erro email: ${error}`)
+    // Tentar marcar como falha se temos o trackingId
+    try {
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: String(error) }).eq('tracking_id', trackingId)
+    } catch (e) {}
   }
 }
 
