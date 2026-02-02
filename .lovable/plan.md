@@ -1,252 +1,235 @@
 
-# Plano: Prévia de Email + Mover Monitor para Sidebar
+# Plano: Sistema de Créditos de IA por Período de Assinatura
 
 ## Resumo
 
-Duas alterações solicitadas:
-1. **Prévia do email**: Ao clicar em um email enviado na tabela, mostrar um modal com a prévia HTML do email recebido
-2. **Mover para sidebar**: Retirar o monitor da home e adicionar como item na barra lateral
+Implementar um sistema onde:
+- **Pro**: 900 créditos/período
+- **IA Unlimited**: 1800 créditos/período
+- Créditos são **resetados** (não somados) a cada renovação
+- Quando assinatura expira → créditos zeram
 
 ---
 
-## Mudanças no Banco de Dados
+## Mudanças Necessárias
 
-### Nova coluna `email_content`
+### 1. Nova Função RPC no Banco de Dados
 
-A tabela `welcome_email_logs` atualmente não armazena o HTML do email enviado. Preciso adicionar:
-
-| Coluna | Tipo | Descrição |
-|--------|------|-----------|
-| `email_content` | `TEXT` | HTML completo do email enviado |
+Criar uma função `reset_upscaler_credits` que substitui o saldo (não soma):
 
 ```sql
-ALTER TABLE welcome_email_logs 
-ADD COLUMN IF NOT EXISTS email_content TEXT;
+CREATE OR REPLACE FUNCTION public.reset_upscaler_credits(
+  _user_id uuid, 
+  _amount integer, 
+  _description text DEFAULT 'Subscription credits reset'
+)
+RETURNS TABLE(success boolean, new_balance integer)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  updated_balance INTEGER;
+BEGIN
+  -- Insert or UPDATE credits to new value (reset, not add)
+  INSERT INTO upscaler_credits (user_id, balance)
+  VALUES (_user_id, _amount)
+  ON CONFLICT (user_id) 
+  DO UPDATE SET balance = _amount, updated_at = now()
+  RETURNING balance INTO updated_balance;
+  
+  -- Log transaction
+  INSERT INTO upscaler_credit_transactions 
+    (user_id, amount, balance_after, transaction_type, description)
+  VALUES 
+    (_user_id, _amount, updated_balance, 'reset', _description);
+  
+  RETURN QUERY SELECT TRUE, updated_balance;
+END;
+$$;
+```
+
+### 2. Página `/planos` (Planos.tsx)
+
+Adicionar seção de benefícios extras nos cards Pro e IA Unlimited:
+
+**Card Pro:**
+```tsx
+{plan.name === "Pro" && (
+  <div className="mt-6 pt-4 border-t border-purple-500/20">
+    <p className="text-xs text-purple-400 mb-2 uppercase tracking-wide">
+      {t('planos.extraBenefits')}
+    </p>
+    <div className="flex items-center gap-2 text-sm">
+      <Coins className="w-4 h-4 text-yellow-400" />
+      <span className="text-purple-200">{t('planos.features.bonusCredits900')}</span>
+    </div>
+  </div>
+)}
+```
+
+**Card IA Unlimited (atualizar):**
+```tsx
+{plan.name === "IA Unlimited" && (
+  <div className="mt-6 pt-4 border-t border-purple-500/20">
+    <p className="text-xs text-purple-400 mb-2 uppercase tracking-wide">
+      {t('planos.extraBenefits')}
+    </p>
+    <div className="flex items-center gap-2 text-sm mb-2">
+      <Sparkles className="w-4 h-4 text-purple-400" />
+      <span className="text-purple-200">{t('planos.allAIFeatures')}</span>
+    </div>
+    <div className="flex items-center gap-2 text-sm">
+      <Coins className="w-4 h-4 text-yellow-400" />
+      <span className="text-purple-200">{t('planos.features.bonusCredits1800')}</span>
+    </div>
+  </div>
+)}
+```
+
+### 3. Arquivos de Tradução
+
+**`src/locales/pt/prompts.json`:**
+```json
+"features": {
+  // ...existentes
+  "bonusCredits900": "+900 créditos de IA/mês",
+  "bonusCredits1800": "+1800 créditos de IA/mês"
+}
+```
+
+**`src/locales/es/prompts.json`:**
+```json
+"features": {
+  // ...existentes
+  "bonusCredits900": "+900 créditos de IA/mes",
+  "bonusCredits1800": "+1800 créditos de IA/mes"
+}
+```
+
+### 4. Webhook Greenn (webhook-greenn/index.ts)
+
+Adicionar lógica após ativar o premium:
+
+```typescript
+// Após upsert premium_users com sucesso...
+
+// Reset credits based on plan (not add - complete reset)
+const planCredits: Record<string, number> = {
+  'arcano_pro': 900,
+  'arcano_unlimited': 1800
+};
+
+const creditsToReset = planCredits[planType];
+if (creditsToReset && creditsToReset > 0) {
+  try {
+    const { data: creditResult, error: creditError } = await supabase.rpc('reset_upscaler_credits', {
+      _user_id: userId,
+      _amount: creditsToReset,
+      _description: `Créditos do plano ${planDisplayName} - ${billingPeriod === 'yearly' ? 'Renovação Anual' : 'Renovação Mensal'}`
+    });
+    
+    if (creditError) {
+      console.log(`   ├─ ⚠️ Erro ao resetar créditos: ${creditError.message}`);
+    } else {
+      console.log(`   ├─ ✅ Créditos resetados para ${creditsToReset}`);
+    }
+  } catch (creditError) {
+    console.log(`   ├─ ⚠️ Falha ao resetar créditos: ${creditError}`);
+  }
+}
+```
+
+### 5. Zerar Créditos ao Expirar
+
+No hook `usePremiumStatus` ou em um job agendado, quando a assinatura expira, zerar os créditos:
+
+**Opção A - Frontend (simples):**
+Quando o usuário logado tem `expires_at < now()`, a UI já mostra como expirado e não permite usar ferramentas.
+
+**Opção B - Backend (recomendado):**
+Adicionar no webhook de cancelamento/unpaid:
+
+```typescript
+// Handle deactivation
+if (status === 'canceled' || status === 'unpaid' || status === 'refunded' || status === 'chargeback') {
+  const userId = await findUserByEmail(supabase, email, requestId)
+
+  if (userId) {
+    await supabase.from('premium_users').update({ is_active: false }).eq('user_id', userId)
+    
+    // Zerar créditos ao cancelar/expirar
+    await supabase.rpc('reset_upscaler_credits', {
+      _user_id: userId,
+      _amount: 0,
+      _description: `Créditos zerados - ${status}`
+    });
+    
+    console.log(`   ├─ ✅ Premium desativado + créditos zerados`)
+    // ...
+  }
+}
+```
+
+---
+
+## Fluxo Completo
+
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│               USUÁRIO ASSINA OU RENOVA PLANO                      │
+└──────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                   Greenn webhook (paid/approved)                  │
+│                                                                   │
+│  1. Criar/encontrar usuário                                       │
+│  2. Ativar/atualizar premium_users                               │
+│  3. ★ RESET créditos via RPC:                                    │
+│     - arcano_pro → RESET para 900                                │
+│     - arcano_unlimited → RESET para 1800                         │
+│  4. Enviar email de boas-vindas                                  │
+└──────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌──────────────────────────────────────────────────────────────────┐
+│   Usuário pode usar créditos durante período de assinatura        │
+└──────────────────────────────────────────────────────────────────┘
+                                │
+            ┌───────────────────┴───────────────────┐
+            ▼                                       ▼
+┌─────────────────────────┐             ┌─────────────────────────┐
+│     ASSINATURA EXPIRA    │             │   USUÁRIO RENOVA        │
+│   (canceled/unpaid)      │             │   (paid novamente)      │
+└─────────────────────────┘             └─────────────────────────┘
+            │                                       │
+            ▼                                       ▼
+┌─────────────────────────┐             ┌─────────────────────────┐
+│  RESET créditos para 0  │             │  RESET créditos para    │
+│  via webhook            │             │  900 ou 1800            │
+└─────────────────────────┘             └─────────────────────────┘
 ```
 
 ---
 
 ## Arquivos a Modificar
 
-### 1. `supabase/functions/resend-pending-emails/index.ts`
-
-Salvar o HTML gerado na nova coluna `email_content`:
-
-```typescript
-await supabaseAdmin.from("welcome_email_logs").insert({
-  // ... campos existentes
-  email_content: emailHtml, // ← NOVO: salvar HTML
-});
-```
-
-### 2. `supabase/functions/webhook-greenn-artes/index.ts` (e outros webhooks)
-
-Também precisam salvar o conteúdo do email para compras novas.
-
-### 3. `src/components/AdminHubSidebar.tsx`
-
-Adicionar novo item no menu:
-
-```typescript
-{
-  id: "emails" as const,
-  label: "EMAILS DE BOAS-VINDAS",
-  icon: Mail,
-  description: "Monitoramento de envios"
-}
-```
-
-Atualizar o tipo `HubViewType`:
-
-```typescript
-export type HubViewType = "home" | "dashboard" | "marketing" | "email-marketing" | 
-                          "push-notifications" | "partners" | "abandoned-checkouts" | 
-                          "admins" | "emails"; // ← NOVO
-```
-
-### 4. `src/pages/AdminHub.tsx`
-
-**Remover** o `WelcomeEmailsMonitor` da view "home":
-
-```tsx
-case "home":
-  return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      {/* REMOVIDO: WelcomeEmailsMonitor */}
-      
-      {/* Platform Selection */}
-      <div className="text-center">...
-```
-
-**Adicionar** case para a nova view:
-
-```tsx
-case "emails":
-  return <WelcomeEmailsMonitor />;
-```
-
-### 5. `src/components/WelcomeEmailsMonitor.tsx`
-
-Adicionar funcionalidade de prévia:
-
-**Novos estados:**
-```typescript
-const [selectedEmail, setSelectedEmail] = useState<PurchaseEmailStatus | null>(null);
-const [emailContent, setEmailContent] = useState<string | null>(null);
-const [isLoadingContent, setIsLoadingContent] = useState(false);
-```
-
-**Atualizar query para buscar `email_content`:**
-```typescript
-const { data: emailLogs } = await supabase
-  .from('welcome_email_logs')
-  .select('email, platform, status, sent_at, error_message, email_content') // ← adicionar
-```
-
-**Handler de clique na linha:**
-```typescript
-const handleEmailClick = async (purchase: PurchaseEmailStatus) => {
-  if (purchase.email_status !== 'sent') return;
-  
-  setSelectedEmail(purchase);
-  setIsLoadingContent(true);
-  
-  // Buscar conteúdo do email
-  const { data } = await supabase
-    .from('welcome_email_logs')
-    .select('email_content')
-    .eq('email', purchase.email.toLowerCase())
-    .eq('status', 'sent')
-    .order('sent_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  
-  setEmailContent(data?.email_content || null);
-  setIsLoadingContent(false);
-};
-```
-
-**Modal de prévia:**
-```tsx
-<Dialog open={!!selectedEmail} onOpenChange={() => setSelectedEmail(null)}>
-  <DialogContent className="max-w-4xl max-h-[90vh]">
-    <DialogHeader>
-      <DialogTitle className="flex items-center gap-2">
-        <Mail className="h-5 w-5" />
-        Prévia do Email Enviado
-      </DialogTitle>
-      <DialogDescription>
-        Enviado para: {selectedEmail?.email}
-      </DialogDescription>
-    </DialogHeader>
-    
-    <div className="border rounded-lg overflow-hidden bg-white">
-      {isLoadingContent ? (
-        <div className="p-8 text-center">
-          <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-          <p className="mt-2 text-muted-foreground">Carregando...</p>
-        </div>
-      ) : emailContent ? (
-        <iframe 
-          srcDoc={emailContent}
-          className="w-full h-[500px] border-0"
-          title="Prévia do email"
-        />
-      ) : (
-        <div className="p-8 text-center text-muted-foreground">
-          <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-          <p>Conteúdo do email não disponível</p>
-          <p className="text-sm mt-1">
-            Emails enviados antes desta atualização não têm o conteúdo salvo.
-          </p>
-        </div>
-      )}
-    </div>
-  </DialogContent>
-</Dialog>
-```
-
-**Tornar linha clicável (apenas para enviados):**
-```tsx
-<tr 
-  key={purchase.id} 
-  className={cn(
-    "hover:bg-muted/30",
-    purchase.email_status === 'sent' && "cursor-pointer hover:bg-muted/50"
-  )}
-  onClick={() => handleEmailClick(purchase)}
->
-```
-
----
-
-## Fluxo Visual
-
-```text
-+------------------------------------------+
-|           BARRA LATERAL                   |
-+------------------------------------------+
-| HOME                                      |
-| DASHBOARD GERAL                           |
-| MARKETING GERAL                           |
-| GERENCIAR PARCEIROS                       |
-| REMARKETING                               |
-| ADMINISTRADORES                           |
-| ▶ EMAILS DE BOAS-VINDAS  ← NOVO          |
-+------------------------------------------+
-```
-
-Ao clicar em "EMAILS DE BOAS-VINDAS", o monitor aparece na área de conteúdo.
-
----
-
-## Modal de Prévia (Wireframe)
-
-```text
-+--------------------------------------------------+
-|  ✉️ Prévia do Email Enviado              [X]     |
-|  Enviado para: cliente@email.com                 |
-+--------------------------------------------------+
-|                                                  |
-|   +------------------------------------------+   |
-|   |                                          |   |
-|   |   🤖 ¡Tu Herramienta de IA está         |   |
-|   |         Activada!                        |   |
-|   |                                          |   |
-|   |   Hola Cliente!                          |   |
-|   |   Tu compra fue confirmada...            |   |
-|   |                                          |   |
-|   |   📋 Datos de acceso:                    |   |
-|   |   Email: cliente@email.com               |   |
-|   |   Contraseña: cliente@email.com          |   |
-|   |                                          |   |
-|   |   [🚀 Acceder Ahora]                     |   |
-|   |                                          |   |
-|   +------------------------------------------+   |
-|                                                  |
-+--------------------------------------------------+
-```
-
----
-
-## Resumo de Arquivos
-
 | Arquivo | Ação |
 |---------|------|
-| `welcome_email_logs` (DB) | Adicionar coluna `email_content` |
-| `resend-pending-emails/index.ts` | Salvar `email_content` ao enviar |
-| `webhook-greenn-artes/index.ts` | Salvar `email_content` ao enviar |
-| `webhook-greenn-musicos/index.ts` | Salvar `email_content` ao enviar |
-| `webhook-hotmart-artes/index.ts` | Salvar `email_content` ao enviar |
-| `AdminHubSidebar.tsx` | Adicionar item "EMAILS DE BOAS-VINDAS" |
-| `AdminHub.tsx` | Remover monitor da home, adicionar case "emails" |
-| `WelcomeEmailsMonitor.tsx` | Adicionar modal de prévia e handler de clique |
+| Banco de dados | Criar função `reset_upscaler_credits` |
+| `src/pages/Planos.tsx` | Adicionar seção de créditos nos cards Pro e Unlimited |
+| `src/locales/pt/prompts.json` | Adicionar traduções `bonusCredits900` e `bonusCredits1800` |
+| `src/locales/es/prompts.json` | Adicionar traduções `bonusCredits900` e `bonusCredits1800` |
+| `supabase/functions/webhook-greenn/index.ts` | Adicionar lógica de reset de créditos |
 
 ---
 
 ## Resultado Esperado
 
-1. O monitor de emails fica acessível pela sidebar (não mais na home)
-2. Ao clicar em um email ENVIADO, abre um modal com a prévia do HTML
-3. Emails antigos (sem `email_content`) mostram mensagem informativa
-4. Novos emails terão o conteúdo salvo automaticamente
+1. Usuários veem os benefícios de créditos na página de planos
+2. Ao assinar Pro → créditos resetados para 900
+3. Ao assinar Unlimited → créditos resetados para 1800
+4. Renovação → créditos resetados para o valor do plano (não acumulam)
+5. Cancelamento/expiração → créditos zerados
+6. Transações registradas no histórico com descrição clara
