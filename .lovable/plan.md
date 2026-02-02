@@ -1,138 +1,80 @@
 
 
-# Plano: Modal de "Sem Créditos" no Upscaler Arcano
+# Plano: Melhorar Zoom e Aumentar Visor do Upscaler
 
-## Objetivo
+## Problemas Identificados
 
-Quando o usuário não estiver logado **OU** não tiver créditos suficientes, ao clicar para gerar a imagem, exibir um popup amigável ao invés de apenas um toast de erro. O popup terá um botão que leva para a página de compra de créditos (`/planos-creditos`).
-
----
-
-## Componente a Criar
-
-### `NoCreditsModal.tsx`
-
-Um novo componente de modal reutilizável com:
-
-- Ícone de moedas/coins em destaque
-- Título: "Ops, você não tem créditos!"
-- Descrição explicativa sobre o que são créditos
-- Botão principal: "Recarregar Créditos" → redireciona para `/planos-creditos`
-- Botão secundário: "Fazer Login" (exibido apenas quando o usuário não está logado)
-
-**Estrutura visual baseada no `ExpiredSubscriptionModal.tsx` já existente.**
+1. **Zoom muito lento**: O `WHEEL_FACTOR = 1.15` requer muitos giros de mouse para aumentar/diminuir
+2. **Visor pequeno no desktop**: O container do resultado usa largura total mas poderia ser maior
 
 ---
 
-## Lógica de Exibição
+## Solução 1: Zoom Exponencial Mais Rápido
 
-O modal será aberto nas seguintes situações:
+Aumentar o `WHEEL_FACTOR` de `1.15` para `1.40` (quase 3x mais rápido por giro):
 
-| Situação | Condição | Ação |
-|----------|----------|------|
-| Usuário não logado | `!user?.id` | Mostrar modal com opção de login |
-| Créditos insuficientes | `credits < creditCost` | Mostrar modal para recarregar |
-| Erro do backend | `code === 'INSUFFICIENT_CREDITS'` | Mostrar modal para recarregar |
+| Configuração | Valor Atual | Novo Valor | Efeito |
+|--------------|-------------|------------|--------|
+| WHEEL_FACTOR | 1.15 | 1.40 | ~3x mais rápido por giro de scroll |
+| Animação | 200ms | 150ms | Transição mais fluida |
+
+Cada giro de scroll agora aumenta/diminui 40% ao invés de 15%, fazendo o zoom parecer muito mais responsivo.
 
 ---
 
-## Modificações em `UpscalerArcanoTool.tsx`
+## Solução 2: Aumentar Container 50% no Desktop
 
-1. **Adicionar estado para controlar o modal:**
-```tsx
-const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
-const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
-```
+Atualmente o container do resultado ocupa a largura disponível. Para aumentar 50% verticalmente no desktop:
 
-2. **Substituir os `toast.error` por abertura do modal:**
+- Trocar o AspectRatio de `16/9` para `4/3` (mais alto)
+- Adicionar altura mínima no desktop: `md:min-h-[600px]`
+
+Isso dá mais espaço vertical para visualizar a imagem no desktop sem quebrar mobile.
+
+---
+
+## Arquivos a Modificar
+
+| Arquivo | Modificação |
+|---------|-------------|
+| `src/pages/UpscalerArcanoTool.tsx` | Ajustar WHEEL_FACTOR e AspectRatio |
+
+---
+
+## Código a Alterar
+
+### Linha 837 - Zoom mais rápido
 ```tsx
 // Antes:
-if (!user?.id) {
-  toast.error('Você precisa estar logado...');
-  return;
-}
-if (credits < creditCost) {
-  toast.error(`Créditos insuficientes...`);
-  return;
-}
+const WHEEL_FACTOR = 1.15;
 
 // Depois:
-if (!user?.id) {
-  setNoCreditsReason('not_logged');
-  setShowNoCreditsModal(true);
-  return;
-}
-if (credits < creditCost) {
-  setNoCreditsReason('insufficient');
-  setShowNoCreditsModal(true);
-  return;
-}
+const WHEEL_FACTOR = 1.40;
 ```
 
-3. **Tratar erro do backend também:**
+### Linha 870 - Animação mais fluida
 ```tsx
-if (runResponse.data?.code === 'INSUFFICIENT_CREDITS') {
-  setNoCreditsReason('insufficient');
-  setShowNoCreditsModal(true);
-  setStatus('idle');
-  refetchCredits();
-  return;
-}
+// Antes:
+transformRef.setTransform(newPosX, newPosY, newScale, 200, 'easeOut');
+
+// Depois:
+transformRef.setTransform(newPosX, newPosY, newScale, 150, 'easeOut');
 ```
 
-4. **Renderizar o modal no JSX:**
+### Linha 873 - Container maior no desktop
 ```tsx
-<NoCreditsModal
-  isOpen={showNoCreditsModal}
-  onClose={() => setShowNoCreditsModal(false)}
-  reason={noCreditsReason}
-/>
+// Antes:
+<AspectRatio ratio={16 / 9}>
+
+// Depois:
+<AspectRatio ratio={16 / 9} className="md:!aspect-[4/3]">
 ```
 
 ---
 
-## Arquivos a Modificar/Criar
+## Resultado Esperado
 
-| Arquivo | Ação |
-|---------|------|
-| `src/components/upscaler/NoCreditsModal.tsx` | **Criar** - Novo componente de modal |
-| `src/pages/UpscalerArcanoTool.tsx` | **Modificar** - Adicionar estado e lógica do modal |
-
----
-
-## Design do Modal
-
-```text
-┌────────────────────────────────────────┐
-│                                        │
-│              🪙 (ícone)                │
-│                                        │
-│    Ops, você não tem créditos!         │
-│                                        │
-│    Você precisa de créditos para       │
-│    usar o Upscaler Arcano. Recarregue  │
-│    agora e continue melhorando suas    │
-│    imagens!                            │
-│                                        │
-│  ┌──────────────────────────────────┐  │
-│  │    🪙 Recarregar Créditos        │  │
-│  └──────────────────────────────────┘  │
-│                                        │
-│  (Se não logado:)                      │
-│  ┌──────────────────────────────────┐  │
-│  │         Fazer Login              │  │
-│  └──────────────────────────────────┘  │
-│                                        │
-└────────────────────────────────────────┘
-```
-
----
-
-## Detalhes Técnicos
-
-- O modal usa os componentes existentes: `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `Button`
-- A navegação usa `useNavigate` do react-router-dom
-- O botão de login leva para `/user-login` (rota de login padrão do sistema)
-- O botão de créditos leva para `/planos-creditos`
-- Gradiente roxo/amarelo no botão principal para destacar a ação
+- Zoom 3x mais rápido e mais fluido
+- Visor 50% mais alto no desktop
+- Mantém experiência mobile inalterada
 
