@@ -574,11 +574,11 @@ const UpscalerArcanoTool: React.FC = () => {
       />
 
       {/* Main Content - Two Column Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-3 h-full">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 lg:h-full">
           
           {/* Left Side - Controls Panel (~28%) */}
-          <div className="lg:col-span-2 flex flex-col gap-2 overflow-y-auto pb-4 lg:pb-0">
+          <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
             
             {/* Version Switcher - Compact */}
             <TooltipProvider>
@@ -908,8 +908,8 @@ const UpscalerArcanoTool: React.FC = () => {
           </div>
 
           {/* Right Side - Result Viewer (~72%) */}
-          <div className="lg:col-span-5 flex flex-col min-h-0">
-            <Card className="flex-1 bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden flex flex-col">
+          <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
+            <Card className="flex-1 bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden flex flex-col min-h-[250px] lg:min-h-0">
               {/* Warning Banner */}
               {isProcessing && (
                 <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
