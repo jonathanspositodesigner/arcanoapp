@@ -2183,6 +2183,7 @@ export type Database = {
           amount: number
           balance_after: number
           created_at: string | null
+          credit_type: string
           description: string | null
           id: string
           transaction_type: string
@@ -2192,6 +2193,7 @@ export type Database = {
           amount: number
           balance_after: number
           created_at?: string | null
+          credit_type?: string
           description?: string | null
           id?: string
           transaction_type: string
@@ -2201,6 +2203,7 @@ export type Database = {
           amount?: number
           balance_after?: number
           created_at?: string | null
+          credit_type?: string
           description?: string | null
           id?: string
           transaction_type?: string
@@ -2213,6 +2216,8 @@ export type Database = {
           balance: number
           created_at: string | null
           id: string
+          lifetime_balance: number
+          monthly_balance: number
           updated_at: string | null
           user_id: string
         }
@@ -2220,6 +2225,8 @@ export type Database = {
           balance?: number
           created_at?: string | null
           id?: string
+          lifetime_balance?: number
+          monthly_balance?: number
           updated_at?: string | null
           user_id: string
         }
@@ -2227,6 +2234,8 @@ export type Database = {
           balance?: number
           created_at?: string | null
           id?: string
+          lifetime_balance?: number
+          monthly_balance?: number
           updated_at?: string | null
           user_id?: string
         }
@@ -2546,6 +2555,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_lifetime_credits: {
+        Args: { _amount: number; _description?: string; _user_id: string }
+        Returns: {
+          new_balance: number
+          success: boolean
+        }[]
+      }
       add_upscaler_credits: {
         Args: { _amount: number; _description?: string; _user_id: string }
         Returns: {
@@ -2599,6 +2615,14 @@ export type Database = {
         }[]
       }
       get_upscaler_credits: { Args: { _user_id: string }; Returns: number }
+      get_upscaler_credits_breakdown: {
+        Args: { _user_id: string }
+        Returns: {
+          lifetime: number
+          monthly: number
+          total: number
+        }[]
+      }
       get_user_expired_packs: {
         Args: { _user_id: string }
         Returns: {
