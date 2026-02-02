@@ -1,92 +1,43 @@
 
-# Plano: Fila Global de Jobs AI
 
-## Problema Identificado
+# Plano: Aumentar Cards de Upload com Aspect Ratio 3:4
 
-As Edge Functions contam jobs apenas de suas próprias tabelas, permitindo que mais de 3 jobs rodem simultaneamente quando são de ferramentas diferentes.
+## Objetivo
 
-## Solução
-
-Modificar ambas as Edge Functions para contar jobs `running` de **todas as tabelas** antes de decidir se enfileira ou inicia.
+Ampliar os componentes de upload de imagem no desktop e usar aspect ratio 3:4 para exibição das imagens.
 
 ---
 
-## Alteração 1: runninghub-upscaler/index.ts
+## Alteração 1: ImageUploadCard.tsx
 
-**Localização:** Linhas 468-474
+**Mudanças na área de upload:**
 
-**Antes:**
-```typescript
-const { count: runningCount } = await supabase
-  .from('upscaler_jobs')
-  .select('*', { count: 'exact', head: true })
-  .eq('status', 'running');
-
-console.log(`[RunningHub] Running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS}`);
+```text
+Antes:  h-16 (64px) fixo para mobile e desktop
+Depois: h-20 para mobile, lg:h-auto com aspect-[3/4] para desktop
 ```
 
-**Depois:**
+### Detalhes Técnicos:
+
 ```typescript
-// Count running jobs across ALL AI tools (global queue)
-const { count: upscalerRunning } = await supabase
-  .from('upscaler_jobs')
-  .select('*', { count: 'exact', head: true })
-  .eq('status', 'running');
+// Área de Upload - Antes
+<div className="relative h-16 flex flex-col items-center justify-center ...">
 
-const { count: poseRunning } = await supabase
-  .from('pose_changer_jobs')
-  .select('*', { count: 'exact', head: true })
-  .eq('status', 'running');
-
-const runningCount = (upscalerRunning || 0) + (poseRunning || 0);
-
-console.log(`[RunningHub] Global running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS} (upscaler: ${upscalerRunning || 0}, pose: ${poseRunning || 0})`);
+// Área de Upload - Depois
+<div className="relative h-20 lg:aspect-[3/4] flex flex-col items-center justify-center ...">
 ```
 
----
+### Exibição da Imagem:
 
-## Alteração 2: runninghub-pose-changer/index.ts
-
-**Localização:** Linhas 416-422
-
-**Antes:**
 ```typescript
-const { count: runningCount } = await supabase
-  .from('pose_changer_jobs')
-  .select('*', { count: 'exact', head: true })
-  .eq('status', 'running');
+// Antes
+<img src={image} className="w-full h-full object-contain" />
 
-console.log(`[PoseChanger] Running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS}`);
+// Depois - Centralizada com aspect ratio
+<div className="w-full h-full flex items-center justify-center p-2">
+  <img src={image} className="max-w-full max-h-full object-contain" />
+</div>
 ```
-
-**Depois:**
-```typescript
-// Count running jobs across ALL AI tools (global queue)
-const { count: upscalerRunning } = await supabase
-  .from('upscaler_jobs')
-  .select('*', { count: 'exact', head: true })
-  .eq('status', 'running');
-
-const { count: poseRunning } = await supabase
-  .from('pose_changer_jobs')
-  .select('*', { count: 'exact', head: true })
-  .eq('status', 'running');
-
-const runningCount = (upscalerRunning || 0) + (poseRunning || 0);
-
-console.log(`[PoseChanger] Global running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS} (upscaler: ${upscalerRunning || 0}, pose: ${poseRunning || 0})`);
-```
-
----
-
-## Comportamento Final
-
-| Situação | Antes | Depois |
-|----------|-------|--------|
-| 3 upscaler rodando, tenta pose | Inicia (bug) | Enfileira |
-| 2 upscaler + 1 pose rodando, tenta upscaler | Inicia (bug) | Enfileira |
-| 1 upscaler + 1 pose, tenta qualquer | Inicia | Inicia |
-| Fila: 3 upscaler + 2 pose na fila | Processa separado | Processa por ordem global |
 
 ---
 
@@ -94,24 +45,31 @@ console.log(`[PoseChanger] Global running jobs: ${runningCount}/${MAX_CONCURRENT
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `supabase/functions/runninghub-upscaler/index.ts` | Contar jobs de ambas tabelas |
-| `supabase/functions/runninghub-pose-changer/index.ts` | Contar jobs de ambas tabelas |
+| `src/components/pose-changer/ImageUploadCard.tsx` | Alterar altura para `lg:aspect-[3/4]` e ajustar layout da imagem |
 
 ---
 
-## Escalabilidade Futura
+## Resultado Visual
 
-Quando novas ferramentas forem adicionadas (Outfit Changer, 3D Stamp Forge, etc.), basta:
+```text
+Desktop:
+┌────────────────┐
+│ 📷 Sua Foto    │
+├────────────────┤
+│                │
+│    [IMAGEM]    │  ← Aspect 3:4 (~180-200px altura)
+│                │
+└────────────────┘
+┌────────────────┐
+│ 📷 Ref. Pose   │
+├────────────────┤
+│                │
+│    [IMAGEM]    │  ← Aspect 3:4 (~180-200px altura)
+│                │
+├────────────────┤
+│ Biblioteca...  │
+└────────────────┘
 
-1. Adicionar mais uma query para a nova tabela
-2. Somar no `runningCount` total
-
-Exemplo futuro:
-```typescript
-const { count: outfitRunning } = await supabase
-  .from('outfit_changer_jobs')
-  .select('*', { count: 'exact', head: true })
-  .eq('status', 'running');
-
-const runningCount = (upscalerRunning || 0) + (poseRunning || 0) + (outfitRunning || 0);
+Mobile: Mantém compacto (h-20 = 80px)
 ```
+
