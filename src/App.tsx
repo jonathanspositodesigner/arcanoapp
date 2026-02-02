@@ -114,6 +114,7 @@ const PlanosUpscalerArcano69ES = lazy(() => import("./pages/PlanosUpscalerArcano
 const PlanosUpscalerArcano590ES = lazy(() => import("./pages/PlanosUpscalerArcano590ES"));
 const PlanosForjaSelos3D = lazy(() => import("./pages/PlanosForjaSelos3D"));
 const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
+const PoseChangerTool = lazy(() => import("./pages/PoseChangerTool"));
 
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
 const PackAgendas = lazy(() => import("./pages/PackAgendas"));
@@ -265,6 +266,7 @@ const AppContent = () => {
           <Route path="/planos-upscaler-arcano-590-es" element={<PlanosUpscalerArcano590ES />} />
           <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
           <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
+          <Route path="/pose-changer-tool" element={<PoseChangerTool />} />
           <Route path="/pack-agendas" element={<PackAgendas />} />
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
           <Route path="/planos-creditos" element={<PlanosCreditos />} />
