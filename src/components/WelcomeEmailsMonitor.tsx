@@ -234,7 +234,11 @@ const WelcomeEmailsMonitor = () => {
     }
 
     if (platform === 'hotmart-es') {
-      return 'Webhook Hotmart: email registrado com platform diferente ou não processado';
+      return 'Hotmart ES: verificar template ferramentas_ia/es ou cliente antigo sem email configurado';
+    }
+
+    if (platform === 'artes-eventos' || platform === 'artes-musicos' || platform === 'prompts') {
+      return 'Email não encontrado - verificar webhook e template';
     }
 
     return 'Email não encontrado no sistema de logs';
