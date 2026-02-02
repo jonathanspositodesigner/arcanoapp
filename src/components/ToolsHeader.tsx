@@ -169,9 +169,18 @@ const ToolsHeader = ({
                       <Coins className="w-4 h-4 text-yellow-400" />
                       Créditos
                     </span>
-                    <Badge className="bg-purple-600 text-white">
-                      {creditsLoading ? '...' : credits}
-                    </Badge>
+                    <div className="flex items-center gap-1">
+                      <Badge className="bg-purple-600 text-white">
+                        {creditsLoading ? '...' : credits}
+                      </Badge>
+                      <button
+                        onClick={() => navigate('/planos-creditos')}
+                        className="p-1 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded"
+                        title="Comprar créditos"
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   <DropdownMenuSeparator className="bg-purple-500/20" />

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, History, TrendingDown, TrendingUp, Loader2, Coins } from "lucide-react";
+import { ArrowLeft, History, TrendingDown, TrendingUp, Loader2, Coins, PlusCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -94,9 +94,20 @@ const CreditHistory = () => {
               <Coins className="h-5 w-5 text-yellow-400" />
               <span className="text-purple-300">Saldo atual</span>
             </div>
-            <Badge className="bg-purple-600 text-white text-lg px-4 py-1">
-              {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge className="bg-purple-600 text-white text-lg px-4 py-1">
+                {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/planos-creditos')}
+                className="h-8 w-8 text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                title="Comprar créditos"
+              >
+                <PlusCircle className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </Card>
 

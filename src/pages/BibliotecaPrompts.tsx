@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, LogOut, Settings, User, Phone, Coins } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, LogOut, Settings, User, Phone, Coins, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
@@ -433,9 +433,18 @@ const BibliotecaPrompts = () => {
             <Coins className="w-4 h-4 text-yellow-400" />
             Créditos
           </span>
-          <Badge className="bg-purple-600 text-white">
-            {creditsLoading ? '...' : credits}
-          </Badge>
+          <div className="flex items-center gap-1">
+            <Badge className="bg-purple-600 text-white">
+              {creditsLoading ? '...' : credits}
+            </Badge>
+            <button
+              onClick={() => navigate('/planos-creditos')}
+              className="p-1 text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded"
+              title="Comprar créditos"
+            >
+              <PlusCircle className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         
         <DropdownMenuSeparator className="bg-purple-500/20" />
@@ -499,15 +508,27 @@ const BibliotecaPrompts = () => {
                 <Star className="h-3 w-3 mr-2" fill="currentColor" />
                 {t('header.becomePremium')}
               </Button>
-              <Badge 
-                variant="outline" 
-                className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
-              >
-                <Coins className="w-3.5 h-3.5 text-yellow-400" />
-                <span className="font-medium">
-                  {creditsLoading ? '...' : credits}
-                </span>
-              </Badge>
+              <div className="flex items-center gap-1">
+                <Badge 
+                  variant="outline" 
+                  className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:bg-purple-800/50"
+                  onClick={() => navigate('/credit-history')}
+                >
+                  <Coins className="w-3.5 h-3.5 text-yellow-400" />
+                  <span className="font-medium">
+                    {creditsLoading ? '...' : credits}
+                  </span>
+                </Badge>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate('/planos-creditos')}
+                  className="h-7 w-7 text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                  title="Comprar créditos"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                </Button>
+              </div>
               <ProfileDropdown />
             </>
           )}
@@ -516,15 +537,27 @@ const BibliotecaPrompts = () => {
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               {t('header.premiumActive')}
             </Badge>
-            <Badge 
-              variant="outline" 
-              className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
-            >
-              <Coins className="w-3.5 h-3.5 text-yellow-400" />
-              <span className="font-medium">
-                {creditsLoading ? '...' : credits}
-              </span>
-            </Badge>
+            <div className="flex items-center gap-1">
+              <Badge 
+                variant="outline" 
+                className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:bg-purple-800/50"
+                onClick={() => navigate('/credit-history')}
+              >
+                <Coins className="w-3.5 h-3.5 text-yellow-400" />
+                <span className="font-medium">
+                  {creditsLoading ? '...' : credits}
+                </span>
+              </Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/planos-creditos')}
+                className="h-7 w-7 text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                title="Comprar créditos"
+              >
+                <PlusCircle className="w-4 h-4" />
+              </Button>
+            </div>
             <ProfileDropdown />
           </>}
         </div>
@@ -551,10 +584,22 @@ const BibliotecaPrompts = () => {
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Button>
-            <Badge className="bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1">
-              <Coins className="w-3 h-3 text-yellow-400" />
-              {creditsLoading ? '...' : credits}
-            </Badge>
+            <div className="flex items-center gap-1">
+              <Badge 
+                className="bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1 cursor-pointer"
+                onClick={() => navigate('/credit-history')}
+              >
+                <Coins className="w-3 h-3 text-yellow-400" />
+                {creditsLoading ? '...' : credits}
+              </Badge>
+              <button
+                onClick={() => navigate('/planos-creditos')}
+                className="p-0.5 text-green-400 hover:text-green-300"
+                title="Comprar créditos"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+              </button>
+            </div>
             <ProfileDropdown isMobile />
           </div>
         )}
@@ -563,10 +608,22 @@ const BibliotecaPrompts = () => {
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Badge>
-            <Badge className="bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1">
-              <Coins className="w-3 h-3 text-yellow-400" />
-              {creditsLoading ? '...' : credits}
-            </Badge>
+            <div className="flex items-center gap-1">
+              <Badge 
+                className="bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1 cursor-pointer"
+                onClick={() => navigate('/credit-history')}
+              >
+                <Coins className="w-3 h-3 text-yellow-400" />
+                {creditsLoading ? '...' : credits}
+              </Badge>
+              <button
+                onClick={() => navigate('/planos-creditos')}
+                className="p-0.5 text-green-400 hover:text-green-300"
+                title="Comprar créditos"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+              </button>
+            </div>
             <ProfileDropdown isMobile />
           </div>}
       </header>
