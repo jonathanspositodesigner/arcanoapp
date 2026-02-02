@@ -1,105 +1,58 @@
 
 
-# Plano: Ajustar Layout da Página Ferramentas IA Aplicativo
+# Plano: Banner de Promoção na Página de Ferramentas IA
 
-## Mudanças Solicitadas
+## Objetivo
+Adicionar uma tarja promocional abaixo do header na página `/ferramentas-ia-aplicativo` seguindo o estilo da imagem de referência (fundo rosa/magenta) com:
+- Badge "OFERTA LIMITADA" no início
+- Texto: "comece agora mesmo a usar nossas ferramentas de ia com 30% de desconto"
+- Opção de fechar (X)
 
-1. **Remover** o botão "Primeiro Acesso" (não mostrar para ninguém)
-2. **Usar** o `ToolsHeader` que já mostra perfil + créditos no topo
-3. **Remover** as seções separadas "Suas Ferramentas" e "Disponíveis para Aquisição"
-4. **Colocar** todas as 4 ferramentas em um único grid, sem distinção
+---
 
-## Estrutura da Nova Página
+## Mudanças Planejadas
+
+### 1. Criar Componente `PromoToolsBanner`
+**Arquivo:** `src/components/PromoToolsBanner.tsx` (novo)
+
+Estrutura do componente:
+- Fundo com gradiente rosa/magenta similar à imagem de referência
+- Badge destacado com ícone de tag e texto "OFERTA LIMITADA"
+- Texto promocional à direita do badge
+- Botão X para fechar o banner
+- Responsivo para mobile e desktop
+- Efeito shimmer animado (igual ao PromoNatalBanner)
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│  HEADER (ToolsHeader)                                           │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ [←] Logo Ferramentas IA          [Créditos 123] [+] [Perfil]││
-│  └─────────────────────────────────────────────────────────────┘│
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    GRID ÚNICO (4 colunas)                 │  │
-│  │                                                           │  │
-│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐      │  │
-│  │  │Upscaler │  │ Forja   │  │  Muda   │  │  Muda   │      │  │
-│  │  │ Arcano  │  │ Selos3D │  │  Pose   │  │  Roupa  │      │  │
-│  │  └─────────┘  └─────────┘  └─────────┘  └─────────┘      │  │
-│  │                                                           │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│ [Tag] OFERTA LIMITADA   comece agora mesmo a usar nossas...  30% OFF  X │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## O Que Será Removido
+### 2. Integrar na Página `FerramentasIAAplicativo`
+**Arquivo:** `src/pages/FerramentasIAAplicativo.tsx`
 
-| Elemento | Motivo |
-|----------|--------|
-| Botão "Primeiro Acesso" (linhas 311-325) | Não necessário nesta página |
-| Seção "Suas Ferramentas" (linhas 333-344) | Grid único sem separação |
-| Seção "Disponíveis para Aquisição" (linhas 346-357) | Grid único sem separação |
-| Modais de Primeiro Acesso (linhas 367-459) | Não necessário |
-| Estados de modal `showFirstAccessModal`, `firstAccessEmail`, etc. | Não necessário |
-| Função `handleFirstAccessCheck` | Não necessário |
+- Importar o novo componente `PromoToolsBanner`
+- Inserir logo abaixo do `<ToolsHeader>`
+- O banner será exibido apenas nesta página específica
 
-## O Que Será Mantido
+---
 
-| Elemento | Descrição |
-|----------|-----------|
-| `ToolsHeader` | Já tem perfil + créditos + login |
-| Grid de cards | Todas as 4 ferramentas em um único grid |
-| `renderToolCard()` | Renderização dos cards permanece igual |
-| Lógica de acesso | `checkToolAccess()` continua funcionando |
-| Links das ferramentas | `handleToolClick()` mantido (vamos mudar depois) |
+## Detalhes Técnicos
 
-## Código Simplificado
+### Estilo Visual
+- **Fundo:** Gradiente rosa/magenta (`from-pink-600 via-pink-500 to-pink-600`)
+- **Badge:** Fundo escuro semi-transparente com borda, ícone de tag (Lucide `Tag`)
+- **Texto:** Branco com peso médio
+- **Botão fechar:** Ícone X com hover state
 
-### Estrutura do JSX Principal
+### Comportamento
+- Banner pode ser fechado (estado local com `useState`)
+- Não persiste após refresh (fecha temporariamente na sessão)
+- Layout responsivo:
+  - Desktop: Linha única centralizada
+  - Mobile: Duas linhas (badge em cima, texto embaixo)
 
-```tsx
-return (
-  <div className="min-h-screen bg-[#0D0221]">
-    {/* Header com perfil e créditos */}
-    <ToolsHeader 
-      title={t('ferramentas.title')}
-      onBack={goBack}
-      showLogo={true}
-    />
-
-    {/* Conteúdo - Grid único com todas as ferramentas */}
-    <main className="container mx-auto px-4 py-8">
-      <p className="text-purple-300 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
-        {t('ferramentas.description')}
-      </p>
-
-      {/* Grid único - sem separação por acesso */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {tools.map(renderToolCard)}
-      </div>
-
-      {tools.length === 0 && (
-        <div className="text-center py-16">
-          <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-          <p className="text-purple-300">{t('ferramentas.noToolsAvailable')}</p>
-        </div>
-      )}
-    </main>
-  </div>
-);
-```
-
-## Arquivo a Modificar
-
-| Arquivo | Ação |
-|---------|------|
-| `src/pages/FerramentasIAAplicativo.tsx` | Copiar estrutura de `FerramentasIA.tsx` e simplificar conforme descrito |
-
-## Benefícios
-
-1. **Layout limpo**: Sem botão extra de primeiro acesso
-2. **Header consistente**: Igual às outras páginas de ferramentas (perfil + créditos)
-3. **Grid único**: Todas as ferramentas visíveis igualmente
-4. **Menos código**: Remove lógica desnecessária de modais de primeiro acesso
-5. **Pronto para próxima etapa**: Links prontos para serem alterados
+### Animação
+- Efeito shimmer sutil no background (reutilizando estilo do PromoNatalBanner)
 
