@@ -6,8 +6,7 @@ import AdminSidebar from "./AdminSidebar";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import GlobalImportProgress from "./GlobalImportProgress";
-import GlobalEmailProgress from "./GlobalEmailProgress";
+
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
@@ -66,10 +65,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   }
 
   return (
-    <>
-      <GlobalImportProgress />
-      <GlobalEmailProgress />
-      <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <AdminSidebar onLogout={handleLogout} />
@@ -97,7 +93,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </div>
       </main>
     </div>
-    </>
   );
 };
 

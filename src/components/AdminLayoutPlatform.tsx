@@ -6,8 +6,6 @@ import { Menu } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminSidebarPlatform, { AdminPlatform } from "./AdminSidebarPlatform";
-import GlobalImportProgress from "./GlobalImportProgress";
-import GlobalEmailProgress from "./GlobalEmailProgress";
 
 interface AdminLayoutPlatformProps {
   children: React.ReactNode;
@@ -64,9 +62,6 @@ const AdminLayoutPlatform = ({ children, platform }: AdminLayoutPlatformProps) =
 
   return (
     <div className="min-h-screen bg-background flex w-full">
-      <GlobalImportProgress />
-      <GlobalEmailProgress />
-      
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <AdminSidebarPlatform platform={platform} onLogout={handleLogout} />
