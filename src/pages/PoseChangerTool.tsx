@@ -235,9 +235,13 @@ const PoseChangerTool: React.FC = () => {
 
   // Upload image to Supabase storage
   const uploadToStorage = async (file: File | Blob, prefix: string): Promise<string> => {
+    if (!user?.id) {
+      throw new Error('User not authenticated');
+    }
+    
     const timestamp = Date.now();
     const fileName = `${prefix}-${timestamp}.webp`;
-    const filePath = `pose-changer/${fileName}`;
+    const filePath = `pose-changer/${user.id}/${fileName}`;
 
     const { data, error } = await supabase.storage
       .from('artes-cloudinary')
