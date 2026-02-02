@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Coins, History, TrendingDown, TrendingUp, Loader2, ChevronRight } from "lucide-react";
+import { Coins, History, TrendingDown, TrendingUp, Loader2, ChevronRight, PlusCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -151,6 +151,17 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown }: Cred
             Nenhuma transação encontrada
           </p>
         )}
+      </div>
+
+      {/* Buy Credits Button */}
+      <div className="border-t border-purple-500/20 pt-4 mt-4">
+        <Button
+          onClick={() => navigate('/planos-creditos')}
+          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-medium"
+        >
+          <PlusCircle className="w-4 h-4 mr-2" />
+          Comprar Créditos
+        </Button>
       </div>
     </Card>
   );

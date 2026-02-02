@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Coins, Lock, Settings, LogOut, Phone, LogIn, Sparkles } from "lucide-react";
+import { ArrowLeft, User, Coins, Lock, Settings, LogOut, Phone, LogIn, Sparkles, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -104,17 +104,28 @@ const ToolsHeader = ({
             </Button>
           ) : (
             <>
-              {/* Credits Badge */}
-              <Badge
-                variant="outline"
-                className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:bg-purple-800/50"
-                onClick={() => navigate('/credit-history')}
-              >
-                <Coins className="w-3.5 h-3.5 text-yellow-400" />
-                <span className="font-medium">
-                  {creditsLoading ? '...' : credits}
-                </span>
-              </Badge>
+              {/* Credits Badge + Add Button */}
+              <div className="flex items-center gap-1">
+                <Badge
+                  variant="outline"
+                  className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:bg-purple-800/50"
+                  onClick={() => navigate('/credit-history')}
+                >
+                  <Coins className="w-3.5 h-3.5 text-yellow-400" />
+                  <span className="font-medium">
+                    {creditsLoading ? '...' : credits}
+                  </span>
+                </Badge>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate('/planos-creditos')}
+                  className="h-7 w-7 text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                  title="Comprar créditos"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                </Button>
+              </div>
 
               {/* Profile Dropdown */}
               <DropdownMenu>

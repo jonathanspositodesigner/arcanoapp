@@ -118,6 +118,7 @@ const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
 const PackAgendas = lazy(() => import("./pages/PackAgendas"));
 const ComboArtesArcanas = lazy(() => import("./pages/ComboArtesArcanas"));
+const PlanosCreditos = lazy(() => import("./pages/PlanosCreditos"));
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
@@ -265,6 +266,7 @@ const AppContent = () => {
           <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
           <Route path="/pack-agendas" element={<PackAgendas />} />
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
+          <Route path="/planos-creditos" element={<PlanosCreditos />} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>
