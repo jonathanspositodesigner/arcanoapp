@@ -1,119 +1,65 @@
 
-# Plano: Deduplicação Robusta de Emails de Boas-Vindas
 
-## Problema Diagnosticado
+# Plano: Corrigir Função de Email de Boas-Vindas Quebrada
 
-A verificação atual de duplicatas falha quando webhooks chegam simultaneamente:
+## Diagnóstico do Problema
 
-```text
-Webhook A ──► SELECT (não encontra) ──► ENVIA EMAIL ──► INSERT
-                                                              ↓
-Webhook B ──► SELECT (não encontra) ──────────────────────► ENVIA EMAIL ──► INSERT
-                      ↑
-          Ambos passam porque INSERT ainda não ocorreu
+O código foi modificado para usar deduplicação atômica com `dedup_key`, mas **a migração de banco nunca foi executada**. 
+
+A função `sendWelcomeEmail` em todos os 3 webhooks tenta inserir:
+```javascript
+dedup_key: dedupKey  // ← Esta coluna NÃO EXISTE!
 ```
 
-**Evidência real** (logs de hoje):
-- `elionesdbv@gmail.com`: 2 emails com diferença de **9 milissegundos**
-- `claudiojosesjdp@hotmail.com`: 2 emails com diferença de **189ms**
+Como resultado, o INSERT falha com erro `42703: column does not exist` e **nenhum email é enviado**.
 
-## Solução: Insert-First com Unique Constraint
+## Clientes Afetados Hoje (8 pessoas)
 
-Em vez de verificar ANTES de enviar, vamos **inserir primeiro** com status `pending` e usar um **unique constraint** para bloquear duplicatas:
+| Email | Plataforma | Horário Compra |
+|-------|------------|----------------|
+| markinhosky@hotmail.com | artes-eventos | 15:27 |
+| gg.grafica@hotmail.com | artes-eventos | 15:20 |
+| studio.2023.inovacao@gmail.com | artes-eventos | 15:18 |
+| renatomizaelfotografia@gmail.com | artes-eventos | 14:59 |
+| jhonesantozz@gmail.com | artes-eventos | 14:58 |
+| filipieodriguesdsgn@gmail.com | artes-eventos | 14:45 |
+| fabioxgomes@gmail.com | artes-eventos | 13:56 |
+| lekfred@gmail.com | artes-eventos | 13:55 |
 
-```text
-Webhook A ──► INSERT (pending) ✅ ──► ENVIA EMAIL ──► UPDATE (sent)
-                      ↓
-Webhook B ──► INSERT (pending) ❌ BLOQUEADO por constraint ──► IGNORA
-```
-
-## Detalhamento Técnico
+## Solução em 2 Partes
 
 ### Parte 1: Migração de Banco de Dados
 
-Adicionar um **unique constraint parcial** na tabela `welcome_email_logs`:
+Adicionar a coluna `dedup_key` e o unique constraint:
 
 ```sql
--- Unique constraint: apenas 1 email por email+produto em 5 minutos
-CREATE UNIQUE INDEX idx_welcome_email_dedup 
-ON welcome_email_logs (email, product_info, date_trunc('minute', sent_at))
-WHERE status IN ('pending', 'sent');
+-- Adicionar coluna dedup_key
+ALTER TABLE welcome_email_logs 
+ADD COLUMN IF NOT EXISTS dedup_key TEXT;
+
+-- Criar índice único para deduplicação atômica
+CREATE UNIQUE INDEX IF NOT EXISTS idx_welcome_email_dedup_key 
+ON welcome_email_logs (dedup_key) 
+WHERE dedup_key IS NOT NULL;
 ```
 
-Este índice garante que não pode existir dois registros com:
-- Mesmo email
-- Mesmo product_info  
-- Mesmo minuto
-- Status pending ou sent
+### Parte 2: Reenviar Emails Pendentes
 
-### Parte 2: Refatorar Função `sendWelcomeEmail`
+Após a correção, criar uma edge function temporária para reenviar os emails perdidos para os 8 clientes afetados.
 
-Nova lógica em todos os 3 webhooks:
+## Arquivos Afetados
 
-```typescript
-async function sendWelcomeEmail(...): Promise<void> {
-  try {
-    // PASSO 1: Tentar INSERT primeiro (atômico)
-    const { data: inserted, error: insertError } = await supabase
-      .from('welcome_email_logs')
-      .insert({
-        email,
-        product_info: packInfo,
-        platform,
-        status: 'pending',  // Marcado como pendente
-        tracking_id: crypto.randomUUID(),
-        locale
-      })
-      .select('id, tracking_id')
-      .single()
-    
-    // Se falhou por duplicata, ignorar silenciosamente
-    if (insertError?.code === '23505') { // unique_violation
-      console.log(`   ├─ [${requestId}] ⏭️ Email duplicado bloqueado`)
-      return
-    }
-    
-    if (insertError) throw insertError
-    
-    // PASSO 2: Enviar email (apenas quem conseguiu INSERT)
-    const result = await enviarViaAPI(...)
-    
-    // PASSO 3: Atualizar status para sent ou failed
-    await supabase
-      .from('welcome_email_logs')
-      .update({ 
-        status: result.success ? 'sent' : 'failed',
-        error_message: result.error || null
-      })
-      .eq('id', inserted.id)
-      
-  } catch (error) {
-    // Tratar erro
-  }
-}
-```
+| Arquivo | Status | Problema |
+|---------|--------|----------|
+| `webhook-greenn-artes/index.ts` | Código OK | Aguardando migração DB |
+| `webhook-greenn-musicos/index.ts` | Código OK | Aguardando migração DB |
+| `webhook-greenn/index.ts` | Código OK | Aguardando migração DB |
+| Banco de Dados | **FALTANDO** | Coluna `dedup_key` não existe |
 
-### Parte 3: Arquivos a Modificar
+## Resultado Após Correção
 
-| Arquivo | Alteração |
-|---------|-----------|
-| Migração SQL | Criar unique index `idx_welcome_email_dedup` |
-| `webhook-greenn-artes/index.ts` | Refatorar `sendWelcomeEmail` para usar insert-first |
-| `webhook-greenn-musicos/index.ts` | Mesma refatoração |
-| `webhook-greenn/index.ts` | Mesma refatoração |
+- Emails de boas-vindas voltarão a funcionar
+- Deduplicação atômica funcionará corretamente
+- Race conditions serão eliminadas
+- Os 8 clientes afetados receberão seus emails
 
-## Por Que Não Aumenta Custo do Cloud
-
-1. **Mesma quantidade de operações** - Apenas trocamos a ordem (INSERT antes em vez de SELECT antes)
-2. **Sem Edge Functions extras** - Usa operações de banco existentes
-3. **Sem locks externos** - O constraint do PostgreSQL faz o trabalho
-4. **Operação atômica** - Garantia de consistência sem custo extra
-
-## Resultado Esperado
-
-| Métrica | Antes | Depois |
-|---------|-------|--------|
-| Emails duplicados | ~2% | **0%** |
-| Queries por envio | 2 (SELECT + INSERT) | 2 (INSERT + UPDATE) |
-| Custo adicional | - | **Zero** |
-| Confiabilidade | Race condition | Atômico |
