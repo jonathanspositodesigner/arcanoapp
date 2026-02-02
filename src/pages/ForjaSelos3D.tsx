@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Play } from "lucide-react";
+import { ExternalLink, Play } from "lucide-react";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
+import ToolsHeader from "@/components/ToolsHeader";
 
 interface VideoLesson {
   titleKey: string;
@@ -73,26 +74,12 @@ const ForjaSelos3D = () => {
 
   return (
     <div className="min-h-screen bg-[#0D0221]">
+      <ToolsHeader 
+        title={t('forja3DLessons.title')}
+        subtitle={t('forja3DLessons.description')}
+        onBack={goBack}
+      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={goBack}
-            className="shrink-0 text-purple-300 hover:text-white hover:bg-purple-500/20"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white">
-              {t('forja3DLessons.title')}
-            </h1>
-            <p className="text-purple-300 text-sm md:text-base">
-              {t('forja3DLessons.description')}
-            </p>
-          </div>
-        </div>
 
         {/* Video Lessons */}
         <div className="space-y-8">

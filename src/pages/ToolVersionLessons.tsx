@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Play, ExternalLink, Lock, Unlock, AlertTriangle, ChevronRight, Check, CheckCircle2, Circle, Trophy } from "lucide-react";
+import { Play, ExternalLink, Lock, Unlock, AlertTriangle, ChevronRight, Check, CheckCircle2, Circle, Trophy } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
@@ -21,6 +21,7 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
+import ToolsHeader from "@/components/ToolsHeader";
 
 interface TutorialLesson {
   title: string;
@@ -473,6 +474,11 @@ const ToolVersionLessons = () => {
 
   return (
     <div className="min-h-screen bg-[#0D0221] flex flex-col">
+      <ToolsHeader 
+        title={`${toolName} - ${versionName}`}
+        subtitle={t('toolLessons.lessonsAvailable', { count: lessons.length })}
+        onBack={locale === 'es' ? () => navigate(toolSelectPath) : goBack}
+      />
       <div className="container mx-auto px-4 py-8 max-w-6xl flex-1">
         {/* Confetti Animation */}
         {showConfetti && (
@@ -482,26 +488,6 @@ const ToolVersionLessons = () => {
             <div className="absolute text-4xl animate-pulse" style={{ animationDelay: '0.2s' }}>🎊</div>
           </div>
         )}
-
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={locale === 'es' ? () => navigate(toolSelectPath) : goBack}
-            className="shrink-0 text-purple-300 hover:text-white hover:bg-purple-500/20"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-lg md:text-3xl font-bold text-white">
-              {toolName} - {versionName}
-            </h1>
-            <p className="text-purple-300 text-sm md:text-base">
-              {t('toolLessons.lessonsAvailable', { count: lessons.length })}
-            </p>
-          </div>
-        </div>
 
         {/* Master's Journey Progress Bar - Only for upscaler tools */}
         {toolSlug === 'upscaller-arcano' && lessons.length >= 4 && (

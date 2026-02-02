@@ -5,11 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
-import { ArrowLeft, Sparkles, CheckCircle, Loader2, Play, ShoppingCart, LogIn, UserCheck, AlertTriangle, ChevronRight, ChevronLeft, User } from "lucide-react";
+import { Sparkles, CheckCircle, Loader2, Play, ShoppingCart, UserCheck, AlertTriangle, ChevronRight, ChevronLeft, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import ToolsHeader from "@/components/ToolsHeader";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
@@ -287,44 +288,11 @@ const FerramentasIA = () => {
   return (
     <div className="min-h-screen bg-[#0D0221]">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0D0221]/95 backdrop-blur-lg border-b border-purple-500/20">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Lado Esquerdo - Voltar + Login */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={goBack}
-              className="text-purple-300 hover:text-white hover:bg-purple-500/20"
-              title={getBackLabel()}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            
-            {!user && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/login-artes?redirect=/ferramentas-ia")}
-                className="text-purple-300 border-purple-500/30 hover:bg-purple-500/20 text-xs sm:text-sm"
-              >
-                <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
-                {t('ferramentas.login')}
-              </Button>
-            )}
-          </div>
-
-          {/* Lado Direito - Logo + Título (fixo) */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </div>
-            <h1 className="text-base sm:text-xl font-bold text-white hidden sm:block">
-              {t('ferramentas.title')}
-            </h1>
-          </div>
-        </div>
-      </header>
+      <ToolsHeader 
+        title={t('ferramentas.title')}
+        onBack={goBack}
+        showLogo={true}
+      />
 
       {/* Primeiro Acesso Button - Below Header - Only for logged out users */}
       {!user && (
