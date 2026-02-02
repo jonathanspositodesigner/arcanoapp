@@ -1,0 +1,595 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// API Configuration
+const RUNNINGHUB_API_KEY = (
+  Deno.env.get('RUNNINGHUB_API_KEY') ||
+  Deno.env.get('RUNNINGHUB_APIKEY') ||
+  ''
+).trim();
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+// WebApp ID for Pose Changer
+const WEBAPP_ID_POSE = '2018451429635133442';
+const MAX_CONCURRENT_JOBS = 3;
+
+// Rate limit configuration
+const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 };
+const RATE_LIMIT_RUN = { maxRequests: 5, windowSeconds: 60 };
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+if (!RUNNINGHUB_API_KEY) {
+  console.error('[PoseChanger] CRITICAL: Missing RUNNINGHUB_API_KEY secret');
+}
+
+console.log('[PoseChanger] Config loaded - WebApp ID:', WEBAPP_ID_POSE);
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// Get client IP from request headers
+function getClientIP(req: Request): string {
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim();
+  }
+  const realIP = req.headers.get('x-real-ip');
+  if (realIP) {
+    return realIP;
+  }
+  return 'unknown';
+}
+
+// Check rate limit using database function
+async function checkRateLimit(
+  ip: string, 
+  endpoint: string, 
+  maxRequests: number, 
+  windowSeconds: number
+): Promise<{ allowed: boolean; currentCount: number; resetAt: string }> {
+  try {
+    const { data, error } = await supabase.rpc('check_rate_limit', {
+      _ip_address: ip,
+      _endpoint: endpoint,
+      _max_requests: maxRequests,
+      _window_seconds: windowSeconds
+    });
+    
+    if (error) {
+      console.error('[RateLimit] Error checking rate limit:', error);
+      return { allowed: true, currentCount: 0, resetAt: '' };
+    }
+    
+    const result = data?.[0] || { allowed: true, current_count: 0, reset_at: null };
+    return { 
+      allowed: result.allowed, 
+      currentCount: result.current_count,
+      resetAt: result.reset_at || ''
+    };
+  } catch (err) {
+    console.error('[RateLimit] Exception:', err);
+    return { allowed: true, currentCount: 0, resetAt: '' };
+  }
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const url = new URL(req.url);
+    const path = url.pathname.split('/').pop();
+    const clientIP = getClientIP(req);
+    
+    console.log(`[PoseChanger] Endpoint called: ${path}, IP: ${clientIP}`);
+
+    // Apply rate limiting
+    if (path === 'upload' || path === 'run') {
+      const rateConfig = path === 'upload' ? RATE_LIMIT_UPLOAD : RATE_LIMIT_RUN;
+      const rateLimitResult = await checkRateLimit(
+        clientIP, 
+        `runninghub-pose-changer/${path}`,
+        rateConfig.maxRequests,
+        rateConfig.windowSeconds
+      );
+      
+      if (!rateLimitResult.allowed) {
+        console.warn(`[RateLimit] IP ${clientIP} exceeded limit for ${path}`);
+        return new Response(JSON.stringify({ 
+          error: 'Too many requests. Please wait before trying again.',
+          code: 'RATE_LIMIT_EXCEEDED',
+          retryAfter: rateLimitResult.resetAt
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' },
+        });
+      }
+    }
+
+    if (path === 'upload') {
+      return await handleUpload(req);
+    } else if (path === 'run') {
+      return await handleRun(req);
+    } else if (path === 'queue-status') {
+      return await handleQueueStatus(req);
+    } else {
+      return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[PoseChanger] Unhandled error:', error);
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
+
+// Upload image to RunningHub
+async function handleUpload(req: Request) {
+  if (!RUNNINGHUB_API_KEY) {
+    return new Response(JSON.stringify({ 
+      error: 'API key not configured',
+      code: 'MISSING_API_KEY'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { imageBase64, fileName } = await req.json();
+  
+  if (!imageBase64) {
+    return new Response(JSON.stringify({ error: 'imageBase64 is required', code: 'MISSING_IMAGE' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  console.log('[PoseChanger] Uploading image...');
+
+  try {
+    const binaryString = atob(imageBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    const ext = (fileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
+    const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 
+                     ext === 'webp' ? 'image/webp' : 'image/png';
+
+    const formData = new FormData();
+    formData.append('apiKey', RUNNINGHUB_API_KEY);
+    formData.append('fileType', 'image');
+    formData.append('file', new Blob([bytes], { type: mimeType }), fileName || 'upload.png');
+
+    const response = await fetch('https://www.runninghub.ai/task/openapi/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json();
+    console.log('[PoseChanger] Upload response:', JSON.stringify(data));
+
+    if (data.code !== 0) {
+      return new Response(JSON.stringify({ 
+        error: data.msg || 'Upload failed',
+        code: data.code,
+        details: data
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      fileName: data.data.fileName 
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
+    console.error('[PoseChanger] Upload error:', error);
+    return new Response(JSON.stringify({ error: errorMessage, code: 'UPLOAD_EXCEPTION' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// Run the Pose Changer workflow
+async function handleRun(req: Request) {
+  if (!RUNNINGHUB_API_KEY) {
+    return new Response(JSON.stringify({ 
+      error: 'API key not configured',
+      code: 'MISSING_API_KEY'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { 
+    jobId,
+    personImageUrl,     // URL from Supabase Storage for person photo
+    referenceImageUrl,  // URL from Supabase Storage for pose reference
+    userId,
+    creditCost
+  } = await req.json();
+  
+  // ========== INPUT VALIDATION ==========
+  if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
+    return new Response(JSON.stringify({ 
+      error: 'Valid jobId is required', 
+      code: 'INVALID_JOB_ID' 
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!personImageUrl || !referenceImageUrl) {
+    return new Response(JSON.stringify({ 
+      error: 'Both personImageUrl and referenceImageUrl are required', 
+      code: 'MISSING_PARAMS' 
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate URLs are from Supabase storage
+  const allowedDomains = ['supabase.co', 'supabase.in', SUPABASE_URL.replace('https://', '')];
+  
+  for (const imageUrl of [personImageUrl, referenceImageUrl]) {
+    try {
+      const urlObj = new URL(imageUrl);
+      const isAllowed = allowedDomains.some(domain => urlObj.hostname.endsWith(domain));
+      
+      if (!isAllowed) {
+        console.warn(`[PoseChanger] Rejected image URL: ${urlObj.hostname}`);
+        return new Response(JSON.stringify({ 
+          error: 'Image URLs must be from Supabase storage', 
+          code: 'INVALID_IMAGE_SOURCE' 
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } catch (e) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid image URL format', 
+        code: 'INVALID_IMAGE_URL' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  }
+
+  // Validate creditCost
+  if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+    return new Response(JSON.stringify({ 
+      error: 'Invalid credit cost (must be 1-500)', 
+      code: 'INVALID_CREDIT_COST'
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate userId
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
+    return new Response(JSON.stringify({ 
+      error: 'Valid userId is required', 
+      code: 'INVALID_USER_ID'
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Download and upload both images to RunningHub
+  let personFileName: string;
+  let referenceFileName: string;
+
+  try {
+    // Upload person image
+    console.log('[PoseChanger] Downloading person image from storage...');
+    const personResponse = await fetch(personImageUrl);
+    if (!personResponse.ok) throw new Error('Failed to download person image');
+    
+    const personBlob = await personResponse.blob();
+    const personName = personImageUrl.split('/').pop() || 'person.png';
+    
+    const personFormData = new FormData();
+    personFormData.append('apiKey', RUNNINGHUB_API_KEY);
+    personFormData.append('fileType', 'image');
+    personFormData.append('file', personBlob, personName);
+    
+    const personUpload = await fetch('https://www.runninghub.ai/task/openapi/upload', {
+      method: 'POST',
+      body: personFormData,
+    });
+    
+    const personData = await personUpload.json();
+    if (personData.code !== 0) throw new Error('Person image upload failed: ' + personData.msg);
+    personFileName = personData.data.fileName;
+    console.log('[PoseChanger] Person image uploaded:', personFileName);
+
+    // Upload reference image
+    console.log('[PoseChanger] Downloading reference image from storage...');
+    const refResponse = await fetch(referenceImageUrl);
+    if (!refResponse.ok) throw new Error('Failed to download reference image');
+    
+    const refBlob = await refResponse.blob();
+    const refName = referenceImageUrl.split('/').pop() || 'reference.png';
+    
+    const refFormData = new FormData();
+    refFormData.append('apiKey', RUNNINGHUB_API_KEY);
+    refFormData.append('fileType', 'image');
+    refFormData.append('file', refBlob, refName);
+    
+    const refUpload = await fetch('https://www.runninghub.ai/task/openapi/upload', {
+      method: 'POST',
+      body: refFormData,
+    });
+    
+    const refData = await refUpload.json();
+    if (refData.code !== 0) throw new Error('Reference image upload failed: ' + refData.msg);
+    referenceFileName = refData.data.fileName;
+    console.log('[PoseChanger] Reference image uploaded:', referenceFileName);
+
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
+    console.error('[PoseChanger] Image transfer error:', error);
+    return new Response(JSON.stringify({ 
+      error: errorMsg, 
+      code: 'IMAGE_TRANSFER_ERROR' 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Consume credits
+  console.log(`[PoseChanger] Consuming ${creditCost} credits for user ${userId}`);
+  const { data: creditResult, error: creditError } = await supabase.rpc(
+    'consume_upscaler_credits', 
+    {
+      _user_id: userId,
+      _amount: creditCost,
+      _description: 'Pose Changer'
+    }
+  );
+
+  if (creditError) {
+    console.error('[PoseChanger] Credit consumption error:', creditError);
+    return new Response(JSON.stringify({ 
+      error: 'Erro ao processar créditos',
+      code: 'CREDIT_ERROR',
+      details: creditError.message
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
+    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+    console.log('[PoseChanger] Insufficient credits:', errorMsg);
+    return new Response(JSON.stringify({ 
+      error: errorMsg,
+      code: 'INSUFFICIENT_CREDITS',
+      currentBalance: creditResult?.[0]?.new_balance
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  console.log(`[PoseChanger] Credits consumed. New balance: ${creditResult[0].new_balance}`);
+
+  try {
+    // Update job with input file names
+    await supabase
+      .from('pose_changer_jobs')
+      .update({ 
+        person_file_name: personFileName,
+        reference_file_name: referenceFileName
+      })
+      .eq('id', jobId);
+
+    // Check concurrent jobs
+    const { count: runningCount } = await supabase
+      .from('pose_changer_jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'running');
+
+    console.log(`[PoseChanger] Running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS}`);
+
+    const { data: currentJob } = await supabase
+      .from('pose_changer_jobs')
+      .select('created_at')
+      .eq('id', jobId)
+      .single();
+
+    if ((runningCount || 0) >= MAX_CONCURRENT_JOBS) {
+      // Calculate queue position
+      const { count: aheadOfMe } = await supabase
+        .from('pose_changer_jobs')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'queued')
+        .lt('created_at', currentJob?.created_at || new Date().toISOString());
+
+      const position = (aheadOfMe || 0) + 1;
+
+      await supabase
+        .from('pose_changer_jobs')
+        .update({ status: 'queued', position: position })
+        .eq('id', jobId);
+
+      console.log(`[PoseChanger] Job ${jobId} queued at position ${position}`);
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        queued: true, 
+        position: position,
+        message: 'Job queued, will start when slot available'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Slot available - start processing
+    await supabase
+      .from('pose_changer_jobs')
+      .update({ 
+        status: 'running', 
+        started_at: new Date().toISOString(),
+        position: 0
+      })
+      .eq('id', jobId);
+
+    // Build node info list for Pose Changer API
+    // NodeId 27 = Person photo, NodeId 60 = Pose reference
+    const nodeInfoList = [
+      { nodeId: "27", fieldName: "image", fieldValue: personFileName },
+      { nodeId: "60", fieldName: "image", fieldValue: referenceFileName }
+    ];
+
+    const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
+
+    const requestBody = {
+      nodeInfoList: nodeInfoList,
+      instanceType: "default",
+      usePersonalQueue: false,
+      webhookUrl: webhookUrl,
+    };
+
+    console.log('[PoseChanger] AI App request:', JSON.stringify(requestBody));
+
+    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_POSE}`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    const data = await response.json();
+    console.log('[PoseChanger] AI App response:', JSON.stringify(data));
+
+    if (data.taskId) {
+      await supabase
+        .from('pose_changer_jobs')
+        .update({ task_id: data.taskId })
+        .eq('id', jobId);
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        taskId: data.taskId,
+        method: 'ai-app-v2'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Failed to start
+    await supabase
+      .from('pose_changer_jobs')
+      .update({ 
+        status: 'failed', 
+        error_message: data.msg || 'Failed to start workflow',
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', jobId);
+
+    return new Response(JSON.stringify({
+      error: data.msg || 'Failed to start workflow',
+      code: data.code || 'RUN_FAILED',
+      details: data
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[PoseChanger] Run error:', error);
+
+    await supabase
+      .from('pose_changer_jobs')
+      .update({ 
+        status: 'failed', 
+        error_message: errorMessage,
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', jobId);
+
+    return new Response(JSON.stringify({ 
+      error: errorMessage, 
+      code: 'RUN_EXCEPTION' 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// Get queue status
+async function handleQueueStatus(req: Request) {
+  const { jobId } = await req.json();
+
+  if (!jobId) {
+    return new Response(JSON.stringify({ error: 'jobId is required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  try {
+    const { data: job, error } = await supabase
+      .from('pose_changer_jobs')
+      .select('status, position, output_url, error_message')
+      .eq('id', jobId)
+      .single();
+
+    if (error || !job) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true,
+      status: job.status,
+      position: job.position,
+      outputUrl: job.output_url,
+      errorMessage: job.error_message
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('[PoseChanger] Queue status error:', error);
+    return new Response(JSON.stringify({ error: 'Failed to get queue status' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}

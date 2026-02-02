@@ -1,30 +1,42 @@
-import React, { useState } from 'react';
-import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { toast } from 'sonner';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
+import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 import PoseLibraryModal from '@/components/pose-changer/PoseLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
+import imageCompression from 'browser-image-compression';
 
-type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
+type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
 const CREDIT_COST = 60;
+const SESSION_KEY = 'pose_session_id';
+
+// Queue messages for better UX
+const queueMessages = [
+  { emoji: '🎨', text: 'Preparando sua transformação...' },
+  { emoji: '✨', text: 'Aguardando mágica IA...' },
+  { emoji: '🚀', text: 'Quase lá, continue esperando!' },
+  { emoji: '🌟', text: 'Processando sua pose incrível...' },
+];
 
 const PoseChangerTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
 
   // Image states
   const [personImage, setPersonImage] = useState<string | null>(null);
+  const [personFile, setPersonFile] = useState<File | null>(null);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
+  const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
 
   // UI states
@@ -33,15 +45,218 @@ const PoseChangerTool: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
 
+  // Queue states
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [queuePosition, setQueuePosition] = useState(0);
+  const [queueMessageIndex, setQueueMessageIndex] = useState(0);
+
+  // Session management
+  const sessionIdRef = useRef<string>('');
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
   // No credits modal
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
 
   const canProcess = personImage && referenceImage && status === 'idle';
-  const isProcessing = status === 'uploading' || status === 'processing';
+  const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
+
+  // Initialize session ID
+  useEffect(() => {
+    let storedSessionId = localStorage.getItem(SESSION_KEY);
+    if (!storedSessionId) {
+      storedSessionId = crypto.randomUUID();
+      localStorage.setItem(SESSION_KEY, storedSessionId);
+    }
+    sessionIdRef.current = storedSessionId;
+    
+    // Check for pending jobs
+    checkPendingJobs();
+  }, []);
+
+  // Check for pending jobs on load
+  const checkPendingJobs = async () => {
+    if (!sessionIdRef.current) return;
+
+    try {
+      const { data: pendingJob } = await supabase
+        .from('pose_changer_jobs')
+        .select('*')
+        .eq('session_id', sessionIdRef.current)
+        .in('status', ['queued', 'running'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (pendingJob) {
+        console.log('[PoseChanger] Found pending job:', pendingJob.id);
+        setJobId(pendingJob.id);
+        setStatus(pendingJob.status === 'queued' ? 'waiting' : 'processing');
+        setQueuePosition(pendingJob.position || 0);
+        subscribeToJobUpdates(pendingJob.id);
+      }
+    } catch (error) {
+      console.error('[PoseChanger] Error checking pending jobs:', error);
+    }
+  };
+
+  // Subscribe to realtime updates for a job
+  const subscribeToJobUpdates = useCallback((jId: string) => {
+    // Cleanup previous subscription
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+    }
+
+    const channel = supabase
+      .channel(`pose-job-${jId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'pose_changer_jobs',
+          filter: `id=eq.${jId}`
+        },
+        (payload) => {
+          const newData = payload.new as any;
+          console.log('[PoseChanger] Job update:', newData);
+
+          if (newData.status === 'completed' && newData.output_url) {
+            setOutputImage(newData.output_url);
+            setStatus('completed');
+            setProgress(100);
+            refetchCredits();
+            toast.success('Pose alterada com sucesso!');
+          } else if (newData.status === 'failed') {
+            setStatus('error');
+            toast.error(newData.error_message || 'Erro no processamento');
+          } else if (newData.status === 'running') {
+            setStatus('processing');
+            setQueuePosition(0);
+          } else if (newData.status === 'queued') {
+            setStatus('waiting');
+            setQueuePosition(newData.position || 0);
+          }
+        }
+      )
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+  }, [refetchCredits]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+      }
+    };
+  }, []);
+
+  // Rotate queue messages
+  useEffect(() => {
+    if (!isProcessing) return;
+    
+    const interval = setInterval(() => {
+      setQueueMessageIndex(prev => (prev + 1) % queueMessages.length);
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [isProcessing]);
+
+  // Progress simulation for processing state
+  useEffect(() => {
+    if (status !== 'processing') return;
+    
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) return prev;
+        return prev + Math.random() * 5;
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [status]);
+
+  // Warn user before leaving during processing
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isProcessing) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isProcessing]);
+
+  // Handle person image upload
+  const handlePersonImageChange = (dataUrl: string | null, file?: File) => {
+    setPersonImage(dataUrl);
+    setPersonFile(file || null);
+  };
+
+  // Handle reference image selection (from library or upload)
+  const handleReferenceImageChange = async (imageUrl: string | null, file?: File) => {
+    setReferenceImage(imageUrl);
+    
+    if (imageUrl && !file) {
+      // Image from library - fetch as blob
+      try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const fetchedFile = new File([blob], 'reference.png', { type: blob.type });
+        setReferenceFile(fetchedFile);
+      } catch (error) {
+        console.error('[PoseChanger] Error fetching reference image:', error);
+      }
+    } else {
+      setReferenceFile(file || null);
+    }
+  };
+
+  // Compress image before upload
+  const compressImage = async (file: File): Promise<Blob> => {
+    const options = {
+      maxSizeMB: 2,
+      maxWidthOrHeight: 2048,
+      useWebWorker: true,
+      fileType: 'image/webp' as const,
+    };
+    
+    try {
+      return await imageCompression(file, options);
+    } catch (error) {
+      console.warn('[PoseChanger] Compression failed, using original:', error);
+      return file;
+    }
+  };
+
+  // Upload image to Supabase storage
+  const uploadToStorage = async (file: File | Blob, prefix: string): Promise<string> => {
+    const timestamp = Date.now();
+    const fileName = `${prefix}-${timestamp}.webp`;
+    const filePath = `pose-changer/${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('artes-cloudinary')
+      .upload(filePath, file, {
+        contentType: 'image/webp',
+        upsert: true,
+      });
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+      .from('artes-cloudinary')
+      .getPublicUrl(filePath);
+
+    return urlData.publicUrl;
+  };
 
   const handleProcess = async () => {
-    if (!personImage || !referenceImage) {
+    if (!personImage || !referenceImage || !personFile) {
       toast.error('Por favor, selecione ambas as imagens');
       return;
     }
@@ -58,63 +273,165 @@ const PoseChangerTool: React.FC = () => {
       return;
     }
 
-    // For now, just show a toast - motor will be connected later
-    toast.info('Motor de IA será conectado na próxima fase');
-    
-    // Simulate processing for layout testing
-    setStatus('processing');
+    setStatus('uploading');
     setProgress(0);
-    
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setStatus('completed');
-          // Use person image as "output" for demo
-          setOutputImage(personImage);
-          toast.success('Processamento concluído!');
-          return 100;
+    setOutputImage(null);
+
+    try {
+      // Step 1: Create job in database
+      const { data: job, error: jobError } = await supabase
+        .from('pose_changer_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'queued',
+        })
+        .select()
+        .single();
+
+      if (jobError || !job) {
+        throw new Error('Failed to create job');
+      }
+
+      setJobId(job.id);
+      console.log('[PoseChanger] Job created:', job.id);
+
+      // Step 2: Compress and upload person image
+      setProgress(10);
+      const compressedPerson = await compressImage(personFile);
+      const personUrl = await uploadToStorage(compressedPerson, 'person');
+      console.log('[PoseChanger] Person image uploaded:', personUrl);
+
+      // Step 3: Compress and upload reference image
+      setProgress(30);
+      let referenceUrl: string;
+      
+      if (referenceFile) {
+        const compressedRef = await compressImage(referenceFile);
+        referenceUrl = await uploadToStorage(compressedRef, 'reference');
+      } else {
+        // Already a URL from library
+        referenceUrl = referenceImage;
+      }
+      console.log('[PoseChanger] Reference image uploaded:', referenceUrl);
+
+      // Step 4: Call edge function
+      setProgress(50);
+      setStatus('processing');
+      
+      const { data: runResult, error: runError } = await supabase.functions.invoke(
+        'runninghub-pose-changer/run',
+        {
+          body: {
+            jobId: job.id,
+            personImageUrl: personUrl,
+            referenceImageUrl: referenceUrl,
+            userId: user.id,
+            creditCost: CREDIT_COST,
+          },
         }
-        return prev + 10;
-      });
-    }, 500);
+      );
+
+      if (runError) {
+        throw new Error(runError.message);
+      }
+
+      console.log('[PoseChanger] Run result:', runResult);
+
+      if (runResult.queued) {
+        setStatus('waiting');
+        setQueuePosition(runResult.position || 1);
+      } else if (runResult.success) {
+        setStatus('processing');
+      } else if (runResult.code === 'INSUFFICIENT_CREDITS') {
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        setStatus('idle');
+        return;
+      } else {
+        throw new Error(runResult.error || 'Unknown error');
+      }
+
+      // Subscribe to job updates
+      subscribeToJobUpdates(job.id);
+      refetchCredits();
+
+    } catch (error: any) {
+      console.error('[PoseChanger] Process error:', error);
+      setStatus('error');
+      toast.error(error.message || 'Erro ao processar imagem');
+    }
+  };
+
+  const handleCancelQueue = async () => {
+    if (!jobId) return;
+
+    try {
+      await supabase
+        .from('pose_changer_jobs')
+        .update({ status: 'cancelled' })
+        .eq('id', jobId);
+
+      setStatus('idle');
+      setJobId(null);
+      setQueuePosition(0);
+      toast.info('Processamento cancelado');
+    } catch (error) {
+      console.error('[PoseChanger] Cancel error:', error);
+    }
   };
 
   const handleReset = () => {
     setPersonImage(null);
+    setPersonFile(null);
     setReferenceImage(null);
+    setReferenceFile(null);
     setOutputImage(null);
     setStatus('idle');
     setProgress(0);
     setZoomLevel(1);
+    setJobId(null);
+    setQueuePosition(0);
   };
 
   const handleDownload = () => {
     if (!outputImage) return;
     
-    // For demo, open in new tab
     const link = document.createElement('a');
     link.href = outputImage;
     link.download = `pose-changer-${Date.now()}.png`;
+    link.target = '_blank';
     link.click();
     toast.success('Download iniciado!');
   };
 
+  const currentQueueMessage = queueMessages[queueMessageIndex];
+
   return (
     <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
       <ToolsHeader title="Pose Changer" onBack={goBack} />
+
+      {/* Warning banner during processing */}
+      {isProcessing && (
+        <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-400" />
+          <span className="text-xs text-amber-200">
+            Não feche esta página durante o processamento
+          </span>
+        </div>
+      )}
 
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden">
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 lg:h-full">
           
           {/* Left Side - Inputs (2/7 on desktop ~28%) */}
-          <div className="lg:col-span-2 flex flex-col gap-2">
+          <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
             {/* Person Image Upload */}
             <ImageUploadCard
               title="Sua Foto"
               image={personImage}
-              onImageChange={setPersonImage}
+              onImageChange={handlePersonImageChange}
               disabled={isProcessing}
             />
 
@@ -122,7 +439,7 @@ const PoseChangerTool: React.FC = () => {
             <ImageUploadCard
               title="Referência de Pose"
               image={referenceImage}
-              onImageChange={setReferenceImage}
+              onImageChange={handleReferenceImageChange}
               showLibraryButton
               onOpenLibrary={() => setShowPoseLibrary(true)}
               disabled={isProcessing}
@@ -135,10 +452,20 @@ const PoseChangerTool: React.FC = () => {
               disabled={!canProcess || isProcessing}
               onClick={handleProcess}
             >
-              {isProcessing ? (
+              {status === 'uploading' ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                  {progress}%
+                  Enviando...
+                </>
+              ) : status === 'waiting' ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  Fila #{queuePosition}
+                </>
+              ) : status === 'processing' ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  {Math.round(progress)}%
                 </>
               ) : (
                 <>
@@ -147,10 +474,23 @@ const PoseChangerTool: React.FC = () => {
                 </>
               )}
             </Button>
+
+            {/* Cancel button when in queue */}
+            {status === 'waiting' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/10"
+                onClick={handleCancelQueue}
+              >
+                <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                Sair da Fila
+              </Button>
+            )}
           </div>
 
           {/* Right Side - Result Viewer (5/7 on desktop ~72%) */}
-          <div className="lg:col-span-5 flex flex-col min-h-[300px] lg:min-h-0">
+          <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
             <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
               {/* Header */}
               <div className="px-3 py-2 border-b border-purple-500/20 flex items-center justify-between flex-shrink-0">
@@ -213,12 +553,20 @@ const PoseChangerTool: React.FC = () => {
                       <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-purple-400" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-white font-medium">
-                        Processando...
+                      <p className="text-sm text-white font-medium flex items-center gap-2">
+                        <span>{currentQueueMessage.emoji}</span>
+                        <span>{currentQueueMessage.text}</span>
                       </p>
-                      <p className="text-xs text-purple-300 mt-0.5">
-                        {progress}% concluído
-                      </p>
+                      {status === 'waiting' && queuePosition > 0 && (
+                        <p className="text-xs text-purple-300 mt-1">
+                          Posição na fila: #{queuePosition}
+                        </p>
+                      )}
+                      {status === 'processing' && (
+                        <p className="text-xs text-purple-300 mt-0.5">
+                          {Math.round(progress)}% concluído
+                        </p>
+                      )}
                     </div>
                     {/* Progress bar */}
                     <div className="w-36 h-1.5 bg-purple-900/50 rounded-full overflow-hidden">
@@ -226,6 +574,25 @@ const PoseChangerTool: React.FC = () => {
                         className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
+                    </div>
+                  </div>
+                ) : status === 'error' ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                    <div className="w-16 h-16 rounded-xl bg-red-500/10 border-2 border-dashed border-red-500/30 flex items-center justify-center">
+                      <XCircle className="w-8 h-8 text-red-500/60" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-red-300">
+                        Erro no processamento
+                      </p>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="text-xs text-purple-400"
+                        onClick={handleReset}
+                      >
+                        Tentar novamente
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -276,7 +643,7 @@ const PoseChangerTool: React.FC = () => {
       <PoseLibraryModal
         isOpen={showPoseLibrary}
         onClose={() => setShowPoseLibrary(false)}
-        onSelectPose={(url) => setReferenceImage(url)}
+        onSelectPose={(url) => handleReferenceImageChange(url)}
       />
 
       {/* No Credits Modal */}

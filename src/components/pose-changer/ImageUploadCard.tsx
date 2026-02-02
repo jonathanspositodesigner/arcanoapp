@@ -8,7 +8,7 @@ interface ImageUploadCardProps {
   title: string;
   subtitle?: string;
   image: string | null;
-  onImageChange: (image: string | null) => void;
+  onImageChange: (image: string | null, file?: File) => void;
   showLibraryButton?: boolean;
   onOpenLibrary?: () => void;
   className?: string;
@@ -38,7 +38,7 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      onImageChange(e.target?.result as string);
+      onImageChange(e.target?.result as string, file);
     };
     reader.readAsDataURL(file);
   }, [onImageChange]);
