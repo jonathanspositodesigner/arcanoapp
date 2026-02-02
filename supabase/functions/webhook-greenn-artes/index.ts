@@ -38,9 +38,14 @@ const LEGACY_PRODUCT_ID_MAPPING: Record<number, ProductMapping> = {
 
 // Mapeamento de produtos de CRÉDITOS
 const CREDITS_PRODUCT_MAPPING: Record<number, { amount: number; name: string }> = {
+  // Créditos PUROS
   156946: { amount: 1500, name: 'Pacote +1.500 Créditos' },
   156948: { amount: 4200, name: 'Pacote +4.200 Créditos' },
-  156952: { amount: 10800, name: 'Pacote +10.800 Créditos' }
+  156952: { amount: 10800, name: 'Pacote +10.800 Créditos' },
+  // Créditos + Ferramentas (App)
+  156954: { amount: 1500, name: 'Pacote Créditos App +1.500' },
+  156957: { amount: 4200, name: 'Pacote Créditos App +4.200' },
+  156960: { amount: 10800, name: 'Pacote Créditos App +10.800' }
 }
 
 // Textos de email por idioma
