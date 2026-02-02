@@ -101,19 +101,19 @@ const PoseChangerTool: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A]">
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
       <ToolsHeader title="Pose Changer" onBack={goBack} />
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-3 overflow-hidden">
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-full">
           
           {/* Left Side - Inputs (2/5 on desktop) */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 flex flex-col gap-3">
             {/* Person Image Upload */}
             <ImageUploadCard
               title="Sua Foto"
-              subtitle="Foto da pessoa que terá a pose alterada"
+              subtitle="Foto da pessoa"
               image={personImage}
               onImageChange={setPersonImage}
               disabled={isProcessing}
@@ -122,7 +122,7 @@ const PoseChangerTool: React.FC = () => {
             {/* Reference Image Upload */}
             <ImageUploadCard
               title="Referência de Pose"
-              subtitle="Imagem com a pose desejada"
+              subtitle="Pose desejada"
               image={referenceImage}
               onImageChange={setReferenceImage}
               showLibraryButton
@@ -132,69 +132,69 @@ const PoseChangerTool: React.FC = () => {
 
             {/* Action Button */}
             <Button
-              size="lg"
-              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold py-6 text-lg disabled:opacity-50"
+              size="sm"
+              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold py-4 text-sm disabled:opacity-50"
               disabled={!canProcess || isProcessing}
               onClick={handleProcess}
             >
               {isProcessing ? (
                 <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Processando... {progress}%
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Gerar Nova Pose ({CREDIT_COST} créditos)
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Gerar Pose ({CREDIT_COST} créditos)
                 </>
               )}
             </Button>
 
             {/* Credits Info */}
             {user && (
-              <p className="text-xs text-purple-400 text-center">
-                Você tem <span className="text-purple-200 font-semibold">{credits}</span> créditos disponíveis
+              <p className="text-[10px] text-purple-400 text-center">
+                <span className="text-purple-200 font-semibold">{credits}</span> créditos disponíveis
               </p>
             )}
           </div>
 
           {/* Right Side - Result Viewer (3/5 on desktop) */}
-          <div className="lg:col-span-3">
-            <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 h-full min-h-[400px] lg:min-h-[600px]">
+          <div className="lg:col-span-3 flex flex-col min-h-0">
+            <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col">
               {/* Header */}
-              <div className="px-4 py-3 border-b border-purple-500/20 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4 text-purple-400" />
+              <div className="px-3 py-2 border-b border-purple-500/20 flex items-center justify-between flex-shrink-0">
+                <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
                   Resultado
                 </h3>
                 
                 {outputImage && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-purple-300 hover:text-white hover:bg-purple-500/20"
+                      className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
                       onClick={() => setZoomLevel(Math.max(0.5, zoomLevel - 0.25))}
                     >
-                      <ZoomOut className="w-4 h-4" />
+                      <ZoomOut className="w-3.5 h-3.5" />
                     </Button>
-                    <span className="text-xs text-purple-300 w-12 text-center">
+                    <span className="text-[10px] text-purple-300 w-8 text-center">
                       {Math.round(zoomLevel * 100)}%
                     </span>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-purple-300 hover:text-white hover:bg-purple-500/20"
+                      className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
                       onClick={() => setZoomLevel(Math.min(4, zoomLevel + 0.25))}
                     >
-                      <ZoomIn className="w-4 h-4" />
+                      <ZoomIn className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 )}
               </div>
 
               {/* Result Area */}
-              <div className="relative flex-1 h-[calc(100%-60px)]">
+              <div className="relative flex-1 min-h-0">
                 {outputImage ? (
                   <TransformWrapper
                     initialScale={1}
@@ -216,21 +216,21 @@ const PoseChangerTool: React.FC = () => {
                     </TransformComponent>
                   </TransformWrapper>
                 ) : isProcessing ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     <div className="relative">
-                      <div className="w-20 h-20 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin" />
-                      <Sparkles className="absolute inset-0 m-auto w-8 h-8 text-purple-400" />
+                      <div className="w-14 h-14 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin" />
+                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-purple-400" />
                     </div>
                     <div className="text-center">
-                      <p className="text-lg text-white font-medium">
-                        Processando sua imagem...
+                      <p className="text-sm text-white font-medium">
+                        Processando...
                       </p>
-                      <p className="text-sm text-purple-300 mt-1">
+                      <p className="text-xs text-purple-300 mt-0.5">
                         {progress}% concluído
                       </p>
                     </div>
                     {/* Progress bar */}
-                    <div className="w-48 h-2 bg-purple-900/50 rounded-full overflow-hidden">
+                    <div className="w-36 h-1.5 bg-purple-900/50 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300"
                         style={{ width: `${progress}%` }}
@@ -238,16 +238,16 @@ const PoseChangerTool: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                    <div className="w-24 h-24 rounded-2xl bg-purple-500/10 border-2 border-dashed border-purple-500/30 flex items-center justify-center">
-                      <ImageIcon className="w-12 h-12 text-purple-500/40" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                    <div className="w-16 h-16 rounded-xl bg-purple-500/10 border-2 border-dashed border-purple-500/30 flex items-center justify-center">
+                      <ImageIcon className="w-8 h-8 text-purple-500/40" />
                     </div>
                     <div className="text-center">
-                      <p className="text-lg text-purple-300">
+                      <p className="text-sm text-purple-300">
                         O resultado aparecerá aqui
                       </p>
-                      <p className="text-sm text-purple-400 mt-1">
-                        Envie as duas imagens e clique em "Gerar Nova Pose"
+                      <p className="text-xs text-purple-400 mt-0.5">
+                        Envie as imagens e clique em "Gerar Pose"
                       </p>
                     </div>
                   </div>
@@ -256,20 +256,22 @@ const PoseChangerTool: React.FC = () => {
 
               {/* Action Buttons */}
               {outputImage && status === 'completed' && (
-                <div className="absolute bottom-4 left-4 right-4 flex gap-3">
+                <div className="absolute bottom-3 left-3 right-3 flex gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1 bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20"
+                    size="sm"
+                    className="flex-1 h-8 text-xs bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20"
                     onClick={handleReset}
                   >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Nova Imagem
+                    <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                    Nova
                   </Button>
                   <Button
-                    className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white"
+                    size="sm"
+                    className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white"
                     onClick={handleDownload}
                   >
-                    <Download className="w-4 h-4 mr-2" />
+                    <Download className="w-3.5 h-3.5 mr-1.5" />
                     Baixar HD
                   </Button>
                 </div>
@@ -277,11 +279,6 @@ const PoseChangerTool: React.FC = () => {
             </Card>
           </div>
         </div>
-
-        {/* Mobile hint */}
-        <p className="text-xs text-purple-400 text-center mt-4 lg:hidden">
-          💡 Use pinch ou scroll para zoom no resultado
-        </p>
       </div>
 
       {/* Pose Library Modal */}
