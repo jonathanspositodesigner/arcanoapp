@@ -76,6 +76,9 @@ const FerramentasIAAplicativo = () => {
   }, []);
 
   const getAccessRoute = (slug: string) => {
+    if (slug === "upscaller-arcano") {
+      return "/upscaler-arcano-tool";
+    }
     return `/ferramenta-ia-artes/${slug}`;
   };
 
