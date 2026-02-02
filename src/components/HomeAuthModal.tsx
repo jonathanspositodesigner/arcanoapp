@@ -555,6 +555,17 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                   </form>
                 </TabsContent>
               </Tabs>
+
+              {/* Navigate without login option */}
+              <div className="mt-6 pt-4 border-t border-border">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                >
+                  {t('auth.browseWithoutLogin') || 'Navegar sem login'}
+                </button>
+              </div>
             </>
           )}
         </div>
