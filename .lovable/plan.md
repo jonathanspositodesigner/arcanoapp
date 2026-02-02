@@ -1,233 +1,119 @@
 
-# Plano: Consolidar Hooks de Status Premium em Context Provider Centralizado
+# Plano: Deduplicação Robusta de Emails de Boas-Vindas
 
-## Resumo Executivo
+## Problema Diagnosticado
 
-Consolidar os 4 hooks de status premium (`usePremiumStatus`, `usePremiumArtesStatus`, `usePackAccess`, `usePremiumMusicosStatus`) em um único **AuthProvider** centralizado, eliminando chamadas duplicadas ao banco que atualmente disparam múltiplas vezes por página.
-
-## Problema Atual
-
-### Diagnóstico
-Analisando os logs, identificamos que em uma única página podem ocorrer:
-- **4x chamadas** para `get_user_packs`
-- **4x chamadas** para `is_premium` 
-- **2x chamadas** para `get_user_expired_packs`
-- **2x chamadas** para `premium_users` (query direta)
-
-### Causa Raiz
-Cada hook (`usePremiumStatus`, `usePremiumArtesStatus`, `usePackAccess`) cria sua própria:
-1. Subscription de `onAuthStateChange` 
-2. Chamada inicial de `getSession`
-3. Queries independentes ao banco
-
-Quando uma página usa múltiplos hooks (ex: `UpscalerArcanoVersionSelect.tsx` usa `usePremiumArtesStatus` + `usePremiumStatus`), cada um dispara suas próprias queries.
-
-## Arquitetura Proposta
+A verificação atual de duplicatas falha quando webhooks chegam simultaneamente:
 
 ```text
-                    ┌─────────────────────────────────────────┐
-                    │           AuthProvider                   │
-                    │  (único listener de auth + queries)     │
-                    └───────────────┬─────────────────────────┘
-                                    │
-                    ┌───────────────┼───────────────┐
-                    │               │               │
-              ┌─────▼─────┐  ┌──────▼──────┐  ┌─────▼─────┐
-              │useAuth    │  │useArtesPacks│  │useMusicos │
-              │(prompts)  │  │             │  │           │
-              └───────────┘  └─────────────┘  └───────────┘
-                    │               │               │
-                    └───────────────┴───────────────┘
-                                    │
-                    Reads from Context (NO new queries)
+Webhook A ──► SELECT (não encontra) ──► ENVIA EMAIL ──► INSERT
+                                                              ↓
+Webhook B ──► SELECT (não encontra) ──────────────────────► ENVIA EMAIL ──► INSERT
+                      ↑
+          Ambos passam porque INSERT ainda não ocorreu
+```
+
+**Evidência real** (logs de hoje):
+- `elionesdbv@gmail.com`: 2 emails com diferença de **9 milissegundos**
+- `claudiojosesjdp@hotmail.com`: 2 emails com diferença de **189ms**
+
+## Solução: Insert-First com Unique Constraint
+
+Em vez de verificar ANTES de enviar, vamos **inserir primeiro** com status `pending` e usar um **unique constraint** para bloquear duplicatas:
+
+```text
+Webhook A ──► INSERT (pending) ✅ ──► ENVIA EMAIL ──► UPDATE (sent)
+                      ↓
+Webhook B ──► INSERT (pending) ❌ BLOQUEADO por constraint ──► IGNORA
 ```
 
 ## Detalhamento Técnico
 
-### Parte 1: Criar AuthContext Unificado
+### Parte 1: Migração de Banco de Dados
 
-**Novo arquivo:** `src/contexts/AuthContext.tsx`
+Adicionar um **unique constraint parcial** na tabela `welcome_email_logs`:
 
-O Context Provider irá:
+```sql
+-- Unique constraint: apenas 1 email por email+produto em 5 minutos
+CREATE UNIQUE INDEX idx_welcome_email_dedup 
+ON welcome_email_logs (email, product_info, date_trunc('minute', sent_at))
+WHERE status IN ('pending', 'sent');
+```
 
-1. **Único listener de auth** - Uma só subscription de `onAuthStateChange`
-2. **Uma só chamada inicial** - Único `getSession()` no mount
-3. **Queries consolidadas** - Fazer todas as verificações de status em paralelo (uma vez só):
-   - `is_premium` (biblioteca de prompts)
-   - `get_user_packs` (packs de artes)
-   - `get_user_expired_packs` (packs expirados)
-   - Query em `premium_users` (status detalhado de prompts)
-   - Query em `premium_musicos_users` (status de músicos)
+Este índice garante que não pode existir dois registros com:
+- Mesmo email
+- Mesmo product_info  
+- Mesmo minuto
+- Status pending ou sent
 
-4. **Cache em memória** - Estado centralizado evita re-fetches
-5. **Refetch manual** - Função `refetch()` para atualizar quando necessário
+### Parte 2: Refatorar Função `sendWelcomeEmail`
 
-**Interface do Context:**
+Nova lógica em todos os 3 webhooks:
+
 ```typescript
-interface AuthContextType {
-  // Auth state
-  user: User | null;
-  session: Session | null;
-  isLoading: boolean;
-  
-  // Prompts premium status
-  isPremium: boolean;
-  planType: string | null;
-  hasExpiredSubscription: boolean;
-  expiredPlanType: string | null;
-  expiringStatus: 'today' | 'tomorrow' | null;
-  
-  // Artes packs
-  userPacks: PackAccess[];
-  expiredPacks: PackAccess[];
-  hasBonusAccess: boolean;
-  hasAccessToPack: (slug: string) => boolean;
-  getPackAccessInfo: (slug: string) => PackAccess | undefined;
-  hasExpiredPack: (slug: string) => boolean;
-  getExpiredPackInfo: (slug: string) => PackAccess | undefined;
-  
-  // Musicos status  
-  isMusicosPremium: boolean;
-  musicosPlanType: string | null;
-  musicosBillingPeriod: string | null;
-  musicosExpiresAt: string | null;
-  
-  // Actions
-  logout: () => Promise<void>;
-  refetch: () => Promise<void>;
+async function sendWelcomeEmail(...): Promise<void> {
+  try {
+    // PASSO 1: Tentar INSERT primeiro (atômico)
+    const { data: inserted, error: insertError } = await supabase
+      .from('welcome_email_logs')
+      .insert({
+        email,
+        product_info: packInfo,
+        platform,
+        status: 'pending',  // Marcado como pendente
+        tracking_id: crypto.randomUUID(),
+        locale
+      })
+      .select('id, tracking_id')
+      .single()
+    
+    // Se falhou por duplicata, ignorar silenciosamente
+    if (insertError?.code === '23505') { // unique_violation
+      console.log(`   ├─ [${requestId}] ⏭️ Email duplicado bloqueado`)
+      return
+    }
+    
+    if (insertError) throw insertError
+    
+    // PASSO 2: Enviar email (apenas quem conseguiu INSERT)
+    const result = await enviarViaAPI(...)
+    
+    // PASSO 3: Atualizar status para sent ou failed
+    await supabase
+      .from('welcome_email_logs')
+      .update({ 
+        status: result.success ? 'sent' : 'failed',
+        error_message: result.error || null
+      })
+      .eq('id', inserted.id)
+      
+  } catch (error) {
+    // Tratar erro
+  }
 }
 ```
 
-### Parte 2: Hooks Legado (Thin Wrappers)
+### Parte 3: Arquivos a Modificar
 
-Manter os hooks existentes como **wrappers finos** que apenas leem do Context:
-
-**Atualizar:** `src/hooks/usePremiumStatus.tsx`
-```typescript
-export const usePremiumStatus = () => {
-  const { 
-    user, session, isPremium, planType, isLoading, 
-    hasExpiredSubscription, expiredPlanType, expiringStatus,
-    logout 
-  } = useAuth();
-  
-  return { 
-    user, session, isPremium, planType, isLoading,
-    hasExpiredSubscription, expiredPlanType, expiringStatus,
-    logout
-  };
-};
-```
-
-**Atualizar:** `src/hooks/usePremiumArtesStatus.tsx`
-```typescript
-export const usePremiumArtesStatus = () => {
-  const { 
-    user, session, userPacks, expiredPacks, hasBonusAccess,
-    hasAccessToPack, getPackAccessInfo, hasExpiredPack, 
-    getExpiredPackInfo, isLoading, logout, refetch
-  } = useAuth();
-  
-  const isPremium = userPacks.length > 0;
-  const hasAccessToBonusAndUpdates = userPacks.length > 0;
-  const planType = hasBonusAccess ? 'bonus_access' : (isPremium ? 'pack_only' : null);
-  
-  return { 
-    user, session, isPremium, planType, userPacks, expiredPacks,
-    hasBonusAccess, hasAccessToBonusAndUpdates, hasAccessToPack,
-    getPackAccessInfo, hasExpiredPack, getExpiredPackInfo,
-    isLoading, logout, refetch
-  };
-};
-```
-
-**Atualizar:** `src/hooks/usePackAccess.ts` 
-```typescript
-export const usePackAccess = () => {
-  const { 
-    user, userPacks, hasBonusAccess, isLoading,
-    hasAccessToPack, getPackAccessInfo, logout, refetch
-  } = useAuth();
-  
-  return {
-    user, userPacks, hasBonusAccess, isLoading,
-    hasAccessToPack, getPackAccessInfo, logout, refetch
-  };
-};
-```
-
-**Atualizar:** `src/hooks/usePremiumMusicosStatus.tsx`
-```typescript
-export const usePremiumMusicosStatus = () => {
-  const { 
-    user, session, isMusicosPremium, musicosPlanType,
-    musicosBillingPeriod, musicosExpiresAt, isLoading,
-    logout, refetch
-  } = useAuth();
-  
-  return {
-    user, session,
-    isPremium: isMusicosPremium,
-    planType: musicosPlanType,
-    billingPeriod: musicosBillingPeriod,
-    expiresAt: musicosExpiresAt,
-    isLoading, logout, refetch
-  };
-};
-```
-
-### Parte 3: Integrar Provider no App
-
-**Atualizar:** `src/App.tsx`
-
-```tsx
-import { AuthProvider } from "./contexts/AuthContext";
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LocaleProvider>
-      <AuthProvider>      {/* <-- Novo provider */}
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </AuthProvider>
-    </LocaleProvider>
-  </QueryClientProvider>
-);
-```
-
-## Resumo de Arquivos
-
-### Criar (1 arquivo)
-| Arquivo | Descrição |
-|---------|-----------|
-| `src/contexts/AuthContext.tsx` | Context Provider unificado com toda lógica de auth e status premium |
-
-### Modificar (5 arquivos)
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/hooks/usePremiumStatus.tsx` | Converter para wrapper que lê do AuthContext |
-| `src/hooks/usePremiumArtesStatus.tsx` | Converter para wrapper que lê do AuthContext |
-| `src/hooks/usePackAccess.ts` | Converter para wrapper que lê do AuthContext |
-| `src/hooks/usePremiumMusicosStatus.tsx` | Converter para wrapper que lê do AuthContext |
-| `src/App.tsx` | Adicionar AuthProvider na árvore de componentes |
+| Migração SQL | Criar unique index `idx_welcome_email_dedup` |
+| `webhook-greenn-artes/index.ts` | Refatorar `sendWelcomeEmail` para usar insert-first |
+| `webhook-greenn-musicos/index.ts` | Mesma refatoração |
+| `webhook-greenn/index.ts` | Mesma refatoração |
 
-### Sem alteração (16+ arquivos)
-Todos os componentes que usam os hooks continuarão funcionando **sem nenhuma modificação**, pois os hooks mantêm a mesma interface.
+## Por Que Não Aumenta Custo do Cloud
 
-## Economia Esperada
+1. **Mesma quantidade de operações** - Apenas trocamos a ordem (INSERT antes em vez de SELECT antes)
+2. **Sem Edge Functions extras** - Usa operações de banco existentes
+3. **Sem locks externos** - O constraint do PostgreSQL faz o trabalho
+4. **Operação atômica** - Garantia de consistência sem custo extra
 
-| Métrica | Antes | Depois | Redução |
-|---------|-------|--------|---------|
-| Chamadas `get_user_packs` por página | 4x | 1x | **75%** |
-| Chamadas `is_premium` por página | 4x | 1x | **75%** |
-| Listeners de `onAuthStateChange` | 4x | 1x | **75%** |
-| Chamadas `getSession()` no mount | 4x | 1x | **75%** |
+## Resultado Esperado
 
-## Benefícios
-
-1. **Performance** - Reduz latência de carregamento das páginas
-2. **Consistência** - Estado de auth único evita race conditions
-3. **Manutenibilidade** - Lógica centralizada em um só lugar
-4. **Retrocompatibilidade** - Hooks existentes continuam funcionando
-5. **Custo** - Menos queries = menos carga no banco
+| Métrica | Antes | Depois |
+|---------|-------|--------|
+| Emails duplicados | ~2% | **0%** |
+| Queries por envio | 2 (SELECT + INSERT) | 2 (INSERT + UPDATE) |
+| Custo adicional | - | **Zero** |
+| Confiabilidade | Race condition | Atômico |
