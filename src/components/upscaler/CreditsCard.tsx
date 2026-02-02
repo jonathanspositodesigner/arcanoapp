@@ -153,11 +153,10 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown }: Cred
         )}
       </div>
 
-      {/* Buy Credits Button */}
       <div className="border-t border-purple-500/20 pt-4 mt-4">
         <Button
           onClick={() => navigate('/planos-creditos')}
-          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-medium"
+          className="w-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-medium"
         >
           <PlusCircle className="w-4 h-4 mr-2" />
           Comprar Créditos
