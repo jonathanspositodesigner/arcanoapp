@@ -786,9 +786,11 @@ const AbandonedCheckoutsContent = () => {
             {/* Content */}
             <div className="space-y-2">
               <Label>Conteúdo do email</Label>
-              <EmailEditor
+              <Textarea
                 value={emailContent}
-                onChange={setEmailContent}
+                onChange={(e) => setEmailContent(e.target.value)}
+                placeholder="Conteúdo do email..."
+                rows={8}
               />
             </div>
 

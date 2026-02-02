@@ -23,6 +23,16 @@ export interface PushNotificationStats {
   conversionRate: number;
 }
 
+export interface PushCampaignStats {
+  totalCampaigns: number;
+  totalSent: number;
+  totalDelivered: number;
+  totalFailed: number;
+  totalClicked: number;
+  deliveryRate: number;
+  clickRate: number;
+}
+
 // Returns empty stats - analytics disabled
 export async function fetchPushNotificationStats(startDate?: string, endDate?: string): Promise<PushNotificationStats> {
   return {
@@ -34,5 +44,18 @@ export async function fetchPushNotificationStats(startDate?: string, endDate?: s
     totalActivated: 0,
     totalSubscriptions: 0,
     conversionRate: 0
+  };
+}
+
+// Returns empty campaign stats - analytics disabled
+export async function fetchPushCampaignStats(): Promise<PushCampaignStats> {
+  return {
+    totalCampaigns: 0,
+    totalSent: 0,
+    totalDelivered: 0,
+    totalFailed: 0,
+    totalClicked: 0,
+    deliveryRate: 0,
+    clickRate: 0
   };
 }
