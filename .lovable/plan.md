@@ -1,76 +1,138 @@
 
-# Plano: Corrigir Erro de RLS no Upload do Upscaler Arcano
 
-## Problema Identificado
+# Plano: Modal de "Sem Créditos" no Upscaler Arcano
 
-O erro "new row violates row-level security policy" ocorre porque:
+## Objetivo
 
-1. O bucket de storage `artes-cloudinary` só permite **admins** fazerem upload (INSERT)
-2. O Upscaler Arcano Tool tenta fazer upload de imagens para `artes-cloudinary/upscaler/` com usuários autenticados normais
-3. Como o usuário não é admin, o upload falha com erro de RLS
+Quando o usuário não estiver logado **OU** não tiver créditos suficientes, ao clicar para gerar a imagem, exibir um popup amigável ao invés de apenas um toast de erro. O popup terá um botão que leva para a página de compra de créditos (`/planos-creditos`).
 
-### Política Atual (Restritiva)
-```sql
--- Apenas admins podem fazer upload
-CREATE POLICY "Admins can upload to artes-cloudinary"
-ON storage.objects FOR INSERT
-WITH CHECK (
-  bucket_id = 'artes-cloudinary' 
-  AND has_role(auth.uid(), 'admin'::app_role)
-);
+---
+
+## Componente a Criar
+
+### `NoCreditsModal.tsx`
+
+Um novo componente de modal reutilizável com:
+
+- Ícone de moedas/coins em destaque
+- Título: "Ops, você não tem créditos!"
+- Descrição explicativa sobre o que são créditos
+- Botão principal: "Recarregar Créditos" → redireciona para `/planos-creditos`
+- Botão secundário: "Fazer Login" (exibido apenas quando o usuário não está logado)
+
+**Estrutura visual baseada no `ExpiredSubscriptionModal.tsx` já existente.**
+
+---
+
+## Lógica de Exibição
+
+O modal será aberto nas seguintes situações:
+
+| Situação | Condição | Ação |
+|----------|----------|------|
+| Usuário não logado | `!user?.id` | Mostrar modal com opção de login |
+| Créditos insuficientes | `credits < creditCost` | Mostrar modal para recarregar |
+| Erro do backend | `code === 'INSUFFICIENT_CREDITS'` | Mostrar modal para recarregar |
+
+---
+
+## Modificações em `UpscalerArcanoTool.tsx`
+
+1. **Adicionar estado para controlar o modal:**
+```tsx
+const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
+const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
+```
+
+2. **Substituir os `toast.error` por abertura do modal:**
+```tsx
+// Antes:
+if (!user?.id) {
+  toast.error('Você precisa estar logado...');
+  return;
+}
+if (credits < creditCost) {
+  toast.error(`Créditos insuficientes...`);
+  return;
+}
+
+// Depois:
+if (!user?.id) {
+  setNoCreditsReason('not_logged');
+  setShowNoCreditsModal(true);
+  return;
+}
+if (credits < creditCost) {
+  setNoCreditsReason('insufficient');
+  setShowNoCreditsModal(true);
+  return;
+}
+```
+
+3. **Tratar erro do backend também:**
+```tsx
+if (runResponse.data?.code === 'INSUFFICIENT_CREDITS') {
+  setNoCreditsReason('insufficient');
+  setShowNoCreditsModal(true);
+  setStatus('idle');
+  refetchCredits();
+  return;
+}
+```
+
+4. **Renderizar o modal no JSX:**
+```tsx
+<NoCreditsModal
+  isOpen={showNoCreditsModal}
+  onClose={() => setShowNoCreditsModal(false)}
+  reason={noCreditsReason}
+/>
 ```
 
 ---
 
-## Solução Proposta
-
-Adicionar uma nova política RLS que permite usuários autenticados fazerem upload **apenas na pasta `upscaler/`** do bucket `artes-cloudinary`.
-
-### Migração SQL
-
-```sql
--- Permitir usuários autenticados fazer upload na pasta upscaler/
-CREATE POLICY "Authenticated users can upload to upscaler folder"
-ON storage.objects FOR INSERT
-TO authenticated
-WITH CHECK (
-  bucket_id = 'artes-cloudinary' 
-  AND (storage.foldername(name))[1] = 'upscaler'
-);
-```
-
-Esta política:
-- Aplica-se apenas a usuários **autenticados**
-- Permite upload **apenas** na pasta `upscaler/`
-- Não afeta outras pastas do bucket (admin-only)
-- Mantém a segurança do restante do bucket
-
----
-
-## Arquivos a Modificar
+## Arquivos a Modificar/Criar
 
 | Arquivo | Ação |
 |---------|------|
-| Nova migração SQL | Criar política de storage para pasta upscaler |
+| `src/components/upscaler/NoCreditsModal.tsx` | **Criar** - Novo componente de modal |
+| `src/pages/UpscalerArcanoTool.tsx` | **Modificar** - Adicionar estado e lógica do modal |
+
+---
+
+## Design do Modal
+
+```text
+┌────────────────────────────────────────┐
+│                                        │
+│              🪙 (ícone)                │
+│                                        │
+│    Ops, você não tem créditos!         │
+│                                        │
+│    Você precisa de créditos para       │
+│    usar o Upscaler Arcano. Recarregue  │
+│    agora e continue melhorando suas    │
+│    imagens!                            │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │    🪙 Recarregar Créditos        │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  (Se não logado:)                      │
+│  ┌──────────────────────────────────┐  │
+│  │         Fazer Login              │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+└────────────────────────────────────────┘
+```
 
 ---
 
 ## Detalhes Técnicos
 
-### Fluxo Atual do Upscaler
-1. Frontend cria job em `upscaler_jobs` ✅
-2. Frontend faz upload da imagem para `artes-cloudinary/upscaler/{job.id}.ext` ❌ **FALHA AQUI**
-3. Edge function processa o job com RunningHub
-4. Webhook atualiza o resultado
+- O modal usa os componentes existentes: `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `Button`
+- A navegação usa `useNavigate` do react-router-dom
+- O botão de login leva para `/user-login` (rota de login padrão do sistema)
+- O botão de créditos leva para `/planos-creditos`
+- Gradiente roxo/amarelo no botão principal para destacar a ação
 
-### Após a Correção
-O passo 2 funcionará porque usuários autenticados terão permissão de upload na pasta específica `upscaler/`.
-
----
-
-## Considerações de Segurança
-
-- A nova política é **restritiva** - só permite uploads na pasta `upscaler/`
-- Outras pastas do bucket continuam protegidas (apenas admins)
-- Usuários anônimos (não logados) não podem fazer upload
-- O path inclui o job ID, dificultando conflitos/abuso
