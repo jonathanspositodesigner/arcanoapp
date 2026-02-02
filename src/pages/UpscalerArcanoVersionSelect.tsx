@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Lock, Unlock, Sparkles, Zap, Target, Star } from "lucide-react";
+import { Lock, Unlock, Sparkles, Zap, Target, Star } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
+import ToolsHeader from "@/components/ToolsHeader";
 // Fallback images for backwards compatibility
 import upscalerV1Image from "@/assets/upscaler-v1-card.png";
 import upscalerV2Image from "@/assets/upscaler-v1-5-card.png";
@@ -318,26 +319,12 @@ const UpscalerArcanoVersionSelect = () => {
 
   return (
     <div className="min-h-screen bg-[#0D0221]">
+      <ToolsHeader 
+        title={t('upscaler.title')}
+        subtitle={t('versionSelect.chooseVersion')}
+        onBack={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
+      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
-            className="shrink-0 text-purple-300 hover:text-white hover:bg-purple-500/20"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white">
-              {t('upscaler.title')}
-            </h1>
-            <p className="text-purple-300 text-sm md:text-base">
-              {t('versionSelect.chooseVersion')}
-            </p>
-          </div>
-        </div>
 
         {/* Version Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

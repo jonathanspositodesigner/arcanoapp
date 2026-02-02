@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ArrowLeft, Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock, MessageSquare, Crown, Coins, User, Settings, Lock, LogOut, Phone } from 'lucide-react';
+import { Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock, MessageSquare, Crown, Coins } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,15 +10,6 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +17,7 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import imageCompression from 'browser-image-compression';
+import ToolsHeader from '@/components/ToolsHeader';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -53,23 +45,8 @@ const UpscalerArcanoTool: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
-  const { user, logout } = usePremiumStatus();
+  const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
-  const [userProfile, setUserProfile] = useState<{name?: string; phone?: string} | null>(null);
-
-  // Fetch user profile
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from('profiles')
-        .select('name, phone')
-        .eq('id', user.id)
-        .single();
-      if (data) setUserProfile(data);
-    };
-    fetchProfile();
-  }, [user]);
 
   // State
   const [version, setVersion] = useState<'standard' | 'pro'>('standard');
@@ -642,116 +619,10 @@ const UpscalerArcanoTool: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] text-white">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          {/* Left side: Back button + Title */}
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={goBack}
-              className="text-purple-300 hover:text-white hover:bg-purple-500/20"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              {t('upscalerTool.title')}
-            </h1>
-          </div>
-
-          {/* Right side: Credits Badge + Profile Dropdown */}
-          <div className="flex items-center gap-2">
-            {/* Credits Badge */}
-            <Badge 
-              variant="outline" 
-              className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
-            >
-              <Coins className="w-3.5 h-3.5 text-yellow-400" />
-              <span className="font-medium">
-                {creditsLoading ? '...' : credits}
-              </span>
-            </Badge>
-
-            {/* Profile Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-purple-300 hover:text-white hover:bg-purple-500/20 rounded-full"
-                >
-                  <User className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="end" 
-                className="w-56 bg-[#1A0A2E] border-purple-500/30 text-white"
-              >
-                {/* User Info */}
-                <DropdownMenuLabel className="text-purple-200">
-                  <div className="flex flex-col gap-1">
-                    <span className="font-medium">
-                      {userProfile?.name || user?.email?.split('@')[0] || 'Meu Perfil'}
-                    </span>
-                    <span className="text-xs text-purple-400 font-normal">
-                      {user?.email}
-                    </span>
-                  </div>
-                </DropdownMenuLabel>
-                
-                {userProfile?.phone && (
-                  <div className="px-2 py-1.5 text-sm text-purple-300 flex items-center gap-2">
-                    <Phone className="w-3.5 h-3.5" />
-                    {userProfile.phone}
-                  </div>
-                )}
-                
-                <DropdownMenuSeparator className="bg-purple-500/20" />
-                
-                {/* Credits Display */}
-                <div className="px-2 py-2 flex items-center justify-between">
-                  <span className="text-sm text-purple-300 flex items-center gap-2">
-                    <Coins className="w-4 h-4 text-yellow-400" />
-                    Créditos
-                  </span>
-                  <Badge className="bg-purple-600 text-white">
-                    {creditsLoading ? '...' : credits}
-                  </Badge>
-                </div>
-                
-                <DropdownMenuSeparator className="bg-purple-500/20" />
-                
-                {/* Actions */}
-                <DropdownMenuItem 
-                  onClick={() => navigate('/change-password')}
-                  className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
-                >
-                  <Lock className="w-4 h-4 mr-2" />
-                  Alterar Senha
-                </DropdownMenuItem>
-                
-                <DropdownMenuItem 
-                  onClick={() => navigate('/profile-settings')}
-                  className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Configurações
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator className="bg-purple-500/20" />
-                
-                <DropdownMenuItem 
-                  onClick={logout}
-                  className="cursor-pointer text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 focus:text-red-400"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </div>
+      <ToolsHeader 
+        title={t('upscalerTool.title')}
+        onBack={goBack}
+      />
 
       <div className="max-w-4xl mx-auto px-4 py-6 pb-28 sm:pb-6 space-y-6">
         {/* Version Switcher - Full Width */}
