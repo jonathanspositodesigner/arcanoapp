@@ -18,18 +18,87 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // ========== AUTHENTICATION CHECK ==========
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Authorization header required" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Verify the user's token
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getUser(token);
+
+    if (claimsError || !claimsData?.user) {
+      console.error("Invalid token:", claimsError?.message);
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const userId = claimsData.user.id;
+    console.log(`User ${userId} attempting to send announcement`);
+
+    // ========== ADMIN ROLE CHECK ==========
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: roleData, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (roleError) {
+      console.error("Error checking admin role:", roleError.message);
+      return new Response(
+        JSON.stringify({ error: "Error verifying permissions" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!roleData) {
+      console.error(`User ${userId} is not an admin - access denied`);
+      return new Response(
+        JSON.stringify({ error: "Admin access required" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    console.log(`Admin ${userId} authorized to send announcement`);
+
+    // ========== PROCESS ANNOUNCEMENT ==========
     const { 
       push_title, 
       push_body, 
       push_url, 
     }: AnnouncementRequest = await req.json();
 
-    console.log("Starting push announcement:", { push_title });
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    console.log("Starting push announcement:", { push_title, admin_user_id: userId });
 
     let pushSent = 0;
     let pushFailed = 0;
@@ -68,7 +137,7 @@ serve(async (req) => {
       console.log("No push subscriptions found");
     }
 
-    console.log(`Announcement complete. Push: ${pushSent} sent, ${pushFailed} failed.`);
+    console.log(`Announcement complete by admin ${userId}. Push: ${pushSent} sent, ${pushFailed} failed.`);
 
     return new Response(
       JSON.stringify({
