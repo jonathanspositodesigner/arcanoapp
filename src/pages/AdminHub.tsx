@@ -10,7 +10,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AdminHubSidebar, { HubViewType } from "@/components/AdminHubSidebar";
 import AdminGeneralDashboard from "@/components/AdminGeneralDashboard";
 import HubGeneralMarketing from "@/components/HubGeneralMarketing";
-import EmailMarketingContent from "@/components/EmailMarketingContent";
 import PushNotificationsContent from "@/components/PushNotificationsContent";
 import PartnersManagementContent from "@/components/PartnersManagementContent";
 import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
@@ -148,8 +147,6 @@ const AdminHub = () => {
         return <AdminGeneralDashboard />;
       case "marketing":
         return <HubGeneralMarketing onNavigate={handleViewChange} />;
-      case "email-marketing":
-        return <EmailMarketingContent />;
       case "push-notifications":
         return <PushNotificationsContent />;
       case "partners":

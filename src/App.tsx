@@ -38,7 +38,6 @@ const ArtesMusicosMarketing = lazy(() => import("./pages/admin/ArtesMusicosMarke
 const PromptsDashboard = lazy(() => import("./pages/admin/PromptsDashboard"));
 const PromptsFerramentas = lazy(() => import("./pages/admin/PromptsFerramentas"));
 const PromptsMarketing = lazy(() => import("./pages/admin/PromptsMarketing"));
-const AdminEmailMarketing = lazy(() => import("./pages/AdminEmailMarketing"));
 const AdminCommunityReview = lazy(() => import("./pages/AdminCommunityReview"));
 const AdminArtesReview = lazy(() => import("./pages/AdminArtesReview"));
 const AdminManageImages = lazy(() => import("./pages/AdminManageImages"));
@@ -95,7 +94,6 @@ const AdminCategoriesPrompts = lazy(() => import("./pages/AdminCategoriesPrompts
 const AdminManagePacks = lazy(() => import("./pages/AdminManagePacks"));
 const AdminManageBanners = lazy(() => import("./pages/AdminManageBanners"));
 const AdminPackPurchases = lazy(() => import("./pages/AdminPackPurchases"));
-const AdminImportClients = lazy(() => import("./pages/AdminImportClients"));
 const AdminManageAdmins = lazy(() => import("./pages/AdminManageAdmins"));
 const ForjaSelos3DArtes = lazy(() => import("./pages/ForjaSelos3DArtes"));
 const TutorialArtes = lazy(() => import("./pages/TutorialArtes"));
@@ -116,12 +114,10 @@ const PlanosUpscalerArcano69ES = lazy(() => import("./pages/PlanosUpscalerArcano
 const PlanosUpscalerArcano590ES = lazy(() => import("./pages/PlanosUpscalerArcano590ES"));
 const PlanosForjaSelos3D = lazy(() => import("./pages/PlanosForjaSelos3D"));
 const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
-const UpscalerRunpod = lazy(() => import("./pages/UpscalerRunpod"));
 
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
 const PackAgendas = lazy(() => import("./pages/PackAgendas"));
 const ComboArtesArcanas = lazy(() => import("./pages/ComboArtesArcanas"));
-const GlobalImportProgress = lazy(() => import("./components/GlobalImportProgress"));
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
@@ -138,7 +134,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   // Log version to confirm deployment
-  console.log("[APP] ===== VERSION 5.2.0 LOADED =====", new Date().toISOString());
+  console.log("[APP] ===== VERSION 5.3.0 LOADED =====", new Date().toISOString());
   
   // Track app installations
   useInstallTracker();
@@ -148,17 +144,9 @@ const AppContent = () => {
   
   // Auto-update Service Worker and clean old caches on each session
   useServiceWorkerUpdate();
-  
-  // Only show GlobalImportProgress on admin routes to avoid background queries on public pages
-  const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
 
   return (
     <TooltipProvider>
-      {isAdminRoute && (
-        <Suspense fallback={null}>
-          <GlobalImportProgress />
-        </Suspense>
-      )}
       <Toaster />
       <Sonner />
       
@@ -186,7 +174,6 @@ const AppContent = () => {
           <Route path="/admin-prompts" element={<PromptsDashboard />} />
           <Route path="/admin-prompts/ferramentas" element={<PromptsFerramentas />} />
           <Route path="/admin-prompts/marketing" element={<PromptsMarketing />} />
-          <Route path="/admin-email-marketing" element={<AdminEmailMarketing />} />
           <Route path="/admin-upload" element={<AdminUpload />} />
           <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
           <Route path="/admin-upload-artes-musicos" element={<AdminUploadArtesMusicos />} />
@@ -202,7 +189,7 @@ const AppContent = () => {
           <Route path="/profile-settings" element={<ProfileSettings />} />
           <Route path="/credit-history" element={<CreditHistory />} />
           <Route path="/install-app" element={<InstallApp />} />
-<Route path="/planos" element={<Planos />} />
+          <Route path="/planos" element={<Planos />} />
           <Route path="/planos-2" element={<Planos2 />} />
           <Route path="/upgrade" element={<UpgradePlano />} />
           <Route path="/admin-install-stats" element={<AdminInstallStats />} />
@@ -255,7 +242,6 @@ const AppContent = () => {
           <Route path="/admin-manage-packs" element={<AdminManagePacks />} />
           <Route path="/admin-manage-banners" element={<AdminManageBanners />} />
           <Route path="/admin-pack-purchases" element={<AdminPackPurchases />} />
-          <Route path="/admin-import-clients" element={<AdminImportClients />} />
           <Route path="/admin-manage-admins" element={<AdminManageAdmins />} />
           <Route path="/forja-selos-3d-artes" element={<ForjaSelos3DArtes />} />
           <Route path="/tutorial-artes/:slug" element={<TutorialArtes />} />
@@ -277,11 +263,9 @@ const AppContent = () => {
           <Route path="/planos-upscaler-arcano-590-es" element={<PlanosUpscalerArcano590ES />} />
           <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
           <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
-          <Route path="/upscaler-runpod" element={<UpscalerRunpod />} />
-          
           <Route path="/pack-agendas" element={<PackAgendas />} />
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
@@ -289,14 +273,16 @@ const AppContent = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LocaleProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </LocaleProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LocaleProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </LocaleProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
