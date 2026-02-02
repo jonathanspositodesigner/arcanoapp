@@ -51,28 +51,53 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
   const planNames: Record<string, string> = { 'arcano_basico': 'Arcano Básico', 'arcano_pro': 'Arcano Pro', 'arcano_unlimited': 'Arcano Unlimited' }
   const planDisplayName = planNames[planType] || planType
   
+  // Gerar dedup_key: email|product|YYYYMMDDHHMM
+  const now = new Date()
+  const dedupMinute = now.toISOString().slice(0, 16).replace(/[-T:]/g, '') // YYYYMMDDHHMM
+  const dedupKey = `${email}|${planDisplayName}|${dedupMinute}`
+  const trackingId = crypto.randomUUID()
+  
   try {
-    // Verificar se já enviou email para este email+produto nos últimos 5 minutos
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-    const { data: recentEmail } = await supabase
+    // PASSO 1: Tentar INSERT primeiro (atômico) - quem conseguir primeiro ganha
+    const { data: inserted, error: insertError } = await supabase
       .from('welcome_email_logs')
-      .select('id, sent_at')
-      .eq('email', email)
-      .eq('product_info', planDisplayName)
-      .eq('status', 'sent')
-      .gte('sent_at', fiveMinutesAgo)
-      .maybeSingle()
-
-    if (recentEmail) {
-      console.log(`   ├─ [${requestId}] ⏭️ Email já enviado há ${Math.round((Date.now() - new Date(recentEmail.sent_at).getTime()) / 1000)}s - IGNORANDO duplicata`)
+      .insert({
+        email,
+        name,
+        platform: 'promptverso',
+        product_info: planDisplayName,
+        status: 'pending',
+        tracking_id: trackingId,
+        template_used: 'default',
+        locale,
+        dedup_key: dedupKey
+      })
+      .select('id, tracking_id')
+      .single()
+    
+    // Se falhou por duplicata (unique constraint), ignorar silenciosamente
+    if (insertError?.code === '23505') {
+      console.log(`   ├─ [${requestId}] ⏭️ Email duplicado bloqueado por constraint`)
       return
     }
-
+    
+    if (insertError) {
+      console.log(`   ├─ [${requestId}] ❌ Erro ao inserir log: ${insertError.message}`)
+      return
+    }
+    
+    const logId = inserted.id
+    console.log(`   ├─ [${requestId}] 🔒 Lock obtido (dedup_key: ${dedupKey.slice(-20)})`)
+    
+    // PASSO 2: Enviar email (apenas quem conseguiu o INSERT)
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
     const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
     const supabaseUrl = Deno.env.get("SUPABASE_URL")
     
-    if (!clientId || !clientSecret) return
+    if (!clientId || !clientSecret) {
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: 'SendPulse não configurado' }).eq('id', logId)
+      return
+    }
 
     const { data: template } = await supabase
       .from('welcome_email_templates')
@@ -82,8 +107,6 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       .eq('is_active', true)
       .maybeSingle()
 
-    // planDisplayName já definido no início da função
-    const trackingId = crypto.randomUUID()
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
     const platformUrl = 'https://arcanolab.voxvisual.com.br/login'
     const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
@@ -93,7 +116,11 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ grant_type: "client_credentials", client_id: clientId, client_secret: clientSecret }),
     })
-    if (!tokenResponse.ok) return
+    
+    if (!tokenResponse.ok) {
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: 'Falha ao obter token SendPulse' }).eq('id', logId)
+      return
+    }
 
     const { access_token } = await tokenResponse.json()
 
@@ -117,15 +144,19 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
       }),
     }).then(r => r.json())
 
-    await supabase.from('welcome_email_logs').insert({
-      email, name, platform: 'promptverso', tracking_id: trackingId, template_used: template?.id || 'default',
-      product_info: planDisplayName, status: result.result === true ? 'sent' : 'failed',
-      error_message: result.result !== true ? JSON.stringify(result) : null, locale
-    })
+    // PASSO 3: Atualizar status para sent ou failed
+    await supabase.from('welcome_email_logs').update({
+      status: result.result === true ? 'sent' : 'failed',
+      error_message: result.result !== true ? JSON.stringify(result) : null,
+      template_used: template?.id || 'default'
+    }).eq('id', logId)
     
     console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email enviado' : '❌ Falha email'}`)
   } catch (error) {
     console.log(`   ├─ [${requestId}] ❌ Erro email: ${error}`)
+    try {
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: String(error) }).eq('tracking_id', trackingId)
+    } catch (e) {}
   }
 }
 
