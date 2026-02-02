@@ -2121,6 +2121,36 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          ip_address: string
+          request_count: number
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          ip_address: string
+          request_count?: number
+          updated_at?: string
+          window_start?: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          ip_address?: string
+          request_count?: number
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       tutorial_events: {
         Row: {
           created_at: string
@@ -2524,8 +2554,22 @@ export type Database = {
           password_changed: boolean
         }[]
       }
+      check_rate_limit: {
+        Args: {
+          _endpoint: string
+          _ip_address: string
+          _max_requests?: number
+          _window_seconds?: number
+        }
+        Returns: {
+          allowed: boolean
+          current_count: number
+          reset_at: string
+        }[]
+      }
       cleanup_monthly_logs: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: undefined }
+      cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_stale_upscaler_jobs: { Args: never; Returns: undefined }
       consume_upscaler_credits: {
         Args: { _amount: number; _description?: string; _user_id: string }

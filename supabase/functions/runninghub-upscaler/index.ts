@@ -18,6 +18,10 @@ const WEBAPP_ID_STANDARD = '2017030861371219969';
 const WEBAPP_ID_LONGE = '2017343414227963905'; // WebApp for full-body/wide-angle photos
 const MAX_CONCURRENT_JOBS = 3;
 
+// Rate limit configuration
+const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 }; // 10 uploads per minute
+const RATE_LIMIT_RUN = { maxRequests: 5, windowSeconds: 60 }; // 5 runs per minute
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 if (!RUNNINGHUB_API_KEY) {
@@ -31,6 +35,52 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Get client IP from request headers
+function getClientIP(req: Request): string {
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim();
+  }
+  const realIP = req.headers.get('x-real-ip');
+  if (realIP) {
+    return realIP;
+  }
+  return 'unknown';
+}
+
+// Check rate limit using database function
+async function checkRateLimit(
+  ip: string, 
+  endpoint: string, 
+  maxRequests: number, 
+  windowSeconds: number
+): Promise<{ allowed: boolean; currentCount: number; resetAt: string }> {
+  try {
+    const { data, error } = await supabase.rpc('check_rate_limit', {
+      _ip_address: ip,
+      _endpoint: endpoint,
+      _max_requests: maxRequests,
+      _window_seconds: windowSeconds
+    });
+    
+    if (error) {
+      console.error('[RateLimit] Error checking rate limit:', error);
+      // On error, allow the request (fail open)
+      return { allowed: true, currentCount: 0, resetAt: '' };
+    }
+    
+    const result = data?.[0] || { allowed: true, current_count: 0, reset_at: null };
+    return { 
+      allowed: result.allowed, 
+      currentCount: result.current_count,
+      resetAt: result.reset_at || ''
+    };
+  } catch (err) {
+    console.error('[RateLimit] Exception:', err);
+    return { allowed: true, currentCount: 0, resetAt: '' };
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -39,8 +89,36 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const path = url.pathname.split('/').pop();
+    const clientIP = getClientIP(req);
     
-    console.log(`[RunningHub] Endpoint called: ${path}`);
+    console.log(`[RunningHub] Endpoint called: ${path}, IP: ${clientIP}`);
+
+    // Apply rate limiting for upload and run endpoints
+    if (path === 'upload' || path === 'run') {
+      const rateConfig = path === 'upload' ? RATE_LIMIT_UPLOAD : RATE_LIMIT_RUN;
+      const rateLimitResult = await checkRateLimit(
+        clientIP, 
+        `runninghub-upscaler/${path}`,
+        rateConfig.maxRequests,
+        rateConfig.windowSeconds
+      );
+      
+      if (!rateLimitResult.allowed) {
+        console.warn(`[RateLimit] IP ${clientIP} exceeded limit for ${path}: ${rateLimitResult.currentCount} requests`);
+        return new Response(JSON.stringify({ 
+          error: 'Too many requests. Please wait before trying again.',
+          code: 'RATE_LIMIT_EXCEEDED',
+          retryAfter: rateLimitResult.resetAt
+        }), {
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': '60'
+          },
+        });
+      }
+    }
 
     if (path === 'upload') {
       return await handleUpload(req);
