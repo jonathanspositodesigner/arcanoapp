@@ -36,6 +36,13 @@ const LEGACY_PRODUCT_ID_MAPPING: Record<number, ProductMapping> = {
   149342: { packSlug: 'pack-arcano-vol-2', accessType: 'vitalicio', hasBonusAccess: true },
 }
 
+// Mapeamento de produtos de CRÉDITOS
+const CREDITS_PRODUCT_MAPPING: Record<number, { amount: number; name: string }> = {
+  156946: { amount: 1500, name: 'Pacote +1.500 Créditos' },
+  156948: { amount: 4200, name: 'Pacote +4.200 Créditos' },
+  156952: { amount: 10800, name: 'Pacote +10.800 Créditos' }
+}
+
 // Textos de email por idioma
 const emailTexts = {
   pt: {
@@ -46,6 +53,7 @@ const emailTexts = {
     securityWarning: 'Por segurança, você deverá trocar sua senha no primeiro acesso.',
     clickButtonArtes: 'Clique no botão acima para fazer seu primeiro login e começar a explorar artes editáveis em PSD e Canva!',
     clickButtonIA: 'Clique no botão acima para fazer seu primeiro login e começar a usar sua ferramenta de IA!',
+    clickButtonCreditos: 'Clique no botão acima para acessar suas ferramentas de IA e começar a usar seus créditos!',
     copyrightArtes: '© Biblioteca de Artes Arcanas',
     copyrightIA: '© Ferramentas IA Arcanas',
     important: 'Importante'
@@ -58,6 +66,7 @@ const emailTexts = {
     securityWarning: 'Por seguridad, deberás cambiar tu contraseña en el primer acceso.',
     clickButtonArtes: '¡Haz clic en el botón de arriba para iniciar sesión y explorar artes editables en PSD y Canva!',
     clickButtonIA: '¡Haz clic en el botón de arriba para iniciar sesión y usar tu herramienta de IA!',
+    clickButtonCreditos: '¡Haz clic en el botón de arriba para acceder a tus herramientas de IA y empezar a usar tus créditos!',
     copyrightArtes: '© Biblioteca de Artes Arcanas',
     copyrightIA: '© Herramientas IA Arcanas',
     important: 'Importante'
@@ -382,6 +391,263 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
 }
 
 // ============================================================================
+// EMAIL DE CRÉDITOS
+// ============================================================================
+async function sendCreditsWelcomeEmail(
+  supabase: any, 
+  email: string, 
+  name: string, 
+  creditsAmount: number, 
+  requestId: string, 
+  locale: 'pt' | 'es' = 'pt'
+): Promise<void> {
+  const t = emailTexts[locale]
+  
+  // Gerar dedup_key: email|creditos|YYYYMMDDHHMM
+  const now = new Date()
+  const dedupMinute = now.toISOString().slice(0, 16).replace(/[-T:]/g, '')
+  const dedupKey = `${email}|creditos-${creditsAmount}|${dedupMinute}`
+  const trackingId = crypto.randomUUID()
+  
+  try {
+    // Tentar INSERT primeiro (atômico)
+    const { data: inserted, error: insertError } = await supabase
+      .from('welcome_email_logs')
+      .insert({
+        email,
+        name,
+        platform: 'creditos',
+        product_info: `+${creditsAmount.toLocaleString('pt-BR')} Créditos`,
+        status: 'pending',
+        tracking_id: trackingId,
+        template_used: 'creditos',
+        locale,
+        dedup_key: dedupKey
+      })
+      .select('id, tracking_id')
+      .single()
+    
+    if (insertError?.code === '23505') {
+      console.log(`   ├─ [${requestId}] ⏭️ Email de créditos duplicado bloqueado`)
+      return
+    }
+    
+    if (insertError) {
+      console.log(`   ├─ [${requestId}] ❌ Erro ao inserir log de créditos: ${insertError.message}`)
+      return
+    }
+    
+    const logId = inserted.id
+    console.log(`   ├─ [${requestId}] 🔒 Lock obtido para email de créditos`)
+    
+    const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
+    const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")
+    
+    if (!clientId || !clientSecret) {
+      console.log(`   ├─ [${requestId}] ⚠️ SendPulse não configurado`)
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: 'SendPulse não configurado' }).eq('id', logId)
+      return
+    }
+
+    const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ grant_type: "client_credentials", client_id: clientId, client_secret: clientSecret }),
+    })
+
+    if (!tokenResponse.ok) {
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: 'Falha ao obter token SendPulse' }).eq('id', logId)
+      return
+    }
+
+    const { access_token } = await tokenResponse.json()
+
+    const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
+    const platformUrl = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia'
+    const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
+
+    const creditsFormatted = creditsAmount.toLocaleString('pt-BR')
+    const heading = locale === 'es' ? '¡Tus Créditos fueron Añadidos!' : 'Seus Créditos foram Adicionados!'
+    const intro = locale === 'es' 
+      ? `¡Tu compra de <strong>+${creditsFormatted} créditos</strong> fue confirmada y ya está disponible en tu cuenta!`
+      : `Sua compra de <strong>+${creditsFormatted} créditos</strong> foi confirmada e já está disponível na sua conta!`
+    const buttonText = locale === 'es' ? 'Acceder a las Herramientas' : 'Acessar Ferramentas'
+    const toolsInfo = locale === 'es' 
+      ? 'Usa tus créditos en nuestras herramientas de IA: Upscaler Arcano, Forja de Sellos 3D, y más!'
+      : 'Use seus créditos em nossas ferramentas de IA: Upscaler Arcano, Forja de Selos 3D, e mais!'
+    const footer = locale === 'es' ? '¿Dudas? Responde este email!' : 'Dúvidas? Responda este email!'
+
+    const creditsHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;background:#f4f4f4;padding:20px}.container{max-width:600px;margin:0 auto;background:white;padding:40px;border-radius:12px}h1{color:#d4af37;text-align:center}.cta-button{display:block;background:#d4af37;color:white;text-align:center;padding:16px;border-radius:8px;text-decoration:none;margin:20px 0}.credits-box{background:linear-gradient(135deg,#fefce8 0%,#fef3c7 100%);padding:24px;border-radius:12px;margin:20px 0;text-align:center;border:2px solid #d4af37}.credits-amount{font-size:36px;font-weight:bold;color:#d4af37}.credentials{background:#f0fdf4;padding:20px;border-radius:8px;margin:20px 0}</style></head><body><div class="container"><h1>🎫 ${heading}</h1><p>${t.greeting}${name ? ` <strong>${name}</strong>` : ''}!</p><p>${intro}</p><div class="credits-box"><div class="credits-amount">+${creditsFormatted}</div><div style="color:#666;margin-top:8px">${locale === 'es' ? 'créditos añadidos' : 'créditos adicionados'}</div></div><p style="text-align:center;color:#666">${toolsInfo}</p><div class="credentials"><h3>${t.accessData}</h3><p><strong>${t.email}:</strong> ${email}</p><p><strong>${t.password}:</strong> ${email}</p><p>⚠️ ${t.securityWarning}</p></div><a href="${clickTrackingUrl}" class="cta-button">🚀 ${buttonText}</a><p style="text-align:center;color:#666">${t.clickButtonCreditos}</p><p style="text-align:center;color:#666;font-size:12px">${footer}</p></div><img src="${trackingBaseUrl}?id=${trackingId}&action=open" width="1" height="1" style="display:none"/></body></html>`
+
+    const emailResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${access_token}` },
+      body: JSON.stringify({
+        email: {
+          html: btoa(unescape(encodeURIComponent(creditsHtml))),
+          text: `${heading} - +${creditsFormatted} créditos adicionados! Email: ${email}, Senha: ${email}`,
+          subject: `🎫 +${creditsFormatted} Créditos Adicionados à sua Conta!`,
+          from: { name: 'Ferramentas IA Arcanas', email: 'contato@voxvisual.com.br' },
+          to: [{ email, name: name || "" }],
+        },
+      }),
+    })
+
+    const result = await emailResponse.json()
+    
+    await supabase.from('welcome_email_logs').update({
+      status: result.result === true ? 'sent' : 'failed',
+      error_message: result.result !== true ? JSON.stringify(result) : null,
+      email_content: creditsHtml
+    }).eq('id', logId)
+    
+    console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email de créditos enviado' : '❌ Falha no email de créditos'}`)
+  } catch (error) {
+    console.log(`   ├─ [${requestId}] ❌ Erro email créditos: ${error}`)
+    try {
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: String(error) }).eq('tracking_id', trackingId)
+    } catch (e) {}
+  }
+}
+
+// ============================================================================
+// PROCESSAMENTO DE CRÉDITOS
+// ============================================================================
+async function processCreditsWebhook(
+  supabase: any, 
+  payload: any, 
+  logId: string, 
+  requestId: string,
+  creditsProduct: { amount: number; name: string }
+): Promise<void> {
+  const email = payload.client?.email?.toLowerCase().trim()
+  const clientName = payload.client?.name || ''
+  const clientPhone = payload.client?.phone?.replace(/\D/g, '') || ''
+  const userLocale = extractLocale(payload)
+
+  console.log(`\n🎫 [${requestId}] PROCESSANDO CRÉDITOS: +${creditsProduct.amount}`)
+  console.log(`   ├─ Email: ${email}`)
+  console.log(`   ├─ Nome: ${clientName}`)
+
+  try {
+    // Verificar blacklist
+    if (await isEmailBlacklisted(supabase, email)) {
+      console.log(`   ├─ 🚫 Email bloqueado`)
+      await supabase.from('webhook_logs').update({ 
+        result: 'blocked', 
+        error_message: 'Email na blacklist',
+        platform: 'creditos'
+      }).eq('id', logId)
+      return
+    }
+
+    // Criar ou buscar usuário
+    let userId: string | null = null
+
+    const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+      email, password: email, email_confirm: true
+    })
+
+    if (createError) {
+      if (createError.message?.includes('email') || createError.code === 'email_exists') {
+        // Buscar usuário existente
+        const { data: profile } = await supabase.from('profiles').select('id').ilike('email', email).maybeSingle()
+        
+        if (profile) {
+          userId = profile.id
+          console.log(`   ├─ 👤 Usuário existente encontrado via profile: ${userId}`)
+        } else {
+          // Busca paginada em auth.users
+          let page = 1
+          while (!userId && page <= 10) {
+            const { data: usersPage } = await supabase.auth.admin.listUsers({ page, perPage: 1000 })
+            const found = usersPage?.users?.find((u: any) => u.email?.toLowerCase() === email)
+            if (found) userId = found.id
+            if (!usersPage?.users?.length || usersPage.users.length < 1000) break
+            page++
+          }
+          if (userId) {
+            console.log(`   ├─ 👤 Usuário existente encontrado via auth: ${userId}`)
+          }
+        }
+        
+        if (!userId) {
+          console.log(`   ├─ ❌ Usuário existe mas não encontrado`)
+          await supabase.from('webhook_logs').update({ 
+            result: 'failed', 
+            error_message: 'Usuário existe mas não encontrado',
+            platform: 'creditos'
+          }).eq('id', logId)
+          return
+        }
+      } else {
+        throw createError
+      }
+    } else {
+      userId = newUser.user.id
+      console.log(`   ├─ ✅ Novo usuário criado: ${userId}`)
+    }
+
+    // Upsert profile
+    await supabase.from('profiles').upsert({
+      id: userId, 
+      name: clientName, 
+      phone: clientPhone, 
+      email, 
+      locale: userLocale, 
+      password_changed: false, 
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'id' })
+    console.log(`   ├─ ✅ Profile atualizado`)
+
+    // Adicionar créditos vitalícios
+    const { data: creditsResult, error: creditsError } = await supabase.rpc('add_lifetime_credits', {
+      _user_id: userId,
+      _amount: creditsProduct.amount,
+      _description: `Compra: ${creditsProduct.name}`
+    })
+
+    if (creditsError) {
+      console.log(`   ├─ ❌ Erro ao adicionar créditos: ${creditsError.message}`)
+      await supabase.from('webhook_logs').update({ 
+        result: 'failed', 
+        error_message: `Erro RPC add_lifetime_credits: ${creditsError.message}`,
+        platform: 'creditos'
+      }).eq('id', logId)
+      return
+    }
+
+    const newBalance = creditsResult?.[0]?.new_balance || creditsProduct.amount
+    console.log(`   ├─ ✅ +${creditsProduct.amount} créditos adicionados (novo saldo: ${newBalance})`)
+
+    // Marcar sucesso ANTES do email
+    await supabase.from('webhook_logs').update({ 
+      result: 'success',
+      platform: 'creditos',
+      payload: {} // Limpar payload
+    }).eq('id', logId)
+
+    // Enviar email de boas-vindas (não bloqueia)
+    try {
+      await sendCreditsWelcomeEmail(supabase, email, clientName, creditsProduct.amount, requestId, userLocale)
+    } catch (e) {
+      console.log(`   ├─ ⚠️ Falha no email (créditos já liberados)`)
+    }
+
+    console.log(`\n✅ [${requestId}] CRÉDITOS PROCESSADOS COM SUCESSO`)
+
+  } catch (error) {
+    console.error(`\n❌ [${requestId}] ERRO CRÉDITOS:`, error)
+    await supabase.from('webhook_logs').update({ 
+      result: 'failed', 
+      error_message: error instanceof Error ? error.message : 'Erro desconhecido',
+      platform: 'creditos'
+    }).eq('id', logId)
+  }
+}
+
+// ============================================================================
 // PROCESSAMENTO EM BACKGROUND
 // ============================================================================
 async function processGreennArtesWebhook(supabase: any, payload: any, logId: string, requestId: string): Promise<void> {
@@ -444,6 +710,16 @@ async function processGreennArtesWebhook(supabase: any, payload: any, logId: str
 
     // Handle paid/approved
     if (status === 'paid' || status === 'approved') {
+      // ========================================
+      // VERIFICAR SE É PRODUTO DE CRÉDITOS
+      // ========================================
+      const creditsProduct = productId ? CREDITS_PRODUCT_MAPPING[productId] : null
+      if (creditsProduct) {
+        console.log(`   ├─ 🎫 PRODUTO DE CRÉDITOS DETECTADO: ${creditsProduct.amount} créditos`)
+        await processCreditsWebhook(supabase, payload, logId, requestId, creditsProduct)
+        return  // Não continuar para processamento de artes
+      }
+
       // Check blacklist
       if (await isEmailBlacklisted(supabase, email)) {
         console.log(`   ├─ 🚫 Email bloqueado`)
@@ -665,7 +941,11 @@ Deno.serve(async (req) => {
     const utmSource = extractUtmSource(payload)
     const fromApp = isFromApp(payload)
 
-    console.log(`📦 [${requestId}] Dados: email=${email}, productId=${productId}, status=${status}, event=${eventType}`)
+    // Detectar se é produto de créditos para log inicial
+    const isCreditsProduct = productId && CREDITS_PRODUCT_MAPPING[productId]
+    const logPlatform = isCreditsProduct ? 'creditos' : (fromApp ? 'app' : 'artes-eventos')
+
+    console.log(`📦 [${requestId}] Dados: email=${email}, productId=${productId}, status=${status}, event=${eventType}, platform=${logPlatform}`)
 
     // Handle checkoutAbandoned separately (quick response)
     if (eventType === 'checkoutAbandoned') {
@@ -715,12 +995,12 @@ Deno.serve(async (req) => {
     ).then(() => console.log(`   🧹 Limpeza automática executada`))
      .catch(() => {})
 
-    // Log to webhook_logs (durable)
+    // Log to webhook_logs (durable) - platform já detecta créditos
     const { data: logEntry, error: logError } = await supabase
       .from('webhook_logs')
       .insert({
         payload,
-        platform: fromApp ? 'app' : 'artes-eventos',
+        platform: logPlatform,
         email,
         product_id: productId || null,
         status,
