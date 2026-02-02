@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 import ToolsHeader from "@/components/ToolsHeader";
+import PromoToolsBanner from "@/components/PromoToolsBanner";
 
 interface ToolData {
   id: string;
@@ -202,6 +203,9 @@ const FerramentasIAAplicativo = () => {
         onBack={goBack}
         showLogo={true}
       />
+      
+      {/* Promo Banner */}
+      <PromoToolsBanner />
 
       {/* Content - Single grid with all tools */}
       <main className="container mx-auto px-4 py-8">
