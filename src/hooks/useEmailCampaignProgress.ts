@@ -14,27 +14,6 @@ interface EmailCampaignProgress {
 
 export const useEmailCampaignProgress = () => {
   const [activeCampaign, setActiveCampaign] = useState<EmailCampaignProgress | null>(null);
-  const lastUpdateRef = useRef<number>(Date.now());
-  const watchdogIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const isRecoveringRef = useRef(false);
-
-  // Auto-recovery function when campaign stalls
-  const triggerRecovery = useCallback(async (campaignId: string) => {
-    if (isRecoveringRef.current) return;
-    
-    isRecoveringRef.current = true;
-    console.log('[Watchdog] Campaign stalled, triggering recovery...');
-    
-    try {
-      await supabase.functions.invoke('send-email-campaign', {
-        body: { campaign_id: campaignId, resume: true }
-      });
-    } catch (error) {
-      console.error('[Watchdog] Recovery failed:', error);
-    } finally {
-      isRecoveringRef.current = false;
-    }
-  }, []);
 
   useEffect(() => {
     // Check for active sending campaigns on mount
@@ -49,7 +28,6 @@ export const useEmailCampaignProgress = () => {
 
       if (data) {
         setActiveCampaign(data);
-        lastUpdateRef.current = Date.now();
       }
     };
 
@@ -75,7 +53,6 @@ export const useEmailCampaignProgress = () => {
 
           if (record.status === 'sending') {
             setActiveCampaign(record);
-            lastUpdateRef.current = Date.now();
           } else if (activeCampaign?.id === record.id) {
             // Campaign finished or was cancelled
             setActiveCampaign(null);
@@ -84,27 +61,10 @@ export const useEmailCampaignProgress = () => {
       )
       .subscribe();
 
-    // Watchdog: check every 15 seconds if campaign is stalled
-    watchdogIntervalRef.current = setInterval(() => {
-      if (activeCampaign && activeCampaign.status === 'sending' && !activeCampaign.is_paused) {
-        const timeSinceLastUpdate = Date.now() - lastUpdateRef.current;
-        
-        // If no update in 45 seconds, trigger recovery
-        if (timeSinceLastUpdate > 45000) {
-          console.log(`[Watchdog] No updates for ${Math.round(timeSinceLastUpdate/1000)}s, recovering...`);
-          triggerRecovery(activeCampaign.id);
-          lastUpdateRef.current = Date.now(); // Reset to prevent spam
-        }
-      }
-    }, 15000);
-
     return () => {
       supabase.removeChannel(channel);
-      if (watchdogIntervalRef.current) {
-        clearInterval(watchdogIntervalRef.current);
-      }
     };
-  }, [activeCampaign?.id, triggerRecovery]);
+  }, [activeCampaign?.id]);
 
   const pauseCampaign = async (campaignId: string) => {
     await supabase
@@ -118,8 +78,6 @@ export const useEmailCampaignProgress = () => {
       .from('email_campaigns')
       .update({ is_paused: false })
       .eq('id', campaignId);
-    
-    lastUpdateRef.current = Date.now();
     
     // Re-invoke edge function to continue sending
     await supabase.functions.invoke('send-email-campaign', {
