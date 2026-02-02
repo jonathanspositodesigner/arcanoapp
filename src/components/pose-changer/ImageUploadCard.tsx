@@ -96,20 +96,17 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
       className
     )}>
       {/* Header */}
-      <div className="px-3 py-2 border-b border-purple-500/20">
-        <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
-          <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
+      <div className="px-2 py-1 border-b border-purple-500/20">
+        <h3 className="text-[10px] font-semibold text-white flex items-center gap-1">
+          <ImageIcon className="w-3 h-3 text-purple-400" />
           {title}
         </h3>
-        {subtitle && (
-          <p className="text-[10px] text-purple-300/70 mt-0.5">{subtitle}</p>
-        )}
       </div>
 
-      {/* Upload Area - Compact */}
+      {/* Upload Area - Ultra Compact */}
       <div
         className={cn(
-          "relative aspect-[4/3] flex flex-col items-center justify-center cursor-pointer transition-all",
+          "relative h-16 flex flex-col items-center justify-center cursor-pointer transition-all",
           !image && "hover:bg-purple-500/10",
           disabled && "cursor-not-allowed"
         )}
@@ -127,23 +124,19 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
             {/* Remove button */}
             <button
               onClick={handleRemove}
-              className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center transition-colors"
+              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center transition-colors"
             >
-              <X className="w-3.5 h-3.5 text-white" />
+              <X className="w-3 h-3 text-white" />
             </button>
           </>
         ) : (
-          <div className="flex flex-col items-center gap-2 p-3 text-center">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 border-2 border-dashed border-purple-500/40 flex items-center justify-center">
-              <Upload className="w-5 h-5 text-purple-400" />
+          <div className="flex items-center gap-2 p-2">
+            <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-dashed border-purple-500/40 flex items-center justify-center">
+              <Upload className="w-4 h-4 text-purple-400" />
             </div>
-            <div>
-              <p className="text-xs text-purple-200 font-medium">
-                Arraste sua imagem
-              </p>
-              <p className="text-[10px] text-purple-400 mt-0.5">
-                ou clique • Ctrl+V
-              </p>
+            <div className="text-left">
+              <p className="text-[10px] text-purple-200 font-medium">Arraste ou clique</p>
+              <p className="text-[9px] text-purple-400">Ctrl+V para colar</p>
             </div>
           </div>
         )}
@@ -160,18 +153,18 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
 
       {/* Library Button */}
       {showLibraryButton && (
-        <div className="px-3 py-2 border-t border-purple-500/20">
+        <div className="px-2 py-1 border-t border-purple-500/20">
           <Button
             variant="outline"
             size="sm"
-            className="w-full h-7 text-xs bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white"
+            className="w-full h-6 text-[10px] bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white"
             onClick={(e) => {
               e.stopPropagation();
               onOpenLibrary?.();
             }}
             disabled={disabled}
           >
-            <Library className="w-3.5 h-3.5 mr-1.5" />
+            <Library className="w-3 h-3 mr-1" />
             Biblioteca de Poses
           </Button>
         </div>

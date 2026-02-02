@@ -104,16 +104,15 @@ const PoseChangerTool: React.FC = () => {
     <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
       <ToolsHeader title="Pose Changer" onBack={goBack} />
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-3 overflow-hidden">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-hidden">
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 h-full">
           
           {/* Left Side - Inputs (2/5 on desktop) */}
-          <div className="lg:col-span-2 flex flex-col gap-3">
+          <div className="lg:col-span-2 flex flex-col gap-2">
             {/* Person Image Upload */}
             <ImageUploadCard
               title="Sua Foto"
-              subtitle="Foto da pessoa"
               image={personImage}
               onImageChange={setPersonImage}
               disabled={isProcessing}
@@ -122,7 +121,6 @@ const PoseChangerTool: React.FC = () => {
             {/* Reference Image Upload */}
             <ImageUploadCard
               title="Referência de Pose"
-              subtitle="Pose desejada"
               image={referenceImage}
               onImageChange={setReferenceImage}
               showLibraryButton
@@ -133,29 +131,22 @@ const PoseChangerTool: React.FC = () => {
             {/* Action Button */}
             <Button
               size="sm"
-              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold py-4 text-sm disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
               disabled={!canProcess || isProcessing}
               onClick={handleProcess}
             >
               {isProcessing ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Processando... {progress}%
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  {progress}%
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 mr-2" />
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                   Gerar Pose ({CREDIT_COST} créditos)
                 </>
               )}
             </Button>
-
-            {/* Credits Info */}
-            {user && (
-              <p className="text-[10px] text-purple-400 text-center">
-                <span className="text-purple-200 font-semibold">{credits}</span> créditos disponíveis
-              </p>
-            )}
           </div>
 
           {/* Right Side - Result Viewer (3/5 on desktop) */}
