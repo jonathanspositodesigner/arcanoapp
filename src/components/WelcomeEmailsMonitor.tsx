@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
   RefreshCw, 
   Mail, 
@@ -16,12 +17,14 @@ import {
   CalendarIcon,
   Send,
   Info,
-  Loader2
+  Loader2,
+  Eye
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 type PeriodFilter = 'today' | '7' | '15' | '30' | 'custom';
 
@@ -42,6 +45,7 @@ interface PurchaseEmailStatus {
   email_status: 'sent' | 'pending' | 'failed';
   email_sent_at?: string;
   failure_reason?: string;
+  email_content?: string | null;
 }
 
 // Mapeamento de plataformas do webhook_logs para welcome_email_logs
@@ -57,6 +61,9 @@ const WelcomeEmailsMonitor = () => {
   const [period, setPeriod] = useState<PeriodFilter>('today');
   const [customRange, setCustomRange] = useState<DateRange | undefined>();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [selectedEmail, setSelectedEmail] = useState<PurchaseEmailStatus | null>(null);
+  const [emailContent, setEmailContent] = useState<string | null>(null);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
   const queryClient = useQueryClient();
 
   const getDateRange = () => {
@@ -111,13 +118,13 @@ const WelcomeEmailsMonitor = () => {
       // Buscar TODOS os emails enviados (sem filtro de data para pegar matching correto)
       const { data: emailLogs, error: emailError } = await supabase
         .from('welcome_email_logs')
-        .select('email, platform, status, sent_at, error_message')
+        .select('email, platform, status, sent_at, error_message, email_content')
         .gte('sent_at', subDays(startDate, 1).toISOString()); // Pegar emails até 1 dia antes
 
       if (emailError) throw emailError;
 
       // Criar mapa de emails enviados - chave por email apenas (mais flexível)
-      const emailByEmailOnly = new Map<string, { status: string; sent_at: string; error_message?: string; platform: string }>();
+      const emailByEmailOnly = new Map<string, { status: string; sent_at: string; error_message?: string; platform: string; email_content?: string | null }>();
       emailLogs?.forEach(log => {
         const key = log.email?.toLowerCase();
         if (key) {
@@ -128,7 +135,8 @@ const WelcomeEmailsMonitor = () => {
               status: log.status || 'sent', 
               sent_at: log.sent_at || '',
               error_message: log.error_message || undefined,
-              platform: log.platform || ''
+              platform: log.platform || '',
+              email_content: log.email_content
             });
           }
         }
@@ -182,7 +190,8 @@ const WelcomeEmailsMonitor = () => {
           received_at: p.received_at || '',
           email_status: emailStatus,
           email_sent_at: emailInfo?.sent_at,
-          failure_reason: failureReason
+          failure_reason: failureReason,
+          email_content: emailInfo?.email_content
         };
       });
 
@@ -297,6 +306,33 @@ const WelcomeEmailsMonitor = () => {
       return;
     }
     resendMutation.mutate(pendingEmails);
+  };
+
+  const handleEmailClick = async (purchase: PurchaseEmailStatus) => {
+    if (purchase.email_status !== 'sent') return;
+    
+    setSelectedEmail(purchase);
+    setIsLoadingContent(true);
+    
+    // Se já temos o conteúdo no cache, usar diretamente
+    if (purchase.email_content) {
+      setEmailContent(purchase.email_content);
+      setIsLoadingContent(false);
+      return;
+    }
+    
+    // Buscar conteúdo do email do banco
+    const { data } = await supabase
+      .from('welcome_email_logs')
+      .select('email_content')
+      .eq('email', purchase.email.toLowerCase())
+      .eq('status', 'sent')
+      .order('sent_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    setEmailContent(data?.email_content || null);
+    setIsLoadingContent(false);
   };
 
   const pendingCount = data?.stats.pending || 0;
@@ -457,16 +493,28 @@ const WelcomeEmailsMonitor = () => {
                   </tr>
                 ) : (
                   data.purchases.map((purchase) => (
-                    <tr key={purchase.id} className="hover:bg-muted/30">
+                    <tr 
+                      key={purchase.id} 
+                      className={cn(
+                        "hover:bg-muted/30",
+                        purchase.email_status === 'sent' && "cursor-pointer hover:bg-muted/50"
+                      )}
+                      onClick={() => handleEmailClick(purchase)}
+                    >
                       <td className="p-3 text-sm">
                         {format(new Date(purchase.received_at), 'dd/MM HH:mm', { locale: ptBR })}
                       </td>
                       <td className="p-3 text-sm font-mono">
-                        <div>
-                          {purchase.email.length > 25 
-                            ? `${purchase.email.substring(0, 25)}...` 
-                            : purchase.email
-                          }
+                        <div className="flex items-center gap-2">
+                          <div>
+                            {purchase.email.length > 25 
+                              ? `${purchase.email.substring(0, 25)}...` 
+                              : purchase.email
+                            }
+                          </div>
+                          {purchase.email_status === 'sent' && (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
                         </div>
                         {purchase.name && (
                           <div className="text-xs text-muted-foreground">{purchase.name}</div>
@@ -528,6 +576,51 @@ const WelcomeEmailsMonitor = () => {
             </table>
           </div>
         </Card>
+
+        {/* Modal de Prévia do Email */}
+        <Dialog open={!!selectedEmail} onOpenChange={() => setSelectedEmail(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5 text-primary" />
+                Prévia do Email Enviado
+              </DialogTitle>
+              <DialogDescription>
+                Enviado para: {selectedEmail?.email}
+                {selectedEmail?.email_sent_at && (
+                  <span className="ml-2 text-xs">
+                    em {format(new Date(selectedEmail.email_sent_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="flex-1 border rounded-lg overflow-hidden bg-white min-h-[400px]">
+              {isLoadingContent ? (
+                <div className="p-8 text-center h-full flex flex-col items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <p className="mt-3 text-muted-foreground">Carregando prévia...</p>
+                </div>
+              ) : emailContent ? (
+                <iframe 
+                  srcDoc={emailContent}
+                  className="w-full h-[500px] border-0"
+                  title="Prévia do email"
+                  sandbox="allow-same-origin"
+                />
+              ) : (
+                <div className="p-8 text-center h-full flex flex-col items-center justify-center text-muted-foreground">
+                  <AlertCircle className="h-12 w-12 mb-3 opacity-50" />
+                  <p className="font-medium">Conteúdo do email não disponível</p>
+                  <p className="text-sm mt-2 max-w-md">
+                    Emails enviados antes desta atualização não têm o conteúdo salvo.
+                    Novos emails terão a prévia disponível automaticamente.
+                  </p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
   );

@@ -384,7 +384,8 @@ serve(async (req) => {
           product_info: `${productName} (reenvio manual)`,
           locale: locale,
           dedup_key: dedupKey,
-          error_message: success ? null : "Falha no envio via SendPulse"
+          error_message: success ? null : "Falha no envio via SendPulse",
+          email_content: emailHtml // Salvar HTML para prévia
         });
 
         if (success) {
