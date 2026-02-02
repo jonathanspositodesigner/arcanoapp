@@ -5,10 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
-import { Sparkles, CheckCircle, Loader2, Play, ShoppingCart } from "lucide-react";
+import { Sparkles, Loader2, Play, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import ToolsHeader from "@/components/ToolsHeader";
 
 interface ToolData {
@@ -154,15 +154,6 @@ const FerramentasIAAplicativo = () => {
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
               <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
-            </div>
-          )}
-          
-          {hasAccess && (
-            <div className="absolute top-2 right-2 z-10">
-              <Badge className="bg-green-500/30 text-green-300 border-0 text-[10px] font-semibold shadow-lg px-2 py-0.5">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                {t('ferramentas.released')}
-              </Badge>
             </div>
           )}
           
