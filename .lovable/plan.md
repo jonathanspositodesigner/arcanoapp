@@ -1,114 +1,238 @@
 
-# Plano: Correção de Contraste dos Botões e Cards nas Páginas de Aulas
+# Plano Completo: Correção do Consumo Excessivo de Cloud ($17+ em 2 dias)
 
-## Problema Identificado
-Os botões e cards nas páginas de aulas do Upscaler (v1, v2) e ToolVersionLessons estão usando classes genéricas do Tailwind (`bg-card`, `bg-muted`, `border-border`, `variant="outline"`) que resultam em elementos brancos/claros que não combinam com o fundo escuro roxo (`#0D0221`).
+## Diagnóstico Detalhado
 
-Além disso, a página **TutorialArtes.tsx** ainda está com o tema light completo e precisa ser migrada.
+### 🚨 Problemas Críticos Identificados
+
+| # | Problema | Arquivo(s) | Impacto Estimado |
+|---|----------|------------|------------------|
+| 1 | **Polling Bugado V3** | `UpscalerArcanoV3.tsx` | ~$4-6 (milhares de 400 errors) |
+| 2 | **Polling Runpod** | `UpscalerRunpod.tsx` | ~$2-4 (invocações a cada 5s) |
+| 3 | **Upload Base64** | Todas as ferramentas | ~$3-5 (bandwidth 33% overhead) |
+| 4 | **Loop N+1 Webhook** | `runninghub-webhook/index.ts` | ~$1-2 (múltiplos UPDATEs) |
+| 5 | **Polling Redundante** | `AguardandoPagamentoMusicos.tsx` | ~$0.50-1 (leituras desnecessárias) |
+
+---
+
+## Correções a Implementar
+
+### 1. Migrar UpscalerArcanoV3 para Realtime (CRÍTICO)
+
+**Problema:** O V3 faz polling a cada 5 segundos chamando a Edge Function com `action: 'status'`, mas a função não reconhece essa action → erros 400 constantes.
+
+**Solução:** Migrar para o mesmo padrão do `UpscalerArcanoTool.tsx`:
+- Salvar job na tabela `upscaler_jobs`
+- Usar Supabase Realtime para monitorar mudanças
+- Eliminar completamente o `setInterval`
+
+**Arquivo:** `src/pages/UpscalerArcanoV3.tsx`
+
+**Mudanças:**
+```typescript
+// REMOVER: Polling loop (linhas 168-267)
+pollingRef.current = setInterval(async () => { ... }, 5000);
+
+// ADICIONAR: Realtime subscription (mesmo padrão do UpscalerArcanoTool)
+useEffect(() => {
+  if (!jobId) return;
+  
+  const channel = supabase
+    .channel(`upscaler-job-${jobId}`)
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'upscaler_jobs',
+      filter: `id=eq.${jobId}`
+    }, (payload) => {
+      // Processar update
+    })
+    .subscribe();
+    
+  return () => supabase.removeChannel(channel);
+}, [jobId]);
+```
+
+---
+
+### 2. Migrar UpscalerRunpod para Realtime
+
+**Problema:** Idêntico ao V3 - polling a cada 5 segundos.
+
+**Solução:** Se o Runpod for mantido:
+- Implementar webhook callback no Runpod
+- Usar tabela `upscaler_jobs` com campo `provider = 'runpod'`
+- Realtime para atualizar UI
+
+**Arquivo:** `src/pages/UpscalerRunpod.tsx` + nova edge function `runpod-webhook`
+
+**Ou solução alternativa:** Se Runpod não estiver em uso ativo, **desativar/remover** a página para evitar custos.
+
+---
+
+### 3. Upload Direto ao Supabase Storage (ALTA ECONOMIA)
+
+**Problema Atual:**
+```
+Usuário → Base64 (1.33x maior) → Edge Function → Processa → RunningHub
+```
+
+**Solução:**
+```
+Usuário → Upload direto ao Storage (binário) → Edge Function recebe apenas URL
+```
+
+**Arquivos a modificar:**
+- `src/pages/UpscalerArcanoTool.tsx`
+- `src/pages/UpscalerArcanoV3.tsx`
+- `src/pages/UpscalerRunpod.tsx`
+- `supabase/functions/runninghub-upscaler/index.ts`
+
+**Mudança no Frontend:**
+```typescript
+// ANTES (processImage function)
+const base64Data = inputImage.split(',')[1];
+const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {
+  body: { imageBase64: base64Data, fileName }
+});
+
+// DEPOIS
+// 1. Converter base64 para File
+const blob = await fetch(inputImage).then(r => r.blob());
+const file = new File([blob], inputFileName, { type: blob.type });
+
+// 2. Upload direto ao Supabase Storage (GRÁTIS, sem Edge Function)
+const path = `upscaler/${crypto.randomUUID()}.${fileName.split('.').pop()}`;
+const { data, error } = await supabase.storage
+  .from('artes-cloudinary')
+  .upload(path, file, { contentType: file.type });
+
+// 3. Obter URL pública
+const { data: urlData } = supabase.storage
+  .from('artes-cloudinary')
+  .getPublicUrl(path);
+
+// 4. Enviar apenas URL para a Edge Function
+const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
+  body: { imageUrl: urlData.publicUrl, jobId, ... }
+});
+```
+
+**Economia:** Reduz bandwidth em ~33% e elimina tempo de computação na Edge Function para processamento de Base64.
+
+---
+
+### 4. Otimizar Loop N+1 no Webhook
+
+**Problema Atual (linhas 258-263):**
+```typescript
+for (let i = 0; i < queuedJobs.length; i++) {
+  await supabase.from('upscaler_jobs').update({ position: i + 1 }).eq('id', queuedJobs[i].id);
+}
+// 10 jobs na fila = 10 queries separadas
+```
+
+**Solução:** Uma única query SQL com `ROW_NUMBER()`
+
+**Arquivo:** `supabase/functions/runninghub-webhook/index.ts`
+
+**Nova implementação:**
+```typescript
+async function updateQueuePositions() {
+  // Uma única query que atualiza todas as posições de uma vez
+  const { error } = await supabase.rpc('update_queue_positions');
+  if (error) console.error('[Webhook] Error updating positions:', error);
+}
+```
+
+**Nova Database Function (migration):**
+```sql
+CREATE OR REPLACE FUNCTION update_queue_positions()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+BEGIN
+  UPDATE upscaler_jobs AS uj
+  SET position = ranked.new_position
+  FROM (
+    SELECT id, ROW_NUMBER() OVER (ORDER BY created_at ASC) AS new_position
+    FROM upscaler_jobs
+    WHERE status = 'queued'
+  ) AS ranked
+  WHERE uj.id = ranked.id AND uj.status = 'queued';
+END;
+$$;
+```
+
+---
+
+### 5. Remover Polling Redundante na Página de Pagamento
+
+**Problema:** A página já usa Realtime (linhas 31-38), mas também tem um `setInterval` de 10 segundos (linha 45).
+
+**Arquivo:** `src/pages/AguardandoPagamentoMusicos.tsx`
+
+**Solução:** Remover o polling ou aumentar para 60 segundos (fallback apenas)
+
+```typescript
+// REMOVER ou MODIFICAR (linha 43-47):
+useEffect(() => {
+  if (!user?.id) return;
+  // ANTES: 10 segundos
+  // const interval = setInterval(() => { refetch(); }, 10000);
+  
+  // DEPOIS: 60 segundos como fallback apenas
+  const interval = setInterval(() => { refetch(); }, 60000);
+  return () => clearInterval(interval);
+}, [user?.id, refetch]);
+```
 
 ---
 
 ## Arquivos a Modificar
 
-### 1. `src/pages/UpscalerArcanoV1.tsx`
-
-**Problemas:**
-- Linha 214: `bg-[#1A0A2E]/50 border border-purple-500/20` está OK ✓
-- Linha 226: `bg-muted` (barra de progresso vazia) → branco no dark mode
-- Linha 298: `bg-card border-border` (tooltip) → branco no dark mode
-- Linha 319: `<Card className="p-4">` (lesson info) → sem estilos dark
-- Linha 332: `bg-muted` (video placeholder)
-- Linhas 343-358: Botão "Marcar como assistido" com `variant="outline"` → branco no dark mode
-- Linhas 387-426: Cards de lista de aulas com `bg-accent`, `bg-muted`, etc. → brancos
-
-**Correções:**
-- `bg-muted` → `bg-purple-900/30`
-- `bg-card border-border` → `bg-[#1A0A2E] border-purple-500/20`
-- Cards sem classes → `bg-[#1A0A2E]/50 border-purple-500/20`
-- Botão outline não-marcado → `border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white hover:border-purple-400`
+| Arquivo | Tipo de Mudança | Prioridade |
+|---------|-----------------|------------|
+| `src/pages/UpscalerArcanoV3.tsx` | Migrar polling → Realtime | 🔴 CRÍTICA |
+| `src/pages/UpscalerRunpod.tsx` | Migrar polling → Realtime ou desativar | 🔴 CRÍTICA |
+| `src/pages/UpscalerArcanoTool.tsx` | Upload direto ao Storage | 🟠 ALTA |
+| `supabase/functions/runninghub-upscaler/index.ts` | Receber URL em vez de Base64 | 🟠 ALTA |
+| `supabase/functions/runninghub-webhook/index.ts` | Otimizar loop N+1 | 🟡 MÉDIA |
+| `src/pages/AguardandoPagamentoMusicos.tsx` | Aumentar intervalo de polling | 🟢 BAIXA |
 
 ---
 
-### 2. `src/pages/UpscalerArcanoV2.tsx`
+## Economia Estimada Após Correções
 
-**Problemas idênticos ao V1:**
-- Linha 269: `bg-card border border-border` (progress bar container)
-- Linha 281: `bg-muted` (barra vazia)
-- Linha 355: `bg-card border-border` (tooltip)
-- Linha 379: `<Card className="p-4">` (lesson info)
-- Linha 392: `bg-muted` (video placeholder)
-- Linhas 403-418: Botão "Marcar como assistido" outline
-- Linhas 447-486: Cards de lista de aulas
-- Linha 511: `bg-card border-border` (mensagem "em breve")
+| Problema | Custo Atual (2 dias) | Custo Após Correção |
+|----------|---------------------|---------------------|
+| Polling V3 bugado | ~$4-6 | $0 |
+| Polling Runpod | ~$2-4 | $0 |
+| Bandwidth Base64 | ~$3-5 | ~$1-2 |
+| Loop N+1 webhook | ~$1-2 | ~$0.10 |
+| Polling pagamento | ~$0.50-1 | ~$0.05 |
+| **TOTAL** | **~$17+** | **~$1-3** |
 
-**Correções:** Mesmas do V1
-
----
-
-### 3. `src/pages/ToolVersionLessons.tsx`
-
-**Problemas:**
-- Linha 508: `bg-card border border-border` (progress bar)
-- Linha 520: `bg-muted` (barra vazia)
-- Linha 594: `bg-card border-border` (tooltip)
-- Linha 616: `<Card className="p-4">` (lesson info)
-- Linhas 661-676: Botão "Marcar como assistido" outline
-- Linhas 682-695: Botões de ação com `variant="outline"` e `className="gap-2"` → BRANCOS
-- Linhas 706-745: Cards de lista de aulas
-
-**Correções:**
-- Botões de ação (linhas 682-695): `variant="outline"` + `className="gap-2 border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"`
+**Economia projetada: 85-95% de redução no consumo de Cloud**
 
 ---
 
-### 4. `src/pages/TutorialArtes.tsx`
+## Ordem de Implementação
 
-**Problema: Página inteira com tema light**
-
-**Correções:**
-- Linha 94, 105: `bg-background` → `bg-[#0D0221]`
-- Linha 107: `bg-card border-b border-border` → `bg-[#1A0A2E] border-b border-purple-500/20`
-- Linha 109-115: Botão ghost sem classes → adicionar `text-purple-300 hover:text-white hover:bg-purple-500/20`
-- Linha 117, 133: `text-foreground` → `text-white`
-- Linha 120, 136, 148: `text-muted-foreground` → `text-purple-300`
-- Linha 130, 144: `<Card>` sem classes → `bg-[#1A0A2E]/50 border-purple-500/20`
-- Linha 132: `text-muted-foreground` (ícone Play) → `text-purple-400`
+1. **Fase 1 (Emergencial):** Corrigir polling bugado V3 e Runpod
+2. **Fase 2 (Alto Impacto):** Migrar uploads para Storage direto
+3. **Fase 3 (Otimização):** Webhook batch update + polling pagamento
+4. **Fase 4 (Monitoramento):** Verificar métricas após 24h
 
 ---
 
-## Padrão de Cores Unificado
+## Decisão Necessária
 
-| Elemento | Classe Antes | Classe Depois |
-|----------|-------------|---------------|
-| Fundo página | `bg-background` | `bg-[#0D0221]` |
-| Cards | `bg-card border-border` | `bg-[#1A0A2E]/50 border-purple-500/20` |
-| Progress bar vazia | `bg-muted` | `bg-purple-900/30` |
-| Tooltips | `bg-card border-border` | `bg-[#1A0A2E] border-purple-500/20` |
-| Texto título | `text-foreground` | `text-white` |
-| Texto secundário | `text-muted-foreground` | `text-purple-300` |
-| Botão outline (padrão) | `variant="outline"` | `border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white` |
-| Hover em cards | `hover:bg-accent` | `hover:bg-purple-500/10` |
-| Card selecionado | `border-primary bg-primary/5` | `border-purple-400 bg-purple-500/10` |
-| Número de aula inativo | `bg-muted text-muted-foreground` | `bg-purple-900/40 text-purple-400` |
+Antes de implementar, preciso saber:
 
----
+1. **UpscalerRunpod** está em uso ativo ou pode ser desativado/removido?
+2. **UpscalerArcanoV3** está em uso ou é apenas experimental?
 
-## Resumo das Mudanças
-
-| Arquivo | Mudanças Principais |
-|---------|---------------------|
-| `UpscalerArcanoV1.tsx` | Cards, botão outline, barra de progresso, tooltips |
-| `UpscalerArcanoV2.tsx` | Mesmas do V1 |
-| `ToolVersionLessons.tsx` | Cards, botões outline (incluindo os de ação), barra de progresso |
-| `TutorialArtes.tsx` | Migração completa para tema escuro roxo |
-
----
-
-## Resultado Esperado
-
-- Todos os botões terão bordas roxas sutis em vez de brancas
-- Todos os cards terão fundo roxo escuro transparente
-- Barra de progresso terá fundo roxo escuro
-- Tooltips terão fundo escuro
-- Alto contraste entre texto branco/roxo claro e fundo escuro
-- Experiência visual consistente com a Biblioteca de Prompts
+Se ambos forem experimentais/não-ativos, a correção mais rápida é simplesmente **desativar essas páginas** (remover rotas) enquanto mantemos apenas o `UpscalerArcanoTool.tsx` que já usa Realtime corretamente.
