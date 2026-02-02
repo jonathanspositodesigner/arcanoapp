@@ -1,182 +1,262 @@
 
+# Plano: Pose Changer Tool - Nova Ferramenta de IA
 
-# Plano: Visor de Créditos com Atualização Animada em Tempo Real
+## Visão Geral
 
-## Objetivo
-
-Quando o saldo de créditos mudar (seja por consumo ou recarga), o número deve animar suavemente subindo ou descendo até o novo valor, com feedback visual claro.
-
----
-
-## Arquitetura da Solução
-
-### 1. Hook `useAnimatedNumber`
-
-Um novo hook que anima a transição entre valores numéricos:
-
-```
-valorAnterior → [animação contagem] → valorNovo
-```
-
-**Características:**
-- Animação de ~500ms usando requestAnimationFrame
-- Easing suave (ease-out) para parecer natural
-- Suporta números subindo e descendo
-- Cor verde quando sobe, vermelha quando desce
+Criar uma nova página `/pose-changer-tool` baseada no layout e arquitetura do `UpscalerArcanoTool`, mas com funcionalidade específica para troca de poses usando dois inputs de imagem: a foto da pessoa e a referência de pose.
 
 ---
 
-### 2. Componente `AnimatedCreditsDisplay`
+## Layout da Interface
 
-Componente reutilizável que exibe créditos com animação:
+O layout será responsivo, adaptando-se para desktop e mobile:
+
+### Desktop (2 colunas principais)
 
 ```text
-┌─────────────────────────────────┐
-│  🪙  [número animando...]       │
-│      ↓ (animação de contagem)   │
-│  🪙  900.150                    │
-└─────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│                         HEADER (ToolsHeader)                        │
+├───────────────────────────────┬────────────────────────────────────┤
+│    LADO ESQUERDO (40%)        │      LADO DIREITO (60%)            │
+│                               │                                     │
+│  ┌─────────────────────────┐  │   ┌─────────────────────────────┐  │
+│  │ FOTO DA PESSOA          │  │   │                             │  │
+│  │ (Upload area)           │  │   │                             │  │
+│  │ [imagem carregada]      │  │   │    RESULTADO                │  │
+│  └─────────────────────────┘  │   │    (visor grande)           │  │
+│                               │   │                             │  │
+│  ┌─────────────────────────┐  │   │                             │  │
+│  │ REFERÊNCIA DE POSE      │  │   │                             │  │
+│  │ (Upload area)           │  │   └─────────────────────────────┘  │
+│  │ [imagem carregada]      │  │                                     │
+│  │                         │  │                                     │
+│  │ [Biblioteca de Poses]   │  │                                     │
+│  └─────────────────────────┘  │                                     │
+│                               │                                     │
+│  [BOTÃO GERAR POSE]           │                                     │
+│  60 créditos                  │                                     │
+└───────────────────────────────┴────────────────────────────────────┘
 ```
 
-**Comportamento visual:**
-- Quando diminui: Número fica vermelho brevemente → anima descendo
-- Quando aumenta: Número fica verde brevemente → anima subindo
-- Após animação: Volta à cor normal (branca/roxa)
+### Mobile (Layout vertical)
+
+```text
+┌─────────────────────────────────────┐
+│         HEADER (ToolsHeader)         │
+├─────────────────────────────────────┤
+│  FOTO DA PESSOA (upload)             │
+├─────────────────────────────────────┤
+│  REFERÊNCIA DE POSE (upload)         │
+│  [Biblioteca de Poses]               │
+├─────────────────────────────────────┤
+│  RESULTADO (preview grande)          │
+├─────────────────────────────────────┤
+│  [BOTÃO GERAR POSE]                  │
+└─────────────────────────────────────┘
+```
 
 ---
 
-### 3. Realtime com Supabase
+## Modal: Biblioteca de Referências
 
-Adicionar listener de realtime na tabela `upscaler_credit_transactions`:
+Quando o usuário clicar em "Biblioteca de Poses", abre um modal com:
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│  BIBLIOTECA DE POSES DE REFERÊNCIA                      [X]  │
+├──────────────────────────────────────────────────────────────┤
+│  [HOMEM]  [MULHER]                                           │
+├──────────────────────────────────────────────────────────────┤
+│  ┌────┐  ┌────┐  ┌────┐  ┌────┐  ┌────┐                     │
+│  │ 👤 │  │ 👤 │  │ 👤 │  │ 👤 │  │ 👤 │                     │
+│  └────┘  └────┘  └────┘  └────┘  └────┘                     │
+│                                                              │
+│  (grid 3x4 ou 4x3 com poses pré-configuradas)               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Filtros:**
+- HOMEM: Poses masculinas (ex: em pé, sentado, braços cruzados, etc.)
+- MULHER: Poses femininas
+
+---
+
+## Arquivos a Criar
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `src/pages/PoseChangerTool.tsx` | Página principal da ferramenta |
+| `src/components/pose-changer/PoseLibraryModal.tsx` | Modal da biblioteca de poses |
+| `src/components/pose-changer/ImageUploadCard.tsx` | Card de upload reutilizável |
+
+---
+
+## Arquivos a Modificar
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/App.tsx` | Adicionar rota `/pose-changer-tool` |
+| `src/locales/pt/tools.json` | Adicionar traduções da ferramenta |
+
+---
+
+## Componentes do Layout
+
+### 1. ImageUploadCard (reutilizável)
+
+Componente para upload de imagem com:
+- Área de drag-and-drop
+- Preview da imagem carregada
+- Botão para remover/trocar imagem
+- Suporte a colar do clipboard
+- Título configurável
+
+### 2. PoseLibraryModal
+
+Modal para biblioteca de poses:
+- Filtro por gênero (Homem/Mulher)
+- Grid de imagens placeholder (configuráveis depois)
+- Seleção ao clicar na pose
+- Fecha e preenche automaticamente o input de referência
+
+### 3. PoseChangerTool (página principal)
+
+Layout baseado no UpscalerArcanoTool mas adaptado:
+- Usa mesmo tema dark purple (#0D0221 / #1A0A2E)
+- Mesmo sistema de créditos (useUpscalerCredits)
+- Mesmo ToolsHeader
+- Mesmo sistema de autenticação
+
+---
+
+## Estados da Página
 
 ```tsx
-supabase
-  .channel('credit-changes')
-  .on('postgres_changes', { 
-    event: 'INSERT', 
-    schema: 'public', 
-    table: 'upscaler_credit_transactions',
-    filter: `user_id=eq.${userId}`
-  }, () => refetchCredits())
-  .subscribe();
+// Inputs
+const [personImage, setPersonImage] = useState<string | null>(null);
+const [referenceImage, setReferenceImage] = useState<string | null>(null);
+const [showPoseLibrary, setShowPoseLibrary] = useState(false);
+
+// Processamento
+const [status, setStatus] = useState<'idle' | 'processing' | 'completed' | 'error'>('idle');
+const [outputImage, setOutputImage] = useState<string | null>(null);
+
+// Biblioteca
+const [poseFilter, setPoseFilter] = useState<'homem' | 'mulher'>('homem');
 ```
 
-Isso garante que qualquer alteração (via webhook, edge function, etc.) atualize automaticamente o saldo.
+---
+
+## Imagens Placeholder para Biblioteca
+
+Por enquanto, usar imagens fictícias (placeholder) com cores sólidas e ícones para indicar onde ficarão as poses reais:
+
+**Homem (6-8 poses):**
+- Em pé casual
+- Braços cruzados
+- Sentado
+- Caminhando
+- Apontando
+- etc.
+
+**Mulher (6-8 poses):**
+- Em pé elegante
+- Mãos na cintura
+- Sentada
+- Pose fashion
+- etc.
 
 ---
 
-## Arquivos a Criar/Modificar
+## Fluxo do Usuário
 
-| Arquivo | Ação |
-|---------|------|
-| `src/hooks/useAnimatedNumber.ts` | **Criar** - Hook de animação numérica |
-| `src/components/upscaler/AnimatedCreditsDisplay.tsx` | **Criar** - Componente de exibição animada |
-| `src/hooks/useUpscalerCredits.tsx` | **Modificar** - Adicionar realtime listener |
-| `src/components/ToolsHeader.tsx` | **Modificar** - Usar AnimatedCreditsDisplay |
-| `src/components/upscaler/CreditsCard.tsx` | **Modificar** - Usar AnimatedCreditsDisplay |
-| `src/pages/CreditHistory.tsx` | **Modificar** - Usar AnimatedCreditsDisplay |
+1. Usuário acessa `/pose-changer-tool`
+2. Faz upload da foto da pessoa (ou arrasta/cola)
+3. Faz upload da pose de referência OU clica em "Biblioteca de Poses"
+   - Se clicar na biblioteca: abre modal, seleciona filtro, escolhe pose
+4. Com ambas imagens carregadas, botão "Gerar Nova Pose" fica ativo
+5. Clica no botão (consome créditos)
+6. Aguarda processamento (skeleton/loading)
+7. Resultado aparece no visor grande à direita
+8. Pode baixar ou resetar
 
 ---
 
-## Hook `useAnimatedNumber` - Detalhes
+## Custo de Créditos
+
+Inicialmente definir como **60 créditos** (igual ao Upscaler Standard), ajustável depois quando o motor for conectado.
+
+---
+
+## Estrutura do Código
+
+### PoseChangerTool.tsx (estrutura base)
 
 ```tsx
-const useAnimatedNumber = (
-  targetValue: number, 
-  duration: number = 500
-) => {
-  // Retorna:
-  // - displayValue: número a exibir (animado)
-  // - isAnimating: boolean
-  // - direction: 'up' | 'down' | null
-}
-```
-
-**Lógica:**
-1. Quando `targetValue` muda, detecta se subiu ou desceu
-2. Inicia animação do valor atual até o novo valor
-3. Usa requestAnimationFrame para performance suave
-4. Interpola linearmente com easing
-
----
-
-## Componente `AnimatedCreditsDisplay` - Detalhes
-
-```tsx
-interface Props {
-  credits: number;
-  isLoading: boolean;
-  size?: 'sm' | 'md' | 'lg';
-  showCoin?: boolean;
-}
-```
-
-**Classes condicionais:**
-- `text-green-400` + `animate-pulse` quando subindo
-- `text-red-400` + `animate-pulse` quando descendo  
-- `text-white` (ou tema) quando estável
-
----
-
-## Realtime - Detalhes Técnicos
-
-**Migração SQL necessária:**
-```sql
-ALTER PUBLICATION supabase_realtime 
-ADD TABLE public.upscaler_credit_transactions;
-```
-
-**No hook `useUpscalerCredits`:**
-```tsx
-useEffect(() => {
-  if (!userId) return;
+const PoseChangerTool = () => {
+  // Estados
+  // Hooks (usePremiumStatus, useUpscalerCredits, useSmartBackNavigation)
   
-  const channel = supabase
-    .channel(`credits-${userId}`)
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'upscaler_credit_transactions',
-      filter: `user_id=eq.${userId}`
-    }, () => fetchBalance())
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, [userId, fetchBalance]);
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A]">
+      <ToolsHeader title="Pose Changer" onBack={goBack} />
+      
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          
+          {/* Lado Esquerdo - 2/5 */}
+          <div className="md:col-span-2 space-y-4">
+            <ImageUploadCard 
+              title="Sua Foto" 
+              image={personImage}
+              onImageChange={setPersonImage}
+            />
+            <ImageUploadCard 
+              title="Referência de Pose"
+              image={referenceImage}
+              onImageChange={setReferenceImage}
+              showLibraryButton
+              onOpenLibrary={() => setShowPoseLibrary(true)}
+            />
+            {/* Botão de Ação */}
+          </div>
+          
+          {/* Lado Direito - 3/5 */}
+          <div className="md:col-span-3">
+            {/* Visor do Resultado */}
+          </div>
+        </div>
+      </div>
+      
+      <PoseLibraryModal 
+        isOpen={showPoseLibrary}
+        onClose={() => setShowPoseLibrary(false)}
+        onSelectPose={(url) => setReferenceImage(url)}
+      />
+    </div>
+  );
+};
 ```
 
 ---
 
-## Fluxo Completo
+## Próximos Passos (Fase 2 - Motor IA)
 
-```text
-1. Usuário usa ferramenta IA
-   ↓
-2. Backend debita créditos (INSERT em transactions)
-   ↓
-3. Realtime detecta INSERT
-   ↓
-4. useUpscalerCredits.refetch() é chamado
-   ↓
-5. balance muda (ex: 900 → 840)
-   ↓
-6. AnimatedCreditsDisplay detecta mudança
-   ↓
-7. useAnimatedNumber anima: 900 → 899 → 898... → 840
-   ↓
-8. Número fica vermelho durante animação
-   ↓
-9. Volta ao normal após 500ms
-```
+Após o layout estar pronto, você vai fornecer a documentação do motor Running Hub para:
+1. Criar edge function de processamento
+2. Configurar WebApp ID e nodeIds específicos
+3. Integrar com sistema de jobs e realtime
+4. Conectar webhook de conclusão
 
 ---
 
-## Resultado Esperado
+## Resumo das Funcionalidades
 
-- **Header**: Badge de créditos anima suavemente ao mudar
-- **ProfileSettings**: CreditsCard mostra animação no saldo
-- **CreditHistory**: Saldo atual também anima
-- **Tempo real**: Qualquer mudança (até de outro dispositivo) reflete instantaneamente
-
+- Upload de foto da pessoa (drag, click, paste)
+- Upload de referência de pose (drag, click, paste, ou biblioteca)
+- Modal de biblioteca com filtros Homem/Mulher
+- Visor grande para resultado à direita
+- Sistema de créditos integrado
+- Layout responsivo mobile/desktop
+- Mesmo tema visual do Upscaler Arcano
