@@ -87,10 +87,10 @@ const Planos = () => {
     }],
     anual: [{
       name: "Starter",
-      price: "9,90",
-      originalPrice: "14,90",
+      price: "14,90",
+      originalPrice: null,
       perMonth: true,
-      yearlyTotal: "118,80",
+      yearlyTotal: "178,80",
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/RaLcc5",
       features: [
         { text: t('planos.features.10PromptsDay'), included: true },
@@ -107,10 +107,10 @@ const Planos = () => {
       promo: false
     }, {
       name: "Pro",
-      price: "14,90",
+      price: "18,90",
       originalPrice: "20,90",
       perMonth: true,
-      yearlyTotal: "178,80",
+      yearlyTotal: "226,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
@@ -125,13 +125,13 @@ const Planos = () => {
       ],
       popular: false,
       promo: false,
-      hasTrial: true
+      hasTrial: false
     }, {
       name: "IA Unlimited",
-      price: "19,90",
+      price: "24,90",
       originalPrice: "29,90",
       perMonth: true,
-      yearlyTotal: "238,80",
+      yearlyTotal: "298,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
