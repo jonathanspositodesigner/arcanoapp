@@ -243,11 +243,123 @@ async function handleRun(req: Request) {
     creditCost   // credit cost (60 standard, 80 pro)
   } = await req.json();
   
-  // Validate: need either imageUrl (new) or fileName (legacy)
-  if (!jobId || (!imageUrl && !fileName)) {
+  // ========== INPUT VALIDATION ==========
+  // Validate jobId is a valid UUID-like string
+  if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
     return new Response(JSON.stringify({ 
-      error: 'jobId and (imageUrl or fileName) are required', 
+      error: 'Valid jobId is required', 
+      code: 'INVALID_JOB_ID' 
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate: need either imageUrl (new) or fileName (legacy)
+  if (!imageUrl && !fileName) {
+    return new Response(JSON.stringify({ 
+      error: 'imageUrl or fileName is required', 
       code: 'MISSING_PARAMS' 
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate imageUrl is from expected domain (Supabase storage)
+  if (imageUrl) {
+    const allowedDomains = [
+      'supabase.co',
+      'supabase.in',
+      SUPABASE_URL.replace('https://', '')
+    ];
+    
+    try {
+      const urlObj = new URL(imageUrl);
+      const isAllowed = allowedDomains.some(domain => urlObj.hostname.endsWith(domain));
+      
+      if (!isAllowed) {
+        console.warn(`[RunningHub] Rejected image URL from untrusted domain: ${urlObj.hostname}`);
+        return new Response(JSON.stringify({ 
+          error: 'Image URL must be from Supabase storage', 
+          code: 'INVALID_IMAGE_SOURCE' 
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } catch (e) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid image URL format', 
+        code: 'INVALID_IMAGE_URL' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  }
+
+  // Validate creditCost is within expected range
+  if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+    return new Response(JSON.stringify({ 
+      error: 'Invalid credit cost (must be 1-500)', 
+      code: 'INVALID_CREDIT_COST'
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate userId is a valid UUID format
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
+    return new Response(JSON.stringify({ 
+      error: 'Valid userId is required', 
+      code: 'INVALID_USER_ID'
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate resolution is within expected range
+  if (resolution !== undefined && (typeof resolution !== 'number' || resolution < 512 || resolution > 8192)) {
+    return new Response(JSON.stringify({ 
+      error: 'Invalid resolution (must be 512-8192)', 
+      code: 'INVALID_RESOLUTION'
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate prompt length if provided
+  if (prompt !== undefined && (typeof prompt !== 'string' || prompt.length > 2000)) {
+    return new Response(JSON.stringify({ 
+      error: 'Prompt too long (max 2000 chars)', 
+      code: 'INVALID_PROMPT'
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate version
+  if (version !== undefined && !['standard', 'pro'].includes(version)) {
+    return new Response(JSON.stringify({ 
+      error: 'Invalid version (must be standard or pro)', 
+      code: 'INVALID_VERSION'
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate framingMode
+  if (framingMode !== undefined && !['longe', 'perto'].includes(framingMode)) {
+    return new Response(JSON.stringify({ 
+      error: 'Invalid framing mode', 
+      code: 'INVALID_FRAMING_MODE'
     }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -300,17 +412,6 @@ async function handleRun(req: Request) {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-  }
-
-  // Validate credit parameters
-  if (!userId || !creditCost) {
-    return new Response(JSON.stringify({ 
-      error: 'userId e creditCost são obrigatórios', 
-      code: 'MISSING_AUTH'
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
   }
 
   // FIRST: Consume credits before processing
