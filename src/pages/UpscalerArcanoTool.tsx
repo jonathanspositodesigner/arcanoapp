@@ -421,179 +421,117 @@ const UpscalerArcanoTool: React.FC = () => {
       }
 
       const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
-      const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 
-                       ext === 'webp' ? 'image/webp' : 'image/png';
-      const blob = new Blob([bytes], { type: mimeType });
       const storagePath = `upscaler/${job.id}.${ext}`;
-
-      const { error: storageError } = await supabase.storage
+      
+      const { error: uploadError } = await supabase.storage
         .from('artes-cloudinary')
-        .upload(storagePath, blob, { contentType: mimeType, upsert: true });
+        .upload(storagePath, bytes.buffer, {
+          contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+          upsert: true
+        });
 
-      if (storageError) {
-        throw new Error('Erro no upload: ' + storageError.message);
+      if (uploadError) {
+        throw new Error('Erro no upload: ' + uploadError.message);
       }
 
       // Get public URL
-      const { data: urlData } = supabase.storage
+      const { data: publicUrlData } = supabase.storage
         .from('artes-cloudinary')
         .getPublicUrl(storagePath);
 
-      console.log('[Upscaler] Image uploaded to storage:', urlData.publicUrl);
-      setProgress(35);
-      setStatus('processing');
+      const imageUrl = publicUrlData.publicUrl;
+      console.log('[Upscaler] Image uploaded:', imageUrl);
+      setProgress(40);
 
-      // Step 3: Start processing (with webhook callback) - send imageUrl instead of Base64
-      const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
+      // Step 3: Call edge function with URL (not base64)
+      const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler', {
         body: {
           jobId: job.id,
-          imageUrl: urlData.publicUrl, // NEW: URL instead of fileName
-          detailDenoise: isLongeMode ? null : detailDenoise,
-          resolution: resolution === '4k' ? 4096 : 2048,
-          prompt: isLongeMode ? null : getFinalPrompt(),
+          imageUrl: imageUrl,
+          detailDenoise: detailDenoise,
+          prompt: getFinalPrompt(),
+          resolution: resolution,
           version: version,
-          framingMode: isLongeMode ? 'longe' : 'perto',
-          // Credit consumption moved to backend
-          userId: user.id,
-          creditCost: creditCost,
-        },
+          isLongeMode: isLongeMode,
+          userId: user.id
+        }
       });
 
-      if (runResponse.error) {
-        throw new Error(runResponse.error.message || 'Erro ao iniciar processamento');
+      if (fnError) {
+        throw new Error('Erro na função: ' + fnError.message);
       }
 
-      if (runResponse.data?.error) {
-        // Handle insufficient credits error from backend
-        if (runResponse.data.code === 'INSUFFICIENT_CREDITS') {
-          setNoCreditsReason('insufficient');
-          setShowNoCreditsModal(true);
-          setStatus('idle');
-          refetchCredits(); // Sync credits from server
-          return;
-        }
-        setLastError({
-          message: runResponse.data.error,
-          code: runResponse.data.code,
-          solution: runResponse.data.solution,
-        });
-        throw new Error(runResponse.data.error);
+      if (!response.success) {
+        throw new Error(response.error || 'Unknown error from edge function');
       }
 
-      console.log('[Upscaler] Run response:', runResponse.data);
+      console.log('[Upscaler] Edge function response:', response);
       setProgress(50);
-      
-      // Credits were consumed by backend - refresh local balance
+      setStatus('processing');
+
+      // Refetch credits after successful job start (they were consumed in the backend)
       refetchCredits();
 
-      // Check if queued or running
-      if (runResponse.data?.queued) {
-        setIsWaitingInQueue(true);
-        setQueuePosition(runResponse.data.position || 1);
-        setCurrentQueueCombo(Math.floor(Math.random() * queueMessageCombos.length));
-        toast.info('Você entrou na fila de espera!');
-      } else {
-        // Processing started immediately - Realtime will notify when done
-        console.log('[Upscaler] Processing started, waiting for Realtime notification...');
-      }
-
     } catch (error: any) {
-      console.error('[Upscaler] Process error:', error);
+      console.error('[Upscaler] Error:', error);
       setStatus('error');
-      
-      if (!lastError) {
-        setLastError({
-          message: error.message || 'Erro desconhecido ao processar imagem',
-          code: 'PROCESS_ERROR'
-        });
-      }
-      
-      toast.error(error.message || 'Erro ao processar imagem');
+      setLastError({
+        message: error.message || 'Erro desconhecido',
+        code: 'UPLOAD_ERROR',
+        solution: 'Tente novamente ou use uma imagem menor.'
+      });
+      toast.error('Erro ao processar imagem');
     }
   };
 
   // Cancel queue
   const cancelQueue = async () => {
-    if (jobId) {
-      try {
-        await supabase
-          .from('upscaler_jobs')
-          .delete()
-          .eq('id', jobId);
-      } catch (e) {
-        console.error('[Upscaler] Error deleting job:', e);
-      }
+    if (!jobId) return;
+
+    try {
+      await supabase
+        .from('upscaler_jobs')
+        .update({ status: 'cancelled' })
+        .eq('id', jobId);
+      
+      setStatus('idle');
+      setIsWaitingInQueue(false);
+      setQueuePosition(0);
+      setJobId(null);
+      toast.info('Saiu da fila');
+    } catch (error) {
+      console.error('[Upscaler] Error cancelling:', error);
     }
-    
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current);
-      realtimeChannelRef.current = null;
-    }
-    
-    setIsWaitingInQueue(false);
-    setQueuePosition(0);
-    setJobId(null);
-    setStatus('idle');
-    setProgress(0);
   };
 
   // Download result
-  const downloadResult = async () => {
+  const downloadResult = useCallback(() => {
     if (!outputImage) return;
 
-    try {
-      const response = await fetch(outputImage);
+    const link = document.createElement('a');
+    link.href = outputImage;
+    link.download = `upscaled-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(t('upscalerTool.toast.downloaded'));
+  }, [outputImage, t]);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-      if (isIOS) {
-        const blobUrl = URL.createObjectURL(blob);
-        window.open(blobUrl, '_blank');
-        toast.success(t('upscalerTool.toast.imageOpened'));
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'upscaled.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.success(t('upscalerTool.toast.downloadStarted'));
-      }
-    } catch (error) {
-      console.error('[Upscaler] Download error:', error);
-      window.open(outputImage, '_blank');
-      toast.info(t('upscalerTool.toast.openedNewTab'));
-    }
-  };
-
-  // Reset
-  const resetTool = () => {
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current);
-      realtimeChannelRef.current = null;
-    }
-    
+  // Reset tool
+  const resetTool = useCallback(() => {
     setInputImage(null);
     setInputFileName('');
     setOutputImage(null);
     setStatus('idle');
     setProgress(0);
+    setSliderPosition(50);
     setLastError(null);
+    setJobId(null);
     setIsWaitingInQueue(false);
     setQueuePosition(0);
-    setJobId(null);
-  };
+  }, []);
 
-  // Slider drag handling
+  // Slider handlers for before/after comparison
   const updateSliderPositionFromClientX = useCallback((clientX: number) => {
     if (sliderRef.current) {
       const rect = sliderRef.current.getBoundingClientRect();
@@ -624,382 +562,123 @@ const UpscalerArcanoTool: React.FC = () => {
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   }, []);
 
+  // Check if we're processing or in queue
+  const isProcessing = status === 'processing' || status === 'uploading' || isWaitingInQueue;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] text-white">
+    <div className="h-screen overflow-hidden flex flex-col bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] text-white">
       {/* Header */}
       <ToolsHeader 
         title={t('upscalerTool.title')}
         onBack={goBack}
       />
 
-      <div className="max-w-4xl mx-auto px-4 py-6 pb-28 sm:pb-6 space-y-6">
-        {/* Version Switcher - Full Width */}
-        <div className="w-full space-y-2">
-          <TooltipProvider>
-            <ToggleGroup 
-              type="single" 
-              value={version} 
-              onValueChange={(val) => val && setVersion(val as 'standard' | 'pro')}
-              className="w-full grid grid-cols-2 gap-0 bg-[#1A0A2E]/50 border border-purple-500/30 rounded-xl p-1"
-            >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <ToggleGroupItem 
-                    value="standard" 
-                    className={`w-full py-3 px-4 text-sm sm:text-base rounded-lg transition-all font-medium ${
-                      version === 'standard' 
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10 hover:text-purple-200'
-                    }`}
-                  >
-                    Upscaler Arcano
-                  </ToggleGroupItem>
-                </TooltipTrigger>
-                <TooltipContent className="bg-black/90 border-purple-500/30 hidden sm:block">
-                  <div className="flex items-center gap-1.5 text-sm text-white">
-                    <Clock className="w-3.5 h-3.5 text-purple-400" />
-                    <span>~2m 20s</span>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <ToggleGroupItem 
-                    value="pro" 
-                    className={`w-full py-3 px-4 text-sm sm:text-base rounded-lg transition-all font-medium flex items-center justify-center gap-2 ${
-                      version === 'pro' 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-transparent text-purple-300/70 hover:bg-purple-500/10 hover:text-purple-200'
-                    }`}
-                  >
-                    Upscaler Arcano
-                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30">
+      {/* Main Content - Two Column Layout */}
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-3 h-full">
+          
+          {/* Left Side - Controls Panel (~28%) */}
+          <div className="lg:col-span-2 flex flex-col gap-2 overflow-y-auto pb-4 lg:pb-0">
+            
+            {/* Version Switcher - Compact */}
+            <TooltipProvider>
+              <ToggleGroup 
+                type="single" 
+                value={version} 
+                onValueChange={(val) => val && setVersion(val as 'standard' | 'pro')}
+                className="w-full grid grid-cols-2 gap-0 bg-[#1A0A2E]/50 border border-purple-500/30 rounded-lg p-1"
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <ToggleGroupItem 
+                      value="standard" 
+                      className={`w-full py-2 px-2 text-xs rounded-md transition-all font-medium ${
+                        version === 'standard' 
+                          ? 'bg-purple-600 text-white border border-purple-400' 
+                          : 'border border-transparent text-purple-300/70 hover:bg-purple-500/10'
+                      }`}
+                    >
+                      Standard
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-black/90 border-purple-500/30">
+                    <div className="flex items-center gap-1.5 text-xs text-white">
+                      <Clock className="w-3 h-3 text-purple-400" />
+                      <span>~2m 20s</span>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <ToggleGroupItem 
+                      value="pro" 
+                      className={`w-full py-2 px-2 text-xs rounded-md transition-all font-medium flex items-center justify-center gap-1 ${
+                        version === 'pro' 
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border border-purple-400' 
+                          : 'border border-transparent text-purple-300/70 hover:bg-purple-500/10'
+                      }`}
+                    >
                       <Crown className="w-3 h-3" />
                       PRO
-                    </span>
-                  </ToggleGroupItem>
-                </TooltipTrigger>
-                <TooltipContent className="bg-black/90 border-purple-500/30 hidden sm:block">
-                  <div className="flex items-center gap-1.5 text-sm text-white">
-                    <Clock className="w-3.5 h-3.5 text-purple-400" />
-                    <span>~3m 30s</span>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </ToggleGroup>
-          </TooltipProvider>
-          
-          {/* Show estimated time below switcher */}
-          <div className="flex items-center justify-center gap-1.5 text-sm text-white/80">
-            <Clock className="w-3.5 h-3.5 text-purple-400" />
-            <span>Tempo estimado: {version === 'pro' ? '~3m 30s' : '~2m 20s'}</span>
-          </div>
-        </div>
-        {/* Warning Banner - Don't close page */}
-        {(status === 'processing' || status === 'uploading' || isWaitingInQueue) && (
-          <div className="bg-amber-500/20 border border-amber-500/50 rounded-lg p-3 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
-            <p className="text-sm text-amber-200">
-              {t('upscalerTool.warnings.dontClose')}
-            </p>
-          </div>
-        )}
-
-        {/* Queue Waiting UI */}
-        {isWaitingInQueue && (
-          <Card className="bg-[#1A0A2E]/50 border-yellow-500/30 p-6">
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center animate-pulse">
-                <Clock className="w-8 h-8 text-yellow-400" />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-yellow-300">
-                  {queueMessageCombos[currentQueueCombo].emoji} {queueMessageCombos[currentQueueCombo].title}
-                </p>
-                <p className="text-4xl font-bold text-white mt-2">
-                  {queueMessageCombos[currentQueueCombo].position(queuePosition)}
-                </p>
-                <p className="text-sm text-purple-300/70 mt-2">
-                  {queueMessageCombos[currentQueueCombo].subtitle}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={cancelQueue}
-                className="text-red-300 hover:text-red-100 hover:bg-red-500/20"
-              >
-                Sair da fila
-              </Button>
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-black/90 border-purple-500/30">
+                    <div className="flex items-center gap-1.5 text-xs text-white">
+                      <Clock className="w-3 h-3 text-purple-400" />
+                      <span>~3m 30s</span>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </ToggleGroup>
+            </TooltipProvider>
+            
+            {/* Estimated Time */}
+            <div className="flex items-center justify-center gap-1 text-xs text-white/60">
+              <Clock className="w-3 h-3 text-purple-400" />
+              <span>{version === 'pro' ? '~3m 30s' : '~2m 20s'}</span>
             </div>
-          </Card>
-        )}
 
-        {/* Image Upload */}
-        {!inputImage && !isWaitingInQueue ? (
-          <Card 
-            className="bg-[#1A0A2E]/50 border-purple-500/20 border-dashed border-2 p-12 cursor-pointer hover:bg-[#1A0A2E]/70 transition-colors"
-            onClick={() => fileInputRef.current?.click()}
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-          >
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center">
-                <Upload className="w-8 h-8 text-purple-400" />
-              </div>
-              <div>
-                <p className="text-lg font-medium text-white">{t('upscalerTool.upload.dragHere')}</p>
-                <p className="text-sm text-purple-300/70">{t('upscalerTool.upload.orClick')}</p>
-                <p className="text-xs text-purple-300/50 mt-2">{t('upscalerTool.upload.formats')}</p>
-              </div>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-            />
-          </Card>
-        ) : status === 'completed' && outputImage ? (
-          /* Result View - Before/After Slider with Zoom */
-          <Card className="bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden">
-            <TransformWrapper
-              initialScale={1}
-              minScale={1}
-              maxScale={6}
-              smooth={true}
-              onInit={(ref) => {
-                setZoomLevel(ref.state.scale);
-                // Store ref for custom wheel zoom
-                (window as any).__upscalerTransformRef = ref;
-                if (beforeTransformRef.current) {
-                  beforeTransformRef.current.style.transform = `translate(${ref.state.positionX}px, ${ref.state.positionY}px) scale(${ref.state.scale})`;
-                  beforeTransformRef.current.style.transformOrigin = '0% 0%';
-                }
-              }}
-              onTransformed={(_, state) => {
-                setZoomLevel(state.scale);
-                if (beforeTransformRef.current) {
-                  beforeTransformRef.current.style.transform = `translate(${state.positionX}px, ${state.positionY}px) scale(${state.scale})`;
-                }
-              }}
-              wheel={{ disabled: true }}
-              pinch={{ step: 3 }}
-              doubleClick={{ mode: 'zoomIn', step: 0.14 }}
-              panning={{ disabled: zoomLevel <= 1 }}
+            {/* Image Upload - Compact */}
+            <Card 
+              className="bg-[#1A0A2E]/50 border-purple-500/20 border-dashed border-2 p-4 cursor-pointer hover:bg-[#1A0A2E]/70 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
             >
-              {({ zoomIn, zoomOut, resetTransform }) => (
-                <div className="relative">
-                  {/* Zoom Controls */}
-                  <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
-                    <button 
-                      onClick={() => zoomOut(0.14)}
-                      className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-                      title="Diminuir zoom"
-                    >
-                      <ZoomOut className="w-4 h-4 text-white" />
-                    </button>
-                    <span className="text-xs font-mono min-w-[3rem] text-center text-white">
-                      {Math.round(zoomLevel * 100)}%
-                    </span>
-                    <button 
-                      onClick={() => zoomIn(0.14)}
-                      className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-                      title="Aumentar zoom"
-                    >
-                      <ZoomIn className="w-4 h-4 text-white" />
-                    </button>
-                    {zoomLevel > 1 && (
-                      <button 
-                        onClick={() => resetTransform()}
-                        className="p-1.5 hover:bg-white/20 rounded-full transition-colors ml-1"
-                        title="Resetar zoom"
-                      >
-                        <RotateCcw className="w-4 h-4 text-white" />
-                      </button>
-                    )}
+              {inputImage ? (
+                <div className="flex items-center gap-3">
+                  <img src={inputImage} alt="Preview" className="w-12 h-12 object-cover rounded-lg" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-white truncate">{inputFileName || 'Imagem selecionada'}</p>
+                    <p className="text-[10px] text-purple-300/70">Clique para trocar</p>
                   </div>
-
-                  {/* Container with ref for slider calculations and custom wheel zoom */}
-                  <div 
-                    ref={sliderRef} 
-                    className="relative w-full mx-auto overflow-hidden"
-                    onWheel={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      
-                      const transformRef = (window as any).__upscalerTransformRef;
-                      if (!transformRef) return;
-                      
-                      const MIN_ZOOM = 1;
-                      const MAX_ZOOM = 6;
-                      const WHEEL_FACTOR = 1.40;
-                      
-                      const { scale, positionX, positionY } = transformRef.state;
-                      const wrapperComponent = transformRef.instance?.wrapperComponent;
-                      
-                      if (!wrapperComponent) return;
-                      
-                      const rect = wrapperComponent.getBoundingClientRect();
-                      const mouseX = e.clientX - rect.left;
-                      const mouseY = e.clientY - rect.top;
-                      
-                      // Calculate new scale (multiplicative)
-                      let newScale: number;
-                      if (e.deltaY < 0) {
-                        // Zoom in
-                        newScale = scale * WHEEL_FACTOR;
-                      } else {
-                        // Zoom out
-                        newScale = scale / WHEEL_FACTOR;
-                      }
-                      
-                      // Clamp to min/max
-                      newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newScale));
-                      
-                      // If no change, skip
-                      if (newScale === scale) return;
-                      
-                      // Calculate new position to keep mouse point stable
-                      const scaleDiff = newScale - scale;
-                      const newPosX = positionX - mouseX * scaleDiff;
-                      const newPosY = positionY - mouseY * scaleDiff;
-                      
-                      // Apply transform
-                      transformRef.setTransform(newPosX, newPosY, newScale, 150, 'easeOut');
-                    }}
-                  >
-                    <AspectRatio ratio={16 / 9} className="md:!aspect-[4/3]">
-                      <div className="relative w-full h-full bg-black overflow-hidden">
-                        {/* AFTER image */}
-                        <TransformComponent 
-                          wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} 
-                          contentStyle={{ width: '100%', height: '100%' }}
-                        >
-                          <img 
-                            src={outputImage} 
-                            alt="Depois" 
-                            className="w-full h-full object-contain"
-                            draggable={false}
-                          />
-                        </TransformComponent>
-
-                        {/* BEFORE image - overlay clipped */}
-                        <div 
-                          className="absolute inset-0 pointer-events-none"
-                          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
-                        >
-                          <div 
-                            ref={beforeTransformRef}
-                            className="w-full h-full"
-                            style={{ transformOrigin: '0% 0%' }}
-                          >
-                            <img 
-                              src={inputImage} 
-                              alt="Antes" 
-                              className="w-full h-full object-contain"
-                              draggable={false}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Slider Line and Handle */}
-                        <div 
-                          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-20"
-                          style={{ 
-                            left: `${sliderPosition}%`, 
-                            transform: 'translateX(-50%)', 
-                            cursor: 'ew-resize',
-                            touchAction: 'none'
-                          }}
-                          onPointerDown={handleSliderPointerDown}
-                          onPointerMove={handleSliderPointerMove}
-                          onPointerUp={handleSliderPointerUp}
-                          onPointerCancel={handleSliderPointerUp}
-                        >
-                          <div 
-                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center cursor-ew-resize"
-                            style={{ touchAction: 'none' }}
-                          >
-                            <div className="flex gap-0.5">
-                              <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                              <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Labels */}
-                        <div className="absolute top-2 sm:top-14 left-2 sm:left-4 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-black/90 border border-white/30 text-white text-xs sm:text-sm font-bold z-20 pointer-events-none shadow-lg">
-                          {t('upscalerTool.labels.before')}
-                        </div>
-                        <div className="absolute top-2 sm:top-14 right-2 sm:right-4 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-purple-600/90 border border-purple-400/50 text-white text-xs sm:text-sm font-bold z-20 pointer-events-none shadow-lg">
-                          {t('upscalerTool.labels.after')}
-                        </div>
-                      </div>
-                    </AspectRatio>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <Upload className="w-5 h-5 text-purple-400" />
                   </div>
-
-                  {/* Zoom Hint */}
-                  <div className="hidden sm:block absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-white/20 shadow-lg">
-                    🔍 {t('upscalerTool.zoomHint')}
+                  <div>
+                    <p className="text-sm font-medium text-white">{t('upscalerTool.upload.dragHere')}</p>
+                    <p className="text-[10px] text-purple-300/50">{t('upscalerTool.upload.formats')}</p>
                   </div>
                 </div>
               )}
-            </TransformWrapper>
-          </Card>
-        ) : inputImage && !isWaitingInQueue ? (
-          /* Input Preview */
-          <Card className="bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden">
-            <AspectRatio ratio={16 / 9}>
-              <div className="relative w-full h-full bg-black/50">
-                <img 
-                  src={inputImage} 
-                  alt="Preview" 
-                  className="w-full h-full object-contain"
-                />
-                {(status === 'uploading' || status === 'processing') && (
-                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
-                    <div className="text-center">
-                      <p className="text-lg font-medium text-white">
-                        {status === 'uploading' ? t('upscalerTool.status.uploading') : t('upscalerTool.status.processing')}
-                      </p>
-                      <p className="text-sm text-purple-300/70">
-                        {t('upscalerTool.status.mayTake2Min')}
-                      </p>
-                    </div>
-                    <div className="w-64 h-2 bg-purple-900/50 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                    <p className="text-sm text-purple-300">{Math.round(progress)}%</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={cancelQueue}
-                      className="text-purple-300 hover:text-white hover:bg-purple-500/20 mt-2"
-                    >
-                      {t('upscalerTool.buttons.cancel')}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </AspectRatio>
-          </Card>
-        ) : null}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+              />
+            </Card>
 
-        {/* Controls - Show for both versions */}
-        {inputImage && status === 'idle' && !isWaitingInQueue && (
-          <div className="space-y-4">
-            {/* Image Type Category Buttons - FIRST - only show when custom prompt is OFF */}
-            {!useCustomPrompt && (
-              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <MessageSquare className="w-4 h-4 text-pink-400" />
-                  <span className="font-medium text-white">Tipo de Imagem</span>
+            {/* Image Type Selector - Only show when not using custom prompt */}
+            {(!useCustomPrompt || version === 'standard') && (
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-3.5 h-3.5 text-pink-400" />
+                  <span className="text-xs font-medium text-white">Tipo de Imagem</span>
                 </div>
                 <ToggleGroup 
                   type="single" 
@@ -1013,66 +692,26 @@ const UpscalerArcanoTool: React.FC = () => {
                       }
                     }
                   }}
-                  className="flex justify-start flex-wrap gap-1 sm:gap-2"
+                  className="flex flex-wrap gap-1"
                 >
-                  <ToggleGroupItem 
-                    value="pessoas" 
-                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
-                      promptCategory.startsWith('pessoas')
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    Pessoas
-                  </ToggleGroupItem>
-                  <ToggleGroupItem 
-                    value="comida" 
-                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
-                      promptCategory === 'comida' 
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    Comida
-                  </ToggleGroupItem>
-                  <ToggleGroupItem 
-                    value="fotoAntiga" 
-                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
-                      promptCategory === 'fotoAntiga' 
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    Antiga
-                  </ToggleGroupItem>
-                  <ToggleGroupItem 
-                    value="logo" 
-                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
-                      promptCategory === 'logo' 
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    Logo
-                  </ToggleGroupItem>
-                  <ToggleGroupItem 
-                    value="render3d" 
-                    className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
-                      promptCategory === 'render3d' 
-                        ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                        : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                    }`}
-                  >
-                    3D
-                  </ToggleGroupItem>
+                  {['pessoas', 'comida', 'fotoAntiga', 'logo', 'render3d'].map((cat) => (
+                    <ToggleGroupItem 
+                      key={cat}
+                      value={cat} 
+                      className={`px-2 py-1 text-[10px] rounded-md transition-all ${
+                        (cat === 'pessoas' ? promptCategory.startsWith('pessoas') : promptCategory === cat)
+                          ? 'bg-purple-600 text-white border border-purple-400' 
+                          : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                      }`}
+                    >
+                      {cat === 'pessoas' ? 'Pessoas' : cat === 'comida' ? 'Comida' : cat === 'fotoAntiga' ? 'Antiga' : cat === 'logo' ? 'Logo' : '3D'}
+                    </ToggleGroupItem>
+                  ))}
                 </ToggleGroup>
 
-                {/* Pessoas Framing Selector - only show when pessoas is selected */}
+                {/* Pessoas Framing Selector */}
                 {promptCategory.startsWith('pessoas') && (
-                  <div className="mt-4 pt-4 border-t border-purple-500/20">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm text-purple-300">Enquadramento da foto:</span>
-                    </div>
+                  <div className="mt-3 pt-3 border-t border-purple-500/20">
                     <ToggleGroup 
                       type="single" 
                       value={pessoasFraming} 
@@ -1082,72 +721,41 @@ const UpscalerArcanoTool: React.FC = () => {
                           setPromptCategory(`pessoas_${value}` as PromptCategory);
                         }
                       }}
-                      className="grid w-full grid-cols-2 gap-3"
+                      className="grid w-full grid-cols-2 gap-2"
                     >
                       <ToggleGroupItem 
                         value="perto" 
-                        className={`flex w-full flex-col items-center gap-2 rounded-xl px-4 py-3 transition-all h-auto ${
+                        className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
                           pessoasFraming === 'perto'
-                            ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                            : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                            ? 'bg-purple-600 text-white border border-purple-400' 
+                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
-                        {/* Close-up portrait icon - face fills the frame */}
-                        <div className="w-16 h-16 rounded-lg bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
-                          {/* Frame corners to show cropping */}
-                          <div className="absolute top-1 left-1 w-2 h-2 border-l-2 border-t-2 border-purple-300/60" />
-                          <div className="absolute top-1 right-1 w-2 h-2 border-r-2 border-t-2 border-purple-300/60" />
-                          <div className="absolute bottom-1 left-1 w-2 h-2 border-l-2 border-b-2 border-purple-300/60" />
-                          <div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-purple-300/60" />
-                          {/* Large head filling frame - close-up */}
-                          <svg width="52" height="52" viewBox="0 0 48 48" fill="none" className="text-current">
-                            {/* Head - large, close-up portrait */}
+                        <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
+                          <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
                             <circle cx="24" cy="20" r="14" fill="currentColor" opacity="0.85" />
-                            {/* Eyes */}
-                            <circle cx="19" cy="18" r="2" fill="currentColor" opacity="0.35" />
-                            <circle cx="29" cy="18" r="2" fill="currentColor" opacity="0.35" />
-                            {/* Mouth */}
-                            <path d="M20 26 Q24 30 28 26" stroke="currentColor" strokeWidth="1.6" opacity="0.35" fill="none" />
-                            {/* Shoulders cropped at bottom */}
                             <ellipse cx="24" cy="48" rx="18" ry="14" fill="currentColor" opacity="0.55" />
                           </svg>
                         </div>
-                        <span className="text-xs font-semibold">De Perto</span>
+                        <span className="text-[10px] font-medium">De Perto</span>
                       </ToggleGroupItem>
                       <ToggleGroupItem 
                         value="longe" 
-                        className={`flex w-full flex-col items-center gap-2 rounded-xl px-4 py-3 transition-all h-auto ${
+                        className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
                           pessoasFraming === 'longe'
-                            ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                            : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                            ? 'bg-purple-600 text-white border border-purple-400' 
+                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
-                        {/* Full body icon - person small in frame with environment */}
-                        <div className="w-16 h-16 rounded-lg bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
-                          {/* Frame corners */}
-                          <div className="absolute top-1 left-1 w-2 h-2 border-l-2 border-t-2 border-purple-300/60" />
-                          <div className="absolute top-1 right-1 w-2 h-2 border-r-2 border-t-2 border-purple-300/60" />
-                          <div className="absolute bottom-1 left-1 w-2 h-2 border-l-2 border-b-2 border-purple-300/60" />
-                          <div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-purple-300/60" />
-                          {/* Small full body person with space around */}
-                          <svg width="52" height="52" viewBox="0 0 48 48" fill="none" className="text-current">
-                            {/* Ground line */}
-                            <line x1="8" y1="44" x2="40" y2="44" stroke="currentColor" strokeWidth="1" opacity="0.25" />
-                            {/* Small head */}
+                        <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
+                          <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
                             <circle cx="24" cy="14" r="5" fill="currentColor" opacity="0.85" />
-                            {/* Body/torso */}
                             <rect x="20" y="19" width="8" height="12" rx="3" fill="currentColor" opacity="0.75" />
-                            {/* Left arm */}
-                            <rect x="12" y="20" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.55" />
-                            {/* Right arm */}
-                            <rect x="28" y="20" width="8" height="3" rx="1.5" fill="currentColor" opacity="0.55" />
-                            {/* Left leg */}
                             <rect x="20" y="30" width="3.5" height="13" rx="1.5" fill="currentColor" opacity="0.55" />
-                            {/* Right leg */}
                             <rect x="24.5" y="30" width="3.5" height="13" rx="1.5" fill="currentColor" opacity="0.55" />
                           </svg>
                         </div>
-                        <span className="text-xs font-semibold">De Longe</span>
+                        <span className="text-[10px] font-medium">De Longe</span>
                       </ToggleGroupItem>
                     </ToggleGroup>
                   </div>
@@ -1155,24 +763,15 @@ const UpscalerArcanoTool: React.FC = () => {
               </Card>
             )}
 
-            {/* Detail Denoise - SECOND - ONLY show when NOT in "De Longe" mode */}
+            {/* Detail Level Slider - PRO only, not in Longe mode */}
             {version === 'pro' && !isLongeMode && (
-              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-purple-400" />
-                    <span className="font-medium text-white">{t('upscalerTool.controls.detailLevel')}</span>
-                    <div className="group relative">
-                      <Info className="w-4 h-4 text-purple-400/70 cursor-help" />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                        {t('upscalerTool.controls.controlsDetails')}
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                    <span className="text-xs font-medium text-white">{t('upscalerTool.controls.detailLevel')}</span>
                   </div>
-                  <span className="text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
-                </div>
-                <div className="text-xs text-purple-300 mb-3">
-                  ✨ {t('upscalerTool.controls.detailRecommended')}
+                  <span className="text-xs text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
                 </div>
                 <Slider
                   value={[detailDenoise]}
@@ -1182,54 +781,54 @@ const UpscalerArcanoTool: React.FC = () => {
                   step={0.01}
                   className="w-full"
                 />
-                <div className="flex justify-between text-xs text-purple-300/70 mt-2">
-                  <span>{t('upscalerTool.controls.lessDetail')}</span>
-                  <span>{t('upscalerTool.controls.moreDetail')}</span>
+                <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+                  <span>Menos</span>
+                  <span>Mais</span>
                 </div>
               </Card>
             )}
 
             {/* Resolution Selector */}
-            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="font-medium text-white">📐 Resolução</span>
+            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-medium text-white">📐 Resolução</span>
               </div>
               <ToggleGroup 
                 type="single" 
                 value={resolution} 
                 onValueChange={(val) => val && setResolution(val as '2k' | '4k')}
-                className="flex justify-start gap-1 sm:gap-2"
+                className="flex gap-1"
               >
                 <ToggleGroupItem 
                   value="2k" 
-                  className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
+                  className={`px-3 py-1.5 text-xs rounded-md transition-all ${
                     resolution === '2k' 
-                      ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                      : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                      ? 'bg-purple-600 text-white border border-purple-400' 
+                      : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                   }`}
                 >
-                  2K (2048px)
+                  2K
                 </ToggleGroupItem>
                 <ToggleGroupItem 
                   value="4k" 
-                  className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm rounded-lg transition-all ${
+                  className={`px-3 py-1.5 text-xs rounded-md transition-all ${
                     resolution === '4k' 
-                      ? 'bg-purple-600 text-white border-2 border-purple-400' 
-                      : 'border-2 border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                      ? 'bg-purple-600 text-white border border-purple-400' 
+                      : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                   }`}
                 >
-                  4K (4096px)
+                  4K
                 </ToggleGroupItem>
               </ToggleGroup>
             </Card>
 
-            {/* Custom Prompt Toggle - ONLY FOR PRO VERSION and NOT in "De Longe" mode */}
+            {/* Custom Prompt - PRO only, not in Longe mode */}
             {version === 'pro' && !isLongeMode && (
-              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-pink-400" />
-                    <span className="font-medium text-white">{t('upscalerTool.controls.usePrompt')}</span>
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-pink-400" />
+                    <span className="text-xs font-medium text-white">{t('upscalerTool.controls.usePrompt')}</span>
                   </div>
                   <Switch
                     checked={useCustomPrompt}
@@ -1238,93 +837,325 @@ const UpscalerArcanoTool: React.FC = () => {
                 </div>
                 
                 {useCustomPrompt && (
-                  <>
-                    <p className="text-xs text-pink-300/70 mb-3">
-                      {t('upscalerTool.controls.promptHint')}
-                    </p>
-                    <Textarea
-                      value={customPrompt}
-                      onChange={(e) => setCustomPrompt(e.target.value)}
-                      placeholder={t('upscalerTool.controls.promptPlaceholder')}
-                      className="min-h-[100px] bg-[#0D0221]/50 border-purple-500/30 text-white placeholder:text-purple-300/50"
-                    />
-                  </>
+                  <Textarea
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    placeholder={t('upscalerTool.controls.promptPlaceholder')}
+                    className="min-h-[60px] text-xs bg-[#0D0221]/50 border-purple-500/30 text-white placeholder:text-purple-300/50"
+                  />
                 )}
               </Card>
             )}
+
+            {/* Generate Button */}
+            {inputImage && !isProcessing && status !== 'completed' && (
+              <Button
+                className="w-full py-3 text-sm font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
+                onClick={processImage}
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {t('upscalerTool.buttons.increaseQuality')}
+                <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                  <Coins className="w-3.5 h-3.5" />
+                  {version === 'pro' ? '80' : '60'}
+                </span>
+              </Button>
+            )}
+
+            {/* Completed Actions */}
+            {status === 'completed' && (
+              <div className="space-y-2">
+                <Button
+                  className="w-full py-3 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  onClick={downloadResult}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {t('upscalerTool.buttons.downloadHD')}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full py-3 text-sm border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                  onClick={resetTool}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  {t('upscalerTool.buttons.processNew')}
+                </Button>
+              </div>
+            )}
+
+            {/* Error State */}
+            {status === 'error' && lastError && (
+              <Card className="bg-red-950/30 border-red-500/30 p-3">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-xs font-medium text-red-300">{lastError.message}</p>
+                    {lastError.solution && (
+                      <p className="text-[10px] text-purple-300/80">💡 {lastError.solution}</p>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full mt-2 py-2 text-xs border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                  onClick={resetTool}
+                >
+                  <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                  {t('upscalerTool.buttons.tryAgain')}
+                </Button>
+              </Card>
+            )}
           </div>
-        )}
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          {status === 'idle' && inputImage && !isWaitingInQueue && (
-            <Button
-              className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
-              onClick={processImage}
-            >
-              <Sparkles className="w-5 h-5 mr-2" />
-              {t('upscalerTool.buttons.increaseQuality')}
-              <span className="ml-2 flex items-center gap-1 text-sm opacity-90">
-                <Coins className="w-4 h-4" />
-                {version === 'pro' ? '80' : '60'}
-              </span>
-            </Button>
-          )}
+          {/* Right Side - Result Viewer (~72%) */}
+          <div className="lg:col-span-5 flex flex-col min-h-0">
+            <Card className="flex-1 bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden flex flex-col">
+              {/* Warning Banner */}
+              {isProcessing && (
+                <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                  <p className="text-xs text-amber-200">{t('upscalerTool.warnings.dontClose')}</p>
+                </div>
+              )}
 
-          {status === 'completed' && (
-            <>
-              <Button
-                className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/25"
-                onClick={downloadResult}
-              >
-                <Download className="w-5 h-5 mr-2" />
-                {t('upscalerTool.buttons.downloadHD')}
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full py-6 text-lg border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-                onClick={resetTool}
-              >
-                <RotateCcw className="w-5 h-5 mr-2" />
-                {t('upscalerTool.buttons.processNew')}
-              </Button>
-            </>
-          )}
-
-          {status === 'error' && (
-            <>
-              {lastError && (
-                <Card className="bg-red-950/30 border-red-500/30 p-4">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1 space-y-2">
-                      <p className="font-medium text-red-300">
-                        {lastError.message}
+              {/* Content Area */}
+              <div className="flex-1 flex items-center justify-center p-4 min-h-0">
+                {/* Queue Waiting UI */}
+                {isWaitingInQueue ? (
+                  <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center animate-pulse">
+                      <Clock className="w-8 h-8 text-yellow-400" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold text-yellow-300">
+                        {queueMessageCombos[currentQueueCombo].emoji} {queueMessageCombos[currentQueueCombo].title}
                       </p>
-                      {lastError.code && (
-                        <p className="text-sm text-red-400/70">
-                          {t('upscalerTool.errors.code')}: {lastError.code}
-                        </p>
-                      )}
-                      {lastError.solution && (
-                        <p className="text-sm text-purple-300/80 mt-2">
-                          💡 {lastError.solution}
-                        </p>
-                      )}
+                      <p className="text-3xl font-bold text-white mt-2">
+                        {queueMessageCombos[currentQueueCombo].position(queuePosition)}
+                      </p>
+                      <p className="text-sm text-purple-300/70 mt-2">
+                        {queueMessageCombos[currentQueueCombo].subtitle}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={cancelQueue}
+                      className="text-red-300 hover:text-red-100 hover:bg-red-500/20"
+                    >
+                      Sair da fila
+                    </Button>
+                  </div>
+                ) : status === 'completed' && outputImage ? (
+                  /* Result View - Before/After Slider with Zoom */
+                  <TransformWrapper
+                    initialScale={1}
+                    minScale={1}
+                    maxScale={6}
+                    smooth={true}
+                    onInit={(ref) => {
+                      setZoomLevel(ref.state.scale);
+                      (window as any).__upscalerTransformRef = ref;
+                      if (beforeTransformRef.current) {
+                        beforeTransformRef.current.style.transform = `translate(${ref.state.positionX}px, ${ref.state.positionY}px) scale(${ref.state.scale})`;
+                        beforeTransformRef.current.style.transformOrigin = '0% 0%';
+                      }
+                    }}
+                    onTransformed={(_, state) => {
+                      setZoomLevel(state.scale);
+                      if (beforeTransformRef.current) {
+                        beforeTransformRef.current.style.transform = `translate(${state.positionX}px, ${state.positionY}px) scale(${state.scale})`;
+                      }
+                    }}
+                    wheel={{ disabled: true }}
+                    pinch={{ step: 3 }}
+                    doubleClick={{ mode: 'zoomIn', step: 0.14 }}
+                    panning={{ disabled: zoomLevel <= 1 }}
+                  >
+                    {({ zoomIn, zoomOut, resetTransform }) => (
+                      <div className="relative w-full h-full">
+                        {/* Zoom Controls */}
+                        <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
+                          <button 
+                            onClick={() => zoomOut(0.14)}
+                            className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
+                          >
+                            <ZoomOut className="w-4 h-4 text-white" />
+                          </button>
+                          <span className="text-xs font-mono min-w-[3rem] text-center text-white">
+                            {Math.round(zoomLevel * 100)}%
+                          </span>
+                          <button 
+                            onClick={() => zoomIn(0.14)}
+                            className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
+                          >
+                            <ZoomIn className="w-4 h-4 text-white" />
+                          </button>
+                          {zoomLevel > 1 && (
+                            <button 
+                              onClick={() => resetTransform()}
+                              className="p-1.5 hover:bg-white/20 rounded-full transition-colors ml-1"
+                            >
+                              <RotateCcw className="w-4 h-4 text-white" />
+                            </button>
+                          )}
+                        </div>
+
+                        <div 
+                          ref={sliderRef} 
+                          className="relative w-full h-full overflow-hidden"
+                          onWheel={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const transformRef = (window as any).__upscalerTransformRef;
+                            if (!transformRef) return;
+                            
+                            const MIN_ZOOM = 1;
+                            const MAX_ZOOM = 6;
+                            const WHEEL_FACTOR = 1.40;
+                            
+                            const { scale, positionX, positionY } = transformRef.state;
+                            const wrapperComponent = transformRef.instance?.wrapperComponent;
+                            
+                            if (!wrapperComponent) return;
+                            
+                            const rect = wrapperComponent.getBoundingClientRect();
+                            const mouseX = e.clientX - rect.left;
+                            const mouseY = e.clientY - rect.top;
+                            
+                            let newScale: number;
+                            if (e.deltaY < 0) {
+                              newScale = scale * WHEEL_FACTOR;
+                            } else {
+                              newScale = scale / WHEEL_FACTOR;
+                            }
+                            
+                            newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newScale));
+                            
+                            if (newScale === scale) return;
+                            
+                            const scaleDiff = newScale - scale;
+                            const newPosX = positionX - mouseX * scaleDiff;
+                            const newPosY = positionY - mouseY * scaleDiff;
+                            
+                            transformRef.setTransform(newPosX, newPosY, newScale, 150, 'easeOut');
+                          }}
+                        >
+                          <div className="relative w-full h-full bg-black">
+                            {/* AFTER image */}
+                            <TransformComponent 
+                              wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} 
+                              contentStyle={{ width: '100%', height: '100%' }}
+                            >
+                              <img 
+                                src={outputImage} 
+                                alt="Depois" 
+                                className="w-full h-full object-contain"
+                                draggable={false}
+                              />
+                            </TransformComponent>
+
+                            {/* BEFORE image - overlay clipped */}
+                            <div 
+                              className="absolute inset-0 pointer-events-none"
+                              style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+                            >
+                              <div 
+                                ref={beforeTransformRef}
+                                className="w-full h-full"
+                                style={{ transformOrigin: '0% 0%' }}
+                              >
+                                <img 
+                                  src={inputImage || ''} 
+                                  alt="Antes" 
+                                  className="w-full h-full object-contain"
+                                  draggable={false}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Slider Line and Handle */}
+                            <div 
+                              className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-20"
+                              style={{ 
+                                left: `${sliderPosition}%`, 
+                                transform: 'translateX(-50%)', 
+                                cursor: 'ew-resize',
+                                touchAction: 'none'
+                              }}
+                              onPointerDown={handleSliderPointerDown}
+                              onPointerMove={handleSliderPointerMove}
+                              onPointerUp={handleSliderPointerUp}
+                              onPointerCancel={handleSliderPointerUp}
+                            >
+                              <div 
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center cursor-ew-resize"
+                                style={{ touchAction: 'none' }}
+                              >
+                                <div className="flex gap-0.5">
+                                  <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                                  <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Labels */}
+                            <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-white/30 text-white text-xs font-bold z-20 pointer-events-none">
+                              {t('upscalerTool.labels.before')}
+                            </div>
+                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-purple-600/90 border border-purple-400/50 text-white text-xs font-bold z-20 pointer-events-none">
+                              {t('upscalerTool.labels.after')}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Zoom Hint */}
+                        <div className="hidden sm:block absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-white/20">
+                          🔍 {t('upscalerTool.zoomHint')}
+                        </div>
+                      </div>
+                    )}
+                  </TransformWrapper>
+                ) : (status === 'uploading' || status === 'processing') && !isWaitingInQueue ? (
+                  /* Processing State */
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+                    <div className="text-center">
+                      <p className="text-lg font-medium text-white">
+                        {status === 'uploading' ? t('upscalerTool.status.uploading') : t('upscalerTool.status.processing')}
+                      </p>
+                      <p className="text-sm text-purple-300/70">
+                        {t('upscalerTool.status.mayTake2Min')}
+                      </p>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="w-48 h-2 bg-purple-900/50 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                      />
                     </div>
                   </div>
-                </Card>
-              )}
-              <Button
-                variant="outline"
-                className="w-full py-6 text-lg border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-                onClick={resetTool}
-              >
-                <RotateCcw className="w-5 h-5 mr-2" />
-                {t('upscalerTool.buttons.tryAgain')}
-              </Button>
-            </>
-          )}
+                ) : inputImage ? (
+                  /* Preview uploaded image */
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <img 
+                      src={inputImage} 
+                      alt="Preview" 
+                      className="max-w-full max-h-full object-contain rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  /* Empty State */
+                  <div className="flex flex-col items-center gap-4 text-center text-purple-300/50">
+                    <Upload className="w-16 h-16" />
+                    <p className="text-sm">Carregue uma imagem para começar</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
 
