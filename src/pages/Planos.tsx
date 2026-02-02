@@ -32,7 +32,7 @@ const Planos = () => {
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
       features: [
-        { text: t('planos.features.10PromptsDay'), included: true },
+        { text: t('planos.features.5PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -51,7 +51,7 @@ const Planos = () => {
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/kbgwmH",
       features: [
-        { text: t('planos.features.24PromptsDay'), included: true },
+        { text: t('planos.features.10PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -93,7 +93,7 @@ const Planos = () => {
       yearlyTotal: "178,80",
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/RaLcc5",
       features: [
-        { text: t('planos.features.10PromptsDay'), included: true },
+        { text: t('planos.features.5PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -113,7 +113,7 @@ const Planos = () => {
       yearlyTotal: "226,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/2wrEY3",
       features: [
-        { text: t('planos.features.24PromptsDay'), included: true },
+        { text: t('planos.features.10PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
