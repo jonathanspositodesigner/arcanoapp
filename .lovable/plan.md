@@ -1,109 +1,156 @@
 
-# Plano: Remoção do UpscalerArcanoV3 + Otimização do Upload
+# Plano de Limpeza: Edge Functions Não Usadas + Código Morto de Email Marketing
 
-## Parte 1: Remoção Completa do UpscalerArcanoV3
+## Resumo Executivo
 
-### Arquivos a Deletar
-| Arquivo | Ação |
-|---------|------|
-| `src/pages/UpscalerArcanoV3.tsx` | DELETAR (736 linhas) |
-
-### Arquivos a Modificar
-
-**`src/App.tsx`** - Remover referências:
-- Linha 120: Remover import `const UpscalerArcanoV3 = lazy(...)`
-- Linha 281: Remover rota `<Route path="/upscaler-arcano-v3" element={<UpscalerArcanoV3 />} />`
-
-### Limpeza Adicional
-- Remover `upscaler_v3_session_id` do localStorage (se existir)
-- A pasta `upscaler-v3/` no bucket `artes-cloudinary` pode ser limpa manualmente depois
+Este plano remove **6 Edge Functions não utilizadas** e **todo o código morto relacionado a Email Marketing e Importação CSV**, resultando em eliminação total de custos desnecessários do Cloud.
 
 ---
 
-## Parte 2: Análise do Upload no UpscalerArcanoTool
+## Parte 1: Edge Functions a Deletar
 
-### Fluxo Atual (Já Otimizado)
+| Edge Function | Motivo da Remoção |
+|--------------|-------------------|
+| `runpod-upscaler/` | Substituída pelo RunningHub - nunca é chamada |
+| `sendpulse-webhook/` | Email marketing - você não usa |
+| `process-import-job/` | Importação CSV - você não usa |
+| `send-email-campaign/` | Email marketing - você não usa |
+| `resend-failed-welcome-emails/` | Recovery de welcome emails - você não usa |
+| `process-scheduled-emails/` | Campanhas agendadas - você não usa |
 
-```
-Usuário → Compressão WebP (client) → Upload direto Storage → URL → Edge Function → RunningHub
-```
-
-**O que já está bom:**
-1. Compressão agressiva antes do upload (max 2MB, WebP)
-2. Upload direto para Supabase Storage (não passa Base64 para Edge Function)
-3. Edge Function recebe apenas `imageUrl` e faz download + re-upload para RunningHub
-
-### Problema Identificado: Double Download
-
-**Fluxo atual na Edge Function (linha 183-224):**
-```
-Storage (public URL) → Edge Function baixa → Re-upload para RunningHub
-```
-
-Isso consome bandwidth DUAS VEZES:
-- Egress do Storage → Edge Function
-- Ingress/Egress da Edge Function → RunningHub
-
-### Melhoria Possível: Verificar se RunningHub aceita URL direta
-
-Infelizmente, após análise da API do RunningHub, o endpoint `/openapi/v2/run/ai-app/{webappId}` aceita APENAS `fileName` (referência interna do RunningHub), não URLs externas.
-
-**Conclusão:** O fluxo atual é o mais otimizado possível dado a limitação da API do RunningHub.
-
-### Melhorias Menores Identificadas
-
-#### 1. Endpoint `/upload` Obsoleto
-O endpoint `handleUpload` (linhas 67-139) ainda existe mas não é mais usado pelo frontend. Pode ser marcado como deprecated ou removido.
-
-#### 2. Logging Excessivo Pode Ser Reduzido
-Múltiplos `console.log` com dados JSON grandes aumentam ligeiramente o compute time.
+**Pasta a deletar de cada:**
+- `supabase/functions/runpod-upscaler/index.ts`
+- `supabase/functions/sendpulse-webhook/index.ts`
+- `supabase/functions/process-import-job/index.ts`
+- `supabase/functions/send-email-campaign/index.ts`
+- `supabase/functions/resend-failed-welcome-emails/index.ts`
+- `supabase/functions/process-scheduled-emails/index.ts`
 
 ---
 
-## Resumo das Ações
+## Parte 2: Atualizar `supabase/config.toml`
 
-| Prioridade | Ação | Impacto |
-|------------|------|---------|
-| CRÍTICA | Deletar `UpscalerArcanoV3.tsx` | Reduz código morto |
-| CRÍTICA | Remover import e rota do `App.tsx` | Evita erros |
-| BAIXA | Deprecar endpoint `/upload` na Edge Function | Limpeza de código |
+Remover as entradas de configuração das Edge Functions deletadas:
+- `[functions.runpod-upscaler]`
+- `[functions.sendpulse-webhook]`
+- `[functions.process-import-job]`
+- `[functions.send-email-campaign]`
+- `[functions.process-scheduled-emails]`
 
 ---
 
-## Seção Técnica
+## Parte 3: Páginas a Deletar
 
-### Arquivos Modificados
-1. `src/pages/UpscalerArcanoV3.tsx` - DELETAR
-2. `src/App.tsx` - Remover import (linha 120) e rota (linha 281)
-3. `supabase/functions/runninghub-upscaler/index.ts` (opcional) - Deprecar endpoint `/upload`
+| Arquivo | Linhas | Motivo |
+|---------|--------|--------|
+| `src/pages/AdminEmailMarketing.tsx` | 17 linhas | Página de email marketing |
+| `src/pages/UpscalerRunpod.tsx` | 91 linhas | Página desativada do runpod |
+| `src/pages/AdminImportClients.tsx` | 799 linhas | Página de importação CSV |
 
-### Código a Remover do App.tsx
+---
 
-**Import (linha 120):**
-```typescript
-// REMOVER:
-const UpscalerArcanoV3 = lazy(() => import("./pages/UpscalerArcanoV3"));
+## Parte 4: Componentes a Deletar
+
+| Arquivo | Linhas | Motivo |
+|---------|--------|--------|
+| `src/components/EmailMarketingContent.tsx` | 1069 linhas | Componente principal de email |
+| `src/components/GlobalImportProgress.tsx` | 120 linhas | Barra de progresso de importação |
+| `src/components/email-marketing/CampaignHistory.tsx` | ~350 linhas | Histórico de campanhas |
+| `src/components/email-marketing/EmailEditor.tsx` | ~300 linhas | Editor de email |
+| `src/components/email-marketing/EmojiPicker.tsx` | 68 linhas | Seletor de emoji |
+| `src/components/email-marketing/RecipientSelector.tsx` | ~250 linhas | Seletor de destinatários |
+| `src/components/email-marketing/SendingProgress.tsx` | ~200 linhas | Progresso de envio |
+| `src/components/email-marketing/WelcomeEmailTemplates.tsx` | ~400 linhas | Templates de welcome email |
+
+**Pasta inteira a deletar:**
+- `src/components/email-marketing/`
+
+---
+
+## Parte 5: Hooks a Deletar
+
+| Arquivo | Linhas | Motivo |
+|---------|--------|--------|
+| `src/hooks/useEmailCampaignProgress.ts` | ~100 linhas | Hook de progresso (já simplificado) |
+| `src/hooks/useEmailMarketingAnalytics.ts` | ~500 linhas | Analytics de email marketing |
+| `src/hooks/useImportProgress.ts` | ~250 linhas | Hook de importação CSV |
+
+---
+
+## Parte 6: Atualizar `src/App.tsx`
+
+Remover referências:
+
+**Imports a remover:**
+- Linha 41: `const AdminEmailMarketing = lazy(...)`
+- Linha 98: `const AdminImportClients = lazy(...)`
+- Linha 119: `const UpscalerRunpod = lazy(...)`
+- Linha 124: `const GlobalImportProgress = lazy(...)`
+
+**Rotas a remover:**
+- Linha 189: `<Route path="/admin-email-marketing" ...>`
+- Linha 258: `<Route path="/admin-import-clients" ...>`
+- Linha 280: `<Route path="/upscaler-runpod" ...>`
+
+**Lógica a remover:**
+- Linhas 152-161: Renderização do `GlobalImportProgress`
+
+---
+
+## Parte 7: Atualizar Páginas de Marketing (Remover Referências Email)
+
+Arquivos que importam `useEmailMarketingAnalytics`:
+- `src/pages/AdminMarketing.tsx`
+- `src/pages/admin/PromptsMarketing.tsx`
+- `src/components/HubGeneralMarketing.tsx`
+
+**Ação:** Remover imports e referências às estatísticas de email (manter apenas push notifications)
+
+---
+
+## Resumo de Arquivos
+
+### Deletar Completamente (23 arquivos)
+```
+supabase/functions/runpod-upscaler/index.ts
+supabase/functions/sendpulse-webhook/index.ts
+supabase/functions/process-import-job/index.ts
+supabase/functions/send-email-campaign/index.ts
+supabase/functions/resend-failed-welcome-emails/index.ts
+supabase/functions/process-scheduled-emails/index.ts
+src/pages/AdminEmailMarketing.tsx
+src/pages/AdminImportClients.tsx
+src/pages/UpscalerRunpod.tsx
+src/components/EmailMarketingContent.tsx
+src/components/GlobalImportProgress.tsx
+src/components/email-marketing/CampaignHistory.tsx
+src/components/email-marketing/EmailEditor.tsx
+src/components/email-marketing/EmojiPicker.tsx
+src/components/email-marketing/RecipientSelector.tsx
+src/components/email-marketing/SendingProgress.tsx
+src/components/email-marketing/WelcomeEmailTemplates.tsx
+src/hooks/useEmailCampaignProgress.ts
+src/hooks/useEmailMarketingAnalytics.ts
+src/hooks/useImportProgress.ts
 ```
 
-**Rota (linha 281):**
-```typescript
-// REMOVER:
-<Route path="/upscaler-arcano-v3" element={<UpscalerArcanoV3 />} />
+### Modificar (4 arquivos)
+```
+supabase/config.toml (remover 5 entries)
+src/App.tsx (remover imports e rotas)
+src/pages/AdminMarketing.tsx (remover stats de email)
+src/components/HubGeneralMarketing.tsx (remover stats de email)
+src/pages/admin/PromptsMarketing.tsx (remover stats de email)
 ```
 
-### Análise do Upload Atual (UpscalerArcanoTool)
+---
 
-**handleFileSelect (linhas 312-356):**
-- Compressão agressiva com `browser-image-compression`
-- Max 2MB, WebP, 4096px max dimension
-- OK - não precisa de mudanças
+## Economia Estimada
 
-**processImage (linhas 385-527):**
-- Upload direto para Storage (não Base64 para Edge)
-- Envia `imageUrl` para Edge Function
-- OK - fluxo otimizado
+| Componente Removido | Economia |
+|---------------------|----------|
+| 6 Edge Functions inativas | Elimina risco de invocações acidentais |
+| ~3500 linhas de código morto | Build mais rápido |
+| Watchdogs e polling removidos | $0 em invocações desnecessárias |
 
-**Edge Function (runninghub-upscaler):**
-- Recebe `imageUrl`, baixa, re-envia para RunningHub
-- Necessário devido à API do RunningHub (não aceita URLs externas)
-- O endpoint `/upload` não é mais usado e pode ser removido
+**Total de linhas removidas:** ~5.000+ linhas de código morto
