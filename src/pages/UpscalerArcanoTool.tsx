@@ -428,43 +428,42 @@ const UpscalerArcanoTool: React.FC = () => {
       setJobId(job.id);
       setProgress(20);
 
-      // Step 2: Upload image
+      // Step 2: Upload image directly to Storage (no Base64 to edge function)
       const base64Data = inputImage.split(',')[1];
-      
-      const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {
-        body: {
-          imageBase64: base64Data,
-          fileName: inputFileName || 'image.png',
-        },
-      });
-
-      if (uploadResponse.error) {
-        throw new Error(uploadResponse.error.message || 'Erro ao fazer upload');
+      const binaryStr = atob(base64Data);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
       }
 
-      if (uploadResponse.data?.error) {
-        setLastError({
-          message: uploadResponse.data.error,
-          code: uploadResponse.data.code,
-          solution: uploadResponse.data.solution,
-        });
-        throw new Error(uploadResponse.data.error);
+      const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
+      const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 
+                       ext === 'webp' ? 'image/webp' : 'image/png';
+      const blob = new Blob([bytes], { type: mimeType });
+      const storagePath = `upscaler/${job.id}.${ext}`;
+
+      const { error: storageError } = await supabase.storage
+        .from('artes-cloudinary')
+        .upload(storagePath, blob, { contentType: mimeType, upsert: true });
+
+      if (storageError) {
+        throw new Error('Erro no upload: ' + storageError.message);
       }
 
-      const { fileName } = uploadResponse.data;
-      if (!fileName) {
-        throw new Error('Upload não retornou nome do arquivo');
-      }
-      
-      console.log('[Upscaler] Upload successful, fileName:', fileName);
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('artes-cloudinary')
+        .getPublicUrl(storagePath);
+
+      console.log('[Upscaler] Image uploaded to storage:', urlData.publicUrl);
       setProgress(35);
       setStatus('processing');
 
-      // Step 3: Start processing (with webhook callback)
+      // Step 3: Start processing (with webhook callback) - send imageUrl instead of Base64
       const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {
           jobId: job.id,
-          fileName,
+          imageUrl: urlData.publicUrl, // NEW: URL instead of fileName
           detailDenoise: isLongeMode ? null : detailDenoise,
           resolution: resolution === '4k' ? 4096 : 2048,
           prompt: isLongeMode ? null : getFinalPrompt(),
