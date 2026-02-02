@@ -259,24 +259,14 @@ const UpscalerArcanoV3: React.FC = () => {
       console.log('[UpscalerV3] Image uploaded to storage:', urlData.publicUrl);
       setProgress(40);
 
-      // Step 3: Upload to RunningHub (they need their own file reference)
-      const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {
-        body: { imageBase64: base64Data, fileName: inputFileName || 'image.png' },
-      });
-
-      if (uploadResponse.error || !uploadResponse.data?.fileName) {
-        throw new Error(uploadResponse.error?.message || 'Erro no upload para RunningHub');
-      }
-
-      console.log('[UpscalerV3] RunningHub file:', uploadResponse.data.fileName);
+      // Step 3: Start processing - send imageUrl directly (no duplicate upload!)
       setProgress(60);
       setStatus('processing');
 
-      // Step 4: Start processing (webhook will update job via Realtime)
       const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {
           jobId: job.id,
-          fileName: uploadResponse.data.fileName,
+          imageUrl: urlData.publicUrl, // Use storage URL directly
           mode,
           resolution,
           creativityDenoise,

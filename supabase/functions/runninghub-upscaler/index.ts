@@ -154,24 +154,74 @@ async function handleRun(req: Request) {
 
   const { 
     jobId,
-    fileName, 
+    imageUrl,    // NEW: URL from Supabase Storage
+    fileName,    // DEPRECATED: kept for backward compatibility
     detailDenoise,
     resolution,
     prompt,
     version,
     framingMode, // 'longe' or 'perto'
-    userId,      // NEW: user ID for credit consumption
-    creditCost   // NEW: credit cost (60 standard, 80 pro)
+    userId,      // user ID for credit consumption
+    creditCost   // credit cost (60 standard, 80 pro)
   } = await req.json();
   
-  if (!fileName || !jobId) {
+  // Validate: need either imageUrl (new) or fileName (legacy)
+  if (!jobId || (!imageUrl && !fileName)) {
     return new Response(JSON.stringify({ 
-      error: 'fileName and jobId are required', 
+      error: 'jobId and (imageUrl or fileName) are required', 
       code: 'MISSING_PARAMS' 
     }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+  }
+
+  // Determine which fileName to use for RunningHub
+  let rhFileName = fileName;
+
+  // NEW: If imageUrl provided, download and upload to RunningHub
+  if (imageUrl && !fileName) {
+    console.log('[RunningHub] Downloading image from storage:', imageUrl);
+    
+    try {
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error('Failed to download image from storage');
+      }
+      
+      const imageBlob = await imageResponse.blob();
+      const imageName = imageUrl.split('/').pop() || 'image.png';
+      
+      const formData = new FormData();
+      formData.append('apiKey', RUNNINGHUB_API_KEY);
+      formData.append('fileType', 'image');
+      formData.append('file', imageBlob, imageName);
+      
+      const uploadResponse = await fetch('https://www.runninghub.ai/task/openapi/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const uploadData = await uploadResponse.json();
+      console.log('[RunningHub] Upload to RH response:', JSON.stringify(uploadData));
+      
+      if (uploadData.code !== 0) {
+        throw new Error('RunningHub upload failed: ' + (uploadData.msg || 'Unknown error'));
+      }
+      
+      rhFileName = uploadData.data.fileName;
+      console.log('[RunningHub] Uploaded to RH, fileName:', rhFileName);
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
+      console.error('[RunningHub] Image transfer error:', error);
+      return new Response(JSON.stringify({ 
+        error: errorMsg, 
+        code: 'IMAGE_TRANSFER_ERROR' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
   }
 
   // Validate credit parameters
@@ -227,13 +277,13 @@ async function handleRun(req: Request) {
   // "De Longe" mode uses a specialized WebApp that only needs image + resolution
   const isLongeMode = framingMode === 'longe';
   const webappId = isLongeMode ? WEBAPP_ID_LONGE : (version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD);
-  console.log(`[RunningHub] Processing job ${jobId} - version: ${version}, framingMode: ${framingMode}, webappId: ${webappId}, fileName: ${fileName}`);
+  console.log(`[RunningHub] Processing job ${jobId} - version: ${version}, framingMode: ${framingMode}, webappId: ${webappId}, rhFileName: ${rhFileName}`);
 
   try {
     // Update job with input file name
     await supabase
       .from('upscaler_jobs')
-      .update({ input_file_name: fileName })
+      .update({ input_file_name: rhFileName })
       .eq('id', jobId);
 
     // Check how many jobs are currently running
@@ -299,7 +349,7 @@ async function handleRun(req: Request) {
     if (isLongeMode) {
       // WebApp "De Longe" - only image (nodeId: 1) and resolution (nodeId: 7)
       nodeInfoList = [
-        { nodeId: "1", fieldName: "image", fieldValue: fileName },
+        { nodeId: "1", fieldName: "image", fieldValue: rhFileName },
         { nodeId: "7", fieldName: "value", fieldValue: String(resolution || 2048) },
       ];
       console.log(`[RunningHub] Using "De Longe" WebApp with simplified nodeInfoList`);
@@ -308,7 +358,7 @@ async function handleRun(req: Request) {
       const resolutionNodeId = version === 'pro' ? "73" : "75";
       
       nodeInfoList = [
-        { nodeId: "26", fieldName: "image", fieldValue: fileName },
+        { nodeId: "26", fieldName: "image", fieldValue: rhFileName },
         { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
         { nodeId: resolutionNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
       ];
