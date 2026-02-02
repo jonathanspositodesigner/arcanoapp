@@ -103,10 +103,10 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
         </h3>
       </div>
 
-      {/* Upload Area - Ultra Compact */}
+      {/* Upload Area - Responsive with 3:4 aspect ratio on desktop */}
       <div
         className={cn(
-          "relative h-16 flex flex-col items-center justify-center cursor-pointer transition-all",
+          "relative h-20 lg:h-auto lg:aspect-[3/4] flex flex-col items-center justify-center cursor-pointer transition-all",
           !image && "hover:bg-purple-500/10",
           disabled && "cursor-not-allowed"
         )}
@@ -116,11 +116,13 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
       >
         {image ? (
           <>
-            <img
-              src={image}
-              alt={title}
-              className="w-full h-full object-contain"
-            />
+            <div className="w-full h-full flex items-center justify-center p-2">
+              <img
+                src={image}
+                alt={title}
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
             {/* Remove button */}
             <button
               onClick={handleRemove}
