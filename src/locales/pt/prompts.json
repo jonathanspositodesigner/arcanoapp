@@ -67,7 +67,8 @@
     "prompt": "Prompt",
     "copyPrompt": "Copiar Prompt",
     "download": "Baixar",
-    "watchTutorial": "Ver Tutorial"
+    "watchTutorial": "Ver Tutorial",
+    "clickToCopy": "Clique em \"Copiar Prompt\" para visualizar"
   },
   "premiumModal": {
     "title": "Conteúdo Premium",
