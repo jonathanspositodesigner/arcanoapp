@@ -44,33 +44,33 @@ const comingSoonTools = [
 
 const creditPlans = [
   { 
-    credits: 1500, 
+    credits: "+1.500", 
     description: "~25 imagens", 
     price: "29,90",
     originalPrice: null,
     savings: null,
-    link: "#",
+    link: "https://payfast.greenn.com.br/9trhhb9",
     icon: Coins,
     color: "from-purple-500 to-fuchsia-500"
   },
   { 
-    credits: 4200, 
+    credits: "+4.200", 
     description: "~70 imagens", 
     price: "39,90",
     originalPrice: "49,90",
     savings: "52",
-    link: "#", 
+    link: "https://payfast.greenn.com.br/y3u2u3d", 
     popular: true,
     icon: Zap,
     color: "from-fuchsia-500 to-pink-500"
   },
   { 
-    credits: 10800, 
+    credits: "+10.800", 
     description: "~180 imagens", 
     price: "99,90",
     originalPrice: "149,90",
     savings: "54",
-    link: "#", 
+    link: "https://payfast.greenn.com.br/vwfzrw2", 
     bestValue: true,
     icon: Star,
     color: "from-yellow-500 to-orange-500"
@@ -253,7 +253,7 @@ const PlanosCreditos = () => {
                   {/* Credits */}
                   <div className="mb-1">
                     <span className="text-2xl sm:text-3xl font-bold text-white">
-                      {plan.credits.toLocaleString('pt-BR')}
+                      {plan.credits}
                     </span>
                     <p className="text-purple-300 text-sm">créditos</p>
                   </div>
