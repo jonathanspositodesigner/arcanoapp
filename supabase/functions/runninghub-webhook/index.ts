@@ -9,7 +9,10 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const RUNNINGHUB_API_KEY = (Deno.env.get('RUNNINGHUB_API_KEY') || '').trim();
-const WEBAPP_ID = '2015865378030755841';
+
+// WebApp IDs
+const WEBAPP_ID_UPSCALER = '2015865378030755841';
+const WEBAPP_ID_POSE = '2018451429635133442';
 const MAX_CONCURRENT_JOBS = 3;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -23,8 +26,7 @@ serve(async (req) => {
     const payload = await req.json();
     console.log('[Webhook] Received payload:', JSON.stringify(payload));
 
-    // RunningHub API v2 webhook format (from official documentation)
-    // Structure: { event, taskId, eventData: { status, results[], errorCode, errorMessage, usage } }
+    // RunningHub API v2 webhook format
     const event = payload.event;
     const taskId = payload.taskId;
     const eventData = payload.eventData || {};
@@ -49,15 +51,13 @@ serve(async (req) => {
       });
     }
 
-    // Get output URL from eventData.results (API v2 format)
-    // results[]: { url, outputType, text }
+    // Get output URL from eventData.results
     let outputUrl: string | null = null;
     let errorMessage: string | null = null;
 
     const results = eventData.results || [];
     
     if (Array.isArray(results) && results.length > 0) {
-      // Find image result by outputType (png, jpg, jpeg, webp)
       const imageResult = results.find((r: any) => 
         r.outputType === 'png' || 
         r.outputType === 'jpg' || 
@@ -67,46 +67,73 @@ serve(async (req) => {
       outputUrl = imageResult?.url || results[0]?.url || null;
     }
 
-    // Check for error from eventData
     if (taskStatus === 'FAILED') {
       errorMessage = eventData.errorMessage || eventData.errorCode || 'Processing failed';
     }
 
     console.log(`[Webhook] OutputUrl: ${outputUrl}, Error: ${errorMessage}`);
 
-    // Update the job in the database
+    // Determine which table the job belongs to
+    // First check upscaler_jobs, then pose_changer_jobs
+    let jobTable: 'upscaler_jobs' | 'pose_changer_jobs' = 'upscaler_jobs';
+    let jobData: any = null;
+
+    // Try upscaler_jobs first
+    const { data: upscalerJob, error: upscalerError } = await supabase
+      .from('upscaler_jobs')
+      .select('id')
+      .eq('task_id', taskId)
+      .maybeSingle();
+
+    if (upscalerJob) {
+      jobTable = 'upscaler_jobs';
+      jobData = upscalerJob;
+      console.log(`[Webhook] Found job in upscaler_jobs: ${upscalerJob.id}`);
+    } else {
+      // Try pose_changer_jobs
+      const { data: poseJob, error: poseError } = await supabase
+        .from('pose_changer_jobs')
+        .select('id')
+        .eq('task_id', taskId)
+        .maybeSingle();
+
+      if (poseJob) {
+        jobTable = 'pose_changer_jobs';
+        jobData = poseJob;
+        console.log(`[Webhook] Found job in pose_changer_jobs: ${poseJob.id}`);
+      }
+    }
+
+    if (!jobData) {
+      console.log('[Webhook] Job not found in any table, might be already processed');
+      return new Response(JSON.stringify({ success: true, message: 'Job not found' }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Update the job in the correct table
     const newStatus = errorMessage ? 'failed' : (outputUrl ? 'completed' : 'failed');
     
-    const { data: updateData, error: updateError } = await supabase
-      .from('upscaler_jobs')
+    const { error: updateError } = await supabase
+      .from(jobTable)
       .update({
         status: newStatus,
         output_url: outputUrl,
         error_message: errorMessage || (newStatus === 'failed' ? 'No output received' : null),
         completed_at: new Date().toISOString()
       })
-      .eq('task_id', taskId)
-      .select()
-      .single();
+      .eq('task_id', taskId);
 
     if (updateError) {
       console.error('[Webhook] Error updating job:', updateError);
-      // Try to find by task_id anyway
-      const { data: existingJob } = await supabase
-        .from('upscaler_jobs')
-        .select('id')
-        .eq('task_id', taskId)
-        .single();
-      
-      if (!existingJob) {
-        console.log('[Webhook] Job not found, might be already processed or invalid taskId');
-      }
     } else {
-      console.log('[Webhook] Job updated successfully:', updateData?.id);
+      console.log(`[Webhook] Job updated successfully in ${jobTable}`);
     }
 
-    // Process next job in queue if there's a slot available
-    await processNextInQueue();
+    // Process next job in queue for both tables
+    await processNextInQueue('upscaler_jobs');
+    await processNextInQueue('pose_changer_jobs');
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -122,24 +149,30 @@ serve(async (req) => {
   }
 });
 
-async function processNextInQueue() {
+async function processNextInQueue(tableName: 'upscaler_jobs' | 'pose_changer_jobs') {
   try {
-    // Check how many jobs are currently running
-    const { count: runningCount } = await supabase
+    // Check how many jobs are currently running across both tables
+    const { count: upscalerRunning } = await supabase
       .from('upscaler_jobs')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'running');
 
-    console.log(`[Webhook] Running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS}`);
+    const { count: poseRunning } = await supabase
+      .from('pose_changer_jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'running');
 
-    if ((runningCount || 0) >= MAX_CONCURRENT_JOBS) {
+    const totalRunning = (upscalerRunning || 0) + (poseRunning || 0);
+    console.log(`[Webhook] Total running jobs: ${totalRunning}/${MAX_CONCURRENT_JOBS}`);
+
+    if (totalRunning >= MAX_CONCURRENT_JOBS) {
       console.log('[Webhook] No slots available');
       return;
     }
 
-    // Get the next job in queue (oldest first)
+    // Get the next job in queue for this table
     const { data: nextJob, error: fetchError } = await supabase
-      .from('upscaler_jobs')
+      .from(tableName)
       .select('*')
       .eq('status', 'queued')
       .order('created_at', { ascending: true })
@@ -147,15 +180,15 @@ async function processNextInQueue() {
       .maybeSingle();
 
     if (fetchError || !nextJob) {
-      console.log('[Webhook] No jobs in queue');
+      console.log(`[Webhook] No jobs in queue for ${tableName}`);
       return;
     }
 
-    console.log(`[Webhook] Processing next job: ${nextJob.id}`);
+    console.log(`[Webhook] Processing next job from ${tableName}: ${nextJob.id}`);
 
     // Mark as running
     await supabase
-      .from('upscaler_jobs')
+      .from(tableName)
       .update({ 
         status: 'running', 
         started_at: new Date().toISOString(),
@@ -164,31 +197,32 @@ async function processNextInQueue() {
       .eq('id', nextJob.id);
 
     // Start processing via RunningHub API v2
-    await startRunningHubJob(nextJob);
+    if (tableName === 'upscaler_jobs') {
+      await startUpscalerJob(nextJob);
+    } else {
+      await startPoseChangerJob(nextJob);
+    }
 
-    // Update positions of remaining queued jobs using batch SQL function
-    await updateQueuePositions();
+    // Update positions for remaining queued jobs
+    await updateQueuePositions(tableName);
 
   } catch (error) {
-    console.error('[Webhook] Error processing next job:', error);
+    console.error(`[Webhook] Error processing next job from ${tableName}:`, error);
   }
 }
 
-async function startRunningHubJob(job: any) {
+async function startUpscalerJob(job: any) {
   const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
   
-  // Correct node IDs from RunningHub documentation
   const nodeInfoList: any[] = [
     { nodeId: "26", fieldName: "image", fieldValue: job.input_file_name },
     { nodeId: "25", fieldName: "value", fieldValue: job.detail_denoise || 0.15 },
   ];
 
-  // Add prompt if provided (nodeId 128 for prompt)
   if (job.prompt) {
     nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: job.prompt });
   }
 
-  // API v2 format - auth via Bearer header, not in body
   const requestBody = {
     nodeInfoList: nodeInfoList,
     instanceType: "default",
@@ -196,10 +230,10 @@ async function startRunningHubJob(job: any) {
     webhookUrl: webhookUrl,
   };
 
-  console.log('[Webhook] Starting RunningHub job:', JSON.stringify(requestBody));
+  console.log('[Webhook] Starting Upscaler job:', JSON.stringify(requestBody));
 
   try {
-    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID}`, {
+    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_UPSCALER}`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -211,17 +245,14 @@ async function startRunningHubJob(job: any) {
     const data = await response.json();
     console.log('[Webhook] RunningHub response:', JSON.stringify(data));
 
-    // API v2 response: { taskId, status, ... } directly (no wrapper)
     if (data.taskId) {
-      // Update job with taskId
       await supabase
         .from('upscaler_jobs')
         .update({ task_id: data.taskId })
         .eq('id', job.id);
       
-      console.log(`[Webhook] Job ${job.id} started with taskId: ${data.taskId}`);
+      console.log(`[Webhook] Upscaler job ${job.id} started with taskId: ${data.taskId}`);
     } else {
-      // Mark as failed
       await supabase
         .from('upscaler_jobs')
         .update({ 
@@ -231,10 +262,10 @@ async function startRunningHubJob(job: any) {
         })
         .eq('id', job.id);
       
-      console.error('[Webhook] Failed to start job:', data.message || data.error);
+      console.error('[Webhook] Failed to start upscaler job:', data.message || data.error);
     }
   } catch (error) {
-    console.error('[Webhook] Error calling RunningHub:', error);
+    console.error('[Webhook] Error calling RunningHub for upscaler:', error);
     await supabase
       .from('upscaler_jobs')
       .update({ 
@@ -246,19 +277,84 @@ async function startRunningHubJob(job: any) {
   }
 }
 
-// OPTIMIZED: Uses single SQL function instead of N+1 loop
-async function updateQueuePositions() {
+async function startPoseChangerJob(job: any) {
+  const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
+  
+  // NodeId 27 = Person photo, NodeId 60 = Pose reference
+  const nodeInfoList = [
+    { nodeId: "27", fieldName: "image", fieldValue: job.person_file_name },
+    { nodeId: "60", fieldName: "image", fieldValue: job.reference_file_name }
+  ];
+
+  const requestBody = {
+    nodeInfoList: nodeInfoList,
+    instanceType: "default",
+    usePersonalQueue: false,
+    webhookUrl: webhookUrl,
+  };
+
+  console.log('[Webhook] Starting Pose Changer job:', JSON.stringify(requestBody));
+
   try {
-    // Single RPC call to update all positions at once
-    const { error } = await supabase.rpc('update_queue_positions');
-    
-    if (error) {
-      console.error('[Webhook] Error updating queue positions via RPC:', error);
-      // Fallback: don't crash if function doesn't exist
+    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_POSE}`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    const data = await response.json();
+    console.log('[Webhook] RunningHub response:', JSON.stringify(data));
+
+    if (data.taskId) {
+      await supabase
+        .from('pose_changer_jobs')
+        .update({ task_id: data.taskId })
+        .eq('id', job.id);
+      
+      console.log(`[Webhook] Pose Changer job ${job.id} started with taskId: ${data.taskId}`);
     } else {
-      console.log('[Webhook] Queue positions updated via batch SQL');
+      await supabase
+        .from('pose_changer_jobs')
+        .update({ 
+          status: 'failed', 
+          error_message: data.message || data.error || 'Failed to start job',
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', job.id);
+      
+      console.error('[Webhook] Failed to start pose changer job:', data.message || data.error);
     }
   } catch (error) {
-    console.error('[Webhook] Error updating queue positions:', error);
+    console.error('[Webhook] Error calling RunningHub for pose changer:', error);
+    await supabase
+      .from('pose_changer_jobs')
+      .update({ 
+        status: 'failed', 
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', job.id);
+  }
+}
+
+async function updateQueuePositions(tableName: 'upscaler_jobs' | 'pose_changer_jobs') {
+  try {
+    // Use dedicated RPC function for each table
+    const rpcName = tableName === 'upscaler_jobs' 
+      ? 'update_queue_positions' 
+      : 'update_pose_changer_queue_positions';
+    
+    const { error } = await supabase.rpc(rpcName);
+    
+    if (error) {
+      console.error(`[Webhook] Error updating queue positions for ${tableName}:`, error);
+    } else {
+      console.log(`[Webhook] Queue positions updated for ${tableName}`);
+    }
+  } catch (error) {
+    console.error(`[Webhook] Error updating queue positions for ${tableName}:`, error);
   }
 }

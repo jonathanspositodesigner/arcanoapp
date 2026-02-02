@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.runninghub-webhook]
 verify_jwt = false
+
+[functions.runninghub-pose-changer]
+verify_jwt = false
