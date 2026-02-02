@@ -6,6 +6,7 @@ import { Sparkles, Music, FileText, Menu } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminGoalsCard from "@/components/AdminGoalsCard";
+import WelcomeEmailsMonitor from "@/components/WelcomeEmailsMonitor";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AdminHubSidebar, { HubViewType } from "@/components/AdminHubSidebar";
 import AdminGeneralDashboard from "@/components/AdminGeneralDashboard";
@@ -110,9 +111,13 @@ const AdminHub = () => {
     switch (activeView) {
       case "home":
         return (
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-2">Escolha uma Plataforma</h2>
+          <div className="max-w-6xl mx-auto space-y-8">
+            {/* Welcome Emails Monitor - First thing on the page */}
+            <WelcomeEmailsMonitor />
+
+            {/* Platform Selection */}
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Escolha uma Plataforma</h2>
               <p className="text-muted-foreground">Cada plataforma possui seu próprio painel de gerenciamento</p>
             </div>
 
@@ -138,9 +143,7 @@ const AdminHub = () => {
             </div>
 
             {/* Goals Section */}
-            <div className="mt-12">
-              <AdminGoalsCard />
-            </div>
+            <AdminGoalsCard />
           </div>
         );
       case "dashboard":
