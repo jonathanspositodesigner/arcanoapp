@@ -170,27 +170,52 @@ function calculateExpirationDate(accessType: string, startDate: Date = new Date(
 }
 
 // Send welcome email via SendPulse (background task - não bloqueia)
-async function sendWelcomeEmail(supabase: any, email: string, name: string, packInfo: string, requestId: string): Promise<void> {
+// isNewUser: true = mostrar credenciais, false = email sem senha (cliente antigo)
+async function sendWelcomeEmail(
+  supabase: any, 
+  email: string, 
+  name: string, 
+  packInfo: string, 
+  requestId: string,
+  transaction: string | undefined,
+  isNewUser: boolean = true
+): Promise<void> {
   console.log(`\n📧 [${requestId}] EMAIL DE BOAS-VINDAS (ES):`)
   console.log(`   ├─ Destinatário: ${email}`)
   console.log(`   ├─ Nome: ${name || 'N/A'}`)
   console.log(`   ├─ Pack: ${packInfo}`)
+  console.log(`   ├─ Cliente: ${isNewUser ? 'NOVO (com senha)' : 'ANTIGO (sem senha)'}`)
+  console.log(`   └─ Transaction: ${transaction || 'N/A'}`)
   
   try {
-    // Verificar se já enviou email para este email+pack nos últimos 5 minutos
+    // DEDUPLICAÇÃO POR TRANSACTION - 1 email por compra
+    if (transaction) {
+      const { data: existingByTx } = await supabase
+        .from('welcome_email_logs')
+        .select('id, sent_at')
+        .eq('product_info', `Hotmart:${transaction}`)
+        .eq('status', 'sent')
+        .maybeSingle()
+      
+      if (existingByTx) {
+        console.log(`   ⏭️ Email já enviado para transaction ${transaction} - IGNORANDO`)
+        return
+      }
+    }
+    
+    // Verificar se já enviou email para este email nos últimos 5 minutos (fallback)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
     const { data: recentEmail } = await supabase
       .from('welcome_email_logs')
       .select('id, sent_at')
       .eq('email', email)
-      .eq('product_info', packInfo)
       .eq('status', 'sent')
       .gte('sent_at', fiveMinutesAgo)
       .maybeSingle()
     
     if (recentEmail) {
       const secondsAgo = Math.round((Date.now() - new Date(recentEmail.sent_at).getTime()) / 1000)
-      console.log(`   └─ ⏭️ Email já enviado há ${secondsAgo}s - IGNORANDO duplicata`)
+      console.log(`   ⏭️ Email já enviado há ${secondsAgo}s - IGNORANDO duplicata`)
       return
     }
     
@@ -199,7 +224,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     const supabaseUrl = Deno.env.get("SUPABASE_URL")
     
     if (!clientId || !clientSecret) {
-      console.log(`   └─ ⚠️ SendPulse não configurado, email não enviado`)
+      console.log(`   ⚠️ SendPulse não configurado, email não enviado`)
       return
     }
 
@@ -218,7 +243,11 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
       heading: '¡Tu Herramienta de IA está Activada!',
       intro: '¡Tu compra fue confirmada con éxito! Ahora tienes acceso ilimitado a esta poderosa herramienta de Inteligencia Artificial.',
       button_text: 'Acceder a Mi Herramienta',
-      footer: '¡Si tienes alguna duda, responde este email y te ayudaremos!'
+      footer: '¡Si tienes alguna duda, responde este email y te ayudaremos!',
+      heading_returning: '🎉 ¡Compra Confirmada!',
+      intro_returning: 'Tu compra fue confirmada exitosamente. Ya tienes acceso en tu cuenta.',
+      access_note: 'Usa tu email y contraseña actuales para ingresar.',
+      forgot_password: '¿Olvidaste tu contraseña?'
     }
     
     if (template?.content) {
@@ -228,6 +257,10 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
         console.log(`   ├─ ⚠️ Erro parsing template, usando default`)
       }
     }
+
+    // Usar heading diferente para cliente novo vs antigo
+    const heading = isNewUser ? templateContent.heading : templateContent.heading_returning
+    const intro = isNewUser ? templateContent.intro : templateContent.intro_returning
 
     const subject = template?.subject || '🤖 ¡Bienvenido! Tu Herramienta de IA está lista para usar!'
     const senderName = template?.sender_name || 'Herramientas IA Arcanas'
@@ -252,12 +285,45 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     })
 
     if (!tokenResponse.ok) {
-      console.log(`   └─ ❌ Falha ao obter token SendPulse`)
+      console.log(`   ❌ Falha ao obter token SendPulse`)
+      // Log failure
+      await supabase.from('welcome_email_logs').insert({
+        email,
+        name,
+        platform: 'ferramentas_ia',
+        status: 'failed',
+        error_message: 'Falha ao obter token SendPulse',
+        product_info: transaction ? `Hotmart:${transaction}` : packInfo,
+        locale: 'es'
+      })
       return
     }
 
     const tokenData = await tokenResponse.json()
     const accessToken = tokenData.access_token
+
+    // Gerar HTML baseado em se é cliente novo ou antigo
+    const credentialsSection = isNewUser ? `
+    <div class="credentials">
+      <h3>${emailTexts.accessData}</h3>
+      <p><strong>${emailTexts.email}:</strong> ${email}</p>
+      <p><strong>${emailTexts.password}:</strong> <span class="highlight">${email}</span></p>
+      <div class="warning">
+        <p>⚠️ <strong>${emailTexts.important}:</strong> ${emailTexts.securityWarning}</p>
+      </div>
+    </div>
+    ` : `
+    <div class="info-box">
+      <p>${templateContent.access_note}</p>
+    </div>
+    `
+
+    const forgotPasswordSection = !isNewUser ? `
+    <p style="text-align:center;color:#666;font-size:13px;">
+      ${templateContent.forgot_password} 
+      <a href="https://arcanoapp.voxvisual.com.br/forgot-password" style="color:#d4af37;">Recuperar aquí</a>
+    </p>
+    ` : ''
 
     const welcomeHtml = `
 <!DOCTYPE html>
@@ -278,6 +344,8 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     .highlight { background: #fff; padding: 10px 16px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 15px; border: 1px solid #e5e7eb; display: inline-block; }
     .warning { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-top: 16px; }
     .warning p { color: #92400e; font-size: 13px; margin: 0; }
+    .info-box { background: #e0f2fe; border: 1px solid #38bdf8; border-radius: 12px; padding: 20px; margin: 24px 0; }
+    .info-box p { color: #0369a1; margin: 0; }
     .pack-badge { background: #d4af37; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 16px; }
     .footer { color: #666; font-size: 13px; text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
   </style>
@@ -285,25 +353,18 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
 <body>
   <div class="container">
     <div class="logo">
-      <h1>🤖 ${templateContent.heading}</h1>
+      <h1>${isNewUser ? '🤖' : '🎉'} ${heading}</h1>
     </div>
     
     <p>${emailTexts.greeting}${name ? ` <strong>${name}</strong>` : ''}!</p>
     
-    <p>${templateContent.intro}</p>
+    <p>${intro}</p>
     
     <div style="text-align: center;">
       <span class="pack-badge">✨ ${packInfo}</span>
     </div>
     
-    <div class="credentials">
-      <h3>${emailTexts.accessData}</h3>
-      <p><strong>${emailTexts.email}:</strong> ${email}</p>
-      <p><strong>${emailTexts.password}:</strong> <span class="highlight">${email}</span></p>
-      <div class="warning">
-        <p>⚠️ <strong>${emailTexts.important}:</strong> ${emailTexts.securityWarning}</p>
-      </div>
-    </div>
+    ${credentialsSection}
     
     <a href="${clickTrackingUrl}" class="cta-button">
       🚀 ${templateContent.button_text}
@@ -312,6 +373,8 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     <p style="text-align: center; color: #666;">
       ${emailTexts.clickButtonIA}
     </p>
+    
+    ${forgotPasswordSection}
     
     <div class="footer">
       <p>${templateContent.footer}</p>
@@ -334,7 +397,7 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
       body: JSON.stringify({
         email: {
           html: htmlBase64,
-          text: `${templateContent.heading} Tu acceso está listo. Email: ${email}, Contraseña: ${email}. Accede: ${platformUrl}`,
+          text: `${heading} Tu acceso está listo. Email: ${email}${isNewUser ? `, Contraseña: ${email}` : ''}. Accede: ${platformUrl}`,
           subject: subject,
           from: {
             name: senderName,
@@ -347,25 +410,40 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
 
     const result = await emailResponse.json()
     
+    // Log com product_info incluindo transaction para deduplicação
     await supabase.from('welcome_email_logs').insert({
       email,
       name,
       platform: 'ferramentas_ia',
       tracking_id: trackingId,
       template_used: template?.id || 'default',
-      product_info: packInfo,
+      product_info: transaction ? `Hotmart:${transaction}` : packInfo,
       status: result.result === true ? 'sent' : 'failed',
       error_message: result.result !== true ? JSON.stringify(result) : null,
       locale: 'es'
     })
     
     if (result.result === true) {
-      console.log(`   └─ ✅ Email enviado com sucesso`)
+      console.log(`   ✅ Email enviado com sucesso`)
     } else {
-      console.log(`   └─ ❌ Falha no envio: ${JSON.stringify(result)}`)
+      console.log(`   ❌ Falha no envio: ${JSON.stringify(result)}`)
     }
   } catch (error) {
-    console.log(`   └─ ❌ Erro ao enviar email: ${error}`)
+    console.log(`   ❌ Erro ao enviar email: ${error}`)
+    // Log failure
+    try {
+      await supabase.from('welcome_email_logs').insert({
+        email,
+        name,
+        platform: 'ferramentas_ia',
+        status: 'failed',
+        error_message: error instanceof Error ? error.message : 'Erro desconhecido',
+        product_info: transaction ? `Hotmart:${transaction}` : packInfo,
+        locale: 'es'
+      })
+    } catch {
+      // ignore log error
+    }
   }
 }
 
@@ -623,13 +701,18 @@ async function processHotmartWebhook(
     }).eq('id', logId)
 
     // Enviar email de boas-vindas (em try/catch separado)
+    // Agora enviamos para TODOS: novos, recompras e reativações
+    // A diferença é que clientes antigos NÃO recebem a senha no email
     const wasInactive = existingPack && !existingPack.is_active
+    const isReturningCustomer = !isNewUser && (existingPack || wasInactive)
     const shouldSendEmail = isNewUser || !existingPack || wasInactive
 
     if (shouldSendEmail) {
       console.log(`   ├─ 📧 Enviando email de boas-vindas...`)
+      console.log(`   ├─ Tipo: ${isNewUser ? 'NOVO (com senha)' : 'ANTIGO (sem senha)'}`)
       try {
-        await sendWelcomeEmail(supabase, email, name, productName, requestId)
+        // Passar transaction para deduplicação e isNewUser para decidir se mostra senha
+        await sendWelcomeEmail(supabase, email, name, productName, requestId, transaction, !isReturningCustomer)
       } catch (emailError) {
         console.log(`   ├─ ⚠️ Falha no email (acesso já liberado): ${emailError}`)
       }
