@@ -104,7 +104,11 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
           onClose();
           window.location.href = '/change-password?redirect=/';
         } else {
-          toast.error(t('auth.loginError'));
+          // Login automático falhou - senha não é o email
+          // Redirecionar para recuperação de senha com email preenchido
+          toast.info(t('auth.needPasswordReset') || 'Precisamos redefinir sua senha para garantir seu acesso.');
+          onClose();
+          window.location.href = `/forgot-password?email=${encodeURIComponent(loginEmail.trim())}`;
         }
         return;
       }
