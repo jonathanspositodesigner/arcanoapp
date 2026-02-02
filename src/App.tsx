@@ -6,8 +6,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import { LocaleProvider } from "./contexts/LocaleContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import "./lib/i18n"; // Initialize i18n
-
 // Critical pages - keep static for fast initial load
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -277,9 +277,11 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <LocaleProvider>
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
+        <AuthProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </AuthProvider>
       </LocaleProvider>
     </QueryClientProvider>
   );
