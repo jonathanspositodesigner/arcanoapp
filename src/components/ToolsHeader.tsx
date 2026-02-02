@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
 import { useTranslation } from "react-i18next";
+import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
 
 interface ToolsHeaderProps {
   title?: string;
@@ -106,16 +107,19 @@ const ToolsHeader = ({
             <>
               {/* Credits Badge + Add Button */}
               <div className="flex items-center gap-1">
-                <Badge
-                  variant="outline"
-                  className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:bg-purple-800/50"
+                <div
+                  className="bg-purple-900/50 border border-purple-500/30 rounded-full flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:bg-purple-800/50"
                   onClick={() => navigate('/credit-history')}
                 >
-                  <Coins className="w-3.5 h-3.5 text-yellow-400" />
-                  <span className="font-medium">
-                    {creditsLoading ? '...' : credits}
-                  </span>
-                </Badge>
+                  <AnimatedCreditsDisplay 
+                    credits={credits} 
+                    isLoading={creditsLoading}
+                    size="sm"
+                    showCoin={true}
+                    variant="text"
+                    className="text-purple-200"
+                  />
+                </div>
                 <button
                   onClick={() => navigate('/planos-creditos')}
                   className="h-7 w-7 flex items-center justify-center rounded hover:bg-purple-500/10"
@@ -168,9 +172,13 @@ const ToolsHeader = ({
                       Créditos
                     </span>
                     <div className="flex items-center gap-1">
-                      <Badge className="bg-purple-600 text-white">
-                        {creditsLoading ? '...' : credits}
-                      </Badge>
+                      <AnimatedCreditsDisplay 
+                        credits={credits} 
+                        isLoading={creditsLoading}
+                        size="sm"
+                        showCoin={false}
+                        variant="badge"
+                      />
                       <button
                         onClick={() => navigate('/planos-creditos')}
                         className="p-1 rounded hover:bg-purple-500/10"
