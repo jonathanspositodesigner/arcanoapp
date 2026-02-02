@@ -18,7 +18,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
   };
 
   const handleLogin = () => {
-    navigate('/user-login');
+    navigate('/login-artes?redirect=' + encodeURIComponent(window.location.pathname));
     onClose();
   };
 
