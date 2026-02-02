@@ -211,36 +211,24 @@ const PlanosCreditos = () => {
 
         {/* Credits Section */}
         <section>
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 mb-4">
               <Coins className="w-7 h-7 text-white" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
               Recarregue seus Créditos
             </h2>
-            <p className="text-purple-300 max-w-md mx-auto">
+            <p className="text-purple-300 max-w-md mx-auto mb-4">
               Créditos <span className="text-green-400 font-semibold">vitalícios</span> que nunca expiram — use quando quiser!
             </p>
-          </div>
 
-          {/* Countdown Timer */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <Clock className="w-5 h-5 text-red-400" />
-              <span className="text-red-400 font-medium">Essa oferta expira em</span>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <div className="bg-red-900/60 border border-red-500/40 rounded-lg px-4 py-2 min-w-[60px]">
-                <span className="text-2xl sm:text-3xl font-bold text-white">{time.hours}</span>
-              </div>
-              <span className="text-2xl font-bold text-red-400">:</span>
-              <div className="bg-red-900/60 border border-red-500/40 rounded-lg px-4 py-2 min-w-[60px]">
-                <span className="text-2xl sm:text-3xl font-bold text-white">{time.minutes}</span>
-              </div>
-              <span className="text-2xl font-bold text-red-400">:</span>
-              <div className="bg-red-900/60 border border-red-500/40 rounded-lg px-4 py-2 min-w-[60px]">
-                <span className="text-2xl sm:text-3xl font-bold text-white">{time.seconds}</span>
-              </div>
+            {/* Compact Countdown Timer */}
+            <div className="inline-flex items-center gap-2 bg-purple-900/30 border border-purple-500/20 rounded-full px-4 py-2">
+              <Clock className="w-4 h-4 text-purple-400" />
+              <span className="text-purple-300 text-sm">Oferta expira em</span>
+              <span className="text-white font-mono font-medium text-sm">
+                {time.hours}:{time.minutes}:{time.seconds}
+              </span>
             </div>
           </div>
 
@@ -251,70 +239,76 @@ const PlanosCreditos = () => {
               return (
                 <Card 
                   key={plan.credits}
-                  className={`relative p-6 bg-[#1A0A2E] border-purple-500/20 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:border-purple-400/40 ${
+                  className={`relative p-6 bg-[#1A0A2E] border-purple-500/20 flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-purple-400/40 ${
                     plan.bestValue ? 'ring-2 ring-yellow-500/50 border-yellow-500/30' : ''
                   } ${plan.popular ? 'ring-2 ring-fuchsia-500/50 border-fuchsia-500/30' : ''}`}
                 >
                   {/* Badges */}
                   {plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 px-3 py-1">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 px-3 py-1 text-xs">
                       ⭐ MELHOR VALOR
                     </Badge>
                   )}
                   {plan.popular && !plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 px-3 py-1">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 px-3 py-1 text-xs">
                       🔥 POPULAR
                     </Badge>
                   )}
 
                   {/* Icon */}
-                  <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${plan.color} flex items-center justify-center mb-4 mt-2`}>
-                    <Icon className="w-7 h-7 text-white" />
+                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${plan.color} flex items-center justify-center mb-3 mt-2`}>
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
 
                   {/* Credits */}
-                  <div className="mb-2">
-                    <span className="text-3xl sm:text-4xl font-bold text-white">
+                  <div className="mb-1">
+                    <span className="text-2xl sm:text-3xl font-bold text-white">
                       {plan.credits.toLocaleString('pt-BR')}
                     </span>
-                    <p className="text-purple-300 text-sm mt-1">créditos</p>
+                    <p className="text-purple-300 text-sm">créditos</p>
                   </div>
 
                   {/* Description */}
-                  <p className="text-purple-400 text-sm mb-4">
+                  <p className="text-purple-400 text-sm mb-3">
                     {plan.description}
                   </p>
 
                   {/* Lifetime Badge */}
-                  <Badge variant="outline" className="bg-green-500/10 border-green-500/30 text-green-400 mb-4">
+                  <Badge variant="outline" className="bg-green-500/10 border-green-500/30 text-green-400 text-xs mb-3">
                     ♾️ Vitalício
                   </Badge>
 
-                  {/* Savings Badge */}
-                  {plan.savings && (
-                    <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/40 rounded-lg px-4 py-2 mb-4">
-                      <span className="text-green-400 font-bold text-sm">ECONOMIZE {plan.savings}</span>
+                  {/* Content wrapper for consistent height - pushes button to bottom */}
+                  <div className="flex-1 flex flex-col justify-end w-full">
+                    {/* Price Section */}
+                    <div className="mb-4">
+                      {plan.originalPrice ? (
+                        <>
+                          <div className="flex items-center justify-center gap-2 mb-1">
+                            <span className="text-sm text-purple-500 line-through">R$ {plan.originalPrice}</span>
+                            <span className="text-green-400 text-xs font-medium">-{plan.savings}</span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-purple-400">R$ </span>
+                            <span className="text-2xl font-bold text-white">{plan.price}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div>
+                          <span className="text-sm text-purple-400">R$ </span>
+                          <span className="text-2xl font-bold text-white">{plan.price}</span>
+                        </div>
+                      )}
                     </div>
-                  )}
 
-                  {/* Price */}
-                  <div className="mb-4">
-                    {plan.originalPrice && (
-                      <div className="mb-1">
-                        <span className="text-sm text-purple-500 line-through">de R$ {plan.originalPrice}</span>
-                      </div>
-                    )}
-                    <span className="text-sm text-purple-400">R$ </span>
-                    <span className="text-2xl font-bold text-white">{plan.price}</span>
+                    {/* CTA Button */}
+                    <Button 
+                      onClick={() => handlePurchase(plan.link)}
+                      className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
+                    >
+                      Comprar Agora
+                    </Button>
                   </div>
-
-                  {/* CTA Button */}
-                  <Button 
-                    onClick={() => handlePurchase(plan.link)}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
-                  >
-                    Comprar Agora
-                  </Button>
                 </Card>
               );
             })}
