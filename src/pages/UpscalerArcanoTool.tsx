@@ -44,7 +44,7 @@ type PessoasFraming = 'perto' | 'longe';
 const UpscalerArcanoTool: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
-  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
 
