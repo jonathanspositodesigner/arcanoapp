@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ArrowLeft, Upload, Sparkles, Eraser, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Upload, Sparkles, Eraser, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -37,20 +37,117 @@ const UpscalerArcanoV3: React.FC = () => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [lastError, setLastError] = useState<ErrorDetails | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [queuePosition, setQueuePosition] = useState(0);
+  const [isWaitingInQueue, setIsWaitingInQueue] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
+  const sessionIdRef = useRef<string>('');
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  // Cleanup polling on unmount
+  // Initialize session ID
+  useEffect(() => {
+    const savedId = localStorage.getItem('upscaler_v3_session_id');
+    if (savedId) {
+      sessionIdRef.current = savedId;
+    } else {
+      const newId = crypto.randomUUID();
+      sessionIdRef.current = newId;
+      localStorage.setItem('upscaler_v3_session_id', newId);
+    }
+  }, []);
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
       }
     };
   }, []);
+
+  // Subscribe to Realtime updates when jobId changes
+  useEffect(() => {
+    if (!jobId) return;
+
+    console.log('[UpscalerV3] Subscribing to Realtime for job:', jobId);
+
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+    }
+
+    const channel = supabase
+      .channel(`upscaler-v3-job-${jobId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'upscaler_jobs',
+          filter: `id=eq.${jobId}`
+        },
+        (payload) => {
+          console.log('[UpscalerV3] Realtime update:', payload.new);
+          const job = payload.new as any;
+
+          if (job.status === 'completed' && job.output_url) {
+            console.log('[UpscalerV3] Job completed! Output:', job.output_url);
+            setOutputImage(job.output_url);
+            setStatus('completed');
+            setProgress(100);
+            setIsWaitingInQueue(false);
+            setQueuePosition(0);
+            toast.success('Imagem processada com sucesso!');
+          } else if (job.status === 'failed') {
+            console.log('[UpscalerV3] Job failed:', job.error_message);
+            setStatus('error');
+            setLastError({
+              message: job.error_message || 'Processing failed',
+              code: 'TASK_FAILED',
+              solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
+            });
+            setIsWaitingInQueue(false);
+            toast.error('Erro no processamento. Tente novamente.');
+          } else if (job.status === 'running') {
+            console.log('[UpscalerV3] Job running');
+            setStatus('processing');
+            setIsWaitingInQueue(false);
+            setQueuePosition(0);
+            setProgress(prev => Math.min(prev + 5, 90));
+          } else if (job.status === 'queued') {
+            console.log('[UpscalerV3] Job queued at position:', job.position);
+            setIsWaitingInQueue(true);
+            setQueuePosition(job.position || 1);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('[UpscalerV3] Realtime subscription status:', status);
+      });
+
+    realtimeChannelRef.current = channel;
+
+    return () => {
+      console.log('[UpscalerV3] Cleaning up Realtime subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [jobId]);
+
+  // Progress animation while processing
+  useEffect(() => {
+    if (status !== 'processing') return;
+
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + 1;
+      });
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [status]);
 
   // Handle file selection
   const handleFileSelect = useCallback((file: File) => {
@@ -100,33 +197,93 @@ const UpscalerArcanoV3: React.FC = () => {
     return () => window.removeEventListener('paste', handlePaste);
   }, [handleFileSelect]);
 
-  // Process image via RunningHub
+  // Process image via RunningHub using Realtime (no polling!)
   const processImage = async () => {
     if (!inputImage) {
       toast.error('Selecione uma imagem primeiro');
       return;
     }
 
-    // Clear previous error
     setLastError(null);
+    setStatus('uploading');
+    setProgress(10);
 
     try {
-      setStatus('uploading');
-      setProgress(10);
+      // Step 1: Create job in database
+      const { data: job, error: jobError } = await supabase
+        .from('upscaler_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          status: 'queued',
+          detail_denoise: detailDenoise,
+          resolution: resolution
+        })
+        .select()
+        .single();
 
-      // Extract base64 data from data URL
+      if (jobError || !job) {
+        throw new Error('Erro ao criar job: ' + (jobError?.message || 'Unknown'));
+      }
+
+      console.log('[UpscalerV3] Job created:', job.id);
+      setJobId(job.id);
+      setProgress(20);
+
+      // Step 2: Upload image to storage (direct upload, no Base64 to edge function)
       const base64Data = inputImage.split(',')[1];
+      const binaryStr = atob(base64Data);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      
+      const ext = inputFileName.split('.').pop()?.toLowerCase() || 'png';
+      const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 
+                       ext === 'webp' ? 'image/webp' : 'image/png';
+      const blob = new Blob([bytes], { type: mimeType });
+      const storagePath = `upscaler-v3/${job.id}.${ext}`;
 
-      // Step 1: Start RunningHub job (sends image + workflow)
-      console.log('[UpscalerV3] Starting job...');
-      const runResponse = await supabase.functions.invoke('runninghub-upscaler', {
+      const { error: uploadError } = await supabase.storage
+        .from('artes-cloudinary')
+        .upload(storagePath, blob, { contentType: mimeType, upsert: true });
+
+      if (uploadError) {
+        throw new Error('Erro no upload: ' + uploadError.message);
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('artes-cloudinary')
+        .getPublicUrl(storagePath);
+
+      console.log('[UpscalerV3] Image uploaded to storage:', urlData.publicUrl);
+      setProgress(40);
+
+      // Step 3: Upload to RunningHub (they need their own file reference)
+      const uploadResponse = await supabase.functions.invoke('runninghub-upscaler/upload', {
+        body: { imageBase64: base64Data, fileName: inputFileName || 'image.png' },
+      });
+
+      if (uploadResponse.error || !uploadResponse.data?.fileName) {
+        throw new Error(uploadResponse.error?.message || 'Erro no upload para RunningHub');
+      }
+
+      console.log('[UpscalerV3] RunningHub file:', uploadResponse.data.fileName);
+      setProgress(60);
+      setStatus('processing');
+
+      // Step 4: Start processing (webhook will update job via Realtime)
+      const runResponse = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {
-          imageBase64: base64Data,
-          fileName: inputFileName || 'image.png',
+          jobId: job.id,
+          fileName: uploadResponse.data.fileName,
           mode,
           resolution,
           creativityDenoise,
           detailDenoise,
+          version: 'standard',
+          userId: null, // V3 doesn't require credits
+          creditCost: 0
         },
       });
 
@@ -134,143 +291,18 @@ const UpscalerArcanoV3: React.FC = () => {
         throw new Error(runResponse.error.message || 'Erro ao iniciar processamento');
       }
 
-      // Check for API error in run response
-      if (runResponse.data?.error) {
-        setLastError({
-          message: runResponse.data.error,
-          code: runResponse.data.code,
-          solution: runResponse.data.solution,
-          details: runResponse.data.details
-        });
-        throw new Error(runResponse.data.error);
+      if (runResponse.data?.queued) {
+        setIsWaitingInQueue(true);
+        setQueuePosition(runResponse.data.position || 1);
+        toast.info(`Você está na posição ${runResponse.data.position} da fila`);
       }
 
-      const { taskId } = runResponse.data;
-      
-      // Validate taskId exists
-      if (!taskId) {
-        setLastError({
-          message: 'O servidor não retornou um ID de task',
-          code: 'NO_TASK_ID',
-          solution: 'Verifique a configuração do RunningHub endpoint'
-        });
-        throw new Error('Servidor não retornou taskId');
-      }
-      
-      console.log('[UpscalerV3] Job started, taskId:', taskId);
-      setStatus('processing');
-      setProgress(40);
-
-      // Step 2: Poll for status
-      let attempts = 0;
-      const maxAttempts = 120; // 10 minutes max (5s * 120)
-
-      pollingRef.current = setInterval(async () => {
-        attempts++;
-        
-        if (attempts > maxAttempts) {
-          clearInterval(pollingRef.current!);
-          setStatus('error');
-          setLastError({
-            message: 'Tempo limite excedido',
-            code: 'TIMEOUT',
-            solution: 'O processamento demorou mais de 10 minutos. Tente com uma imagem menor ou com menos resolução.'
-          });
-          toast.error('Tempo limite excedido. Tente novamente.');
-          return;
-        }
-
-        try {
-          const statusResponse = await supabase.functions.invoke('runninghub-upscaler', {
-            body: { 
-              action: 'status',
-              taskId 
-            },
-          });
-
-          if (statusResponse.error) {
-            console.error('[UpscalerV3] Status check error:', statusResponse.error);
-            return;
-          }
-
-          // Check for API error in status
-          if (statusResponse.data?.error) {
-            clearInterval(pollingRef.current!);
-            setStatus('error');
-            setLastError({
-              message: statusResponse.data.error,
-              code: statusResponse.data.code,
-              solution: 'Erro ao verificar status do processamento'
-            });
-            toast.error('Erro ao verificar status');
-            return;
-          }
-
-          const taskStatus = statusResponse.data?.status;
-          
-          // Handle undefined status
-          if (!taskStatus) {
-            console.warn('[UpscalerV3] Status undefined, continuing polling...');
-            return;
-          }
-          
-          console.log('[UpscalerV3] Task status:', taskStatus);
-
-          // Update progress based on status
-          if (taskStatus === 'PENDING' || taskStatus === 'RUNNING') {
-            setProgress(Math.min(40 + (attempts * 0.4), 90));
-          } else if (taskStatus === 'COMPLETED' || taskStatus === 'SUCCESS') {
-            clearInterval(pollingRef.current!);
-            setProgress(95);
-
-            // Get output from status response
-            const output = statusResponse.data?.output || statusResponse.data?.outputUrl;
-            console.log('[UpscalerV3] Output:', output);
-
-            if (output) {
-              // Handle single URL or array of images
-              const outputUrl = Array.isArray(output) ? output[output.length - 1] : output;
-              setOutputImage(outputUrl);
-              setStatus('completed');
-              setProgress(100);
-              toast.success('Imagem processada com sucesso!');
-            } else {
-              setLastError({
-                message: 'Nenhuma imagem retornada',
-                code: 'NO_OUTPUT',
-                solution: 'O processamento foi concluído mas não retornou imagens. Tente novamente.'
-              });
-              throw new Error('Nenhuma imagem retornada');
-            }
-          } else if (taskStatus === 'FAILED' || taskStatus === 'ERROR') {
-            clearInterval(pollingRef.current!);
-            setStatus('error');
-            setLastError({
-              message: statusResponse.data?.error || 'O processamento falhou no servidor',
-              code: 'TASK_FAILED',
-              solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
-            });
-            toast.error('Erro no processamento. Tente novamente.');
-          } else if (taskStatus === 'CANCELLED') {
-            clearInterval(pollingRef.current!);
-            setStatus('error');
-            setLastError({
-              message: 'Task cancelada',
-              code: 'CANCELLED',
-              solution: 'O processamento foi cancelado. Tente novamente.'
-            });
-            toast.error('Processamento cancelado.');
-          }
-        } catch (error) {
-          console.error('[UpscalerV3] Polling error:', error);
-        }
-      }, 5000); // 5 seconds polling interval
+      // From here, Realtime will handle all updates - no polling needed!
 
     } catch (error: any) {
       console.error('[UpscalerV3] Process error:', error);
       setStatus('error');
       
-      // Set error details if not already set
       if (!lastError) {
         setLastError({
           message: error.message || 'Erro desconhecido ao processar imagem',
@@ -279,9 +311,6 @@ const UpscalerArcanoV3: React.FC = () => {
       }
       
       toast.error(error.message || 'Erro ao processar imagem');
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-      }
     }
   };
 
@@ -314,8 +343,12 @@ const UpscalerArcanoV3: React.FC = () => {
     setStatus('idle');
     setProgress(0);
     setLastError(null);
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
+    setJobId(null);
+    setIsWaitingInQueue(false);
+    setQueuePosition(0);
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+      realtimeChannelRef.current = null;
     }
   };
 
@@ -369,7 +402,7 @@ const UpscalerArcanoV3: React.FC = () => {
             Upscaler Arcano V3
           </h1>
           <span className="ml-auto text-xs bg-emerald-500/20 text-emerald-300 px-2 py-1 rounded">
-            🚀 V3
+            🚀 V3 Realtime
           </span>
         </div>
       </div>
@@ -482,296 +515,229 @@ const UpscalerArcanoV3: React.FC = () => {
                         onMouseDown={zoomLevel <= 1 ? handleSliderMouseDown : undefined}
                         onMouseMove={zoomLevel <= 1 ? handleSliderMouseMove : undefined}
                         onMouseUp={zoomLevel <= 1 ? handleSliderMouseUp : undefined}
+                        onMouseLeave={handleSliderMouseUp}
                       >
-                        {/* After Image (full) */}
-                        <img 
-                          src={outputImage} 
-                          alt="Depois" 
-                          className="absolute inset-0 w-full h-full object-contain bg-black"
+                        {/* After Image (Full) */}
+                        <img
+                          src={outputImage}
+                          alt="After"
+                          className="absolute inset-0 w-full h-full object-contain"
                           draggable={false}
                         />
                         
-                        {/* Before Image (clipped) */}
-                        <div 
+                        {/* Before Image (Clipped) */}
+                        <div
                           className="absolute inset-0 overflow-hidden"
                           style={{ width: `${sliderPosition}%` }}
                         >
-                          <img 
-                            src={inputImage} 
-                            alt="Antes" 
-                            className="h-full object-contain bg-black"
-                            style={{ 
-                              width: sliderRef.current ? `${sliderRef.current.offsetWidth}px` : '100vw',
-                              maxWidth: 'none'
-                            }}
+                          <img
+                            src={inputImage}
+                            alt="Before"
+                            className="absolute inset-0 w-full h-full object-contain"
+                            style={{ width: `${100 / (sliderPosition / 100)}%`, maxWidth: 'none' }}
                             draggable={false}
                           />
                         </div>
                         
                         {/* Slider Line */}
-                        <div 
+                        <div
                           className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
-                          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)', cursor: 'ew-resize' }}
+                          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
                         >
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center">
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
                             <div className="flex gap-0.5">
-                              <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                              <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                              <div className="w-0.5 h-4 bg-gray-400 rounded" />
+                              <div className="w-0.5 h-4 bg-gray-400 rounded" />
                             </div>
                           </div>
                         </div>
 
                         {/* Labels */}
-                        <div className="absolute top-14 left-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
-                          ANTES
+                        <div className="absolute bottom-4 left-4 bg-black/60 px-2 py-1 rounded text-xs">
+                          Antes
                         </div>
-                        <div className="absolute top-14 right-4 px-3 py-1 rounded-full bg-black/70 text-sm font-medium">
-                          DEPOIS
+                        <div className="absolute bottom-4 right-4 bg-black/60 px-2 py-1 rounded text-xs">
+                          Depois
                         </div>
                       </div>
                     </TransformComponent>
-
-                    {/* Zoom Hint */}
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-purple-300/60 bg-black/50 px-3 py-1 rounded-full">
-                      🔍 Scroll ou pinch para zoom • Duplo clique para zoom rápido
-                    </div>
                   </div>
                 )}
               </TransformWrapper>
             ) : (
-              /* PNG Preview with checkerboard background */
-              <div 
-                className="relative aspect-video"
-                style={{
-                  backgroundImage: `
-                    linear-gradient(45deg, #1a1a2e 25%, transparent 25%),
-                    linear-gradient(-45deg, #1a1a2e 25%, transparent 25%),
-                    linear-gradient(45deg, transparent 75%, #1a1a2e 75%),
-                    linear-gradient(-45deg, transparent 75%, #1a1a2e 75%)
-                  `,
-                  backgroundSize: '20px 20px',
-                  backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
-                  backgroundColor: '#0d0d1a'
-                }}
-              >
-                <img 
-                  src={outputImage} 
-                  alt="Sem fundo" 
-                  className="w-full h-full object-contain"
+              /* Remove Background Result */
+              <div className="relative aspect-video bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAUdEVYdFRpdGxlAENoZWNrZXJib2FyZNy1bPsAAAAYSURBVDiNY/z//z8DKYCJgUIwaAyMGgMAaA4CAbWqIO0AAAAASUVORK5CYII=')] bg-repeat">
+                <img
+                  src={outputImage}
+                  alt="Result"
+                  className="absolute inset-0 w-full h-full object-contain"
                 />
               </div>
             )}
+
+            {/* Action Buttons */}
+            <div className="p-4 flex gap-2">
+              <Button
+                onClick={downloadResult}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Baixar Resultado
+              </Button>
+              <Button
+                onClick={resetTool}
+                variant="outline"
+                className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Nova Imagem
+              </Button>
+            </div>
           </Card>
         ) : (
-          /* Input Preview */
+          /* Preview and Controls */
           <Card className="bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden">
-            <div className="relative aspect-video bg-black/50">
-              <img 
-                src={inputImage} 
-                alt="Preview" 
-                className="w-full h-full object-contain"
+            {/* Image Preview */}
+            <div className="relative aspect-video bg-black/20">
+              <img
+                src={inputImage}
+                alt="Preview"
+                className="absolute inset-0 w-full h-full object-contain"
               />
-              {(status === 'uploading' || status === 'processing') && (
+              
+              {/* Processing Overlay */}
+              {(status === 'uploading' || status === 'processing' || isWaitingInQueue) && (
                 <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-4">
-                  <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
-                  <div className="text-center">
-                    <p className="text-lg font-medium">
-                      {status === 'uploading' ? 'Enviando imagem...' : 'Processando via RunningHub...'}
-                    </p>
-                    <p className="text-sm text-purple-300/70">
-                      Isso pode levar até 5 minutos
-                    </p>
+                  {isWaitingInQueue ? (
+                    <>
+                      <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center">
+                        <Clock className="w-8 h-8 text-purple-400 animate-pulse" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-medium text-white">Na fila de processamento</p>
+                        <p className="text-sm text-purple-300/70">Posição: {queuePosition}</p>
+                        <p className="text-xs text-purple-300/50 mt-2">Aguardando automaticamente...</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Loader2 className="w-12 h-12 animate-spin text-purple-400" />
+                      <div className="text-center">
+                        <p className="text-sm text-white/80">
+                          {status === 'uploading' ? 'Enviando imagem...' : 'Processando com IA...'}
+                        </p>
+                        <div className="w-48 h-2 bg-purple-900/50 rounded-full mt-2 overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-purple-300/50 mt-2">{progress}%</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Error State */}
+              {status === 'error' && lastError && (
+                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-4 p-4">
+                  <AlertCircle className="w-12 h-12 text-red-400" />
+                  <div className="text-center max-w-md">
+                    <p className="text-lg font-medium text-red-400">{lastError.message}</p>
+                    {lastError.solution && (
+                      <p className="text-sm text-red-300/70 mt-2">{lastError.solution}</p>
+                    )}
+                    <Button
+                      onClick={() => { setStatus('idle'); setLastError(null); }}
+                      variant="outline"
+                      className="mt-4 border-red-500/50 text-red-300 hover:bg-red-500/20"
+                    >
+                      Tentar Novamente
+                    </Button>
                   </div>
-                  <div className="w-64 h-2 bg-purple-900/50 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <p className="text-sm text-purple-300">{Math.round(progress)}%</p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      if (pollingRef.current) clearInterval(pollingRef.current);
-                      setStatus('idle');
-                      setProgress(0);
-                    }}
-                    className="text-purple-300 hover:text-white hover:bg-purple-500/20 mt-2"
-                  >
-                    Cancelar
-                  </Button>
                 </div>
               )}
             </div>
+
+            {/* Settings (only when idle) */}
+            {status === 'idle' && (
+              <div className="p-4 space-y-4">
+                {mode === 'upscale' && (
+                  <>
+                    {/* Resolution */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-purple-200">Resolução</label>
+                        <span className="text-sm text-purple-300/70">{resolution}px</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant={resolution === 2048 ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() => setResolution(2048)}
+                          className={resolution === 2048 
+                            ? 'bg-purple-600 hover:bg-purple-700' 
+                            : 'text-purple-300 hover:text-white hover:bg-purple-500/20'}
+                        >
+                          2K
+                        </Button>
+                        <Button
+                          variant={resolution === 4096 ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() => setResolution(4096)}
+                          className={resolution === 4096 
+                            ? 'bg-purple-600 hover:bg-purple-700' 
+                            : 'text-purple-300 hover:text-white hover:bg-purple-500/20'}
+                        >
+                          4K
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Detail Denoise */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-purple-200 flex items-center gap-1">
+                          Nível de Detalhe
+                          <Info className="w-3 h-3 text-purple-400" />
+                        </label>
+                        <span className="text-sm text-purple-300/70">{detailDenoise.toFixed(2)}</span>
+                      </div>
+                      <Slider
+                        value={[detailDenoise]}
+                        onValueChange={([v]) => setDetailDenoise(v)}
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        className="w-full"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Process Button */}
+                <Button
+                  onClick={processImage}
+                  disabled={status !== 'idle'}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {mode === 'upscale' ? 'Aumentar Qualidade' : 'Remover Fundo'}
+                </Button>
+
+                <Button
+                  onClick={resetTool}
+                  variant="outline"
+                  className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Escolher Outra Imagem
+                </Button>
+              </div>
+            )}
           </Card>
         )}
-
-        {/* Controls - Only show for upscale mode */}
-        {mode === 'upscale' && inputImage && status === 'idle' && (
-          <div className="space-y-4">
-            {/* Resolution */}
-            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <ZoomIn className="w-4 h-4 text-purple-400" />
-                <span className="font-medium">Resolução Final</span>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={resolution === 2048 ? 'default' : 'outline'}
-                  className={resolution === 2048 
-                    ? 'flex-1 bg-purple-600 hover:bg-purple-700' 
-                    : 'flex-1 border-purple-500/30 text-purple-300 hover:bg-purple-500/20'}
-                  onClick={() => setResolution(2048)}
-                >
-                  2K (2048px)
-                </Button>
-                <Button
-                  variant={resolution === 4096 ? 'default' : 'outline'}
-                  className={resolution === 4096 
-                    ? 'flex-1 bg-purple-600 hover:bg-purple-700' 
-                    : 'flex-1 border-purple-500/30 text-purple-300 hover:bg-purple-500/20'}
-                  onClick={() => setResolution(4096)}
-                >
-                  4K (4096px)
-                </Button>
-              </div>
-            </Card>
-
-            {/* Detail Denoise */}
-            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
-                  <span className="font-medium text-white">Nível de Detalhe</span>
-                  <div className="group relative">
-                    <Info className="w-4 h-4 text-purple-400/70 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                      Controla a quantidade de detalhes adicionados
-                    </div>
-                  </div>
-                </div>
-                <span className="text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
-              </div>
-              <div className="text-xs text-purple-300 mb-3">
-                ✨ Recomendado: 0.10 - 0.30
-              </div>
-              <Slider
-                value={[detailDenoise]}
-                onValueChange={([value]) => setDetailDenoise(value)}
-                min={0}
-                max={1}
-                step={0.01}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-purple-300/70 mt-2">
-                <span>Menos detalhe</span>
-                <span>Mais detalhe</span>
-              </div>
-            </Card>
-
-            {/* Creativity Denoise */}
-            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-4">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-pink-400" />
-                  <span className="font-medium text-white">Criatividade da IA</span>
-                  <div className="group relative">
-                    <Info className="w-4 h-4 text-purple-400/70 cursor-help" />
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                      Valores baixos = mais fiel à original
-                    </div>
-                  </div>
-                </div>
-                <span className="text-purple-300 font-mono">{creativityDenoise.toFixed(2)}</span>
-              </div>
-              <div className="text-xs text-pink-300 mb-3">
-                ✨ Recomendado: 0.05 - 0.20
-              </div>
-              <Slider
-                value={[creativityDenoise]}
-                onValueChange={([value]) => setCreativityDenoise(value)}
-                min={0}
-                max={1}
-                step={0.01}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-purple-300/70 mt-2">
-                <span>Fiel à original</span>
-                <span>Mais criativo</span>
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          {status === 'idle' && inputImage && (
-            <Button
-              className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
-              onClick={processImage}
-            >
-              <Sparkles className="w-5 h-5 mr-2" />
-              {mode === 'upscale' ? 'Aumentar Qualidade' : 'Remover Fundo'}
-            </Button>
-          )}
-
-          {status === 'completed' && (
-            <>
-              <Button
-                className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/25"
-                onClick={downloadResult}
-              >
-                <Download className="w-5 h-5 mr-2" />
-                Baixar {mode === 'upscale' ? 'Imagem HD' : 'PNG'}
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full py-6 text-lg border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-                onClick={resetTool}
-              >
-                <RotateCcw className="w-5 h-5 mr-2" />
-                Processar Nova Imagem
-              </Button>
-            </>
-          )}
-
-          {status === 'error' && (
-            <>
-              {/* Error Details Card */}
-              {lastError && (
-                <Card className="bg-red-950/30 border-red-500/30 p-4">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1 space-y-2">
-                      <p className="font-medium text-red-300">
-                        {lastError.message}
-                      </p>
-                      {lastError.code && (
-                        <p className="text-sm text-red-400/70">
-                          Código: {lastError.code}
-                        </p>
-                      )}
-                      {lastError.solution && (
-                        <p className="text-sm text-purple-300/80 mt-2">
-                          💡 {lastError.solution}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              )}
-              <Button
-                variant="outline"
-                className="w-full py-6 text-lg border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-                onClick={resetTool}
-              >
-                <RotateCcw className="w-5 h-5 mr-2" />
-                Tentar Novamente
-              </Button>
-            </>
-          )}
-        </div>
       </div>
     </div>
   );
