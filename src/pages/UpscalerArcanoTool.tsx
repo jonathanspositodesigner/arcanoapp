@@ -834,7 +834,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       
                       const MIN_ZOOM = 1;
                       const MAX_ZOOM = 6;
-                      const WHEEL_FACTOR = 1.15;
+                      const WHEEL_FACTOR = 1.40;
                       
                       const { scale, positionX, positionY } = transformRef.state;
                       const wrapperComponent = transformRef.instance?.wrapperComponent;
@@ -867,10 +867,10 @@ const UpscalerArcanoTool: React.FC = () => {
                       const newPosY = positionY - mouseY * scaleDiff;
                       
                       // Apply transform
-                      transformRef.setTransform(newPosX, newPosY, newScale, 200, 'easeOut');
+                      transformRef.setTransform(newPosX, newPosY, newScale, 150, 'easeOut');
                     }}
                   >
-                    <AspectRatio ratio={16 / 9}>
+                    <AspectRatio ratio={16 / 9} className="md:!aspect-[4/3]">
                       <div className="relative w-full h-full bg-black overflow-hidden">
                         {/* AFTER image */}
                         <TransformComponent 
