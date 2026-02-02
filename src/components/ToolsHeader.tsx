@@ -80,7 +80,7 @@ const ToolsHeader = ({
             </div>
           ) : title ? (
             <div>
-            <h1 className="text-sm sm:text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent whitespace-nowrap">
+            <h1 className="hidden sm:block text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               {title}
             </h1>
               {subtitle && (
