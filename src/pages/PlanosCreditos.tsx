@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Coins, Sparkles, Star, Zap, Wand2, Box, Shirt, PersonStanding, Clock, Video, Eraser, Image, Trash2, Monitor, Music } from "lucide-react";
+import { ArrowLeft, Coins, Sparkles, Star, Zap, Wand2, Box, Shirt, PersonStanding, Clock, Video, Eraser, Image, Trash2, Monitor, Music, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +47,7 @@ const creditPlans = [
     description: "~25 imagens", 
     price: "29,90",
     originalPrice: null,
-    savings: null,
+    pricePerImage: "1,20",
     link: "#",
     icon: Coins,
     color: "from-purple-500 to-fuchsia-500"
@@ -57,7 +57,7 @@ const creditPlans = [
     description: "~70 imagens", 
     price: "39,90",
     originalPrice: "49,90",
-    savings: "40%",
+    pricePerImage: "0,57",
     link: "#", 
     popular: true,
     icon: Zap,
@@ -68,7 +68,7 @@ const creditPlans = [
     description: "~180 imagens", 
     price: "99,90",
     originalPrice: "149,90",
-    savings: "54%",
+    pricePerImage: "0,55",
     link: "#", 
     bestValue: true,
     icon: Star,
@@ -273,6 +273,12 @@ const PlanosCreditos = () => {
                     {plan.description}
                   </p>
 
+                  {/* Price per Image Badge */}
+                  <Badge className="bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs mb-2 gap-1">
+                    <Tag className="w-3 h-3" />
+                    R$ {plan.pricePerImage}/imagem
+                  </Badge>
+
                   {/* Lifetime Badge */}
                   <Badge variant="outline" className="bg-green-500/10 border-green-500/30 text-green-400 text-xs mb-3">
                     ♾️ Vitalício
@@ -282,23 +288,13 @@ const PlanosCreditos = () => {
                   <div className="flex-1 flex flex-col justify-end w-full">
                     {/* Price Section */}
                     <div className="mb-4">
-                      {plan.originalPrice ? (
-                        <>
-                          <div className="flex items-center justify-center gap-2 mb-1">
-                            <span className="text-sm text-purple-500 line-through">R$ {plan.originalPrice}</span>
-                            <span className="text-green-400 text-xs font-medium">-{plan.savings}</span>
-                          </div>
-                          <div>
-                            <span className="text-sm text-purple-400">R$ </span>
-                            <span className="text-2xl font-bold text-white">{plan.price}</span>
-                          </div>
-                        </>
-                      ) : (
-                        <div>
-                          <span className="text-sm text-purple-400">R$ </span>
-                          <span className="text-2xl font-bold text-white">{plan.price}</span>
-                        </div>
+                      {plan.originalPrice && (
+                        <span className="text-sm text-purple-500 line-through block mb-1">R$ {plan.originalPrice}</span>
                       )}
+                      <div>
+                        <span className="text-sm text-purple-400">R$ </span>
+                        <span className="text-2xl font-bold text-white">{plan.price}</span>
+                      </div>
                     </div>
 
                     {/* CTA Button */}
