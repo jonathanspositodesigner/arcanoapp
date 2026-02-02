@@ -2448,6 +2448,7 @@ export type Database = {
           clicked_at: string | null
           dedup_key: string | null
           email: string
+          email_content: string | null
           error_message: string | null
           id: string
           locale: string | null
@@ -2466,6 +2467,7 @@ export type Database = {
           clicked_at?: string | null
           dedup_key?: string | null
           email: string
+          email_content?: string | null
           error_message?: string | null
           id?: string
           locale?: string | null
@@ -2484,6 +2486,7 @@ export type Database = {
           clicked_at?: string | null
           dedup_key?: string | null
           email?: string
+          email_content?: string | null
           error_message?: string | null
           id?: string
           locale?: string | null

@@ -420,7 +420,8 @@ async function sendWelcomeEmail(
       product_info: transaction ? `Hotmart:${transaction}` : packInfo,
       status: result.result === true ? 'sent' : 'failed',
       error_message: result.result !== true ? JSON.stringify(result) : null,
-      locale: 'es'
+      locale: 'es',
+      email_content: welcomeHtml // Salvar HTML para prévia
     })
     
     if (result.result === true) {

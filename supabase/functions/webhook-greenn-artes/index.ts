@@ -367,7 +367,8 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, pack
     await supabase.from('welcome_email_logs').update({
       status: result.result === true ? 'sent' : 'failed',
       error_message: result.result !== true ? JSON.stringify(result) : null,
-      template_used: template?.id || 'default'
+      template_used: template?.id || 'default',
+      email_content: welcomeHtml // Salvar HTML para prévia
     }).eq('id', logId)
     
     console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email enviado' : '❌ Falha no email'}`)

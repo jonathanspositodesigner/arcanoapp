@@ -112,9 +112,6 @@ const AdminHub = () => {
       case "home":
         return (
           <div className="max-w-6xl mx-auto space-y-8">
-            {/* Welcome Emails Monitor - First thing on the page */}
-            <WelcomeEmailsMonitor />
-
             {/* Platform Selection */}
             <div className="text-center">
               <h2 className="text-2xl font-bold text-foreground mb-2">Escolha uma Plataforma</h2>
@@ -158,6 +155,8 @@ const AdminHub = () => {
         return <AbandonedCheckoutsContent />;
       case "admins":
         return <AdminsManagementContent />;
+      case "emails":
+        return <WelcomeEmailsMonitor />;
       default:
         return null;
     }
