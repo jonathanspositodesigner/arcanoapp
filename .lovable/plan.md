@@ -1,114 +1,97 @@
 
-# Plano: Sistema de Créditos de IA com Saldo Mensal + Vitalício
 
-## Problema Atual
+# Plano: Adicionar Botão de Recarga de Créditos + Página de Planos
 
-A tabela `upscaler_credits` tem apenas um campo `balance`. Quando a assinatura renova, a função `reset_upscaler_credits` **sobrescreve tudo**, perdendo créditos vitalícios que o usuário possa ter ganho (bônus RunningHub, pacotes avulsos, créditos manuais).
+## Resumo
 
-## Solução: Dois Saldos Separados
+Adicionar um ícone de "+" clicável próximo ao saldo de créditos que levará os usuários para uma nova página de venda de pacotes de créditos vitalícios.
 
-Modificar a estrutura para ter dois saldos independentes:
-- **`monthly_balance`**: Créditos da assinatura (resetam a cada ciclo)
-- **`lifetime_balance`**: Créditos vitalícios (nunca são resetados, apenas consumidos)
+## Pacotes de Créditos
 
-## Mudanças no Banco de Dados
+| Pacote | Créditos | Uso Aproximado |
+|--------|----------|----------------|
+| Básico | 1.500 | ~25 upscales Standard |
+| Popular | 4.200 | ~70 upscales Standard |
+| Profissional | 10.800 | ~180 upscales Standard |
 
-### 1. Alterar tabela `upscaler_credits`
-```sql
-ALTER TABLE upscaler_credits 
-  ADD COLUMN monthly_balance INTEGER NOT NULL DEFAULT 0,
-  ADD COLUMN lifetime_balance INTEGER NOT NULL DEFAULT 0;
+## Arquivos a Modificar/Criar
 
--- Migrar saldo atual para monthly (ou lifetime, dependendo da origem)
-UPDATE upscaler_credits SET monthly_balance = balance;
+### 1. `src/components/ToolsHeader.tsx`
+- Adicionar ícone `PlusCircle` verde ao lado do badge de créditos
+- Ao clicar, navega para `/planos-creditos`
+
+### 2. `src/components/upscaler/CreditsCard.tsx`
+- Adicionar botão "Comprar Créditos" abaixo do breakdown
+- Navega para `/planos-creditos`
+
+### 3. `src/pages/PlanosCreditos.tsx` (CRIAR)
+Nova página com:
+- Header com botão voltar e título
+- Descrição sobre créditos vitalícios
+- 3 cards de planos (1500, 4200, 10800 créditos)
+- Botões de checkout (links placeholder por enquanto)
+- Visual consistente com tema roxo escuro
+
+### 4. `src/App.tsx`
+- Adicionar lazy import da página
+- Registrar rota `/planos-creditos`
+
+## Layout da Página
+
+```text
++------------------------------------------+
+|  ← Voltar         Comprar Créditos       |
++------------------------------------------+
+|                                          |
+|    💎 Recarregue seus Créditos de IA     |
+|    "Créditos vitalícios que nunca        |
+|     expiram - use quando quiser!"        |
+|                                          |
+|  +------------+  +------------+          |
+|  |   1.500    |  |   4.200    |          |
+|  |  créditos  |  |  créditos  |          |
+|  |  ~25 usos  |  |  ~70 usos  |          |
+|  |  R$ XX,XX  |  |  R$ XX,XX  |          |
+|  |  [Comprar] |  |  [Comprar] |          |
+|  +------------+  +------------+          |
+|                                          |
+|         +----------------+               |
+|         |    10.800      |               |
+|         |   créditos     |               |
+|         |   ~180 usos    |               |
+|         |   R$ XX,XX     |               |
+|         | ⭐ MELHOR VALOR |               |
+|         |   [Comprar]    |               |
+|         +----------------+               |
+|                                          |
++------------------------------------------+
 ```
 
-### 2. Alterar tabela `upscaler_credit_transactions`
-```sql
-ALTER TABLE upscaler_credit_transactions 
-  ADD COLUMN credit_type TEXT NOT NULL DEFAULT 'monthly' 
-  CHECK (credit_type IN ('monthly', 'lifetime'));
+## Detalhes Técnicos
+
+### Ícone no Header
+```tsx
+// Ao lado do badge de créditos
+<Button
+  variant="ghost"
+  size="icon"
+  onClick={() => navigate('/planos-creditos')}
+  className="h-7 w-7 text-green-400 hover:text-green-300"
+>
+  <PlusCircle className="w-4 h-4" />
+</Button>
 ```
 
-### 3. Nova função `get_upscaler_credits`
-Retornar a soma dos dois saldos (monthly + lifetime):
-```sql
-CREATE OR REPLACE FUNCTION get_upscaler_credits(_user_id uuid)
-RETURNS INTEGER AS $$
-  SELECT COALESCE(
-    (SELECT monthly_balance + lifetime_balance FROM upscaler_credits WHERE user_id = _user_id),
-    0
-  )
-$$ LANGUAGE sql STABLE SECURITY DEFINER;
+### Estrutura dos Planos
+```tsx
+const creditPlans = [
+  { credits: 1500, description: "~25 upscales Standard", price: "XX,XX", link: "#" },
+  { credits: 4200, description: "~70 upscales Standard", price: "XX,XX", link: "#", popular: true },
+  { credits: 10800, description: "~180 upscales Standard", price: "XX,XX", link: "#", bestValue: true },
+];
 ```
 
-### 4. Nova função `consume_upscaler_credits`
-Consumir primeiro do monthly, depois do lifetime:
-```sql
--- Lógica: gasta primeiro o monthly, depois o lifetime
-```
+## Observação
 
-### 5. Nova função `reset_upscaler_credits`
-Resetar APENAS o `monthly_balance` (não toca no lifetime):
-```sql
-CREATE OR REPLACE FUNCTION reset_upscaler_credits(...)
--- SET monthly_balance = _amount (ignora lifetime)
-```
+Os preços e links de checkout da Greenn serão placeholder por enquanto. Você pode me informar os valores e links reais posteriormente para eu atualizar.
 
-### 6. Nova função `add_lifetime_credits`
-Para adicionar créditos vitalícios:
-```sql
-CREATE OR REPLACE FUNCTION add_lifetime_credits(_user_id uuid, _amount integer, _description text)
--- Adiciona ao lifetime_balance
-```
-
-## Mudanças nos Webhooks
-
-### `webhook-greenn/index.ts`
-- Continua usando `reset_upscaler_credits` para assinaturas
-- A função agora só reseta o `monthly_balance`
-
-### `RunningHubBonusModal.tsx`
-- Trocar `add_upscaler_credits` por `add_lifetime_credits`
-- Assim o bônus RunningHub vai para créditos vitalícios
-
-## Mudanças no Frontend
-
-### Hook `useUpscalerCredits.tsx`
-- Opcionalmente retornar breakdown: `{ total, monthly, lifetime }`
-- O consumo continua igual (o banco decide qual saldo usar primeiro)
-
-### `CreditsCard.tsx`
-- Mostrar breakdown opcional: "X créditos mensais + Y vitalícios"
-
-## Ordem de Consumo
-
-Quando o usuário usa créditos:
-1. Primeiro gasta do **monthly_balance** (que vai zerar no fim do ciclo)
-2. Depois gasta do **lifetime_balance** (que é permanente)
-
-Isso é mais justo: usa o que vai expirar primeiro.
-
-## Exemplo de Fluxo
-
-| Ação | Monthly | Lifetime | Total |
-|------|---------|----------|-------|
-| Assina Pro (900 créditos) | 900 | 0 | 900 |
-| Bônus RunningHub (+210) | 900 | 210 | 1110 |
-| Usa upscaler (-60) | 840 | 210 | 1050 |
-| Assinatura renova (reset 900) | 900 | 210 | 1110 |
-| Cancela assinatura (zera monthly) | 0 | 210 | 210 |
-
-## Arquivos a Modificar
-
-1. **Migração SQL** (nova) - Alterar estrutura das tabelas
-2. **`supabase/functions/webhook-greenn/index.ts`** - Sem mudança (função reset vai mudar comportamento)
-3. **`src/components/RunningHubBonusModal.tsx`** - Usar nova função `add_lifetime_credits`
-4. **`src/hooks/useUpscalerCredits.tsx`** - Opcionalmente retornar breakdown
-5. **`src/components/upscaler/CreditsCard.tsx`** - Opcionalmente mostrar breakdown
-
-## Próximos Passos Após Implementação
-
-- Admin panel para adicionar créditos vitalícios manualmente
-- Página de venda de pacotes de créditos avulsos
-- Webhook para compra de pacotes de créditos
