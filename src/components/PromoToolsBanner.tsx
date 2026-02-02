@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Tag, X } from "lucide-react";
 
 interface PromoToolsBannerProps {
@@ -7,19 +8,28 @@ interface PromoToolsBannerProps {
 
 const PromoToolsBanner = ({ onClose }: PromoToolsBannerProps) => {
   const [isVisible, setIsVisible] = useState(true);
+  const navigate = useNavigate();
 
   if (!isVisible) return null;
 
-  const handleClose = () => {
+  const handleClose = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsVisible(false);
     onClose?.();
   };
 
+  const handleClick = () => {
+    navigate("/planos-creditos");
+  };
+
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-pink-600 via-pink-500 to-pink-600">
+    <div 
+      className="relative overflow-hidden bg-gradient-to-r from-pink-600 via-pink-500 to-pink-600 cursor-pointer hover:brightness-110 transition-all"
+      onClick={handleClick}
+    >
       {/* Shimmer effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_3s_ease-in-out_infinite] -translate-x-full" />
-      
+
       <div className="container mx-auto px-4 py-2.5 sm:py-2">
         <div className="flex items-center justify-center gap-2 sm:gap-4 relative">
           {/* Badge */}
