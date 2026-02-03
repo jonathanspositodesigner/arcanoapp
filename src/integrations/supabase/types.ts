@@ -2454,6 +2454,62 @@ export type Database = {
         }
         Relationships: []
       }
+      veste_ai_jobs: {
+        Row: {
+          clothing_file_name: string | null
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          output_url: string | null
+          person_file_name: string | null
+          position: number | null
+          session_id: string
+          started_at: string | null
+          status: string
+          task_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          clothing_file_name?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          output_url?: string | null
+          person_file_name?: string | null
+          position?: number | null
+          session_id: string
+          started_at?: string | null
+          status?: string
+          task_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          clothing_file_name?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          output_url?: string | null
+          person_file_name?: string | null
+          position?: number | null
+          session_id?: string
+          started_at?: string | null
+          status?: string
+          task_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veste_ai_jobs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_logs: {
         Row: {
           email: string | null
@@ -2642,6 +2698,7 @@ export type Database = {
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_stale_pose_changer_jobs: { Args: never; Returns: undefined }
       cleanup_stale_upscaler_jobs: { Args: never; Returns: undefined }
+      cleanup_stale_veste_ai_jobs: { Args: never; Returns: undefined }
       consume_upscaler_credits: {
         Args: { _amount: number; _description?: string; _user_id: string }
         Returns: {
@@ -2742,6 +2799,7 @@ export type Database = {
       }
       update_pose_changer_queue_positions: { Args: never; Returns: undefined }
       update_queue_positions: { Args: never; Returns: undefined }
+      update_veste_ai_queue_positions: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "partner"
