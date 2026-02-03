@@ -22,13 +22,19 @@ serve(async (req) => {
     const payload = await req.json();
     console.log("[VideoUpscaler Webhook] Received payload:", JSON.stringify(payload));
 
-    // Extract task ID and status from RunningHub webhook payload
-    // PLACEHOLDER: Adjust field names based on actual RunningHub API response
-    const taskId = payload.taskId || payload.task_id;
+    // Extract fields from RunningHub webhook payload
+    // Based on API documentation: taskId, status (QUEUED, RUNNING, SUCCESS, FAILED), results array
+    const taskId = payload.taskId;
     const status = payload.status;
-    const outputUrl = payload.output_url || payload.outputUrl || payload.result?.url;
-    const errorMessage = payload.error || payload.errorMessage || payload.message;
-    const rhCost = payload.cost || payload.credits_used || 0;
+    const results = payload.results || [];
+    const errorMessage = payload.errorMessage || payload.failedReason?.message || "";
+    const usage = payload.usage || {};
+    
+    // Calculate RH cost from usage data
+    const rhCost = usage.consumeCoins ? parseInt(usage.consumeCoins) : 0;
+    
+    // Get output URL from results array
+    const outputUrl = results.length > 0 ? results[0].url : null;
 
     if (!taskId) {
       console.error("[VideoUpscaler Webhook] Missing taskId in payload");
@@ -55,17 +61,27 @@ serve(async (req) => {
 
     console.log(`[VideoUpscaler Webhook] Found job ${job.id} with status ${status}`);
 
-    // Handle different statuses
-    if (status === "completed" || status === "success" || status === "COMPLETED") {
+    // Calculate dynamic RH cost based on processing time
+    let calculatedRhCost = rhCost;
+    if (job.started_at && (status === "SUCCESS" || status === "FAILED")) {
+      const startedAt = new Date(job.started_at);
+      const completedAt = new Date();
+      const processingSeconds = (completedAt.getTime() - startedAt.getTime()) / 1000;
+      calculatedRhCost = Math.round(processingSeconds * 0.2);
+      console.log(`[VideoUpscaler Webhook] Processing time: ${processingSeconds}s, RH cost: ${calculatedRhCost}`);
+    }
+
+    // Handle different statuses based on RunningHub API documentation
+    if (status === "SUCCESS") {
       if (!outputUrl) {
-        console.error("[VideoUpscaler Webhook] Completed but no output URL");
+        console.error("[VideoUpscaler Webhook] SUCCESS but no output URL in results");
         await supabase
           .from('video_upscaler_jobs')
           .update({
             status: 'failed',
             error_message: 'No output URL received',
             completed_at: new Date().toISOString(),
-            rh_cost: rhCost,
+            rh_cost: calculatedRhCost,
           })
           .eq('id', job.id);
       } else {
@@ -75,38 +91,37 @@ serve(async (req) => {
             status: 'completed',
             output_url: outputUrl,
             completed_at: new Date().toISOString(),
-            rh_cost: rhCost,
+            rh_cost: calculatedRhCost,
           })
           .eq('id', job.id);
 
         console.log(`[VideoUpscaler Webhook] Job ${job.id} completed with output: ${outputUrl}`);
       }
-    } else if (status === "failed" || status === "error" || status === "FAILED") {
+    } else if (status === "FAILED") {
       await supabase
         .from('video_upscaler_jobs')
         .update({
           status: 'failed',
           error_message: errorMessage || 'Unknown error',
           completed_at: new Date().toISOString(),
-          rh_cost: rhCost,
+          rh_cost: calculatedRhCost,
         })
         .eq('id', job.id);
 
       console.log(`[VideoUpscaler Webhook] Job ${job.id} failed: ${errorMessage}`);
-    } else if (status === "processing" || status === "running" || status === "PROCESSING") {
+    } else if (status === "RUNNING" || status === "QUEUED") {
       await supabase
         .from('video_upscaler_jobs')
         .update({ status: 'running' })
         .eq('id', job.id);
 
-      console.log(`[VideoUpscaler Webhook] Job ${job.id} is processing`);
+      console.log(`[VideoUpscaler Webhook] Job ${job.id} status: ${status}`);
     } else {
       console.log(`[VideoUpscaler Webhook] Unknown status: ${status}`);
     }
 
     // Process next job in queue if this one is done
-    if (status === "completed" || status === "success" || status === "failed" || status === "error" ||
-        status === "COMPLETED" || status === "FAILED") {
+    if (status === "SUCCESS" || status === "FAILED") {
       try {
         // Trigger queue processing
         const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";

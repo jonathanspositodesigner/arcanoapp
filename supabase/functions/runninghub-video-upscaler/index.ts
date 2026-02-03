@@ -7,10 +7,15 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// PLACEHOLDER: Configure with the actual WebApp ID when API documentation is provided
-const VIDEO_UPSCALER_WEBAPP_ID = "PLACEHOLDER_VIDEO_UPSCALER_WEBAPP_ID";
+// RunningHub Video Upscaler Configuration
+const VIDEO_UPSCALER_WEBAPP_ID = "2018810750139109378";
+const RUNNINGHUB_API_BASE = "https://www.runninghub.ai/openapi/v2";
 const MAX_CONCURRENT_JOBS = 3;
 const CREDIT_COST = 150;
+
+// Node mapping for Video Upscaler
+const VIDEO_NODE_ID = "3";
+const VIDEO_FIELD_NAME = "video";
 
 // Rate limiting: 5 requests per minute per user
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
@@ -190,31 +195,92 @@ serve(async (req) => {
         );
       }
 
-      // Update job to running
+      // Get the RunningHub API key
+      const runninghubApiKey = Deno.env.get("RUNNINGHUB_API_KEY");
+      if (!runninghubApiKey) {
+        console.error("[VideoUpscaler] RUNNINGHUB_API_KEY not configured");
+        await supabase
+          .from('video_upscaler_jobs')
+          .update({ status: 'failed', error_message: 'API key not configured' })
+          .eq('id', jobId);
+        return new Response(
+          JSON.stringify({ success: false, error: "API key not configured" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Build webhook URL for this specific tool
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const webhookUrl = `${supabaseUrl}/functions/v1/runninghub-video-upscaler-webhook`;
+
+      // Call RunningHub API to start the video upscaling
+      console.log(`[VideoUpscaler] Starting job ${jobId}. Video: ${videoUrl}`);
+      
+      const runninghubResponse = await fetch(`${RUNNINGHUB_API_BASE}/run/ai-app/${VIDEO_UPSCALER_WEBAPP_ID}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${runninghubApiKey}`,
+        },
+        body: JSON.stringify({
+          nodeInfoList: [
+            {
+              nodeId: VIDEO_NODE_ID,
+              fieldName: VIDEO_FIELD_NAME,
+              fieldValue: videoUrl,
+            }
+          ],
+          instanceType: "default",
+          usePersonalQueue: "false",
+          webhookUrl: webhookUrl,
+        }),
+      });
+
+      let runninghubData;
+      try {
+        runninghubData = await runninghubResponse.json();
+      } catch (e) {
+        console.error("[VideoUpscaler] Failed to parse RunningHub response:", e);
+        runninghubData = { error: "Failed to parse response" };
+      }
+
+      console.log("[VideoUpscaler] RunningHub response:", JSON.stringify(runninghubData));
+
+      if (!runninghubResponse.ok || runninghubData.errorCode) {
+        const errorMsg = runninghubData.errorMessage || runninghubData.error || `HTTP ${runninghubResponse.status}`;
+        console.error("[VideoUpscaler] RunningHub API error:", errorMsg);
+        
+        await supabase
+          .from('video_upscaler_jobs')
+          .update({
+            status: 'failed',
+            error_message: errorMsg,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', jobId);
+
+        return new Response(
+          JSON.stringify({ success: false, error: errorMsg }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Update job with task ID from RunningHub
+      const taskId = runninghubData.taskId;
       await supabase
         .from('video_upscaler_jobs')
         .update({
           status: 'running',
+          task_id: taskId,
           started_at: new Date().toISOString(),
           user_credit_cost: creditCost || CREDIT_COST,
         })
         .eq('id', jobId);
 
-      // PLACEHOLDER: Call RunningHub API when documentation is provided
-      // For now, we just mark the job as running and wait for the webhook
-      console.log(`[VideoUpscaler] Job ${jobId} started. Video URL: ${videoUrl}`);
-      console.log(`[VideoUpscaler] PLACEHOLDER: API integration pending. WebApp ID: ${VIDEO_UPSCALER_WEBAPP_ID}`);
-
-      // TODO: Implement actual RunningHub API call here
-      // const runninghubApiKey = Deno.env.get("RUNNINGHUB_API_KEY");
-      // const response = await fetch("https://api.runninghub.ai/...", {
-      //   method: "POST",
-      //   headers: { ... },
-      //   body: JSON.stringify({ ... })
-      // });
+      console.log(`[VideoUpscaler] Job ${jobId} started successfully. Task ID: ${taskId}`);
 
       return new Response(
-        JSON.stringify({ success: true, jobId }),
+        JSON.stringify({ success: true, jobId, taskId }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -276,11 +342,100 @@ serve(async (req) => {
         }
       }
 
-      // Update job to running
+      // Get the RunningHub API key
+      const runninghubApiKey = Deno.env.get("RUNNINGHUB_API_KEY");
+      if (!runninghubApiKey) {
+        console.error("[VideoUpscaler] RUNNINGHUB_API_KEY not configured for queue processing");
+        await supabase
+          .from('video_upscaler_jobs')
+          .update({ status: 'failed', error_message: 'API key not configured' })
+          .eq('id', nextJob.id);
+        await updateQueuePositions(supabase);
+        return new Response(
+          JSON.stringify({ success: false, reason: "API key not configured" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Build webhook URL
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const webhookUrl = `${supabaseUrl}/functions/v1/runninghub-video-upscaler-webhook`;
+
+      // Get video URL from job (stored in input_file_name or similar field)
+      const videoUrl = nextJob.input_file_name;
+      if (!videoUrl) {
+        console.error("[VideoUpscaler] No video URL found for queued job:", nextJob.id);
+        await supabase
+          .from('video_upscaler_jobs')
+          .update({ status: 'failed', error_message: 'No video URL found' })
+          .eq('id', nextJob.id);
+        await updateQueuePositions(supabase);
+        return new Response(
+          JSON.stringify({ success: false, reason: "No video URL found" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`[VideoUpscaler] Processing queued job: ${nextJob.id}. Video: ${videoUrl}`);
+
+      // Call RunningHub API
+      const runninghubResponse = await fetch(`${RUNNINGHUB_API_BASE}/run/ai-app/${VIDEO_UPSCALER_WEBAPP_ID}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${runninghubApiKey}`,
+        },
+        body: JSON.stringify({
+          nodeInfoList: [
+            {
+              nodeId: VIDEO_NODE_ID,
+              fieldName: VIDEO_FIELD_NAME,
+              fieldValue: videoUrl,
+            }
+          ],
+          instanceType: "default",
+          usePersonalQueue: "false",
+          webhookUrl: webhookUrl,
+        }),
+      });
+
+      let runninghubData;
+      try {
+        runninghubData = await runninghubResponse.json();
+      } catch (e) {
+        console.error("[VideoUpscaler] Failed to parse RunningHub response:", e);
+        runninghubData = { error: "Failed to parse response" };
+      }
+
+      console.log("[VideoUpscaler] RunningHub response for queued job:", JSON.stringify(runninghubData));
+
+      if (!runninghubResponse.ok || runninghubData.errorCode) {
+        const errorMsg = runninghubData.errorMessage || runninghubData.error || `HTTP ${runninghubResponse.status}`;
+        console.error("[VideoUpscaler] RunningHub API error for queued job:", errorMsg);
+        
+        await supabase
+          .from('video_upscaler_jobs')
+          .update({
+            status: 'failed',
+            error_message: errorMsg,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', nextJob.id);
+
+        await updateQueuePositions(supabase);
+        return new Response(
+          JSON.stringify({ success: false, reason: errorMsg }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Update job with task ID
+      const taskId = runninghubData.taskId;
       await supabase
         .from('video_upscaler_jobs')
         .update({
           status: 'running',
+          task_id: taskId,
           started_at: new Date().toISOString(),
           user_credit_cost: CREDIT_COST,
         })
@@ -289,12 +444,10 @@ serve(async (req) => {
       // Update remaining queue positions
       await updateQueuePositions(supabase);
 
-      console.log(`[VideoUpscaler] Processing queued job: ${nextJob.id}`);
-
-      // TODO: Start actual processing with RunningHub
+      console.log(`[VideoUpscaler] Queued job ${nextJob.id} started. Task ID: ${taskId}`);
 
       return new Response(
-        JSON.stringify({ success: true, jobId: nextJob.id }),
+        JSON.stringify({ success: true, jobId: nextJob.id, taskId }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
