@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { 
   ArrowLeft, Plus, RefreshCw, Pencil, Trash2, Users, Crown, Clock, 
   AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, MessageCircle, KeyRound,
-  FileText, ExternalLink, Coins
+  FileText, ExternalLink, Coins, Cpu
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import {
@@ -27,6 +27,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import AdminCreditsTab from "@/components/admin/AdminCreditsTab";
+import AdminAIToolsUsageTab from "@/components/admin/AdminAIToolsUsageTab";
 
 interface PremiumUser {
   id: string;
@@ -526,7 +527,7 @@ const AdminPremiumDashboard = () => {
         </div>
 
         <Tabs defaultValue="assinantes" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3">
             <TabsTrigger value="assinantes" className="flex items-center gap-2">
               <Crown className="h-4 w-4" />
               Assinantes
@@ -534,6 +535,10 @@ const AdminPremiumDashboard = () => {
             <TabsTrigger value="creditos" className="flex items-center gap-2">
               <Coins className="h-4 w-4" />
               Créditos IA
+            </TabsTrigger>
+            <TabsTrigger value="uso-ferramentas" className="flex items-center gap-2">
+              <Cpu className="h-4 w-4" />
+              Uso Ferramentas
             </TabsTrigger>
           </TabsList>
 
@@ -1095,6 +1100,10 @@ const AdminPremiumDashboard = () => {
 
           <TabsContent value="creditos" className="mt-6">
             <AdminCreditsTab />
+          </TabsContent>
+
+          <TabsContent value="uso-ferramentas" className="mt-6">
+            <AdminAIToolsUsageTab />
           </TabsContent>
         </Tabs>
       </div>

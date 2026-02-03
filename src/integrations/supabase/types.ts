@@ -1746,12 +1746,16 @@ export type Database = {
           output_url: string | null
           person_file_name: string | null
           position: number | null
+          queue_wait_seconds: number | null
           reference_file_name: string | null
+          rh_cost: number | null
           session_id: string
           started_at: string | null
           status: string
           task_id: string | null
+          user_credit_cost: number | null
           user_id: string | null
+          waited_in_queue: boolean | null
         }
         Insert: {
           completed_at?: string | null
@@ -1761,12 +1765,16 @@ export type Database = {
           output_url?: string | null
           person_file_name?: string | null
           position?: number | null
+          queue_wait_seconds?: number | null
           reference_file_name?: string | null
+          rh_cost?: number | null
           session_id: string
           started_at?: string | null
           status?: string
           task_id?: string | null
+          user_credit_cost?: number | null
           user_id?: string | null
+          waited_in_queue?: boolean | null
         }
         Update: {
           completed_at?: string | null
@@ -1776,12 +1784,16 @@ export type Database = {
           output_url?: string | null
           person_file_name?: string | null
           position?: number | null
+          queue_wait_seconds?: number | null
           reference_file_name?: string | null
+          rh_cost?: number | null
           session_id?: string
           started_at?: string | null
           status?: string
           task_id?: string | null
+          user_credit_cost?: number | null
           user_id?: string | null
+          waited_in_queue?: boolean | null
         }
         Relationships: []
       }
@@ -2300,11 +2312,16 @@ export type Database = {
           output_url: string | null
           position: number | null
           prompt: string | null
+          queue_wait_seconds: number | null
           resolution: number | null
+          rh_cost: number | null
           session_id: string
           started_at: string | null
           status: string
           task_id: string | null
+          user_credit_cost: number | null
+          user_id: string | null
+          waited_in_queue: boolean | null
         }
         Insert: {
           completed_at?: string | null
@@ -2316,11 +2333,16 @@ export type Database = {
           output_url?: string | null
           position?: number | null
           prompt?: string | null
+          queue_wait_seconds?: number | null
           resolution?: number | null
+          rh_cost?: number | null
           session_id: string
           started_at?: string | null
           status?: string
           task_id?: string | null
+          user_credit_cost?: number | null
+          user_id?: string | null
+          waited_in_queue?: boolean | null
         }
         Update: {
           completed_at?: string | null
@@ -2332,13 +2354,26 @@ export type Database = {
           output_url?: string | null
           position?: number | null
           prompt?: string | null
+          queue_wait_seconds?: number | null
           resolution?: number | null
+          rh_cost?: number | null
           session_id?: string
           started_at?: string | null
           status?: string
           task_id?: string | null
+          user_credit_cost?: number | null
+          user_id?: string | null
+          waited_in_queue?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "upscaler_jobs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_pack_purchases: {
         Row: {
@@ -2464,11 +2499,15 @@ export type Database = {
           output_url: string | null
           person_file_name: string | null
           position: number | null
+          queue_wait_seconds: number | null
+          rh_cost: number | null
           session_id: string
           started_at: string | null
           status: string
           task_id: string | null
+          user_credit_cost: number | null
           user_id: string | null
+          waited_in_queue: boolean | null
         }
         Insert: {
           clothing_file_name?: string | null
@@ -2479,11 +2518,15 @@ export type Database = {
           output_url?: string | null
           person_file_name?: string | null
           position?: number | null
+          queue_wait_seconds?: number | null
+          rh_cost?: number | null
           session_id: string
           started_at?: string | null
           status?: string
           task_id?: string | null
+          user_credit_cost?: number | null
           user_id?: string | null
+          waited_in_queue?: boolean | null
         }
         Update: {
           clothing_file_name?: string | null
@@ -2494,11 +2537,15 @@ export type Database = {
           output_url?: string | null
           person_file_name?: string | null
           position?: number | null
+          queue_wait_seconds?: number | null
+          rh_cost?: number | null
           session_id?: string
           started_at?: string | null
           status?: string
           task_id?: string | null
+          user_credit_cost?: number | null
           user_id?: string | null
+          waited_in_queue?: boolean | null
         }
         Relationships: [
           {
@@ -2705,6 +2752,49 @@ export type Database = {
           error_message: string
           new_balance: number
           success: boolean
+        }[]
+      }
+      get_ai_tools_usage: {
+        Args: {
+          p_end_date?: string
+          p_page?: number
+          p_page_size?: number
+          p_start_date?: string
+        }
+        Returns: {
+          completed_at: string
+          created_at: string
+          id: string
+          processing_seconds: number
+          profit: number
+          queue_wait_seconds: number
+          rh_cost: number
+          started_at: string
+          status: string
+          tool_name: string
+          user_credit_cost: number
+          user_email: string
+          user_id: string
+          user_name: string
+          waited_in_queue: boolean
+        }[]
+      }
+      get_ai_tools_usage_count: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: number
+      }
+      get_ai_tools_usage_summary: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: {
+          avg_processing_seconds: number
+          avg_queue_wait_seconds: number
+          completed_jobs: number
+          failed_jobs: number
+          jobs_with_queue: number
+          total_jobs: number
+          total_profit: number
+          total_rh_cost: number
+          total_user_credits: number
         }[]
       }
       get_all_credit_users: {
