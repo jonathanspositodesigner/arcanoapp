@@ -78,7 +78,8 @@ const FerramentasIAAplicativo = () => {
 
   const getAccessRoute = (slug: string) => {
     if (slug === "upscaller-arcano") {
-      return "/upscaler-arcano-tool";
+      // Navigate to selection page instead of directly to image upscaler
+      return "/upscaler-selection";
     }
     if (slug === "upscaller-arcano-video") {
       return "/video-upscaler-tool";
@@ -94,7 +95,7 @@ const FerramentasIAAplicativo = () => {
 
   // Override names for display
   const toolNameOverrides: Record<string, string> = {
-    "upscaller-arcano": "Upscaler Arcano V3 (imagem)",
+    "upscaller-arcano": "Upscaler Arcano V3",
     "upscaller-arcano-video": "Upscaler Arcano V3 (vídeo)",
     "ia-muda-pose": "Pose Changer",
     "ia-muda-roupa": "Veste AI",
