@@ -72,7 +72,17 @@ const UserLoginArtesMusicos = () => {
           toast.success(t('errors.firstAccessSetPassword'));
           navigate(`/change-password-artes-musicos?redirect=${redirectTo}`);
         } else {
-          toast.error(t('errors.loginError'));
+          // Enviar link para criar senha (NÃO forgot-password)
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+            email.trim().toLowerCase(),
+            { redirectTo: `${window.location.origin}/change-password-artes-musicos?redirect=${encodeURIComponent(redirectTo)}` }
+          );
+          
+          if (!resetError) {
+            toast.success(t('success.passwordLinkSent') || 'Enviamos um link para criar sua senha. Verifique seu email.');
+          } else {
+            toast.error(t('errors.errorSendingLink') || 'Erro ao enviar link. Tente novamente.');
+          }
         }
         return;
       }

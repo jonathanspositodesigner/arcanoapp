@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,24 @@ const ChangePassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // Sem sessão - redirecionar para login
+        toast.info(t('errors.needLogin') || 'Você precisa estar logado para alterar a senha.');
+        navigate(`/login?redirect=${encodeURIComponent('/change-password?redirect=' + redirectTo)}`);
+        return;
+      }
+      
+      setIsCheckingSession(false);
+    };
+    
+    checkSession();
+  }, [navigate, redirectTo, t]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +77,14 @@ const ChangePassword = () => {
       setIsLoading(false);
     }
   };
+
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
+        <Loader2 className="h-8 w-8 text-purple-400 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
