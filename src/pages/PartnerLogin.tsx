@@ -1,86 +1,54 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ArrowLeft, Users, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { z } from "zod";
-
-const loginSchema = z.object({
-  email: z.string().email("Email inválido"),
-  password: z.string().min(1, "Senha é obrigatória"),
-});
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
+import { LoginEmailStep, LoginPasswordStep } from "@/components/auth";
+import { User } from "@supabase/supabase-js";
 
 const PartnerLogin = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const validation = loginSchema.safeParse({ email, password });
-    if (!validation.success) {
-      toast.error(validation.error.errors[0].message);
-      return;
+  // Partner-specific validation
+  const validatePartner = async (user: User): Promise<{ valid: boolean; error?: string }> => {
+    // Check if user has partner role
+    const { data: roleData, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'partner')
+      .maybeSingle();
+
+    if (roleError || !roleData) {
+      return { valid: false, error: "Acesso negado. Esta área é exclusiva para parceiros." };
     }
 
-    setIsLoading(true);
+    // Check if partner is active
+    const { data: partnerData, error: partnerError } = await supabase
+      .from('partners')
+      .select('is_active')
+      .eq('user_id', user.id)
+      .maybeSingle();
 
-    try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Erro ao fazer login");
-
-      // Check if user has partner role
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', authData.user.id)
-        .eq('role', 'partner')
-        .maybeSingle();
-
-      if (roleError) throw roleError;
-
-      if (!roleData) {
-        await supabase.auth.signOut();
-        toast.error("Acesso negado. Esta área é exclusiva para parceiros.");
-        return;
-      }
-
-      // Check if partner is active
-      const { data: partnerData, error: partnerError } = await supabase
-        .from('partners')
-        .select('is_active')
-        .eq('user_id', authData.user.id)
-        .maybeSingle();
-
-      if (partnerError) throw partnerError;
-
-      if (!partnerData?.is_active) {
-        await supabase.auth.signOut();
-        toast.error("Sua conta de parceiro está desativada. Entre em contato com o administrador.");
-        return;
-      }
-
-      toast.success("Login realizado com sucesso!");
-      navigate('/parceiro-dashboard');
-    } catch (error: any) {
-      console.error("Login error:", error);
-      toast.error(error.message || "Erro ao fazer login");
-    } finally {
-      setIsLoading(false);
+    if (partnerError || !partnerData) {
+      return { valid: false, error: "Conta de parceiro não encontrada." };
     }
+
+    if (!partnerData.is_active) {
+      return { valid: false, error: "Sua conta de parceiro está desativada. Entre em contato com o administrador." };
+    }
+
+    return { valid: true };
   };
+
+  const auth = useUnifiedAuth({
+    changePasswordRoute: '/change-password',
+    loginRoute: '/parceiro-login',
+    forgotPasswordRoute: '/forgot-password',
+    defaultRedirect: '/parceiro-dashboard',
+    postLoginValidation: validatePartner,
+  });
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -107,49 +75,41 @@ const PartnerLogin = () => {
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
-                className="mt-1"
-                autoComplete="email"
-              />
-            </div>
+          {auth.state.step === 'email' && (
+            <LoginEmailStep
+              email={auth.state.email}
+              onEmailChange={auth.setEmail}
+              onSubmit={auth.checkEmail}
+              onSignupClick={() => {}} // Partners can't self-register
+              isLoading={auth.state.isLoading}
+              labels={{
+                email: 'Email',
+                emailPlaceholder: 'seu@email.com',
+                continue: 'Continuar',
+                loading: 'Verificando...',
+                noAccountYet: '',
+                createAccount: '',
+              }}
+            />
+          )}
 
-            <div>
-              <Label htmlFor="password">Senha</Label>
-              <div className="relative mt-1">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-gradient-primary hover:opacity-90"
-              disabled={isLoading}
-            >
-              {isLoading ? "Entrando..." : "Entrar"}
-            </Button>
-          </form>
+          {auth.state.step === 'password' && (
+            <LoginPasswordStep
+              email={auth.state.verifiedEmail}
+              onSubmit={auth.loginWithPassword}
+              onChangeEmail={auth.changeEmail}
+              forgotPasswordUrl={auth.getForgotPasswordUrl()}
+              isLoading={auth.state.isLoading}
+              labels={{
+                password: 'Senha',
+                passwordPlaceholder: '••••••••',
+                signIn: 'Entrar',
+                signingIn: 'Entrando...',
+                forgotPassword: 'Esqueci minha senha',
+                changeEmail: 'Trocar',
+              }}
+            />
+          )}
 
           <div className="mt-6 text-center">
             <Button

@@ -6,7 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff, Lock, Music, Mail, RefreshCw, ArrowLeft, Loader2 } from "lucide-react";
-import { resendPasswordLink } from "@/lib/firstAccess";
+// Inline resend function
+const resendPasswordLink = async (
+  email: string,
+  changePasswordRoute: string,
+  redirectAfterPassword: string = '/'
+): Promise<{ success: boolean; error?: string }> => {
+  const redirectUrl = `${window.location.origin}${changePasswordRoute}?redirect=${encodeURIComponent(redirectAfterPassword)}`;
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    email.trim().toLowerCase(),
+    { redirectTo: redirectUrl }
+  );
+  if (error) return { success: false, error: 'Erro ao reenviar link' };
+  return { success: true };
+};
 
 const ChangePasswordArtesMusicos = () => {
   const navigate = useNavigate();
