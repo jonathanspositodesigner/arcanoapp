@@ -143,22 +143,33 @@ const FerramentasIAAplicativo = () => {
   const renderToolCard = (tool: ToolData) => {
     const hasAccess = checkToolAccess(tool.slug);
     const description = toolDescriptions[tool.slug] || "Ferramenta de IA";
+    const isComingSoon = tool.slug === "forja-selos-3d-ilimitada";
     
     return (
       <Card 
         key={tool.id}
-        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all group border border-purple-500/20 shadow-md hover:shadow-xl bg-[#1A0A2E]/50"
-        onClick={() => handleToolClick(tool)}
+        className={`overflow-hidden transition-all group border border-purple-500/20 shadow-md bg-[#1A0A2E]/50 ${
+          isComingSoon 
+            ? "cursor-not-allowed opacity-70" 
+            : "cursor-pointer hover:ring-2 hover:ring-purple-400 hover:shadow-xl"
+        }`}
+        onClick={() => !isComingSoon && handleToolClick(tool)}
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
           {tool.cover_url ? (
             <img 
               src={tool.cover_url} 
               alt={tool.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className={`w-full h-full object-cover transition-transform duration-300 ${
+                isComingSoon ? "grayscale" : "group-hover:scale-105"
+              }`}
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
+            <div className={`w-full h-full flex items-center justify-center ${
+              isComingSoon 
+                ? "bg-gradient-to-br from-gray-500 to-gray-600" 
+                : "bg-gradient-to-br from-purple-500 to-fuchsia-600"
+            }`}>
               <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
             </div>
           )}
@@ -171,17 +182,27 @@ const FerramentasIAAplicativo = () => {
               {description}
             </p>
             
-            <Button
-              size="sm"
-              className={`mt-3 w-full text-sm font-medium ${
-                hasAccess 
-                  ? "bg-green-500 hover:bg-green-600" 
-                  : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
-              } text-white`}
-            >
-              <Play className="h-4 w-4 mr-2" />
-              {t('ferramentas.accessTool')}
-            </Button>
+            {isComingSoon ? (
+              <Button
+                size="sm"
+                disabled
+                className="mt-3 w-full text-sm font-medium bg-gray-600 text-gray-300 cursor-not-allowed"
+              >
+                Em Breve
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                className={`mt-3 w-full text-sm font-medium ${
+                  hasAccess 
+                    ? "bg-green-500 hover:bg-green-600" 
+                    : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
+                } text-white`}
+              >
+                <Play className="h-4 w-4 mr-2" />
+                {t('ferramentas.accessTool')}
+              </Button>
+            )}
           </div>
         </div>
       </Card>
