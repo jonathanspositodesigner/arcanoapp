@@ -1,105 +1,64 @@
 
+## Objetivo
+Fazer o resultado do Pose Changer aparecer **com a foto inteira visível, centralizada no meio, sem cortar** (sem “subir” e esconder o rosto), mantendo zoom/pan funcionando direito.
 
-## Problema
+## Diagnóstico (por que está cortando / ficando “pra cima”)
+Hoje o viewer está assim:
+- `TransformWrapper` com `centerOnInit={true}` e `initialScale={1}`
+- `TransformComponent` com `wrapperStyle` e `contentStyle` usando **flex** (centralização via `alignItems/justifyContent`)
+- A imagem usa `max-w-full max-h-full object-contain`
 
-Quando você clica UMA vez no botão "Gerar Pose", a função `handleProcess` é chamada DUAS vezes, criando 2 jobs e gastando 2x créditos.
+Isso pode causar dois problemas comuns no `react-zoom-pan-pinch`:
+1) **Cálculo de centralização errado na inicialização**: o `centerOnInit` pode calcular posição antes da imagem ter dimensões definitivas (image load), e a transform inicial fica com `positionY` deslocado (aí o topo “corta”).
+2) **Flex no wrapper do TransformComponent** pode atrapalhar o cálculo de bounds/posicionamento interno da lib, gerando offsets estranhos e panning “preso”.
 
-Isso acontece porque:
-1. `setStatus('uploading')` é chamado na linha 280
-2. Mas o React atualiza o estado de forma **assíncrona** (não instantânea)
-3. Durante esses milissegundos, se houver um segundo evento de clique (duplo clique acidental, ou re-render), a condição `isProcessing` ainda é `false`
-4. A segunda chamada passa e executa tudo de novo
+Além disso, tem um bug secundário:
+- Os botões de zoom (+/–) no header **só mudam o número** (`zoomLevel`), mas **não aplicam zoom de verdade** no TransformWrapper. Isso bagunça a percepção do usuário (mostra 70% mas a imagem pode estar em outra escala/posição).
 
----
+## Mudanças propostas (frontend apenas)
+### A) Trocar o layout do viewer para um padrão “à prova de corte”
+No `src/pages/PoseChangerTool.tsx`, no bloco do resultado:
 
-## Solução
+1) **Remover o `display:flex` do `wrapperStyle`** e padronizar dimensões:
+- `TransformComponent.wrapperStyle`: `{ width: '100%', height: '100%' }`
+- `TransformComponent.contentStyle`: `{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }`
 
-Adicionar um **flag síncrono** com `useRef` que bloqueia imediatamente qualquer chamada duplicada do **mesmo usuário no mesmo navegador**.
+2) Trocar a imagem para preencher a área e depender do `object-contain` do jeito mais estável:
+- `className="w-full h-full object-contain"` (no lugar de `max-w-full max-h-full`)
 
-**IMPORTANTE:** Isso NÃO afeta outros usuários! Cada navegador tem sua própria instância do React. O sistema de fila de 3 simultâneos no backend continua funcionando normalmente.
+Isso garante:
+- A área transformável (content) sempre tem o mesmo tamanho do wrapper
+- A imagem fica contida e centralizada dentro dessa área
+- O “fit” não depende de cálculo de max-height/max-width em uma hierarquia que pode variar
 
----
+### B) Parar de depender do `centerOnInit` (evitar offset “pra cima”)
+3) **Remover `centerOnInit={true}`** do TransformWrapper (ou deixar, mas a recomendação aqui é remover para eliminar esse comportamento instável).
+4) Garantir que ao mostrar um novo resultado a transform comece “zerada”:
+- Adicionar `key={outputImage}` no `TransformWrapper` para forçar remontagem quando trocar a imagem (isso reinicia posição/scale).
+- Opcionalmente, usar `onLoad` da imagem para disparar um `resetTransform()` (ver item C abaixo) caso a lib ainda mantenha algum offset.
 
-## Alterações técnicas
+### C) Consertar os botões de zoom do header (opcional, mas recomendado)
+5) Ligar os botões +/– ao TransformWrapper de verdade:
+- Criar um `transformRef` (`useRef`) para guardar a instância do zoom-pan-pinch via `onInit`.
+- No `onClick` do ZoomIn/ZoomOut, chamar `transformRef.current?.zoomIn(step)` / `zoomOut(step)`.
+- Manter o `zoomLevel` sincronizado via `onTransformed`.
 
-**Arquivo:** `src/pages/PoseChangerTool.tsx`
+Resultado: o % exibido reflete o zoom real, e o usuário tem controle para “ver a foto inteira” facilmente (zoom out de verdade).
 
-1. **Adicionar ref para bloqueio síncrono** (linha ~54):
-```typescript
-const processingRef = useRef(false);
-```
+## Arquivo a alterar
+- `src/pages/PoseChangerTool.tsx` (somente o bloco do viewer/TransformWrapper + handlers dos botões de zoom)
 
-2. **No início de `handleProcess` (linha 262), adicionar verificação imediata:**
-```typescript
-const handleProcess = async () => {
-  // CRITICAL: Prevent duplicate calls (sync check)
-  if (processingRef.current) {
-    console.log('[PoseChanger] Already processing, ignoring duplicate call');
-    return;
-  }
-  processingRef.current = true;
+## Como vou validar (checklist rápido)
+1) Gerar uma pose e confirmar que:
+   - A imagem aparece **inteira** (rosto visível) sem precisar arrastar.
+   - Fica **centralizada** no meio (vertical e horizontal).
+2) Testar zoom:
+   - Botões +/– mudam o zoom real.
+   - Zoom out mostra ainda mais da imagem, sem “corte”.
+3) Testar pan:
+   - Ao dar zoom in, arrastar funciona sem prender embaixo/cima.
+4) Confirmar que o lock anti-duplicação (processingRef) continua igual e a fila de 3 simultâneos não é afetada.
 
-  // ... resto do código existente ...
-```
-
-3. **No catch de erro (linha 374), liberar o flag:**
-```typescript
-} catch (error: any) {
-  console.error('[PoseChanger] Process error:', error);
-  setStatus('error');
-  toast.error(error.message || 'Erro ao processar imagem');
-  processingRef.current = false; // LIBERA O FLAG
-}
-```
-
-4. **No `handleReset` (linha 399), também liberar:**
-```typescript
-const handleReset = () => {
-  processingRef.current = false; // LIBERA O FLAG
-  setPersonImage(null);
-  // ... resto ...
-```
-
-5. **Quando o job completa com sucesso ou erro via realtime, liberar o flag** (no callback de `subscribeToJobUpdates`)
-
----
-
-## Por que funciona
-
-| Tipo de operação | `useState` | `useRef` |
-|-----------------|------------|----------|
-| Atualização | Assíncrona (próximo render) | **Síncrona (imediata)** |
-| Acessível no mesmo tick | Não | **Sim** |
-
-Ao usar `processingRef.current = true` ANTES de qualquer `await`, bloqueamos qualquer chamada duplicada no mesmo milissegundo.
-
----
-
-## Diagrama do fluxo
-
-```text
-Clique 1                          Clique 2 (acidental)
-   │                                   │
-   ▼                                   ▼
-processingRef.current = false?    processingRef.current = true?
-   │                                   │
-   ▼                                   ▼
-   SIM → processingRef = true         SIM → RETURN (bloqueado)
-   │
-   ▼
- await criar job...
- await upload...
- await edge function...
-   │
-   ▼
- (continua normalmente)
-```
-
----
-
-## Resultado
-
-- 1 clique = 1 job = 1 cobrança de créditos
-- Múltiplos usuários continuam funcionando em paralelo (cada um com seu próprio `processingRef`)
-- Sistema de fila de 3 simultâneos no backend não é afetado
-
+## Riscos / efeitos colaterais
+- Mudança é só no viewer (CSS/integração de zoom). Não mexe em backend, créditos, fila, nem realtime.
+- O comportamento “centralizar automático” passa a ser estável (baseado no tamanho do container) e não em cálculos de init que podem ocorrer antes do carregamento da imagem.
