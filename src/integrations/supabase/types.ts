@@ -2557,6 +2557,72 @@ export type Database = {
           },
         ]
       }
+      video_upscaler_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          input_file_name: string | null
+          output_url: string | null
+          position: number | null
+          queue_wait_seconds: number | null
+          rh_cost: number | null
+          session_id: string
+          started_at: string | null
+          status: string
+          task_id: string | null
+          user_credit_cost: number | null
+          user_id: string | null
+          video_duration_seconds: number | null
+          video_height: number | null
+          video_width: number | null
+          waited_in_queue: boolean | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          input_file_name?: string | null
+          output_url?: string | null
+          position?: number | null
+          queue_wait_seconds?: number | null
+          rh_cost?: number | null
+          session_id: string
+          started_at?: string | null
+          status?: string
+          task_id?: string | null
+          user_credit_cost?: number | null
+          user_id?: string | null
+          video_duration_seconds?: number | null
+          video_height?: number | null
+          video_width?: number | null
+          waited_in_queue?: boolean | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          input_file_name?: string | null
+          output_url?: string | null
+          position?: number | null
+          queue_wait_seconds?: number | null
+          rh_cost?: number | null
+          session_id?: string
+          started_at?: string | null
+          status?: string
+          task_id?: string | null
+          user_credit_cost?: number | null
+          user_id?: string | null
+          video_duration_seconds?: number | null
+          video_height?: number | null
+          video_width?: number | null
+          waited_in_queue?: boolean | null
+        }
+        Relationships: []
+      }
       webhook_logs: {
         Row: {
           email: string | null
