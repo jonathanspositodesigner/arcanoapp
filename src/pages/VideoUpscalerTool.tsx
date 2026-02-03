@@ -426,7 +426,7 @@ const VideoUpscalerTool: React.FC = () => {
               <h4 className="text-xs font-semibold text-white mb-2">Especificações</h4>
               <ul className="text-[10px] text-purple-300 space-y-1">
                 <li>• Resolução máxima: 1280px</li>
-                <li>• Duração máxima: 8 segundos</li>
+                <li>• Duração máxima: 10 segundos</li>
                 <li>• Formatos: MP4, WebM, MOV</li>
               </ul>
             </Card>
