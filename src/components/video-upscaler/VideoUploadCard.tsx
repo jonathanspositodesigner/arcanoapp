@@ -1,8 +1,9 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react';
-import { Upload, X, Video, Play, Clock, Maximize } from 'lucide-react';
+import { Upload, X, Video, Clock, Maximize } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import VideoTrimModal from './VideoTrimModal';
 
 interface VideoMetadata {
   width: number;
@@ -34,9 +35,18 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  
+  // Trim modal state
+  const [showTrimModal, setShowTrimModal] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   // Validate video dimensions and duration
-  const validateVideo = useCallback((file: File): Promise<{ valid: boolean; error?: string; metadata?: VideoMetadata }> => {
+  const validateVideo = useCallback((file: File): Promise<{ 
+    valid: boolean; 
+    error?: string; 
+    metadata?: VideoMetadata;
+    needsTrim?: boolean;
+  }> => {
     return new Promise((resolve) => {
       const video = document.createElement('video');
       video.preload = 'metadata';
@@ -54,9 +64,11 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
             error: `Resolução muito alta (${width}x${height}). Dimensão máxima: ${MAX_DIMENSION}px`,
           });
         } else if (duration > MAX_DURATION) {
+          // Instead of rejecting, signal that trim is needed
           resolve({
-            valid: false,
-            error: `Vídeo muito longo (${duration.toFixed(1)}s). Máximo: ${MAX_DURATION} segundos`,
+            valid: true,
+            needsTrim: true,
+            metadata: { width, height, duration },
           });
         } else {
           resolve({
@@ -134,6 +146,13 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
       return;
     }
 
+    // If video needs trimming, open the trim modal
+    if (validation.needsTrim) {
+      setPendingFile(file);
+      setShowTrimModal(true);
+      return;
+    }
+
     // Generate thumbnail
     try {
       const thumb = await generateThumbnail(file);
@@ -147,6 +166,30 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
     setMetadata(validation.metadata!);
     onVideoChange(url, file, validation.metadata);
   }, [validateVideo, generateThumbnail, onVideoChange]);
+
+  // Handle trim save callback
+  const handleTrimSave = useCallback(async (trimmedFile: File, trimmedMetadata: VideoMetadata) => {
+    // Generate thumbnail for the trimmed video
+    try {
+      const thumb = await generateThumbnail(trimmedFile);
+      setThumbnailUrl(thumb);
+    } catch (error) {
+      console.error('Failed to generate thumbnail:', error);
+    }
+
+    // Create object URL for preview
+    const url = URL.createObjectURL(trimmedFile);
+    setMetadata(trimmedMetadata);
+    onVideoChange(url, trimmedFile, trimmedMetadata);
+    setShowTrimModal(false);
+    setPendingFile(null);
+  }, [generateThumbnail, onVideoChange]);
+
+  // Handle trim modal close
+  const handleTrimClose = useCallback(() => {
+    setShowTrimModal(false);
+    setPendingFile(null);
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -293,6 +336,16 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
           disabled={disabled}
         />
       </div>
+
+      {/* Trim Modal */}
+      {pendingFile && (
+        <VideoTrimModal
+          isOpen={showTrimModal}
+          onClose={handleTrimClose}
+          videoFile={pendingFile}
+          onSave={handleTrimSave}
+        />
+      )}
     </Card>
   );
 };
