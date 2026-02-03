@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle } from 'lucide-react';
+import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins } from 'lucide-react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -505,7 +505,11 @@ const PoseChangerTool: React.FC = () => {
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                  Gerar Pose ({CREDIT_COST} créditos)
+                  Gerar Pose
+                  <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                    <Coins className="w-3.5 h-3.5" />
+                    {CREDIT_COST}
+                  </span>
                 </>
               )}
             </Button>
