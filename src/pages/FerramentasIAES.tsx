@@ -69,8 +69,9 @@ const FerramentasIAES = () => {
     }
     setFirstAccessLoading(true);
     try {
+      const normalizedEmail = firstAccessEmail.trim().toLowerCase();
       const { data: profileCheck, error: rpcError } = await supabase.rpc('check_profile_exists', {
-        check_email: firstAccessEmail.trim()
+        check_email: normalizedEmail
       });
       
       if (rpcError) {
@@ -91,8 +92,8 @@ const FerramentasIAES = () => {
       if (profileExists && !passwordChanged) {
         // Primeiro acesso: login com email/email
         const { error } = await supabase.auth.signInWithPassword({
-          email: firstAccessEmail.trim(),
-          password: firstAccessEmail.trim()
+          email: normalizedEmail,
+          password: normalizedEmail
         });
         if (!error) {
           setShowFirstAccessModal(false);
@@ -100,9 +101,20 @@ const FerramentasIAES = () => {
           toast.success(t('ferramentas.toast.welcome'));
           navigate('/change-password-artes?redirect=/ferramentas-ia-es');
         } else {
-          toast.error(t('ferramentas.toast.errorAccessing'));
-          setShowFirstAccessModal(false);
-          // Não navega para login-artes, mantém na página ES
+          // Auto-login falhou - enviar link e navegar para /change-password-artes
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+            normalizedEmail,
+            { redirectTo: `${window.location.origin}/change-password-artes?redirect=/ferramentas-ia-es` }
+          );
+          
+          if (!resetError) {
+            setShowFirstAccessModal(false);
+            setFirstAccessEmail("");
+            navigate(`/change-password-artes?redirect=/ferramentas-ia-es&sent=1&email=${encodeURIComponent(normalizedEmail)}`);
+          } else {
+            toast.error(t('ferramentas.toast.errorAccessing'));
+            setShowFirstAccessModal(false);
+          }
         }
         return;
       }
@@ -111,7 +123,7 @@ const FerramentasIAES = () => {
         toast.info(t('ferramentas.toast.alreadySetPassword'));
         setShowFirstAccessModal(false);
         setFirstAccessEmail("");
-        // Não navega para login-artes, mantém na página ES
+        // Mantém na página ES
       }
     } catch (error) {
       toast.error(t('ferramentas.toast.errorVerifyingEmail'));

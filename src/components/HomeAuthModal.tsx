@@ -94,9 +94,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
       
       if (profileExists && !passwordChanged) {
         // First access - auto login with email as password
+        const normalizedEmail = loginEmail.trim().toLowerCase();
         const { error: autoLoginError } = await supabase.auth.signInWithPassword({
-          email: loginEmail.trim().toLowerCase(),
-          password: loginEmail.trim().toLowerCase(),
+          email: normalizedEmail,
+          password: normalizedEmail,
         });
         
         if (!autoLoginError) {
@@ -104,18 +105,20 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
           onClose();
           window.location.href = '/change-password?redirect=/';
         } else {
-          // Login automático falhou - enviar link para criar senha (NÃO forgot-password)
+          // Login automático falhou - enviar link para criar senha e navegar para /change-password
           const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-            loginEmail.trim().toLowerCase(),
+            normalizedEmail,
             { redirectTo: `${window.location.origin}/change-password?redirect=/` }
           );
           
           if (!resetError) {
-            toast.success(t('auth.passwordLinkSent') || 'Enviamos um link para criar sua senha. Verifique seu email.');
+            onClose();
+            // Navegar para /change-password com parâmetros de "aguardando link"
+            window.location.href = `/change-password?redirect=/&sent=1&email=${encodeURIComponent(normalizedEmail)}`;
           } else {
             toast.error(t('auth.errorSendingLink') || 'Erro ao enviar link. Tente novamente.');
+            onClose();
           }
-          onClose();
         }
         return;
       }

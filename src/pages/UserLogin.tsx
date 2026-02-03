@@ -91,23 +91,25 @@ const UserLogin = () => {
       
       if (profileExists && !passwordChanged) {
         // First access - auto-login with email as password and redirect
+        const normalizedEmail = email.trim().toLowerCase();
         const { error: autoLoginError } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password: email.trim()
+          email: normalizedEmail,
+          password: normalizedEmail
         });
         
         if (!autoLoginError) {
           toast.success(t('errors.firstAccessSetPassword'));
           navigate(`/change-password?redirect=${redirectTo}`);
         } else {
-          // Enviar link para criar senha (NÃO forgot-password)
+          // Enviar link para criar senha e navegar para /change-password
           const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-            email.trim().toLowerCase(),
+            normalizedEmail,
             { redirectTo: `${window.location.origin}/change-password?redirect=${encodeURIComponent(redirectTo)}` }
           );
           
           if (!resetError) {
-            toast.success(t('success.passwordLinkSent') || 'Enviamos um link para criar sua senha. Verifique seu email.');
+            // Navegar para /change-password com parâmetros de "aguardando link"
+            navigate(`/change-password?redirect=${encodeURIComponent(redirectTo)}&sent=1&email=${encodeURIComponent(normalizedEmail)}`);
           } else {
             toast.error(t('errors.errorSendingLink') || 'Erro ao enviar link. Tente novamente.');
           }
