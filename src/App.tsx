@@ -38,6 +38,7 @@ const ArtesMusicosMarketing = lazy(() => import("./pages/admin/ArtesMusicosMarke
 const PromptsDashboard = lazy(() => import("./pages/admin/PromptsDashboard"));
 const PromptsFerramentas = lazy(() => import("./pages/admin/PromptsFerramentas"));
 const PromptsMarketing = lazy(() => import("./pages/admin/PromptsMarketing"));
+const PromptsCustosIA = lazy(() => import("./pages/admin/PromptsCustosIA"));
 const AdminCommunityReview = lazy(() => import("./pages/AdminCommunityReview"));
 const AdminArtesReview = lazy(() => import("./pages/AdminArtesReview"));
 const AdminManageImages = lazy(() => import("./pages/AdminManageImages"));
@@ -177,6 +178,7 @@ const AppContent = () => {
           <Route path="/admin-prompts" element={<PromptsDashboard />} />
           <Route path="/admin-prompts/ferramentas" element={<PromptsFerramentas />} />
           <Route path="/admin-prompts/marketing" element={<PromptsMarketing />} />
+          <Route path="/admin-prompts/custos-ia" element={<PromptsCustosIA />} />
           <Route path="/admin-upload" element={<AdminUpload />} />
           <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
           <Route path="/admin-upload-artes-musicos" element={<AdminUploadArtesMusicos />} />
