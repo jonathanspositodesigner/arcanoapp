@@ -529,7 +529,13 @@ async function handleRun(req: Request) {
 
       await supabase
         .from('pose_changer_jobs')
-        .update({ status: 'queued', position: position })
+        .update({ 
+          status: 'queued', 
+          position: position,
+          user_credit_cost: creditCost,
+          rh_cost: 40, // RH cost for pose changer
+          waited_in_queue: true
+        })
         .eq('id', jobId);
 
       console.log(`[PoseChanger] Job ${jobId} queued at position ${position}`);
@@ -548,6 +554,9 @@ async function handleRun(req: Request) {
     await supabase
       .from('pose_changer_jobs')
       .update({ 
+        user_credit_cost: creditCost,
+        rh_cost: 40, // RH cost for pose changer
+        waited_in_queue: false,
         status: 'running', 
         started_at: new Date().toISOString(),
         position: 0
