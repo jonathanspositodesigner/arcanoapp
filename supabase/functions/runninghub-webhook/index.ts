@@ -83,7 +83,7 @@ serve(async (req) => {
     // Try upscaler_jobs first
     const { data: upscalerJob, error: upscalerError } = await supabase
       .from('upscaler_jobs')
-      .select('id')
+      .select('id, started_at, user_credit_cost')
       .eq('task_id', taskId)
       .maybeSingle();
 
@@ -95,7 +95,7 @@ serve(async (req) => {
       // Try pose_changer_jobs
       const { data: poseJob, error: poseError } = await supabase
         .from('pose_changer_jobs')
-        .select('id')
+        .select('id, started_at, user_credit_cost')
         .eq('task_id', taskId)
         .maybeSingle();
 
@@ -107,7 +107,7 @@ serve(async (req) => {
         // Try veste_ai_jobs
         const { data: vesteJob, error: vesteError } = await supabase
           .from('veste_ai_jobs')
-          .select('id')
+          .select('id, started_at, user_credit_cost')
           .eq('task_id', taskId)
           .maybeSingle();
 
@@ -127,6 +127,17 @@ serve(async (req) => {
       });
     }
 
+    // Calculate RH cost based on processing time (0.2 RH per second)
+    const completedAt = new Date();
+    let rhCost = 0;
+    
+    if (jobData.started_at && !errorMessage) {
+      const startedAt = new Date(jobData.started_at);
+      const processingSeconds = Math.max(1, Math.ceil((completedAt.getTime() - startedAt.getTime()) / 1000));
+      rhCost = Math.round(processingSeconds * 0.2);
+      console.log(`[Webhook] Processing time: ${processingSeconds}s, RH Cost: ${rhCost} (0.2 RH/s)`);
+    }
+
     // Update the job in the correct table
     const newStatus = errorMessage ? 'failed' : (outputUrl ? 'completed' : 'failed');
     
@@ -136,14 +147,15 @@ serve(async (req) => {
         status: newStatus,
         output_url: outputUrl,
         error_message: errorMessage || (newStatus === 'failed' ? 'No output received' : null),
-        completed_at: new Date().toISOString()
+        completed_at: completedAt.toISOString(),
+        rh_cost: rhCost > 0 ? rhCost : null
       })
       .eq('task_id', taskId);
 
     if (updateError) {
       console.error('[Webhook] Error updating job:', updateError);
     } else {
-      console.log(`[Webhook] Job updated successfully in ${jobTable}`);
+      console.log(`[Webhook] Job updated successfully in ${jobTable} - Status: ${newStatus}, RH Cost: ${rhCost}`);
     }
 
     // Process next job in queue for all tables

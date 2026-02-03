@@ -533,7 +533,6 @@ async function handleRun(req: Request) {
           status: 'queued', 
           position: position,
           user_credit_cost: creditCost,
-          rh_cost: 40, // RH cost for pose changer
           waited_in_queue: true
         })
         .eq('id', jobId);
@@ -555,7 +554,6 @@ async function handleRun(req: Request) {
       .from('pose_changer_jobs')
       .update({ 
         user_credit_cost: creditCost,
-        rh_cost: 40, // RH cost for pose changer
         waited_in_queue: false,
         status: 'running', 
         started_at: new Date().toISOString(),
