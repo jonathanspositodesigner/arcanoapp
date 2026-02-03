@@ -118,6 +118,7 @@ const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
 const PoseChangerTool = lazy(() => import("./pages/PoseChangerTool"));
 const VesteAITool = lazy(() => import("./pages/VesteAITool"));
 const VideoUpscalerTool = lazy(() => import("./pages/VideoUpscalerTool"));
+const UpscalerSelectionPage = lazy(() => import("./pages/UpscalerSelectionPage"));
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
 const PackAgendas = lazy(() => import("./pages/PackAgendas"));
 const ComboArtesArcanas = lazy(() => import("./pages/ComboArtesArcanas"));
@@ -272,6 +273,7 @@ const AppContent = () => {
           <Route path="/pose-changer-tool" element={<PoseChangerTool />} />
           <Route path="/veste-ai-tool" element={<VesteAITool />} />
           <Route path="/video-upscaler-tool" element={<VideoUpscalerTool />} />
+          <Route path="/upscaler-selection" element={<UpscalerSelectionPage />} />
           <Route path="/pack-agendas" element={<PackAgendas />} />
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
           <Route path="/planos-creditos" element={<PlanosCreditos />} />
