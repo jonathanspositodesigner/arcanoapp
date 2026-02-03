@@ -1,134 +1,133 @@
 
-# Correção do Login - Email Não Encontrado
+Objetivo
+- Para usuário com email existente e password_changed = false (primeiro acesso), o fluxo deve levar o usuário para “cadastrar nova senha” (/change-password) e não para “esqueceu sua senha”.
+- Manter o comportamento atual “ideal”: quando a senha temporária (email = senha) funciona, o usuário entra automaticamente e cai direto na tela de criar senha.
+- Quando a senha temporária falhar (casos quebrados/misturados), ainda assim não mandar para a tela “esqueceu senha”; em vez disso, disparar um fluxo de “criar senha” com link seguro e direcionar esse link para /change-password.
 
-## Problema Identificado
+Diagnóstico (estado atual)
+- HomeAuthModal.tsx:
+  - Se exists && !password_changed: tenta signInWithPassword(email, email).
+  - Se falha, hoje redireciona para /forgot-password?email=...
+- UserLogin.tsx:
+  - Se exists && !password_changed: tenta signInWithPassword(email, email).
+  - Se falha, abre um modal explicando para tentar “email como senha” (não garante que o usuário vá para criar senha).
+- UserLoginArtes.tsx e UserLoginArtesMusicos.tsx:
+  - Se exists && !password_changed: tenta signInWithPassword(email, email).
+  - Se falha, só dá toast de erro genérico.
+- Ponto técnico importante:
+  - A página /change-password (e as variantes) depende de sessão autenticada para conseguir setar senha via updateUser.
+  - Se o auto-login falha, não existe sessão; então “mandar direto para /change-password” sem mais nada não funciona. A alternativa correta (sem gambiarra no banco) é iniciar um fluxo de criação/redefinição via link que cria uma sessão de recovery e então /change-password consegue setar a nova senha.
 
-O usuário `aliados.sj@gmail.com` **existe no banco de dados**, mas quando tenta fazer login, o sistema mostra "Email não encontrado".
+Estratégia de correção (sem “gambiarra de banco”)
+1) Manter o auto-login (email/email) quando password_changed=false:
+   - Se funcionar: redireciona para /change-password?redirect=...
+2) Se o auto-login falhar:
+   - Em vez de jogar para /forgot-password, vamos iniciar automaticamente um “link de criar senha” (resetPasswordForEmail) e:
+     - Mostrar um “Primeiro acesso – crie sua senha” (tela/estado dentro do modal/página de login), sem mencionar “esqueceu senha”.
+     - O link enviado por email deve redirecionar para /change-password (ou variante) para o usuário cadastrar a senha e então seguir para o redirect.
+   - Resultado: o usuário não cai na página de “esqueceu senha” e ainda chega na página “cadastrar senha” do jeito certo (após clicar no link).
 
-### Causa Raiz
+3) Robustez de detecção do email:
+   - Atualizar a função check_profile_exists para normalizar (trim + lower) internamente antes de comparar, evitando casos de email com espaços/casing que causam falso “não encontrado”.
 
-A função `check_profile_exists` não consegue ler da tabela `profiles` quando chamada por usuários não autenticados, mesmo sendo `SECURITY DEFINER`.
+Mudanças no backend (banco de dados)
+A) Atualizar a RPC public.check_profile_exists(check_email text)
+- Ajustes:
+  - Normalizar: check_email := lower(trim(check_email))
+  - Rodar validações e comparação usando o valor normalizado
+- Observação de segurança:
+  - Não criar policy “USING (true)” em profiles. Isso seria permissivo demais.
+  - A função já é SECURITY DEFINER e é a forma correta de expor somente “existe/não existe” e o flag password_changed.
 
-**Por quê?**
+Mudanças no frontend (fluxo)
+B) Home (modal de autenticação)
+Arquivo: src/components/HomeAuthModal.tsx
+- Alterar o bloco do primeiro acesso:
+  - Hoje: se auto-login falha -> redirect /forgot-password
+  - Novo: se auto-login falha -> chamar resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/change-password?redirect=/` }) e então:
+    - Exibir estado de “Email enviado para criar senha” (dentro do modal)
+    - Incluir botão “Já abri o email” (fecha modal) e texto curto orientando o usuário
+- Garantir que o texto/UX não use “Esqueceu senha”, e sim “Criar senha / Primeiro acesso”.
 
-As políticas RLS da tabela `profiles` usam `auth.uid()` para verificar acesso:
+C) Página de login padrão (/login)
+Arquivo: src/pages/UserLogin.tsx
+- No fluxo exists && !password_changed:
+  - Se auto-login falhar:
+    - Trocar “showFirstAccessModal (só instrução)” por uma ação clara:
+      - botão “Enviar link para criar senha”
+      - ao clicar: resetPasswordForEmail com redirectTo apontando para /change-password?redirect=${redirectTo}
+      - mostrar confirmação de envio (sem encaminhar para /forgot-password)
+- Opcional: se você quiser fluxo 100% automático, pode disparar o envio do link imediatamente ao falhar (sem depender do clique), mas manter o botão “Reenviar” e feedback.
 
-| Política | Condição |
-|----------|----------|
-| Users can view their own profile | `auth.uid() = id` |
-| Admins can view all profiles | `has_role(auth.uid(), 'admin')` |
+D) Login Artes e Músicos
+Arquivos:
+- src/pages/UserLoginArtes.tsx
+- src/pages/UserLoginArtesMusicos.tsx
+- Hoje: no auto-login fail -> toast erro
+- Novo:
+  - No auto-login fail:
+    - disparar resetPasswordForEmail com redirectTo apontando para:
+      - /change-password-artes?redirect=${redirectTo}
+      - /change-password-artes-musicos?redirect=${redirectTo}
+    - mostrar UI/alert de “Link enviado para criar sua senha”
+    - sem mandar para /forgot-password-*
 
-Quando um usuário **não está logado**:
-- `auth.uid()` retorna `NULL`
-- Nenhuma política RLS permite acesso
-- A função não encontra registros
-- Retorna `exists_in_db: false` mesmo o email existindo
+E) Garantir que /change-password lide bem com usuário não autenticado
+Arquivo: src/pages/ChangePassword.tsx
+- Hoje ele não checa sessão antes; se a pessoa cair ali sem sessão, pode gerar erro/confusão.
+- Ajustar para seguir o padrão do ChangePasswordArtes:
+  - checar session no mount
+  - se não tiver session: redirecionar para /login?redirect=...
+- Isso evita que alguém caia “seco” no /change-password e fique preso.
 
----
+F) RedirectTo: parar de hardcode de domínio em fluxos de senha (qualidade)
+Arquivos:
+- src/pages/ForgotPassword.tsx (e variantes Artes/Músicos, se aplicável)
+- Trocar redirectTo hardcoded para `${window.location.origin}/reset-password...` quando fizer sentido.
+- Mesmo que a gente passe a não usar /forgot-password no primeiro acesso, isso previne bugs em preview/produção.
 
-## Solução
+Detalhes técnicos (como ficará o fluxo)
+- Primeiro acesso (normal):
+  1) Email existe e password_changed=false
+  2) signInWithPassword(email, email) funciona
+  3) redirect /change-password?redirect=...
+  4) usuário cria senha, password_changed vira true, segue
 
-Adicionar uma política RLS que permite a função `check_profile_exists` fazer SELECT apenas nas colunas necessárias (`email` e `password_changed`), bypassando a restrição de autenticação para essa verificação específica.
+- Primeiro acesso (auto-login falha):
+  1) Email existe e password_changed=false
+  2) signInWithPassword(email, email) falha
+  3) app dispara resetPasswordForEmail com redirectTo=/change-password?redirect=...
+  4) usuário abre email e clica no link
+  5) entra em sessão de recovery, abre /change-password e define senha
+  6) segue para redirect, sem passar por “esqueceu senha”
 
-### Opção Implementada: Política RLS para verificação de email
+Checklist de testes (end-to-end)
+1) Conta recém-criada via admin/webhook (senha = email, password_changed=false):
+   - Email check -> auto-login -> /change-password -> salvar -> login ok
+2) Conta “quebrada” (password_changed=false, mas senha não é email):
+   - Email check -> auto-login falha -> “link enviado” -> clicar link no email -> /change-password -> salvar -> login ok
+3) Email inexistente:
+   - cair no signup/fluxo de criar conta como hoje
+4) Acessar /change-password direto sem sessão:
+   - deve redirecionar para /login com mensagem adequada
+5) Repetir em /login-artes e /login-artes-musicos:
+   - mesmos cenários acima, com rotas change-password-* corretas
 
-Criar uma nova política que permite leitura pública apenas para verificação de existência:
+Arquivos que serão alterados (resumo)
+- Backend (migração SQL): função public.check_profile_exists
+- Frontend:
+  - src/components/HomeAuthModal.tsx
+  - src/pages/UserLogin.tsx
+  - src/pages/UserLoginArtes.tsx
+  - src/pages/UserLoginArtesMusicos.tsx
+  - src/pages/ChangePassword.tsx
+  - (Opcional hardening) src/pages/ForgotPassword*.tsx para redirectTo via window.location.origin
 
-```sql
--- Permitir que a função check_profile_exists leia profiles
--- Isso é seguro porque a função só retorna true/false, não expõe dados
-CREATE POLICY "Allow check_profile_exists function"
-ON public.profiles
-FOR SELECT
-TO anon, authenticated
-USING (true);
-```
+Riscos e como vamos mitigar
+- “Não quero email”: tecnicamente, sem sessão autenticada, não dá para setar senha diretamente na tela /change-password. O único caminho seguro é criar sessão de recovery via link.
+  - Mitigação: deixar o envio do link transparente e com wording “Criar senha / Primeiro acesso”, sem “Esqueci minha senha”.
+- Traduções/strings: adicionar chaves novas (i18n) ou usar fallback strings onde necessário.
 
-**IMPORTANTE**: Isso pode ser muito permissivo. Uma alternativa mais segura é usar uma View com SECURITY DEFINER:
-
-### Alternativa Mais Segura: Atualizar a função com SET search_path
-
-A forma mais segura é garantir que a função realmente bypass RLS adicionando a opção correta:
-
-```sql
-DROP FUNCTION IF EXISTS check_profile_exists(TEXT);
-
-CREATE OR REPLACE FUNCTION check_profile_exists(check_email TEXT)
-RETURNS TABLE(exists_in_db BOOLEAN, password_changed BOOLEAN)
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  -- Validação básica
-  IF check_email IS NULL OR LENGTH(TRIM(check_email)) < 3 THEN
-    RETURN QUERY SELECT FALSE, FALSE;
-    RETURN;
-  END IF;
-  
-  -- Normalizar email (trim + lowercase)
-  check_email := LOWER(TRIM(check_email));
-  
-  -- Buscar perfil (RLS bypassado via SECURITY DEFINER)
-  RETURN QUERY
-  SELECT 
-    TRUE,
-    COALESCE(p.password_changed, FALSE)
-  FROM profiles p
-  WHERE LOWER(p.email) = check_email
-  LIMIT 1;
-  
-  -- Se não encontrou
-  IF NOT FOUND THEN
-    RETURN QUERY SELECT FALSE, FALSE;
-  END IF;
-END;
-$$;
-
--- Garantir permissões
-GRANT EXECUTE ON FUNCTION check_profile_exists(TEXT) TO anon, authenticated;
-```
-
-E adicionar uma política específica para o postgres user:
-
-```sql
--- Política para permitir que SECURITY DEFINER functions leiam profiles
-CREATE POLICY "Service role can read all profiles"
-ON public.profiles
-FOR SELECT
-TO postgres
-USING (true);
-```
-
----
-
-## Mudanças
-
-### 1. Migração SQL (Database)
-
-Atualizar a função RPC e adicionar política RLS apropriada.
-
-### 2. Frontend (Opcional - ForgotPassword)
-
-Atualizar `src/pages/ForgotPassword.tsx` para ler o parâmetro `?email=` da URL e pré-preencher o campo.
-
----
-
-## Resumo Técnico
-
-| Item | Antes | Depois |
-|------|-------|--------|
-| Função RPC | Não faz TRIM interno | Faz TRIM e LOWER internamente |
-| RLS postgres | Sem política | Política permitindo leitura |
-| ForgotPassword | Não lê URL params | Lê e preenche email da URL |
-
----
-
-## Resultado Esperado
-
-1. Usuário digita `aliados.sj@gmail.com` (com ou sem espaços)
-2. RPC retorna `exists_in_db: true, password_changed: false`
-3. Sistema tenta auto-login com email como senha
-4. Se falhar, redireciona para `/forgot-password?email=xxx`
-5. Página abre com email pré-preenchido
-6. Usuário clica em enviar e recebe link de recuperação
+Critério de sucesso
+- Nenhum caso de primeiro acesso redireciona para /forgot-password.
+- Usuários com password_changed=false sempre acabam em /change-password (via auto-login ou via link) e conseguem setar senha e entrar na plataforma.
