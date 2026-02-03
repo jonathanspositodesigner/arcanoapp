@@ -96,19 +96,27 @@ Deno.serve(async (req) => {
     // Use service role client for admin operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if user exists in Auth
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     let userId: string | null = null;
     let isNewUser = false;
-    
-    const existingUser = existingUsers?.users.find(u => u.email === normalizedEmail);
-    
-    if (existingUser) {
-      userId = existingUser.id;
-      console.log('Found existing user:', userId);
-      // Do NOT update password for existing users - only set on creation
-    } else {
-      // Create new user with password equal to email
+
+    // STEP 1: Try to find user by email in profiles first (faster)
+    console.log('Checking profiles table for:', normalizedEmail);
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+
+    if (existingProfile) {
+      userId = existingProfile.id;
+      console.log('Found user via profiles table:', userId);
+    }
+
+    // STEP 2: If not found in profiles, search in Auth with pagination
+    if (!userId) {
+      console.log('Not in profiles, searching Auth...');
+      
+      // Try to create user first - if email exists, we'll get an error
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: normalizedEmail,
         password: normalizedEmail,
@@ -116,16 +124,56 @@ Deno.serve(async (req) => {
       });
 
       if (createError) {
-        console.error('Error creating user:', createError);
-        return new Response(
-          JSON.stringify({ error: `Erro ao criar usuário: ${createError.message}` }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        // User exists in Auth but not in profiles (orphaned user)
+        if (createError.message?.includes('already') || createError.message?.includes('exists')) {
+          console.log('User exists in Auth but missing profile, searching...');
+          
+          // Paginated search for user in Auth
+          let page = 1;
+          const perPage = 1000;
+          let found = false;
+          
+          while (!found && page <= 10) {
+            const { data: usersPage } = await supabaseAdmin.auth.admin.listUsers({
+              page,
+              perPage
+            });
+            
+            if (!usersPage?.users?.length) break;
+            
+            const matchedUser = usersPage.users.find(u => 
+              u.email?.toLowerCase() === normalizedEmail
+            );
+            
+            if (matchedUser) {
+              userId = matchedUser.id;
+              found = true;
+              console.log(`Found orphaned user on page ${page}:`, userId);
+            }
+            
+            if (usersPage.users.length < perPage) break;
+            page++;
+          }
+          
+          if (!userId) {
+            console.error('User exists in Auth but could not find after 10 pages');
+            return new Response(
+              JSON.stringify({ error: 'Usuário existe mas não foi encontrado. Contate o suporte.' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        } else {
+          console.error('Error creating user:', createError);
+          return new Response(
+            JSON.stringify({ error: `Erro ao criar usuário: ${createError.message}` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } else {
+        userId = newUser.user?.id;
+        isNewUser = true;
+        console.log('Created new user:', userId);
       }
-
-      userId = newUser.user?.id;
-      isNewUser = true;
-      console.log('Created new user:', userId);
     }
 
     if (!userId) {
@@ -135,10 +183,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Upsert profile with name and phone
-    console.log('Upserting profile:', { id: userId, name, phone: cleanPhone, email: normalizedEmail });
+    // STEP 3: ALWAYS upsert profile (this fixes orphaned users!)
+    console.log('Upserting profile for:', { id: userId, name, phone: cleanPhone, email: normalizedEmail });
     
-    const { error: profileError } = await supabaseAdmin
+    const { data: upsertedProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .upsert({
         id: userId,
@@ -147,17 +195,27 @@ Deno.serve(async (req) => {
         email: normalizedEmail,
         password_changed: false,
         updated_at: new Date().toISOString()
-      }, { onConflict: 'id' });
+      }, { onConflict: 'id' })
+      .select()
+      .single();
 
     if (profileError) {
-      console.error('Error upserting profile:', profileError);
+      console.error('Profile upsert failed:', profileError);
+      console.error('Profile upsert details:', JSON.stringify({ 
+        userId, 
+        name, 
+        phone: cleanPhone, 
+        email: normalizedEmail,
+        errorCode: profileError.code,
+        errorDetails: profileError.details
+      }));
       return new Response(
         JSON.stringify({ error: `Erro ao criar perfil: ${profileError.message}` }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    console.log('Profile upserted successfully');
+    console.log('Profile upserted successfully:', upsertedProfile?.id);
 
     // Delete existing pack purchases for this user (to replace with new ones)
     const { error: deletePacksError } = await supabaseAdmin
