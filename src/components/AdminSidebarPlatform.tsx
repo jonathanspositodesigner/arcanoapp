@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Wrench, BarChart3, Megaphone, LogOut, Home, ArrowLeft, Sparkles, Music, FileText } from "lucide-react";
+import { Wrench, BarChart3, Megaphone, LogOut, Home, ArrowLeft, Sparkles, Music, FileText, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -56,6 +56,12 @@ const AdminSidebarPlatform = ({ platform, onLogout }: AdminSidebarPlatformProps)
       path: `${config.basePath}/marketing`,
       icon: Megaphone,
       description: "Campanhas e divulgação"
+    },
+    {
+      label: "CUSTOS IA",
+      path: `${config.basePath}/custos-ia`,
+      icon: Cpu,
+      description: "Uso das ferramentas de IA"
     }
   ];
 
