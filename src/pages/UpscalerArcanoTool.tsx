@@ -534,6 +534,10 @@ const UpscalerArcanoTool: React.FC = () => {
     setJobId(null);
     setIsWaitingInQueue(false);
     setQueuePosition(0);
+    // Clear file input to allow re-selecting same file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   }, []);
 
   // Slider handlers for before/after comparison
