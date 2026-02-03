@@ -107,7 +107,7 @@ const UpscalerSelectionPage = () => {
               </h2>
               <p className="text-purple-300/80 mb-6 leading-relaxed">
                 Melhore a qualidade de vídeos curtos com IA. 
-                Perfeito para clips, reels e vídeos de até 8 segundos.
+                Perfeito para clips, reels e vídeos de até 10 segundos.
               </p>
 
               {/* Features */}
