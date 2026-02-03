@@ -53,6 +53,9 @@ const PoseChangerTool: React.FC = () => {
   // Session management
   const sessionIdRef = useRef<string>('');
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  
+  // CRITICAL: Synchronous flag to prevent duplicate API calls
+  const processingRef = useRef(false);
 
   // No credits modal
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
@@ -126,9 +129,11 @@ const PoseChangerTool: React.FC = () => {
             setStatus('completed');
             setProgress(100);
             refetchCredits();
+            processingRef.current = false;
             toast.success('Pose alterada com sucesso!');
           } else if (newData.status === 'failed') {
             setStatus('error');
+            processingRef.current = false;
             toast.error(newData.error_message || 'Erro no processamento');
           } else if (newData.status === 'running') {
             setStatus('processing');
@@ -260,20 +265,30 @@ const PoseChangerTool: React.FC = () => {
   };
 
   const handleProcess = async () => {
+    // CRITICAL: Prevent duplicate calls with synchronous check
+    if (processingRef.current) {
+      console.log('[PoseChanger] Already processing, ignoring duplicate call');
+      return;
+    }
+    processingRef.current = true;
+
     if (!personImage || !referenceImage || !personFile) {
       toast.error('Por favor, selecione ambas as imagens');
+      processingRef.current = false;
       return;
     }
 
     if (!user?.id) {
       setNoCreditsReason('not_logged');
       setShowNoCreditsModal(true);
+      processingRef.current = false;
       return;
     }
 
     if (credits < CREDIT_COST) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
+      processingRef.current = false;
       return;
     }
 
@@ -375,6 +390,7 @@ const PoseChangerTool: React.FC = () => {
       console.error('[PoseChanger] Process error:', error);
       setStatus('error');
       toast.error(error.message || 'Erro ao processar imagem');
+      processingRef.current = false;
     }
   };
 
@@ -397,6 +413,7 @@ const PoseChangerTool: React.FC = () => {
   };
 
   const handleReset = () => {
+    processingRef.current = false;
     setPersonImage(null);
     setPersonFile(null);
     setReferenceImage(null);
