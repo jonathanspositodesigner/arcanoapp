@@ -540,7 +540,7 @@ async function handleRun(req: Request) {
       
       await supabase
         .from('veste_ai_jobs')
-        .update({ position })
+        .update({ position, user_credit_cost: creditCost })
         .eq('id', jobId);
 
       console.log(`[VesteAI] Job queued at position ${position}`);
@@ -561,7 +561,8 @@ async function handleRun(req: Request) {
       .update({ 
         status: 'running', 
         started_at: new Date().toISOString(),
-        position: 0
+        position: 0,
+        user_credit_cost: creditCost
       })
       .eq('id', jobId);
 
