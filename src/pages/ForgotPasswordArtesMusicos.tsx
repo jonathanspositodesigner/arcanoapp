@@ -20,7 +20,7 @@ const ForgotPasswordArtesMusicos = () => {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `https://arcanolab.voxvisual.com.br/reset-password-artes-musicos`,
+        redirectTo: `${window.location.origin}/reset-password-artes-musicos`,
       });
       if (error) { toast.error(t('errors.sendRecoveryEmailError')); return; }
       setEmailSent(true);

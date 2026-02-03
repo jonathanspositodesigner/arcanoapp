@@ -104,11 +104,18 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
           onClose();
           window.location.href = '/change-password?redirect=/';
         } else {
-          // Login automático falhou - senha não é o email
-          // Redirecionar para recuperação de senha com email preenchido
-          toast.info(t('auth.needPasswordReset') || 'Precisamos redefinir sua senha para garantir seu acesso.');
+          // Login automático falhou - enviar link para criar senha (NÃO forgot-password)
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+            loginEmail.trim().toLowerCase(),
+            { redirectTo: `${window.location.origin}/change-password?redirect=/` }
+          );
+          
+          if (!resetError) {
+            toast.success(t('auth.passwordLinkSent') || 'Enviamos um link para criar sua senha. Verifique seu email.');
+          } else {
+            toast.error(t('auth.errorSendingLink') || 'Erro ao enviar link. Tente novamente.');
+          }
           onClose();
-          window.location.href = `/forgot-password?email=${encodeURIComponent(loginEmail.trim())}`;
         }
         return;
       }

@@ -21,7 +21,7 @@ const ForgotPasswordArtes = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `https://arcanolab.voxvisual.com.br/reset-password-artes`,
+        redirectTo: `${window.location.origin}/reset-password-artes`,
       });
 
       if (error) {

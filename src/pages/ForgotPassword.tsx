@@ -22,7 +22,7 @@ const ForgotPassword = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `https://arcanolab.voxvisual.com.br/reset-password`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) throw error;
