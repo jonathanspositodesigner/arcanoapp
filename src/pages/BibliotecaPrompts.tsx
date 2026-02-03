@@ -701,7 +701,7 @@ const BibliotecaPrompts = () => {
 
           {/* Botão Ferramentas de IA destacado */}
           <Button 
-            onClick={() => navigate("/ferramentas-ia")} 
+            onClick={() => navigate("/ferramentas-ia-aplicativo")} 
             className="w-full mt-6 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-semibold h-auto py-4 px-4"
           >
             <Zap className="h-5 w-5 mr-2" />
