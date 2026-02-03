@@ -30,8 +30,77 @@ console.log('[PoseChanger] Config loaded - WebApp ID:', WEBAPP_ID_POSE);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// ========== SAFE JSON PARSING HELPERS ==========
+
+// Read response safely - handles HTML errors from RunningHub/Cloudflare
+async function safeParseResponse(response: Response, context: string): Promise<any> {
+  const contentType = response.headers.get('content-type') || '';
+  const status = response.status;
+  
+  // Always read as text first to avoid stream issues
+  const text = await response.text();
+  
+  console.log(`[PoseChanger] ${context} - Status: ${status}, ContentType: ${contentType}, BodyLength: ${text.length}`);
+  
+  // If not OK, log snippet and throw useful error
+  if (!response.ok) {
+    const snippet = text.slice(0, 300);
+    console.error(`[PoseChanger] ${context} FAILED - Status: ${status}, Body: ${snippet}`);
+    throw new Error(`${context} failed (${status}): ${snippet.slice(0, 100)}`);
+  }
+  
+  // Check if response looks like JSON
+  if (!contentType.includes('application/json') && !text.trim().startsWith('{') && !text.trim().startsWith('[')) {
+    const snippet = text.slice(0, 300);
+    console.error(`[PoseChanger] ${context} returned non-JSON - ContentType: ${contentType}, Body: ${snippet}`);
+    throw new Error(`${context} returned HTML/error (${status}): ${snippet.slice(0, 100)}`);
+  }
+  
+  // Try to parse JSON
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    const snippet = text.slice(0, 300);
+    console.error(`[PoseChanger] ${context} JSON parse failed - Body: ${snippet}`);
+    throw new Error(`${context} invalid JSON (${status}): ${snippet.slice(0, 100)}`);
+  }
+}
+
+// Fetch with retry for transient errors (429, 502, 503, 504)
+async function fetchWithRetry(
+  url: string, 
+  options: RequestInit, 
+  context: string,
+  maxRetries: number = 3
+): Promise<Response> {
+  const retryableStatuses = [429, 502, 503, 504];
+  const delays = [500, 1000, 2000];
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const response = await fetch(url, options);
+    
+    if (!retryableStatuses.includes(response.status)) {
+      return response;
+    }
+    
+    // Consume body to prevent leak
+    await response.text();
+    
+    if (attempt < maxRetries - 1) {
+      const delay = delays[attempt] || 2000;
+      console.warn(`[PoseChanger] ${context} got ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+      await new Promise(r => setTimeout(r, delay));
+    } else {
+      console.error(`[PoseChanger] ${context} failed after ${maxRetries} retries with status ${response.status}`);
+      throw new Error(`${context} failed after ${maxRetries} retries (${response.status})`);
+    }
+  }
+  
+  throw new Error(`${context} failed - unexpected retry loop exit`);
+}
 
 // Get client IP from request headers
 function getClientIP(req: Request): string {
@@ -174,12 +243,13 @@ async function handleUpload(req: Request) {
     formData.append('fileType', 'image');
     formData.append('file', new Blob([bytes], { type: mimeType }), fileName || 'upload.png');
 
-    const response = await fetch('https://www.runninghub.ai/task/openapi/upload', {
-      method: 'POST',
-      body: formData,
-    });
+    const response = await fetchWithRetry(
+      'https://www.runninghub.ai/task/openapi/upload',
+      { method: 'POST', body: formData },
+      'Upload to RunningHub'
+    );
 
-    const data = await response.json();
+    const data = await safeParseResponse(response, 'Upload response');
     console.log('[PoseChanger] Upload response:', JSON.stringify(data));
 
     if (data.code !== 0) {
@@ -223,8 +293,8 @@ async function handleRun(req: Request) {
 
   const { 
     jobId,
-    personImageUrl,     // URL from Supabase Storage for person photo
-    referenceImageUrl,  // URL from Supabase Storage for pose reference
+    personImageUrl,
+    referenceImageUrl,
     userId,
     creditCost
   } = await req.json();
@@ -310,7 +380,7 @@ async function handleRun(req: Request) {
     // Upload person image
     console.log('[PoseChanger] Downloading person image from storage...');
     const personResponse = await fetch(personImageUrl);
-    if (!personResponse.ok) throw new Error('Failed to download person image');
+    if (!personResponse.ok) throw new Error(`Failed to download person image (${personResponse.status})`);
     
     const personBlob = await personResponse.blob();
     const personName = personImageUrl.split('/').pop() || 'person.png';
@@ -320,20 +390,21 @@ async function handleRun(req: Request) {
     personFormData.append('fileType', 'image');
     personFormData.append('file', personBlob, personName);
     
-    const personUpload = await fetch('https://www.runninghub.ai/task/openapi/upload', {
-      method: 'POST',
-      body: personFormData,
-    });
+    const personUploadResponse = await fetchWithRetry(
+      'https://www.runninghub.ai/task/openapi/upload',
+      { method: 'POST', body: personFormData },
+      'Person image upload'
+    );
     
-    const personData = await personUpload.json();
-    if (personData.code !== 0) throw new Error('Person image upload failed: ' + personData.msg);
+    const personData = await safeParseResponse(personUploadResponse, 'Person upload');
+    if (personData.code !== 0) throw new Error('Person image upload failed: ' + (personData.msg || 'Unknown'));
     personFileName = personData.data.fileName;
     console.log('[PoseChanger] Person image uploaded:', personFileName);
 
     // Upload reference image
     console.log('[PoseChanger] Downloading reference image from storage...');
     const refResponse = await fetch(referenceImageUrl);
-    if (!refResponse.ok) throw new Error('Failed to download reference image');
+    if (!refResponse.ok) throw new Error(`Failed to download reference image (${refResponse.status})`);
     
     const refBlob = await refResponse.blob();
     const refName = referenceImageUrl.split('/').pop() || 'reference.png';
@@ -343,19 +414,31 @@ async function handleRun(req: Request) {
     refFormData.append('fileType', 'image');
     refFormData.append('file', refBlob, refName);
     
-    const refUpload = await fetch('https://www.runninghub.ai/task/openapi/upload', {
-      method: 'POST',
-      body: refFormData,
-    });
+    const refUploadResponse = await fetchWithRetry(
+      'https://www.runninghub.ai/task/openapi/upload',
+      { method: 'POST', body: refFormData },
+      'Reference image upload'
+    );
     
-    const refData = await refUpload.json();
-    if (refData.code !== 0) throw new Error('Reference image upload failed: ' + refData.msg);
+    const refData = await safeParseResponse(refUploadResponse, 'Reference upload');
+    if (refData.code !== 0) throw new Error('Reference image upload failed: ' + (refData.msg || 'Unknown'));
     referenceFileName = refData.data.fileName;
     console.log('[PoseChanger] Reference image uploaded:', referenceFileName);
 
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
     console.error('[PoseChanger] Image transfer error:', error);
+    
+    // Mark job as failed
+    await supabase
+      .from('pose_changer_jobs')
+      .update({ 
+        status: 'failed', 
+        error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`,
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', jobId);
+    
     return new Response(JSON.stringify({ 
       error: errorMsg, 
       code: 'IMAGE_TRANSFER_ERROR' 
@@ -489,16 +572,20 @@ async function handleRun(req: Request) {
 
     console.log('[PoseChanger] AI App request:', JSON.stringify(requestBody));
 
-    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_POSE}`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+    const response = await fetchWithRetry(
+      `https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_POSE}`,
+      {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+        },
+        body: JSON.stringify(requestBody),
       },
-      body: JSON.stringify(requestBody),
-    });
+      'Run AI App'
+    );
 
-    const data = await response.json();
+    const data = await safeParseResponse(response, 'AI App response');
     console.log('[PoseChanger] AI App response:', JSON.stringify(data));
 
     if (data.taskId) {
@@ -543,7 +630,7 @@ async function handleRun(req: Request) {
       .from('pose_changer_jobs')
       .update({ 
         status: 'failed', 
-        error_message: errorMessage,
+        error_message: errorMessage.slice(0, 300),
         completed_at: new Date().toISOString()
       })
       .eq('id', jobId);
