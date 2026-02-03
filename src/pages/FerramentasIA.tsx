@@ -6,14 +6,11 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
-import { Sparkles, CheckCircle, Loader2, Play, ShoppingCart, UserCheck, AlertTriangle, ChevronRight, ChevronLeft, User } from "lucide-react";
+import { Sparkles, CheckCircle, Loader2, Play, ShoppingCart, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import ToolsHeader from "@/components/ToolsHeader";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 
 interface ToolData {
   id: string;
@@ -74,11 +71,6 @@ const FerramentasIA = () => {
   const [tools, setTools] = useState<ToolData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // First access modal states
-  const [showFirstAccessModal, setShowFirstAccessModal] = useState(false);
-  const [firstAccessEmail, setFirstAccessEmail] = useState("");
-  const [firstAccessLoading, setFirstAccessLoading] = useState(false);
-  const [showEmailNotFoundModal, setShowEmailNotFoundModal] = useState(false);
 
   // Preferred order for tools
   const preferredOrder = ["upscaller-arcano", "forja-selos-3d-ilimitada", "ia-muda-pose", "ia-muda-roupa"];
@@ -107,75 +99,6 @@ const FerramentasIA = () => {
     fetchTools();
   }, []);
 
-  const handleFirstAccessCheck = async () => {
-    if (!firstAccessEmail.trim()) {
-      toast.error(t('ferramentas.toast.enterEmail'));
-      return;
-    }
-    setFirstAccessLoading(true);
-    try {
-      const normalizedEmail = firstAccessEmail.trim().toLowerCase();
-      const { data: profileCheck, error: rpcError } = await supabase.rpc('check_profile_exists', {
-        check_email: normalizedEmail
-      });
-      
-      if (rpcError) {
-        toast.error(t('ferramentas.toast.errorVerifying'));
-        setFirstAccessLoading(false);
-        return;
-      }
-      
-      const profileExists = profileCheck?.[0]?.exists_in_db || false;
-      const passwordChanged = profileCheck?.[0]?.password_changed || false;
-      
-      if (!profileExists) {
-        setShowFirstAccessModal(false);
-        setShowEmailNotFoundModal(true);
-        return;
-      }
-      
-      if (profileExists && !passwordChanged) {
-        // Primeiro acesso: login com email/email
-        const { error } = await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password: normalizedEmail
-        });
-        if (!error) {
-          setShowFirstAccessModal(false);
-          setFirstAccessEmail("");
-          toast.success(t('ferramentas.toast.welcome'));
-          navigate('/change-password-artes?redirect=/ferramentas-ia');
-        } else {
-          // Auto-login falhou - enviar link e navegar para /change-password-artes
-          const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-            normalizedEmail,
-            { redirectTo: `${window.location.origin}/change-password-artes?redirect=/ferramentas-ia` }
-          );
-          
-          if (!resetError) {
-            setShowFirstAccessModal(false);
-            setFirstAccessEmail("");
-            navigate(`/change-password-artes?redirect=/ferramentas-ia&sent=1&email=${encodeURIComponent(normalizedEmail)}`);
-          } else {
-            toast.error(t('ferramentas.toast.errorAccessing'));
-            setShowFirstAccessModal(false);
-          }
-        }
-        return;
-      }
-      
-      if (profileExists && passwordChanged) {
-        toast.info(t('ferramentas.toast.alreadySetPassword'));
-        setShowFirstAccessModal(false);
-        setFirstAccessEmail("");
-        navigate('/login-artes');
-      }
-    } catch (error) {
-      toast.error(t('ferramentas.toast.errorVerifyingEmail'));
-    } finally {
-      setFirstAccessLoading(false);
-    }
-  };
 
   const getAccessRoute = (slug: string) => {
     return `/ferramenta-ia-artes/${slug}`;
@@ -329,7 +252,7 @@ const FerramentasIA = () => {
         <div className="bg-[#1A0A2E] border-b border-purple-500/20">
           <div className="container mx-auto px-4 py-3">
             <Button
-              onClick={() => setShowFirstAccessModal(true)}
+              onClick={() => navigate('/login-artes?redirect=/ferramentas-ia')}
               className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
               size="sm"
             >
@@ -380,99 +303,6 @@ const FerramentasIA = () => {
         )}
       </main>
 
-      {/* First Access Modal */}
-      <Dialog open={showFirstAccessModal} onOpenChange={setShowFirstAccessModal}>
-        <DialogContent className="max-w-[340px] sm:max-w-md bg-[#1A0A2E] border-purple-500/20">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto">
-              <UserCheck className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">{t('ferramentas.modals.firstAccess.title')}</h2>
-              <p className="text-purple-300 mt-2 text-sm">
-                {t('ferramentas.modals.firstAccess.description')}
-              </p>
-            </div>
-            <div className="space-y-3">
-              <Input 
-                type="email" 
-                placeholder={t('ferramentas.modals.firstAccess.placeholder')}
-                value={firstAccessEmail} 
-                onChange={e => setFirstAccessEmail(e.target.value)} 
-                onKeyDown={e => e.key === 'Enter' && handleFirstAccessCheck()}
-                className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-300/50"
-              />
-              <Button 
-                onClick={handleFirstAccessCheck} 
-                disabled={firstAccessLoading} 
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500"
-              >
-                {firstAccessLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {t('ferramentas.modals.firstAccess.verifying')}
-                  </>
-                ) : (
-                  <>
-                    <ChevronRight className="h-4 w-4 mr-2" />
-                    {t('ferramentas.modals.firstAccess.verify')}
-                  </>
-                )}
-              </Button>
-            </div>
-            <p className="text-xs text-purple-300/70">
-              {t('ferramentas.modals.firstAccess.notCustomer')}{" "}
-              <button 
-                onClick={() => {
-                  setShowFirstAccessModal(false);
-                }} 
-                className="text-purple-400 underline"
-              >
-                {t('ferramentas.modals.firstAccess.seeTools')}
-              </button>
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Email Not Found Modal */}
-      <Dialog open={showEmailNotFoundModal} onOpenChange={setShowEmailNotFoundModal}>
-        <DialogContent className="max-w-[340px] sm:max-w-md bg-[#1A0A2E] border-purple-500/20">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
-              <AlertTriangle className="h-8 w-8 text-red-500" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">{t('ferramentas.modals.emailNotFound.title')}</h2>
-              <p className="text-purple-300 mt-2 text-sm">
-                {t('ferramentas.modals.emailNotFound.description', { email: firstAccessEmail })}
-              </p>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Button 
-                onClick={() => {
-                  setShowEmailNotFoundModal(false);
-                  setShowFirstAccessModal(true);
-                }} 
-                variant="outline"
-              >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                {t('ferramentas.modals.emailNotFound.tryAnother')}
-              </Button>
-              <Button 
-                onClick={() => {
-                  setShowEmailNotFoundModal(false);
-                  navigate('/login-artes');
-                }} 
-                className="bg-gradient-to-r from-yellow-500 to-orange-500"
-              >
-                <User className="h-4 w-4 mr-2" />
-                {t('ferramentas.modals.emailNotFound.createAccount')}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
