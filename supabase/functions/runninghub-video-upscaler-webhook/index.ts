@@ -23,12 +23,14 @@ serve(async (req) => {
     console.log("[VideoUpscaler Webhook] Received payload:", JSON.stringify(payload));
 
     // Extract fields from RunningHub webhook payload
-    // Based on API documentation: taskId, status (QUEUED, RUNNING, SUCCESS, FAILED), results array
-    const taskId = payload.taskId;
-    const status = payload.status;
-    const results = payload.results || [];
-    const errorMessage = payload.errorMessage || payload.failedReason?.message || "";
-    const usage = payload.usage || {};
+    // RunningHub envia dados dentro de eventData para webhooks de vídeo (event: "TASK_END")
+    const eventData = payload.eventData || payload;
+    
+    const taskId = eventData.taskId || payload.taskId;
+    const status = eventData.status;
+    const results = eventData.results || [];
+    const errorMessage = eventData.errorMessage || eventData.failedReason?.message || "";
+    const usage = eventData.usage || {};
     
     // Calculate RH cost from usage data
     const rhCost = usage.consumeCoins ? parseInt(usage.consumeCoins) : 0;
