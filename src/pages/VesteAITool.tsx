@@ -1,0 +1,666 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, Shirt } from 'lucide-react';
+import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
+import { supabase } from '@/integrations/supabase/client';
+import ToolsHeader from '@/components/ToolsHeader';
+import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
+import ClothingLibraryModal from '@/components/veste-ai/ClothingLibraryModal';
+import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
+import imageCompression from 'browser-image-compression';
+
+type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
+
+const CREDIT_COST = 60;
+const SESSION_KEY = 'veste_ai_session_id';
+
+// Queue messages for better UX
+const queueMessages = [
+  { emoji: '👕', text: 'Preparando sua transformação...' },
+  { emoji: '✨', text: 'Vestindo nova roupa...' },
+  { emoji: '🚀', text: 'Quase lá, continue esperando!' },
+  { emoji: '🌟', text: 'Processando seu look incrível...' },
+];
+
+const VesteAITool: React.FC = () => {
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
+  const { user } = usePremiumStatus();
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+
+  // Image states
+  const [personImage, setPersonImage] = useState<string | null>(null);
+  const [personFile, setPersonFile] = useState<File | null>(null);
+  const [clothingImage, setClothingImage] = useState<string | null>(null);
+  const [clothingFile, setClothingFile] = useState<File | null>(null);
+  const [outputImage, setOutputImage] = useState<string | null>(null);
+
+  // UI states
+  const [showClothingLibrary, setShowClothingLibrary] = useState(false);
+  const [status, setStatus] = useState<ProcessingStatus>('idle');
+  const [progress, setProgress] = useState(0);
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  // Queue states
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [queuePosition, setQueuePosition] = useState(0);
+  const [queueMessageIndex, setQueueMessageIndex] = useState(0);
+
+  // Session management
+  const sessionIdRef = useRef<string>('');
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  
+  // CRITICAL: Synchronous flag to prevent duplicate API calls
+  const processingRef = useRef(false);
+  
+  // Ref for zoom/pan control
+  const transformRef = useRef<ReactZoomPanPinchRef>(null);
+
+  // No credits modal
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
+  const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
+
+  const canProcess = personImage && clothingImage && status === 'idle';
+  const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
+
+  // Initialize session ID
+  useEffect(() => {
+    let storedSessionId = localStorage.getItem(SESSION_KEY);
+    if (!storedSessionId) {
+      storedSessionId = crypto.randomUUID();
+      localStorage.setItem(SESSION_KEY, storedSessionId);
+    }
+    sessionIdRef.current = storedSessionId;
+    
+    // Check for pending jobs
+    checkPendingJobs();
+  }, []);
+
+  // Check for pending jobs on load
+  const checkPendingJobs = async () => {
+    if (!sessionIdRef.current) return;
+
+    try {
+      const { data: pendingJob } = await supabase
+        .from('veste_ai_jobs')
+        .select('*')
+        .eq('session_id', sessionIdRef.current)
+        .in('status', ['queued', 'running'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (pendingJob) {
+        console.log('[VesteAI] Found pending job:', pendingJob.id);
+        setJobId(pendingJob.id);
+        setStatus(pendingJob.status === 'queued' ? 'waiting' : 'processing');
+        setQueuePosition(pendingJob.position || 0);
+        subscribeToJobUpdates(pendingJob.id);
+      }
+    } catch (error) {
+      console.error('[VesteAI] Error checking pending jobs:', error);
+    }
+  };
+
+  // Subscribe to realtime updates for a job
+  const subscribeToJobUpdates = useCallback((jId: string) => {
+    // Cleanup previous subscription
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+    }
+
+    const channel = supabase
+      .channel(`veste-job-${jId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'veste_ai_jobs',
+          filter: `id=eq.${jId}`
+        },
+        (payload) => {
+          const newData = payload.new as any;
+          console.log('[VesteAI] Job update:', newData);
+
+          if (newData.status === 'completed' && newData.output_url) {
+            setOutputImage(newData.output_url);
+            setStatus('completed');
+            setProgress(100);
+            refetchCredits();
+            processingRef.current = false;
+            toast.success('Look aplicado com sucesso!');
+          } else if (newData.status === 'failed') {
+            setStatus('error');
+            processingRef.current = false;
+            toast.error(newData.error_message || 'Erro no processamento');
+          } else if (newData.status === 'running') {
+            setStatus('processing');
+            setQueuePosition(0);
+          } else if (newData.status === 'queued') {
+            setStatus('waiting');
+            setQueuePosition(newData.position || 0);
+          }
+        }
+      )
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+  }, [refetchCredits]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+      }
+    };
+  }, []);
+
+  // Rotate queue messages
+  useEffect(() => {
+    if (!isProcessing) return;
+    
+    const interval = setInterval(() => {
+      setQueueMessageIndex(prev => (prev + 1) % queueMessages.length);
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [isProcessing]);
+
+  // Progress simulation for processing state
+  useEffect(() => {
+    if (status !== 'processing') return;
+    
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) return prev;
+        return prev + Math.random() * 5;
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [status]);
+
+  // Warn user before leaving during processing
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isProcessing) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isProcessing]);
+
+  // Handle person image upload
+  const handlePersonImageChange = (dataUrl: string | null, file?: File) => {
+    setPersonImage(dataUrl);
+    setPersonFile(file || null);
+  };
+
+  // Handle clothing image selection (from library or upload)
+  const handleClothingImageChange = async (imageUrl: string | null, file?: File) => {
+    setClothingImage(imageUrl);
+    
+    if (imageUrl && !file) {
+      // Image from library - fetch as blob
+      try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const fetchedFile = new File([blob], 'clothing.png', { type: blob.type });
+        setClothingFile(fetchedFile);
+      } catch (error) {
+        console.error('[VesteAI] Error fetching clothing image:', error);
+      }
+    } else {
+      setClothingFile(file || null);
+    }
+  };
+
+  // Compress image before upload
+  const compressImage = async (file: File): Promise<Blob> => {
+    const options = {
+      maxSizeMB: 2,
+      maxWidthOrHeight: 2048,
+      useWebWorker: true,
+      fileType: 'image/webp' as const,
+    };
+    
+    try {
+      return await imageCompression(file, options);
+    } catch (error) {
+      console.warn('[VesteAI] Compression failed, using original:', error);
+      return file;
+    }
+  };
+
+  // Upload image to Supabase storage
+  const uploadToStorage = async (file: File | Blob, prefix: string): Promise<string> => {
+    if (!user?.id) {
+      throw new Error('User not authenticated');
+    }
+    
+    const timestamp = Date.now();
+    const fileName = `${prefix}-${timestamp}.webp`;
+    const filePath = `veste-ai/${user.id}/${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('artes-cloudinary')
+      .upload(filePath, file, {
+        contentType: 'image/webp',
+        upsert: true,
+      });
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+      .from('artes-cloudinary')
+      .getPublicUrl(filePath);
+
+    return urlData.publicUrl;
+  };
+
+  const handleProcess = async () => {
+    // CRITICAL: Prevent duplicate calls with synchronous check
+    if (processingRef.current) {
+      console.log('[VesteAI] Already processing, ignoring duplicate call');
+      return;
+    }
+    processingRef.current = true;
+
+    if (!personImage || !clothingImage || !personFile) {
+      toast.error('Por favor, selecione ambas as imagens');
+      processingRef.current = false;
+      return;
+    }
+
+    if (!user?.id) {
+      setNoCreditsReason('not_logged');
+      setShowNoCreditsModal(true);
+      processingRef.current = false;
+      return;
+    }
+
+    if (credits < CREDIT_COST) {
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
+      processingRef.current = false;
+      return;
+    }
+
+    setStatus('uploading');
+    setProgress(0);
+    setOutputImage(null);
+
+    try {
+      // Step 1: Create job in database
+      const { data: job, error: jobError } = await supabase
+        .from('veste_ai_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'queued',
+        })
+        .select()
+        .single();
+
+      if (jobError || !job) {
+        throw new Error('Failed to create job');
+      }
+
+      setJobId(job.id);
+      console.log('[VesteAI] Job created:', job.id);
+
+      // Step 2: Compress and upload person image
+      setProgress(10);
+      const compressedPerson = await compressImage(personFile);
+      const personUrl = await uploadToStorage(compressedPerson, 'person');
+      console.log('[VesteAI] Person image uploaded:', personUrl);
+
+      // Step 3: Compress and upload clothing image
+      setProgress(30);
+      let clothingUrl: string;
+      
+      if (clothingFile) {
+        const compressedClothing = await compressImage(clothingFile);
+        clothingUrl = await uploadToStorage(compressedClothing, 'clothing');
+      } else {
+        // Already a URL from library
+        clothingUrl = clothingImage;
+      }
+      console.log('[VesteAI] Clothing image uploaded:', clothingUrl);
+
+      // Step 4: Call edge function
+      setProgress(50);
+      setStatus('processing');
+      
+      const { data: runResult, error: runError } = await supabase.functions.invoke(
+        'runninghub-veste-ai/run',
+        {
+          body: {
+            jobId: job.id,
+            personImageUrl: personUrl,
+            clothingImageUrl: clothingUrl,
+            userId: user.id,
+            creditCost: CREDIT_COST,
+          },
+        }
+      );
+
+      if (runError) {
+        // Try to extract detailed error from the response
+        let errorMessage = runError.message || 'Erro desconhecido';
+        if (errorMessage.includes('non-2xx')) {
+          errorMessage = 'Falha na comunicação com o servidor. Tente novamente.';
+        }
+        throw new Error(errorMessage);
+      }
+
+      console.log('[VesteAI] Run result:', runResult);
+
+      if (runResult.queued) {
+        setStatus('waiting');
+        setQueuePosition(runResult.position || 1);
+      } else if (runResult.success) {
+        setStatus('processing');
+      } else if (runResult.code === 'INSUFFICIENT_CREDITS') {
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        setStatus('idle');
+        return;
+      } else if (runResult.code === 'IMAGE_TRANSFER_ERROR') {
+        // Specific error for RunningHub communication issues
+        const detail = runResult.error || 'Falha ao enviar imagens';
+        throw new Error(`Erro no provedor: ${detail.slice(0, 100)}`);
+      } else if (runResult.code === 'RATE_LIMIT_EXCEEDED') {
+        throw new Error('Muitas requisições. Aguarde 1 minuto e tente novamente.');
+      } else {
+        throw new Error(runResult.error || 'Erro desconhecido');
+      }
+
+      // Subscribe to job updates
+      subscribeToJobUpdates(job.id);
+      refetchCredits();
+
+    } catch (error: any) {
+      console.error('[VesteAI] Process error:', error);
+      setStatus('error');
+      toast.error(error.message || 'Erro ao processar imagem');
+      processingRef.current = false;
+    }
+  };
+
+  const handleCancelQueue = async () => {
+    if (!jobId) return;
+
+    try {
+      await supabase
+        .from('veste_ai_jobs')
+        .update({ status: 'cancelled' })
+        .eq('id', jobId);
+
+      setStatus('idle');
+      setJobId(null);
+      setQueuePosition(0);
+      processingRef.current = false;
+      toast.info('Processamento cancelado');
+    } catch (error) {
+      console.error('[VesteAI] Cancel error:', error);
+    }
+  };
+
+  const handleReset = () => {
+    processingRef.current = false;
+    setPersonImage(null);
+    setPersonFile(null);
+    setClothingImage(null);
+    setClothingFile(null);
+    setOutputImage(null);
+    setStatus('idle');
+    setProgress(0);
+    setZoomLevel(1);
+    setJobId(null);
+    setQueuePosition(0);
+  };
+
+  const handleDownload = () => {
+    if (!outputImage) return;
+    
+    const link = document.createElement('a');
+    link.href = outputImage;
+    link.download = `veste-ai-${Date.now()}.png`;
+    link.target = '_blank';
+    link.click();
+    toast.success('Download iniciado!');
+  };
+
+  const currentQueueMessage = queueMessages[queueMessageIndex];
+
+  return (
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
+      <ToolsHeader title="Veste AI" onBack={goBack} />
+
+      {/* Warning banner during processing */}
+      {isProcessing && (
+        <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-400" />
+          <span className="text-xs text-amber-200">
+            Não feche esta página durante o processamento
+          </span>
+        </div>
+      )}
+
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden">
+        {/* Main Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 lg:h-full">
+          
+          {/* Left Side - Inputs (2/7 on desktop ~28%) */}
+          <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
+            {/* Person Image Upload */}
+            <ImageUploadCard
+              title="Sua Foto"
+              image={personImage}
+              onImageChange={handlePersonImageChange}
+              disabled={isProcessing}
+            />
+
+            {/* Clothing Image Upload */}
+            <ImageUploadCard
+              title="Roupa de Referência"
+              image={clothingImage}
+              onImageChange={handleClothingImageChange}
+              showLibraryButton
+              onOpenLibrary={() => setShowClothingLibrary(true)}
+              disabled={isProcessing}
+            />
+
+            {/* Action Button */}
+            <Button
+              size="sm"
+              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
+              disabled={!canProcess || isProcessing}
+              onClick={handleProcess}
+            >
+              {status === 'uploading' ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  Enviando...
+                </>
+              ) : status === 'waiting' ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  Fila #{queuePosition}
+                </>
+              ) : status === 'processing' ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <Shirt className="w-3.5 h-3.5 mr-1.5" />
+                  Vestir ({CREDIT_COST} <Coins className="w-3 h-3 inline ml-0.5" />)
+                </>
+              )}
+            </Button>
+
+            {/* Cancel button when in queue */}
+            {status === 'waiting' && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs"
+                onClick={handleCancelQueue}
+              >
+                <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                Cancelar
+              </Button>
+            )}
+
+            {/* Credits Display */}
+            <div className="flex items-center justify-center gap-2 text-xs text-purple-300 bg-purple-500/10 rounded-lg px-3 py-2">
+              <Coins className="w-3.5 h-3.5" />
+              <span>Saldo: {creditsLoading ? '...' : credits} créditos</span>
+            </div>
+          </div>
+
+          {/* Right Side - Result Viewer (5/7 on desktop ~72%) */}
+          <div className="lg:col-span-5 flex flex-col gap-2 min-h-[300px] lg:min-h-0 lg:h-full">
+            <Card className="flex-1 relative bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden flex items-center justify-center">
+              {/* Processing overlay */}
+              {isProcessing && (
+                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
+                  <div className="w-16 h-16 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin mb-4" />
+                  <p className="text-white text-lg font-medium mb-2">
+                    {currentQueueMessage.emoji} {currentQueueMessage.text}
+                  </p>
+                  {status === 'waiting' && queuePosition > 0 && (
+                    <p className="text-purple-300 text-sm">
+                      Posição na fila: #{queuePosition}
+                    </p>
+                  )}
+                  {status === 'processing' && (
+                    <div className="w-48 h-2 bg-purple-500/20 rounded-full overflow-hidden mt-2">
+                      <div 
+                        className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Result Image */}
+              {outputImage ? (
+                <TransformWrapper
+                  ref={transformRef}
+                  initialScale={1}
+                  minScale={0.5}
+                  maxScale={4}
+                  centerOnInit
+                  onTransformed={(_, state) => setZoomLevel(state.scale)}
+                >
+                  <TransformComponent
+                    wrapperClass="!w-full !h-full"
+                    contentClass="!w-full !h-full flex items-center justify-center"
+                  >
+                    <img
+                      src={outputImage}
+                      alt="Resultado"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </TransformComponent>
+                </TransformWrapper>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-purple-400/50 p-8">
+                  <Shirt className="w-16 h-16 mb-4" />
+                  <p className="text-center text-sm">
+                    O resultado aparecerá aqui
+                  </p>
+                </div>
+              )}
+
+              {/* Zoom controls */}
+              {outputImage && !isProcessing && (
+                <div className="absolute bottom-3 right-3 flex gap-2">
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="w-8 h-8 bg-black/50 border-purple-500/30 text-white hover:bg-purple-500/20"
+                    onClick={() => transformRef.current?.zoomOut()}
+                  >
+                    <ZoomOut className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="w-8 h-8 bg-black/50 border-purple-500/30 text-white hover:bg-purple-500/20"
+                    onClick={() => transformRef.current?.zoomIn()}
+                  >
+                    <ZoomIn className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </Card>
+
+            {/* Action buttons when completed */}
+            {status === 'completed' && outputImage && (
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white"
+                  onClick={handleReset}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Novo Look
+                </Button>
+                <Button
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white"
+                  onClick={handleDownload}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Baixar HD
+                </Button>
+              </div>
+            )}
+
+            {/* Error state */}
+            {status === 'error' && (
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white"
+                  onClick={handleReset}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Tentar Novamente
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Clothing Library Modal */}
+      <ClothingLibraryModal
+        isOpen={showClothingLibrary}
+        onClose={() => setShowClothingLibrary(false)}
+        onSelectClothing={handleClothingImageChange}
+      />
+
+      {/* No Credits Modal */}
+      <NoCreditsModal
+        isOpen={showNoCreditsModal}
+        onClose={() => setShowNoCreditsModal(false)}
+        reason={noCreditsReason}
+      />
+    </div>
+  );
+};
+
+export default VesteAITool;
