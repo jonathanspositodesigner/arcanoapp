@@ -540,18 +540,29 @@ const PoseChangerTool: React.FC = () => {
               </div>
 
               {/* Result Area */}
-              <div className="relative flex-1 min-h-0">
+              <div className="relative flex-1 min-h-0 flex items-center justify-center">
                 {outputImage ? (
                   <TransformWrapper
                     initialScale={1}
                     minScale={0.5}
                     maxScale={4}
                     wheel={{ step: 0.4 }}
+                    centerOnInit={true}
                     onTransformed={(_, state) => setZoomLevel(state.scale)}
                   >
                     <TransformComponent
-                      wrapperClass="w-full h-full"
-                      contentClass="w-full h-full flex items-center justify-center"
+                      wrapperStyle={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      contentStyle={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
                     >
                       <img
                         src={outputImage}
