@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle } from 'lucide-react';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -56,6 +56,9 @@ const PoseChangerTool: React.FC = () => {
   
   // CRITICAL: Synchronous flag to prevent duplicate API calls
   const processingRef = useRef(false);
+  
+  // Ref for zoom/pan control
+  const transformRef = useRef<ReactZoomPanPinchRef>(null);
 
   // No credits modal
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
@@ -537,7 +540,7 @@ const PoseChangerTool: React.FC = () => {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
-                      onClick={() => setZoomLevel(Math.max(0.5, zoomLevel - 0.25))}
+                      onClick={() => transformRef.current?.zoomOut(0.5)}
                     >
                       <ZoomOut className="w-3.5 h-3.5" />
                     </Button>
@@ -548,7 +551,7 @@ const PoseChangerTool: React.FC = () => {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
-                      onClick={() => setZoomLevel(Math.min(4, zoomLevel + 0.25))}
+                      onClick={() => transformRef.current?.zoomIn(0.5)}
                     >
                       <ZoomIn className="w-3.5 h-3.5" />
                     </Button>
@@ -560,31 +563,31 @@ const PoseChangerTool: React.FC = () => {
               <div className="relative flex-1 min-h-0 flex items-center justify-center">
                 {outputImage ? (
                   <TransformWrapper
+                    ref={transformRef}
+                    key={outputImage}
                     initialScale={1}
                     minScale={0.5}
                     maxScale={4}
                     wheel={{ step: 0.4 }}
-                    centerOnInit={true}
                     onTransformed={(_, state) => setZoomLevel(state.scale)}
                   >
                     <TransformComponent
                       wrapperStyle={{
                         width: '100%',
                         height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
                       }}
                       contentStyle={{
+                        width: '100%',
+                        height: '100%',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
                       }}
                     >
                       <img
                         src={outputImage}
                         alt="Resultado"
-                        className="max-w-full max-h-full object-contain"
+                        className="w-full h-full object-contain"
                         draggable={false}
                       />
                     </TransformComponent>
