@@ -15,12 +15,12 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // WebApp IDs for the upscaler workflows
 const WEBAPP_ID_PRO = '2015865378030755841';
 const WEBAPP_ID_STANDARD = '2017030861371219969';
-const WEBAPP_ID_LONGE = '2017343414227963905'; // WebApp for full-body/wide-angle photos
+const WEBAPP_ID_LONGE = '2017343414227963905';
 const MAX_CONCURRENT_JOBS = 3;
 
 // Rate limit configuration
-const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 }; // 10 uploads per minute
-const RATE_LIMIT_RUN = { maxRequests: 5, windowSeconds: 60 }; // 5 runs per minute
+const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 };
+const RATE_LIMIT_RUN = { maxRequests: 5, windowSeconds: 60 };
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -32,8 +32,77 @@ console.log('[RunningHub] Config loaded - PRO:', WEBAPP_ID_PRO, 'STANDARD:', WEB
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// ========== SAFE JSON PARSING HELPERS ==========
+
+// Read response safely - handles HTML errors from RunningHub/Cloudflare
+async function safeParseResponse(response: Response, context: string): Promise<any> {
+  const contentType = response.headers.get('content-type') || '';
+  const status = response.status;
+  
+  // Always read as text first to avoid stream issues
+  const text = await response.text();
+  
+  console.log(`[RunningHub] ${context} - Status: ${status}, ContentType: ${contentType}, BodyLength: ${text.length}`);
+  
+  // If not OK, log snippet and throw useful error
+  if (!response.ok) {
+    const snippet = text.slice(0, 300);
+    console.error(`[RunningHub] ${context} FAILED - Status: ${status}, Body: ${snippet}`);
+    throw new Error(`${context} failed (${status}): ${snippet.slice(0, 100)}`);
+  }
+  
+  // Check if response looks like JSON
+  if (!contentType.includes('application/json') && !text.trim().startsWith('{') && !text.trim().startsWith('[')) {
+    const snippet = text.slice(0, 300);
+    console.error(`[RunningHub] ${context} returned non-JSON - ContentType: ${contentType}, Body: ${snippet}`);
+    throw new Error(`${context} returned HTML/error (${status}): ${snippet.slice(0, 100)}`);
+  }
+  
+  // Try to parse JSON
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    const snippet = text.slice(0, 300);
+    console.error(`[RunningHub] ${context} JSON parse failed - Body: ${snippet}`);
+    throw new Error(`${context} invalid JSON (${status}): ${snippet.slice(0, 100)}`);
+  }
+}
+
+// Fetch with retry for transient errors (429, 502, 503, 504)
+async function fetchWithRetry(
+  url: string, 
+  options: RequestInit, 
+  context: string,
+  maxRetries: number = 3
+): Promise<Response> {
+  const retryableStatuses = [429, 502, 503, 504];
+  const delays = [500, 1000, 2000];
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const response = await fetch(url, options);
+    
+    if (!retryableStatuses.includes(response.status)) {
+      return response;
+    }
+    
+    // Consume body to prevent leak
+    await response.text();
+    
+    if (attempt < maxRetries - 1) {
+      const delay = delays[attempt] || 2000;
+      console.warn(`[RunningHub] ${context} got ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+      await new Promise(r => setTimeout(r, delay));
+    } else {
+      console.error(`[RunningHub] ${context} failed after ${maxRetries} retries with status ${response.status}`);
+      throw new Error(`${context} failed after ${maxRetries} retries (${response.status})`);
+    }
+  }
+  
+  throw new Error(`${context} failed - unexpected retry loop exit`);
+}
 
 // Get client IP from request headers
 function getClientIP(req: Request): string {
@@ -65,7 +134,6 @@ async function checkRateLimit(
     
     if (error) {
       console.error('[RateLimit] Error checking rate limit:', error);
-      // On error, allow the request (fail open)
       return { allowed: true, currentCount: 0, resetAt: '' };
     }
     
@@ -182,12 +250,13 @@ async function handleUpload(req: Request) {
     formData.append('fileType', 'image');
     formData.append('file', new Blob([bytes], { type: mimeType }), fileName || 'upload.png');
 
-    const response = await fetch('https://www.runninghub.ai/task/openapi/upload', {
-      method: 'POST',
-      body: formData,
-    });
+    const response = await fetchWithRetry(
+      'https://www.runninghub.ai/task/openapi/upload',
+      { method: 'POST', body: formData },
+      'Upload to RunningHub'
+    );
 
-    const data = await response.json();
+    const data = await safeParseResponse(response, 'Upload response');
     console.log('[RunningHub] Upload response:', JSON.stringify(data));
 
     if (data.code !== 0) {
@@ -232,19 +301,18 @@ async function handleRun(req: Request) {
 
   const { 
     jobId,
-    imageUrl,    // NEW: URL from Supabase Storage
-    fileName,    // DEPRECATED: kept for backward compatibility
+    imageUrl,
+    fileName,
     detailDenoise,
     resolution,
     prompt,
     version,
-    framingMode, // 'longe' or 'perto'
-    userId,      // user ID for credit consumption
-    creditCost   // credit cost (60 standard, 80 pro)
+    framingMode,
+    userId,
+    creditCost
   } = await req.json();
   
   // ========== INPUT VALIDATION ==========
-  // Validate jobId is a valid UUID-like string
   if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
     return new Response(JSON.stringify({ 
       error: 'Valid jobId is required', 
@@ -255,7 +323,6 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Validate: need either imageUrl (new) or fileName (legacy)
   if (!imageUrl && !fileName) {
     return new Response(JSON.stringify({ 
       error: 'imageUrl or fileName is required', 
@@ -266,7 +333,7 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Validate imageUrl is from expected domain (Supabase storage)
+  // Validate imageUrl is from expected domain
   if (imageUrl) {
     const allowedDomains = [
       'supabase.co',
@@ -299,7 +366,7 @@ async function handleRun(req: Request) {
     }
   }
 
-  // Validate creditCost is within expected range
+  // Validate creditCost
   if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
     return new Response(JSON.stringify({ 
       error: 'Invalid credit cost (must be 1-500)', 
@@ -310,7 +377,7 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Validate userId is a valid UUID format
+  // Validate userId
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
     return new Response(JSON.stringify({ 
@@ -322,7 +389,7 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Validate resolution is within expected range
+  // Validate resolution
   if (resolution !== undefined && (typeof resolution !== 'number' || resolution < 512 || resolution > 8192)) {
     return new Response(JSON.stringify({ 
       error: 'Invalid resolution (must be 512-8192)', 
@@ -333,7 +400,7 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Validate prompt length if provided
+  // Validate prompt length
   if (prompt !== undefined && (typeof prompt !== 'string' || prompt.length > 2000)) {
     return new Response(JSON.stringify({ 
       error: 'Prompt too long (max 2000 chars)', 
@@ -369,14 +436,14 @@ async function handleRun(req: Request) {
   // Determine which fileName to use for RunningHub
   let rhFileName = fileName;
 
-  // NEW: If imageUrl provided, download and upload to RunningHub
+  // If imageUrl provided, download and upload to RunningHub
   if (imageUrl && !fileName) {
     console.log('[RunningHub] Downloading image from storage:', imageUrl);
     
     try {
       const imageResponse = await fetch(imageUrl);
       if (!imageResponse.ok) {
-        throw new Error('Failed to download image from storage');
+        throw new Error(`Failed to download image from storage (${imageResponse.status})`);
       }
       
       const imageBlob = await imageResponse.blob();
@@ -387,12 +454,13 @@ async function handleRun(req: Request) {
       formData.append('fileType', 'image');
       formData.append('file', imageBlob, imageName);
       
-      const uploadResponse = await fetch('https://www.runninghub.ai/task/openapi/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      const uploadResponse = await fetchWithRetry(
+        'https://www.runninghub.ai/task/openapi/upload',
+        { method: 'POST', body: formData },
+        'Image upload to RunningHub'
+      );
       
-      const uploadData = await uploadResponse.json();
+      const uploadData = await safeParseResponse(uploadResponse, 'Upload to RH');
       console.log('[RunningHub] Upload to RH response:', JSON.stringify(uploadData));
       
       if (uploadData.code !== 0) {
@@ -404,6 +472,17 @@ async function handleRun(req: Request) {
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
       console.error('[RunningHub] Image transfer error:', error);
+      
+      // Mark job as failed
+      await supabase
+        .from('upscaler_jobs')
+        .update({ 
+          status: 'failed', 
+          error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+      
       return new Response(JSON.stringify({ 
         error: errorMsg, 
         code: 'IMAGE_TRANSFER_ERROR' 
@@ -414,7 +493,7 @@ async function handleRun(req: Request) {
     }
   }
 
-  // FIRST: Consume credits before processing
+  // Consume credits
   console.log(`[RunningHub] Consuming ${creditCost} credits for user ${userId}`);
   const { data: creditResult, error: creditError } = await supabase.rpc(
     'consume_upscaler_credits', 
@@ -453,7 +532,6 @@ async function handleRun(req: Request) {
   console.log(`[RunningHub] Credits consumed successfully. New balance: ${creditResult[0].new_balance}`);
 
   // Select WebApp ID based on version and framing mode
-  // "De Longe" mode uses a specialized WebApp that only needs image + resolution
   const isLongeMode = framingMode === 'longe';
   const webappId = isLongeMode ? WEBAPP_ID_LONGE : (version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD);
   console.log(`[RunningHub] Processing job ${jobId} - version: ${version}, framingMode: ${framingMode}, webappId: ${webappId}, rhFileName: ${rhFileName}`);
@@ -465,7 +543,7 @@ async function handleRun(req: Request) {
       .update({ input_file_name: rhFileName })
       .eq('id', jobId);
 
-    // Count running jobs across ALL AI tools (global queue)
+    // Count running jobs (global queue)
     const { count: upscalerRunning } = await supabase
       .from('upscaler_jobs')
       .select('*', { count: 'exact', head: true })
@@ -480,7 +558,6 @@ async function handleRun(req: Request) {
 
     console.log(`[RunningHub] Global running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS} (upscaler: ${upscalerRunning || 0}, pose: ${poseRunning || 0})`);
 
-    // Get the job to check its created_at
     const { data: currentJob } = await supabase
       .from('upscaler_jobs')
       .select('created_at')
@@ -488,7 +565,6 @@ async function handleRun(req: Request) {
       .single();
 
     if ((runningCount || 0) >= MAX_CONCURRENT_JOBS) {
-      // Calculate queue position
       const { count: aheadOfMe } = await supabase
         .from('upscaler_jobs')
         .select('*', { count: 'exact', head: true })
@@ -497,7 +573,6 @@ async function handleRun(req: Request) {
 
       const position = (aheadOfMe || 0) + 1;
 
-      // Update job to queued status with position
       await supabase
         .from('upscaler_jobs')
         .update({ 
@@ -528,19 +603,16 @@ async function handleRun(req: Request) {
       })
       .eq('id', jobId);
 
-    // Build node info list for RunningHub API
-    // "De Longe" mode uses different nodeIds and only needs image + resolution
+    // Build node info list
     let nodeInfoList: any[];
     
     if (isLongeMode) {
-      // WebApp "De Longe" - only image (nodeId: 1) and resolution (nodeId: 7)
       nodeInfoList = [
         { nodeId: "1", fieldName: "image", fieldValue: rhFileName },
         { nodeId: "7", fieldName: "value", fieldValue: String(resolution || 2048) },
       ];
       console.log(`[RunningHub] Using "De Longe" WebApp with simplified nodeInfoList`);
     } else {
-      // Standard/PRO WebApps - Resolution nodeId differs: PRO uses "73", Light uses "75"
       const resolutionNodeId = version === 'pro' ? "73" : "75";
       
       nodeInfoList = [
@@ -549,7 +621,6 @@ async function handleRun(req: Request) {
         { nodeId: resolutionNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
       ];
 
-      // Add prompt if provided (nodeId 128 for prompt)
       if (prompt) {
         nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
       }
@@ -569,21 +640,23 @@ async function handleRun(req: Request) {
       webhookUrl: webhookUrl
     }));
 
-    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+    const response = await fetchWithRetry(
+      `https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`,
+      {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+        },
+        body: JSON.stringify(requestBody),
       },
-      body: JSON.stringify(requestBody),
-    });
+      'Run AI App'
+    );
 
-    const data = await response.json();
+    const data = await safeParseResponse(response, 'AI App response');
     console.log('[RunningHub] AI App response:', JSON.stringify(data));
 
-    // API v2 response: { taskId, status, ... } directly (no wrapper)
     if (data.taskId) {
-      // Update job with taskId
       await supabase
         .from('upscaler_jobs')
         .update({ task_id: data.taskId })
@@ -598,7 +671,7 @@ async function handleRun(req: Request) {
       });
     }
 
-    // Failed to start - mark as failed
+    // Failed to start
     await supabase
       .from('upscaler_jobs')
       .update({ 
@@ -621,12 +694,11 @@ async function handleRun(req: Request) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('[RunningHub] Run error:', error);
 
-    // Mark job as failed
     await supabase
       .from('upscaler_jobs')
       .update({ 
         status: 'failed', 
-        error_message: errorMessage,
+        error_message: errorMessage.slice(0, 300),
         completed_at: new Date().toISOString()
       })
       .eq('id', jobId);

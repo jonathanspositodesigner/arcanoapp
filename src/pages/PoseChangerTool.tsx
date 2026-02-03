@@ -337,7 +337,12 @@ const PoseChangerTool: React.FC = () => {
       );
 
       if (runError) {
-        throw new Error(runError.message);
+        // Try to extract detailed error from the response
+        let errorMessage = runError.message || 'Erro desconhecido';
+        if (errorMessage.includes('non-2xx')) {
+          errorMessage = 'Falha na comunicação com o servidor. Tente novamente.';
+        }
+        throw new Error(errorMessage);
       }
 
       console.log('[PoseChanger] Run result:', runResult);
@@ -352,8 +357,14 @@ const PoseChangerTool: React.FC = () => {
         setShowNoCreditsModal(true);
         setStatus('idle');
         return;
+      } else if (runResult.code === 'IMAGE_TRANSFER_ERROR') {
+        // Specific error for RunningHub communication issues
+        const detail = runResult.error || 'Falha ao enviar imagens';
+        throw new Error(`Erro no provedor: ${detail.slice(0, 100)}`);
+      } else if (runResult.code === 'RATE_LIMIT_EXCEEDED') {
+        throw new Error('Muitas requisições. Aguarde 1 minuto e tente novamente.');
       } else {
-        throw new Error(runResult.error || 'Unknown error');
+        throw new Error(runResult.error || 'Erro desconhecido');
       }
 
       // Subscribe to job updates
