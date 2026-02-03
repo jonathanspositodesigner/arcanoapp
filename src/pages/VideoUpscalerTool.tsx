@@ -14,7 +14,6 @@ import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
 const CREDIT_COST = 150;
-const SESSION_KEY = 'video_upscaler_session_id';
 
 // Queue messages for better UX
 const queueMessages = [
@@ -64,44 +63,10 @@ const VideoUpscalerTool: React.FC = () => {
   const canProcess = videoUrl && videoFile && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
 
-  // Initialize session ID
+  // Initialize session ID (fresh each visit - no recovery)
   useEffect(() => {
-    let storedSessionId = localStorage.getItem(SESSION_KEY);
-    if (!storedSessionId) {
-      storedSessionId = crypto.randomUUID();
-      localStorage.setItem(SESSION_KEY, storedSessionId);
-    }
-    sessionIdRef.current = storedSessionId;
-    
-    // Check for pending jobs
-    checkPendingJobs();
+    sessionIdRef.current = crypto.randomUUID();
   }, []);
-
-  // Check for pending jobs on load
-  const checkPendingJobs = async () => {
-    if (!sessionIdRef.current) return;
-
-    try {
-      const { data: pendingJob } = await supabase
-        .from('video_upscaler_jobs')
-        .select('*')
-        .eq('session_id', sessionIdRef.current)
-        .in('status', ['queued', 'running'])
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (pendingJob) {
-        console.log('[VideoUpscaler] Found pending job:', pendingJob.id);
-        setJobId(pendingJob.id);
-        setStatus(pendingJob.status === 'queued' ? 'waiting' : 'processing');
-        setQueuePosition(pendingJob.position || 0);
-        subscribeToJobUpdates(pendingJob.id);
-      }
-    } catch (error) {
-      console.error('[VideoUpscaler] Error checking pending jobs:', error);
-    }
-  };
 
   // Subscribe to realtime updates for a job
   const subscribeToJobUpdates = useCallback((jId: string) => {
@@ -183,18 +148,6 @@ const VideoUpscalerTool: React.FC = () => {
     return () => clearInterval(interval);
   }, [status]);
 
-  // Warn user before leaving during processing
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isProcessing) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isProcessing]);
 
   // Handle video upload
   const handleVideoChange = (url: string | null, file?: File, metadata?: VideoMetadata) => {
