@@ -2650,6 +2650,18 @@ export type Database = {
           success: boolean
         }[]
       }
+      get_all_credit_users: {
+        Args: never
+        Returns: {
+          email: string
+          lifetime_balance: number
+          monthly_balance: number
+          name: string
+          total_balance: number
+          updated_at: string
+          user_id: string
+        }[]
+      }
       get_daily_arte_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_musicos_download_count: {
@@ -2705,6 +2717,22 @@ export type Database = {
       is_premium: { Args: never; Returns: boolean }
       is_premium_artes: { Args: never; Returns: boolean }
       is_premium_musicos: { Args: never; Returns: boolean }
+      remove_lifetime_credits: {
+        Args: { _amount: number; _description?: string; _user_id: string }
+        Returns: {
+          error_message: string
+          new_balance: number
+          success: boolean
+        }[]
+      }
+      remove_monthly_credits: {
+        Args: { _amount: number; _description?: string; _user_id: string }
+        Returns: {
+          error_message: string
+          new_balance: number
+          success: boolean
+        }[]
+      }
       reset_upscaler_credits: {
         Args: { _amount: number; _description?: string; _user_id: string }
         Returns: {

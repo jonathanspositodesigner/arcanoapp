@@ -10,11 +10,12 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { 
   ArrowLeft, Plus, RefreshCw, Pencil, Trash2, Users, Crown, Clock, 
   AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, MessageCircle, KeyRound,
-  FileText, ExternalLink
+  FileText, ExternalLink, Coins
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import {
@@ -25,6 +26,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import AdminCreditsTab from "@/components/admin/AdminCreditsTab";
 
 interface PremiumUser {
   id: string;
@@ -521,16 +523,30 @@ const AdminPremiumDashboard = () => {
             </Button>
             <h1 className="text-2xl font-bold">Gerenciar Premium</h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="icon" onClick={fetchPremiumUsers}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-            <Button onClick={() => { resetForm(); setIsCreateModalOpen(true); }}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Usuário
-            </Button>
-          </div>
         </div>
+
+        <Tabs defaultValue="assinantes" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="assinantes" className="flex items-center gap-2">
+              <Crown className="h-4 w-4" />
+              Assinantes
+            </TabsTrigger>
+            <TabsTrigger value="creditos" className="flex items-center gap-2">
+              <Coins className="h-4 w-4" />
+              Créditos IA
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="assinantes" className="space-y-6 mt-6">
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="icon" onClick={fetchPremiumUsers}>
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button onClick={() => { resetForm(); setIsCreateModalOpen(true); }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Usuário
+              </Button>
+            </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
@@ -1074,6 +1090,13 @@ const AdminPremiumDashboard = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+          </TabsContent>
+
+          <TabsContent value="creditos" className="mt-6">
+            <AdminCreditsTab />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
