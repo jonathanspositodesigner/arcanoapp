@@ -20,7 +20,7 @@ interface VideoUploadCardProps {
 }
 
 const MAX_DIMENSION = 1280;
-const MAX_DURATION = 8;
+const MAX_DURATION = 10;
 
 const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
   title,
