@@ -1,32 +1,61 @@
 
-# Correção do Upscaler Arcano - Endpoint /run
+# Correção: Upload de Imagem Não Funciona Após Reset
 
-## Problema
-A linha 451 do arquivo `src/pages/UpscalerArcanoTool.tsx` está chamando a edge function sem o endpoint `/run`:
+## Problema Identificado
 
+Após clicar em **"Processar Nova Imagem"**, o botão de upload ignora os cliques porque o `<input type="file">` ainda contém o valor do arquivo anterior.
+
+**Causa raiz:** A função `resetTool` limpa os estados React mas não limpa o `fileInputRef.current.value`, fazendo com que o evento `onChange` do input não dispare.
+
+## Localização do Bug
+
+**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
+
+**Função problemática (linhas 526-537):**
 ```typescript
-// ATUAL (linha 451) - QUEBRADO
-const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler', {
+const resetTool = useCallback(() => {
+  setInputImage(null);
+  setInputFileName('');
+  setOutputImage(null);
+  setStatus('idle');
+  setProgress(0);
+  setSliderPosition(50);
+  setLastError(null);
+  setJobId(null);
+  setIsWaitingInQueue(false);
+  setQueuePosition(0);
+  // ❌ FALTA: limpar o fileInputRef.current.value
+}, []);
 ```
 
 ## Solução
-Alterar para incluir o endpoint `/run`:
+
+Adicionar a limpeza do file input na função `resetTool`:
 
 ```typescript
-// CORRIGIDO
-const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler/run', {
+const resetTool = useCallback(() => {
+  setInputImage(null);
+  setInputFileName('');
+  setOutputImage(null);
+  setStatus('idle');
+  setProgress(0);
+  setSliderPosition(50);
+  setLastError(null);
+  setJobId(null);
+  setIsWaitingInQueue(false);
+  setQueuePosition(0);
+  // ✅ Limpar o input de arquivo para permitir nova seleção
+  if (fileInputRef.current) {
+    fileInputRef.current.value = '';
+  }
+}, []);
 ```
 
-## Arquivo Afetado
-- `src/pages/UpscalerArcanoTool.tsx` - linha 451
+## Referência
+
+Este padrão já é usado corretamente em outros componentes do projeto, como em `PartnerUploadArtes.tsx` (linhas 163-165).
 
 ## Impacto
-- **Upscaler Arcano**: Voltará a funcionar corretamente
-- **Pose Changer**: Não será afetado (código completamente separado)
 
-## Resultado Esperado
-Após a correção, o fluxo do Upscaler funcionará:
-1. Upload da imagem para storage ✓
-2. Chamada da edge function com endpoint correto `/run` ✓
-3. Processamento do upscale no RunningHub ✓
-4. Retorno do resultado via webhook ✓
+- **Upscaler Arcano**: Upload funcionará corretamente após reset
+- **Outros componentes**: Nenhum impacto
