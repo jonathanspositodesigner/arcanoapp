@@ -192,11 +192,12 @@ const BibliotecaArtes = () => {
     }
     setFirstAccessLoading(true);
     try {
+      const normalizedEmail = firstAccessEmail.trim().toLowerCase();
       const {
         data: profileCheck,
         error: rpcError
       } = await supabase.rpc('check_profile_exists', {
-        check_email: firstAccessEmail.trim()
+        check_email: normalizedEmail
       });
       if (rpcError) {
         console.error('Erro ao verificar perfil:', rpcError);
@@ -217,18 +218,29 @@ const BibliotecaArtes = () => {
         const {
           error
         } = await supabase.auth.signInWithPassword({
-          email: firstAccessEmail.trim(),
-          password: firstAccessEmail.trim()
+          email: normalizedEmail,
+          password: normalizedEmail
         });
         if (!error) {
           setShowFirstAccessModal(false);
           setFirstAccessEmail("");
           toast.success(t('messages.welcomeSetPassword'));
-          navigate('/change-password-artes');
+          navigate('/change-password-artes?redirect=/biblioteca-artes');
         } else {
-          toast.error(t('messages.accessError'));
-          setShowFirstAccessModal(false);
-          navigate('/login-artes');
+          // Auto-login falhou - enviar link e navegar para /change-password-artes
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+            normalizedEmail,
+            { redirectTo: `${window.location.origin}/change-password-artes?redirect=/biblioteca-artes` }
+          );
+          
+          if (!resetError) {
+            setShowFirstAccessModal(false);
+            setFirstAccessEmail("");
+            navigate(`/change-password-artes?redirect=/biblioteca-artes&sent=1&email=${encodeURIComponent(normalizedEmail)}`);
+          } else {
+            toast.error(t('messages.accessError'));
+            setShowFirstAccessModal(false);
+          }
         }
         return;
       }

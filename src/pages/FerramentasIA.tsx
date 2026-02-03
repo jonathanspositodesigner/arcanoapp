@@ -114,8 +114,9 @@ const FerramentasIA = () => {
     }
     setFirstAccessLoading(true);
     try {
+      const normalizedEmail = firstAccessEmail.trim().toLowerCase();
       const { data: profileCheck, error: rpcError } = await supabase.rpc('check_profile_exists', {
-        check_email: firstAccessEmail.trim()
+        check_email: normalizedEmail
       });
       
       if (rpcError) {
@@ -136,18 +137,29 @@ const FerramentasIA = () => {
       if (profileExists && !passwordChanged) {
         // Primeiro acesso: login com email/email
         const { error } = await supabase.auth.signInWithPassword({
-          email: firstAccessEmail.trim(),
-          password: firstAccessEmail.trim()
+          email: normalizedEmail,
+          password: normalizedEmail
         });
         if (!error) {
           setShowFirstAccessModal(false);
           setFirstAccessEmail("");
           toast.success(t('ferramentas.toast.welcome'));
-          navigate('/change-password-artes');
+          navigate('/change-password-artes?redirect=/ferramentas-ia');
         } else {
-          toast.error(t('ferramentas.toast.errorAccessing'));
-          setShowFirstAccessModal(false);
-          navigate('/login-artes');
+          // Auto-login falhou - enviar link e navegar para /change-password-artes
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+            normalizedEmail,
+            { redirectTo: `${window.location.origin}/change-password-artes?redirect=/ferramentas-ia` }
+          );
+          
+          if (!resetError) {
+            setShowFirstAccessModal(false);
+            setFirstAccessEmail("");
+            navigate(`/change-password-artes?redirect=/ferramentas-ia&sent=1&email=${encodeURIComponent(normalizedEmail)}`);
+          } else {
+            toast.error(t('ferramentas.toast.errorAccessing'));
+            setShowFirstAccessModal(false);
+          }
         }
         return;
       }
