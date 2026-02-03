@@ -50,7 +50,7 @@ const FerramentasIAAplicativo = () => {
   const [loading, setLoading] = useState(true);
 
   // Preferred order for tools
-  const preferredOrder = ["upscaller-arcano", "forja-selos-3d-ilimitada", "ia-muda-pose", "ia-muda-roupa"];
+  const preferredOrder = ["upscaller-arcano", "upscaller-arcano-video", "forja-selos-3d-ilimitada", "ia-muda-pose", "ia-muda-roupa"];
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -80,6 +80,9 @@ const FerramentasIAAplicativo = () => {
     if (slug === "upscaller-arcano") {
       return "/upscaler-arcano-tool";
     }
+    if (slug === "upscaller-arcano-video") {
+      return "/video-upscaler-tool";
+    }
     if (slug === "ia-muda-pose") {
       return "/pose-changer-tool";
     }
@@ -92,6 +95,7 @@ const FerramentasIAAplicativo = () => {
   // Override names for display
   const toolNameOverrides: Record<string, string> = {
     "upscaller-arcano": "Upscaler Arcano V3 (imagem)",
+    "upscaller-arcano-video": "Upscaler Arcano V3 (vídeo)",
     "ia-muda-pose": "Pose Changer",
     "ia-muda-roupa": "Veste AI",
   };
