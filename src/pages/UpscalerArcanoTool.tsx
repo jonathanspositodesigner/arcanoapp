@@ -399,7 +399,8 @@ const UpscalerArcanoTool: React.FC = () => {
           session_id: sessionIdRef.current,
           status: 'queued',
           detail_denoise: detailDenoise,
-          prompt: getFinalPrompt()
+          prompt: getFinalPrompt(),
+          user_id: user.id
         })
         .select()
         .single();
