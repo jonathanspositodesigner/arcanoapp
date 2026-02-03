@@ -148,43 +148,64 @@ const VideoUpscalerTool: React.FC = () => {
     return () => clearInterval(interval);
   }, [status]);
 
-  // Polling fallback - verifica status diretamente no banco a cada 15s
-  // Funciona como backup caso o Realtime ou webhook falhem
+  // Polling fallback de ÚLTIMO RECURSO - só ativa após 3 minutos sem resposta
+  // Roda no máximo 3 vezes para não gastar Cloud desnecessariamente
+  const pollAttemptsRef = useRef(0);
+  const pollStartTimeRef = useRef<number | null>(null);
+  
   useEffect(() => {
     if (!jobId || status === 'completed' || status === 'error' || status === 'idle') {
+      pollAttemptsRef.current = 0;
+      pollStartTimeRef.current = null;
       return;
     }
 
-    const pollInterval = setInterval(async () => {
-      try {
-        const { data: job } = await supabase
-          .from('video_upscaler_jobs')
-          .select('status, output_url, error_message')
-          .eq('id', jobId)
-          .maybeSingle();
+    // Marca quando o job começou a processar
+    if (!pollStartTimeRef.current) {
+      pollStartTimeRef.current = Date.now();
+    }
 
-        if (!job) return;
+    // Só começa o polling após 3 minutos (180000ms) E no máximo 3 tentativas
+    const DELAY_BEFORE_POLLING = 180000; // 3 minutos
+    const MAX_POLL_ATTEMPTS = 3;
+    const POLL_INTERVAL = 20000; // 20s entre tentativas
 
-        console.log('[VideoUpscaler] Polling check:', job.status);
+    const checkTimeout = setTimeout(async () => {
+      const elapsed = Date.now() - (pollStartTimeRef.current || Date.now());
+      
+      // Só faz polling se passaram 3+ minutos e ainda não esgotou tentativas
+      if (elapsed >= DELAY_BEFORE_POLLING && pollAttemptsRef.current < MAX_POLL_ATTEMPTS) {
+        pollAttemptsRef.current += 1;
+        console.log(`[VideoUpscaler] Polling fallback #${pollAttemptsRef.current}/${MAX_POLL_ATTEMPTS} (após ${Math.round(elapsed/1000)}s)`);
+        
+        try {
+          const { data: job } = await supabase
+            .from('video_upscaler_jobs')
+            .select('status, output_url, error_message')
+            .eq('id', jobId)
+            .maybeSingle();
 
-        if (job.status === 'completed' && job.output_url) {
-          setOutputVideoUrl(job.output_url);
-          setStatus('completed');
-          setProgress(100);
-          refetchCredits();
-          processingRef.current = false;
-          toast.success('Vídeo upscalado com sucesso!');
-        } else if (job.status === 'failed') {
-          setStatus('error');
-          processingRef.current = false;
-          toast.error(job.error_message || 'Erro no processamento');
+          if (!job) return;
+
+          if (job.status === 'completed' && job.output_url) {
+            setOutputVideoUrl(job.output_url);
+            setStatus('completed');
+            setProgress(100);
+            refetchCredits();
+            processingRef.current = false;
+            toast.success('Vídeo upscalado com sucesso!');
+          } else if (job.status === 'failed') {
+            setStatus('error');
+            processingRef.current = false;
+            toast.error(job.error_message || 'Erro no processamento');
+          }
+        } catch (e) {
+          console.error('[VideoUpscaler] Polling error:', e);
         }
-      } catch (e) {
-        console.error('[VideoUpscaler] Polling error:', e);
       }
-    }, 15000); // 15 segundos
+    }, pollStartTimeRef.current ? Math.max(0, DELAY_BEFORE_POLLING - (Date.now() - pollStartTimeRef.current) + (pollAttemptsRef.current * POLL_INTERVAL)) : DELAY_BEFORE_POLLING);
 
-    return () => clearInterval(pollInterval);
+    return () => clearTimeout(checkTimeout);
   }, [jobId, status, refetchCredits]);
 
   // Handle video upload
