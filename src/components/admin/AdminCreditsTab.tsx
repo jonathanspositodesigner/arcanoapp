@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { 
   RefreshCw, Pencil, Coins, ArrowUpDown, ArrowUp, ArrowDown,
-  Plus, Minus
+  Plus, Minus, UserPlus, Search, User, AlertCircle
 } from "lucide-react";
 import {
   Pagination,
@@ -30,8 +30,15 @@ interface CreditUser {
   updated_at: string;
 }
 
+interface SearchedUser {
+  id: string;
+  email: string;
+  name: string | null;
+}
+
 type SortColumn = 'name' | 'email' | 'monthly_balance' | 'lifetime_balance' | 'total_balance';
 type SortDirection = 'asc' | 'desc';
+type AddUserModalState = 'idle' | 'searching' | 'found' | 'not_found' | 'submitting';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -49,6 +56,15 @@ const AdminCreditsTab = () => {
   const [creditAmount, setCreditAmount] = useState(0);
   const [creditDescription, setCreditDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Add User Modal State
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [addUserModalState, setAddUserModalState] = useState<AddUserModalState>('idle');
+  const [searchEmail, setSearchEmail] = useState("");
+  const [foundUser, setFoundUser] = useState<SearchedUser | null>(null);
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserAmount, setNewUserAmount] = useState(0);
+  const [newUserDescription, setNewUserDescription] = useState("");
 
   useEffect(() => {
     fetchCreditUsers();
@@ -82,8 +98,8 @@ const AdminCreditsTab = () => {
     }
 
     filtered.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       switch (sortColumn) {
         case 'name':
@@ -182,7 +198,7 @@ const AdminCreditsTab = () => {
           break;
       }
 
-      const { data, error } = await supabase.rpc(rpcName as any, {
+      const { data, error } = await supabase.rpc(rpcName as 'add_upscaler_credits' | 'remove_monthly_credits' | 'add_lifetime_credits' | 'remove_lifetime_credits', {
         _user_id: selectedUser.user_id,
         _amount: creditAmount,
         _description: description
@@ -199,9 +215,10 @@ const AdminCreditsTab = () => {
       toast.success(`Créditos ${action.includes('add') ? 'adicionados' : 'removidos'} com sucesso!`);
       setIsEditModalOpen(false);
       await fetchCreditUsers();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating credits:", error);
-      toast.error(error.message || "Erro ao atualizar créditos");
+      const errorMessage = error instanceof Error ? error.message : "Erro ao atualizar créditos";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -209,6 +226,89 @@ const AdminCreditsTab = () => {
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('pt-BR').format(num);
+  };
+
+  // Add User Modal Functions
+  const openAddUserModal = () => {
+    setSearchEmail("");
+    setFoundUser(null);
+    setNewUserName("");
+    setNewUserAmount(0);
+    setNewUserDescription("");
+    setAddUserModalState('idle');
+    setIsAddUserModalOpen(true);
+  };
+
+  const handleSearchUser = async () => {
+    if (!searchEmail.trim()) {
+      toast.error("Digite um email para buscar");
+      return;
+    }
+
+    setAddUserModalState('searching');
+
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-add-credit-user', {
+        body: { action: 'search', email: searchEmail.trim() }
+      });
+
+      if (error) throw error;
+
+      if (data.found) {
+        setFoundUser(data.user);
+        setAddUserModalState('found');
+      } else {
+        setFoundUser(null);
+        setAddUserModalState('not_found');
+      }
+    } catch (error: unknown) {
+      console.error("Error searching user:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro ao buscar usuário";
+      toast.error(errorMessage);
+      setAddUserModalState('idle');
+    }
+  };
+
+  const handleAddCreditsToUser = async (creditType: 'monthly' | 'lifetime') => {
+    if (newUserAmount <= 0) {
+      toast.error("Digite uma quantidade válida de créditos");
+      return;
+    }
+
+    setAddUserModalState('submitting');
+
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-add-credit-user', {
+        body: {
+          action: 'add_credits',
+          email: searchEmail.trim(),
+          name: newUserName.trim() || undefined,
+          creditType,
+          amount: newUserAmount,
+          description: newUserDescription.trim() || undefined
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        const message = data.user_created 
+          ? `Usuário criado e ${formatNumber(newUserAmount)} créditos ${creditType === 'monthly' ? 'mensais' : 'vitalícios'} adicionados!`
+          : `${formatNumber(newUserAmount)} créditos ${creditType === 'monthly' ? 'mensais' : 'vitalícios'} adicionados!`;
+        
+        toast.success(message);
+        setIsAddUserModalOpen(false);
+        await fetchCreditUsers();
+      } else {
+        toast.error(data.error || "Erro ao adicionar créditos");
+        setAddUserModalState(foundUser ? 'found' : 'not_found');
+      }
+    } catch (error: unknown) {
+      console.error("Error adding credits:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro ao adicionar créditos";
+      toast.error(errorMessage);
+      setAddUserModalState(foundUser ? 'found' : 'not_found');
+    }
   };
 
   const totalMonthlyCredits = creditUsers.reduce((sum, u) => sum + u.monthly_balance, 0);
@@ -265,7 +365,7 @@ const AdminCreditsTab = () => {
         </Card>
       </div>
 
-      {/* Search and Refresh */}
+      {/* Search, Add User, and Refresh */}
       <div className="flex flex-col sm:flex-row gap-4">
         <Input
           placeholder="Buscar por nome ou email..."
@@ -273,6 +373,10 @@ const AdminCreditsTab = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
         />
+        <Button onClick={openAddUserModal} className="gap-2">
+          <UserPlus className="h-4 w-4" />
+          Adicionar Novo Usuário
+        </Button>
         <Button variant="outline" size="icon" onClick={fetchCreditUsers}>
           <RefreshCw className="h-4 w-4" />
         </Button>
@@ -523,6 +627,159 @@ const AdminCreditsTab = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
               Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New User Modal */}
+      <Dialog open={isAddUserModalOpen} onOpenChange={setIsAddUserModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5" />
+              Adicionar Créditos a Usuário
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Email Search */}
+            <div className="space-y-2">
+              <Label>Email do Usuário</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="usuario@email.com"
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+                  disabled={addUserModalState === 'searching' || addUserModalState === 'submitting'}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && addUserModalState === 'idle') {
+                      handleSearchUser();
+                    }
+                  }}
+                />
+                <Button
+                  onClick={handleSearchUser}
+                  disabled={addUserModalState === 'searching' || addUserModalState === 'submitting' || !searchEmail.trim()}
+                >
+                  {addUserModalState === 'searching' ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* User Found */}
+            {addUserModalState === 'found' && foundUser && (
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <User className="h-8 w-8 text-green-600" />
+                  <div>
+                    <p className="font-medium text-green-800 dark:text-green-200">
+                      Usuário encontrado!
+                    </p>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      {foundUser.name || 'Sem nome'} • {foundUser.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* User Not Found */}
+            {addUserModalState === 'not_found' && (
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-8 w-8 text-yellow-600" />
+                  <div>
+                    <p className="font-medium text-yellow-800 dark:text-yellow-200">
+                      Usuário não encontrado
+                    </p>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                      Um novo usuário será criado automaticamente
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Credit Form (show when found or not_found) */}
+            {(addUserModalState === 'found' || addUserModalState === 'not_found' || addUserModalState === 'submitting') && (
+              <>
+                {/* Name (only for new users) */}
+                {(addUserModalState === 'not_found' || (addUserModalState === 'submitting' && !foundUser)) && (
+                  <div>
+                    <Label>Nome do Usuário (opcional)</Label>
+                    <Input
+                      value={newUserName}
+                      onChange={(e) => setNewUserName(e.target.value)}
+                      placeholder="Nome completo"
+                      disabled={addUserModalState === 'submitting'}
+                    />
+                  </div>
+                )}
+
+                {/* Credit Amount */}
+                <div>
+                  <Label>Quantidade de Créditos</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={newUserAmount}
+                    onChange={(e) => setNewUserAmount(parseInt(e.target.value) || 0)}
+                    placeholder="Ex: 1500"
+                    disabled={addUserModalState === 'submitting'}
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <Label>Descrição (opcional)</Label>
+                  <Input
+                    value={newUserDescription}
+                    onChange={(e) => setNewUserDescription(e.target.value)}
+                    placeholder="Motivo do crédito..."
+                    disabled={addUserModalState === 'submitting'}
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => handleAddCreditsToUser('monthly')}
+                    disabled={addUserModalState === 'submitting' || newUserAmount <= 0}
+                  >
+                    {addUserModalState === 'submitting' ? (
+                      <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Plus className="h-4 w-4 mr-2" />
+                    )}
+                    Mensais
+                  </Button>
+                  <Button
+                    className="bg-purple-600 hover:bg-purple-700"
+                    onClick={() => handleAddCreditsToUser('lifetime')}
+                    disabled={addUserModalState === 'submitting' || newUserAmount <= 0}
+                  >
+                    {addUserModalState === 'submitting' ? (
+                      <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Plus className="h-4 w-4 mr-2" />
+                    )}
+                    Vitalícios
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddUserModalOpen(false)}>
+              Cancelar
             </Button>
           </DialogFooter>
         </DialogContent>

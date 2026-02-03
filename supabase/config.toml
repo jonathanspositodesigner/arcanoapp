@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.runninghub-pose-changer]
 verify_jwt = false
+
+[functions.admin-add-credit-user]
+verify_jwt = false
