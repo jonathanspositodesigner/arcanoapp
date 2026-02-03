@@ -1,97 +1,54 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ArrowLeft, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Eye, EyeOff, ArrowLeft, Shield } from "lucide-react";
-import { z } from "zod";
-
-const loginSchema = z.object({
-  email: z.string().email("Email inválido"),
-  password: z.string().min(1, "Senha é obrigatória"),
-});
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
+import { LoginEmailStep, LoginPasswordStep } from "@/components/auth";
+import { User } from "@supabase/supabase-js";
 
 const PartnerLoginArtes = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  // Partner-specific validation for Artes
+  const validatePartnerArtes = async (user: User): Promise<{ valid: boolean; error?: string }> => {
+    // Check if user has partner role
+    const { data: roleData, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'partner')
+      .maybeSingle();
 
-    try {
-      // Validate input
-      const validation = loginSchema.safeParse({ email: email.trim(), password });
-      if (!validation.success) {
-        toast.error(validation.error.errors[0].message);
-        setIsLoading(false);
-        return;
-      }
-
-      // Sign in
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-
-      if (error) {
-        toast.error("Email ou senha incorretos");
-        setIsLoading(false);
-        return;
-      }
-
-      if (data.user) {
-        // Check if user has partner_artes role
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', data.user.id)
-          .eq('role', 'partner')
-          .maybeSingle();
-
-        if (roleError || !roleData) {
-          await supabase.auth.signOut();
-          toast.error("Você não possui acesso de colaborador para Artes");
-          setIsLoading(false);
-          return;
-        }
-
-        // Check if partner is active in partners_artes table
-        const { data: partnerData, error: partnerError } = await supabase
-          .from('partners_artes')
-          .select('is_active')
-          .eq('user_id', data.user.id)
-          .maybeSingle();
-
-        if (partnerError || !partnerData) {
-          await supabase.auth.signOut();
-          toast.error("Conta de colaborador de Artes não encontrada");
-          setIsLoading(false);
-          return;
-        }
-
-        if (!partnerData.is_active) {
-          await supabase.auth.signOut();
-          toast.error("Sua conta de colaborador de Artes está desativada");
-          setIsLoading(false);
-          return;
-        }
-
-        toast.success("Login realizado com sucesso!");
-        navigate("/parceiro-dashboard-artes");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Erro ao fazer login");
-    } finally {
-      setIsLoading(false);
+    if (roleError || !roleData) {
+      return { valid: false, error: "Você não possui acesso de colaborador para Artes" };
     }
+
+    // Check if partner is active in partners_artes table
+    const { data: partnerData, error: partnerError } = await supabase
+      .from('partners_artes')
+      .select('is_active')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (partnerError || !partnerData) {
+      return { valid: false, error: "Conta de colaborador de Artes não encontrada" };
+    }
+
+    if (!partnerData.is_active) {
+      return { valid: false, error: "Sua conta de colaborador de Artes está desativada" };
+    }
+
+    return { valid: true };
   };
+
+  const auth = useUnifiedAuth({
+    changePasswordRoute: '/change-password-artes',
+    loginRoute: '/parceiro-login-artes',
+    forgotPasswordRoute: '/forgot-password-artes',
+    defaultRedirect: '/parceiro-dashboard-artes',
+    postLoginValidation: validatePartnerArtes,
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
@@ -111,55 +68,55 @@ const PartnerLoginArtes = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
-                required
-              />
-            </div>
-            <div className="relative">
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
+          {auth.state.step === 'email' && (
+            <LoginEmailStep
+              email={auth.state.email}
+              onEmailChange={auth.setEmail}
+              onSubmit={auth.checkEmail}
+              onSignupClick={() => {}} // Partners can't self-register
+              isLoading={auth.state.isLoading}
+              variant="dark"
+              labels={{
+                email: 'Email',
+                emailPlaceholder: 'Email',
+                continue: 'Continuar',
+                loading: 'Verificando...',
+                noAccountYet: '',
+                createAccount: '',
+              }}
+            />
+          )}
 
+          {auth.state.step === 'password' && (
+            <LoginPasswordStep
+              email={auth.state.verifiedEmail}
+              onSubmit={auth.loginWithPassword}
+              onChangeEmail={auth.changeEmail}
+              forgotPasswordUrl={auth.getForgotPasswordUrl()}
+              isLoading={auth.state.isLoading}
+              variant="dark"
+              labels={{
+                password: 'Senha',
+                passwordPlaceholder: 'Senha',
+                signIn: 'Entrar',
+                signingIn: 'Entrando...',
+                forgotPassword: 'Esqueci minha senha',
+                changeEmail: 'Trocar',
+              }}
+            />
+          )}
+
+          <div className="text-center pt-4 border-t border-[#2d4a5e]/30 mt-4">
             <Button
-              type="submit"
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
-              disabled={isLoading}
+              type="button"
+              variant="ghost"
+              className="text-white/60 hover:text-white text-sm"
+              onClick={() => navigate("/admin-login")}
             >
-              {isLoading ? "Entrando..." : "Entrar"}
+              <Shield className="h-4 w-4 mr-2" />
+              Login de Administrador
             </Button>
-
-            <div className="text-center pt-4 border-t border-[#2d4a5e]/30">
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-white/60 hover:text-white text-sm"
-                onClick={() => navigate("/admin-login")}
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Login de Administrador
-              </Button>
-            </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
     </div>
