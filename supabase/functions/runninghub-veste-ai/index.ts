@@ -13,15 +13,16 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 // =====================================================
-// VESTE AI CONFIGURATION - COMPLETELY SEPARATE
+// VESTE AI CONFIGURATION - Virtual Try-On
 // =====================================================
-// WebApp ID for Veste AI (placeholder - will be set with API docs)
-const WEBAPP_ID_VESTE_AI = 'PLACEHOLDER_WEBAPP_ID';
+// WebApp ID from RunningHub AI App documentation
+const WEBAPP_ID_VESTE_AI = '2018755100210106369';
 
-// Node IDs for Veste AI (placeholder - will be set with API docs)
-// These will be configured when the user provides the API documentation
-const NODE_ID_PERSON = 'PLACEHOLDER_PERSON_NODE';
-const NODE_ID_CLOTHING = 'PLACEHOLDER_CLOTHING_NODE';
+// Node IDs from the API documentation:
+// - nodeId 41: Person image (SUA FOTO)
+// - nodeId 43: Clothing reference image (IMAGEM DA ROUPA REFERENCIA)
+const NODE_ID_PERSON = '41';
+const NODE_ID_CLOTHING = '43';
 // =====================================================
 
 const MAX_CONCURRENT_JOBS = 3;
@@ -169,16 +170,7 @@ serve(async (req) => {
     
     console.log(`[VesteAI] Endpoint called: ${path}, IP: ${clientIP}`);
 
-    // Check if the tool is configured
-    if (WEBAPP_ID_VESTE_AI === 'PLACEHOLDER_WEBAPP_ID') {
-      return new Response(JSON.stringify({ 
-        error: 'Veste AI ainda não está configurada. Aguarde a configuração do motor de IA.',
-        code: 'NOT_CONFIGURED'
-      }), {
-        status: 503,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    // Tool is properly configured with WebApp ID: 2018755100210106369
 
     // Apply rate limiting
     if (path === 'upload' || path === 'run') {
