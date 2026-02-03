@@ -1,133 +1,159 @@
 
-Objetivo
-- Para usuário com email existente e password_changed = false (primeiro acesso), o fluxo deve levar o usuário para “cadastrar nova senha” (/change-password) e não para “esqueceu sua senha”.
-- Manter o comportamento atual “ideal”: quando a senha temporária (email = senha) funciona, o usuário entra automaticamente e cai direto na tela de criar senha.
-- Quando a senha temporária falhar (casos quebrados/misturados), ainda assim não mandar para a tela “esqueceu senha”; em vez disso, disparar um fluxo de “criar senha” com link seguro e direcionar esse link para /change-password.
+Objetivo (o que vai mudar de verdade)
+- Quando o usuário existe e `password_changed = false` (primeiro acesso), ele deve cair no fluxo de “cadastrar nova senha” (/change-password ou variantes) e nunca ser jogado para “Esqueci minha senha”.
+- Se o login automático (email = senha temporária) falhar, o sistema pode até precisar mandar um link por email (isso é inevitável sem sessão), mas:
+  1) a UX não pode parecer “recuperação de senha”
+  2) o usuário deve ser direcionado para a tela de “cadastrar senha” imediatamente, com uma tela/estado “Aguardando link no email” dentro do /change-password (sem redirecionar para /forgot-password)
 
-Diagnóstico (estado atual)
-- HomeAuthModal.tsx:
-  - Se exists && !password_changed: tenta signInWithPassword(email, email).
-  - Se falha, hoje redireciona para /forgot-password?email=...
-- UserLogin.tsx:
-  - Se exists && !password_changed: tenta signInWithPassword(email, email).
-  - Se falha, abre um modal explicando para tentar “email como senha” (não garante que o usuário vá para criar senha).
-- UserLoginArtes.tsx e UserLoginArtesMusicos.tsx:
-  - Se exists && !password_changed: tenta signInWithPassword(email, email).
-  - Se falha, só dá toast de erro genérico.
-- Ponto técnico importante:
-  - A página /change-password (e as variantes) depende de sessão autenticada para conseguir setar senha via updateUser.
-  - Se o auto-login falha, não existe sessão; então “mandar direto para /change-password” sem mais nada não funciona. A alternativa correta (sem gambiarra no banco) é iniciar um fluxo de criação/redefinição via link que cria uma sessão de recovery e então /change-password consegue setar a nova senha.
+Diagnóstico do que está acontecendo agora (com base no código)
+1) O comportamento “Enviamos um link para criar sua senha…” é disparado quando:
+   - `check_profile_exists` retorna exists=true e password_changed=false
+   - o auto-login `signInWithPassword(email, email)` falha
+   - então o frontend chama `resetPasswordForEmail(...)` e mostra toast de “link enviado”
+   Isso está correto tecnicamente, mas a experiência está “parecendo forgot password”.
 
-Estratégia de correção (sem “gambiarra de banco”)
-1) Manter o auto-login (email/email) quando password_changed=false:
-   - Se funcionar: redireciona para /change-password?redirect=...
-2) Se o auto-login falhar:
-   - Em vez de jogar para /forgot-password, vamos iniciar automaticamente um “link de criar senha” (resetPasswordForEmail) e:
-     - Mostrar um “Primeiro acesso – crie sua senha” (tela/estado dentro do modal/página de login), sem mencionar “esqueceu senha”.
-     - O link enviado por email deve redirecionar para /change-password (ou variante) para o usuário cadastrar a senha e então seguir para o redirect.
-   - Resultado: o usuário não cai na página de “esqueceu senha” e ainda chega na página “cadastrar senha” do jeito certo (após clicar no link).
+2) Existe um segundo problema real no app: páginas de “primeiro acesso” fora do login principal ainda estão desatualizadas:
+   - `src/pages/BibliotecaArtes.tsx` e `src/pages/FerramentasIA.tsx`/`FerramentasIAES.tsx`
+   - Nelas, quando o auto-login falha, hoje elas mandam o usuário para `/login-artes` ou só dão erro, em vez de iniciar o fluxo de criar senha por link e direcionar corretamente.
 
-3) Robustez de detecção do email:
-   - Atualizar a função check_profile_exists para normalizar (trim + lower) internamente antes de comparar, evitando casos de email com espaços/casing que causam falso “não encontrado”.
+3) No banco (ambiente de teste), o perfil do email `aliados.sj@gmail.com` existe com `password_changed=false`. A função `check_profile_exists` também está correta e normalizando com `lower(trim(...))`.
+   - Então o “Email não encontrado” visto no print provavelmente veio de um fluxo específico (BibliotecaArtes) e/ou de ambiente diferente (Preview x Publicado). Vamos deixar isso robusto em todos os pontos de entrada, e também melhorar a UX para eliminar a confusão.
 
-Mudanças no backend (banco de dados)
-A) Atualizar a RPC public.check_profile_exists(check_email text)
-- Ajustes:
-  - Normalizar: check_email := lower(trim(check_email))
-  - Rodar validações e comparação usando o valor normalizado
-- Observação de segurança:
-  - Não criar policy “USING (true)” em profiles. Isso seria permissivo demais.
-  - A função já é SECURITY DEFINER e é a forma correta de expor somente “existe/não existe” e o flag password_changed.
+Decisão técnica importante (sem “gambiarra”)
+- Não existe como “cair no /change-password e já trocar a senha” quando o auto-login falha, porque **sem sessão não dá** para chamar `updateUser` de forma segura.
+- O caminho correto é:
+  - enviar link seguro (recovery) que cria uma sessão
+  - depois que o usuário clica, ele chega no /change-password já autenticado e consegue definir senha
 
-Mudanças no frontend (fluxo)
-B) Home (modal de autenticação)
-Arquivo: src/components/HomeAuthModal.tsx
-- Alterar o bloco do primeiro acesso:
-  - Hoje: se auto-login falha -> redirect /forgot-password
-  - Novo: se auto-login falha -> chamar resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/change-password?redirect=/` }) e então:
-    - Exibir estado de “Email enviado para criar senha” (dentro do modal)
-    - Incluir botão “Já abri o email” (fecha modal) e texto curto orientando o usuário
-- Garantir que o texto/UX não use “Esqueceu senha”, e sim “Criar senha / Primeiro acesso”.
+Ajuste que vai te entregar o que você pediu na prática
+- Após falhar o auto-login, nós vamos:
+  1) enviar o link de criação de senha (recovery)
+  2) navegar imediatamente para `/change-password?...` (ou variante) com um parâmetro `sent=1&email=...`
+  3) a página `/change-password` (ou variante) vai mostrar uma tela “Primeiro acesso: verifique seu email para cadastrar sua senha” enquanto não houver sessão
+  4) quando o usuário clicar no link do email, ele volta para `/change-password` (sem `sent=1`), agora com sessão, e aí aparece o formulário de cadastrar senha
 
-C) Página de login padrão (/login)
-Arquivo: src/pages/UserLogin.tsx
-- No fluxo exists && !password_changed:
-  - Se auto-login falhar:
-    - Trocar “showFirstAccessModal (só instrução)” por uma ação clara:
-      - botão “Enviar link para criar senha”
-      - ao clicar: resetPasswordForEmail com redirectTo apontando para /change-password?redirect=${redirectTo}
-      - mostrar confirmação de envio (sem encaminhar para /forgot-password)
-- Opcional: se você quiser fluxo 100% automático, pode disparar o envio do link imediatamente ao falhar (sem depender do clique), mas manter o botão “Reenviar” e feedback.
+Plano de implementação (frontend)
+1) Criar um helper único para “primeiro acesso”
+   - Novo util/hook (ex.: `src/lib/firstAccess.ts`) para centralizar:
+     - normalização de email (`trim().toLowerCase()`)
+     - tentativa de auto-login `signInWithPassword(email,email)`
+     - fallback: `resetPasswordForEmail(email, { redirectTo: origin + changePasswordRoute + '?redirect=...' })`
+     - retorno de status (`AUTOLOGIN_OK`, `LINK_SENT`, `EMAIL_NOT_FOUND`, `ERROR`)
+   Benefício: para de existir comportamento diferente entre Home, /login, Biblioteca, Ferramentas.
 
-D) Login Artes e Músicos
-Arquivos:
-- src/pages/UserLoginArtes.tsx
-- src/pages/UserLoginArtesMusicos.tsx
-- Hoje: no auto-login fail -> toast erro
-- Novo:
-  - No auto-login fail:
-    - disparar resetPasswordForEmail com redirectTo apontando para:
-      - /change-password-artes?redirect=${redirectTo}
-      - /change-password-artes-musicos?redirect=${redirectTo}
-    - mostrar UI/alert de “Link enviado para criar sua senha”
-    - sem mandar para /forgot-password-*
+2) Ajustar TODOS os pontos de entrada que checam `check_profile_exists`
+   2.1) Home modal (rota “/”)
+   - Arquivo: `src/components/HomeAuthModal.tsx`
+   - Mudança: quando auto-login falhar e link for enviado:
+     - em vez de só fechar o modal + toast, redirecionar para:
+       `/change-password?redirect=/&sent=1&email=<email>`
+     - e manter wording “Primeiro acesso / Criar senha” (sem “recuperar”)
 
-E) Garantir que /change-password lide bem com usuário não autenticado
-Arquivo: src/pages/ChangePassword.tsx
-- Hoje ele não checa sessão antes; se a pessoa cair ali sem sessão, pode gerar erro/confusão.
-- Ajustar para seguir o padrão do ChangePasswordArtes:
-  - checar session no mount
-  - se não tiver session: redirecionar para /login?redirect=...
-- Isso evita que alguém caia “seco” no /change-password e fique preso.
+   2.2) Login padrão
+   - Arquivo: `src/pages/UserLogin.tsx`
+   - Mudança: no fallback de auto-login falho:
+     - após enviar link, navegar para:
+       `/change-password?redirect=<redirectTo>&sent=1&email=<email>`
 
-F) RedirectTo: parar de hardcode de domínio em fluxos de senha (qualidade)
-Arquivos:
-- src/pages/ForgotPassword.tsx (e variantes Artes/Músicos, se aplicável)
-- Trocar redirectTo hardcoded para `${window.location.origin}/reset-password...` quando fizer sentido.
-- Mesmo que a gente passe a não usar /forgot-password no primeiro acesso, isso previne bugs em preview/produção.
+   2.3) Login Artes e Login Músicos
+   - Arquivos:
+     - `src/pages/UserLoginArtes.tsx`
+     - `src/pages/UserLoginArtesMusicos.tsx`
+   - Mudança: após enviar link:
+     - Artes: `/change-password-artes?redirect=<redirectTo>&sent=1&email=<email>`
+     - Músicos: `/change-password-artes-musicos?redirect=<redirectTo>&sent=1&email=<email>`
 
-Detalhes técnicos (como ficará o fluxo)
-- Primeiro acesso (normal):
-  1) Email existe e password_changed=false
-  2) signInWithPassword(email, email) funciona
-  3) redirect /change-password?redirect=...
-  4) usuário cria senha, password_changed vira true, segue
+   2.4) Biblioteca de Artes (onde está o modal do print “Comprar Pack / Email não encontrado”)
+   - Arquivo: `src/pages/BibliotecaArtes.tsx`
+   - Mudança crítica:
+     - no bloco `profileExists && !passwordChanged`:
+       - se auto-login OK: `navigate('/change-password-artes?redirect=/biblioteca-artes')`
+       - se auto-login falhar: chamar `resetPasswordForEmail` com `redirectTo` apontando para `/change-password-artes?redirect=/biblioteca-artes`
+       - e então `navigate('/change-password-artes?redirect=/biblioteca-artes&sent=1&email=<email>')`
+     - isso remove o comportamento atual de “falhou => vai pra /login-artes”
 
-- Primeiro acesso (auto-login falha):
-  1) Email existe e password_changed=false
-  2) signInWithPassword(email, email) falha
-  3) app dispara resetPasswordForEmail com redirectTo=/change-password?redirect=...
-  4) usuário abre email e clica no link
-  5) entra em sessão de recovery, abre /change-password e define senha
-  6) segue para redirect, sem passar por “esqueceu senha”
+   2.5) Ferramentas IA (e ES)
+   - Arquivos:
+     - `src/pages/FerramentasIA.tsx`
+     - `src/pages/FerramentasIAES.tsx`
+   - Mesma mudança do item acima:
+     - falhou auto-login => manda link => navega para `/change-password-artes?...&sent=1&email=...`
+     - usando redirect coerente (`/ferramentas-ia` ou `/ferramentas-ia-es`)
 
-Checklist de testes (end-to-end)
-1) Conta recém-criada via admin/webhook (senha = email, password_changed=false):
-   - Email check -> auto-login -> /change-password -> salvar -> login ok
-2) Conta “quebrada” (password_changed=false, mas senha não é email):
-   - Email check -> auto-login falha -> “link enviado” -> clicar link no email -> /change-password -> salvar -> login ok
-3) Email inexistente:
-   - cair no signup/fluxo de criar conta como hoje
-4) Acessar /change-password direto sem sessão:
-   - deve redirecionar para /login com mensagem adequada
-5) Repetir em /login-artes e /login-artes-musicos:
-   - mesmos cenários acima, com rotas change-password-* corretas
+3) Transformar /change-password (e variantes) em “duas telas”: (A) aguardando link (sem sessão) e (B) cadastrar senha (com sessão)
+   3.1) ChangePassword (principal)
+   - Arquivo: `src/pages/ChangePassword.tsx`
+   - Atualizar lógica atual que redireciona pro login quando não tem sessão:
+     - Se NÃO tem sessão E `sent=1` E `email` existe:
+       - NÃO redirecionar para /login
+       - Mostrar tela de instrução (Card):
+         - título: “Primeiro acesso: crie sua senha”
+         - texto: “Enviamos um link para seu email. Clique nele para abrir esta tela e cadastrar sua senha.”
+         - botões:
+           - “Reenviar link” (com cooldown de 30–60s no frontend)
+           - “Trocar email” (volta pro /login)
+           - “Já cliquei no link” (revalida sessão: chama `getSession()` novamente)
+     - Se NÃO tem sessão e NÃO tem `sent=1`:
+       - mantém o hardening atual: redireciona para /login (evita cair “seco”)
 
-Arquivos que serão alterados (resumo)
-- Backend (migração SQL): função public.check_profile_exists
-- Frontend:
-  - src/components/HomeAuthModal.tsx
-  - src/pages/UserLogin.tsx
-  - src/pages/UserLoginArtes.tsx
-  - src/pages/UserLoginArtesMusicos.tsx
-  - src/pages/ChangePassword.tsx
-  - (Opcional hardening) src/pages/ForgotPassword*.tsx para redirectTo via window.location.origin
+   3.2) ChangePasswordArtes e ChangePasswordArtesMusicos
+   - Arquivos:
+     - `src/pages/ChangePasswordArtes.tsx`
+     - `src/pages/ChangePasswordArtesMusicos.tsx`
+   - Mesma lógica do 3.1:
+     - sem sessão + `sent=1&email=...` => mostra tela de instrução
+     - sem sessão sem `sent=1` => redireciona para o login respectivo
 
-Riscos e como vamos mitigar
-- “Não quero email”: tecnicamente, sem sessão autenticada, não dá para setar senha diretamente na tela /change-password. O único caminho seguro é criar sessão de recovery via link.
-  - Mitigação: deixar o envio do link transparente e com wording “Criar senha / Primeiro acesso”, sem “Esqueci minha senha”.
-- Traduções/strings: adicionar chaves novas (i18n) ou usar fallback strings onde necessário.
+4) Ajustar textos para parar de soar “recuperação”
+   - Arquivos de tradução:
+     - `src/locales/pt/auth.json` (criar `success.passwordLinkSent` e mensagens específicas de “Primeiro acesso”)
+     - `src/locales/pt/index.json` (criar `auth.passwordLinkSent` etc. para o modal Home)
+     - `src/locales/pt/library.json` (mensagens do modal da Biblioteca: adicionar um texto de “link enviado para criar senha” se a gente decidir mostrar algo ali, ou garantir que ao falhar ele já navega pro /change-password-artes?sent=1)
+   - Regra: nenhuma mensagem desse fluxo deve usar “recuperar/redefinir” (isso fica só para quando o usuário clicar explicitamente em “Esqueci minha senha”).
 
-Critério de sucesso
-- Nenhum caso de primeiro acesso redireciona para /forgot-password.
-- Usuários com password_changed=false sempre acabam em /change-password (via auto-login ou via link) e conseguem setar senha e entrar na plataforma.
+5) Observabilidade (para parar o “parece que tá indo pro lugar errado”)
+   - Adicionar logs pontuais (console) nos handlers de primeiro acesso:
+     - email normalizado
+     - retorno de `check_profile_exists`
+     - status: autologin ok / link enviado / email não encontrado
+   - Isso facilita confirmar em qual tela o usuário estava (Home, Biblioteca, Ferramentas, /login) e qual branch foi executado.
+
+Plano de validação (end-to-end)
+1) Cenário A (ideal): usuário com `password_changed=false` e senha temporária = email
+   - Resultado: entra automático e vai direto pro formulário do /change-password (com sessão)
+2) Cenário B (quebrado): `password_changed=false`, mas senha no auth não é email
+   - Resultado: app vai para `/change-password(...)?sent=1&email=...` mostrando instruções
+   - Usuário clica no link do email
+   - Volta para /change-password com sessão e define senha
+3) Repetir A e B em:
+   - Home modal (/)
+   - /login
+   - /biblioteca-artes (modal “Comprar Pack”)
+   - /ferramentas-ia e /ferramentas-ia-es
+   - /login-artes e /login-artes-musicos
+4) Confirmar que nenhuma dessas rotas manda o usuário para /forgot-password automaticamente (somente se ele clicar por vontade própria).
+
+Arquivos que deverão ser alterados (resumo)
+- Fluxo:
+  - `src/components/HomeAuthModal.tsx`
+  - `src/pages/UserLogin.tsx`
+  - `src/pages/UserLoginArtes.tsx`
+  - `src/pages/UserLoginArtesMusicos.tsx`
+  - `src/pages/BibliotecaArtes.tsx`
+  - `src/pages/FerramentasIA.tsx`
+  - `src/pages/FerramentasIAES.tsx`
+- Telas de senha:
+  - `src/pages/ChangePassword.tsx`
+  - `src/pages/ChangePasswordArtes.tsx`
+  - `src/pages/ChangePasswordArtesMusicos.tsx`
+- Traduções:
+  - `src/locales/pt/auth.json`
+  - `src/locales/pt/index.json`
+  - `src/locales/pt/library.json`
+- (Novo) helper compartilhado:
+  - `src/lib/firstAccess.ts` (ou `src/hooks/useFirstAccessFlow.ts`)
+
+Resultado final esperado (do jeito que você descreveu)
+- Usuário “primeiro acesso” sempre é levado para a “página de cadastrar senha” (mesma rota /change-password):
+  - se tiver sessão (auto-login deu certo): vê o formulário imediatamente
+  - se ainda não tiver sessão (auto-login falhou): vê a tela “verifique seu email” dentro do /change-password, sem aparecer “esqueceu senha” e sem jogar para /forgot-password
