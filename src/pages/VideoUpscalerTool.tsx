@@ -148,6 +148,44 @@ const VideoUpscalerTool: React.FC = () => {
     return () => clearInterval(interval);
   }, [status]);
 
+  // Polling fallback - verifica status diretamente no banco a cada 15s
+  // Funciona como backup caso o Realtime ou webhook falhem
+  useEffect(() => {
+    if (!jobId || status === 'completed' || status === 'error' || status === 'idle') {
+      return;
+    }
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const { data: job } = await supabase
+          .from('video_upscaler_jobs')
+          .select('status, output_url, error_message')
+          .eq('id', jobId)
+          .maybeSingle();
+
+        if (!job) return;
+
+        console.log('[VideoUpscaler] Polling check:', job.status);
+
+        if (job.status === 'completed' && job.output_url) {
+          setOutputVideoUrl(job.output_url);
+          setStatus('completed');
+          setProgress(100);
+          refetchCredits();
+          processingRef.current = false;
+          toast.success('Vídeo upscalado com sucesso!');
+        } else if (job.status === 'failed') {
+          setStatus('error');
+          processingRef.current = false;
+          toast.error(job.error_message || 'Erro no processamento');
+        }
+      } catch (e) {
+        console.error('[VideoUpscaler] Polling error:', e);
+      }
+    }, 15000); // 15 segundos
+
+    return () => clearInterval(pollInterval);
+  }, [jobId, status, refetchCredits]);
 
   // Handle video upload
   const handleVideoChange = (url: string | null, file?: File, metadata?: VideoMetadata) => {
