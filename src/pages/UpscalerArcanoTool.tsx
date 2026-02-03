@@ -444,16 +444,21 @@ const UpscalerArcanoTool: React.FC = () => {
       setProgress(40);
 
       // Step 3: Call edge function with URL (not base64)
+      const creditCost = version === 'pro' ? 80 : 60;
+      const resolutionValue = resolution === '4k' ? 4096 : 2048;
+      const framingMode = isLongeMode ? 'longe' : 'perto';
+
       const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler', {
         body: {
           jobId: job.id,
           imageUrl: imageUrl,
           detailDenoise: detailDenoise,
           prompt: getFinalPrompt(),
-          resolution: resolution,
+          resolution: resolutionValue,
           version: version,
-          isLongeMode: isLongeMode,
-          userId: user.id
+          framingMode: framingMode,
+          userId: user.id,
+          creditCost: creditCost
         }
       });
 
