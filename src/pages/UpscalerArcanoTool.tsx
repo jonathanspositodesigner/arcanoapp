@@ -448,7 +448,7 @@ const UpscalerArcanoTool: React.FC = () => {
       const resolutionValue = resolution === '4k' ? 4096 : 2048;
       const framingMode = isLongeMode ? 'longe' : 'perto';
 
-      const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler', {
+      const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {
           jobId: job.id,
           imageUrl: imageUrl,
