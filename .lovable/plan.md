@@ -1,47 +1,27 @@
 
-# Plano: Remover Lógica Duplicada de Primeiro Acesso
 
-## ✅ CONCLUÍDO
+# Confirmar Email de Todos os Usuários
 
-A refatoração foi completada com sucesso. Aproximadamente **300 linhas** de código duplicado foram removidas.
+## O que será feito
 
-## Alterações Realizadas
+Executar um SQL para confirmar o email de todos os 4 usuários que estão com `email_confirmed_at = NULL`.
 
-### 1. `src/pages/BibliotecaArtes.tsx`
-- ✅ Removidos estados: `showFirstAccessModal`, `firstAccessEmail`, `firstAccessLoading`, `showEmailNotFoundModal`
-- ✅ Removida função: `handleFirstAccessCheck` (~70 linhas)
-- ✅ Removidos modais: "First Access Modal" e "Email Not Found Modal" (~70 linhas)
-- ✅ Atualizados 3 botões para navegar diretamente para `/login-artes?redirect=/biblioteca-artes`
+## SQL a ser executado
 
-### 2. `src/pages/FerramentasIA.tsx`
-- ✅ Removidos estados e função `handleFirstAccessCheck` (~70 linhas)
-- ✅ Removidos modais (~90 linhas)
-- ✅ Removidos imports não utilizados (Dialog, Input, toast, icons)
-- ✅ Atualizado botão para navegar para `/login-artes?redirect=/ferramentas-ia`
+```sql
+UPDATE auth.users 
+SET email_confirmed_at = NOW() 
+WHERE email_confirmed_at IS NULL;
+```
 
-### 3. `src/pages/FerramentasIAES.tsx`
-- ✅ Removidos estados e função `handleFirstAccessCheck` (~70 linhas)
-- ✅ Removidos modais (~90 linhas)
-- ✅ Removidos imports não utilizados
-- ✅ Atualizados ambos botões ("Primeiro Acesso" e "Login") para navegar para `/login-artes?redirect=/ferramentas-ia-es`
+## Resultado esperado
 
-## Fluxo Unificado
+Após a execução:
+- Os 4 usuários terão seus emails confirmados
+- O `aliados.sj@gmail.com` (e os outros 3) poderão fazer login normalmente
+- Usuários criados no futuro já serão confirmados automaticamente (pois o "Auto-confirm Email" está ativado)
 
-Agora todos os botões de login/primeiro acesso redirecionam para a página de login centralizada (`/login-artes`), que usa o hook `useUnifiedAuth` com o seguinte fluxo:
+## Observação
 
-1. **Email não cadastrado** → Aba de cadastro
-2. **Email cadastrado + password_changed=false** → Auto-login ou link para criar senha
-3. **Email cadastrado + password_changed=true** → Solicita senha para login
+Esse é um UPDATE na tabela `auth.users` que é gerenciada pelo Supabase. Você precisará executar isso através do **Cloud View > Run SQL** no painel do Lovable Cloud.
 
-## Benefícios
-
-1. **~300 linhas de código removidas**
-2. **Consistência** - todos os acessos passam pelo hook centralizado
-3. **Manutenção simplificada** - uma única fonte de verdade
-4. **Menos estados** para gerenciar nas páginas
-
-## Testes
-
-- BibliotecaArtes: Botões "Já é cliente?" → `/login-artes?redirect=/biblioteca-artes`
-- FerramentasIA: Botão "Primeiro Acesso" → `/login-artes?redirect=/ferramentas-ia`
-- FerramentasIAES: Botões → `/login-artes?redirect=/ferramentas-ia-es`
