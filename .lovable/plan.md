@@ -1,27 +1,32 @@
 
+# Correção do Upscaler Arcano - Endpoint /run
 
-# Confirmar Email de Todos os Usuários
+## Problema
+A linha 451 do arquivo `src/pages/UpscalerArcanoTool.tsx` está chamando a edge function sem o endpoint `/run`:
 
-## O que será feito
-
-Executar um SQL para confirmar o email de todos os 4 usuários que estão com `email_confirmed_at = NULL`.
-
-## SQL a ser executado
-
-```sql
-UPDATE auth.users 
-SET email_confirmed_at = NOW() 
-WHERE email_confirmed_at IS NULL;
+```typescript
+// ATUAL (linha 451) - QUEBRADO
+const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler', {
 ```
 
-## Resultado esperado
+## Solução
+Alterar para incluir o endpoint `/run`:
 
-Após a execução:
-- Os 4 usuários terão seus emails confirmados
-- O `aliados.sj@gmail.com` (e os outros 3) poderão fazer login normalmente
-- Usuários criados no futuro já serão confirmados automaticamente (pois o "Auto-confirm Email" está ativado)
+```typescript
+// CORRIGIDO
+const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler/run', {
+```
 
-## Observação
+## Arquivo Afetado
+- `src/pages/UpscalerArcanoTool.tsx` - linha 451
 
-Esse é um UPDATE na tabela `auth.users` que é gerenciada pelo Supabase. Você precisará executar isso através do **Cloud View > Run SQL** no painel do Lovable Cloud.
+## Impacto
+- **Upscaler Arcano**: Voltará a funcionar corretamente
+- **Pose Changer**: Não será afetado (código completamente separado)
 
+## Resultado Esperado
+Após a correção, o fluxo do Upscaler funcionará:
+1. Upload da imagem para storage ✓
+2. Chamada da edge function com endpoint correto `/run` ✓
+3. Processamento do upscale no RunningHub ✓
+4. Retorno do resultado via webhook ✓
