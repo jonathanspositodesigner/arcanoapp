@@ -1,102 +1,118 @@
 
-## Objetivo
-Corrigir o erro “new row violates row-level security policy” no Pose Changer, que está acontecendo **no upload das imagens para o armazenamento** (não é a fila, nem o job na tabela).
+## Diagnóstico objetivo (onde está travando de verdade)
 
-## Diagnóstico (o que está acontecendo)
-- O log mostra `StorageApiError: new row violates row-level security policy` ao tentar fazer `upload()` para:
-  - bucket: `artes-cloudinary`
-  - caminho: `pose-changer/person-....webp`
-- Hoje existe uma policy explícita permitindo upload **apenas** para a pasta `upscaler/` dentro desse bucket:
-  - `Authenticated users can upload to upscaler folder`
-- Como o Pose Changer faz upload em `pose-changer/`, o backend bloqueia com 403.
+Pelo fluxo atual do Pose Changer, o ponto que está quebrando “do nada” não é mais upload/permissão. Agora o travamento principal é este:
 
-Isso **não é por estar no preview**. O preview só está mostrando o erro; a causa é a regra de permissão do armazenamento.
+1) O front cria o job no banco (`pose_changer_jobs`).
+2) Faz upload das 2 imagens pro storage (isso está funcionando; eu confirmei que os arquivos existem em `pose-changer/<user_id>/...`).
+3) Chama a função `runninghub-pose-changer/run`.
+4) Dentro dessa função, na etapa de “transferir” as imagens pro RunningHub, ela faz:
+   - `const personData = await personUpload.json()`
+   - `const refData = await refUpload.json()`
 
----
+Quando o RunningHub responde com **HTML** (Cloudflare/502/403/429 etc), o `.json()` quebra com:
+- `Unexpected token '<' ... is not valid JSON`
 
-## Solução proposta
-Adicionar uma policy de upload para a pasta `pose-changer/` (seguindo o mesmo padrão da pasta `upscaler/`) para permitir que usuários autenticados consigam enviar os arquivos.
+Resultado:
+- o backend responde 500 e o front só mostra “non-2xx”
+- o job pode ficar “queued/running” sem erro gravado (estado zumbi), o que dá a sensação de “toda vez quebra uma coisa diferente”.
 
-### Opção recomendada (mais segura)
-Além de liberar `pose-changer/`, organizar o caminho por usuário:
-- De: `pose-changer/person-...`
-- Para: `pose-changer/<user_id>/person-...`
-
-E criar a policy exigindo que a 2ª pasta seja o próprio `auth.uid()`. Isso reduz risco de um usuário sobrescrever/atacar arquivos de outro usuário.
+Importante: eu consegui disparar o endpoint `/openapi/v2/run/ai-app/2018451429635133442` via função e receber `taskId` com sucesso em teste. Então a integração está “no caminho certo”, mas falta robustez e tratamento correto quando o provedor responde erro/HTML.
 
 ---
 
-## Passos de implementação
+## Objetivo das correções (sem “cabuloso”)
 
-### 1) Backend (migração SQL): liberar upload para Pose Changer
-Criar uma nova migração em `supabase/migrations/*` adicionando policies em `storage.objects`:
-
-- `INSERT` para usuários autenticados no bucket `artes-cloudinary`
-- Restringindo a pasta `pose-changer`
-- (Recomendado) Restringindo também a subpasta do usuário
-
-Exemplo (recomendado):
-
-```sql
--- Permitir usuários autenticados fazer upload na pasta pose-changer/<user_id>/
-CREATE POLICY "Authenticated users can upload to pose-changer folder"
-ON storage.objects FOR INSERT
-TO authenticated
-WITH CHECK (
-  bucket_id = 'artes-cloudinary'
-  AND (storage.foldername(name))[1] = 'pose-changer'
-  AND (storage.foldername(name))[2] = auth.uid()::text
-);
-```
-
-Opcional (robustez por causa do `upsert: true` no client): policy de UPDATE também, para cobrir cenários de re-upload do mesmo caminho:
-
-```sql
-CREATE POLICY "Authenticated users can update pose-changer folder"
-ON storage.objects FOR UPDATE
-TO authenticated
-USING (
-  bucket_id = 'artes-cloudinary'
-  AND (storage.foldername(name))[1] = 'pose-changer'
-  AND (storage.foldername(name))[2] = auth.uid()::text
-)
-WITH CHECK (
-  bucket_id = 'artes-cloudinary'
-  AND (storage.foldername(name))[1] = 'pose-changer'
-  AND (storage.foldername(name))[2] = auth.uid()::text
-);
-```
-
-### 2) Frontend: ajustar o caminho do upload para bater com a policy
-Editar `src/pages/PoseChangerTool.tsx` na função `uploadToStorage`:
-
-- De:
-  - `const filePath = \`pose-changer/${fileName}\`;`
-- Para:
-  - `const filePath = \`pose-changer/${user.id}/${fileName}\`;`
-
-Também garantir fallback seguro:
-- Se `!user?.id`, lançar erro (mas isso já está bloqueado no `handleProcess`).
-
-### 3) Teste rápido (critério de aceite)
-No `/pose-changer-tool`:
-1. Escolher “Sua Foto” e “Referência”
-2. Clicar “Gerar Pose”
-3. Validar no console/network:
-   - O request `POST .../storage/v1/object/artes-cloudinary/...` deve voltar 200 (ou 201), não 403
-4. Confirmar que:
-   - O job é criado
-   - A chamada `runninghub-pose-changer/run` acontece
-   - A fila/processamento segue normalmente
+1) Parar de quebrar em `.json()` quando a resposta não for JSON.
+2) Retornar pro front um erro útil (status + trecho do corpo), em vez de “non-2xx”.
+3) Quando falhar em qualquer passo, **marcar o job como `failed`** com `error_message` (para não ficar travado).
+4) Fortalecer também o `/run/ai-app/...` (mesmo problema: hoje faz `response.json()` direto).
+5) (Bonus bem simples) Melhorar o front para mostrar o erro retornado pela função.
 
 ---
 
-## Observações
-- A policy de “Public read access” para `artes-cloudinary` já existe, então a função backend continua conseguindo baixar a imagem via URL pública.
-- Essa correção é específica do upload. A fila global de 3 simultâneos continua válida e separada desse problema.
+## Mudanças propostas (implementação)
+
+### A) Blindar parsing/erros no `runninghub-pose-changer` (principal)
+**Arquivo:** `supabase/functions/runninghub-pose-changer/index.ts`
+
+1. Criar helper interno para ler resposta com segurança:
+   - ler `content-type`
+   - ler `text()` sempre
+   - se parecer JSON, fazer `JSON.parse(text)` (try/catch)
+   - se for HTML ou parse falhar: lançar erro com:
+     - `endpoint`, `status`, `content-type`, `bodySnippet` (200–400 chars)
+
+2. Aplicar esse helper em:
+   - upload da person image (`/task/openapi/upload`)
+   - upload da reference image (`/task/openapi/upload`)
+   - start do app (`/openapi/v2/run/ai-app/...`)
+
+3. Checar `response.ok` antes de parsear e tratar:
+   - 429/502/503/504: retry simples (2–3 tentativas, backoff curto 500ms/1000ms/2000ms)
+   - demais: falha imediata com mensagem clara
+
+4. **No catch de IMAGE_TRANSFER_ERROR**, além de retornar o erro, atualizar o job:
+   - `status = 'failed'`
+   - `error_message = 'IMAGE_TRANSFER_ERROR: <mensagem curta>'`
+   - `completed_at = now()`
+   Isso mata o “job zumbi” e o realtime do front vai refletir.
+
+5. Também ajustar CORS headers para o formato padrão (incluindo os headers longos), para evitar preflight estranho no browser em alguns cenários.
+
+**Resultado esperado:** nunca mais “Unexpected token ‘<’” derrubando tudo; quando o provedor der pau, o erro volta explicado e o job vira failed.
 
 ---
 
-## Arquivos envolvidos
-- Backend: nova migração SQL em `supabase/migrations/*` (policies em `storage.objects`)
-- Frontend: `src/pages/PoseChangerTool.tsx` (ajuste do `filePath` do upload)
+### B) Blindar o `runninghub-upscaler` (mesmo bug, mesmo remédio)
+**Arquivo:** `supabase/functions/runninghub-upscaler/index.ts`
+
+Ele tem o mesmo padrão perigoso (`await uploadResponse.json()` / `await response.json()`). Vamos reaproveitar a mesma abordagem de:
+- ler `text()`, validar JSON, logar snippet
+- retry para 429/502/503/504
+
+**Resultado:** evita o mesmo inferno reaparecer em outra ferramenta.
+
+---
+
+### C) Melhorar o front para mostrar o erro real (e não “non-2xx”)
+**Arquivo:** `src/pages/PoseChangerTool.tsx`
+
+1. Ao receber `runError` do `supabase.functions.invoke`, tentar extrair detalhes do erro retornado pela função (quando existir) e mostrar no toast algo do tipo:
+   - “RunningHub retornou HTML (502). Tente novamente em 30s.”
+   - “Rate limit (429). Aguarde e tente de novo.”
+2. Subscribing mais cedo:
+   - Assinar updates do job logo após criar o job (antes do upload e do invoke), assim qualquer `failed` gravado no backend aparece mesmo se o invoke falhar no meio.
+
+**Resultado:** você vê exatamente “qual passo falhou” sem ter que adivinhar.
+
+---
+
+### D) Verificação do fluxo passo a passo (critério de aceite)
+Depois de implementar:
+
+1) Abrir `/pose-changer-tool`
+2) Selecionar 2 imagens (pessoa + referência)
+3) Clicar “Gerar Pose”
+4) Confirmar no console/network:
+   - uploads para storage OK (200/201)
+   - invoke do `runninghub-pose-changer/run`:
+     - em sucesso: retorna `{ taskId }` e o job fica `running`
+     - em falha: o front mostra status e snippet; o job vira `failed` com `error_message`
+5) Aguardar término:
+   - webhook atualiza para `completed` com `output_url` (se o provedor estiver ok)
+   - se não chegar callback: pelo menos não fica travado silenciosamente (e teremos logs melhores para diagnosticar o callback)
+
+---
+
+## Arquivos que serão alterados
+- `supabase/functions/runninghub-pose-changer/index.ts`
+- `supabase/functions/runninghub-upscaler/index.ts`
+- `src/pages/PoseChangerTool.tsx`
+
+---
+
+## Observações (importante)
+- Eu não vou “enfiar mais proibição”; o foco aqui é remover os crashes e deixar o sistema resiliente quando o provedor responde fora do padrão.
+- A API que você mandou (`/run/ai-app/2018451429635133442`) já está sendo usada; o que faltou foi tratar corretamente quando o provedor não entrega JSON (o que acontece na vida real).
+
