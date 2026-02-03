@@ -1,79 +1,134 @@
 
-## Correção do Upscaler Arcano Tool
+# Correção do Login - Email Não Encontrado
 
-### Problema Identificado
+## Problema Identificado
 
-A edge function `runninghub-upscaler` foi atualizada para exigir validação estrita de parâmetros, mas o frontend **não foi atualizado** para enviar os parâmetros no formato correto.
+O usuário `aliados.sj@gmail.com` **existe no banco de dados**, mas quando tenta fazer login, o sistema mostra "Email não encontrado".
 
-**O que a edge function espera:**
-| Parâmetro | Tipo | Valor esperado |
-|-----------|------|----------------|
-| `creditCost` | number | 60 ou 80 (obrigatório) |
-| `resolution` | number | 2048 ou 4096 |
-| `framingMode` | string | `'perto'` ou `'longe'` |
+### Causa Raiz
 
-**O que o frontend envia atualmente:**
-| Parâmetro | Tipo | Valor enviado |
-|-----------|------|---------------|
-| `creditCost` | ❌ não envia | - |
-| `resolution` | string | `'2k'` ou `'4k'` |
-| `isLongeMode` | boolean | `true` ou `false` |
+A função `check_profile_exists` não consegue ler da tabela `profiles` quando chamada por usuários não autenticados, mesmo sendo `SECURITY DEFINER`.
 
-### Erro Resultante
+**Por quê?**
 
-Quando o frontend chama a edge function, ela retorna:
-```json
-{
-  "error": "Invalid credit cost (must be 1-500)",
-  "code": "INVALID_CREDIT_COST"
-}
+As políticas RLS da tabela `profiles` usam `auth.uid()` para verificar acesso:
+
+| Política | Condição |
+|----------|----------|
+| Users can view their own profile | `auth.uid() = id` |
+| Admins can view all profiles | `has_role(auth.uid(), 'admin')` |
+
+Quando um usuário **não está logado**:
+- `auth.uid()` retorna `NULL`
+- Nenhuma política RLS permite acesso
+- A função não encontra registros
+- Retorna `exists_in_db: false` mesmo o email existindo
+
+---
+
+## Solução
+
+Adicionar uma política RLS que permite a função `check_profile_exists` fazer SELECT apenas nas colunas necessárias (`email` e `password_changed`), bypassando a restrição de autenticação para essa verificação específica.
+
+### Opção Implementada: Política RLS para verificação de email
+
+Criar uma nova política que permite leitura pública apenas para verificação de existência:
+
+```sql
+-- Permitir que a função check_profile_exists leia profiles
+-- Isso é seguro porque a função só retorna true/false, não expõe dados
+CREATE POLICY "Allow check_profile_exists function"
+ON public.profiles
+FOR SELECT
+TO anon, authenticated
+USING (true);
 ```
 
-Isso gera o erro genérico: **"Edge Function returned a non-2xx status code"**
+**IMPORTANTE**: Isso pode ser muito permissivo. Uma alternativa mais segura é usar uma View com SECURITY DEFINER:
 
----
+### Alternativa Mais Segura: Atualizar a função com SET search_path
 
-### Solução
+A forma mais segura é garantir que a função realmente bypass RLS adicionando a opção correta:
 
-Atualizar o arquivo `src/pages/UpscalerArcanoTool.tsx` para enviar os parâmetros no formato correto:
+```sql
+DROP FUNCTION IF EXISTS check_profile_exists(TEXT);
 
-```typescript
-// Step 3: Call edge function with URL (not base64)
-const creditCost = version === 'pro' ? 80 : 60;
-const resolutionValue = resolution === '4k' ? 4096 : 2048;
-const framingMode = isLongeMode ? 'longe' : 'perto';
+CREATE OR REPLACE FUNCTION check_profile_exists(check_email TEXT)
+RETURNS TABLE(exists_in_db BOOLEAN, password_changed BOOLEAN)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  -- Validação básica
+  IF check_email IS NULL OR LENGTH(TRIM(check_email)) < 3 THEN
+    RETURN QUERY SELECT FALSE, FALSE;
+    RETURN;
+  END IF;
+  
+  -- Normalizar email (trim + lowercase)
+  check_email := LOWER(TRIM(check_email));
+  
+  -- Buscar perfil (RLS bypassado via SECURITY DEFINER)
+  RETURN QUERY
+  SELECT 
+    TRUE,
+    COALESCE(p.password_changed, FALSE)
+  FROM profiles p
+  WHERE LOWER(p.email) = check_email
+  LIMIT 1;
+  
+  -- Se não encontrou
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT FALSE, FALSE;
+  END IF;
+END;
+$$;
 
-const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler', {
-  body: {
-    jobId: job.id,
-    imageUrl: imageUrl,
-    detailDenoise: detailDenoise,
-    prompt: getFinalPrompt(),
-    resolution: resolutionValue,     // número, não string
-    version: version,
-    framingMode: framingMode,        // string 'perto' ou 'longe'
-    userId: user.id,
-    creditCost: creditCost           // NOVO - obrigatório
-  }
-});
+-- Garantir permissões
+GRANT EXECUTE ON FUNCTION check_profile_exists(TEXT) TO anon, authenticated;
+```
+
+E adicionar uma política específica para o postgres user:
+
+```sql
+-- Política para permitir que SECURITY DEFINER functions leiam profiles
+CREATE POLICY "Service role can read all profiles"
+ON public.profiles
+FOR SELECT
+TO postgres
+USING (true);
 ```
 
 ---
 
-### Alterações Técnicas
+## Mudanças
 
-**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
+### 1. Migração SQL (Database)
 
-1. **Linhas 446-458** - Atualizar chamada da edge function:
-   - Adicionar `creditCost` (60 ou 80 dependendo da versão)
-   - Converter `resolution` de string para número (`'2k'` → `2048`, `'4k'` → `4096`)
-   - Trocar `isLongeMode` (boolean) por `framingMode` (string `'perto'` ou `'longe'`)
+Atualizar a função RPC e adicionar política RLS apropriada.
+
+### 2. Frontend (Opcional - ForgotPassword)
+
+Atualizar `src/pages/ForgotPassword.tsx` para ler o parâmetro `?email=` da URL e pré-preencher o campo.
 
 ---
 
-### Resultado Esperado
+## Resumo Técnico
 
-- A chamada da edge function vai funcionar novamente
-- O job será processado corretamente
-- Créditos serão consumidos atomicamente no backend
-- Upscaler Arcano voltará a funcionar como antes
+| Item | Antes | Depois |
+|------|-------|--------|
+| Função RPC | Não faz TRIM interno | Faz TRIM e LOWER internamente |
+| RLS postgres | Sem política | Política permitindo leitura |
+| ForgotPassword | Não lê URL params | Lê e preenche email da URL |
+
+---
+
+## Resultado Esperado
+
+1. Usuário digita `aliados.sj@gmail.com` (com ou sem espaços)
+2. RPC retorna `exists_in_db: true, password_changed: false`
+3. Sistema tenta auto-login com email como senha
+4. Se falhar, redireciona para `/forgot-password?email=xxx`
+5. Página abre com email pré-preenchido
+6. Usuário clica em enviar e recebe link de recuperação
