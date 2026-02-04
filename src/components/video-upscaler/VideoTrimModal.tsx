@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Scissors, Loader2 } from 'lucide-react';
+import { Scissors, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
 
 interface VideoMetadata {
   width: number;
@@ -20,12 +21,30 @@ interface VideoTrimModalProps {
 }
 
 const MAX_TRIM_DURATION = 10;
+const GLOBAL_TIMEOUT_MS = 60000; // 60s timeout máximo
 
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   const ms = Math.floor((seconds % 1) * 10);
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms}`;
+};
+
+// Detectar melhor mimeType suportado
+const getSupportedMimeType = (): string | null => {
+  const types = [
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm',
+  ];
+  for (const type of types) {
+    if (MediaRecorder.isTypeSupported(type)) {
+      return type;
+    }
+  }
+  return null;
 };
 
 const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
@@ -39,7 +58,10 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [range, setRange] = useState<[number, number]>([0, Math.min(MAX_TRIM_DURATION, videoDuration)]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [currentPreviewTime, setCurrentPreviewTime] = useState(0);
+  const abortRef = useRef(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   // Create object URL when modal opens
   useEffect(() => {
@@ -48,6 +70,8 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
       setVideoUrl(url);
       setRange([0, Math.min(MAX_TRIM_DURATION, videoDuration)]);
       setCurrentPreviewTime(0);
+      setProgress(0);
+      abortRef.current = false;
       return () => URL.revokeObjectURL(url);
     }
   }, [isOpen, videoFile, videoDuration]);
@@ -58,22 +82,17 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
     const currentStart = range[0];
     const currentEnd = range[1];
     
-    // Determine which handle moved
     let adjustedStart = newStart;
     let adjustedEnd = newEnd;
     
-    // Ensure maximum 10 seconds range
     if (newEnd - newStart > MAX_TRIM_DURATION) {
-      // If start moved, adjust end
       if (newStart !== currentStart) {
         adjustedEnd = newStart + MAX_TRIM_DURATION;
         if (adjustedEnd > videoDuration) {
           adjustedEnd = videoDuration;
           adjustedStart = adjustedEnd - MAX_TRIM_DURATION;
         }
-      }
-      // If end moved, adjust start
-      else if (newEnd !== currentEnd) {
+      } else if (newEnd !== currentEnd) {
         adjustedStart = newEnd - MAX_TRIM_DURATION;
         if (adjustedStart < 0) {
           adjustedStart = 0;
@@ -84,147 +103,248 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
     
     setRange([adjustedStart, adjustedEnd]);
     
-    // Seek video to the start of selection when dragging
     if (videoRef.current) {
       videoRef.current.currentTime = adjustedStart;
       setCurrentPreviewTime(adjustedStart);
     }
   }, [range, videoDuration]);
 
-  // Handle video time update
   const handleTimeUpdate = useCallback(() => {
     if (videoRef.current) {
       const currentTime = videoRef.current.currentTime;
       setCurrentPreviewTime(currentTime);
-      
-      // Loop within selected range
       if (currentTime >= range[1]) {
         videoRef.current.currentTime = range[0];
       }
     }
   }, [range]);
 
-  // Trim video using frame-by-frame seeking
-  const trimVideo = useCallback(async (): Promise<File> => {
+  // Método principal: Play + CaptureStream (mais estável)
+  const trimVideoPlayback = useCallback(async (): Promise<File> => {
+    const mimeType = getSupportedMimeType();
+    if (!mimeType) {
+      throw new Error('Seu navegador não suporta exportar vídeo. Use Chrome ou Edge.');
+    }
+
+    const [startTime, endTime] = range;
+    const duration = endTime - startTime;
+
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
-      video.src = URL.createObjectURL(videoFile);
+      const videoSrc = URL.createObjectURL(videoFile);
+      video.src = videoSrc;
       video.muted = false;
-      video.volume = 0;
+      video.playsInline = true;
+      video.preload = 'auto';
+
+      let recorder: MediaRecorder | null = null;
+      let stream: MediaStream | null = null;
+      let animationId: number | null = null;
+      let safetyTimeout: ReturnType<typeof setTimeout> | null = null;
+      let resolved = false;
+
+      const cleanup = () => {
+        if (animationId) cancelAnimationFrame(animationId);
+        if (safetyTimeout) clearTimeout(safetyTimeout);
+        video.pause();
+        if (stream) {
+          stream.getTracks().forEach(t => t.stop());
+        }
+        URL.revokeObjectURL(videoSrc);
+      };
+
+      cleanupRef.current = cleanup;
+
+      const finishRecording = (chunks: Blob[]) => {
+        if (resolved) return;
+        resolved = true;
+        cleanup();
+        
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const trimmedFile = new File(
+          [blob],
+          `trimmed-${videoFile.name.replace(/\.[^/.]+$/, '')}.webm`,
+          { type: 'video/webm' }
+        );
+        resolve(trimmedFile);
+      };
 
       video.onloadedmetadata = async () => {
         try {
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          const ctx = canvas.getContext('2d')!;
-
-          // Capture canvas stream for video
-          const canvasStream = canvas.captureStream(30);
+          // Seek to start
+          video.currentTime = startTime;
           
-          // Try to capture audio from video
-          try {
-            const videoStream = (video as any).captureStream();
-            const audioTracks = videoStream.getAudioTracks();
-            audioTracks.forEach((track: MediaStreamTrack) => canvasStream.addTrack(track));
-          } catch (e) {
-            console.warn('Could not capture audio:', e);
+          await new Promise<void>((res, rej) => {
+            const timeout = setTimeout(() => rej(new Error('Seek timeout')), 5000);
+            video.onseeked = () => {
+              clearTimeout(timeout);
+              res();
+            };
+          });
+
+          if (abortRef.current) {
+            cleanup();
+            reject(new Error('Cancelado'));
+            return;
           }
 
-          const recorder = new MediaRecorder(canvasStream, { 
-            mimeType: 'video/webm;codecs=vp9,opus'
-          });
+          // Capture stream from video element (includes audio!)
+          stream = (video as any).captureStream ? (video as any).captureStream() : null;
+          if (!stream) {
+            throw new Error('captureStream não suportado');
+          }
+
+          recorder = new MediaRecorder(stream, { mimeType });
           const chunks: Blob[] = [];
 
           recorder.ondataavailable = (e) => {
             if (e.data.size > 0) chunks.push(e.data);
           };
-          
+
           recorder.onstop = () => {
-            const blob = new Blob(chunks, { type: 'video/webm' });
-            const trimmedFile = new File(
-              [blob], 
-              `trimmed-${videoFile.name.replace(/\.[^/.]+$/, '')}.webm`, 
-              { type: 'video/webm' }
-            );
-            URL.revokeObjectURL(video.src);
-            resolve(trimmedFile);
+            finishRecording(chunks);
           };
 
-          const [startTime, endTime] = range;
-          const FPS = 30;
-          const frameInterval = 1 / FPS;
-          const duration = endTime - startTime;
-          const totalFrames = Math.ceil(duration * FPS);
-          let frameCount = 0;
+          recorder.onerror = (e) => {
+            cleanup();
+            reject(new Error('Erro no MediaRecorder'));
+          };
 
-          // Seek to start position
-          video.currentTime = startTime;
-          await new Promise<void>(r => { video.onseeked = () => r(); });
+          recorder.start(100);
 
-          recorder.start(100); // Collect data every 100ms
+          // Play video
+          await video.play();
 
-          // Process frames manually for exact duration
-          const processFrame = async () => {
-            if (frameCount >= totalFrames) {
-              recorder.stop();
+          // Monitor playback and stop at endTime
+          const checkTime = () => {
+            if (abortRef.current) {
+              recorder?.stop();
               return;
             }
+            
+            const currentTime = video.currentTime;
+            const progressPercent = Math.min(100, ((currentTime - startTime) / duration) * 100);
+            setProgress(Math.round(progressPercent));
 
-            // Draw current frame to canvas
-            ctx.drawImage(video, 0, 0);
-            frameCount++;
-
-            // Seek to next frame
-            const nextTime = startTime + (frameCount * frameInterval);
-            if (nextTime <= endTime) {
-              video.currentTime = nextTime;
-              await new Promise<void>(r => { video.onseeked = () => r(); });
+            if (currentTime >= endTime - 0.05) {
+              // Reached end
+              video.pause();
+              recorder?.stop();
+            } else {
+              animationId = requestAnimationFrame(checkTime);
             }
-
-            // Use setTimeout for next frame
-            setTimeout(processFrame, 1000 / FPS);
           };
 
-          await processFrame();
+          animationId = requestAnimationFrame(checkTime);
+
+          // Safety timeout: stop after expected duration + 2s buffer
+          safetyTimeout = setTimeout(() => {
+            if (!resolved) {
+              video.pause();
+              recorder?.stop();
+            }
+          }, (duration + 2) * 1000);
+
         } catch (error) {
-          URL.revokeObjectURL(video.src);
+          cleanup();
           reject(error);
         }
       };
 
       video.onerror = () => {
-        URL.revokeObjectURL(video.src);
+        cleanup();
         reject(new Error('Erro ao carregar vídeo'));
       };
     });
   }, [videoFile, range]);
 
+  const handleCancel = useCallback(() => {
+    abortRef.current = true;
+    if (cleanupRef.current) {
+      cleanupRef.current();
+    }
+    setIsProcessing(false);
+    setProgress(0);
+  }, []);
+
   const handleSave = async () => {
+    const mimeType = getSupportedMimeType();
+    if (!mimeType) {
+      toast({
+        title: "Navegador não suportado",
+        description: "Use Chrome, Edge ou Firefox para cortar vídeos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
+    setProgress(0);
+    abortRef.current = false;
+
     try {
-      const trimmedFile = await trimVideo();
-      
+      // Timeout global de segurança
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Tempo limite excedido')), GLOBAL_TIMEOUT_MS);
+      });
+
+      const trimmedFile = await Promise.race([
+        trimVideoPlayback(),
+        timeoutPromise,
+      ]);
+
+      if (abortRef.current) {
+        return;
+      }
+
       // Get metadata of trimmed video
       const video = document.createElement('video');
-      video.src = URL.createObjectURL(trimmedFile);
-      
-      await new Promise<void>((resolve) => {
+      const tempUrl = URL.createObjectURL(trimmedFile);
+      video.src = tempUrl;
+
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          URL.revokeObjectURL(tempUrl);
+          reject(new Error('Timeout ao ler metadata'));
+        }, 5000);
+        
         video.onloadedmetadata = () => {
+          clearTimeout(timeout);
           const metadata: VideoMetadata = {
             width: video.videoWidth,
             height: video.videoHeight,
             duration: video.duration,
           };
-          URL.revokeObjectURL(video.src);
+          URL.revokeObjectURL(tempUrl);
           onSave(trimmedFile, metadata);
           resolve();
         };
+        
+        video.onerror = () => {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(tempUrl);
+          reject(new Error('Erro ao ler vídeo cortado'));
+        };
       });
+
+      toast({
+        title: "Vídeo cortado!",
+        description: `Duração: ${(range[1] - range[0]).toFixed(1)}s`,
+      });
+
     } catch (error) {
       console.error('Error trimming video:', error);
+      
+      if (!abortRef.current) {
+        toast({
+          title: "Erro ao cortar vídeo",
+          description: error instanceof Error ? error.message : "Tente novamente",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsProcessing(false);
+      setProgress(0);
     }
   };
 
@@ -255,7 +375,6 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
               />
             )}
             
-            {/* Current time overlay */}
             <div className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-xs text-white">
               {formatTime(currentPreviewTime)} / {formatTime(videoDuration)}
             </div>
@@ -267,7 +386,6 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
               Selecione até {MAX_TRIM_DURATION} segundos do vídeo:
             </p>
             
-            {/* Dual Slider */}
             <div className="py-4">
               <Slider
                 value={range}
@@ -279,7 +397,6 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
               />
             </div>
 
-            {/* Range Info */}
             <div className="flex items-center justify-between text-xs">
               <span className="text-purple-300">0s</span>
               <div className="flex items-center gap-2 bg-purple-500/20 px-3 py-1.5 rounded-full">
@@ -299,22 +416,41 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
             </div>
           </div>
 
-          {/* Save Button */}
-          <div className="flex justify-end pt-2">
-            <Button
-              onClick={handleSave}
-              disabled={isProcessing || selectedDuration > MAX_TRIM_DURATION}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Processando...
-                </>
-              ) : (
-                'Salvar Vídeo'
-              )}
-            </Button>
+          {/* Progress bar during processing */}
+          {isProcessing && (
+            <div className="px-2">
+              <div className="w-full bg-purple-900/30 rounded-full h-2">
+                <div 
+                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="text-center text-xs text-purple-300 mt-1">
+                Processando... {progress}%
+              </p>
+            </div>
+          )}
+
+          {/* Buttons */}
+          <div className="flex justify-end gap-2 pt-2">
+            {isProcessing ? (
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                className="border-red-500/50 text-red-400 hover:bg-red-500/20"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancelar
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSave}
+                disabled={selectedDuration > MAX_TRIM_DURATION}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6"
+              >
+                Salvar Vídeo
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
