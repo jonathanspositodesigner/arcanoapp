@@ -509,38 +509,43 @@ async function handleRun(req: Request) {
       })
       .eq('id', jobId);
 
-    // Count running jobs across ALL AI tools (global queue)
-    const { count: upscalerRunning } = await supabase
-      .from('upscaler_jobs')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'running');
+    // ========================================
+    // VERIFICAR DISPONIBILIDADE VIA QUEUE MANAGER CENTRALIZADO
+    // ========================================
+    let slotsAvailable = 0;
+    try {
+      const queueCheckUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`;
+      const queueResponse = await fetch(queueCheckUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+      });
+      const queueData = await queueResponse.json();
+      slotsAvailable = queueData.slotsAvailable || 0;
+      console.log(`[VesteAI] Queue Manager check: ${queueData.running}/${queueData.maxConcurrent}, slots: ${slotsAvailable}`);
+    } catch (queueError) {
+      console.error('[VesteAI] Queue Manager check failed, assuming no slots:', queueError);
+    }
 
-    const { count: poseRunning } = await supabase
-      .from('pose_changer_jobs')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'running');
-
-    const { count: vesteRunning } = await supabase
-      .from('veste_ai_jobs')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'running');
-
-    const runningCount = (upscalerRunning || 0) + (poseRunning || 0) + (vesteRunning || 0);
-    console.log(`[VesteAI] Global running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS}`);
-
-    if (runningCount >= MAX_CONCURRENT_JOBS) {
+    if (slotsAvailable <= 0) {
       // Get queue position
       const { count: queuedBefore } = await supabase
         .from('veste_ai_jobs')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'queued')
-        .lt('created_at', new Date().toISOString());
+        .eq('status', 'queued');
 
       const position = (queuedBefore || 0) + 1;
       
       await supabase
         .from('veste_ai_jobs')
-        .update({ position, user_credit_cost: creditCost })
+        .update({ 
+          status: 'queued',
+          position, 
+          user_credit_cost: creditCost,
+          waited_in_queue: true
+        })
         .eq('id', jobId);
 
       console.log(`[VesteAI] Job queued at position ${position}`);

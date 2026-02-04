@@ -487,43 +487,32 @@ async function handleRun(req: Request) {
   console.log(`[PoseChanger] Credits consumed. New balance: ${creditResult[0].new_balance}`);
 
   try {
-    // Update job with input file names
-    await supabase
-      .from('pose_changer_jobs')
-      .update({ 
-        person_file_name: personFileName,
-        reference_file_name: referenceFileName
-      })
-      .eq('id', jobId);
+    // ========================================
+    // VERIFICAR DISPONIBILIDADE VIA QUEUE MANAGER CENTRALIZADO
+    // ========================================
+    let slotsAvailable = 0;
+    try {
+      const queueCheckUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`;
+      const queueResponse = await fetch(queueCheckUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+      });
+      const queueData = await queueResponse.json();
+      slotsAvailable = queueData.slotsAvailable || 0;
+      console.log(`[PoseChanger] Queue Manager check: ${queueData.running}/${queueData.maxConcurrent}, slots: ${slotsAvailable}`);
+    } catch (queueError) {
+      console.error('[PoseChanger] Queue Manager check failed, assuming no slots:', queueError);
+    }
 
-    // Count running jobs across ALL AI tools (global queue)
-    const { count: upscalerRunning } = await supabase
-      .from('upscaler_jobs')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'running');
-
-    const { count: poseRunning } = await supabase
-      .from('pose_changer_jobs')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'running');
-
-    const runningCount = (upscalerRunning || 0) + (poseRunning || 0);
-
-    console.log(`[PoseChanger] Global running jobs: ${runningCount}/${MAX_CONCURRENT_JOBS} (upscaler: ${upscalerRunning || 0}, pose: ${poseRunning || 0})`);
-
-    const { data: currentJob } = await supabase
-      .from('pose_changer_jobs')
-      .select('created_at')
-      .eq('id', jobId)
-      .single();
-
-    if ((runningCount || 0) >= MAX_CONCURRENT_JOBS) {
-      // Calculate queue position
+    if (slotsAvailable <= 0) {
+      // Calcular posição na fila
       const { count: aheadOfMe } = await supabase
         .from('pose_changer_jobs')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'queued')
-        .lt('created_at', currentJob?.created_at || new Date().toISOString());
+        .eq('status', 'queued');
 
       const position = (aheadOfMe || 0) + 1;
 

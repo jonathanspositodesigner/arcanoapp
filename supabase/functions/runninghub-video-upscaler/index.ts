@@ -39,24 +39,31 @@ function checkRateLimit(userId: string): boolean {
   return true;
 }
 
-// Count all running jobs across all AI tools (global queue)
-async function getGlobalRunningCount(supabase: any): Promise<number> {
-  const tables = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs'];
-  let totalRunning = 0;
-
-  for (const table of tables) {
-    try {
-      const { count } = await supabase
-        .from(table)
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'running');
-      totalRunning += count || 0;
-    } catch (e) {
-      console.error(`[VideoUpscaler] Error counting ${table}:`, e);
-    }
+// Verificar disponibilidade via Queue Manager centralizado
+async function checkQueueAvailability(supabase: any): Promise<{ available: boolean; slotsAvailable: number; running: number }> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/runninghub-queue-manager/check`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceRoleKey}`,
+      },
+    });
+    
+    const data = await response.json();
+    console.log(`[VideoUpscaler] Queue Manager check: ${data.running}/${data.maxConcurrent}, slots: ${data.slotsAvailable}`);
+    return {
+      available: data.available || false,
+      slotsAvailable: data.slotsAvailable || 0,
+      running: data.running || 0,
+    };
+  } catch (e) {
+    console.error('[VideoUpscaler] Queue Manager check failed:', e);
+    return { available: false, slotsAvailable: 0, running: 0 };
   }
-
-  return totalRunning;
 }
 
 // Get next queued job for this tool
@@ -149,11 +156,12 @@ serve(async (req) => {
         );
       }
 
-      // Check global running count
-      const runningCount = await getGlobalRunningCount(supabase);
+      // Check global running count via Queue Manager
+      const queueStatus = await checkQueueAvailability(supabase);
+      const runningCount = queueStatus.running;
       console.log(`[VideoUpscaler] Global running jobs: ${runningCount}`);
 
-      if (runningCount >= MAX_CONCURRENT_JOBS) {
+      if (!queueStatus.available) {
         // Add to queue
         await updateQueuePositions(supabase);
         
@@ -287,7 +295,7 @@ serve(async (req) => {
 
     // Route: /queue-status - Get queue status
     if (path === "queue-status" && req.method === "GET") {
-      const runningCount = await getGlobalRunningCount(supabase);
+      const queueStatus = await checkQueueAvailability(supabase);
       
       const { count: queuedCount } = await supabase
         .from('video_upscaler_jobs')
@@ -296,10 +304,10 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({
-          running: runningCount,
+          running: queueStatus.running,
           queued: queuedCount || 0,
           maxConcurrent: MAX_CONCURRENT_JOBS,
-          available: runningCount < MAX_CONCURRENT_JOBS,
+          available: queueStatus.available,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -307,9 +315,9 @@ serve(async (req) => {
 
     // Route: /process-queue - Process next queued job (called by webhook)
     if (path === "process-queue" && req.method === "POST") {
-      const runningCount = await getGlobalRunningCount(supabase);
+      const queueStatus = await checkQueueAvailability(supabase);
 
-      if (runningCount >= MAX_CONCURRENT_JOBS) {
+      if (!queueStatus.available) {
         return new Response(
           JSON.stringify({ success: false, reason: "Queue full" }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
