@@ -235,29 +235,27 @@ const UpscalerArcanoTool: React.FC = () => {
       return;
     }
 
-    // Aggressive compression before upload to reduce bandwidth costs
+    // ALWAYS resize to max 1536px to prevent VRAM overflow errors on RunningHub
     let processedFile = file;
     const originalSize = file.size;
     
-    if (file.size > 500 * 1024) { // Compress if > 500KB
-      try {
-        toast.info('Otimizando imagem...');
-        processedFile = await imageCompression(file, {
-          maxSizeMB: 2, // Max 2MB after compression
-          maxWidthOrHeight: 4096, // Keep high res for upscaling quality
-          useWebWorker: true,
-          fileType: 'image/webp',
-          initialQuality: 0.9,
-        });
-        
-        const savedKB = Math.round((originalSize - processedFile.size) / 1024);
-        if (savedKB > 100) {
-          console.log(`[Upscaler] Image compressed: ${Math.round(originalSize/1024)}KB → ${Math.round(processedFile.size/1024)}KB (saved ${savedKB}KB)`);
-        }
-      } catch (compressionError) {
-        console.warn('[Upscaler] Compression failed, using original:', compressionError);
-        // Continue with original file if compression fails - no retry
+    try {
+      toast.info('Otimizando imagem...');
+      processedFile = await imageCompression(file, {
+        maxSizeMB: 2, // Max 2MB after compression
+        maxWidthOrHeight: 1536, // Max 1536px to prevent VRAM overflow
+        useWebWorker: true,
+        fileType: 'image/webp',
+        initialQuality: 0.9,
+      });
+      
+      const savedKB = Math.round((originalSize - processedFile.size) / 1024);
+      if (savedKB > 0) {
+        console.log(`[Upscaler] Image optimized: ${Math.round(originalSize/1024)}KB → ${Math.round(processedFile.size/1024)}KB (saved ${savedKB}KB)`);
       }
+    } catch (compressionError) {
+      console.warn('[Upscaler] Compression failed, using original:', compressionError);
+      // Continue with original file if compression fails - no retry
     }
 
     const reader = new FileReader();
