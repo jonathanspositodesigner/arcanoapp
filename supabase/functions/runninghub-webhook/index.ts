@@ -13,8 +13,7 @@ const RUNNINGHUB_API_KEY = (Deno.env.get('RUNNINGHUB_API_KEY') || '').trim();
 // WebApp IDs
 const WEBAPP_ID_UPSCALER = '2015865378030755841';
 const WEBAPP_ID_POSE = '2018451429635133442';
-// Veste AI WebApp ID (placeholder - will be configured)
-const WEBAPP_ID_VESTE = 'PLACEHOLDER_WEBAPP_ID';
+const WEBAPP_ID_VESTE = '2018755100210106369';
 const MAX_CONCURRENT_JOBS = 3;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -195,7 +194,12 @@ async function processNextInQueue(tableName: 'upscaler_jobs' | 'pose_changer_job
       .select('*', { count: 'exact', head: true })
       .eq('status', 'running');
 
-    const totalRunning = (upscalerRunning || 0) + (poseRunning || 0) + (vesteRunning || 0);
+    const { count: videoUpscalerRunning } = await supabase
+      .from('video_upscaler_jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'running');
+
+    const totalRunning = (upscalerRunning || 0) + (poseRunning || 0) + (vesteRunning || 0) + (videoUpscalerRunning || 0);
     console.log(`[Webhook] Total running jobs: ${totalRunning}/${MAX_CONCURRENT_JOBS}`);
 
     if (totalRunning >= MAX_CONCURRENT_JOBS) {
@@ -405,9 +409,9 @@ async function updateQueuePositions(tableName: 'upscaler_jobs' | 'pose_changer_j
 async function startVesteAIJob(job: any) {
   const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
   
-  // Placeholder node IDs - will be configured with API documentation
-  const NODE_ID_PERSON = 'PLACEHOLDER_PERSON_NODE';
-  const NODE_ID_CLOTHING = 'PLACEHOLDER_CLOTHING_NODE';
+  // Veste AI Node IDs (Person photo = 41, Clothing reference = 43)
+  const NODE_ID_PERSON = '41';
+  const NODE_ID_CLOTHING = '43';
   
   const nodeInfoList = [
     { nodeId: NODE_ID_PERSON, fieldName: "image", fieldValue: job.person_file_name },
@@ -422,20 +426,6 @@ async function startVesteAIJob(job: any) {
   };
 
   console.log('[Webhook] Starting Veste AI job:', JSON.stringify(requestBody));
-
-  // Skip actual API call if not configured
-  if (WEBAPP_ID_VESTE === 'PLACEHOLDER_WEBAPP_ID') {
-    console.log('[Webhook] Veste AI not configured yet - marking job as failed');
-    await supabase
-      .from('veste_ai_jobs')
-      .update({ 
-        status: 'failed', 
-        error_message: 'Veste AI ainda não está configurada. Aguardando documentação da API.',
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', job.id);
-    return;
-  }
 
   try {
     const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_VESTE}`, {
