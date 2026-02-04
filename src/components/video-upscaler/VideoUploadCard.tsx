@@ -244,6 +244,10 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
   }, []);
 
   const formatDuration = (seconds: number) => {
+    // Guard against invalid values (NaN, Infinity, negative)
+    if (!Number.isFinite(seconds) || seconds < 0) {
+      return '0s';
+    }
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
