@@ -162,31 +162,48 @@ serve(async (req) => {
       console.log(`[VideoUpscaler] Global running jobs: ${runningCount}`);
 
       if (!queueStatus.available) {
-        // Add to queue
-        await updateQueuePositions(supabase);
+        // Usar Queue Manager para enfileirar e obter posição GLOBAL
+        const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
         
-        const { count: queuedCount } = await supabase
-          .from('video_upscaler_jobs')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'queued');
+        try {
+          const enqueueUrl = `${supabaseUrl}/functions/v1/runninghub-queue-manager/enqueue`;
+          const enqueueResponse = await fetch(enqueueUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${serviceRoleKey}`,
+            },
+            body: JSON.stringify({
+              table: 'video_upscaler_jobs',
+              jobId,
+            }),
+          });
+          const enqueueData = await enqueueResponse.json();
+          
+          console.log(`[VideoUpscaler] Job ${jobId} queued at GLOBAL position ${enqueueData.position}`);
 
-        const position = (queuedCount as number || 0) + 1;
+          return new Response(
+            JSON.stringify({ success: true, queued: true, position: enqueueData.position }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        } catch (enqueueError) {
+          console.error('[VideoUpscaler] Enqueue failed:', enqueueError);
+          // Fallback: enfileirar localmente
+          await supabase
+            .from('video_upscaler_jobs')
+            .update({
+              status: 'queued',
+              position: 999,
+              waited_in_queue: true,
+            })
+            .eq('id', jobId);
 
-        await supabase
-          .from('video_upscaler_jobs')
-          .update({
-            status: 'queued',
-            position: position,
-            waited_in_queue: true,
-          })
-          .eq('id', jobId);
-
-        console.log(`[VideoUpscaler] Job ${jobId} queued at position ${position}`);
-
-        return new Response(
-          JSON.stringify({ success: true, queued: true, position }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+          return new Response(
+            JSON.stringify({ success: true, queued: true, position: 999 }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
 
       // Consume credits first

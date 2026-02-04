@@ -530,34 +530,55 @@ async function handleRun(req: Request) {
     }
 
     if (slotsAvailable <= 0) {
-      // Get queue position
-      const { count: queuedBefore } = await supabase
-        .from('veste_ai_jobs')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'queued');
-
-      const position = (queuedBefore || 0) + 1;
-      
-      await supabase
-        .from('veste_ai_jobs')
-        .update({ 
-          status: 'queued',
-          position, 
-          user_credit_cost: creditCost,
-          waited_in_queue: true
-        })
-        .eq('id', jobId);
-
-      console.log(`[VesteAI] Job queued at position ${position}`);
-      
-      return new Response(JSON.stringify({ 
-        success: true, 
-        queued: true,
-        position,
-        newBalance: creditResult[0].new_balance
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      // Usar Queue Manager para enfileirar e obter posição GLOBAL
+      try {
+        const enqueueUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/enqueue`;
+        const enqueueResponse = await fetch(enqueueUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({
+            table: 'veste_ai_jobs',
+            jobId,
+            creditCost,
+          }),
+        });
+        const enqueueData = await enqueueResponse.json();
+        
+        console.log(`[VesteAI] Job ${jobId} queued at GLOBAL position ${enqueueData.position}`);
+        
+        return new Response(JSON.stringify({ 
+          success: true, 
+          queued: true,
+          position: enqueueData.position,
+          newBalance: creditResult[0].new_balance
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (enqueueError) {
+        console.error('[VesteAI] Enqueue failed:', enqueueError);
+        // Fallback: enfileirar localmente
+        await supabase
+          .from('veste_ai_jobs')
+          .update({ 
+            status: 'queued',
+            position: 999,
+            user_credit_cost: creditCost,
+            waited_in_queue: true
+          })
+          .eq('id', jobId);
+        
+        return new Response(JSON.stringify({ 
+          success: true, 
+          queued: true,
+          position: 999,
+          newBalance: creditResult[0].new_balance
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // Start processing immediately

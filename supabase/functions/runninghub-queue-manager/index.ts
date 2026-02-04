@@ -63,6 +63,8 @@ serve(async (req) => {
         return await handleProcessNext();
       case 'status':
         return await handleStatus();
+      case 'enqueue':
+        return await handleEnqueue(req);
       default:
         return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
           status: 400,
@@ -120,6 +122,44 @@ async function getQueuedCounts(): Promise<Record<JobTable, number>> {
 }
 
 /**
+ * Calcula a posição GLOBAL de um job na fila (considerando TODAS as ferramentas)
+ * Retorna a posição baseada em created_at (FIFO global)
+ */
+async function getGlobalQueuePosition(jobCreatedAt: string): Promise<number> {
+  let position = 1;
+  
+  for (const table of JOB_TABLES) {
+    const { count } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'queued')
+      .lt('created_at', jobCreatedAt);
+    
+    position += count || 0;
+  }
+  
+  return position;
+}
+
+/**
+ * Conta TODOS os jobs na fila global
+ */
+async function getTotalQueuedCount(): Promise<number> {
+  let total = 0;
+  
+  for (const table of JOB_TABLES) {
+    const { count } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'queued');
+    
+    total += count || 0;
+  }
+  
+  return total;
+}
+
+/**
  * /check - Verifica se há slot disponível na fila global
  */
 async function handleCheck(req: Request): Promise<Response> {
@@ -135,6 +175,82 @@ async function handleCheck(req: Request): Promise<Response> {
   }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
+}
+
+/**
+ * /enqueue - Adiciona job à fila e retorna posição GLOBAL
+ * Chamado pelas Edge Functions quando não há slot disponível
+ */
+async function handleEnqueue(req: Request): Promise<Response> {
+  try {
+    const { table, jobId, creditCost } = await req.json();
+    
+    if (!table || !jobId) {
+      return new Response(JSON.stringify({ error: 'table and jobId are required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Verificar se a tabela é válida
+    if (!JOB_TABLES.includes(table as JobTable)) {
+      return new Response(JSON.stringify({ error: 'Invalid table' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Obter created_at do job
+    const { data: job, error: jobError } = await supabase
+      .from(table)
+      .select('created_at')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    if (jobError || !job) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Calcular posição GLOBAL na fila
+    const globalPosition = await getGlobalQueuePosition(job.created_at);
+    
+    // Atualizar job com status queued e posição global
+    const updateData: Record<string, any> = {
+      status: 'queued',
+      position: globalPosition,
+      waited_in_queue: true,
+    };
+    
+    if (creditCost !== undefined) {
+      updateData.user_credit_cost = creditCost;
+    }
+    
+    await supabase
+      .from(table)
+      .update(updateData)
+      .eq('id', jobId);
+    
+    console.log(`[QueueManager] Job ${jobId} enqueued at GLOBAL position ${globalPosition}`);
+    
+    return new Response(JSON.stringify({
+      success: true,
+      queued: true,
+      position: globalPosition,
+      totalQueued: await getTotalQueuedCount(),
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error) {
+    console.error('[QueueManager] Enqueue error:', error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 }
 
 /**
@@ -357,47 +473,43 @@ async function callRunningHubApi(
 }
 
 /**
- * Atualiza posições da fila em todas as tabelas
+ * Atualiza posições da fila GLOBALMENTE em todas as tabelas
+ * Posição é baseada em created_at considerando TODAS as filas
  */
 async function updateAllQueuePositions(): Promise<void> {
+  // Buscar TODOS os jobs queued de TODAS as tabelas com seus created_at
+  interface QueuedJob {
+    id: string;
+    created_at: string;
+    table: JobTable;
+  }
+  
+  const allQueuedJobs: QueuedJob[] = [];
+  
   for (const table of JOB_TABLES) {
-    try {
-      let rpcName: string;
-      switch (table) {
-        case 'upscaler_jobs':
-          rpcName = 'update_queue_positions';
-          break;
-        case 'pose_changer_jobs':
-          rpcName = 'update_pose_changer_queue_positions';
-          break;
-        case 'veste_ai_jobs':
-          rpcName = 'update_veste_ai_queue_positions';
-          break;
-        case 'video_upscaler_jobs':
-          // Video upscaler não tem RPC dedicada, faz manualmente
-          const { data: queuedJobs } = await supabase
-            .from('video_upscaler_jobs')
-            .select('id')
-            .eq('status', 'queued')
-            .order('created_at', { ascending: true });
-          
-          if (queuedJobs) {
-            for (let i = 0; i < queuedJobs.length; i++) {
-              await supabase
-                .from('video_upscaler_jobs')
-                .update({ position: i + 1 })
-                .eq('id', queuedJobs[i].id);
-            }
-          }
-          continue;
-        default:
-          continue;
+    const { data: jobs } = await supabase
+      .from(table)
+      .select('id, created_at')
+      .eq('status', 'queued');
+    
+    if (jobs) {
+      for (const job of jobs) {
+        allQueuedJobs.push({ ...job, table });
       }
-      
-      await supabase.rpc(rpcName);
-      console.log(`[QueueManager] Updated positions for ${table}`);
-    } catch (error) {
-      console.error(`[QueueManager] Error updating positions for ${table}:`, error);
     }
   }
+  
+  // Ordenar globalmente por created_at (FIFO)
+  allQueuedJobs.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  
+  // Atualizar posições globalmente
+  for (let i = 0; i < allQueuedJobs.length; i++) {
+    const job = allQueuedJobs[i];
+    await supabase
+      .from(job.table)
+      .update({ position: i + 1 })
+      .eq('id', job.id);
+  }
+  
+  console.log(`[QueueManager] Updated GLOBAL positions for ${allQueuedJobs.length} queued jobs`);
 }
