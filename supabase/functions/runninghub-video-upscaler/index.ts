@@ -39,8 +39,14 @@ function checkRateLimit(userId: string): boolean {
   return true;
 }
 
-// Verificar disponibilidade via Queue Manager centralizado
-async function checkQueueAvailability(supabase: any): Promise<{ available: boolean; slotsAvailable: number; running: number }> {
+// Verificar disponibilidade via Queue Manager centralizado (MULTI-API)
+async function checkQueueAvailability(supabase: any): Promise<{ 
+  available: boolean; 
+  slotsAvailable: number; 
+  running: number;
+  accountName: string | null;
+  accountApiKey: string | null;
+}> {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -54,15 +60,17 @@ async function checkQueueAvailability(supabase: any): Promise<{ available: boole
     });
     
     const data = await response.json();
-    console.log(`[VideoUpscaler] Queue Manager check: ${data.running}/${data.maxConcurrent}, slots: ${data.slotsAvailable}`);
+    console.log(`[VideoUpscaler] Queue Manager check: ${data.running}/${data.maxConcurrent}, slots: ${data.slotsAvailable}, account: ${data.accountName}`);
     return {
       available: data.available || false,
       slotsAvailable: data.slotsAvailable || 0,
       running: data.running || 0,
+      accountName: data.accountName || 'primary',
+      accountApiKey: data.accountApiKey || null,
     };
   } catch (e) {
     console.error('[VideoUpscaler] Queue Manager check failed:', e);
-    return { available: false, slotsAvailable: 0, running: 0 };
+    return { available: false, slotsAvailable: 0, running: 0, accountName: 'primary', accountApiKey: null };
   }
 }
 
@@ -156,10 +164,12 @@ serve(async (req) => {
         );
       }
 
-      // Check global running count via Queue Manager
+      // Check global running count via Queue Manager (MULTI-API)
       const queueStatus = await checkQueueAvailability(supabase);
       const runningCount = queueStatus.running;
-      console.log(`[VideoUpscaler] Global running jobs: ${runningCount}`);
+      const accountName = (queueStatus as any).accountName || 'primary';
+      const accountApiKey = (queueStatus as any).accountApiKey || null;
+      console.log(`[VideoUpscaler] Global running jobs: ${runningCount}, account: ${accountName}`);
 
       if (!queueStatus.available) {
         // Usar Queue Manager para enfileirar e obter posição GLOBAL
@@ -220,8 +230,11 @@ serve(async (req) => {
         );
       }
 
-      // Get the RunningHub API key
-      const runninghubApiKey = Deno.env.get("RUNNINGHUB_API_KEY");
+      // Get the RunningHub API key - use account from Queue Manager or fallback
+      const defaultApiKey = Deno.env.get("RUNNINGHUB_API_KEY");
+      const runninghubApiKey = accountApiKey || defaultApiKey;
+      const accountToUse = accountName;
+      
       if (!runninghubApiKey) {
         console.error("[VideoUpscaler] RUNNINGHUB_API_KEY not configured");
         await supabase
@@ -239,7 +252,7 @@ serve(async (req) => {
       const webhookUrl = `${supabaseUrl}/functions/v1/runninghub-video-upscaler-webhook`;
 
       // Call RunningHub API to start the video upscaling
-      console.log(`[VideoUpscaler] Starting job ${jobId}. Video: ${videoUrl}`);
+      console.log(`[VideoUpscaler] Starting job ${jobId}. Video: ${videoUrl}, Account: ${accountToUse}`);
       
       const runninghubResponse = await fetch(`${RUNNINGHUB_API_BASE}/run/ai-app/${VIDEO_UPSCALER_WEBAPP_ID}`, {
         method: "POST",
@@ -299,6 +312,7 @@ serve(async (req) => {
           task_id: taskId,
           started_at: new Date().toISOString(),
           user_credit_cost: creditCost || CREDIT_COST,
+          api_account: accountToUse,
         })
         .eq('id', jobId);
 

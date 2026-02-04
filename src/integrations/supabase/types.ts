@@ -1739,6 +1739,7 @@ export type Database = {
       }
       pose_changer_jobs: {
         Row: {
+          api_account: string
           completed_at: string | null
           created_at: string | null
           error_message: string | null
@@ -1758,6 +1759,7 @@ export type Database = {
           waited_in_queue: boolean | null
         }
         Insert: {
+          api_account?: string
           completed_at?: string | null
           created_at?: string | null
           error_message?: string | null
@@ -1777,6 +1779,7 @@ export type Database = {
           waited_in_queue?: boolean | null
         }
         Update: {
+          api_account?: string
           completed_at?: string | null
           created_at?: string | null
           error_message?: string | null
@@ -2303,6 +2306,7 @@ export type Database = {
       }
       upscaler_jobs: {
         Row: {
+          api_account: string
           completed_at: string | null
           created_at: string | null
           detail_denoise: number | null
@@ -2324,6 +2328,7 @@ export type Database = {
           waited_in_queue: boolean | null
         }
         Insert: {
+          api_account?: string
           completed_at?: string | null
           created_at?: string | null
           detail_denoise?: number | null
@@ -2345,6 +2350,7 @@ export type Database = {
           waited_in_queue?: boolean | null
         }
         Update: {
+          api_account?: string
           completed_at?: string | null
           created_at?: string | null
           detail_denoise?: number | null
@@ -2491,6 +2497,7 @@ export type Database = {
       }
       veste_ai_jobs: {
         Row: {
+          api_account: string
           clothing_file_name: string | null
           completed_at: string | null
           created_at: string | null
@@ -2510,6 +2517,7 @@ export type Database = {
           waited_in_queue: boolean | null
         }
         Insert: {
+          api_account?: string
           clothing_file_name?: string | null
           completed_at?: string | null
           created_at?: string | null
@@ -2529,6 +2537,7 @@ export type Database = {
           waited_in_queue?: boolean | null
         }
         Update: {
+          api_account?: string
           clothing_file_name?: string | null
           completed_at?: string | null
           created_at?: string | null
@@ -2559,6 +2568,7 @@ export type Database = {
       }
       video_upscaler_jobs: {
         Row: {
+          api_account: string
           completed_at: string | null
           created_at: string | null
           error_message: string | null
@@ -2580,6 +2590,7 @@ export type Database = {
           waited_in_queue: boolean | null
         }
         Insert: {
+          api_account?: string
           completed_at?: string | null
           created_at?: string | null
           error_message?: string | null
@@ -2601,6 +2612,7 @@ export type Database = {
           waited_in_queue?: boolean | null
         }
         Update: {
+          api_account?: string
           completed_at?: string | null
           created_at?: string | null
           error_message?: string | null
