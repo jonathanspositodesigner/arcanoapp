@@ -1,130 +1,104 @@
-# Plano: Arquitetura Multi-API RunningHub Escalável (2-N Contas)
 
-## ✅ STATUS: IMPLEMENTADO
+# Plano: Centralizar Compressão de Imagem para Ferramentas de IA (1536px)
 
-A arquitetura multi-API foi implementada e está pronta para uso. O sistema atualmente funciona com 1 conta (comportamento atual) e suportará automaticamente 2-5 contas quando as secrets forem adicionadas.
-
----
-
-## Sobre Webhooks
-
-**Não precisa de webhooks separados!** O mesmo webhook funciona para todas as contas porque:
-
-1. O RunningHub envia o callback com o `taskId` do job
-2. O webhook busca o job pelo `taskId` no banco de dados
-3. Não importa de qual conta veio - o `taskId` é único
+## Objetivo
+Criar uma função utilitária centralizada para otimização de imagens que será usada por todas as ferramentas de IA, garantindo o limite de 1536 pixels para evitar erros de VRAM no RunningHub.
 
 ---
 
-## Arquitetura Implementada
+## Situação Atual
 
-### Conceito de "API Pool"
+| Ferramenta | Compressão | Limite Atual | Problema |
+|------------|------------|--------------|----------|
+| Upscaler Arcano | ✅ | 1536px | ✓ Correto |
+| Pose Changer | ✅ | 2048px | ❌ Muito grande |
+| Veste AI | ✅ | 2048px | ❌ Muito grande |
+| Video Upscaler | N/A | N/A | Não aplica (vídeo) |
+
+---
+
+## Solução: Hook Centralizado
+
+### 1. Atualizar `useImageOptimizer.ts`
+
+Atualizar o hook existente com uma nova função `optimizeForAI` que usa as configurações corretas para as ferramentas de IA:
 
 ```text
-┌───────────────────────────────────────────────────────────────────┐
-│                     API POOL (Configurável)                        │
-├───────────────────────────────────────────────────────────────────┤
-│  Conta 1: RUNNINGHUB_API_KEY     → 3 slots  ✓ (ativa)              │
-│  Conta 2: RUNNINGHUB_API_KEY_2   → 3 slots  ○ (adicionar secret)   │
-│  Conta 3: RUNNINGHUB_API_KEY_3   → 3 slots  ○ (adicionar secret)   │
-│  Conta 4: RUNNINGHUB_API_KEY_4   → 3 slots  ○ (adicionar secret)   │
-│  Conta 5: RUNNINGHUB_API_KEY_5   → 3 slots  ○ (adicionar secret)   │
-├───────────────────────────────────────────────────────────────────┤
-│  TOTAL: slots_por_conta × contas_ativas                           │
-│  Ex: 3 × 2 = 6 slots simultâneos                                  │
-└───────────────────────────────────────────────────────────────────┘
+optimizeForAI(file: File): Promise<OptimizationResult>
+  - maxSizeMB: 2
+  - maxWidthOrHeight: 1536  ← Limite seguro para VRAM
+  - fileType: 'image/webp'
+  - initialQuality: 0.9
+  - useWebWorker: true
 ```
+
+### 2. Atualizar Ferramentas
+
+| Arquivo | Modificação |
+|---------|-------------|
+| `src/hooks/useImageOptimizer.ts` | Adicionar função `optimizeForAI` |
+| `src/pages/UpscalerArcanoTool.tsx` | Usar `optimizeForAI` do hook |
+| `src/pages/PoseChangerTool.tsx` | Substituir `compressImage` local por `optimizeForAI` |
+| `src/pages/VesteAITool.tsx` | Substituir `compressImage` local por `optimizeForAI` |
 
 ---
 
-## Implementação Concluída
+## Detalhes Técnicos
 
-### 1. ✅ Migração SQL - Coluna `api_account`
+### Nova Função no Hook
 
-Adicionada em todas as 4 tabelas de jobs:
-- `upscaler_jobs.api_account`
-- `pose_changer_jobs.api_account`
-- `veste_ai_jobs.api_account`
-- `video_upscaler_jobs.api_account`
+Adicionar ao `src/hooks/useImageOptimizer.ts`:
 
-Valores: `'primary'`, `'account_2'`, `'account_3'`, `'account_4'`, `'account_5'`
-
-### 2. ✅ Queue Manager Refatorado
-
-Arquivo: `supabase/functions/runninghub-queue-manager/index.ts`
-
-Funcionalidades:
-- Detecta automaticamente quais API keys estão configuradas
-- Balanceia jobs entre contas disponíveis (3 slots por conta)
-- Retorna `accountName` e `accountApiKey` no endpoint `/check`
-- Rastreia `api_account` ao processar jobs da fila
-
-### 3. ✅ Edge Functions Adaptadas
-
-Arquivos modificados:
-- `supabase/functions/runninghub-upscaler/index.ts`
-- `supabase/functions/runninghub-pose-changer/index.ts`
-- `supabase/functions/runninghub-veste-ai/index.ts`
-- `supabase/functions/runninghub-video-upscaler/index.ts`
-
-Mudanças:
-- Recebem `accountName` e `accountApiKey` do Queue Manager
-- Usam a API key da conta atribuída
-- Gravam `api_account` no job para rastreamento
-
-### 4. ✅ Endpoint `/status` Atualizado
-
-Retorna informações detalhadas por conta:
-
-```json
-{
-  "totalMaxSlots": 6,
-  "totalRunning": 4,
-  "totalSlotsAvailable": 2,
-  "totalQueued": 2,
-  "accounts": [
-    { "name": "primary", "running": 3, "maxSlots": 3, "available": 0 },
-    { "name": "account_2", "running": 1, "maxSlots": 3, "available": 2 }
-  ],
-  "queuedByTool": {
-    "upscaler_jobs": 1,
-    "pose_changer_jobs": 0,
-    "veste_ai_jobs": 1,
-    "video_upscaler_jobs": 0
-  }
+```text
+AI_OPTIMIZATION_CONFIG = {
+  maxSizeMB: 2,
+  maxWidthOrHeight: 1536,
+  useWebWorker: true,
+  fileType: 'image/webp',
+  initialQuality: 0.9,
 }
+
+export async function optimizeForAI(file: File): Promise<OptimizationResult>
+  - Aplica compressão com as configurações acima
+  - Retorna arquivo otimizado + métricas (original size, optimized size, savings)
+  - Loga no console as estatísticas de otimização
+  - Nunca falha silenciosamente - retorna arquivo original se compressão falhar
+```
+
+### Uso nas Ferramentas
+
+Cada ferramenta vai importar e usar:
+
+```text
+import { optimizeForAI } from '@/hooks/useImageOptimizer';
+
+// No handleProcess ou compressImage:
+const result = await optimizeForAI(file);
+const optimizedFile = result.file;
 ```
 
 ---
 
-## Como Adicionar Novas Contas
+## Benefícios
 
-### Passo 1: Criar Conta no RunningHub
-1. Acesse runninghub.ai
-2. Crie uma nova conta
-3. Obtenha a API Key
-
-### Passo 2: Adicionar Secret no Lovable
-1. Vá em Cloud → Secrets
-2. Adicione a secret com o nome correto:
-   - Segunda conta: `RUNNINGHUB_API_KEY_2`
-   - Terceira conta: `RUNNINGHUB_API_KEY_3`
-   - E assim por diante...
-
-### Passo 3: Pronto!
-O sistema detectará automaticamente a nova conta e começará a usá-la.
-Nenhuma mudança de código necessária.
+1. **Consistência**: Todas as ferramentas usam o mesmo limite de 1536px
+2. **Manutenibilidade**: Mudança em um único lugar afeta todas as ferramentas
+3. **Menos código**: Remove duplicação de lógica de compressão
+4. **Prevenção de erros**: Evita VRAM overflow em todas as ferramentas
 
 ---
 
-## Considerações de Custo
+## Ferramentas Não Afetadas
 
-| Contas | Slots Totais | Jobs Simultâneos |
-|--------|--------------|------------------|
-| 1 | 3 | 3 |
-| 2 | 6 | 6 |
-| 3 | 9 | 9 |
-| 4 | 12 | 12 |
-| 5 | 15 | 15 |
+- **Video Upscaler**: Trabalha com vídeos, não imagens estáticas
+- **ImageUploadCard**: Componente de UI genérico, a compressão acontece na ferramenta pai
 
-O dashboard de métricas soma os custos de todos os jobs independente da conta.
+---
+
+## Ordem de Implementação
+
+1. Atualizar `useImageOptimizer.ts` com `optimizeForAI`
+2. Refatorar `UpscalerArcanoTool.tsx` para usar o hook
+3. Refatorar `PoseChangerTool.tsx` - remover `compressImage` local
+4. Refatorar `VesteAITool.tsx` - remover `compressImage` local
+5. Testar todas as ferramentas com imagens grandes
