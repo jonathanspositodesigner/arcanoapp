@@ -86,3 +86,12 @@ verify_jwt = false
 
 [functions.admin-add-credit-user]
 verify_jwt = false
+
+[functions.runninghub-queue-manager]
+verify_jwt = false
+
+[functions.runninghub-video-upscaler]
+verify_jwt = false
+
+[functions.runninghub-video-upscaler-webhook]
+verify_jwt = false

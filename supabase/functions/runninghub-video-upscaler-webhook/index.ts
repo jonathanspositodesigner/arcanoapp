@@ -1,29 +1,37 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+/**
+ * RUNNINGHUB VIDEO UPSCALER WEBHOOK
+ * 
+ * Webhook específico para Video Upscaler porque o formato de resposta
+ * do RunningHub para vídeo é diferente (dados dentro de eventData).
+ * 
+ * Quando um job termina, chama o Queue Manager centralizado para processar
+ * o próximo job na fila global.
+ */
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const payload = await req.json();
     console.log("[VideoUpscaler Webhook] Received payload:", JSON.stringify(payload));
 
-    // Extract fields from RunningHub webhook payload
-    // RunningHub envia dados dentro de eventData para webhooks de vídeo (event: "TASK_END")
+    // RunningHub envia dados dentro de eventData para webhooks de vídeo
     const eventData = payload.eventData || payload;
     
     const taskId = eventData.taskId || payload.taskId;
@@ -32,10 +40,10 @@ serve(async (req) => {
     const errorMessage = eventData.errorMessage || eventData.failedReason?.message || "";
     const usage = eventData.usage || {};
     
-    // Calculate RH cost from usage data
+    // Calcular custo RH do usage
     const rhCost = usage.consumeCoins ? parseInt(usage.consumeCoins) : 0;
     
-    // Get output URL from results array
+    // Obter URL de output
     const outputUrl = results.length > 0 ? results[0].url : null;
 
     if (!taskId) {
@@ -46,7 +54,7 @@ serve(async (req) => {
       );
     }
 
-    // Find the job by task_id
+    // Encontrar o job
     const { data: job, error: findError } = await supabase
       .from('video_upscaler_jobs')
       .select('*')
@@ -63,7 +71,7 @@ serve(async (req) => {
 
     console.log(`[VideoUpscaler Webhook] Found job ${job.id} with status ${status}`);
 
-    // Calculate dynamic RH cost based on processing time
+    // Calcular custo RH baseado no tempo de processamento
     let calculatedRhCost = rhCost;
     if (job.started_at && (status === "SUCCESS" || status === "FAILED")) {
       const startedAt = new Date(job.started_at);
@@ -73,10 +81,10 @@ serve(async (req) => {
       console.log(`[VideoUpscaler Webhook] Processing time: ${processingSeconds}s, RH cost: ${calculatedRhCost}`);
     }
 
-    // Handle different statuses based on RunningHub API documentation
+    // Atualizar status do job
     if (status === "SUCCESS") {
       if (!outputUrl) {
-        console.error("[VideoUpscaler Webhook] SUCCESS but no output URL in results");
+        console.error("[VideoUpscaler Webhook] SUCCESS but no output URL");
         await supabase
           .from('video_upscaler_jobs')
           .update({
@@ -97,7 +105,7 @@ serve(async (req) => {
           })
           .eq('id', job.id);
 
-        console.log(`[VideoUpscaler Webhook] Job ${job.id} completed with output: ${outputUrl}`);
+        console.log(`[VideoUpscaler Webhook] Job ${job.id} completed: ${outputUrl}`);
       }
     } else if (status === "FAILED") {
       await supabase
@@ -118,25 +126,27 @@ serve(async (req) => {
         .eq('id', job.id);
 
       console.log(`[VideoUpscaler Webhook] Job ${job.id} status: ${status}`);
-    } else {
-      console.log(`[VideoUpscaler Webhook] Unknown status: ${status}`);
     }
 
-    // Process next job in queue if this one is done
+    // ========================================
+    // CHAMAR O QUEUE MANAGER CENTRALIZADO
+    // ========================================
     if (status === "SUCCESS" || status === "FAILED") {
       try {
-        // Trigger queue processing
-        const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-        await fetch(`${supabaseUrl}/functions/v1/runninghub-video-upscaler/process-queue`, {
+        const queueManagerUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/process-next`;
+        console.log('[VideoUpscaler Webhook] Calling Queue Manager...');
+        
+        await fetch(queueManagerUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
           },
         });
-        console.log("[VideoUpscaler Webhook] Triggered queue processing");
+        
+        console.log("[VideoUpscaler Webhook] Queue Manager triggered");
       } catch (e) {
-        console.error("[VideoUpscaler Webhook] Failed to trigger queue processing:", e);
+        console.error("[VideoUpscaler Webhook] Failed to call Queue Manager:", e);
       }
     }
 
