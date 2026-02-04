@@ -508,34 +508,55 @@ async function handleRun(req: Request) {
     }
 
     if (slotsAvailable <= 0) {
-      // Calcular posição na fila
-      const { count: aheadOfMe } = await supabase
-        .from('pose_changer_jobs')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'queued');
-
-      const position = (aheadOfMe || 0) + 1;
-
-      await supabase
-        .from('pose_changer_jobs')
-        .update({ 
-          status: 'queued', 
-          position: position,
-          user_credit_cost: creditCost,
-          waited_in_queue: true
-        })
-        .eq('id', jobId);
-
-      console.log(`[PoseChanger] Job ${jobId} queued at position ${position}`);
-
-      return new Response(JSON.stringify({ 
-        success: true, 
-        queued: true, 
-        position: position,
-        message: 'Job queued, will start when slot available'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      // Usar Queue Manager para enfileirar e obter posição GLOBAL
+      try {
+        const enqueueUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/enqueue`;
+        const enqueueResponse = await fetch(enqueueUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({
+            table: 'pose_changer_jobs',
+            jobId,
+            creditCost,
+          }),
+        });
+        const enqueueData = await enqueueResponse.json();
+        
+        console.log(`[PoseChanger] Job ${jobId} queued at GLOBAL position ${enqueueData.position}`);
+        
+        return new Response(JSON.stringify({ 
+          success: true, 
+          queued: true, 
+          position: enqueueData.position,
+          message: 'Job queued, will start when slot available'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (enqueueError) {
+        console.error('[PoseChanger] Enqueue failed:', enqueueError);
+        // Fallback: enfileirar localmente
+        await supabase
+          .from('pose_changer_jobs')
+          .update({ 
+            status: 'queued',
+            position: 999,
+            user_credit_cost: creditCost,
+            waited_in_queue: true
+          })
+          .eq('id', jobId);
+        
+        return new Response(JSON.stringify({ 
+          success: true, 
+          queued: true, 
+          position: 999,
+          message: 'Job queued'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // Slot available - start processing
