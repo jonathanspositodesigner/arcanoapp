@@ -20,6 +20,15 @@ const DEFAULT_OPTIONS: OptimizationOptions = {
   useWebWorker: true,
 };
 
+// AI Tools optimization config - safe limit for RunningHub VRAM
+const AI_OPTIMIZATION_CONFIG = {
+  maxSizeMB: 2,
+  maxWidthOrHeight: 1536, // Prevents VRAM overflow on RunningHub
+  useWebWorker: true,
+  fileType: 'image/webp' as const,
+  initialQuality: 0.9,
+};
+
 export const optimizeImage = async (
   file: File,
   options: OptimizationOptions = {}
@@ -81,6 +90,50 @@ export const optimizeImage = async (
   }
 };
 
+/**
+ * Optimize image specifically for AI tools (Upscaler, Pose Changer, Veste AI)
+ * Uses 1536px limit to prevent VRAM overflow on RunningHub
+ */
+export const optimizeForAI = async (file: File): Promise<OptimizationResult> => {
+  const originalSize = file.size;
+
+  try {
+    const compressedFile = await imageCompression(file, AI_OPTIMIZATION_CONFIG);
+
+    // Create a new file with .webp extension
+    const webpFileName = file.name.replace(/\.[^/.]+$/, '.webp');
+    const optimizedFile = new File([compressedFile], webpFileName, {
+      type: 'image/webp',
+    });
+
+    const optimizedSize = optimizedFile.size;
+    const savings = originalSize - optimizedSize;
+    const savingsPercent = Math.round((savings / originalSize) * 100);
+
+    console.log(
+      `[AI Optimize] ${file.name} (${formatBytes(originalSize)}) → ${webpFileName} (${formatBytes(optimizedSize)}) - ${savingsPercent}% saved`
+    );
+
+    return {
+      file: optimizedFile,
+      originalSize,
+      optimizedSize,
+      savings,
+      savingsPercent,
+    };
+  } catch (error) {
+    console.error('[AI Optimize] Error:', error);
+    // Return original file if optimization fails
+    return {
+      file,
+      originalSize,
+      optimizedSize: originalSize,
+      savings: 0,
+      savingsPercent: 0,
+    };
+  }
+};
+
 export const isImageFile = (file: File): boolean => {
   return file.type.startsWith('image/') && !file.type.includes('gif');
 };
@@ -94,5 +147,5 @@ export const formatBytes = (bytes: number): string => {
 };
 
 export const useImageOptimizer = () => {
-  return { optimizeImage, isImageFile, formatBytes };
+  return { optimizeImage, optimizeForAI, isImageFile, formatBytes };
 };

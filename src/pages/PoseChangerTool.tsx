@@ -13,7 +13,7 @@ import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 import PoseLibraryModal from '@/components/pose-changer/PoseLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
-import imageCompression from 'browser-image-compression';
+import { optimizeForAI } from '@/hooks/useImageOptimizer';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -181,21 +181,10 @@ const PoseChangerTool: React.FC = () => {
     }
   };
 
-  // Compress image before upload
+  // Compress image before upload using centralized AI optimizer (1536px limit)
   const compressImage = async (file: File): Promise<Blob> => {
-    const options = {
-      maxSizeMB: 2,
-      maxWidthOrHeight: 2048,
-      useWebWorker: true,
-      fileType: 'image/webp' as const,
-    };
-    
-    try {
-      return await imageCompression(file, options);
-    } catch (error) {
-      console.warn('[PoseChanger] Compression failed, using original:', error);
-      return file;
-    }
+    const result = await optimizeForAI(file);
+    return result.file;
   };
 
   // Upload image to Supabase storage
