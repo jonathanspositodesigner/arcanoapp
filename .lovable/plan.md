@@ -1,92 +1,46 @@
 
-
-# Correção: Vídeo Retornando em 2x Após Corte
+# Correção: Política RLS de Storage para Video Upscaler
 
 ## Problema Identificado
 
-O vídeo cortado volta **mais rápido e com metade do tempo** porque o sistema de captura não está sincronizado corretamente.
+O erro "new row violates row-level security policy" ocorre ao fazer **upload do vídeo para o Storage**, não na tabela `video_upscaler_jobs`.
 
 ### Causa Raiz
 
-A função `trimVideoFile` usa `requestAnimationFrame` para desenhar frames, mas:
+| Código (VideoUpscalerTool.tsx:227) | Política de Storage existente |
+|------------------------------------|-----------------------------|
+| `video-upscaler/${user.id}/...` | Só permite `upscaler/` |
 
-1. **Taxa de frames inconsistente**: `requestAnimationFrame` roda a ~60Hz, enquanto `captureStream(30)` captura a 30 FPS
-2. **Sem controle de timing**: Os frames são desenhados "o mais rápido possível" em vez de respeitarem o timing real do vídeo
-3. **Playback em tempo real**: O vídeo toca em 1x, mas a captura não garante sincronização frame-a-frame
+A política atual só permite uploads na pasta `upscaler/`:
+```sql
+WITH CHECK: bucket_id = 'artes-cloudinary' AND foldername(name)[1] = 'upscaler'
+```
 
-**Resultado**: O MediaRecorder recebe frames em intervalos irregulares e gera um vídeo com duração incorreta.
+Mas o código está tentando fazer upload na pasta `video-upscaler/`:
+```typescript
+const filePath = `video-upscaler/${user.id}/${fileName}`;
+```
 
 ---
 
 ## Solução
 
-Usar um loop controlado por **timestamp** em vez de `requestAnimationFrame`, garantindo que cada frame seja capturado no momento correto:
+Criar uma nova política de storage que permita uploads na pasta `video-upscaler/`:
 
-### Mudanças no arquivo `src/components/video-upscaler/VideoTrimModal.tsx`
-
-**Estratégia**: Capturar frames manualmente a cada ~33ms (30 FPS) usando `setInterval`, sincronizando com o `currentTime` do vídeo.
-
-```typescript
-// ANTES (problemático):
-const renderFrame = () => {
-  if (video.currentTime >= endTime || video.paused || video.ended) {
-    video.pause();
-    recorder.stop();
-    return;
-  }
-  ctx.drawImage(video, 0, 0);
-  requestAnimationFrame(renderFrame);
-};
-renderFrame();
-
-// DEPOIS (corrigido):
-const targetDuration = endTime - startTime;
-const fps = 30;
-const frameInterval = 1000 / fps;
-let frameCount = 0;
-const totalFrames = Math.ceil(targetDuration * fps);
-
-// Pausar o vídeo - vamos controlar manualmente o currentTime
-video.pause();
-
-const captureFrame = () => {
-  if (frameCount >= totalFrames) {
-    clearInterval(intervalId);
-    recorder.stop();
-    return;
-  }
-  
-  // Calcular o tempo exato deste frame
-  const frameTime = startTime + (frameCount / fps);
-  video.currentTime = frameTime;
-  
-  frameCount++;
-};
-
-// Esperar seek e desenhar
-video.onseeked = () => {
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-};
-
-// Capturar frame a cada intervalo
-const intervalId = setInterval(captureFrame, frameInterval);
-captureFrame(); // Iniciar com o primeiro frame
+```sql
+CREATE POLICY "Authenticated users can upload to video-upscaler folder"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'artes-cloudinary' 
+  AND (storage.foldername(name))[1] = 'video-upscaler'
+  AND (storage.foldername(name))[2] = auth.uid()::text
+);
 ```
 
-**A diferença**:
-- Antes: vídeo tocava em tempo real, frames eram capturados quando disponíveis
-- Depois: vídeo fica pausado, pulamos para cada frame específico (frame-by-frame)
-
----
-
-## Por Que Isso Funciona
-
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| Controle de timing | Nenhum (depende do playback) | Total (frame-by-frame) |
-| Duração do output | Imprevisível | Exatamente `endTime - startTime` |
-| Sincronização | Dessincronizado | Perfeita |
-| Método | `video.play()` + rAF | `video.currentTime` manual |
+Essa política segue o mesmo padrão da pasta `pose-changer/`, garantindo que:
+- Só usuários autenticados podem fazer upload
+- Cada usuário só pode fazer upload na sua própria subpasta
 
 ---
 
@@ -94,7 +48,7 @@ captureFrame(); // Iniciar com o primeiro frame
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/video-upscaler/VideoTrimModal.tsx` | Reescrever função `trimVideoFile` com captura frame-by-frame |
+| Nova migração SQL | Criar política de storage para `video-upscaler/` |
 
 ---
 
@@ -102,7 +56,5 @@ captureFrame(); // Iniciar com o primeiro frame
 
 | Antes | Depois |
 |-------|--------|
-| Vídeo 2x mais rápido | Velocidade normal (1x) |
-| Duração ~5s em vez de 10s | Duração exata do corte |
-| Dessincronização | Sincronização perfeita |
-
+| Upload falha com erro de RLS | Upload funciona normalmente |
+| Interface mostra "Erro no processamento" | Processamento continua sem erros |
