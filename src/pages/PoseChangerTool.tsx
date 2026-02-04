@@ -246,13 +246,38 @@ const PoseChangerTool: React.FC = () => {
     setOutputImage(null);
 
     try {
-      // Step 1: Create job in database
+      // Step 1: Compress and upload person image FIRST (before creating job)
+      setProgress(10);
+      console.log('[PoseChanger] Compressing person image...');
+      const compressedPerson = await compressImage(personFile);
+      const personUrl = await uploadToStorage(compressedPerson, 'person');
+      console.log('[PoseChanger] Person image uploaded:', personUrl);
+
+      // Step 2: Compress and upload reference image
+      setProgress(30);
+      let referenceUrl: string;
+      
+      if (referenceFile) {
+        console.log('[PoseChanger] Compressing reference image...');
+        const compressedRef = await compressImage(referenceFile);
+        referenceUrl = await uploadToStorage(compressedRef, 'reference');
+      } else {
+        // Already a URL from library
+        referenceUrl = referenceImage;
+      }
+      console.log('[PoseChanger] Reference image uploaded:', referenceUrl);
+
+      // Step 3: Create job in database ONLY AFTER images are uploaded
+      // This prevents orphaned jobs if user closes page during upload
+      setProgress(40);
       const { data: job, error: jobError } = await supabase
         .from('pose_changer_jobs')
         .insert({
           session_id: sessionIdRef.current,
           user_id: user.id,
           status: 'queued',
+          person_file_name: personUrl.split('/').pop() || 'person.webp',
+          reference_file_name: referenceUrl.split('/').pop() || 'reference.webp',
         })
         .select()
         .single();
@@ -262,26 +287,7 @@ const PoseChangerTool: React.FC = () => {
       }
 
       setJobId(job.id);
-      console.log('[PoseChanger] Job created:', job.id);
-
-      // Step 2: Compress and upload person image
-      setProgress(10);
-      const compressedPerson = await compressImage(personFile);
-      const personUrl = await uploadToStorage(compressedPerson, 'person');
-      console.log('[PoseChanger] Person image uploaded:', personUrl);
-
-      // Step 3: Compress and upload reference image
-      setProgress(30);
-      let referenceUrl: string;
-      
-      if (referenceFile) {
-        const compressedRef = await compressImage(referenceFile);
-        referenceUrl = await uploadToStorage(compressedRef, 'reference');
-      } else {
-        // Already a URL from library
-        referenceUrl = referenceImage;
-      }
-      console.log('[PoseChanger] Reference image uploaded:', referenceUrl);
+      console.log('[PoseChanger] Job created with images:', job.id);
 
       // Step 4: Call edge function
       setProgress(50);
