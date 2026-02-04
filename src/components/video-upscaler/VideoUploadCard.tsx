@@ -1,8 +1,9 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react';
-import { Upload, X, Video, Play, Clock, Maximize } from 'lucide-react';
+import { Upload, X, Video, Clock, Maximize } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import VideoTrimModal from './VideoTrimModal';
 
 interface VideoMetadata {
   width: number;
@@ -34,9 +35,19 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  
+  // Trim modal state
+  const [showTrimModal, setShowTrimModal] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingDuration, setPendingDuration] = useState(0);
 
   // Validate video dimensions and duration
-  const validateVideo = useCallback((file: File): Promise<{ valid: boolean; error?: string; metadata?: VideoMetadata }> => {
+  const validateVideo = useCallback((file: File): Promise<{ 
+    valid: boolean; 
+    error?: string; 
+    metadata?: VideoMetadata;
+    needsTrim?: boolean;
+  }> => {
     return new Promise((resolve) => {
       const video = document.createElement('video');
       video.preload = 'metadata';
@@ -54,9 +65,11 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
             error: `Resolução muito alta (${width}x${height}). Dimensão máxima: ${MAX_DIMENSION}px`,
           });
         } else if (duration > MAX_DURATION) {
+          // Instead of rejecting, signal that video needs trimming
           resolve({
-            valid: false,
-            error: `Vídeo muito longo (${duration.toFixed(1)}s). Máximo: ${MAX_DURATION} segundos`,
+            valid: true,
+            needsTrim: true,
+            metadata: { width, height, duration },
           });
         } else {
           resolve({
@@ -134,7 +147,15 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
       return;
     }
 
-    // Generate thumbnail
+    // If video needs trimming, open the trim modal
+    if (validation.needsTrim && validation.metadata) {
+      setPendingFile(file);
+      setPendingDuration(validation.metadata.duration);
+      setShowTrimModal(true);
+      return;
+    }
+
+    // Video is valid and doesn't need trimming
     try {
       const thumb = await generateThumbnail(file);
       setThumbnailUrl(thumb);
@@ -147,6 +168,32 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
     setMetadata(validation.metadata!);
     onVideoChange(url, file, validation.metadata);
   }, [validateVideo, generateThumbnail, onVideoChange]);
+
+  // Handle trimmed video from modal
+  const handleTrimSave = useCallback(async (trimmedFile: File, trimmedMetadata: VideoMetadata) => {
+    // Generate thumbnail for trimmed video
+    try {
+      const thumb = await generateThumbnail(trimmedFile);
+      setThumbnailUrl(thumb);
+    } catch (error) {
+      console.error('Failed to generate thumbnail:', error);
+    }
+
+    const url = URL.createObjectURL(trimmedFile);
+    setMetadata(trimmedMetadata);
+    onVideoChange(url, trimmedFile, trimmedMetadata);
+    setShowTrimModal(false);
+    setPendingFile(null);
+    setPendingDuration(0);
+    
+    toast.success('Vídeo cortado com sucesso!');
+  }, [generateThumbnail, onVideoChange]);
+
+  const handleTrimClose = useCallback(() => {
+    setShowTrimModal(false);
+    setPendingFile(null);
+    setPendingDuration(0);
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -203,97 +250,110 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
   };
 
   return (
-    <Card className={cn(
-      "relative overflow-hidden bg-purple-900/20 border-purple-500/30",
-      disabled && "opacity-50 cursor-not-allowed",
-      className
-    )}>
-      {/* Header */}
-      <div className="px-2 py-1 border-b border-purple-500/20">
-        <h3 className="text-[10px] font-semibold text-white flex items-center gap-1">
-          <Video className="w-3 h-3 text-purple-400" />
-          {title}
-        </h3>
-      </div>
+    <>
+      <Card className={cn(
+        "relative overflow-hidden bg-purple-900/20 border-purple-500/30",
+        disabled && "opacity-50 cursor-not-allowed",
+        className
+      )}>
+        {/* Header */}
+        <div className="px-2 py-1 border-b border-purple-500/20">
+          <h3 className="text-[10px] font-semibold text-white flex items-center gap-1">
+            <Video className="w-3 h-3 text-purple-400" />
+            {title}
+          </h3>
+        </div>
 
-      {/* Upload Area */}
-      <div
-        className={cn(
-          "relative h-32 lg:h-auto lg:aspect-video flex flex-col items-center justify-center cursor-pointer transition-all",
-          !videoUrl && "hover:bg-purple-500/10",
-          disabled && "cursor-not-allowed"
-        )}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onClick={!videoUrl ? handleClick : undefined}
-      >
-        {videoUrl ? (
-          <>
-            <div className="w-full h-full flex items-center justify-center p-2 relative">
-              {/* Video preview with thumbnail */}
-              <video
-                ref={videoRef}
-                src={videoUrl}
-                className="max-w-full max-h-full object-contain rounded"
-                muted
-                playsInline
-                poster={thumbnailUrl || undefined}
-                controls
-              />
-              
-              {/* Metadata overlay */}
-              {metadata && (
-                <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2 text-[9px]">
-                  <div className="flex items-center gap-2 bg-black/60 rounded px-2 py-1">
-                    <span className="flex items-center gap-1 text-purple-300">
-                      <Maximize className="w-3 h-3" />
-                      {metadata.width}x{metadata.height}
-                    </span>
-                    <span className="flex items-center gap-1 text-purple-300">
-                      <Clock className="w-3 h-3" />
-                      {formatDuration(metadata.duration)}
-                    </span>
+        {/* Upload Area */}
+        <div
+          className={cn(
+            "relative h-32 lg:h-auto lg:aspect-video flex flex-col items-center justify-center cursor-pointer transition-all",
+            !videoUrl && "hover:bg-purple-500/10",
+            disabled && "cursor-not-allowed"
+          )}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onClick={!videoUrl ? handleClick : undefined}
+        >
+          {videoUrl ? (
+            <>
+              <div className="w-full h-full flex items-center justify-center p-2 relative">
+                {/* Video preview with thumbnail */}
+                <video
+                  ref={videoRef}
+                  src={videoUrl}
+                  className="max-w-full max-h-full object-contain rounded"
+                  muted
+                  playsInline
+                  poster={thumbnailUrl || undefined}
+                  controls
+                />
+                
+                {/* Metadata overlay */}
+                {metadata && (
+                  <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2 text-[9px]">
+                    <div className="flex items-center gap-2 bg-black/60 rounded px-2 py-1">
+                      <span className="flex items-center gap-1 text-purple-300">
+                        <Maximize className="w-3 h-3" />
+                        {metadata.width}x{metadata.height}
+                      </span>
+                      <span className="flex items-center gap-1 text-purple-300">
+                        <Clock className="w-3 h-3" />
+                        {formatDuration(metadata.duration)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+              
+              {/* Remove button */}
+              <button
+                onClick={handleRemove}
+                disabled={disabled}
+                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center transition-colors"
+              >
+                <X className="w-3 h-3 text-white" />
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2 p-4">
+              <div className="w-12 h-12 rounded-lg bg-purple-500/20 border border-dashed border-purple-500/40 flex items-center justify-center">
+                <Upload className="w-6 h-6 text-purple-400" />
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-purple-200 font-medium">Arraste ou clique</p>
+                <p className="text-[10px] text-purple-400 mt-1">
+                  MP4, WebM ou MOV
+                </p>
+                <p className="text-[9px] text-purple-500 mt-0.5">
+                  Máx: {MAX_DIMENSION}px • {MAX_DURATION}s
+                </p>
+              </div>
             </div>
-            
-            {/* Remove button */}
-            <button
-              onClick={handleRemove}
-              disabled={disabled}
-              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center transition-colors"
-            >
-              <X className="w-3 h-3 text-white" />
-            </button>
-          </>
-        ) : (
-          <div className="flex flex-col items-center gap-2 p-4">
-            <div className="w-12 h-12 rounded-lg bg-purple-500/20 border border-dashed border-purple-500/40 flex items-center justify-center">
-              <Upload className="w-6 h-6 text-purple-400" />
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-purple-200 font-medium">Arraste ou clique</p>
-              <p className="text-[10px] text-purple-400 mt-1">
-                MP4, WebM ou MOV
-              </p>
-              <p className="text-[9px] text-purple-500 mt-0.5">
-                Máx: {MAX_DIMENSION}px • {MAX_DURATION}s
-              </p>
-            </div>
-          </div>
-        )}
+          )}
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="video/mp4,video/webm,video/quicktime,video/x-m4v"
-          className="hidden"
-          onChange={handleInputChange}
-          disabled={disabled}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime,video/x-m4v"
+            className="hidden"
+            onChange={handleInputChange}
+            disabled={disabled}
+          />
+        </div>
+      </Card>
+
+      {/* Trim Modal */}
+      {pendingFile && (
+        <VideoTrimModal
+          isOpen={showTrimModal}
+          onClose={handleTrimClose}
+          videoFile={pendingFile}
+          videoDuration={pendingDuration}
+          onSave={handleTrimSave}
         />
-      </div>
-    </Card>
+      )}
+    </>
   );
 };
 
