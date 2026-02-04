@@ -24,6 +24,10 @@ const MAX_TRIM_DURATION = 10;
 const GLOBAL_TIMEOUT_MS = 60000; // 60s timeout máximo
 
 const formatTime = (seconds: number): string => {
+  // Guard against invalid values (NaN, Infinity, negative)
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return '00:00.0';
+  }
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   const ms = Math.floor((seconds % 1) * 10);
