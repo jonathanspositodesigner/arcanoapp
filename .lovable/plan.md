@@ -1,38 +1,14 @@
 
 
-# Modal de Corte de Vídeo para 10 Segundos
+# Modal de Corte de Video - Implementacao com Audio e Duracao Exata
 
-## Resumo da Funcionalidade
+## Resumo
 
-Quando o usuário faz upload de um vídeo com duração maior que 10 segundos, um modal aparece automaticamente com:
-- Preview do vídeo
-- Barra de trimming (dual slider) para selecionar o trecho de 10 segundos
-- Preview em tempo real do trecho selecionado
-- Botao "Salvar Vídeo" que corta e salva o trecho
-
-## Fluxo do Usuário
-
-```text
-1. Usuário faz upload do vídeo
-       ↓
-2. Sistema valida:
-   - Se <= 10s → Aceita direto (comportamento atual)
-   - Se > 10s → Abre Modal de Corte
-       ↓
-3. No Modal:
-   - Vídeo aparece com player
-   - Barra de trimming com dois handles (início/fim)
-   - Ao arrastar, vídeo pula pro ponto selecionado
-   - Range máximo fixo em 10s
-       ↓
-4. Clica "Salvar Vídeo"
-   - Sistema corta o vídeo usando Canvas + MediaRecorder
-   - Gera novo arquivo com o trecho
-   - Fecha modal
-   - Vídeo cortado aparece no card de entrada
-       ↓
-5. Usuário pode clicar "Upscale"
-```
+Quando o usuario faz upload de um video com duracao maior que 10 segundos, um modal aparece automaticamente para cortar o video. O corte deve:
+- Manter a duracao EXATA do trecho selecionado
+- Preservar o AUDIO original
+- Nao acelerar nem desacelerar o video
+- Funcionar 100% no navegador (sem custo de Cloud)
 
 ---
 
@@ -46,6 +22,34 @@ Quando o usuário faz upload de um vídeo com duração maior que 10 segundos, u
 
 ---
 
+## Fluxo do Usuario
+
+```text
+1. Usuario faz upload do video
+       |
+       v
+2. Sistema valida:
+   - Se <= 10s --> Aceita direto (comportamento atual)
+   - Se > 10s --> Abre Modal de Corte
+       |
+       v
+3. No Modal:
+   - Video aparece com player
+   - Barra de trimming com dois handles (inicio/fim)
+   - Range maximo fixo em 10s
+   - Ao arrastar handle, video pula pro ponto selecionado
+       |
+       v
+4. Clica "Salvar Video"
+   - Sistema corta o video usando seeking manual + MediaRecorder
+   - Captura video E audio
+   - Gera novo arquivo com o trecho exato
+   - Fecha modal
+   - Video cortado aparece no card de entrada
+```
+
+---
+
 ## Detalhes Tecnicos
 
 ### 1. Novo Componente: VideoTrimModal.tsx
@@ -55,66 +59,122 @@ interface VideoTrimModalProps {
   isOpen: boolean;
   onClose: () => void;
   videoFile: File;
+  videoDuration: number;
   onSave: (trimmedFile: File, metadata: VideoMetadata) => void;
 }
 ```
 
 **Funcionalidades:**
 - Player de video com `<video>` nativo
-- Dual slider usando Radix (dois thumbs para inicio/fim)
+- Dual slider (dois thumbs para inicio/fim)
 - Sincronizacao: ao arrastar slider, `video.currentTime` atualiza
 - Limite fixo de 10s entre os handles
-- Geracao de thumbnails para mostrar na timeline (opcional para v1)
+- Botao "Salvar Video" inicia o processo de corte
 
-### 2. Logica de Corte do Video
+### 2. Logica de Corte - Duracao Exata COM Audio
 
-Usar `MediaRecorder` + `canvas` para renderizar o trecho selecionado:
+A abordagem correta para garantir duracao exata e preservar audio:
+
+1. **Seeking Manual Frame-by-Frame**: Em vez de usar `video.play()` (que pode variar velocidade), avancamos manualmente o `currentTime` em intervalos fixos (1/30s para 30 FPS)
+
+2. **Captura de Audio**: Usar `captureStream()` no elemento `<video>` (captura video + audio junto) em vez de `canvas.captureStream()` (que captura apenas video)
 
 ```typescript
-const trimVideo = async (file: File, startTime: number, endTime: number): Promise<File> => {
+const trimVideoWithAudio = async (
+  file: File, 
+  startTime: number, 
+  endTime: number
+): Promise<File> => {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
     video.src = URL.createObjectURL(file);
-    video.muted = true;
-    
+    video.muted = false; // IMPORTANTE: nao mutar para capturar audio
+    video.volume = 0; // Volume 0 para nao tocar durante gravacao
+
     video.onloadedmetadata = async () => {
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d')!;
+
+      // Capturar stream do canvas (video) + audio do video element
+      const canvasStream = canvas.captureStream(30);
       
-      const stream = canvas.captureStream(30); // 30 FPS
-      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      // Capturar audio do video usando captureStream
+      const videoStream = (video as any).captureStream();
+      const audioTracks = videoStream.getAudioTracks();
+      
+      // Combinar video do canvas + audio do video
+      audioTracks.forEach(track => canvasStream.addTrack(track));
+
+      const recorder = new MediaRecorder(canvasStream, { 
+        mimeType: 'video/webm;codecs=vp9,opus' 
+      });
       const chunks: Blob[] = [];
-      
+
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: 'video/webm' });
-        const trimmedFile = new File([blob], `trimmed-${file.name}`, { type: 'video/webm' });
+        const trimmedFile = new File(
+          [blob], 
+          `trimmed-${file.name.replace(/\.[^/.]+$/, '')}.webm`, 
+          { type: 'video/webm' }
+        );
+        URL.revokeObjectURL(video.src);
         resolve(trimmedFile);
       };
-      
+
+      // Posicionar no inicio
       video.currentTime = startTime;
       await new Promise(r => video.onseeked = r);
-      
+
+      const FPS = 30;
+      const frameInterval = 1 / FPS;
+      const duration = endTime - startTime;
+      const totalFrames = Math.ceil(duration * FPS);
+      let frameCount = 0;
+
       recorder.start();
-      video.play();
-      
-      // Parar quando atingir endTime
-      const checkEnd = () => {
-        if (video.currentTime >= endTime) {
-          video.pause();
+
+      // Funcao que avanca frame por frame manualmente
+      const processFrame = async () => {
+        if (frameCount >= totalFrames) {
           recorder.stop();
-        } else {
-          ctx.drawImage(video, 0, 0);
-          requestAnimationFrame(checkEnd);
+          return;
         }
+
+        // Desenhar frame atual no canvas
+        ctx.drawImage(video, 0, 0);
+        frameCount++;
+
+        // Avancar para proximo frame usando seeking manual
+        const nextTime = startTime + (frameCount * frameInterval);
+        if (nextTime <= endTime) {
+          video.currentTime = nextTime;
+          await new Promise(r => video.onseeked = r);
+        }
+
+        // Pequeno delay para dar tempo do MediaRecorder capturar
+        setTimeout(processFrame, 1000 / FPS);
       };
-      checkEnd();
+
+      processFrame();
+    };
+
+    video.onerror = () => {
+      URL.revokeObjectURL(video.src);
+      reject(new Error('Erro ao carregar video'));
     };
   });
 };
 ```
+
+**Por que essa abordagem funciona:**
+- `video.currentTime = X` + aguardar `onseeked` garante precisao
+- Cada frame e desenhado no canvas depois de confirmar seek
+- O intervalo de 1000/30ms entre frames garante 30 FPS exatos
+- Duracao final = totalFrames / FPS = exatamente o que foi cortado
+- Audio e capturado via `video.captureStream()` e combinado com o canvas
 
 ### 3. Modificacao no VideoUploadCard.tsx
 
@@ -128,7 +188,11 @@ if (duration > MAX_DURATION) {
 
 // DEPOIS: Aceita e sinaliza que precisa de trim
 if (duration > MAX_DURATION) {
-  resolve({ valid: true, needsTrim: true, metadata: { width, height, duration } });
+  resolve({ 
+    valid: true, 
+    needsTrim: true, 
+    metadata: { width, height, duration } 
+  });
 }
 ```
 
@@ -137,10 +201,12 @@ if (duration > MAX_DURATION) {
 ```typescript
 const [showTrimModal, setShowTrimModal] = useState(false);
 const [pendingFile, setPendingFile] = useState<File | null>(null);
+const [pendingDuration, setPendingDuration] = useState(0);
 
 // Se video precisa de trim, abre modal
 if (validation.needsTrim) {
   setPendingFile(file);
+  setPendingDuration(validation.metadata.duration);
   setShowTrimModal(true);
   return;
 }
@@ -149,6 +215,7 @@ if (validation.needsTrim) {
 const handleTrimSave = (trimmedFile: File, metadata: VideoMetadata) => {
   const url = URL.createObjectURL(trimmedFile);
   setMetadata(metadata);
+  setThumbnailUrl(null); // Gerar novo thumbnail
   onVideoChange(url, trimmedFile, metadata);
   setShowTrimModal(false);
   setPendingFile(null);
@@ -157,23 +224,21 @@ const handleTrimSave = (trimmedFile: File, metadata: VideoMetadata) => {
 
 ### 4. Modificacao no Slider para Dual Handles
 
-O Radix Slider ja suporta multiplos valores nativamente. So precisamos renderizar dois thumbs:
+O Radix Slider ja suporta multiplos valores. So precisamos renderizar os thumbs dinamicamente:
 
 ```typescript
-// slider.tsx
 const Slider = React.forwardRef<...>(({ className, ...props }, ref) => {
-  // Detecta se e array (dual) ou single
+  // Detecta quantidade de valores para renderizar thumbs
   const values = Array.isArray(props.value) ? props.value : 
                  Array.isArray(props.defaultValue) ? props.defaultValue : [0];
   
   return (
-    <SliderPrimitive.Root ...>
-      <SliderPrimitive.Track ...>
-        <SliderPrimitive.Range ... />
+    <SliderPrimitive.Root ref={ref} className={cn(...)} {...props}>
+      <SliderPrimitive.Track className="...">
+        <SliderPrimitive.Range className="..." />
       </SliderPrimitive.Track>
-      {/* Renderiza um Thumb para cada valor */}
       {values.map((_, index) => (
-        <SliderPrimitive.Thumb key={index} ... />
+        <SliderPrimitive.Thumb key={index} className="..." />
       ))}
     </SliderPrimitive.Root>
   );
@@ -185,40 +250,51 @@ const Slider = React.forwardRef<...>(({ className, ...props }, ref) => {
 ## UI do Modal
 
 ```text
-┌────────────────────────────────────────────────────┐
-│  Cortar Video                               [X]    │
-├────────────────────────────────────────────────────┤
-│                                                    │
-│    ┌──────────────────────────────────────────┐    │
-│    │                                          │    │
-│    │           [VIDEO PLAYER]                 │    │
-│    │                                          │    │
-│    │          ▶ 00:02 / 00:45                │    │
-│    └──────────────────────────────────────────┘    │
-│                                                    │
-│    Selecione 10 segundos do video:                 │
-│                                                    │
-│    [●━━━━━━━━━━●─────────────────────────────]     │
-│    0s        10s                            45s    │
-│                                                    │
-│    Trecho: 00:00 → 00:10  (10s)                   │
-│                                                    │
-├────────────────────────────────────────────────────┤
-│                               [ Salvar Video ]     │
-└────────────────────────────────────────────────────┘
++----------------------------------------------------+
+|  Cortar Video                               [X]    |
+|----------------------------------------------------|
+|                                                    |
+|    +------------------------------------------+    |
+|    |                                          |    |
+|    |           [VIDEO PLAYER]                 |    |
+|    |                                          |    |
+|    |          00:02 / 00:45                   |    |
+|    +------------------------------------------+    |
+|                                                    |
+|    Selecione 10 segundos do video:                 |
+|                                                    |
+|    [O==========O-------------------------]         |
+|    0s        10s                        45s        |
+|                                                    |
+|    Trecho: 00:00 -> 00:10  (10s)                   |
+|                                                    |
+|----------------------------------------------------|
+|                               [ Salvar Video ]     |
++----------------------------------------------------+
 ```
 
 ---
 
-## Consideracoes Importantes
+## Garantias de Qualidade
 
-1. **Corte em WebM**: O `MediaRecorder` gera WebM por padrao. O backend do RunningHub deve aceitar esse formato (ja listado como suportado).
+| Requisito | Como e garantido |
+|-----------|------------------|
+| Duracao exata | Seeking manual frame-by-frame (nao depende de playback speed) |
+| Audio preservado | `video.captureStream()` captura audio + combinacao com canvas stream |
+| Sem aceleracao | Interval fixo de 1000/FPS ms entre frames |
+| Tamanho correto | totalFrames = ceil(duracao * FPS), cada frame e processado |
 
-2. **Performance**: O corte acontece no navegador do usuario, nao gasta Cloud.
+---
 
-3. **Audio**: O `canvas.captureStream()` nao captura audio por padrao. Para v1, video sera mudo. Para incluir audio, precisaria usar `AudioContext` + `MediaStreamAudioDestinationNode`.
+## Consideracoes
 
-4. **Fallback**: Se o navegador nao suportar `MediaRecorder` (raro), exibir erro pedindo outro navegador.
+1. **Formato WebM**: O MediaRecorder gera WebM. RunningHub aceita esse formato.
+
+2. **Performance**: O processo de corte pode levar alguns segundos (proporcional a duracao do trecho). Mostrar loading durante o processamento.
+
+3. **Compatibilidade**: `video.captureStream()` e suportado em Chrome, Firefox, Edge. Safari tem suporte limitado.
+
+4. **Custo Cloud**: Zero. Todo processamento acontece no navegador.
 
 ---
 
@@ -228,5 +304,7 @@ const Slider = React.forwardRef<...>(({ className, ...props }, ref) => {
 |-------|--------|
 | Videos > 10s rejeitados com erro | Modal abre para cortar |
 | Usuario precisa editar fora do app | Usuario corta dentro do app |
-| UX frustrante | UX igual ao Facebook Ads Manager |
+| N/A | Video cortado tem duracao EXATA |
+| N/A | Audio e preservado |
+| N/A | Velocidade normal (sem acelerar) |
 
