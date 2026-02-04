@@ -1,310 +1,91 @@
 
+Objetivo: parar o “Processando…” infinito no cortador de vídeo e fazer o botão “Salvar Vídeo” sempre finalizar (gerar o arquivo cortado) ou, no pior caso, falhar com mensagem clara e liberar a tela (nunca travar).
 
-# Modal de Corte de Video - Implementacao com Audio e Duracao Exata
+## O que está acontecendo (causa real do travamento)
+Hoje o corte roda num loop que faz:
+- desenha um frame no canvas
+- faz `video.currentTime = próximoFrame`
+- fica esperando `seeked` (`await new Promise(... onseeked ...)`)
+Se por qualquer motivo o navegador não disparar `seeked` em algum passo (isso acontece às vezes com seeks muito pequenos, vídeo pesado, buffering, ou timing), o `await` nunca resolve, o loop para no meio e o `MediaRecorder` nunca recebe `stop()`. Resultado: a Promise do corte nunca termina e o modal fica eternamente em “Processando…”.
 
-## Resumo
+Além disso, não existe “timeout de segurança” para abortar e destravar a UI.
 
-Quando o usuario faz upload de um video com duracao maior que 10 segundos, um modal aparece automaticamente para cortar o video. O corte deve:
-- Manter a duracao EXATA do trecho selecionado
-- Preservar o AUDIO original
-- Nao acelerar nem desacelerar o video
-- Funcionar 100% no navegador (sem custo de Cloud)
+## Mudanças para fazer “funcionar de verdade” (sem complicar a UX)
+### 1) Tornar o corte impossível de travar (timeout + abort)
+No `VideoTrimModal.tsx`:
+- Envolver o `trimVideo()` em um `Promise.race()` com timeout (ex.: 60s).
+- Se estourar o tempo: aborta a gravação (se estiver ativa), limpa recursos e mostra erro para o usuário (toast), e principalmente seta `isProcessing=false`.
 
----
+Resultado: nunca mais fica infinito.
 
-## Arquivos a Criar/Modificar
+### 2) Corrigir o loop de frames para não depender de um `onseeked` que pode falhar
+Trocar o esquema atual por um “seek helper” robusto:
 
-| Arquivo | Acao |
-|---------|------|
-| `src/components/video-upscaler/VideoTrimModal.tsx` | **NOVO** - Modal com player e slider de corte |
-| `src/components/video-upscaler/VideoUploadCard.tsx` | Modificar para abrir modal quando video > 10s |
-| `src/components/ui/slider.tsx` | Modificar para suportar dois thumbs (dual slider) |
+- Criar função `seekTo(video, time, timeoutMs)` que:
+  - registra listener com `addEventListener('seeked', ..., { once: true })`
+  - seta `video.currentTime = time`
+  - resolve no `seeked`
+  - se não vier `seeked` dentro do timeout (ex.: 1500–2000ms), rejeita (para cair no fallback automaticamente)
 
----
+Isso elimina o travamento silencioso.
 
-## Fluxo do Usuario
+### 3) Fallback automático (para garantir que o usuário sempre consegue salvar)
+Se o método “frame a frame” falhar (timeout de seek / erro de recorder), cair automaticamente para um método mais estável:
 
-```text
-1. Usuario faz upload do video
-       |
-       v
-2. Sistema valida:
-   - Se <= 10s --> Aceita direto (comportamento atual)
-   - Se > 10s --> Abre Modal de Corte
-       |
-       v
-3. No Modal:
-   - Video aparece com player
-   - Barra de trimming com dois handles (inicio/fim)
-   - Range maximo fixo em 10s
-   - Ao arrastar handle, video pula pro ponto selecionado
-       |
-       v
-4. Clica "Salvar Video"
-   - Sistema corta o video usando seeking manual + MediaRecorder
-   - Captura video E audio
-   - Gera novo arquivo com o trecho exato
-   - Fecha modal
-   - Video cortado aparece no card de entrada
-```
+**Fallback (bem estável): gravar o trecho tocando o vídeo**
+- `video.currentTime = start`
+- espera `seeked`
+- `const stream = video.captureStream(30)` (pega vídeo+áudio do elemento)
+- `recorder = new MediaRecorder(stream, mimeType suportado)`
+- `recorder.start()`
+- `await video.play()` (clique no botão já é gesto do usuário)
+- parar quando `video.currentTime >= end` (checando em `requestAnimationFrame` + também um `setTimeout` de segurança)
+- `recorder.stop()`
 
----
+Isso preserva áudio e não acelera. A duração fica extremamente próxima do recorte; e com o stop baseado no `currentTime` ela fica no tamanho correto do corte na prática. (E principalmente: não trava.)
 
-## Detalhes Tecnicos
+### 4) Garantir compatibilidade do MediaRecorder (evitar erros escondidos)
+Antes de criar o `MediaRecorder`, escolher o melhor mimeType suportado:
+- tentar `video/webm;codecs=vp9,opus`
+- senão `video/webm;codecs=vp8,opus`
+- senão `video/webm`
+Se nenhum suportar, mostrar erro (“Seu navegador não suporta exportar vídeo. Use Chrome/Edge.”).
 
-### 1. Novo Componente: VideoTrimModal.tsx
+### 5) Feedback e saída limpa (UX de “funcionou”)
+No `handleSave()` do modal:
+- mostrar progresso real (ex.: “Processando… 35%”) baseado em:
+  - frameCount/totalFrames (método frame-a-frame)
+  - ou (currentTime-start)/(end-start) no fallback
+- adicionar botão “Cancelar” (opcional, mas recomendado) para o usuário destravar manualmente caso queira
+- sempre limpar:
+  - `URL.revokeObjectURL(...)`
+  - `video.pause()`
+  - parar tracks do stream (`stream.getTracks().forEach(t => t.stop())`) quando terminar
 
-```typescript
-interface VideoTrimModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  videoFile: File;
-  videoDuration: number;
-  onSave: (trimmedFile: File, metadata: VideoMetadata) => void;
-}
-```
+### 6) Onde mexer (arquivos)
+- `src/components/video-upscaler/VideoTrimModal.tsx`
+  - Reescrever a função `trimVideo()` com:
+    - `seekTo()` com timeout
+    - timeout global do processamento (Promise.race)
+    - fallback automático “play+captureStream”
+    - seleção de mimeType suportado
+    - progresso/cleanup
+- `src/components/video-upscaler/VideoUploadCard.tsx`
+  - Sem mudanças obrigatórias para corrigir o travamento (só se quiser melhorar mensagens/toasts).
+- `src/components/ui/slider.tsx`
+  - Sem mudanças (já está ok para dois thumbs).
 
-**Funcionalidades:**
-- Player de video com `<video>` nativo
-- Dual slider (dois thumbs para inicio/fim)
-- Sincronizacao: ao arrastar slider, `video.currentTime` atualiza
-- Limite fixo de 10s entre os handles
-- Botao "Salvar Video" inicia o processo de corte
+## Critérios de pronto (o que vai ser testado)
+1) Upload de vídeo > 10s → modal abre → escolher trecho → clicar “Salvar Vídeo”:
+   - não pode ficar infinito em “Processando…”
+   - deve gerar um novo arquivo e voltar pro card com o vídeo já cortado
+2) O vídeo cortado:
+   - tem áudio
+   - não fica acelerado/desacelerado
+   - fica com a duração do trecho selecionado (10s quando selecionado 10s)
+3) Repetir com vídeos diferentes (mp4, mov) e com trechos diferentes (início/meio/fim).
 
-### 2. Logica de Corte - Duracao Exata COM Audio
-
-A abordagem correta para garantir duracao exata e preservar audio:
-
-1. **Seeking Manual Frame-by-Frame**: Em vez de usar `video.play()` (que pode variar velocidade), avancamos manualmente o `currentTime` em intervalos fixos (1/30s para 30 FPS)
-
-2. **Captura de Audio**: Usar `captureStream()` no elemento `<video>` (captura video + audio junto) em vez de `canvas.captureStream()` (que captura apenas video)
-
-```typescript
-const trimVideoWithAudio = async (
-  file: File, 
-  startTime: number, 
-  endTime: number
-): Promise<File> => {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement('video');
-    video.src = URL.createObjectURL(file);
-    video.muted = false; // IMPORTANTE: nao mutar para capturar audio
-    video.volume = 0; // Volume 0 para nao tocar durante gravacao
-
-    video.onloadedmetadata = async () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d')!;
-
-      // Capturar stream do canvas (video) + audio do video element
-      const canvasStream = canvas.captureStream(30);
-      
-      // Capturar audio do video usando captureStream
-      const videoStream = (video as any).captureStream();
-      const audioTracks = videoStream.getAudioTracks();
-      
-      // Combinar video do canvas + audio do video
-      audioTracks.forEach(track => canvasStream.addTrack(track));
-
-      const recorder = new MediaRecorder(canvasStream, { 
-        mimeType: 'video/webm;codecs=vp9,opus' 
-      });
-      const chunks: Blob[] = [];
-
-      recorder.ondataavailable = (e) => chunks.push(e.data);
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const trimmedFile = new File(
-          [blob], 
-          `trimmed-${file.name.replace(/\.[^/.]+$/, '')}.webm`, 
-          { type: 'video/webm' }
-        );
-        URL.revokeObjectURL(video.src);
-        resolve(trimmedFile);
-      };
-
-      // Posicionar no inicio
-      video.currentTime = startTime;
-      await new Promise(r => video.onseeked = r);
-
-      const FPS = 30;
-      const frameInterval = 1 / FPS;
-      const duration = endTime - startTime;
-      const totalFrames = Math.ceil(duration * FPS);
-      let frameCount = 0;
-
-      recorder.start();
-
-      // Funcao que avanca frame por frame manualmente
-      const processFrame = async () => {
-        if (frameCount >= totalFrames) {
-          recorder.stop();
-          return;
-        }
-
-        // Desenhar frame atual no canvas
-        ctx.drawImage(video, 0, 0);
-        frameCount++;
-
-        // Avancar para proximo frame usando seeking manual
-        const nextTime = startTime + (frameCount * frameInterval);
-        if (nextTime <= endTime) {
-          video.currentTime = nextTime;
-          await new Promise(r => video.onseeked = r);
-        }
-
-        // Pequeno delay para dar tempo do MediaRecorder capturar
-        setTimeout(processFrame, 1000 / FPS);
-      };
-
-      processFrame();
-    };
-
-    video.onerror = () => {
-      URL.revokeObjectURL(video.src);
-      reject(new Error('Erro ao carregar video'));
-    };
-  });
-};
-```
-
-**Por que essa abordagem funciona:**
-- `video.currentTime = X` + aguardar `onseeked` garante precisao
-- Cada frame e desenhado no canvas depois de confirmar seek
-- O intervalo de 1000/30ms entre frames garante 30 FPS exatos
-- Duracao final = totalFrames / FPS = exatamente o que foi cortado
-- Audio e capturado via `video.captureStream()` e combinado com o canvas
-
-### 3. Modificacao no VideoUploadCard.tsx
-
-**Mudanca na validacao:**
-
-```typescript
-// ANTES: Rejeita videos > 10s
-if (duration > MAX_DURATION) {
-  resolve({ valid: false, error: `Video muito longo...` });
-}
-
-// DEPOIS: Aceita e sinaliza que precisa de trim
-if (duration > MAX_DURATION) {
-  resolve({ 
-    valid: true, 
-    needsTrim: true, 
-    metadata: { width, height, duration } 
-  });
-}
-```
-
-**Novo state e modal:**
-
-```typescript
-const [showTrimModal, setShowTrimModal] = useState(false);
-const [pendingFile, setPendingFile] = useState<File | null>(null);
-const [pendingDuration, setPendingDuration] = useState(0);
-
-// Se video precisa de trim, abre modal
-if (validation.needsTrim) {
-  setPendingFile(file);
-  setPendingDuration(validation.metadata.duration);
-  setShowTrimModal(true);
-  return;
-}
-
-// Callback quando usuario salva o trim
-const handleTrimSave = (trimmedFile: File, metadata: VideoMetadata) => {
-  const url = URL.createObjectURL(trimmedFile);
-  setMetadata(metadata);
-  setThumbnailUrl(null); // Gerar novo thumbnail
-  onVideoChange(url, trimmedFile, metadata);
-  setShowTrimModal(false);
-  setPendingFile(null);
-};
-```
-
-### 4. Modificacao no Slider para Dual Handles
-
-O Radix Slider ja suporta multiplos valores. So precisamos renderizar os thumbs dinamicamente:
-
-```typescript
-const Slider = React.forwardRef<...>(({ className, ...props }, ref) => {
-  // Detecta quantidade de valores para renderizar thumbs
-  const values = Array.isArray(props.value) ? props.value : 
-                 Array.isArray(props.defaultValue) ? props.defaultValue : [0];
-  
-  return (
-    <SliderPrimitive.Root ref={ref} className={cn(...)} {...props}>
-      <SliderPrimitive.Track className="...">
-        <SliderPrimitive.Range className="..." />
-      </SliderPrimitive.Track>
-      {values.map((_, index) => (
-        <SliderPrimitive.Thumb key={index} className="..." />
-      ))}
-    </SliderPrimitive.Root>
-  );
-});
-```
-
----
-
-## UI do Modal
-
-```text
-+----------------------------------------------------+
-|  Cortar Video                               [X]    |
-|----------------------------------------------------|
-|                                                    |
-|    +------------------------------------------+    |
-|    |                                          |    |
-|    |           [VIDEO PLAYER]                 |    |
-|    |                                          |    |
-|    |          00:02 / 00:45                   |    |
-|    +------------------------------------------+    |
-|                                                    |
-|    Selecione 10 segundos do video:                 |
-|                                                    |
-|    [O==========O-------------------------]         |
-|    0s        10s                        45s        |
-|                                                    |
-|    Trecho: 00:00 -> 00:10  (10s)                   |
-|                                                    |
-|----------------------------------------------------|
-|                               [ Salvar Video ]     |
-+----------------------------------------------------+
-```
-
----
-
-## Garantias de Qualidade
-
-| Requisito | Como e garantido |
-|-----------|------------------|
-| Duracao exata | Seeking manual frame-by-frame (nao depende de playback speed) |
-| Audio preservado | `video.captureStream()` captura audio + combinacao com canvas stream |
-| Sem aceleracao | Interval fixo de 1000/FPS ms entre frames |
-| Tamanho correto | totalFrames = ceil(duracao * FPS), cada frame e processado |
-
----
-
-## Consideracoes
-
-1. **Formato WebM**: O MediaRecorder gera WebM. RunningHub aceita esse formato.
-
-2. **Performance**: O processo de corte pode levar alguns segundos (proporcional a duracao do trecho). Mostrar loading durante o processamento.
-
-3. **Compatibilidade**: `video.captureStream()` e suportado em Chrome, Firefox, Edge. Safari tem suporte limitado.
-
-4. **Custo Cloud**: Zero. Todo processamento acontece no navegador.
-
----
-
-## Resultado Esperado
-
-| Antes | Depois |
-|-------|--------|
-| Videos > 10s rejeitados com erro | Modal abre para cortar |
-| Usuario precisa editar fora do app | Usuario corta dentro do app |
-| N/A | Video cortado tem duracao EXATA |
-| N/A | Audio e preservado |
-| N/A | Velocidade normal (sem acelerar) |
-
+## Notas técnicas (para evitar regressão)
+- Nunca deixar Promise do trim depender de evento sem timeout.
+- Sempre ter um timeout global do processamento para liberar UI.
+- Sempre ter fallback automático para o método “play+captureStream” se o frame-a-frame falhar.
