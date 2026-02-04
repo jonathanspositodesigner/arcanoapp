@@ -65,6 +65,8 @@ serve(async (req) => {
         return await handleStatus();
       case 'enqueue':
         return await handleEnqueue(req);
+      case 'cancel-session':
+        return await handleCancelSession(req);
       default:
         return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
           status: 400,
@@ -246,6 +248,95 @@ async function handleEnqueue(req: Request): Promise<Response> {
     
   } catch (error) {
     console.error('[QueueManager] Enqueue error:', error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+/**
+ * /cancel-session - Cancela todos os jobs QUEUED de uma sessão
+ * Chamado quando o usuário fecha a página
+ */
+async function handleCancelSession(req: Request): Promise<Response> {
+  try {
+    const { sessionId, userId } = await req.json();
+    
+    if (!sessionId && !userId) {
+      return new Response(JSON.stringify({ error: 'sessionId or userId is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    let totalCancelled = 0;
+    const cancelledJobs: { table: string; id: string }[] = [];
+    
+    for (const table of JOB_TABLES) {
+      // Buscar jobs queued desta sessão/usuário
+      let query = supabase
+        .from(table)
+        .select('id, user_id, user_credit_cost')
+        .eq('status', 'queued');
+      
+      if (sessionId) {
+        query = query.eq('session_id', sessionId);
+      } else if (userId) {
+        query = query.eq('user_id', userId);
+      }
+      
+      const { data: queuedJobs, error } = await query;
+      
+      if (error || !queuedJobs || queuedJobs.length === 0) continue;
+      
+      for (const job of queuedJobs) {
+        // Marcar como cancelled
+        await supabase
+          .from(table)
+          .update({
+            status: 'cancelled',
+            error_message: 'User left page while in queue',
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', job.id);
+        
+        // Devolver créditos se foram consumidos
+        if (job.user_credit_cost && job.user_id) {
+          try {
+            await supabase.rpc('refund_upscaler_credits', {
+              _user_id: job.user_id,
+              _amount: job.user_credit_cost,
+              _description: 'Refund: cancelled while in queue'
+            });
+            console.log(`[QueueManager] Refunded ${job.user_credit_cost} credits to ${job.user_id}`);
+          } catch (refundError) {
+            console.error(`[QueueManager] Failed to refund credits:`, refundError);
+          }
+        }
+        
+        cancelledJobs.push({ table, id: job.id });
+        totalCancelled++;
+      }
+    }
+    
+    console.log(`[QueueManager] Cancelled ${totalCancelled} queued jobs for session ${sessionId || userId}`);
+    
+    // Atualizar posições da fila global
+    if (totalCancelled > 0) {
+      await updateAllQueuePositions();
+    }
+    
+    return new Response(JSON.stringify({
+      success: true,
+      cancelledCount: totalCancelled,
+      cancelledJobs,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error) {
+    console.error('[QueueManager] Cancel session error:', error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

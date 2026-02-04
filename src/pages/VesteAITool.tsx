@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
+import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
@@ -70,6 +71,9 @@ const VesteAITool: React.FC = () => {
   useEffect(() => {
     sessionIdRef.current = crypto.randomUUID();
   }, []);
+
+  // Cleanup queued jobs when user leaves page
+  useQueueSessionCleanup(sessionIdRef.current, status);
 
   // Subscribe to realtime updates for a job
   const subscribeToJobUpdates = useCallback((jId: string) => {
