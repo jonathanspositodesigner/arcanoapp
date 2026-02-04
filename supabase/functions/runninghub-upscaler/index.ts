@@ -544,9 +544,12 @@ async function handleRun(req: Request) {
       .eq('id', jobId);
 
     // ========================================
-    // VERIFICAR DISPONIBILIDADE VIA QUEUE MANAGER CENTRALIZADO
+    // VERIFICAR DISPONIBILIDADE VIA QUEUE MANAGER CENTRALIZADO (MULTI-API)
     // ========================================
     let slotsAvailable = 0;
+    let accountName: string | null = null;
+    let accountApiKey: string | null = null;
+    
     try {
       const queueCheckUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`;
       const queueResponse = await fetch(queueCheckUrl, {
@@ -558,9 +561,13 @@ async function handleRun(req: Request) {
       });
       const queueData = await queueResponse.json();
       slotsAvailable = queueData.slotsAvailable || 0;
-      console.log(`[RunningHub] Queue Manager check: ${queueData.running}/${queueData.maxConcurrent}, slots: ${slotsAvailable}`);
+      accountName = queueData.accountName || 'primary';
+      accountApiKey = queueData.accountApiKey || RUNNINGHUB_API_KEY;
+      console.log(`[RunningHub] Queue Manager check: ${queueData.running}/${queueData.maxConcurrent}, slots: ${slotsAvailable}, account: ${accountName}`);
     } catch (queueError) {
-      console.error('[RunningHub] Queue Manager check failed, assuming no slots:', queueError);
+      console.error('[RunningHub] Queue Manager check failed, using primary account:', queueError);
+      accountName = 'primary';
+      accountApiKey = RUNNINGHUB_API_KEY;
     }
 
     if (slotsAvailable <= 0) {
@@ -615,7 +622,10 @@ async function handleRun(req: Request) {
       }
     }
 
-    // Slot available - start processing
+    // Slot available - start processing with assigned account
+    const apiKeyToUse = accountApiKey || RUNNINGHUB_API_KEY;
+    const accountToUse = accountName || 'primary';
+    
     await supabase
       .from('upscaler_jobs')
       .update({ 
@@ -623,7 +633,8 @@ async function handleRun(req: Request) {
         started_at: new Date().toISOString(),
         position: 0,
         user_credit_cost: creditCost,
-        waited_in_queue: false
+        waited_in_queue: false,
+        api_account: accountToUse
       })
       .eq('id', jobId);
 
@@ -664,13 +675,15 @@ async function handleRun(req: Request) {
       webhookUrl: webhookUrl
     }));
 
+    console.log(`[RunningHub] Using API account: ${accountToUse}`);
+    
     const response = await fetchWithRetry(
       `https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`,
       {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+          'Authorization': `Bearer ${apiKeyToUse}`
         },
         body: JSON.stringify(requestBody),
       },

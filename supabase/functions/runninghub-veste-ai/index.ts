@@ -510,9 +510,12 @@ async function handleRun(req: Request) {
       .eq('id', jobId);
 
     // ========================================
-    // VERIFICAR DISPONIBILIDADE VIA QUEUE MANAGER CENTRALIZADO
+    // VERIFICAR DISPONIBILIDADE VIA QUEUE MANAGER CENTRALIZADO (MULTI-API)
     // ========================================
     let slotsAvailable = 0;
+    let accountName: string | null = null;
+    let accountApiKey: string | null = null;
+    
     try {
       const queueCheckUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`;
       const queueResponse = await fetch(queueCheckUrl, {
@@ -524,9 +527,13 @@ async function handleRun(req: Request) {
       });
       const queueData = await queueResponse.json();
       slotsAvailable = queueData.slotsAvailable || 0;
-      console.log(`[VesteAI] Queue Manager check: ${queueData.running}/${queueData.maxConcurrent}, slots: ${slotsAvailable}`);
+      accountName = queueData.accountName || 'primary';
+      accountApiKey = queueData.accountApiKey || RUNNINGHUB_API_KEY;
+      console.log(`[VesteAI] Queue Manager check: ${queueData.running}/${queueData.maxConcurrent}, slots: ${slotsAvailable}, account: ${accountName}`);
     } catch (queueError) {
-      console.error('[VesteAI] Queue Manager check failed, assuming no slots:', queueError);
+      console.error('[VesteAI] Queue Manager check failed, using primary account:', queueError);
+      accountName = 'primary';
+      accountApiKey = RUNNINGHUB_API_KEY;
     }
 
     if (slotsAvailable <= 0) {
@@ -581,14 +588,18 @@ async function handleRun(req: Request) {
       }
     }
 
-    // Start processing immediately
+    // Slot available - start processing with assigned account
+    const apiKeyToUse = accountApiKey || RUNNINGHUB_API_KEY;
+    const accountToUse = accountName || 'primary';
+
     await supabase
       .from('veste_ai_jobs')
       .update({ 
         status: 'running', 
         started_at: new Date().toISOString(),
         position: 0,
-        user_credit_cost: creditCost
+        user_credit_cost: creditCost,
+        api_account: accountToUse
       })
       .eq('id', jobId);
 
@@ -610,13 +621,15 @@ async function handleRun(req: Request) {
 
     console.log('[VesteAI] Starting job with RunningHub:', JSON.stringify(requestBody));
 
+    console.log(`[VesteAI] Using API account: ${accountToUse}`);
+    
     const response = await fetchWithRetry(
       `https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_VESTE_AI}`,
       {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`
+          'Authorization': `Bearer ${apiKeyToUse}`
         },
         body: JSON.stringify(requestBody),
       },
