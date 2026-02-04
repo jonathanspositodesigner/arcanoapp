@@ -278,13 +278,14 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
   );
 };
 
-// Helper function to trim video using MediaRecorder
+// Helper function to trim video using MediaRecorder with frame-by-frame capture
 async function trimVideoFile(file: File, startTime: number, endTime: number): Promise<File> {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
     video.src = URL.createObjectURL(file);
     video.muted = true;
     video.playsInline = true;
+    video.preload = 'auto';
 
     video.onloadedmetadata = async () => {
       try {
@@ -334,28 +335,45 @@ async function trimVideoFile(file: File, startTime: number, endTime: number): Pr
           reject(e);
         };
 
-        // Seek to start time
-        video.currentTime = startTime;
-        
-        await new Promise<void>((r) => {
-          video.onseeked = () => r();
-        });
+        // Frame-by-frame capture configuration
+        const fps = 30;
+        const targetDuration = endTime - startTime;
+        const totalFrames = Math.ceil(targetDuration * fps);
+        let frameCount = 0;
+        let isCapturing = true;
 
         // Start recording
-        recorder.start(100); // Collect data every 100ms
-        await video.play();
+        recorder.start(100);
 
-        // Render frames to canvas
-        const renderFrame = () => {
-          if (video.currentTime >= endTime || video.paused || video.ended) {
-            video.pause();
+        // Function to capture next frame
+        const captureNextFrame = () => {
+          if (!isCapturing || frameCount >= totalFrames) {
+            isCapturing = false;
             recorder.stop();
             return;
           }
-          ctx.drawImage(video, 0, 0);
-          requestAnimationFrame(renderFrame);
+
+          // Calculate exact time for this frame
+          const frameTime = startTime + (frameCount / fps);
+          video.currentTime = frameTime;
         };
-        renderFrame();
+
+        // Handle seeked event - draw frame and continue
+        video.onseeked = () => {
+          if (!isCapturing) return;
+          
+          // Draw current frame to canvas
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          frameCount++;
+          
+          // Small delay to ensure frame is captured by MediaRecorder
+          setTimeout(() => {
+            captureNextFrame();
+          }, 1000 / fps);
+        };
+
+        // Start frame-by-frame capture
+        captureNextFrame();
 
       } catch (error) {
         URL.revokeObjectURL(video.src);
