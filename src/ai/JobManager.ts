@@ -22,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 // ==================== TYPES ====================
 
 export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler';
-export type JobStatus = 'queued' | 'starting' | 'running' | 'completed' | 'failed' | 'cancelled';
+export type JobStatus = 'pending' | 'queued' | 'starting' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface JobResult {
   success: boolean;
@@ -179,7 +179,7 @@ export async function createJob(
     const insertData = {
       session_id: sessionId,
       user_id: userId,
-      status: 'queued' as const,
+      status: 'pending' as const,  // Estado neutro - edge function decide o real
       ...payload,
     };
     
@@ -278,7 +278,7 @@ export async function startJob(
 }
 
 /**
- * Marca um job como falho no banco
+ * Marca um job como falho via QueueManager /finish para garantir reembolso
  */
 async function markJobFailed(
   tableName: string,
@@ -286,18 +286,53 @@ async function markJobFailed(
   errorMessage: string
 ): Promise<void> {
   try {
-    await supabase
-      .from(tableName as any)
-      .update({
-        status: 'failed' as const,
-        error_message: errorMessage,
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', jobId);
+    // Chamar QueueManager /finish para garantir reembolso idempotente
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          table: tableName,
+          jobId: jobId,
+          status: 'failed',
+          errorMessage: errorMessage,
+        }),
+      }
+    );
     
-    console.log(`[JobManager] Job ${jobId} marked as failed:`, errorMessage);
+    if (!response.ok) {
+      console.error('[JobManager] markJobFailed via QueueManager failed:', response.status);
+      // Fallback: update direto (sem reembolso, mas pelo menos marca como failed)
+      await supabase
+        .from(tableName as any)
+        .update({
+          status: 'failed' as const,
+          error_message: errorMessage,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', jobId);
+    } else {
+      console.log(`[JobManager] Job ${jobId} marked as failed via QueueManager (reembolso garantido)`);
+    }
   } catch (error) {
-    console.error('[JobManager] Failed to mark job as failed:', error);
+    console.error('[JobManager] markJobFailed exception:', error);
+    // Fallback em caso de erro de rede
+    try {
+      await supabase
+        .from(tableName as any)
+        .update({
+          status: 'failed' as const,
+          error_message: errorMessage,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', jobId);
+    } catch (fallbackError) {
+      console.error('[JobManager] Fallback update also failed:', fallbackError);
+    }
   }
 }
 
