@@ -1,5 +1,6 @@
-// Edge Functions must use Deno.serve() for Supabase runtime compatibility
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // API Configuration
 const RUNNINGHUB_API_KEY = (
@@ -146,7 +147,7 @@ async function checkRateLimit(
   }
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -158,17 +159,18 @@ Deno.serve(async (req) => {
     
     console.log(`[PoseChanger] Endpoint called: ${path}, IP: ${clientIP}`);
 
-    // Apply rate limiting - for /run we need to read body first to get jobId
-    if (path === 'upload') {
+    // Apply rate limiting
+    if (path === 'upload' || path === 'run') {
+      const rateConfig = path === 'upload' ? RATE_LIMIT_UPLOAD : RATE_LIMIT_RUN;
       const rateLimitResult = await checkRateLimit(
         clientIP, 
-        `runninghub-pose-changer/upload`,
-        RATE_LIMIT_UPLOAD.maxRequests,
-        RATE_LIMIT_UPLOAD.windowSeconds
+        `runninghub-pose-changer/${path}`,
+        rateConfig.maxRequests,
+        rateConfig.windowSeconds
       );
       
       if (!rateLimitResult.allowed) {
-        console.warn(`[RateLimit] IP ${clientIP} exceeded limit for upload`);
+        console.warn(`[RateLimit] IP ${clientIP} exceeded limit for ${path}`);
         return new Response(JSON.stringify({ 
           error: 'Too many requests. Please wait before trying again.',
           code: 'RATE_LIMIT_EXCEEDED',
@@ -178,6 +180,9 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' },
         });
       }
+    }
+
+    if (path === 'upload') {
       return await handleUpload(req);
     } else if (path === 'run') {
       return await handleRun(req);
@@ -456,16 +461,6 @@ async function handleRun(req: Request) {
 
   if (creditError) {
     console.error('[PoseChanger] Credit consumption error:', creditError);
-    // CRITICAL: Mark job as failed to prevent orphan
-    await supabase
-      .from('pose_changer_jobs')
-      .update({ 
-        status: 'failed', 
-        error_message: `CREDIT_ERROR: ${creditError.message}`,
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
-    
     return new Response(JSON.stringify({ 
       error: 'Erro ao processar créditos',
       code: 'CREDIT_ERROR',
@@ -479,16 +474,6 @@ async function handleRun(req: Request) {
   if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
     const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
     console.log('[PoseChanger] Insufficient credits:', errorMsg);
-    // CRITICAL: Mark job as failed to prevent orphan
-    await supabase
-      .from('pose_changer_jobs')
-      .update({ 
-        status: 'failed', 
-        error_message: `INSUFFICIENT_CREDITS: ${errorMsg}`,
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
-    
     return new Response(JSON.stringify({ 
       error: errorMsg,
       code: 'INSUFFICIENT_CREDITS',

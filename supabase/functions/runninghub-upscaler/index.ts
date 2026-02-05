@@ -1,5 +1,6 @@
-// Edge Functions must use Deno.serve() for Supabase runtime compatibility
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // API Configuration
 const RUNNINGHUB_API_KEY = (
@@ -37,25 +38,6 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
-
-// ========== FAILSAFE: Mark job as failed ==========
-async function markJobFailed(jobId: string, errorCode: string, errorMessage: string): Promise<void> {
-  if (!jobId) return;
-  
-  try {
-    console.log(`[RunningHub] Marking job ${jobId} as FAILED: ${errorCode} - ${errorMessage}`);
-    await supabase
-      .from('upscaler_jobs')
-      .update({ 
-        status: 'failed', 
-        error_message: `${errorCode}: ${errorMessage}`.slice(0, 500),
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
-  } catch (e) {
-    console.error(`[RunningHub] Failed to mark job ${jobId} as failed:`, e);
-  }
-}
 
 // ========== SAFE JSON PARSING HELPERS ==========
 
@@ -171,7 +153,7 @@ async function checkRateLimit(
   }
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -183,30 +165,37 @@ Deno.serve(async (req) => {
     
     console.log(`[RunningHub] Endpoint called: ${path}, IP: ${clientIP}`);
 
-    if (path === 'upload') {
-      // Rate limit for upload (no jobId to mark failed)
+    // Apply rate limiting for upload and run endpoints
+    if (path === 'upload' || path === 'run') {
+      const rateConfig = path === 'upload' ? RATE_LIMIT_UPLOAD : RATE_LIMIT_RUN;
       const rateLimitResult = await checkRateLimit(
         clientIP, 
-        `runninghub-upscaler/upload`,
-        RATE_LIMIT_UPLOAD.maxRequests,
-        RATE_LIMIT_UPLOAD.windowSeconds
+        `runninghub-upscaler/${path}`,
+        rateConfig.maxRequests,
+        rateConfig.windowSeconds
       );
       
       if (!rateLimitResult.allowed) {
-        console.warn(`[RateLimit] IP ${clientIP} exceeded limit for upload: ${rateLimitResult.currentCount} requests`);
+        console.warn(`[RateLimit] IP ${clientIP} exceeded limit for ${path}: ${rateLimitResult.currentCount} requests`);
         return new Response(JSON.stringify({ 
           error: 'Too many requests. Please wait before trying again.',
           code: 'RATE_LIMIT_EXCEEDED',
           retryAfter: rateLimitResult.resetAt
         }), {
           status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' },
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': '60'
+          },
         });
       }
+    }
+
+    if (path === 'upload') {
       return await handleUpload(req);
     } else if (path === 'run') {
-      // For /run, we need to read JSON first to get jobId, then apply rate limit
-      return await handleRun(req, clientIP);
+      return await handleRun(req);
     } else if (path === 'queue-status') {
       return await handleQueueStatus(req);
     } else {
@@ -302,48 +291,8 @@ async function handleUpload(req: Request) {
 }
 
 // Run the workflow with webhook callback
-async function handleRun(req: Request, clientIP: string) {
-  // Parse JSON first to extract jobId for failsafe
-  let body: any;
-  let jobId: string | null = null;
-  
-  try {
-    body = await req.json();
-    jobId = body.jobId || null;
-  } catch (e) {
-    return new Response(JSON.stringify({ 
-      error: 'Invalid JSON body',
-      code: 'INVALID_JSON'
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  // Now apply rate limit - if denied, mark job as failed
-  const rateLimitResult = await checkRateLimit(
-    clientIP, 
-    `runninghub-upscaler/run`,
-    RATE_LIMIT_RUN.maxRequests,
-    RATE_LIMIT_RUN.windowSeconds
-  );
-  
-  if (!rateLimitResult.allowed) {
-    console.warn(`[RateLimit] IP ${clientIP} exceeded limit for run: ${rateLimitResult.currentCount} requests`);
-    // CRITICAL: Mark job as failed to prevent orphan
-    await markJobFailed(jobId!, 'RATE_LIMIT_EXCEEDED', 'Too many requests');
-    return new Response(JSON.stringify({ 
-      error: 'Too many requests. Please wait before trying again.',
-      code: 'RATE_LIMIT_EXCEEDED',
-      retryAfter: rateLimitResult.resetAt
-    }), {
-      status: 429,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' },
-    });
-  }
-
+async function handleRun(req: Request) {
   if (!RUNNINGHUB_API_KEY) {
-    await markJobFailed(jobId!, 'MISSING_API_KEY', 'API key not configured');
     return new Response(JSON.stringify({ 
       error: 'API key not configured',
       code: 'MISSING_API_KEY',
@@ -355,6 +304,7 @@ async function handleRun(req: Request, clientIP: string) {
   }
 
   const { 
+    jobId,
     imageUrl,
     fileName,
     detailDenoise,
@@ -363,10 +313,10 @@ async function handleRun(req: Request, clientIP: string) {
     version,
     framingMode,
     userId,
-    creditCost,
-    category,
-    editingLevel
-  } = body;
+     creditCost,
+     category,
+     editingLevel
+  } = await req.json();
   
   // ========== INPUT VALIDATION ==========
   if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
@@ -380,7 +330,6 @@ async function handleRun(req: Request, clientIP: string) {
   }
 
   if (!imageUrl && !fileName) {
-    await markJobFailed(jobId, 'MISSING_PARAMS', 'imageUrl or fileName is required');
     return new Response(JSON.stringify({ 
       error: 'imageUrl or fileName is required', 
       code: 'MISSING_PARAMS' 
@@ -404,7 +353,6 @@ async function handleRun(req: Request, clientIP: string) {
       
       if (!isAllowed) {
         console.warn(`[RunningHub] Rejected image URL from untrusted domain: ${urlObj.hostname}`);
-        await markJobFailed(jobId, 'INVALID_IMAGE_SOURCE', 'Image URL must be from Supabase storage');
         return new Response(JSON.stringify({ 
           error: 'Image URL must be from Supabase storage', 
           code: 'INVALID_IMAGE_SOURCE' 
@@ -414,7 +362,6 @@ async function handleRun(req: Request, clientIP: string) {
         });
       }
     } catch (e) {
-      await markJobFailed(jobId, 'INVALID_IMAGE_URL', 'Invalid image URL format');
       return new Response(JSON.stringify({ 
         error: 'Invalid image URL format', 
         code: 'INVALID_IMAGE_URL' 
@@ -427,7 +374,6 @@ async function handleRun(req: Request, clientIP: string) {
 
   // Validate creditCost
   if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
-    await markJobFailed(jobId, 'INVALID_CREDIT_COST', 'Invalid credit cost (must be 1-500)');
     return new Response(JSON.stringify({ 
       error: 'Invalid credit cost (must be 1-500)', 
       code: 'INVALID_CREDIT_COST'
@@ -440,7 +386,6 @@ async function handleRun(req: Request, clientIP: string) {
   // Validate userId
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
-    await markJobFailed(jobId, 'INVALID_USER_ID', 'Valid userId is required');
     return new Response(JSON.stringify({ 
       error: 'Valid userId is required', 
       code: 'INVALID_USER_ID'
@@ -452,7 +397,6 @@ async function handleRun(req: Request, clientIP: string) {
 
   // Validate resolution
   if (resolution !== undefined && (typeof resolution !== 'number' || resolution < 512 || resolution > 8192)) {
-    await markJobFailed(jobId, 'INVALID_RESOLUTION', 'Invalid resolution (must be 512-8192)');
     return new Response(JSON.stringify({ 
       error: 'Invalid resolution (must be 512-8192)', 
       code: 'INVALID_RESOLUTION'
@@ -464,7 +408,6 @@ async function handleRun(req: Request, clientIP: string) {
 
   // Validate prompt length
   if (prompt !== undefined && (typeof prompt !== 'string' || prompt.length > 2000)) {
-    await markJobFailed(jobId, 'INVALID_PROMPT', 'Prompt too long (max 2000 chars)');
     return new Response(JSON.stringify({ 
       error: 'Prompt too long (max 2000 chars)', 
       code: 'INVALID_PROMPT'
@@ -476,7 +419,6 @@ async function handleRun(req: Request, clientIP: string) {
 
   // Validate version
   if (version !== undefined && !['standard', 'pro'].includes(version)) {
-    await markJobFailed(jobId, 'INVALID_VERSION', 'Invalid version (must be standard or pro)');
     return new Response(JSON.stringify({ 
       error: 'Invalid version (must be standard or pro)', 
       code: 'INVALID_VERSION'
@@ -488,7 +430,6 @@ async function handleRun(req: Request, clientIP: string) {
 
    // Validate framingMode (only required for non-special workflows)
    if (framingMode !== undefined && framingMode !== null && !['longe', 'perto'].includes(framingMode)) {
-    await markJobFailed(jobId, 'INVALID_FRAMING_MODE', 'Invalid framing mode');
     return new Response(JSON.stringify({ 
       error: 'Invalid framing mode', 
       code: 'INVALID_FRAMING_MODE'
@@ -501,7 +442,6 @@ async function handleRun(req: Request, clientIP: string) {
    // Validate category if provided
    const validCategories = ['pessoas_perto', 'pessoas_longe', 'comida', 'fotoAntiga', 'logo', 'render3d', 'paisagem'];
    if (category !== undefined && !validCategories.includes(category)) {
-     await markJobFailed(jobId, 'INVALID_CATEGORY', 'Invalid category');
      return new Response(JSON.stringify({ 
        error: 'Invalid category', 
        code: 'INVALID_CATEGORY'
@@ -513,7 +453,6 @@ async function handleRun(req: Request, clientIP: string) {
 
    // Validate editingLevel (0-1 range, optional)
    if (editingLevel !== undefined && (typeof editingLevel !== 'number' || editingLevel < 0 || editingLevel > 1)) {
-     await markJobFailed(jobId, 'INVALID_EDITING_LEVEL', 'Invalid editing level (must be 0-1)');
      return new Response(JSON.stringify({ 
        error: 'Invalid editing level (must be 0-1)', 
        code: 'INVALID_EDITING_LEVEL'
@@ -564,7 +503,14 @@ async function handleRun(req: Request, clientIP: string) {
       console.error('[RunningHub] Image transfer error:', error);
       
       // Mark job as failed
-      await markJobFailed(jobId, 'IMAGE_TRANSFER_ERROR', errorMsg);
+      await supabase
+        .from('upscaler_jobs')
+        .update({ 
+          status: 'failed', 
+          error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
       
       return new Response(JSON.stringify({ 
         error: errorMsg, 
@@ -589,7 +535,6 @@ async function handleRun(req: Request, clientIP: string) {
 
   if (creditError) {
     console.error('[RunningHub] Credit consumption error:', creditError);
-    await markJobFailed(jobId, 'CREDIT_ERROR', creditError.message);
     return new Response(JSON.stringify({ 
       error: 'Erro ao processar créditos',
       code: 'CREDIT_ERROR',
@@ -603,7 +548,6 @@ async function handleRun(req: Request, clientIP: string) {
   if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
     const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
     console.log('[RunningHub] Insufficient credits:', errorMsg);
-    await markJobFailed(jobId, 'INSUFFICIENT_CREDITS', errorMsg);
     return new Response(JSON.stringify({ 
       error: errorMsg,
       code: 'INSUFFICIENT_CREDITS',
@@ -615,12 +559,6 @@ async function handleRun(req: Request, clientIP: string) {
   }
 
   console.log(`[RunningHub] Credits consumed successfully. New balance: ${creditResult[0].new_balance}`);
-
-  // IMMEDIATELY update job with user_credit_cost to prevent auto-heal from cancelling
-  await supabase
-    .from('upscaler_jobs')
-    .update({ user_credit_cost: creditCost })
-    .eq('id', jobId);
 
    // Select WebApp ID based on category, version and framing mode
    const isLongeMode = framingMode === 'longe' && category?.startsWith('pessoas');
@@ -881,7 +819,14 @@ async function handleRun(req: Request, clientIP: string) {
     }
 
     // Failed to start
-    await markJobFailed(jobId, 'RUN_FAILED', data.msg || 'Failed to start workflow');
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        status: 'failed', 
+        error_message: data.msg || 'Failed to start workflow',
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', jobId);
 
     return new Response(JSON.stringify({
       error: data.msg || 'Failed to start workflow',
@@ -896,7 +841,14 @@ async function handleRun(req: Request, clientIP: string) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('[RunningHub] Run error:', error);
 
-    await markJobFailed(jobId, 'RUN_EXCEPTION', errorMessage);
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        status: 'failed', 
+        error_message: errorMessage.slice(0, 300),
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', jobId);
 
     return new Response(JSON.stringify({ 
       error: errorMessage, 

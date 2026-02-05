@@ -1,21 +1,28 @@
-import React, { useState, useRef } from 'react';
-import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, Shirt } from 'lucide-react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
-import { useAIToolProcessor } from '@/hooks/useAIToolProcessor';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
+import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
+ import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 import ClothingLibraryModal from '@/components/veste-ai/ClothingLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
-import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+ import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
+
+type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
 const CREDIT_COST = 60;
 
-const QUEUE_MESSAGES = [
+// Queue messages for better UX
+const queueMessages = [
   { emoji: '👕', text: 'Preparando sua transformação...' },
   { emoji: '✨', text: 'Vestindo nova roupa...' },
   { emoji: '🚀', text: 'Quase lá, continue esperando!' },
@@ -24,50 +31,137 @@ const QUEUE_MESSAGES = [
 
 const VesteAITool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
+  const { user } = usePremiumStatus();
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
 
-  // Use unified processor hook
-  const {
-    status,
-    progress,
-    queuePosition,
-    outputUrl,
-    isProcessing,
-    currentQueueMessage,
-    showNoCreditsModal,
-    setShowNoCreditsModal,
-    noCreditsReason,
-    showActiveJobModal,
-    setShowActiveJobModal,
-    activeToolName,
-    activeJobStatus,
-    activeJobId,
-    activeTable,
-    activeStartedAt,
-    startJob,
-    cancelJob,
-    reset,
-    uploadToStorage,
-    setProgress,
-  } = useAIToolProcessor({
-    toolName: 'veste-ai',
-    tableName: 'veste_ai_jobs',
-    edgeFunctionPath: 'runninghub-veste-ai/run',
-    creditCost: CREDIT_COST,
-    storagePath: 'veste-ai',
-    successMessage: 'Look aplicado com sucesso!',
-    queueMessages: QUEUE_MESSAGES,
-  });
-
-  // UI-specific states
+  // Image states
   const [personImage, setPersonImage] = useState<string | null>(null);
   const [personFile, setPersonFile] = useState<File | null>(null);
   const [clothingImage, setClothingImage] = useState<string | null>(null);
   const [clothingFile, setClothingFile] = useState<File | null>(null);
+  const [outputImage, setOutputImage] = useState<string | null>(null);
+
+  // UI states
   const [showClothingLibrary, setShowClothingLibrary] = useState(false);
+  const [status, setStatus] = useState<ProcessingStatus>('idle');
+  const [progress, setProgress] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
+
+  // Queue states
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [queuePosition, setQueuePosition] = useState(0);
+  const [queueMessageIndex, setQueueMessageIndex] = useState(0);
+
+  // Session management
+  const sessionIdRef = useRef<string>('');
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  
+  // CRITICAL: Synchronous flag to prevent duplicate API calls
+  const processingRef = useRef(false);
+  
+  // Ref for zoom/pan control
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
 
+  // No credits modal
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
+  const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
+ 
+   // Active job block modal
+   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
+   const [activeToolName, setActiveToolName] = useState<string>('');
+   const { checkActiveJob } = useActiveJobCheck();
+
   const canProcess = personImage && clothingImage && status === 'idle';
+  const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
+
+  // Initialize session ID (fresh each visit - no recovery)
+  useEffect(() => {
+    sessionIdRef.current = crypto.randomUUID();
+  }, []);
+
+  // Cleanup queued jobs when user leaves page
+  useQueueSessionCleanup(sessionIdRef.current, status);
+
+  // Subscribe to realtime updates for a job
+  const subscribeToJobUpdates = useCallback((jId: string) => {
+    // Cleanup previous subscription
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+    }
+
+    const channel = supabase
+      .channel(`veste-job-${jId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'veste_ai_jobs',
+          filter: `id=eq.${jId}`
+        },
+        (payload) => {
+          const newData = payload.new as any;
+          console.log('[VesteAI] Job update:', newData);
+
+          if (newData.status === 'completed' && newData.output_url) {
+            setOutputImage(newData.output_url);
+            setStatus('completed');
+            setProgress(100);
+            refetchCredits();
+            processingRef.current = false;
+            toast.success('Look aplicado com sucesso!');
+          } else if (newData.status === 'failed') {
+            setStatus('error');
+            processingRef.current = false;
+            toast.error(newData.error_message || 'Erro no processamento');
+          } else if (newData.status === 'running') {
+            setStatus('processing');
+            setQueuePosition(0);
+          } else if (newData.status === 'queued') {
+            setStatus('waiting');
+            setQueuePosition(newData.position || 0);
+          }
+        }
+      )
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+  }, [refetchCredits]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+      }
+    };
+  }, []);
+
+  // Rotate queue messages
+  useEffect(() => {
+    if (!isProcessing) return;
+    
+    const interval = setInterval(() => {
+      setQueueMessageIndex(prev => (prev + 1) % queueMessages.length);
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [isProcessing]);
+
+  // Progress simulation for processing state
+  useEffect(() => {
+    if (status !== 'processing') return;
+    
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) return prev;
+        return prev + Math.random() * 5;
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [status]);
+
 
   // Handle person image upload
   const handlePersonImageChange = (dataUrl: string | null, file?: File) => {
@@ -75,15 +169,17 @@ const VesteAITool: React.FC = () => {
     setPersonFile(file || null);
   };
 
-  // Handle clothing image selection
+  // Handle clothing image selection (from library or upload)
   const handleClothingImageChange = async (imageUrl: string | null, file?: File) => {
     setClothingImage(imageUrl);
-
+    
     if (imageUrl && !file) {
+      // Image from library - fetch as blob
       try {
         const response = await fetch(imageUrl);
         const blob = await response.blob();
-        setClothingFile(new File([blob], 'clothing.png', { type: blob.type }));
+        const fetchedFile = new File([blob], 'clothing.png', { type: blob.type });
+        setClothingFile(fetchedFile);
       } catch (error) {
         console.error('[VesteAI] Error fetching clothing image:', error);
       }
@@ -92,78 +188,250 @@ const VesteAITool: React.FC = () => {
     }
   };
 
+  // Compress image before upload using centralized AI optimizer (1536px limit)
+  const compressImage = async (file: File): Promise<Blob> => {
+    const result = await optimizeForAI(file);
+    return result.file;
+  };
+
+  // Upload image to Supabase storage
+  const uploadToStorage = async (file: File | Blob, prefix: string): Promise<string> => {
+    if (!user?.id) {
+      throw new Error('User not authenticated');
+    }
+    
+    const timestamp = Date.now();
+    const fileName = `${prefix}-${timestamp}.webp`;
+    const filePath = `veste-ai/${user.id}/${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('artes-cloudinary')
+      .upload(filePath, file, {
+        contentType: 'image/webp',
+        upsert: true,
+      });
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+      .from('artes-cloudinary')
+      .getPublicUrl(filePath);
+
+    return urlData.publicUrl;
+  };
+
   const handleProcess = async () => {
+    // CRITICAL: Prevent duplicate calls with synchronous check
+    if (processingRef.current) {
+      console.log('[VesteAI] Already processing, ignoring duplicate call');
+      return;
+    }
+    processingRef.current = true;
+
     if (!personImage || !clothingImage || !personFile) {
       toast.error('Por favor, selecione ambas as imagens');
+      processingRef.current = false;
       return;
     }
 
-    try {
-      // Compress and upload images
-      setProgress(10);
-      const compressedPerson = await optimizeForAI(personFile);
-      const personUrl = await uploadToStorage(compressedPerson.file, 'person');
+    if (!user?.id) {
+      setNoCreditsReason('not_logged');
+      setShowNoCreditsModal(true);
+      processingRef.current = false;
+      return;
+    }
+ 
+     // Check if user has active job in any tool
+     const { hasActiveJob, activeTool } = await checkActiveJob(user.id);
+     if (hasActiveJob && activeTool) {
+       setActiveToolName(activeTool);
+       setShowActiveJobModal(true);
+       processingRef.current = false;
+       return;
+     }
 
+    if (credits < CREDIT_COST) {
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
+      processingRef.current = false;
+      return;
+    }
+
+    setStatus('uploading');
+    setProgress(0);
+    setOutputImage(null);
+
+    try {
+      // Step 1: Compress and upload person image FIRST (before creating job)
+      setProgress(10);
+      console.log('[VesteAI] Compressing person image...');
+      const compressedPerson = await compressImage(personFile);
+      const personUrl = await uploadToStorage(compressedPerson, 'person');
+      console.log('[VesteAI] Person image uploaded:', personUrl);
+
+      // Step 2: Compress and upload clothing image
       setProgress(30);
       let clothingUrl: string;
+      
       if (clothingFile) {
-        const compressedClothing = await optimizeForAI(clothingFile);
-        clothingUrl = await uploadToStorage(compressedClothing.file, 'clothing');
+        console.log('[VesteAI] Compressing clothing image...');
+        const compressedClothing = await compressImage(clothingFile);
+        clothingUrl = await uploadToStorage(compressedClothing, 'clothing');
       } else {
+        // Already a URL from library
         clothingUrl = clothingImage;
       }
+      console.log('[VesteAI] Clothing image uploaded:', clothingUrl);
 
-      // Start the job
-      await startJob({
-        edgeFunctionPayload: {
-          personImageUrl: personUrl,
-          clothingImageUrl: clothingUrl,
-        },
-        jobInsertData: {
+      // Step 3: Create job in database ONLY AFTER images are uploaded
+      // This prevents orphaned jobs if user closes page during upload
+      setProgress(40);
+      const { data: job, error: jobError } = await supabase
+        .from('veste_ai_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'queued',
           person_file_name: personUrl.split('/').pop() || 'person.webp',
           clothing_file_name: clothingUrl.split('/').pop() || 'clothing.webp',
-        },
-      });
+        })
+        .select()
+        .single();
+
+      if (jobError || !job) {
+        throw new Error('Failed to create job');
+      }
+
+      setJobId(job.id);
+      console.log('[VesteAI] Job created with images:', job.id);
+
+      // Step 4: Call edge function
+      setProgress(50);
+      setStatus('processing');
+      
+      const { data: runResult, error: runError } = await supabase.functions.invoke(
+        'runninghub-veste-ai/run',
+        {
+          body: {
+            jobId: job.id,
+            personImageUrl: personUrl,
+            clothingImageUrl: clothingUrl,
+            userId: user.id,
+            creditCost: CREDIT_COST,
+          },
+        }
+      );
+
+      if (runError) {
+        // Try to extract detailed error from the response
+        let errorMessage = runError.message || 'Erro desconhecido';
+        if (errorMessage.includes('non-2xx')) {
+          errorMessage = 'Falha na comunicação com o servidor. Tente novamente.';
+        }
+        throw new Error(errorMessage);
+      }
+
+      console.log('[VesteAI] Run result:', runResult);
+
+      if (runResult.queued) {
+        setStatus('waiting');
+        setQueuePosition(runResult.position || 1);
+      } else if (runResult.success) {
+        setStatus('processing');
+      } else if (runResult.code === 'INSUFFICIENT_CREDITS') {
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        setStatus('idle');
+        return;
+      } else if (runResult.code === 'IMAGE_TRANSFER_ERROR') {
+        // Specific error for RunningHub communication issues
+        const detail = runResult.error || 'Falha ao enviar imagens';
+        throw new Error(`Erro no provedor: ${detail.slice(0, 100)}`);
+      } else if (runResult.code === 'RATE_LIMIT_EXCEEDED') {
+        throw new Error('Muitas requisições. Aguarde 1 minuto e tente novamente.');
+      } else {
+        throw new Error(runResult.error || 'Erro desconhecido');
+      }
+
+      // Subscribe to job updates
+      subscribeToJobUpdates(job.id);
+      refetchCredits();
+
     } catch (error: any) {
       console.error('[VesteAI] Process error:', error);
+      setStatus('error');
       toast.error(error.message || 'Erro ao processar imagem');
+      processingRef.current = false;
+    }
+  };
+
+  const handleCancelQueue = async () => {
+    if (!jobId) return;
+
+    try {
+      await supabase
+        .from('veste_ai_jobs')
+        .update({ status: 'cancelled' })
+        .eq('id', jobId);
+
+      setStatus('idle');
+      setJobId(null);
+      setQueuePosition(0);
+      processingRef.current = false;
+      toast.info('Processamento cancelado');
+    } catch (error) {
+      console.error('[VesteAI] Cancel error:', error);
     }
   };
 
   const handleReset = () => {
-    reset();
+    processingRef.current = false;
     setPersonImage(null);
     setPersonFile(null);
     setClothingImage(null);
     setClothingFile(null);
+    setOutputImage(null);
+    setStatus('idle');
+    setProgress(0);
     setZoomLevel(1);
+    setJobId(null);
+    setQueuePosition(0);
   };
 
   const handleDownload = () => {
-    if (!outputUrl) return;
+    if (!outputImage) return;
+    
     const link = document.createElement('a');
-    link.href = outputUrl;
+    link.href = outputImage;
     link.download = `veste-ai-${Date.now()}.png`;
     link.target = '_blank';
     link.click();
     toast.success('Download iniciado!');
   };
 
+  const currentQueueMessage = queueMessages[queueMessageIndex];
+
   return (
     <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
       <ToolsHeader title="Veste AI" onBack={goBack} />
 
+      {/* Warning banner during processing */}
       {isProcessing && (
         <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-400" />
-          <span className="text-xs text-amber-200">Não feche esta página durante o processamento</span>
+          <span className="text-xs text-amber-200">
+            Não feche esta página durante o processamento
+          </span>
         </div>
       )}
 
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden">
+        {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 lg:h-full">
-          {/* Left Side - Inputs */}
+          
+          {/* Left Side - Inputs (2/7 on desktop ~28%) */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
+            {/* Person Image Upload */}
             <ImageUploadCard
               title="Sua Foto"
               image={personImage}
@@ -171,6 +439,7 @@ const VesteAITool: React.FC = () => {
               disabled={isProcessing}
             />
 
+            {/* Clothing Image Upload */}
             <ImageUploadCard
               title="Roupa de Referência"
               image={clothingImage}
@@ -181,6 +450,7 @@ const VesteAITool: React.FC = () => {
               disabled={isProcessing}
             />
 
+            {/* Action Button */}
             <Button
               size="sm"
               className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
@@ -200,176 +470,166 @@ const VesteAITool: React.FC = () => {
               ) : status === 'processing' ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                  {Math.round(progress)}%
+                  Processando...
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                  Trocar Roupa
-                  <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                    <Coins className="w-3.5 h-3.5" />
-                    {CREDIT_COST}
-                  </span>
+                  <Shirt className="w-3.5 h-3.5 mr-1.5" />
+                  Vestir ({CREDIT_COST} <Coins className="w-3 h-3 inline ml-0.5" />)
                 </>
               )}
             </Button>
 
+            {/* Cancel button when in queue */}
             {status === 'waiting' && (
               <Button
-                variant="outline"
                 size="sm"
-                className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/10"
-                onClick={cancelJob}
+                variant="outline"
+                className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs"
+                onClick={handleCancelQueue}
               >
                 <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                Sair da Fila
+                Cancelar
               </Button>
             )}
+
           </div>
 
-          {/* Right Side - Result Viewer */}
-          <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-            <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
-              <div className="px-3 py-2 border-b border-purple-500/20 flex items-center justify-between flex-shrink-0">
-                <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
-                  Resultado
-                </h3>
-
-                {outputUrl && (
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
-                      onClick={() => transformRef.current?.zoomOut(0.5)}
-                    >
-                      <ZoomOut className="w-3.5 h-3.5" />
-                    </Button>
-                    <span className="text-[10px] text-purple-300 w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
-                      onClick={() => transformRef.current?.zoomIn(0.5)}
-                    >
-                      <ZoomIn className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              <div className="relative flex-1 min-h-0 flex items-center justify-center">
-                {outputUrl ? (
-                  <TransformWrapper
-                    ref={transformRef}
-                    key={outputUrl}
-                    initialScale={1}
-                    minScale={0.5}
-                    maxScale={4}
-                    wheel={{ step: 0.4 }}
-                    onTransformed={(_, state) => setZoomLevel(state.scale)}
-                  >
-                    <TransformComponent
-                      wrapperStyle={{ width: '100%', height: '100%' }}
-                      contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      <img src={outputUrl} alt="Resultado" className="w-full h-full object-contain" draggable={false} />
-                    </TransformComponent>
-                  </TransformWrapper>
-                ) : isProcessing ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin" />
-                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-purple-400" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-white font-medium flex items-center gap-2">
-                        <span>{currentQueueMessage.emoji}</span>
-                        <span>{currentQueueMessage.text}</span>
-                      </p>
-                      {status === 'waiting' && queuePosition > 0 && (
-                        <p className="text-xs text-purple-300 mt-1">Posição na fila: #{queuePosition}</p>
-                      )}
-                      {status === 'processing' && (
-                        <p className="text-xs text-purple-300 mt-0.5">{Math.round(progress)}% concluído</p>
-                      )}
-                    </div>
-                    <div className="w-36 h-1.5 bg-purple-900/50 rounded-full overflow-hidden">
-                      <div
+          {/* Right Side - Result Viewer (5/7 on desktop ~72%) */}
+          <div className="lg:col-span-5 flex flex-col gap-2 min-h-[300px] lg:min-h-0 lg:h-full">
+            <Card className="flex-1 relative bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden flex items-center justify-center">
+              {/* Processing overlay */}
+              {isProcessing && (
+                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
+                  <div className="w-16 h-16 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin mb-4" />
+                  <p className="text-white text-lg font-medium mb-2">
+                    {currentQueueMessage.emoji} {currentQueueMessage.text}
+                  </p>
+                  {status === 'waiting' && queuePosition > 0 && (
+                    <p className="text-purple-300 text-sm">
+                      Posição na fila: #{queuePosition}
+                    </p>
+                  )}
+                  {status === 'processing' && (
+                    <div className="w-48 h-2 bg-purple-500/20 rounded-full overflow-hidden mt-2">
+                      <div 
                         className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                  </div>
-                ) : status === 'error' ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-red-500/10 border-2 border-dashed border-red-500/30 flex items-center justify-center">
-                      <XCircle className="w-8 h-8 text-red-500/60" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-red-300">Erro no processamento</p>
-                      <Button variant="link" size="sm" className="text-xs text-purple-400" onClick={handleReset}>
-                        Tentar novamente
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-purple-500/10 border-2 border-dashed border-purple-500/30 flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-purple-500/40" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-purple-300">O resultado aparecerá aqui</p>
-                      <p className="text-xs text-purple-400 mt-0.5">Envie as imagens e clique em "Trocar Roupa"</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
-              {outputUrl && status === 'completed' && (
-                <div className="absolute bottom-3 left-3 right-3 flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 h-8 text-xs bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20"
-                    onClick={handleReset}
+              {/* Result Image */}
+              {outputImage ? (
+                <TransformWrapper
+                  ref={transformRef}
+                  initialScale={1}
+                  minScale={0.5}
+                  maxScale={4}
+                  centerOnInit
+                  onTransformed={(_, state) => setZoomLevel(state.scale)}
+                >
+                  <TransformComponent
+                    wrapperClass="!w-full !h-full"
+                    contentClass="!w-full !h-full flex items-center justify-center"
                   >
-                    <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-                    Nova
+                    <img
+                      src={outputImage}
+                      alt="Resultado"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </TransformComponent>
+                </TransformWrapper>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-purple-400/50 p-8">
+                  <Shirt className="w-16 h-16 mb-4" />
+                  <p className="text-center text-sm">
+                    O resultado aparecerá aqui
+                  </p>
+                </div>
+              )}
+
+              {/* Zoom controls */}
+              {outputImage && !isProcessing && (
+                <div className="absolute bottom-3 right-3 flex gap-2">
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="w-8 h-8 bg-black/50 border-purple-500/30 text-white hover:bg-purple-500/20"
+                    onClick={() => transformRef.current?.zoomOut()}
+                  >
+                    <ZoomOut className="w-4 h-4" />
                   </Button>
                   <Button
-                    size="sm"
-                    className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white"
-                    onClick={handleDownload}
+                    size="icon"
+                    variant="outline"
+                    className="w-8 h-8 bg-black/50 border-purple-500/30 text-white hover:bg-purple-500/20"
+                    onClick={() => transformRef.current?.zoomIn()}
                   >
-                    <Download className="w-3.5 h-3.5 mr-1.5" />
-                    Baixar HD
+                    <ZoomIn className="w-4 h-4" />
                   </Button>
                 </div>
               )}
             </Card>
+
+            {/* Action buttons when completed */}
+            {status === 'completed' && outputImage && (
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white"
+                  onClick={handleReset}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Novo Look
+                </Button>
+                <Button
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white"
+                  onClick={handleDownload}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Baixar HD
+                </Button>
+              </div>
+            )}
+
+            {/* Error state */}
+            {status === 'error' && (
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white"
+                  onClick={handleReset}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Tentar Novamente
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Clothing Library Modal */}
       <ClothingLibraryModal
         isOpen={showClothingLibrary}
         onClose={() => setShowClothingLibrary(false)}
-        onSelectClothing={(url) => handleClothingImageChange(url)}
+        onSelectClothing={handleClothingImageChange}
       />
 
-      <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
-
-      <ActiveJobBlockModal
-        isOpen={showActiveJobModal}
-        onClose={() => setShowActiveJobModal(false)}
-        activeTool={activeToolName}
-        activeStatus={activeJobStatus}
-        activeJobId={activeJobId}
-        activeTable={activeTable}
-        activeStartedAt={activeStartedAt}
+      {/* No Credits Modal */}
+      <NoCreditsModal
+        isOpen={showNoCreditsModal}
+        onClose={() => setShowNoCreditsModal(false)}
+        reason={noCreditsReason}
       />
+       
+       {/* Active Job Block Modal */}
+       <ActiveJobBlockModal
+         isOpen={showActiveJobModal}
+         onClose={() => setShowActiveJobModal(false)}
+         activeTool={activeToolName}
+       />
     </div>
   );
 };

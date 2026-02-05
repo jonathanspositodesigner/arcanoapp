@@ -1,4 +1,4 @@
- import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 /**
  * RUNNINGHUB QUEUE MANAGER - MULTI-API ARCHITECTURE
@@ -119,10 +119,7 @@ type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// Timeout para jobs "running" (em minutos) - alinhado com frontend
-const STALE_RUNNING_THRESHOLD_MINUTES = 10;
-
-Deno.serve(async (req) => {
+ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -144,14 +141,8 @@ Deno.serve(async (req) => {
         return await handleEnqueue(req);
       case 'cancel-session':
         return await handleCancelSession(req);
-      case 'cancel-job':
-        return await handleCancelJob(req);
-      case 'check-user-active':
-        return await handleCheckUserActive(req);
-      case 'reconcile-task':
-        return await handleReconcileTask(req);
-      case 'force-cancel-job':
-        return await handleForceCancelJob(req);
+       case 'check-user-active':
+         return await handleCheckUserActive(req);
       default:
         return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
           status: 400,
@@ -313,14 +304,8 @@ async function getTotalQueuedCount(): Promise<number> {
 
 /**
  * /check - Verifica disponibilidade e retorna conta com slot livre
- * AGORA COM WATCHDOG: reconcilia jobs running travados antes de verificar slots
  */
 async function handleCheck(req: Request): Promise<Response> {
-  // Rodar watchdog de forma assíncrona (não bloqueia a resposta)
-  reconcileStaleRunningJobs().catch(err => {
-    console.error('[QueueManager] Watchdog error in /check:', err);
-  });
-  
   const accounts = getAvailableApiAccounts();
   const totalMaxSlots = accounts.reduce((sum, acc) => sum + acc.maxSlots, 0);
   const globalRunning = await getGlobalRunningCount();
@@ -785,20 +770,9 @@ async function updateAllQueuePositions(): Promise<void> {
   
   console.log(`[QueueManager] Updated GLOBAL positions for ${allQueuedJobs.length} queued jobs`);
 }
-
-/**
- * ORPHAN JOB DETECTION THRESHOLDS (in milliseconds)
- * - ORPHAN_THRESHOLD_FAKE_QUEUED_MS: For jobs with waited_in_queue=false (never really queued)
- *   These are "ghost" jobs from client failures during upload/invoke - cancel aggressively
- * - ORPHAN_THRESHOLD_REAL_QUEUED_MS: For jobs with waited_in_queue=true (real queue)
- *   These may be legitimate waiting jobs - be more conservative
- */
-const ORPHAN_THRESHOLD_FAKE_QUEUED_MS = 20 * 1000; // 20 seconds for fake queued
-const ORPHAN_THRESHOLD_REAL_QUEUED_MS = 3 * 60 * 1000; // 3 minutes for real queued
-
+ 
  /**
   * /check-user-active - Verifica se o usuário tem algum job ativo em QUALQUER ferramenta
-  * AGORA COM AUTO-HEAL: cancela automaticamente jobs órfãos (queued sem task_id/started_at)
   */
  async function handleCheckUserActive(req: Request): Promise<Response> {
    try {
@@ -819,116 +793,33 @@ const ORPHAN_THRESHOLD_REAL_QUEUED_MS = 3 * 60 * 1000; // 3 minutes for real que
        'veste_ai_jobs': 'Veste AI',
      };
      
-      // Verificar em TODAS as tabelas de jobs
-      // STRATEGY: Check running jobs FIRST, then queued jobs (deterministic order)
-      // This prevents edge case where orphan is checked before real running job
-      
-      // PHASE 1: Check for RUNNING jobs first (real active jobs)
-      for (const table of JOB_TABLES) {
-        const { data, error } = await supabase
-          .from(table)
-          .select('id, status, created_at, started_at, task_id, position, waited_in_queue, user_credit_cost')
-          .eq('user_id', userId)
-          .eq('status', 'running')
-          .limit(1)
-          .maybeSingle();
-        
-        if (error) {
-          console.error(`[QueueManager] Error checking ${table} (running):`, error);
-          continue;
-        }
-        
-        if (data) {
-          // Real running job found - block user
-          console.log(`[QueueManager] User ${userId} has RUNNING job in ${table}: ${data.id}`);
-          return new Response(JSON.stringify({
-            hasActiveJob: true,
-            activeTool: toolNames[table],
-            activeTable: table,
-            activeJobId: data.id,
-            activeStatus: data.status,
-            createdAt: data.created_at,
-            startedAt: data.started_at,
-          }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-      }
-      
-      // PHASE 2: Check for QUEUED jobs (may be orphans or real queue)
-      for (const table of JOB_TABLES) {
-        const { data, error } = await supabase
-          .from(table)
-          .select('id, status, created_at, started_at, task_id, position, waited_in_queue, user_credit_cost')
-          .eq('user_id', userId)
-          .eq('status', 'queued')
-          .limit(1)
-          .maybeSingle();
-        
-        if (error) {
-          console.error(`[QueueManager] Error checking ${table} (queued):`, error);
-          continue;
-        }
-        
-        if (data) {
-          // CHECK FOR ORPHAN JOB (queued but never actually started)
-          // Criteria:
-          // 1. task_id IS NULL (never sent to RunningHub)
-          // 2. started_at IS NULL (never started processing)
-          // 3. position IS NULL (never assigned a queue position)
-          // 4. waited_in_queue = false (never properly queued)
-          // 5. user_credit_cost = 0 or NULL (credits not consumed yet)
-          // 6. created_at is older than threshold (not a just-created job)
-          const isOrphanCandidate = 
-            !data.task_id &&
-            !data.started_at &&
-            !data.position &&
-            !data.waited_in_queue;
-          
-          const createdAt = new Date(data.created_at).getTime();
-          const age = Date.now() - createdAt;
-          
-          // Credits weren't consumed (0, null, or undefined)
-          const creditsNotConsumed = !data.user_credit_cost || data.user_credit_cost === 0;
-          
-          // Use appropriate threshold based on whether it's a fake or real queued job
-          const thresholdMs = data.waited_in_queue 
-            ? ORPHAN_THRESHOLD_REAL_QUEUED_MS 
-            : ORPHAN_THRESHOLD_FAKE_QUEUED_MS;
-          const isStale = age > thresholdMs;
-          
-          if (isOrphanCandidate && isStale && creditsNotConsumed) {
-            // AUTO-HEAL: Cancel this orphan job
-            console.log(`[QueueManager] AUTO-HEALING orphan job ${data.id} in ${table} (age: ${Math.round(age/1000)}s, threshold: ${Math.round(thresholdMs/1000)}s)`);
-            
-            await supabase
-              .from(table)
-              .update({
-                status: 'cancelled',
-                error_message: 'Auto-clean: orphan queued job (client failed before enqueue/run)',
-                completed_at: new Date().toISOString(),
-              })
-              .eq('id', data.id);
-            
-            // Continue checking other tables (don't block)
-            continue;
-          }
-          
-          // Real queued job found
-          console.log(`[QueueManager] User ${userId} has QUEUED job in ${table}: ${data.id} (position: ${data.position})`);
-          return new Response(JSON.stringify({
-            hasActiveJob: true,
-            activeTool: toolNames[table],
-            activeTable: table,
-            activeJobId: data.id,
-            activeStatus: data.status,
-            createdAt: data.created_at,
-            startedAt: data.started_at,
-          }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-      }
+     // Verificar em TODAS as tabelas de jobs
+     for (const table of JOB_TABLES) {
+       const { data, error } = await supabase
+         .from(table)
+         .select('id, status')
+         .eq('user_id', userId)
+         .in('status', ['running', 'queued'])
+         .limit(1)
+         .maybeSingle();
+       
+       if (error) {
+         console.error(`[QueueManager] Error checking ${table}:`, error);
+         continue;
+       }
+       
+       if (data) {
+         console.log(`[QueueManager] User ${userId} has active job in ${table}`);
+         return new Response(JSON.stringify({
+           hasActiveJob: true,
+           activeTool: toolNames[table],
+           activeJobId: data.id,
+           activeStatus: data.status,
+         }), {
+           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+         });
+       }
+     }
      
      // Nenhum job ativo encontrado
      return new Response(JSON.stringify({
@@ -944,588 +835,7 @@ const ORPHAN_THRESHOLD_REAL_QUEUED_MS = 3 * 60 * 1000; // 3 minutes for real que
        error: error instanceof Error ? error.message : 'Unknown error' 
      }), {
        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-  }
-
-/**
- * /cancel-job - Cancela um job específico por jobId
- * Mais preciso que cancel-session, usado como failsafe após erros de invoke
- */
-async function handleCancelJob(req: Request): Promise<Response> {
-  try {
-    const { table, jobId, userId } = await req.json();
-    
-    if (!table || !jobId || !userId) {
-      return new Response(JSON.stringify({ error: 'table, jobId and userId are required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    if (!JOB_TABLES.includes(table as JobTable)) {
-      return new Response(JSON.stringify({ error: 'Invalid table' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Get the job to verify ownership and status
-    const { data: job, error: jobError } = await supabase
-      .from(table)
-      .select('id, user_id, status, waited_in_queue, user_credit_cost')
-      .eq('id', jobId)
-      .maybeSingle();
-    
-    if (jobError || !job) {
-      return new Response(JSON.stringify({ error: 'Job not found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Verify ownership
-    if (job.user_id !== userId) {
-      return new Response(JSON.stringify({ error: 'Not authorized to cancel this job' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Only cancel queued jobs
-    if (job.status !== 'queued') {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        reason: 'Job is not in queue',
-        currentStatus: job.status 
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Cancel the job
-    await supabase
-      .from(table)
-      .update({
-        status: 'cancelled',
-        error_message: 'Cancelled via cancel-job endpoint',
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', jobId);
-    
-    // Refund credits if they were consumed
-    if (job.user_credit_cost && job.user_credit_cost > 0) {
-      try {
-        await supabase.rpc('refund_upscaler_credits', {
-          _user_id: userId,
-          _amount: job.user_credit_cost,
-          _description: 'Refund: job cancelled'
-        });
-        console.log(`[QueueManager] Refunded ${job.user_credit_cost} credits to ${userId}`);
-      } catch (refundError) {
-        console.error(`[QueueManager] Failed to refund credits:`, refundError);
-      }
-    }
-    
-    // Update queue positions
-    await updateAllQueuePositions();
-    
-    console.log(`[QueueManager] Cancelled job ${jobId} in ${table} for user ${userId}`);
-    
-    return new Response(JSON.stringify({
-      success: true,
-      cancelled: true,
-      jobId,
-      refunded: job.user_credit_cost || 0,
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-    
-  } catch (error) {
-    console.error('[QueueManager] CancelJob error:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-}
-
-/**
- * Consulta o status real de uma task no RunningHub e atualiza o banco
- * Usado como fallback quando webhook não chega
- */
-async function queryRunningHubTaskStatus(
-  taskId: string, 
-  apiKey: string
-): Promise<{
-  status: 'RUNNING' | 'SUCCESS' | 'FAILED' | 'UNKNOWN';
-  errorCode?: string;
-  errorMessage?: string;
-  results?: any[];
-}> {
-  try {
-    const response = await fetch('https://www.runninghub.ai/openapi/v2/query', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({ taskId }),
-    });
-
-    if (!response.ok) {
-      console.error(`[QueueManager] RunningHub query failed: ${response.status}`);
-      return { status: 'UNKNOWN', errorMessage: `HTTP ${response.status}` };
-    }
-
-    const data = await response.json();
-    console.log(`[QueueManager] RunningHub query response for ${taskId}:`, JSON.stringify(data));
-
-    // RunningHub API response structure
-    if (data.code === 0) {
-      const taskStatus = data.data?.taskStatus;
-      
-      if (taskStatus === 'SUCCESS') {
-        return {
-          status: 'SUCCESS',
-          results: data.data?.results || [],
-        };
-      } else if (taskStatus === 'FAILED') {
-        return {
-          status: 'FAILED',
-          errorCode: data.data?.errorCode,
-          errorMessage: data.data?.errorMessage || 'Task failed on RunningHub',
-        };
-      } else if (taskStatus === 'RUNNING' || taskStatus === 'PENDING' || taskStatus === 'QUEUED') {
-        return { status: 'RUNNING' };
-      }
-    }
-
-    // Handle error responses
-    if (data.code !== 0) {
-      return {
-        status: 'FAILED',
-        errorCode: String(data.code),
-        errorMessage: data.message || 'RunningHub API error',
-      };
-    }
-
-    return { status: 'UNKNOWN' };
-  } catch (error) {
-    console.error(`[QueueManager] Error querying RunningHub:`, error);
-    return {
-      status: 'UNKNOWN',
-      errorMessage: error instanceof Error ? error.message : 'Query failed',
-    };
-  }
-}
-
-/**
- * Obtém a API key correta para uma conta
- */
-function getApiKeyForAccount(accountName: string): string | null {
-  const accounts = getAvailableApiAccounts();
-  const account = accounts.find(a => a.name === accountName);
-  return account?.apiKey || accounts[0]?.apiKey || null;
-}
-
-/**
- * /reconcile-task - Consulta status real no RunningHub e atualiza o banco
- * Entrada: { table, jobId } ou { taskId }
- * Saída: { status, errorCode, errorMessage, results, updated }
- */
-async function handleReconcileTask(req: Request): Promise<Response> {
-  try {
-    const { table, jobId, taskId: directTaskId } = await req.json();
-    
-    let targetTable: JobTable | null = null;
-    let job: any = null;
-    let taskId: string | null = directTaskId || null;
-    
-    // Se passou jobId, buscar o job no banco
-    if (table && jobId) {
-      if (!JOB_TABLES.includes(table as JobTable)) {
-        return new Response(JSON.stringify({ error: 'Invalid table' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      targetTable = table as JobTable;
-      const { data, error } = await supabase
-        .from(targetTable)
-        .select('*')
-        .eq('id', jobId)
-        .maybeSingle();
-      
-      if (error || !data) {
-        return new Response(JSON.stringify({ error: 'Job not found' }), {
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      job = data;
-      taskId = job.task_id;
-    }
-    // Se passou apenas taskId, procurar em todas as tabelas
-    else if (directTaskId) {
-      for (const t of JOB_TABLES) {
-        const { data } = await supabase
-          .from(t)
-          .select('*')
-          .eq('task_id', directTaskId)
-          .maybeSingle();
-        
-        if (data) {
-          targetTable = t;
-          job = data;
-          break;
-        }
-      }
-      
-      if (!job) {
-        return new Response(JSON.stringify({ error: 'Job not found for taskId' }), {
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    } else {
-      return new Response(JSON.stringify({ error: 'Either (table + jobId) or taskId is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Se não tem task_id, o job ainda não foi enviado ao RunningHub
-    if (!taskId) {
-      return new Response(JSON.stringify({
-        status: 'NO_TASK_ID',
-        message: 'Job has no task_id yet (not sent to RunningHub)',
-        jobStatus: job.status,
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Obter API key correta baseada na conta usada
-    const apiKey = getApiKeyForAccount(job.api_account || 'primary');
-    if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'No API key available' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Consultar status real no RunningHub
-    const rhStatus = await queryRunningHubTaskStatus(taskId, apiKey);
-    console.log(`[QueueManager] Reconcile taskId ${taskId}: status=${rhStatus.status}`);
-    
-    let updated = false;
-    
-    // Se o job ainda está como running no banco mas já terminou no RH
-    if (job.status === 'running') {
-      if (rhStatus.status === 'SUCCESS') {
-        // Calcular rh_cost baseado no tempo de processamento
-        const startedAt = job.started_at ? new Date(job.started_at) : new Date(job.created_at);
-        const completedAt = new Date();
-        const processingSeconds = Math.round((completedAt.getTime() - startedAt.getTime()) / 1000);
-        const rhCost = Math.ceil(processingSeconds / 60); // 1 crédito por minuto (arredondado pra cima)
-        
-        // Extrair output_url dos results
-        const outputUrl = rhStatus.results?.[0]?.url || rhStatus.results?.[0]?.fileUrl || null;
-        
-        await supabase
-          .from(targetTable!)
-          .update({
-            status: 'completed',
-            output_url: outputUrl,
-            completed_at: completedAt.toISOString(),
-            rh_cost: rhCost,
-          })
-          .eq('id', job.id);
-        
-        updated = true;
-        console.log(`[QueueManager] Reconciled job ${job.id}: SUCCESS -> completed`);
-        
-        // Processar próximo da fila
-        await handleProcessNext();
-        
-      } else if (rhStatus.status === 'FAILED') {
-        await supabase
-          .from(targetTable!)
-          .update({
-            status: 'failed',
-            error_message: rhStatus.errorMessage || `RunningHub error: ${rhStatus.errorCode}`,
-            completed_at: new Date().toISOString(),
-          })
-          .eq('id', job.id);
-        
-        updated = true;
-        console.log(`[QueueManager] Reconciled job ${job.id}: FAILED -> failed`);
-        
-        // Devolver créditos
-        if (job.user_credit_cost && job.user_id) {
-          try {
-            await supabase.rpc('refund_upscaler_credits', {
-              _user_id: job.user_id,
-              _amount: job.user_credit_cost,
-              _description: `Refund: ${rhStatus.errorMessage || 'RunningHub error'}`
-            });
-            console.log(`[QueueManager] Refunded ${job.user_credit_cost} credits to ${job.user_id}`);
-          } catch (refundError) {
-            console.error(`[QueueManager] Failed to refund credits:`, refundError);
-          }
-        }
-        
-        // Processar próximo da fila
-        await handleProcessNext();
-      }
-    }
-    
-    return new Response(JSON.stringify({
-      taskId,
-      rhStatus: rhStatus.status,
-      errorCode: rhStatus.errorCode,
-      errorMessage: rhStatus.errorMessage,
-      results: rhStatus.results,
-      jobStatus: updated ? (rhStatus.status === 'SUCCESS' ? 'completed' : 'failed') : job.status,
-      updated,
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-    
-  } catch (error) {
-    console.error('[QueueManager] ReconcileTask error:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-}
-
-/**
- * Reconcilia jobs "running" que estão presos há muito tempo
- * Chama RunningHub para verificar status real e atualiza o banco
- */
-async function reconcileStaleRunningJobs(): Promise<number> {
-  const staleThreshold = new Date(Date.now() - STALE_RUNNING_THRESHOLD_MINUTES * 60 * 1000);
-  let reconciledCount = 0;
-  
-  for (const table of JOB_TABLES) {
-    const { data: staleJobs, error } = await supabase
-      .from(table)
-      .select('id, task_id, api_account, user_id, user_credit_cost, started_at, created_at')
-      .eq('status', 'running')
-      .lt('started_at', staleThreshold.toISOString())
-      .limit(5); // Limitar para não sobrecarregar
-    
-    if (error || !staleJobs || staleJobs.length === 0) continue;
-    
-    console.log(`[QueueManager] Found ${staleJobs.length} stale running jobs in ${table}`);
-    
-    for (const job of staleJobs) {
-      if (!job.task_id) {
-        // Job sem task_id travado em running = erro crítico, marcar como failed
-        await supabase
-          .from(table)
-          .update({
-            status: 'failed',
-            error_message: 'Job timeout: no task_id after threshold',
-            completed_at: new Date().toISOString(),
-          })
-          .eq('id', job.id);
-        reconciledCount++;
-        continue;
-      }
-      
-      const apiKey = getApiKeyForAccount(job.api_account || 'primary');
-      if (!apiKey) continue;
-      
-      const rhStatus = await queryRunningHubTaskStatus(job.task_id, apiKey);
-      
-      if (rhStatus.status === 'SUCCESS') {
-        const outputUrl = rhStatus.results?.[0]?.url || rhStatus.results?.[0]?.fileUrl || null;
-        const startedAt = job.started_at ? new Date(job.started_at) : new Date(job.created_at);
-        const completedAt = new Date();
-        const processingSeconds = Math.round((completedAt.getTime() - startedAt.getTime()) / 1000);
-        const rhCost = Math.ceil(processingSeconds / 60);
-        
-        await supabase
-          .from(table)
-          .update({
-            status: 'completed',
-            output_url: outputUrl,
-            completed_at: completedAt.toISOString(),
-            rh_cost: rhCost,
-          })
-          .eq('id', job.id);
-        
-        console.log(`[QueueManager] Watchdog: Job ${job.id} SUCCESS -> completed`);
-        reconciledCount++;
-        
-      } else if (rhStatus.status === 'FAILED' || rhStatus.status === 'UNKNOWN') {
-        // Se UNKNOWN após threshold, também marcar como failed
-        const errorMsg = rhStatus.status === 'FAILED'
-          ? (rhStatus.errorMessage || `RunningHub error: ${rhStatus.errorCode}`)
-          : 'Job timeout: unable to verify status';
-        
-        await supabase
-          .from(table)
-          .update({
-            status: 'failed',
-            error_message: errorMsg,
-            completed_at: new Date().toISOString(),
-          })
-          .eq('id', job.id);
-        
-        // Devolver créditos
-        if (job.user_credit_cost && job.user_id) {
-          try {
-            await supabase.rpc('refund_upscaler_credits', {
-              _user_id: job.user_id,
-              _amount: job.user_credit_cost,
-              _description: `Refund: ${errorMsg}`
-            });
-          } catch (e) {
-            console.error(`[QueueManager] Watchdog refund error:`, e);
-          }
-        }
-        
-        console.log(`[QueueManager] Watchdog: Job ${job.id} ${rhStatus.status} -> failed`);
-        reconciledCount++;
-      }
-      // Se RUNNING, deixar continuar (ainda está processando normalmente)
-    }
-  }
-  
-  if (reconciledCount > 0) {
-    // Processar fila após liberar slots
-    await handleProcessNext();
-  }
-  
-  return reconciledCount;
-}
-
-/**
- * /force-cancel-job - Força cancelamento de qualquer job (running ou queued)
- * Usado quando usuário quer cancelar um job em andamento manualmente
- */
-async function handleForceCancelJob(req: Request): Promise<Response> {
-  try {
-    const { table, jobId, userId } = await req.json();
-    
-    if (!table || !jobId || !userId) {
-      return new Response(JSON.stringify({ error: 'table, jobId and userId are required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    if (!JOB_TABLES.includes(table as JobTable)) {
-      return new Response(JSON.stringify({ error: 'Invalid table' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Get the job to verify ownership and status
-    const { data: job, error: jobError } = await supabase
-      .from(table)
-      .select('id, user_id, status, user_credit_cost, task_id, api_account')
-      .eq('id', jobId)
-      .maybeSingle();
-    
-    if (jobError || !job) {
-      return new Response(JSON.stringify({ error: 'Job not found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Verify ownership
-    if (job.user_id !== userId) {
-      return new Response(JSON.stringify({ error: 'Not authorized to cancel this job' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Only cancel jobs that are running or queued
-    if (job.status !== 'queued' && job.status !== 'running') {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        reason: 'Job is not active',
-        currentStatus: job.status 
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    const wasRunning = job.status === 'running';
-    
-    // Cancel the job
-    await supabase
-      .from(table)
-      .update({
-        status: 'cancelled',
-        error_message: wasRunning 
-          ? 'Cancelled by user while processing' 
-          : 'Cancelled by user while in queue',
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', jobId);
-    
-    // Refund credits if they were consumed
-    let refundedAmount = 0;
-    if (job.user_credit_cost && job.user_credit_cost > 0) {
-      try {
-        await supabase.rpc('refund_upscaler_credits', {
-          _user_id: userId,
-          _amount: job.user_credit_cost,
-          _description: wasRunning 
-            ? 'Refund: cancelled by user while processing' 
-            : 'Refund: cancelled by user while in queue'
-        });
-        refundedAmount = job.user_credit_cost;
-        console.log(`[QueueManager] Force-cancelled: Refunded ${job.user_credit_cost} credits to ${userId}`);
-      } catch (refundError) {
-        console.error(`[QueueManager] Failed to refund credits:`, refundError);
-      }
-    }
-    
-    // Update queue positions
-    await updateAllQueuePositions();
-    
-    // If was running, process next in queue
-    if (wasRunning) {
-      await handleProcessNext();
-    }
-    
-    console.log(`[QueueManager] Force-cancelled job ${jobId} in ${table} for user ${userId} (was ${wasRunning ? 'running' : 'queued'})`);
-    
-    return new Response(JSON.stringify({
-      success: true,
-      cancelled: true,
-      jobId,
-      wasRunning,
-      refunded: refundedAmount,
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-    
-  } catch (error) {
-    console.error('[QueueManager] ForceCancelJob error:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-}
+       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+     });
+   }
+ }
