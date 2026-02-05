@@ -62,6 +62,87 @@ type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+// ==================== OBSERVABILITY HELPER ====================
+
+/**
+ * logStep - Registra uma etapa do job para observabilidade
+ * Atualiza current_step e adiciona ao step_history
+ */
+async function logStep(
+  table: string,
+  jobId: string,
+  step: string,
+  details?: Record<string, any>
+): Promise<void> {
+  const timestamp = new Date().toISOString();
+  const entry = { step, timestamp, ...details };
+  
+  try {
+    // Buscar step_history atual
+    const { data: job } = await supabase
+      .from(table)
+      .select('step_history')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    const currentHistory = (job?.step_history as any[]) || [];
+    const newHistory = [...currentHistory, entry];
+    
+    await supabase
+      .from(table)
+      .update({
+        current_step: step,
+        step_history: newHistory,
+      })
+      .eq('id', jobId);
+    
+    console.log(`[${table}] Job ${jobId}: ${step}`, details || '');
+  } catch (e) {
+    console.error(`[logStep] Error logging step for ${table}/${jobId}:`, e);
+  }
+}
+
+/**
+ * logStepFailure - Registra falha em uma etapa específica
+ */
+async function logStepFailure(
+  table: string,
+  jobId: string,
+  failedAtStep: string,
+  errorMessage: string,
+  rawResponse?: Record<string, any>
+): Promise<void> {
+  const timestamp = new Date().toISOString();
+  const entry = { step: 'failed', timestamp, at_step: failedAtStep, error: errorMessage };
+  
+  try {
+    const { data: job } = await supabase
+      .from(table)
+      .select('step_history')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    const currentHistory = (job?.step_history as any[]) || [];
+    const newHistory = [...currentHistory, entry];
+    
+    const updateData: Record<string, any> = {
+      current_step: 'failed',
+      failed_at_step: failedAtStep,
+      step_history: newHistory,
+    };
+    
+    if (rawResponse) {
+      updateData.raw_api_response = rawResponse;
+    }
+    
+    await supabase.from(table).update(updateData).eq('id', jobId);
+    
+    console.log(`[${table}] Job ${jobId}: FAILED at ${failedAtStep}:`, errorMessage);
+  } catch (e) {
+    console.error(`[logStepFailure] Error:`, e);
+  }
+}
+
 // ==================== HELPERS ====================
 
 function getAvailableApiAccounts(): ApiAccount[] {
@@ -403,12 +484,18 @@ async function handleProcessNext(): Promise<Response> {
     .from(oldestJob.table)
     .update({
       status: 'starting',
+      current_step: 'starting',
       started_at: new Date().toISOString(),
       position: 0,
       queue_wait_seconds: queueWaitSeconds,
       api_account: availableAccount.name,
     })
     .eq('id', oldestJob.job.id);
+  
+  await logStep(oldestJob.table, oldestJob.job.id, 'starting', { 
+    queueWaitSeconds, 
+    accountName: availableAccount.name 
+  });
   
   // Iniciar no RunningHub
   const result = await startJobOnRunningHub(oldestJob.table, oldestJob.job, availableAccount);
@@ -429,7 +516,7 @@ async function handleProcessNext(): Promise<Response> {
 
 async function handleFinish(req: Request): Promise<Response> {
   try {
-    const { table, jobId, status, outputUrl, errorMessage, taskId, rhCost } = await req.json();
+    const { table, jobId, status, outputUrl, errorMessage, taskId, rhCost, webhookPayload } = await req.json();
     
     if (!table || !jobId) {
       return new Response(JSON.stringify({ error: 'table and jobId are required' }), {
@@ -469,17 +556,29 @@ async function handleFinish(req: Request): Promise<Response> {
       );
     }
     
-    // Atualizar job
+    // Atualizar job com campos de observabilidade
     const updateData: Record<string, any> = {
       status: status,
       completed_at: new Date().toISOString(),
+      current_step: status,
     };
     
     if (outputUrl) updateData.output_url = outputUrl;
-    if (errorMessage) updateData.error_message = errorMessage;
+    if (errorMessage) {
+      updateData.error_message = errorMessage;
+      updateData.failed_at_step = 'webhook_received';
+    }
     if (rhCost) updateData.rh_cost = rhCost;
+    if (webhookPayload) updateData.raw_webhook_payload = webhookPayload;
     
     await supabase.from(table).update(updateData).eq('id', jobId);
+    
+    // Log da etapa final
+    await logStep(table, jobId, status, { 
+      outputUrl: outputUrl ? 'received' : null, 
+      error: errorMessage,
+      refundedAmount 
+    });
     
     // Processar próximo da fila
     try {
@@ -575,12 +674,14 @@ async function handleEnqueue(req: Request): Promise<Response> {
     
     const updateData: Record<string, any> = {
       status: 'queued',
+      current_step: 'queued',
       position,
       waited_in_queue: true,
     };
     if (creditCost !== undefined) updateData.user_credit_cost = creditCost;
     
     await supabase.from(table).update(updateData).eq('id', jobId);
+    await logStep(table, jobId, 'queued', { position });
     
     console.log(`[QueueManager] Job ${jobId} enqueued at position ${position}`);
     

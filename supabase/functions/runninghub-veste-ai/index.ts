@@ -44,6 +44,77 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// ========== OBSERVABILITY HELPER ==========
+
+async function logStep(
+  jobId: string,
+  step: string,
+  details?: Record<string, any>
+): Promise<void> {
+  const timestamp = new Date().toISOString();
+  const entry = { step, timestamp, ...details };
+  
+  try {
+    const { data: job } = await supabase
+      .from('veste_ai_jobs')
+      .select('step_history')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    const currentHistory = (job?.step_history as any[]) || [];
+    const newHistory = [...currentHistory, entry];
+    
+    await supabase
+      .from('veste_ai_jobs')
+      .update({
+        current_step: step,
+        step_history: newHistory,
+      })
+      .eq('id', jobId);
+    
+    console.log(`[VesteAI] Job ${jobId}: ${step}`, details || '');
+  } catch (e) {
+    console.error(`[logStep] Error:`, e);
+  }
+}
+
+async function logStepFailure(
+  jobId: string,
+  failedAtStep: string,
+  errorMessage: string,
+  rawResponse?: Record<string, any>
+): Promise<void> {
+  const timestamp = new Date().toISOString();
+  const entry = { step: 'failed', timestamp, at_step: failedAtStep, error: errorMessage };
+  
+  try {
+    const { data: job } = await supabase
+      .from('veste_ai_jobs')
+      .select('step_history')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    const currentHistory = (job?.step_history as any[]) || [];
+    const newHistory = [...currentHistory, entry];
+    
+    const updateData: Record<string, any> = {
+      current_step: 'failed',
+      failed_at_step: failedAtStep,
+      step_history: newHistory,
+    };
+    
+    if (rawResponse) {
+      updateData.raw_api_response = rawResponse;
+    }
+    
+    await supabase.from('veste_ai_jobs').update(updateData).eq('id', jobId);
+    
+    console.log(`[VesteAI] Job ${jobId}: FAILED at ${failedAtStep}:`, errorMessage);
+  } catch (e) {
+    console.error(`[logStepFailure] Error:`, e);
+  }
+}
+
 // ========== SAFE JSON PARSING HELPERS ==========
 
 // Read response safely - handles HTML errors from RunningHub/Cloudflare
