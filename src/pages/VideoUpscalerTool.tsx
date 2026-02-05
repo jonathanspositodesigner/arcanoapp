@@ -14,6 +14,7 @@ import ToolsHeader from '@/components/ToolsHeader';
 import VideoUploadCard from '@/components/video-upscaler/VideoUploadCard';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import { cancelJob as centralCancelJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -385,18 +386,25 @@ const VideoUpscalerTool: React.FC = () => {
     if (!jobId) return;
 
     try {
-      await supabase
-        .from('video_upscaler_jobs')
-        .update({ status: 'cancelled' })
-        .eq('id', jobId);
-
-      setStatus('idle');
-      setJobId(null);
-      setQueuePosition(0);
-      endSubmit();
-      toast.info('Processamento cancelado');
+      const result = await centralCancelJob('video_upscaler', jobId);
+      
+      if (result.success) {
+        setStatus('idle');
+        setJobId(null);
+        setQueuePosition(0);
+        endSubmit();
+        if (result.refundedAmount > 0) {
+          toast.success(`Cancelado! ${result.refundedAmount} créditos devolvidos.`);
+        } else {
+          toast.info('Processamento cancelado');
+        }
+        refetchCredits();
+      } else {
+        toast.error(result.errorMessage || 'Erro ao cancelar');
+      }
     } catch (error) {
       console.error('[VideoUpscaler] Cancel error:', error);
+      toast.error('Erro ao cancelar processamento');
     }
   };
 

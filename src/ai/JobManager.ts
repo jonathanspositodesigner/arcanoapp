@@ -194,7 +194,7 @@ export async function createJob(
       return { jobId: null, error: error?.message || 'Failed to create job' };
     }
     
-    const jobRecord = job as { id: string };
+    const jobRecord = job as unknown as { id: string };
     console.log(`[JobManager] Job created in ${tableName}:`, jobRecord.id);
     return { jobId: jobRecord.id };
   } catch (error) {
