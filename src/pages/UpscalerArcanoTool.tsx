@@ -1,11 +1,10 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock, MessageSquare, Crown, Coins } from 'lucide-react';
+import { Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, AlertCircle, Clock, MessageSquare, Crown, Coins } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Card } from '@/components/ui/card';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -23,15 +22,7 @@ import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-
-type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
-
-interface ErrorDetails {
-  message: string;
-  code?: string | number;
-  solution?: string;
-  details?: any;
-}
+import { ProcessingStatus, ErrorDetails } from '@/types/ai-tools';
 
 // Prompt categories for image types
 const PROMPT_CATEGORIES = {
@@ -46,14 +37,29 @@ const PROMPT_CATEGORIES = {
 type PromptCategory = keyof typeof PROMPT_CATEGORIES;
 type PessoasFraming = 'perto' | 'longe';
 
+// Queue message combos
+const QUEUE_MESSAGE_COMBOS = [
+  { emoji: "🔥", title: "Tá bombando!", position: (n: number) => `Você é o ${n}º da fila`, subtitle: "Relaxa que já já é sua vez!" },
+  { emoji: "☕", title: "Hora do cafezinho", position: (n: number) => `Posição: ${n}`, subtitle: "Aproveita pra dar aquela relaxada" },
+  { emoji: "🎨", title: "Artistas trabalhando...", position: (n: number) => `${n > 1 ? n - 1 : 0} pessoas na sua frente`, subtitle: "Grandes obras levam tempo, confia!" },
+  { emoji: "🚀", title: "Decolagem em breve", position: (n: number) => `Você é o ${n}º na pista`, subtitle: "Preparando sua foto para o espaço!" },
+  { emoji: "⚡", title: "Alta demanda agora", position: (n: number) => `Posição ${n} na fila`, subtitle: "Isso aqui tá voando, já já chega sua vez!" },
+  { emoji: "🤖", title: "Robôzinhos a mil!", position: (n: number) => `Faltam ${n > 1 ? n - 1 : 0} na sua frente`, subtitle: "Eles tão trabalhando pesado pra você" },
+  { emoji: "✨", title: "Preparando sua mágica", position: (n: number) => `${n}º lugar na fila VIP`, subtitle: "Magia de qualidade leva um tempinho" },
+  { emoji: "🎮", title: "Loading...", position: (n: number) => `Player ${n} na fila`, subtitle: "Próxima fase desbloqueando em breve!" },
+  { emoji: "🌟", title: "Sucesso gera fila", position: (n: number) => `Você é o ${n}º`, subtitle: "Todo mundo quer essa qualidade, né?" },
+  { emoji: "😎", title: "Fica tranquilo", position: (n: number) => `${n}º da galera esperando`, subtitle: "Vale a pena esperar, resultado top vem aí!" },
+];
+
 const UpscalerArcanoTool: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  const { balance: credits, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  const { checkActiveJob } = useActiveJobCheck();
 
-  // State
+  // Tool configuration state
   const [version, setVersion] = useState<'standard' | 'pro'>('standard');
   const [detailDenoise, setDetailDenoise] = useState(0.15);
   const [resolution, setResolution] = useState<'2k' | '4k'>('2k');
@@ -61,63 +67,54 @@ const UpscalerArcanoTool: React.FC = () => {
   const [customPrompt, setCustomPrompt] = useState('');
   const [promptCategory, setPromptCategory] = useState<PromptCategory>('pessoas_perto');
   const [pessoasFraming, setPessoasFraming] = useState<PessoasFraming>('perto');
-   const [comidaDetailLevel, setComidaDetailLevel] = useState(0.85);
-   const [editingLevel, setEditingLevel] = useState(0.10);
+  const [comidaDetailLevel, setComidaDetailLevel] = useState(0.85);
+  const [editingLevel, setEditingLevel] = useState(0.10);
   const [logoDetailLevel, setLogoDetailLevel] = useState(0.40);
   const [render3dDetailLevel, setRender3dDetailLevel] = useState(0.80);
+
+  // Image state
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [inputFileName, setInputFileName] = useState<string>('');
   const [outputImage, setOutputImage] = useState<string | null>(null);
+
+  // Processing state
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [progress, setProgress] = useState(0);
-  const [sliderPosition, setSliderPosition] = useState(50);
   const [lastError, setLastError] = useState<ErrorDetails | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  
-  // Queue state
+  const [jobId, setJobId] = useState<string | null>(null);
   const [isWaitingInQueue, setIsWaitingInQueue] = useState(false);
   const [queuePosition, setQueuePosition] = useState(0);
-  const [jobId, setJobId] = useState<string | null>(null);
-  
-  // No credits modal state
+  const [currentQueueCombo, setCurrentQueueCombo] = useState(0);
+
+  // UI state
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const [zoomLevel, setZoomLevel] = useState(1);
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
-  const [currentQueueCombo, setCurrentQueueCombo] = useState(0);
- 
-   // Active job block modal state
-   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
-   const [activeToolName, setActiveToolName] = useState<string>('');
-   const [activeJobStatus, setActiveJobStatus] = useState<string>('');
-   const { checkActiveJob } = useActiveJobCheck();
+  const [showActiveJobModal, setShowActiveJobModal] = useState(false);
+  const [activeToolName, setActiveToolName] = useState('');
+  const [activeJobStatus, setActiveJobStatus] = useState('');
 
-  // Queue message combos for friendly waiting experience
-  const queueMessageCombos = [
-    { emoji: "🔥", title: "Tá bombando!", position: (n: number) => `Você é o ${n}º da fila`, subtitle: "Relaxa que já já é sua vez!" },
-    { emoji: "☕", title: "Hora do cafezinho", position: (n: number) => `Posição: ${n}`, subtitle: "Aproveita pra dar aquela relaxada" },
-    { emoji: "🎨", title: "Artistas trabalhando...", position: (n: number) => `${n > 1 ? n - 1 : 0} pessoas na sua frente`, subtitle: "Grandes obras levam tempo, confia!" },
-    { emoji: "🚀", title: "Decolagem em breve", position: (n: number) => `Você é o ${n}º na pista`, subtitle: "Preparando sua foto para o espaço!" },
-    { emoji: "⚡", title: "Alta demanda agora", position: (n: number) => `Posição ${n} na fila`, subtitle: "Isso aqui tá voando, já já chega sua vez!" },
-    { emoji: "🤖", title: "Robôzinhos a mil!", position: (n: number) => `Faltam ${n > 1 ? n - 1 : 0} na sua frente`, subtitle: "Eles tão trabalhando pesado pra você" },
-    { emoji: "✨", title: "Preparando sua mágica", position: (n: number) => `${n}º lugar na fila VIP`, subtitle: "Magia de qualidade leva um tempinho" },
-    { emoji: "🎮", title: "Loading...", position: (n: number) => `Player ${n} na fila`, subtitle: "Próxima fase desbloqueando em breve!" },
-    { emoji: "🌟", title: "Sucesso gera fila", position: (n: number) => `Você é o ${n}º`, subtitle: "Todo mundo quer essa qualidade, né?" },
-    { emoji: "😎", title: "Fica tranquilo", position: (n: number) => `${n}º da galera esperando`, subtitle: "Vale a pena esperar, resultado top vem aí!" },
-  ];
-  
+  // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const beforeTransformRef = useRef<HTMLDivElement>(null);
   const sessionIdRef = useRef<string>('');
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  
-  // CRITICAL: Synchronous flag to prevent duplicate API calls
   const processingRef = useRef(false);
-  
-  // Timeout ref for 10 minute fallback
   const timeoutRef = useRef<number | null>(null);
 
-  // Initialize session ID (fresh each visit - no recovery)
+  // Derived state
+  const isLongeMode = pessoasFraming === 'longe' && promptCategory.startsWith('pessoas');
+  const isSpecialWorkflow = promptCategory === 'fotoAntiga' || promptCategory === 'comida' || promptCategory === 'logo' || promptCategory === 'render3d';
+  const isFotoAntigaMode = promptCategory === 'fotoAntiga';
+  const isComidaMode = promptCategory === 'comida';
+  const isLogoMode = promptCategory === 'logo';
+  const isRender3dMode = promptCategory === 'render3d';
+  const isProcessing = status === 'processing' || status === 'uploading' || isWaitingInQueue;
+
+  // Initialize session ID
   useEffect(() => {
     sessionIdRef.current = crypto.randomUUID();
   }, []);
@@ -125,19 +122,18 @@ const UpscalerArcanoTool: React.FC = () => {
   // Cleanup queued jobs when user leaves page
   useQueueSessionCleanup(sessionIdRef.current, status);
 
-  // Reconciliation polling - self-healing silencioso (não dispara UI updates)
+  // Silent reconciliation polling
   useJobReconciliation({
     table: 'upscaler_jobs',
     jobId,
     status,
-    pollingInterval: 15000, // 15 seconds
+    pollingInterval: 15000,
     enabled: status === 'processing',
   });
-  
-  // Timeout de 10 minutos - único fallback que mostra erro na UI
+
+  // 10-minute timeout fallback
   useEffect(() => {
     if (status === 'processing') {
-      // Iniciar timer de 10 minutos
       timeoutRef.current = window.setTimeout(() => {
         setStatus('error');
         processingRef.current = false;
@@ -149,21 +145,17 @@ const UpscalerArcanoTool: React.FC = () => {
         toast.error('Tempo limite excedido (10 min). Tente novamente.');
       }, 10 * 60 * 1000);
     } else {
-      // Limpar timeout quando status muda
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
     }
-    
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [status]);
 
-  // Cleanup on unmount
+  // Cleanup realtime on unmount
   useEffect(() => {
     return () => {
       if (realtimeChannelRef.current) {
@@ -187,30 +179,16 @@ const UpscalerArcanoTool: React.FC = () => {
     }
   }, [version]);
 
-  // Flag to check if we're in "De Longe" mode (full body photos use different WebApp)
-  const isLongeMode = pessoasFraming === 'longe' && promptCategory.startsWith('pessoas');
-
-   // Flags for special workflows (Foto Antiga and Comida/Objeto)
-   const isSpecialWorkflow = promptCategory === 'fotoAntiga' || promptCategory === 'comida' || promptCategory === 'logo' || promptCategory === 'render3d';
-   const isFotoAntigaMode = promptCategory === 'fotoAntiga';
-   const isComidaMode = promptCategory === 'comida';
-   const isLogoMode = promptCategory === 'logo';
-   const isRender3dMode = promptCategory === 'render3d';
- 
-  // Get the final prompt to send
+  // Get the final prompt
   const getFinalPrompt = (): string => {
-    if (useCustomPrompt) {
-      return customPrompt;
-    }
+    if (useCustomPrompt) return customPrompt;
     return PROMPT_CATEGORIES[promptCategory];
   };
-  // Subscribe to Realtime updates when jobId changes
+
+  // Subscribe to Realtime updates
   useEffect(() => {
     if (!jobId) return;
 
-    console.log('[Upscaler] Subscribing to Realtime for job:', jobId);
-
-    // Remove previous channel if exists
     if (realtimeChannelRef.current) {
       supabase.removeChannel(realtimeChannelRef.current);
     }
@@ -219,27 +197,21 @@ const UpscalerArcanoTool: React.FC = () => {
       .channel(`upscaler-job-${jobId}`)
       .on(
         'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'upscaler_jobs',
-          filter: `id=eq.${jobId}`
-        },
+        { event: 'UPDATE', schema: 'public', table: 'upscaler_jobs', filter: `id=eq.${jobId}` },
         (payload) => {
-          console.log('[Upscaler] Realtime update:', payload.new);
           const job = payload.new as any;
 
           if (job.status === 'completed' && job.output_url) {
-            console.log('[Upscaler] Job completed! Output:', job.output_url);
             setOutputImage(job.output_url);
             setStatus('completed');
             setProgress(100);
             setIsWaitingInQueue(false);
             setQueuePosition(0);
+            processingRef.current = false;
             toast.success(t('upscalerTool.toast.success'));
           } else if (job.status === 'failed') {
-            console.log('[Upscaler] Job failed:', job.error_message);
             setStatus('error');
+            processingRef.current = false;
             setLastError({
               message: job.error_message || 'Processing failed',
               code: 'TASK_FAILED',
@@ -248,28 +220,22 @@ const UpscalerArcanoTool: React.FC = () => {
             setIsWaitingInQueue(false);
             toast.error('Erro no processamento. Tente novamente.');
           } else if (job.status === 'running') {
-            console.log('[Upscaler] Job running');
             setStatus('processing');
             setIsWaitingInQueue(false);
             setQueuePosition(0);
-            // Start progress animation
             setProgress(prev => Math.min(prev + 5, 90));
           } else if (job.status === 'queued') {
-            console.log('[Upscaler] Job queued at position:', job.position);
-            setStatus('waiting');  // Set status to 'waiting' for cleanup hook
+            setStatus('waiting');
             setIsWaitingInQueue(true);
             setQueuePosition(job.position || 1);
           }
         }
       )
-      .subscribe((status) => {
-        console.log('[Upscaler] Realtime subscription status:', status);
-      });
+      .subscribe();
 
     realtimeChannelRef.current = channel;
 
     return () => {
-      console.log('[Upscaler] Cleaning up Realtime subscription');
       supabase.removeChannel(channel);
     };
   }, [jobId, t]);
@@ -277,30 +243,32 @@ const UpscalerArcanoTool: React.FC = () => {
   // Progress animation while processing
   useEffect(() => {
     if (status !== 'processing') return;
-
     const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 90) return prev;
-        return prev + 1;
-      });
+      setProgress(prev => prev >= 90 ? prev : prev + 1);
     }, 2000);
-
     return () => clearInterval(interval);
   }, [status]);
 
-  // Handle file selection with aggressive compression
+  // Rotate queue message combos
+  useEffect(() => {
+    if (!isWaitingInQueue) return;
+    const interval = setInterval(() => {
+      setCurrentQueueCombo(prev => (prev + 1) % QUEUE_MESSAGE_COMBOS.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isWaitingInQueue]);
+
+  // Handle file selection
   const handleFileSelect = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error(t('upscalerTool.errors.selectImage'));
       return;
     }
-
     if (file.size > 10 * 1024 * 1024) {
       toast.error(t('upscalerTool.errors.maxSize'));
       return;
     }
 
-    // ALWAYS optimize for AI tools (1536px max) to prevent VRAM overflow
     toast.info('Otimizando imagem...');
     const optimizationResult = await optimizeForAI(file);
     const processedFile = optimizationResult.file;
@@ -336,20 +304,15 @@ const UpscalerArcanoTool: React.FC = () => {
         }
       }
     };
-
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
   }, [handleFileSelect]);
 
   // Process image
   const processImage = async () => {
-    // CRITICAL: Prevent duplicate calls with synchronous check
-    if (processingRef.current) {
-      console.log('[Upscaler] Already processing, ignoring duplicate call');
-      return;
-    }
+    if (processingRef.current) return;
     processingRef.current = true;
-    
+
     if (!inputImage) {
       toast.error(t('upscalerTool.errors.selectFirst'));
       processingRef.current = false;
@@ -362,20 +325,17 @@ const UpscalerArcanoTool: React.FC = () => {
       processingRef.current = false;
       return;
     }
- 
-     // Check if user has active job in any tool
-     const { hasActiveJob, activeTool, activeStatus } = await checkActiveJob(user.id);
-     if (hasActiveJob && activeTool) {
-       setActiveToolName(activeTool);
-       setActiveJobStatus(activeStatus || '');
-       setShowActiveJobModal(true);
-       processingRef.current = false;
-       return;
-     }
+
+    const { hasActiveJob, activeTool, activeStatus } = await checkActiveJob(user.id);
+    if (hasActiveJob && activeTool) {
+      setActiveToolName(activeTool);
+      setActiveJobStatus(activeStatus || '');
+      setShowActiveJobModal(true);
+      processingRef.current = false;
+      return;
+    }
 
     const creditCost = version === 'pro' ? 80 : 60;
-    
-    // Optimistic check - backend will validate for real
     if (credits < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
@@ -383,19 +343,15 @@ const UpscalerArcanoTool: React.FC = () => {
       return;
     }
 
-    // Credits will be consumed by the backend after successful job start
-
     setLastError(null);
     setStatus('uploading');
     setProgress(10);
 
-    // Generate jobId upfront for orphan-proof workflow
     const generatedJobId = crypto.randomUUID();
     let jobCreatedInDb = false;
-    
+
     try {
-      // Step 1: Upload image FIRST (before creating job in DB)
-      // This prevents orphan jobs if app closes during upload
+      // Upload image
       const base64Data = inputImage.split(',')[1];
       const binaryStr = atob(base64Data);
       const bytes = new Uint8Array(binaryStr.length);
@@ -405,7 +361,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
       const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
       const storagePath = `upscaler/${generatedJobId}.${ext}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('artes-cloudinary')
         .upload(storagePath, bytes.buffer, {
@@ -413,20 +369,16 @@ const UpscalerArcanoTool: React.FC = () => {
           upsert: true
         });
 
-      if (uploadError) {
-        throw new Error('Erro no upload: ' + uploadError.message);
-      }
+      if (uploadError) throw new Error('Erro no upload: ' + uploadError.message);
 
-      // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from('artes-cloudinary')
         .getPublicUrl(storagePath);
 
       const imageUrl = publicUrlData.publicUrl;
-      console.log('[Upscaler] Image uploaded:', imageUrl);
       setProgress(30);
 
-      // Step 2: Create job in database ONLY AFTER successful upload
+      // Create job in database
       const { data: job, error: jobError } = await supabase
         .from('upscaler_jobs')
         .insert({
@@ -440,36 +392,29 @@ const UpscalerArcanoTool: React.FC = () => {
         .select()
         .single();
 
-      if (jobError || !job) {
-        throw new Error('Erro ao criar job: ' + (jobError?.message || 'Unknown'));
-      }
+      if (jobError || !job) throw new Error('Erro ao criar job');
 
       jobCreatedInDb = true;
-      console.log('[Upscaler] Job created:', job.id);
       setJobId(job.id);
       setProgress(40);
 
-      // Step 3: Call edge function with URL (not base64)
-      const creditCost = version === 'pro' ? 80 : 60;
+      // Call edge function
       const resolutionValue = resolution === '4k' ? 4096 : 2048;
       const framingMode = isLongeMode ? 'longe' : 'perto';
 
       const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {
           jobId: job.id,
-          imageUrl: imageUrl,
-          version: version,
+          imageUrl,
+          version,
           userId: user.id,
-          creditCost: creditCost,
+          creditCost,
           category: promptCategory,
-          // Conditional parameters based on workflow type
           detailDenoise: isComidaMode 
             ? comidaDetailLevel 
-            : isLogoMode 
-              ? (version === 'pro' ? logoDetailLevel : undefined)
-              : isRender3dMode
-                ? (version === 'pro' ? render3dDetailLevel : undefined)
-                : (isSpecialWorkflow ? undefined : detailDenoise),
+            : isLogoMode ? (version === 'pro' ? logoDetailLevel : undefined)
+            : isRender3dMode ? (version === 'pro' ? render3dDetailLevel : undefined)
+            : (isSpecialWorkflow ? undefined : detailDenoise),
           resolution: isSpecialWorkflow ? undefined : resolutionValue,
           prompt: isSpecialWorkflow ? undefined : getFinalPrompt(),
           framingMode: isSpecialWorkflow ? undefined : framingMode,
@@ -477,48 +422,25 @@ const UpscalerArcanoTool: React.FC = () => {
         }
       });
 
-      if (fnError) {
-        throw new Error('Erro na função: ' + fnError.message);
-      }
+      if (fnError) throw new Error('Erro na função: ' + fnError.message);
+      if (!response.success) throw new Error(response.error || 'Unknown error');
 
-      if (!response.success) {
-        throw new Error(response.error || 'Unknown error from edge function');
-      }
-
-      console.log('[Upscaler] Edge function response:', response);
       setProgress(50);
       setStatus('processing');
-
-      // Refetch credits after successful job start (they were consumed in the backend)
       refetchCredits();
 
     } catch (error: any) {
-      console.error('[Upscaler] Error:', error);
-      
-      // If job was created in DB, mark it as failed to prevent orphan
       if (jobCreatedInDb && generatedJobId) {
         try {
           await supabase
             .from('upscaler_jobs')
-            .update({ 
-              status: 'failed', 
-              error_message: error.message || 'Client-side error',
-              completed_at: new Date().toISOString()
-            })
+            .update({ status: 'failed', error_message: error.message, completed_at: new Date().toISOString() })
             .eq('id', generatedJobId);
-          console.log('[Upscaler] Marked failed job in DB:', generatedJobId);
-        } catch (cleanupError) {
-          console.error('[Upscaler] Failed to cleanup job:', cleanupError);
-        }
+        } catch {}
       }
-      
       setStatus('error');
       processingRef.current = false;
-      setLastError({
-        message: error.message || 'Erro desconhecido',
-        code: 'UPLOAD_ERROR',
-        solution: 'Tente novamente ou use uma imagem menor.'
-      });
+      setLastError({ message: error.message || 'Erro desconhecido', code: 'UPLOAD_ERROR', solution: 'Tente novamente ou use uma imagem menor.' });
       toast.error('Erro ao processar imagem');
     }
   };
@@ -526,13 +448,8 @@ const UpscalerArcanoTool: React.FC = () => {
   // Cancel queue
   const cancelQueue = async () => {
     if (!jobId) return;
-
     try {
-      await supabase
-        .from('upscaler_jobs')
-        .update({ status: 'cancelled' })
-        .eq('id', jobId);
-      
+      await supabase.from('upscaler_jobs').update({ status: 'cancelled' }).eq('id', jobId);
       processingRef.current = false;
       setStatus('idle');
       setIsWaitingInQueue(false);
@@ -547,7 +464,6 @@ const UpscalerArcanoTool: React.FC = () => {
   // Download result
   const downloadResult = useCallback(() => {
     if (!outputImage) return;
-
     const link = document.createElement('a');
     link.href = outputImage;
     link.download = `upscaled-${Date.now()}.png`;
@@ -570,13 +486,10 @@ const UpscalerArcanoTool: React.FC = () => {
     setJobId(null);
     setIsWaitingInQueue(false);
     setQueuePosition(0);
-    // Clear file input to allow re-selecting same file
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
-  // Slider handlers for before/after comparison
+  // Slider handlers
   const updateSliderPositionFromClientX = useCallback((clientX: number) => {
     if (sliderRef.current) {
       const rect = sliderRef.current.getBoundingClientRect();
@@ -607,29 +520,20 @@ const UpscalerArcanoTool: React.FC = () => {
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   }, []);
 
-  // Check if we're processing or in queue
-  const isProcessing = status === 'processing' || status === 'uploading' || isWaitingInQueue;
-
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] text-white">
-      {/* Header */}
-      <ToolsHeader 
-        title={t('upscalerTool.title')}
-        onBack={goBack}
-      />
+      <ToolsHeader title={t('upscalerTool.title')} onBack={goBack} />
 
-      {/* Main Content - Two Column Layout */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 lg:h-full">
           
-          {/* Left Side - Controls Panel (~28%) */}
+          {/* Left Side - Controls */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
             
-            {/* Version Switcher - Compact */}
+            {/* Version Switcher */}
             <TooltipProvider>
               <ToggleGroup 
-                type="single" 
-                value={version} 
+                type="single" value={version} 
                 onValueChange={(val) => val && setVersion(val as 'standard' | 'pro')}
                 className="w-full grid grid-cols-2 gap-0 bg-[#1A0A2E]/50 border border-purple-500/30 rounded-lg p-1"
               >
@@ -638,19 +542,14 @@ const UpscalerArcanoTool: React.FC = () => {
                     <ToggleGroupItem 
                       value="standard" 
                       className={`w-full py-2 px-2 text-xs rounded-md transition-all font-medium ${
-                        version === 'standard' 
-                          ? 'bg-purple-600 text-white border border-purple-400' 
-                          : 'border border-transparent text-purple-300/70 hover:bg-purple-500/10'
+                        version === 'standard' ? 'bg-purple-600 text-white border border-purple-400' : 'border border-transparent text-purple-300/70 hover:bg-purple-500/10'
                       }`}
                     >
                       Standard
                     </ToggleGroupItem>
                   </TooltipTrigger>
                   <TooltipContent className="bg-black/90 border-purple-500/30">
-                    <div className="flex items-center gap-1.5 text-xs text-white">
-                      <Clock className="w-3 h-3 text-purple-400" />
-                      <span>~2m 20s</span>
-                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-white"><Clock className="w-3 h-3 text-purple-400" /><span>~2m 20s</span></div>
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -658,32 +557,26 @@ const UpscalerArcanoTool: React.FC = () => {
                     <ToggleGroupItem 
                       value="pro" 
                       className={`w-full py-2 px-2 text-xs rounded-md transition-all font-medium flex items-center justify-center gap-1 ${
-                        version === 'pro' 
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border border-purple-400' 
-                          : 'border border-transparent text-purple-300/70 hover:bg-purple-500/10'
+                        version === 'pro' ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border border-purple-400' : 'border border-transparent text-purple-300/70 hover:bg-purple-500/10'
                       }`}
                     >
-                      <Crown className="w-3 h-3" />
-                      PRO
+                      <Crown className="w-3 h-3" />PRO
                     </ToggleGroupItem>
                   </TooltipTrigger>
                   <TooltipContent className="bg-black/90 border-purple-500/30">
-                    <div className="flex items-center gap-1.5 text-xs text-white">
-                      <Clock className="w-3 h-3 text-purple-400" />
-                      <span>~3m 30s</span>
-                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-white"><Clock className="w-3 h-3 text-purple-400" /><span>~3m 30s</span></div>
                   </TooltipContent>
                 </Tooltip>
               </ToggleGroup>
             </TooltipProvider>
-            
+
             {/* Estimated Time */}
             <div className="flex items-center justify-center gap-1 text-xs text-white/60">
               <Clock className="w-3 h-3 text-purple-400" />
               <span>{version === 'pro' ? '~3m 30s' : '~2m 20s'}</span>
             </div>
 
-            {/* Image Upload - Compact */}
+            {/* Image Upload */}
             <Card 
               className="bg-[#1A0A2E]/50 border-purple-500/20 border-dashed border-2 p-4 cursor-pointer hover:bg-[#1A0A2E]/70 transition-colors"
               onClick={() => fileInputRef.current?.click()}
@@ -709,16 +602,10 @@ const UpscalerArcanoTool: React.FC = () => {
                   </div>
                 </div>
               )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])} />
             </Card>
 
-            {/* Image Type Selector - Only show when not using custom prompt */}
+            {/* Image Type Selector */}
             {(!useCustomPrompt || version === 'standard') && (
               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
                 <div className="flex items-center gap-2 mb-2">
@@ -739,12 +626,10 @@ const UpscalerArcanoTool: React.FC = () => {
                   }}
                   className="flex flex-col gap-1"
                 >
-                  {/* Top row: 3 buttons */}
                   <div className="flex gap-1">
                     {['pessoas', 'comida', 'fotoAntiga'].map((cat) => (
                       <ToggleGroupItem 
-                        key={cat}
-                        value={cat} 
+                        key={cat} value={cat} 
                         className={`flex-1 px-2 py-1 text-[10px] rounded-md transition-all ${
                           (cat === 'pessoas' ? promptCategory.startsWith('pessoas') : promptCategory === cat)
                             ? 'bg-purple-600 text-white border border-purple-400' 
@@ -755,16 +640,12 @@ const UpscalerArcanoTool: React.FC = () => {
                       </ToggleGroupItem>
                     ))}
                   </div>
-                  {/* Bottom row: 2 buttons */}
                   <div className="flex gap-1">
                     {['render3d', 'logo'].map((cat) => (
                       <ToggleGroupItem 
-                        key={cat}
-                        value={cat} 
+                        key={cat} value={cat} 
                         className={`flex-1 px-2 py-1 text-[10px] rounded-md transition-all ${
-                          promptCategory === cat
-                            ? 'bg-purple-600 text-white border border-purple-400' 
-                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                          promptCategory === cat ? 'bg-purple-600 text-white border border-purple-400' : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
                         {cat === 'render3d' ? 'Selo 3D' : 'Logo/Arte'}
@@ -774,12 +655,10 @@ const UpscalerArcanoTool: React.FC = () => {
                 </ToggleGroup>
 
                 {/* Pessoas Framing Selector */}
-                {promptCategory.startsWith('pessoas') && (
-                 !isSpecialWorkflow && (
+                {promptCategory.startsWith('pessoas') && !isSpecialWorkflow && (
                   <div className="mt-3 pt-3 border-t border-purple-500/20">
                     <ToggleGroup 
-                      type="single" 
-                      value={pessoasFraming} 
+                      type="single" value={pessoasFraming} 
                       onValueChange={(value) => {
                         if (value) {
                           setPessoasFraming(value as PessoasFraming);
@@ -791,12 +670,10 @@ const UpscalerArcanoTool: React.FC = () => {
                       <ToggleGroupItem 
                         value="perto" 
                         className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
-                          pessoasFraming === 'perto'
-                            ? 'bg-purple-600 text-white border border-purple-400' 
-                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                          pessoasFraming === 'perto' ? 'bg-purple-600 text-white border border-purple-400' : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
-                        <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
+                        <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30">
                           <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
                             <circle cx="24" cy="20" r="14" fill="currentColor" opacity="0.85" />
                             <ellipse cx="24" cy="48" rx="18" ry="14" fill="currentColor" opacity="0.55" />
@@ -807,12 +684,10 @@ const UpscalerArcanoTool: React.FC = () => {
                       <ToggleGroupItem 
                         value="longe" 
                         className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
-                          pessoasFraming === 'longe'
-                            ? 'bg-purple-600 text-white border border-purple-400' 
-                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                          pessoasFraming === 'longe' ? 'bg-purple-600 text-white border border-purple-400' : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
-                        <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
+                        <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30">
                           <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
                             <circle cx="24" cy="14" r="5" fill="currentColor" opacity="0.85" />
                             <rect x="20" y="19" width="8" height="12" rx="3" fill="currentColor" opacity="0.75" />
@@ -824,191 +699,117 @@ const UpscalerArcanoTool: React.FC = () => {
                       </ToggleGroupItem>
                     </ToggleGroup>
                   </div>
-                 ))}
+                )}
               </Card>
             )}
 
-             {/* Detail Level Slider - PRO only, not in Longe mode, not in special workflows */}
-             {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
+            {/* Detail/Denoise Slider - hide for special workflows */}
+            {!isSpecialWorkflow && (
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-white">🎚️ Detalhes / Ruído</span>
+                  <span className="text-xs text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
+                </div>
+                <Slider value={[detailDenoise]} onValueChange={([value]) => setDetailDenoise(value)} min={0.01} max={1} step={0.01} className="w-full" />
+                <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+                  <span>Mais detalhes</span>
+                  <span>Menos ruído</span>
+                </div>
+              </Card>
+            )}
+
+            {/* Comida/Objeto Detail Level */}
+            {isComidaMode && (
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-white">🍽️ Nível de Detalhe</span>
+                  <span className="text-xs text-purple-300 font-mono">{comidaDetailLevel.toFixed(2)}</span>
+                </div>
+                <Slider value={[comidaDetailLevel]} onValueChange={([value]) => setComidaDetailLevel(value)} min={0.01} max={1} step={0.01} className="w-full" />
+                <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+                  <span>Mais Fidelidade</span>
+                  <span>Mais Criatividade</span>
+                </div>
+              </Card>
+            )}
+
+            {/* Editing Level Slider - PRO only, Pessoas De Perto */}
+            {version === 'pro' && promptCategory === 'pessoas_perto' && (
               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                    <span className="text-xs font-medium text-white">{t('upscalerTool.controls.detailLevel')}</span>
+                    <span className="text-xs font-medium text-white">Nível de Edição</span>
                   </div>
-                  <span className="text-xs text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
+                  <span className="text-xs text-purple-300 font-mono">{editingLevel.toFixed(2)}</span>
                 </div>
-                <Slider
-                  value={[detailDenoise]}
-                  onValueChange={([value]) => setDetailDenoise(value)}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  className="w-full"
-                />
+                <Slider value={[editingLevel]} onValueChange={([value]) => setEditingLevel(value)} min={0} max={1} step={0.01} className="w-full" />
                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                  <span>Menos</span>
-                  <span>Mais</span>
+                  <span>Mais Fiel</span>
+                  <span>Mais Criativo</span>
                 </div>
               </Card>
             )}
 
-             {/* Editing Level Slider - PRO + Pessoas + De Perto only */}
-             {version === 'pro' && promptCategory === 'pessoas_perto' && (
-               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
-                 <div className="flex items-center justify-between mb-1">
-                   <div className="flex items-center gap-1.5">
-                     <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-                     <span className="text-xs font-medium text-white">Nível de Edição</span>
-                   </div>
-                   <span className="text-xs text-purple-300 font-mono">{editingLevel.toFixed(2)}</span>
-                 </div>
-                 <Slider
-                   value={[editingLevel]}
-                   onValueChange={([value]) => setEditingLevel(value)}
-                   min={0}
-                   max={1}
-                   step={0.01}
-                   className="w-full"
-                 />
-                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                   <span>Menos Edição</span>
-                   <span>Mais Edição</span>
-                 </div>
-               </Card>
-             )}
- 
-             {/* Comida/Objeto Detail Level Slider (0.70 to 1.00) */}
-             {isComidaMode && (
-               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
-                 <div className="flex items-center justify-between mb-1">
-                   <div className="flex items-center gap-1.5">
-                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                     <span className="text-xs font-medium text-white">Nível de Detalhes</span>
-                   </div>
-                   <span className="text-xs text-purple-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
-                 </div>
-                 <Slider
-                   value={[comidaDetailLevel]}
-                   onValueChange={([value]) => setComidaDetailLevel(value)}
-                   min={0.70}
-                   max={1.00}
-                   step={0.01}
-                   className="w-full"
-                 />
-                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                   <span>Mais Fiel</span>
-                   <span>Mais Criativo</span>
-                 </div>
-               </Card>
-             )}
- 
-             {/* Logo/Arte Detail Level Slider - PRO only */}
-             {isLogoMode && version === 'pro' && (
-               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
-                 <div className="flex items-center justify-between mb-1">
-                   <div className="flex items-center gap-1.5">
-                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                     <span className="text-xs font-medium text-white">Nível de Detalhe</span>
-                   </div>
-                   <span className="text-xs text-purple-300 font-mono">{logoDetailLevel.toFixed(2)}</span>
-                 </div>
-                 <Slider
-                   value={[logoDetailLevel]}
-                   onValueChange={([value]) => setLogoDetailLevel(value)}
-                   min={0.01}
-                   max={1.00}
-                   step={0.01}
-                   className="w-full"
-                 />
-                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                   <span>Mais Fidelidade</span>
-                   <span>Mais Criatividade</span>
-                 </div>
-                 <p className="text-[9px] text-purple-300/40 mt-1 text-center">
-                   Recomendado: 0,30 a 0,60
-                 </p>
-               </Card>
-             )}
+            {/* Logo Detail Level - PRO only */}
+            {isLogoMode && version === 'pro' && (
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-white">Nível de Detalhe</span>
+                  <span className="text-xs text-purple-300 font-mono">{logoDetailLevel.toFixed(2)}</span>
+                </div>
+                <Slider value={[logoDetailLevel]} onValueChange={([value]) => setLogoDetailLevel(value)} min={0.01} max={1} step={0.01} className="w-full" />
+                <p className="text-[9px] text-purple-300/40 mt-1 text-center">Recomendado: 0,30 a 0,60</p>
+              </Card>
+            )}
 
-             {/* Selos 3D Detail Level Slider - PRO only */}
-             {isRender3dMode && version === 'pro' && (
-               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
-                 <div className="flex items-center justify-between mb-1">
-                   <div className="flex items-center gap-1.5">
-                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                     <span className="text-xs font-medium text-white">Nível de Detalhe</span>
-                   </div>
-                   <span className="text-xs text-purple-300 font-mono">{render3dDetailLevel.toFixed(2)}</span>
-                 </div>
-                 <Slider
-                   value={[render3dDetailLevel]}
-                   onValueChange={([value]) => setRender3dDetailLevel(value)}
-                   min={0.01}
-                   max={1.00}
-                   step={0.01}
-                   className="w-full"
-                 />
-                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                   <span>Mais Fidelidade</span>
-                   <span>Mais Criatividade</span>
-                 </div>
-                 <p className="text-[9px] text-purple-300/40 mt-1 text-center">
-                   Recomendado: 0,70 a 0,90
-                 </p>
-               </Card>
-             )}
+            {/* Render 3D Detail Level - PRO only */}
+            {isRender3dMode && version === 'pro' && (
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-white">Nível de Detalhe</span>
+                  <span className="text-xs text-purple-300 font-mono">{render3dDetailLevel.toFixed(2)}</span>
+                </div>
+                <Slider value={[render3dDetailLevel]} onValueChange={([value]) => setRender3dDetailLevel(value)} min={0.01} max={1} step={0.01} className="w-full" />
+                <p className="text-[9px] text-purple-300/40 mt-1 text-center">Recomendado: 0,70 a 0,90</p>
+              </Card>
+            )}
 
-             {/* Resolution Selector - hide for special workflows */}
-             {!isSpecialWorkflow && (
-            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-medium text-white">📐 Resolução</span>
-              </div>
-              <ToggleGroup 
-                type="single" 
-                value={resolution} 
-                onValueChange={(val) => val && setResolution(val as '2k' | '4k')}
-                className="flex gap-1"
-              >
-                <ToggleGroupItem 
-                  value="2k" 
-                  className={`px-3 py-1.5 text-xs rounded-md transition-all ${
-                    resolution === '2k' 
-                      ? 'bg-purple-600 text-white border border-purple-400' 
-                      : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                  }`}
+            {/* Resolution Selector */}
+            {!isSpecialWorkflow && (
+              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-medium text-white">📐 Resolução</span>
+                </div>
+                <ToggleGroup 
+                  type="single" value={resolution} 
+                  onValueChange={(val) => val && setResolution(val as '2k' | '4k')}
+                  className="flex gap-1"
                 >
-                  2K
-                </ToggleGroupItem>
-                <ToggleGroupItem 
-                  value="4k" 
-                  className={`px-3 py-1.5 text-xs rounded-md transition-all ${
-                    resolution === '4k' 
-                      ? 'bg-purple-600 text-white border border-purple-400' 
-                      : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                  }`}
-                >
-                  4K
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </Card>
-             )}
+                  {['2k', '4k'].map((res) => (
+                    <ToggleGroupItem 
+                      key={res} value={res}
+                      className={`px-3 py-1.5 text-xs rounded-md transition-all ${
+                        resolution === res ? 'bg-purple-600 text-white border border-purple-400' : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                      }`}
+                    >
+                      {res.toUpperCase()}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </Card>
+            )}
 
-             {/* Custom Prompt - PRO only, not in Longe mode, not in special workflows */}
-             {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
+            {/* Custom Prompt - PRO only */}
+            {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5 text-pink-400" />
                     <span className="text-xs font-medium text-white">{t('upscalerTool.controls.usePrompt')}</span>
                   </div>
-                  <Switch
-                    checked={useCustomPrompt}
-                    onCheckedChange={setUseCustomPrompt}
-                  />
+                  <Switch checked={useCustomPrompt} onCheckedChange={setUseCustomPrompt} />
                 </div>
-                
                 {useCustomPrompt && (
                   <Textarea
                     value={customPrompt}
@@ -1063,9 +864,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
                   <div className="flex-1 space-y-1">
                     <p className="text-xs font-medium text-red-300">{lastError.message}</p>
-                    {lastError.solution && (
-                      <p className="text-[10px] text-purple-300/80">💡 {lastError.solution}</p>
-                    )}
+                    {lastError.solution && <p className="text-[10px] text-purple-300/80">💡 {lastError.solution}</p>}
                   </div>
                 </div>
                 <Button
@@ -1080,7 +879,7 @@ const UpscalerArcanoTool: React.FC = () => {
             )}
           </div>
 
-          {/* Right Side - Result Viewer (~72%) */}
+          {/* Right Side - Result Viewer */}
           <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
             <Card className="flex-1 bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden flex flex-col min-h-[250px] lg:min-h-0">
               {/* Warning Banner */}
@@ -1093,7 +892,6 @@ const UpscalerArcanoTool: React.FC = () => {
 
               {/* Content Area */}
               <div className="flex-1 flex items-center justify-center p-4 min-h-0">
-                {/* Queue Waiting UI */}
                 {isWaitingInQueue ? (
                   <div className="flex flex-col items-center gap-4 text-center">
                     <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center animate-pulse">
@@ -1101,31 +899,22 @@ const UpscalerArcanoTool: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-xl font-bold text-yellow-300">
-                        {queueMessageCombos[currentQueueCombo].emoji} {queueMessageCombos[currentQueueCombo].title}
+                        {QUEUE_MESSAGE_COMBOS[currentQueueCombo].emoji} {QUEUE_MESSAGE_COMBOS[currentQueueCombo].title}
                       </p>
                       <p className="text-3xl font-bold text-white mt-2">
-                        {queueMessageCombos[currentQueueCombo].position(queuePosition)}
+                        {QUEUE_MESSAGE_COMBOS[currentQueueCombo].position(queuePosition)}
                       </p>
                       <p className="text-sm text-purple-300/70 mt-2">
-                        {queueMessageCombos[currentQueueCombo].subtitle}
+                        {QUEUE_MESSAGE_COMBOS[currentQueueCombo].subtitle}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={cancelQueue}
-                      className="text-red-300 hover:text-red-100 hover:bg-red-500/20"
-                    >
+                    <Button variant="ghost" size="sm" onClick={cancelQueue} className="text-red-300 hover:text-red-100 hover:bg-red-500/20">
                       Sair da fila
                     </Button>
                   </div>
                 ) : status === 'completed' && outputImage ? (
-                  /* Result View - Before/After Slider with Zoom */
                   <TransformWrapper
-                    initialScale={1}
-                    minScale={1}
-                    maxScale={6}
-                    smooth={true}
+                    initialScale={1} minScale={1} maxScale={6} smooth={true}
                     onInit={(ref) => {
                       setZoomLevel(ref.state.scale);
                       (window as any).__upscalerTransformRef = ref;
@@ -1147,28 +936,16 @@ const UpscalerArcanoTool: React.FC = () => {
                   >
                     {({ zoomIn, zoomOut, resetTransform }) => (
                       <div className="relative w-full h-full">
-                        {/* Zoom Controls */}
                         <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
-                          <button 
-                            onClick={() => zoomOut(0.14)}
-                            className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-                          >
+                          <button onClick={() => zoomOut(0.14)} className="p-1.5 hover:bg-white/20 rounded-full transition-colors">
                             <ZoomOut className="w-4 h-4 text-white" />
                           </button>
-                          <span className="text-xs font-mono min-w-[3rem] text-center text-white">
-                            {Math.round(zoomLevel * 100)}%
-                          </span>
-                          <button 
-                            onClick={() => zoomIn(0.14)}
-                            className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-                          >
+                          <span className="text-xs font-mono min-w-[3rem] text-center text-white">{Math.round(zoomLevel * 100)}%</span>
+                          <button onClick={() => zoomIn(0.14)} className="p-1.5 hover:bg-white/20 rounded-full transition-colors">
                             <ZoomIn className="w-4 h-4 text-white" />
                           </button>
                           {zoomLevel > 1 && (
-                            <button 
-                              onClick={() => resetTransform()}
-                              className="p-1.5 hover:bg-white/20 rounded-full transition-colors ml-1"
-                            >
+                            <button onClick={() => resetTransform()} className="p-1.5 hover:bg-white/20 rounded-full transition-colors ml-1">
                               <RotateCcw className="w-4 h-4 text-white" />
                             </button>
                           )}
@@ -1180,92 +957,43 @@ const UpscalerArcanoTool: React.FC = () => {
                           onWheel={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            
                             const transformRef = (window as any).__upscalerTransformRef;
                             if (!transformRef) return;
-                            
-                            const MIN_ZOOM = 1;
-                            const MAX_ZOOM = 6;
-                            const WHEEL_FACTOR = 1.40;
-                            
                             const { scale, positionX, positionY } = transformRef.state;
                             const wrapperComponent = transformRef.instance?.wrapperComponent;
-                            
                             if (!wrapperComponent) return;
-                            
                             const rect = wrapperComponent.getBoundingClientRect();
                             const mouseX = e.clientX - rect.left;
                             const mouseY = e.clientY - rect.top;
-                            
-                            let newScale: number;
-                            if (e.deltaY < 0) {
-                              newScale = scale * WHEEL_FACTOR;
-                            } else {
-                              newScale = scale / WHEEL_FACTOR;
-                            }
-                            
-                            newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newScale));
-                            
+                            let newScale = e.deltaY < 0 ? scale * 1.4 : scale / 1.4;
+                            newScale = Math.max(1, Math.min(6, newScale));
                             if (newScale === scale) return;
-                            
                             const scaleDiff = newScale - scale;
                             const newPosX = positionX - mouseX * scaleDiff;
                             const newPosY = positionY - mouseY * scaleDiff;
-                            
                             transformRef.setTransform(newPosX, newPosY, newScale, 150, 'easeOut');
                           }}
                         >
                           <div className="relative w-full h-full bg-black">
-                            {/* AFTER image */}
-                            <TransformComponent 
-                              wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} 
-                              contentStyle={{ width: '100%', height: '100%' }}
-                            >
-                              <img 
-                                src={outputImage} 
-                                alt="Depois" 
-                                className="w-full h-full object-contain"
-                                draggable={false}
-                              />
+                            <TransformComponent wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} contentStyle={{ width: '100%', height: '100%' }}>
+                              <img src={outputImage} alt="Depois" className="w-full h-full object-contain" draggable={false} />
                             </TransformComponent>
 
-                            {/* BEFORE image - overlay clipped */}
-                            <div 
-                              className="absolute inset-0 pointer-events-none"
-                              style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
-                            >
-                              <div 
-                                ref={beforeTransformRef}
-                                className="w-full h-full"
-                                style={{ transformOrigin: '0% 0%' }}
-                              >
-                                <img 
-                                  src={inputImage || ''} 
-                                  alt="Antes" 
-                                  className="w-full h-full object-contain"
-                                  draggable={false}
-                                />
+                            <div className="absolute inset-0 pointer-events-none" style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}>
+                              <div ref={beforeTransformRef} className="w-full h-full" style={{ transformOrigin: '0% 0%' }}>
+                                <img src={inputImage || ''} alt="Antes" className="w-full h-full object-contain" draggable={false} />
                               </div>
                             </div>
 
-                            {/* Slider Line and Handle */}
                             <div 
                               className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-20"
-                              style={{ 
-                                left: `${sliderPosition}%`, 
-                                transform: 'translateX(-50%)', 
-                                cursor: 'ew-resize',
-                                touchAction: 'none'
-                              }}
+                              style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)', cursor: 'ew-resize', touchAction: 'none' }}
                               onPointerDown={handleSliderPointerDown}
                               onPointerMove={handleSliderPointerMove}
                               onPointerUp={handleSliderPointerUp}
                               onPointerCancel={handleSliderPointerUp}
                             >
-                              <div 
-                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center cursor-ew-resize"
-                                style={{ touchAction: 'none' }}
-                              >
+                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center cursor-ew-resize" style={{ touchAction: 'none' }}>
                                 <div className="flex gap-0.5">
                                   <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
                                   <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
@@ -1273,7 +1001,6 @@ const UpscalerArcanoTool: React.FC = () => {
                               </div>
                             </div>
 
-                            {/* Labels */}
                             <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-white/30 text-white text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.before')}
                             </div>
@@ -1283,7 +1010,6 @@ const UpscalerArcanoTool: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Zoom Hint */}
                         <div className="hidden sm:block absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-white/20">
                           🔍 {t('upscalerTool.zoomHint')}
                         </div>
@@ -1291,36 +1017,23 @@ const UpscalerArcanoTool: React.FC = () => {
                     )}
                   </TransformWrapper>
                 ) : (status === 'uploading' || status === 'processing') && !isWaitingInQueue ? (
-                  /* Processing State */
                   <div className="flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
                     <div className="text-center">
                       <p className="text-lg font-medium text-white">
                         {status === 'uploading' ? t('upscalerTool.status.uploading') : t('upscalerTool.status.processing')}
                       </p>
-                      <p className="text-sm text-purple-300/70">
-                        {t('upscalerTool.status.mayTake2Min')}
-                      </p>
+                      <p className="text-sm text-purple-300/70">{t('upscalerTool.status.mayTake2Min')}</p>
                     </div>
-                    {/* Progress bar */}
                     <div className="w-48 h-2 bg-purple-900/50 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
-                        style={{ width: `${progress}%` }}
-                      />
+                      <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500" style={{ width: `${progress}%` }} />
                     </div>
                   </div>
                 ) : inputImage ? (
-                  /* Preview uploaded image */
                   <div className="relative w-full h-full flex items-center justify-center">
-                    <img 
-                      src={inputImage} 
-                      alt="Preview" 
-                      className="max-w-full max-h-full object-contain rounded-lg"
-                    />
+                    <img src={inputImage} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg" />
                   </div>
                 ) : (
-                  /* Empty State */
                   <div className="flex flex-col items-center gap-4 text-center text-purple-300/50">
                     <Upload className="w-16 h-16" />
                     <p className="text-sm">Carregue uma imagem para começar</p>
@@ -1332,20 +1045,8 @@ const UpscalerArcanoTool: React.FC = () => {
         </div>
       </div>
 
-      {/* No Credits Modal */}
-      <NoCreditsModal
-        isOpen={showNoCreditsModal}
-        onClose={() => setShowNoCreditsModal(false)}
-        reason={noCreditsReason}
-      />
-       
-       {/* Active Job Block Modal */}
-       <ActiveJobBlockModal
-         isOpen={showActiveJobModal}
-         onClose={() => setShowActiveJobModal(false)}
-         activeTool={activeToolName}
-         activeStatus={activeJobStatus}
-       />
+      <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
+      <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeStatus={activeJobStatus} />
     </div>
   );
 };
