@@ -28,22 +28,21 @@ const FerramentasIA = () => {
   const [searchParams] = useSearchParams();
   const from = searchParams.get("from");
   
-  // Redirect logic: users without Upscaler Arcano pack AND no credits go to new app page
+  // Redirect logic: ONLY users with Upscaler Arcano pack can access this page
   const { user, hasAccessToPack, isLoading: isPremiumLoading } = usePremiumArtesStatus();
   const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
   const hasUpscalerArcano = hasAccessToPack('upscaller-arcano');
   
   useEffect(() => {
-    // Wait for both loading states
-    if (isPremiumLoading || creditsLoading) return;
+    // Wait for loading state
+    if (isPremiumLoading) return;
     
-    // Redirect to new page if:
-    // 1. User is NOT logged in, OR
-    // 2. User is logged in but has NO upscaler-arcano AND NO credits
-    if (!user || (!hasUpscalerArcano && credits === 0)) {
+    // Redirect to app page if user does NOT have upscaller-arcano pack
+    // This page is EXCLUSIVE for pack owners
+    if (!user || !hasUpscalerArcano) {
       navigate('/ferramentas-ia-aplicativo', { replace: true });
     }
-  }, [isPremiumLoading, creditsLoading, user, hasUpscalerArcano, credits, navigate]);
+  }, [isPremiumLoading, user, hasUpscalerArcano, navigate]);
 
   const toolDescriptions: Record<string, string> = {
     "upscaller-arcano": t('ferramentas.descriptions.upscaler'),
