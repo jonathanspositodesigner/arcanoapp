@@ -17,13 +17,12 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
-import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { cancelJob as centralCancelJob } from '@/ai/JobManager';
+import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -93,7 +92,7 @@ const UpscalerArcanoTool: React.FC = () => {
    const [activeToolName, setActiveToolName] = useState<string>('');
    const [activeJobId, setActiveJobId] = useState<string | undefined>();
    const [activeStatus, setActiveStatus] = useState<string | undefined>();
-   const { checkActiveJob, cancelActiveJob } = useActiveJobCheck();
+   // Now using centralized checkActiveJob from JobManager
 
   // Queue message combos for friendly waiting experience
   const queueMessageCombos = [
@@ -350,28 +349,7 @@ const UpscalerArcanoTool: React.FC = () => {
     setProgress(10);
 
     try {
-      // Step 1: Create job in database
-      const { data: job, error: jobError } = await supabase
-        .from('upscaler_jobs')
-        .insert({
-          session_id: sessionIdRef.current,
-          status: 'queued',
-          detail_denoise: detailDenoise,
-          prompt: getFinalPrompt(),
-          user_id: user.id
-        })
-        .select()
-        .single();
-
-      if (jobError || !job) {
-        throw new Error('Erro ao criar job: ' + (jobError?.message || 'Unknown'));
-      }
-
-      console.log('[Upscaler] Job created:', job.id);
-      setJobId(job.id);
-      setProgress(20);
-
-      // Step 2: Upload image directly to Storage (no Base64 to edge function)
+      // Step 1: Upload image FIRST (before creating job to prevent orphans)
       const base64Data = inputImage.split(',')[1];
       const binaryStr = atob(base64Data);
       const bytes = new Uint8Array(binaryStr.length);
@@ -380,7 +358,11 @@ const UpscalerArcanoTool: React.FC = () => {
       }
 
       const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
-      const storagePath = `upscaler/${job.id}.${ext}`;
+      const tempId = crypto.randomUUID();
+      const storagePath = `upscaler/${user.id}/${tempId}.${ext}`;
+      
+      setProgress(20);
+      console.log('[Upscaler] Uploading image...');
       
       const { error: uploadError } = await supabase.storage
         .from('artes-cloudinary')
@@ -400,7 +382,30 @@ const UpscalerArcanoTool: React.FC = () => {
 
       const imageUrl = publicUrlData.publicUrl;
       console.log('[Upscaler] Image uploaded:', imageUrl);
-      setProgress(40);
+      setProgress(35);
+
+      // Step 2: Create job in database ONLY AFTER successful upload
+      // This prevents orphaned jobs if user closes page during upload
+      const { data: job, error: jobError } = await supabase
+        .from('upscaler_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          status: 'queued',
+          detail_denoise: detailDenoise,
+          prompt: getFinalPrompt(),
+          user_id: user.id,
+          input_file_name: storagePath.split('/').pop() || `${tempId}.${ext}`,
+        })
+        .select()
+        .single();
+
+      if (jobError || !job) {
+        throw new Error('Erro ao criar job: ' + (jobError?.message || 'Unknown'));
+      }
+
+      console.log('[Upscaler] Job created with image:', job.id);
+      setJobId(job.id);
+      setProgress(45);
 
       // Step 3: Call edge function with URL (not base64)
       const creditCost = version === 'pro' ? 80 : 60;
@@ -1298,7 +1303,7 @@ const UpscalerArcanoTool: React.FC = () => {
         activeTool={activeToolName}
         activeJobId={activeJobId}
         activeStatus={activeStatus}
-        onCancelJob={cancelActiveJob}
+        onCancelJob={centralCancelJob}
       />
     </div>
   );

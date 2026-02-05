@@ -8,7 +8,6 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
-import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
@@ -17,7 +16,7 @@ import ClothingLibraryModal from '@/components/veste-ai/ClothingLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
-import { cancelJob as centralCancelJob } from '@/ai/JobManager';
+import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -73,7 +72,7 @@ const VesteAITool: React.FC = () => {
    const [activeToolName, setActiveToolName] = useState<string>('');
    const [activeJobId, setActiveJobId] = useState<string | undefined>();
    const [activeStatus, setActiveStatus] = useState<string | undefined>();
-   const { checkActiveJob, cancelActiveJob } = useActiveJobCheck();
+   // Now using centralized checkActiveJob from JobManager
 
   const canProcess = personImage && clothingImage && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
@@ -648,7 +647,7 @@ const VesteAITool: React.FC = () => {
         activeTool={activeToolName}
         activeJobId={activeJobId}
         activeStatus={activeStatus}
-        onCancelJob={cancelActiveJob}
+        onCancelJob={centralCancelJob}
       />
     </div>
   );
