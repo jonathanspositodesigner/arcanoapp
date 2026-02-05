@@ -1,352 +1,289 @@
 
-# Plano: Bloquear Usuário de Usar Múltiplas Ferramentas de IA Simultaneamente
+# Plano: Workflows Dedicados para Logo e Arte + Selos 3D
 
-## Problema
+## Resumo
 
-Atualmente, um mesmo usuário logado pode abrir múltiplas abas ou ferramentas diferentes e iniciar vários jobs de IA ao mesmo tempo (Upscaler, Pose Changer, Veste AI, Video Upscaler). Isso consome recursos desnecessariamente e pode causar problemas de concorrência.
+Implementar dois workflows especializados que eliminam o uso de prompts e funcionam como Foto Antiga e Comida/Objeto:
 
-## Solução
+| Categoria | WebApp ID | Node Imagem | Node Detalhe | Padrão | Recomendado |
+|-----------|-----------|-------------|--------------|--------|-------------|
+| **Logo e Arte** | `2019239272464785409` | 39 | 33 | 0.40 | 0.30 a 0.60 |
+| **Selos 3D** | `2019234965992509442` | 301 | 300 | 0.80 | 0.70 a 0.90 |
 
-Implementar verificação centralizada que bloqueia o usuário de iniciar um novo job se ele já tiver um job ativo (status `running` ou `queued`) em **qualquer** ferramenta de IA.
-
----
-
-## Arquitetura da Solução
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    FRONTEND (Ferramenta)                    │
-│  Antes de criar job → chama /check-user-active              │
-│  Se tiver job ativo → mostra modal de bloqueio              │
-└────────────────────────────┬────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────┐
-│            runninghub-queue-manager/check-user-active       │
-│  Consulta TODAS as tabelas de jobs                          │
-│  Procura por status = 'running' ou 'queued'                 │
-│  Retorna: { hasActiveJob: boolean, activeTool: string }     │
-└─────────────────────────────────────────────────────────────┘
-```
+**Comportamento**: Slider de Nível de Detalhe só aparece na versão PRO.
 
 ---
 
-## Mudanças Planejadas
+## Mudanças Técnicas
 
-### Parte 1: Backend - Novo Endpoint no Queue Manager
+### Arquivo 1: Backend - `supabase/functions/runninghub-upscaler/index.ts`
 
-**Arquivo:** `supabase/functions/runninghub-queue-manager/index.ts`
-
-#### 1.1 Adicionar novo case no switch de endpoints
+#### 1.1 Adicionar constantes de WebApp IDs
 
 ```text
-case 'check-user-active':
-  return await handleCheckUserActive(req);
+const WEBAPP_ID_LOGO = '2019239272464785409';
+const WEBAPP_ID_RENDER3D = '2019234965992509442';
 ```
 
-#### 1.2 Criar função handleCheckUserActive
+#### 1.2 Adicionar detecção dos novos modos
 
 ```text
-async function handleCheckUserActive(req: Request): Promise<Response> {
-  try {
-    const { userId } = await req.json();
-    
-    if (!userId) {
-      return new Response(JSON.stringify({ error: 'userId is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    // Mapeamento de tabela para nome amigável da ferramenta
-    const toolNames: Record<JobTable, string> = {
-      'upscaler_jobs': 'Upscaler Arcano',
-      'video_upscaler_jobs': 'Video Upscaler',
-      'pose_changer_jobs': 'Pose Changer',
-      'veste_ai_jobs': 'Veste AI',
-    };
-    
-    // Verificar em TODAS as tabelas de jobs
-    for (const table of JOB_TABLES) {
-      const { data, error } = await supabase
-        .from(table)
-        .select('id, status')
-        .eq('user_id', userId)
-        .in('status', ['running', 'queued'])
-        .limit(1)
-        .maybeSingle();
-      
-      if (error) {
-        console.error(`[QueueManager] Error checking ${table}:`, error);
-        continue;
-      }
-      
-      if (data) {
-        console.log(`[QueueManager] User ${userId} has active job in ${table}`);
-        return new Response(JSON.stringify({
-          hasActiveJob: true,
-          activeTool: toolNames[table],
-          activeJobId: data.id,
-          activeStatus: data.status,
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
-    
-    // Nenhum job ativo encontrado
-    return new Response(JSON.stringify({
-      hasActiveJob: false,
-      activeTool: null,
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-    
-  } catch (error) {
-    console.error('[QueueManager] CheckUserActive error:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
+const isLogoMode = category === 'logo';
+const isRender3dMode = category === 'render3d';
+```
+
+#### 1.3 Atualizar seleção de WebApp ID
+
+```text
+let webappId: string;
+if (isFotoAntigaMode) {
+  webappId = WEBAPP_ID_FOTO_ANTIGA;
+} else if (isComidaMode) {
+  webappId = WEBAPP_ID_COMIDA;
+} else if (isLogoMode) {
+  webappId = WEBAPP_ID_LOGO;
+} else if (isRender3dMode) {
+  webappId = WEBAPP_ID_RENDER3D;
+} else if (isLongeMode) {
+  webappId = WEBAPP_ID_LONGE;
+} else {
+  webappId = version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD;
 }
 ```
 
----
-
-### Parte 2: Frontend - Hook Reutilizável
-
-**Novo arquivo:** `src/hooks/useActiveJobCheck.ts`
+#### 1.4 Adicionar construção de nodeInfoList para Logo e Arte
 
 ```text
-import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-
-interface ActiveJobResult {
-  hasActiveJob: boolean;
-  activeTool: string | null;
-  activeJobId?: string;
-  activeStatus?: string;
-}
-
-export function useActiveJobCheck() {
-  const checkActiveJob = useCallback(async (userId: string): Promise<ActiveJobResult> => {
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/check-user-active`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ userId }),
-        }
-      );
-      
-      if (!response.ok) {
-        console.error('[ActiveJobCheck] Failed:', response.status);
-        return { hasActiveJob: false, activeTool: null };
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('[ActiveJobCheck] Error:', error);
-      return { hasActiveJob: false, activeTool: null };
-    }
-  }, []);
+} else if (isLogoMode) {
+  // === LOGO E ARTE ===
+  // Node 39: image, Node 33: value (detail level)
+  nodeInfoList = [
+    { nodeId: "39", fieldName: "image", fieldValue: rhFileName },
+  ];
   
-  return { checkActiveJob };
-}
-```
-
----
-
-### Parte 3: Frontend - Componente de Modal de Bloqueio
-
-**Novo arquivo:** `src/components/ai-tools/ActiveJobBlockModal.tsx`
-
-```text
-import React from 'react';
-import { AlertTriangle, Loader2 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-} from '@/components/ui/alert-dialog';
-
-interface ActiveJobBlockModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  activeTool: string;
-}
-
-const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
-  isOpen,
-  onClose,
-  activeTool,
-}) => {
-  return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="bg-[#1A0A2E] border-purple-500/30">
-        <AlertDialogHeader>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-yellow-500/20 rounded-full">
-              <AlertTriangle className="w-6 h-6 text-yellow-400" />
-            </div>
-            <AlertDialogTitle className="text-white text-lg">
-              Trabalho em Andamento
-            </AlertDialogTitle>
-          </div>
-          <AlertDialogDescription className="text-purple-200/70">
-            Você já tem um trabalho em processamento no <strong className="text-purple-300">{activeTool}</strong>.
-            <br /><br />
-            Aguarde a conclusão do trabalho atual antes de iniciar outro.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogAction
-            onClick={onClose}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
-          >
-            Entendi
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-};
-
-export default ActiveJobBlockModal;
-```
-
----
-
-### Parte 4: Integrar em Cada Ferramenta
-
-Modificar os arquivos de cada ferramenta para:
-1. Importar o hook e o modal
-2. Adicionar estados para controle do modal
-3. Verificar job ativo antes de processar
-4. Mostrar modal se bloqueado
-
-#### Arquivos a modificar:
-
-| Arquivo | Função de processamento |
-|---------|------------------------|
-| `src/pages/UpscalerArcanoTool.tsx` | `handleProcess` |
-| `src/pages/VideoUpscalerTool.tsx` | `handleProcess` |
-| `src/pages/PoseChangerTool.tsx` | `handleProcess` |
-| `src/pages/VesteAITool.tsx` | `handleProcess` |
-
-#### Exemplo de integração (padrão para todas):
-
-```text
-// Imports
-import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
-import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-
-// Dentro do componente:
-const { checkActiveJob } = useActiveJobCheck();
-const [showActiveJobModal, setShowActiveJobModal] = useState(false);
-const [activeToolName, setActiveToolName] = useState<string>('');
-
-// No início da função handleProcess:
-const handleProcess = async () => {
-  // CRITICAL: Prevent duplicate calls
-  if (processingRef.current) return;
-  processingRef.current = true;
-
-  // Verificar se já tem job ativo em outra ferramenta
-  if (user?.id) {
-    const { hasActiveJob, activeTool } = await checkActiveJob(user.id);
-    if (hasActiveJob && activeTool) {
-      setActiveToolName(activeTool);
-      setShowActiveJobModal(true);
-      processingRef.current = false;
-      return;
-    }
+  // Detail level only for PRO version
+  if (version === 'pro' && detailDenoise !== undefined) {
+    nodeInfoList.push({ 
+      nodeId: "33", 
+      fieldName: "value", 
+      fieldValue: String(detailDenoise) 
+    });
   }
+  
+  console.log(`[RunningHub] Using LOGO workflow - version: ${version}, detail: ${detailDenoise}`);
+}
+```
 
-  // ... resto do código existente
-};
+#### 1.5 Adicionar construção de nodeInfoList para Selos 3D
 
-// No JSX, adicionar o modal:
-<ActiveJobBlockModal
-  isOpen={showActiveJobModal}
-  onClose={() => setShowActiveJobModal(false)}
-  activeTool={activeToolName}
-/>
+```text
+} else if (isRender3dMode) {
+  // === SELOS 3D ===
+  // Node 301: image, Node 300: value (detail level)
+  nodeInfoList = [
+    { nodeId: "301", fieldName: "image", fieldValue: rhFileName },
+  ];
+  
+  // Detail level only for PRO version
+  if (version === 'pro' && detailDenoise !== undefined) {
+    nodeInfoList.push({ 
+      nodeId: "300", 
+      fieldName: "value", 
+      fieldValue: String(detailDenoise) 
+    });
+  }
+  
+  console.log(`[RunningHub] Using RENDER3D workflow - version: ${version}, detail: ${detailDenoise}`);
+}
 ```
 
 ---
 
-## Fluxo Visual
+### Arquivo 2: Frontend - `src/pages/UpscalerArcanoTool.tsx`
 
-### Cenário: Usuário tenta iniciar segundo job
+#### 2.1 Adicionar estados para níveis de detalhe
 
 ```text
-┌────────────────────┐     ┌────────────────────┐
-│   Upscaler Arcano  │     │    Pose Changer    │
-│   (processando)    │     │   (clica Processar)│
-└────────────────────┘     └─────────┬──────────┘
-                                     │
-                                     ▼
-                          ┌──────────────────────┐
-                          │ checkActiveJob(userId)│
-                          └─────────┬────────────┘
-                                    │
-                                    ▼
-                          ┌──────────────────────┐
-                          │ Queue Manager        │
-                          │ Encontra job ativo   │
-                          │ no upscaler_jobs     │
-                          └─────────┬────────────┘
-                                    │
-                                    ▼
-                          ┌──────────────────────┐
-                          │ { hasActiveJob: true,│
-                          │   activeTool:        │
-                          │   "Upscaler Arcano" }│
-                          └─────────┬────────────┘
-                                    │
-                                    ▼
-                          ┌──────────────────────┐
-                          │ Modal de Bloqueio    │
-                          │ "Você já tem um      │
-                          │ trabalho no          │
-                          │ Upscaler Arcano"     │
-                          └──────────────────────┘
+const [logoDetailLevel, setLogoDetailLevel] = useState(0.40);
+const [render3dDetailLevel, setRender3dDetailLevel] = useState(0.80);
+```
+
+#### 2.2 Atualizar flags de workflows especiais
+
+```text
+const isSpecialWorkflow = promptCategory === 'fotoAntiga' || promptCategory === 'comida' || promptCategory === 'logo' || promptCategory === 'render3d';
+const isFotoAntigaMode = promptCategory === 'fotoAntiga';
+const isComidaMode = promptCategory === 'comida';
+const isLogoMode = promptCategory === 'logo';
+const isRender3dMode = promptCategory === 'render3d';
+```
+
+#### 2.3 Atualizar chamada à edge function
+
+```text
+detailDenoise: isComidaMode 
+  ? comidaDetailLevel 
+  : isLogoMode 
+    ? (version === 'pro' ? logoDetailLevel : undefined)
+    : isRender3dMode
+      ? (version === 'pro' ? render3dDetailLevel : undefined)
+      : (isSpecialWorkflow ? undefined : detailDenoise),
+```
+
+#### 2.4 Adicionar slider de Logo e Arte (PRO only)
+
+```text
+{/* Logo/Arte Detail Level Slider - PRO only */}
+{isLogoMode && version === 'pro' && (
+  <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+    <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center gap-1.5">
+        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+        <span className="text-xs font-medium text-white">Nível de Detalhe</span>
+      </div>
+      <span className="text-xs text-purple-300 font-mono">{logoDetailLevel.toFixed(2)}</span>
+    </div>
+    <Slider
+      value={[logoDetailLevel]}
+      onValueChange={([value]) => setLogoDetailLevel(value)}
+      min={0.01}
+      max={1.00}
+      step={0.01}
+      className="w-full"
+    />
+    <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+      <span>Mais Fidelidade</span>
+      <span>Mais Criatividade</span>
+    </div>
+    <p className="text-[9px] text-purple-300/40 mt-1 text-center">
+      Recomendado: 0,30 a 0,60
+    </p>
+  </Card>
+)}
+```
+
+#### 2.5 Adicionar slider de Selos 3D (PRO only)
+
+```text
+{/* Selos 3D Detail Level Slider - PRO only */}
+{isRender3dMode && version === 'pro' && (
+  <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+    <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center gap-1.5">
+        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+        <span className="text-xs font-medium text-white">Nível de Detalhe</span>
+      </div>
+      <span className="text-xs text-purple-300 font-mono">{render3dDetailLevel.toFixed(2)}</span>
+    </div>
+    <Slider
+      value={[render3dDetailLevel]}
+      onValueChange={([value]) => setRender3dDetailLevel(value)}
+      min={0.01}
+      max={1.00}
+      step={0.01}
+      className="w-full"
+    />
+    <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+      <span>Mais Fidelidade</span>
+      <span>Mais Criatividade</span>
+    </div>
+    <p className="text-[9px] text-purple-300/40 mt-1 text-center">
+      Recomendado: 0,70 a 0,90
+    </p>
+  </Card>
+)}
+```
+
+---
+
+## Fluxo de Dados
+
+```text
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            LOGO E ARTE                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Standard: Apenas imagem                                                │
+│  PRO: Imagem + Slider (0.01-1.00, padrão 0.40)                         │
+│                                                                         │
+│  → WebApp ID: 2019239272464785409                                       │
+│  → Node 39: image                                                       │
+│  → Node 33: value (PRO only)                                            │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            SELOS 3D                                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Standard: Apenas imagem                                                │
+│  PRO: Imagem + Slider (0.01-1.00, padrão 0.80)                         │
+│                                                                         │
+│  → WebApp ID: 2019234965992509442                                       │
+│  → Node 301: image                                                      │
+│  → Node 300: value (PRO only)                                           │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Interface Visual
+
+### Versão Standard (ambas categorias)
+```text
+┌─────────────────────────────────┐
+│ [Tipo de Imagem: Logo e Arte]  │
+│                                 │
+│ ┌─────────────────────────────┐ │
+│ │      Upload de Imagem       │ │
+│ │         (apenas)            │ │
+│ └─────────────────────────────┘ │
+│                                 │
+│ [Processar Imagem]              │
+└─────────────────────────────────┘
+```
+
+### Versão PRO (ambas categorias)
+```text
+┌─────────────────────────────────┐
+│ [Tipo de Imagem: Selos 3D]     │
+│                                 │
+│ ┌─────────────────────────────┐ │
+│ │      Upload de Imagem       │ │
+│ └─────────────────────────────┘ │
+│                                 │
+│ ┌─────────────────────────────┐ │
+│ │ Nível de Detalhe      0.80  │ │
+│ │ ────────────●───────────    │ │
+│ │ Mais Fidelidade  Mais Criat.│ │
+│ │    Recomendado: 0,70 a 0,90 │ │
+│ └─────────────────────────────┘ │
+│                                 │
+│ [Processar Imagem]              │
+└─────────────────────────────────┘
 ```
 
 ---
 
 ## Resumo das Mudanças
 
-| Tipo | Arquivo | Ação |
-|------|---------|------|
-| Backend | `runninghub-queue-manager/index.ts` | + Endpoint `/check-user-active` |
-| Hook | `src/hooks/useActiveJobCheck.ts` | Novo arquivo |
-| Componente | `src/components/ai-tools/ActiveJobBlockModal.tsx` | Novo arquivo |
-| Frontend | `src/pages/UpscalerArcanoTool.tsx` | + Verificação antes de processar |
-| Frontend | `src/pages/VideoUpscalerTool.tsx` | + Verificação antes de processar |
-| Frontend | `src/pages/PoseChangerTool.tsx` | + Verificação antes de processar |
-| Frontend | `src/pages/VesteAITool.tsx` | + Verificação antes de processar |
+| Arquivo | Tipo | Mudança |
+|---------|------|---------|
+| `runninghub-upscaler/index.ts` | Backend | + `WEBAPP_ID_LOGO` e `WEBAPP_ID_RENDER3D` |
+| `runninghub-upscaler/index.ts` | Backend | + Detecção `isLogoMode` e `isRender3dMode` |
+| `runninghub-upscaler/index.ts` | Backend | + nodeInfoList para Logo (Nodes 39, 33) |
+| `runninghub-upscaler/index.ts` | Backend | + nodeInfoList para Selos 3D (Nodes 301, 300) |
+| `UpscalerArcanoTool.tsx` | Frontend | + Estados `logoDetailLevel` e `render3dDetailLevel` |
+| `UpscalerArcanoTool.tsx` | Frontend | + Flags `isLogoMode` e `isRender3dMode` |
+| `UpscalerArcanoTool.tsx` | Frontend | + Sliders de detalhe para ambas categorias (PRO) |
+| `UpscalerArcanoTool.tsx` | Frontend | Atualizar lógica de `detailDenoise` na requisição |
 
 ---
 
-## Observações
+## Categorias Finais com Workflows Dedicados
 
-1. **Por conta, não por IP**: A verificação é por `user_id`, então se o mesmo usuário estiver logado em duas abas, será bloqueado. Contas diferentes podem processar simultaneamente.
-
-2. **Não bloqueia na fila**: Se o job está `queued` (esperando slot), também bloqueia iniciar outro - isso evita que o usuário entre na fila várias vezes.
-
-3. **Falha segura**: Se a verificação falhar (rede, etc), permite continuar para não prejudicar a experiência.
-
-4. **Performance**: A verificação é rápida pois usa `limit(1)` e para no primeiro job encontrado.
+| Categoria | Workflow Dedicado | Controles Visíveis |
+|-----------|-------------------|-------------------|
+| Pessoas | ❌ (usa Standard/PRO) | Resolução, Prompt, Enquadramento, Detalhe |
+| Paisagem/Ambiente | ❌ (usa Standard/PRO) | Resolução, Prompt, Enquadramento, Detalhe |
+| Foto Antiga | ✅ WebApp Próprio | Apenas Imagem |
+| Comida/Objeto | ✅ WebApp Próprio | Imagem + Slider PRO |
+| Logo e Arte | ✅ WebApp Próprio | Imagem + Slider PRO |
+| Selos 3D | ✅ WebApp Próprio | Imagem + Slider PRO |
