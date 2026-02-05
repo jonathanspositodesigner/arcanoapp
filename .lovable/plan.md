@@ -1,77 +1,33 @@
 
 
-## Objetivo
-Criar regras permanentes para **proibir QUALQUER migração** nas Edge Functions sem autorização explícita do usuário - seja Deno.serve, mudança de imports, ou qualquer outra alteração de padrão.
+## Diagnóstico
+
+O job `2019471503829110786` está com status `running` no banco de dados desde `18:01:40`, mas nunca recebeu o callback de conclusão do RunningHub. O webhook (`runninghub-webhook`) não registrou nenhuma chamada.
+
+**Causa raiz identificada**: As funções de RunningHub ainda estão usando `esm.sh` para importar o Supabase client, enquanto as outras 22 funções já foram migradas para `npm:`. Isso pode causar falhas de bundling/deploy, resultando em webhooks não funcionais.
 
 ## O que será feito
 
-### 1. Criar arquivo de regras do projeto
+### 1. Corrigir 6 funções de RunningHub para usar `npm:` em vez de `esm.sh`
 
-Arquivo: `.lovable/RULES.md`
+| Arquivo | Mudança |
+|---------|---------|
+| `runninghub-webhook/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
+| `runninghub-upscaler/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
+| `runninghub-pose-changer/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
+| `runninghub-veste-ai/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
+| `runninghub-video-upscaler/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
+| `runninghub-video-upscaler-webhook/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
 
-```markdown
-# REGRAS CRÍTICAS DO PROJETO - NÃO VIOLAR
+### 2. Fazer deploy de todas as 6 funções
 
-## 🚨 PROIBIDO: Qualquer Migração nas Edge Functions
+### 3. Corrigir manualmente o job pendente
 
-As Edge Functions deste projeto estão em um padrão estável e testado.
-**NENHUMA MIGRAÇÃO** é permitida sem autorização explícita do usuário.
+Depois do deploy, vou atualizar o status do job para `failed` e estornar os 60 créditos do usuário.
 
-### Padrão atual (MANTER SEMPRE):
-- ✅ `import { serve } from "https://deno.land/std@0.168.0/http/server.ts"`
-- ✅ `import { createClient } from 'npm:@supabase/supabase-js@2'`
-- ✅ `serve(async (req) => { ... })`
+## Resultado esperado
 
-### Migrações PROIBIDAS (lista não exaustiva):
-- ❌ `Deno.serve()` - NUNCA
-- ❌ Mudança de versão do std (ex: 0.168.0 para 0.200.0)
-- ❌ Mudança de `npm:` para `esm.sh` ou vice-versa
-- ❌ Mudança de estrutura de imports
-- ❌ Qualquer "modernização" ou "atualização de padrão"
-- ❌ Qualquer refatoração de bootstrap/servidor
-
-### Regra obrigatória
-
-Se a IA identificar qualquer sugestão de migração:
-1. **PARAR** imediatamente
-2. **INFORMAR** ao usuário qual migração seria feita
-3. **PERGUNTAR** explicitamente se autoriza
-4. **AGUARDAR** confirmação por escrito
-5. **SÓ PROSSEGUIR** após "SIM" explícito
-
-### Histórico
-- Data da regra: 05/02/2026
-- Motivo: Incidente crítico - migração para Deno.serve() quebrou 22 funções,
-  incluindo webhooks de vendas (Greenn/Hotmart), causando perda de clientes.
-```
-
-### 2. Adicionar aviso em todas as funções críticas (webhooks)
-
-Comentário no topo de cada webhook:
-
-```typescript
-/**
- * ⚠️ ATENÇÃO - REGRA CRÍTICA DO PROJETO ⚠️
- * 
- * NÃO FAZER NENHUMA MIGRAÇÃO NESTE ARQUIVO:
- * - NÃO mudar para Deno.serve()
- * - NÃO alterar imports (std, npm:, etc)
- * - NÃO "modernizar" ou "atualizar" padrões
- * 
- * Qualquer alteração de padrão requer autorização EXPLÍCITA.
- * Regras completas em: .lovable/RULES.md
- */
-```
-
-Arquivos que receberão este aviso:
-- `webhook-greenn-artes/index.ts`
-- `webhook-greenn/index.ts`
-- `webhook-greenn-musicos/index.ts`
-- `webhook-greenn-creditos/index.ts`
-- `webhook-hotmart-artes/index.ts`
-
-## Resultado
-- Regra documentada cobrindo TODAS as migrações
-- Avisos visíveis nas funções mais críticas
-- Proteção contra qualquer alteração não autorizada
+- Todas as funções de IA usando o padrão estável (`npm:`)
+- Webhooks funcionando corretamente
+- Próximos jobs receberão os callbacks normalmente
 
