@@ -19,8 +19,9 @@ export function useQueueSessionCleanup(
   const isQueuedRef = useRef(false);
   
   // Atualizar ref quando status muda
+  // Include 'waiting' status which is used in Upscaler when job enters queue via realtime
   useEffect(() => {
-    isQueuedRef.current = status === 'queued' || status === 'waiting';
+    isQueuedRef.current = status === 'queued' || status === 'waiting' || status === 'uploading';
   }, [status]);
   
   // Função para cancelar jobs da sessão

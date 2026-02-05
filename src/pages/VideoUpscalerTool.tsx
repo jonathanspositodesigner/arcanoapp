@@ -275,15 +275,15 @@ const VideoUpscalerTool: React.FC = () => {
       return;
     }
  
-     // Check if user has active job in any tool
-     const { hasActiveJob, activeTool, activeStatus } = await checkActiveJob(user.id);
-     if (hasActiveJob && activeTool) {
-       setActiveToolName(activeTool);
-       setActiveJobStatus(activeStatus || '');
-       setShowActiveJobModal(true);
-       processingRef.current = false;
-       return;
-     }
+    // Check if user has active job in any tool
+    const { hasActiveJob, activeTool, activeStatus } = await checkActiveJob(user.id);
+    if (hasActiveJob && activeTool) {
+      setActiveToolName(activeTool);
+      setActiveJobStatus(activeStatus || '');
+      setShowActiveJobModal(true);
+      processingRef.current = false;
+      return;
+    }
 
     if (credits < CREDIT_COST) {
       setNoCreditsReason('insufficient');
@@ -296,18 +296,30 @@ const VideoUpscalerTool: React.FC = () => {
     setProgress(0);
     setOutputVideoUrl(null);
 
+    // Generate jobId upfront for orphan-proof workflow
+    const generatedJobId = crypto.randomUUID();
+    let jobCreatedInDb = false;
+
     try {
-      // Step 1: Create job in database
+      // Step 1: Upload video FIRST (before creating job in DB)
+      // This prevents orphan jobs if app closes during upload
+      setProgress(10);
+      const videoStorageUrl = await uploadToStorage(videoFile);
+      console.log('[VideoUpscaler] Video uploaded:', videoStorageUrl);
+      setProgress(30);
+
+      // Step 2: Create job in database ONLY AFTER successful upload
       const { data: job, error: jobError } = await supabase
         .from('video_upscaler_jobs')
         .insert({
+          id: generatedJobId,
           session_id: sessionIdRef.current,
           user_id: user.id,
           status: 'queued',
           video_width: videoMetadata?.width,
           video_height: videoMetadata?.height,
           video_duration_seconds: videoMetadata?.duration,
-          input_file_name: videoFile.name,
+          input_file_name: videoStorageUrl,  // Store URL, not just filename
         })
         .select()
         .single();
@@ -316,16 +328,12 @@ const VideoUpscalerTool: React.FC = () => {
         throw new Error('Failed to create job');
       }
 
+      jobCreatedInDb = true;
       setJobId(job.id);
       console.log('[VideoUpscaler] Job created:', job.id);
-
-      // Step 2: Upload video to storage
-      setProgress(20);
-      const videoStorageUrl = await uploadToStorage(videoFile);
-      console.log('[VideoUpscaler] Video uploaded:', videoStorageUrl);
+      setProgress(40);
 
       // Step 3: Call edge function
-      setProgress(40);
       setStatus('processing');
       
       const { data: runResult, error: runError } = await supabase.functions.invoke(
@@ -373,6 +381,24 @@ const VideoUpscalerTool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[VideoUpscaler] Process error:', error);
+      
+      // If job was created in DB, mark it as failed to prevent orphan
+      if (jobCreatedInDb && generatedJobId) {
+        try {
+          await supabase
+            .from('video_upscaler_jobs')
+            .update({ 
+              status: 'failed', 
+              error_message: error.message || 'Client-side error',
+              completed_at: new Date().toISOString()
+            })
+            .eq('id', generatedJobId);
+          console.log('[VideoUpscaler] Marked failed job in DB:', generatedJobId);
+        } catch (cleanupError) {
+          console.error('[VideoUpscaler] Failed to cleanup job:', cleanupError);
+        }
+      }
+      
       setStatus('error');
       toast.error(error.message || 'Erro ao processar vídeo');
       processingRef.current = false;

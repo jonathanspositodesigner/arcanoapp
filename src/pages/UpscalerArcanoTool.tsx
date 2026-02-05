@@ -23,7 +23,7 @@ import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
  import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 
-type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
+type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
 interface ErrorDetails {
   message: string;
@@ -211,6 +211,7 @@ const UpscalerArcanoTool: React.FC = () => {
             setProgress(prev => Math.min(prev + 5, 90));
           } else if (job.status === 'queued') {
             console.log('[Upscaler] Job queued at position:', job.position);
+            setStatus('waiting');  // Set status to 'waiting' for cleanup hook
             setIsWaitingInQueue(true);
             setQueuePosition(job.position || 1);
           }
@@ -332,29 +333,13 @@ const UpscalerArcanoTool: React.FC = () => {
     setStatus('uploading');
     setProgress(10);
 
+    // Generate jobId upfront for orphan-proof workflow
+    const generatedJobId = crypto.randomUUID();
+    let jobCreatedInDb = false;
+    
     try {
-      // Step 1: Create job in database
-      const { data: job, error: jobError } = await supabase
-        .from('upscaler_jobs')
-        .insert({
-          session_id: sessionIdRef.current,
-          status: 'queued',
-          detail_denoise: detailDenoise,
-          prompt: getFinalPrompt(),
-          user_id: user.id
-        })
-        .select()
-        .single();
-
-      if (jobError || !job) {
-        throw new Error('Erro ao criar job: ' + (jobError?.message || 'Unknown'));
-      }
-
-      console.log('[Upscaler] Job created:', job.id);
-      setJobId(job.id);
-      setProgress(20);
-
-      // Step 2: Upload image directly to Storage (no Base64 to edge function)
+      // Step 1: Upload image FIRST (before creating job in DB)
+      // This prevents orphan jobs if app closes during upload
       const base64Data = inputImage.split(',')[1];
       const binaryStr = atob(base64Data);
       const bytes = new Uint8Array(binaryStr.length);
@@ -363,7 +348,7 @@ const UpscalerArcanoTool: React.FC = () => {
       }
 
       const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
-      const storagePath = `upscaler/${job.id}.${ext}`;
+      const storagePath = `upscaler/${generatedJobId}.${ext}`;
       
       const { error: uploadError } = await supabase.storage
         .from('artes-cloudinary')
@@ -383,6 +368,29 @@ const UpscalerArcanoTool: React.FC = () => {
 
       const imageUrl = publicUrlData.publicUrl;
       console.log('[Upscaler] Image uploaded:', imageUrl);
+      setProgress(30);
+
+      // Step 2: Create job in database ONLY AFTER successful upload
+      const { data: job, error: jobError } = await supabase
+        .from('upscaler_jobs')
+        .insert({
+          id: generatedJobId,
+          session_id: sessionIdRef.current,
+          status: 'queued',
+          detail_denoise: detailDenoise,
+          prompt: getFinalPrompt(),
+          user_id: user.id
+        })
+        .select()
+        .single();
+
+      if (jobError || !job) {
+        throw new Error('Erro ao criar job: ' + (jobError?.message || 'Unknown'));
+      }
+
+      jobCreatedInDb = true;
+      console.log('[Upscaler] Job created:', job.id);
+      setJobId(job.id);
       setProgress(40);
 
       // Step 3: Call edge function with URL (not base64)
@@ -396,20 +404,20 @@ const UpscalerArcanoTool: React.FC = () => {
           imageUrl: imageUrl,
           version: version,
           userId: user.id,
-           creditCost: creditCost,
-           category: promptCategory,
-           // Conditional parameters based on workflow type
-           detailDenoise: isComidaMode 
-             ? comidaDetailLevel 
-             : isLogoMode 
-               ? (version === 'pro' ? logoDetailLevel : undefined)
-               : isRender3dMode
-                 ? (version === 'pro' ? render3dDetailLevel : undefined)
-                 : (isSpecialWorkflow ? undefined : detailDenoise),
-           resolution: isSpecialWorkflow ? undefined : resolutionValue,
-           prompt: isSpecialWorkflow ? undefined : getFinalPrompt(),
-           framingMode: isSpecialWorkflow ? undefined : framingMode,
-           editingLevel: (version === 'pro' && promptCategory === 'pessoas_perto') ? editingLevel : undefined,
+          creditCost: creditCost,
+          category: promptCategory,
+          // Conditional parameters based on workflow type
+          detailDenoise: isComidaMode 
+            ? comidaDetailLevel 
+            : isLogoMode 
+              ? (version === 'pro' ? logoDetailLevel : undefined)
+              : isRender3dMode
+                ? (version === 'pro' ? render3dDetailLevel : undefined)
+                : (isSpecialWorkflow ? undefined : detailDenoise),
+          resolution: isSpecialWorkflow ? undefined : resolutionValue,
+          prompt: isSpecialWorkflow ? undefined : getFinalPrompt(),
+          framingMode: isSpecialWorkflow ? undefined : framingMode,
+          editingLevel: (version === 'pro' && promptCategory === 'pessoas_perto') ? editingLevel : undefined,
         }
       });
 
@@ -430,6 +438,24 @@ const UpscalerArcanoTool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[Upscaler] Error:', error);
+      
+      // If job was created in DB, mark it as failed to prevent orphan
+      if (jobCreatedInDb && generatedJobId) {
+        try {
+          await supabase
+            .from('upscaler_jobs')
+            .update({ 
+              status: 'failed', 
+              error_message: error.message || 'Client-side error',
+              completed_at: new Date().toISOString()
+            })
+            .eq('id', generatedJobId);
+          console.log('[Upscaler] Marked failed job in DB:', generatedJobId);
+        } catch (cleanupError) {
+          console.error('[Upscaler] Failed to cleanup job:', cleanupError);
+        }
+      }
+      
       setStatus('error');
       setLastError({
         message: error.message || 'Erro desconhecido',
