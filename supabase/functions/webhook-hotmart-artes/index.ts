@@ -1,3 +1,14 @@
+/**
+ * ⚠️ ATENÇÃO - REGRA CRÍTICA DO PROJETO ⚠️
+ * 
+ * NÃO FAZER NENHUMA MIGRAÇÃO NESTE ARQUIVO:
+ * - NÃO mudar para Deno.serve()
+ * - NÃO alterar imports (std, npm:, etc)
+ * - NÃO "modernizar" ou "atualizar" padrões
+ * 
+ * Qualquer alteração de padrão requer autorização EXPLÍCITA.
+ * Regras completas em: .lovable/RULES.md
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
