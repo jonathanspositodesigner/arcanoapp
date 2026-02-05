@@ -1,20 +1,45 @@
 
 
-# ✅ CONCLUÍDO: Melhorar Modal "Trabalho em Andamento" com Detalhes e Opção de Cancelar
+# Plano: Corrigir Deploy do Webhook Greenn Artes
 
-## Implementado
+## Problema Identificado
 
-1. ✅ **Função SQL `user_cancel_ai_job()`** - Permite que usuários cancelem seus próprios jobs e recebam estorno
-2. ✅ **Hook `useActiveJobCheck`** atualizado com função `cancelActiveJob()`
-3. ✅ **Modal `ActiveJobBlockModal`** atualizado para mostrar status e botão cancelar
-4. ✅ **Todas as 4 páginas de ferramentas** atualizadas com os novos props:
-   - UpscalerArcanoTool.tsx
-   - PoseChangerTool.tsx
-   - VesteAITool.tsx
-   - VideoUpscalerTool.tsx
+A Edge Function `webhook-greenn-artes` **NÃO ESTÁ DEPLOYADA** no Supabase. Quando a Greenn tenta enviar um webhook, recebe erro 404 (função não encontrada).
 
-## Resultado
+O deploy está falhando com "Bundle generation timed out" - provavelmente por causa da importação via `esm.sh` que está instável.
 
-- O modal agora mostra o **status atual** do trabalho (Processando/Na Fila)
-- Botão **"Cancelar Trabalho"** permite que o usuário cancele e receba os créditos de volta
-- Toast confirma o estorno de créditos
+## Solução
+
+Atualizar a importação do Supabase client de `esm.sh` para `npm:` (mais estável e recomendado):
+
+```typescript
+// ANTES (linha 1)
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+// DEPOIS
+import { createClient } from 'npm:@supabase/supabase-js@2'
+```
+
+## Arquivo a Modificar
+
+| Arquivo | Mudança |
+|---------|---------|
+| `supabase/functions/webhook-greenn-artes/index.ts` | Trocar import de `esm.sh` para `npm:` |
+
+## Após o Deploy
+
+1. Testar a URL novamente
+2. Reenviar os webhooks das vendas perdidas na Greenn
+3. Verificar se todos os clientes foram ativados
+
+## Vendas Perdidas a Reprocessar
+
+Após o deploy, você precisará reenviar os webhooks na Greenn para:
+1. `venicio.scatolino@gm...` (12:25)
+2. `ellemarie.2011@hotma...` (12:33)
+3. `dayvsonuser@gmail.co...` (12:37)
+4. `henriquearaujo271509...` (13:16)
+5. `robson.b.dantas@gmai...` (13:32)
+6. `llena_cavalcante@hot...` (14:05)
+7. `hildafotos.01@gmail...` (14:09)
+
