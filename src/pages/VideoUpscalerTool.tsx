@@ -66,7 +66,9 @@ const VideoUpscalerTool: React.FC = () => {
    // Active job block modal
    const [showActiveJobModal, setShowActiveJobModal] = useState(false);
    const [activeToolName, setActiveToolName] = useState<string>('');
-   const { checkActiveJob } = useActiveJobCheck();
+   const [activeJobId, setActiveJobId] = useState<string | undefined>();
+   const [activeStatus, setActiveStatus] = useState<string | undefined>();
+   const { checkActiveJob, cancelActiveJob } = useActiveJobCheck();
 
   const canProcess = videoUrl && videoFile && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
@@ -274,14 +276,16 @@ const VideoUpscalerTool: React.FC = () => {
       return;
     }
  
-     // Check if user has active job in any tool
-     const { hasActiveJob, activeTool } = await checkActiveJob(user.id);
-     if (hasActiveJob && activeTool) {
-       setActiveToolName(activeTool);
-       setShowActiveJobModal(true);
-       processingRef.current = false;
-       return;
-     }
+    // Check if user has active job in any tool
+    const activeCheck = await checkActiveJob(user.id);
+    if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+      setActiveToolName(activeCheck.activeTool);
+      setActiveJobId(activeCheck.activeJobId);
+      setActiveStatus(activeCheck.activeStatus);
+      setShowActiveJobModal(true);
+      processingRef.current = false;
+      return;
+    }
 
     if (credits < CREDIT_COST) {
       setNoCreditsReason('insufficient');
@@ -633,12 +637,15 @@ const VideoUpscalerTool: React.FC = () => {
         reason={noCreditsReason}
       />
        
-       {/* Active Job Block Modal */}
-       <ActiveJobBlockModal
-         isOpen={showActiveJobModal}
-         onClose={() => setShowActiveJobModal(false)}
-         activeTool={activeToolName}
-       />
+      {/* Active Job Block Modal */}
+      <ActiveJobBlockModal
+        isOpen={showActiveJobModal}
+        onClose={() => setShowActiveJobModal(false)}
+        activeTool={activeToolName}
+        activeJobId={activeJobId}
+        activeStatus={activeStatus}
+        onCancelJob={cancelActiveJob}
+      />
     </div>
   );
 };

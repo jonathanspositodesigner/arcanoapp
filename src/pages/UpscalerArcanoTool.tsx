@@ -86,7 +86,9 @@ const UpscalerArcanoTool: React.FC = () => {
    // Active job block modal state
    const [showActiveJobModal, setShowActiveJobModal] = useState(false);
    const [activeToolName, setActiveToolName] = useState<string>('');
-   const { checkActiveJob } = useActiveJobCheck();
+   const [activeJobId, setActiveJobId] = useState<string | undefined>();
+   const [activeStatus, setActiveStatus] = useState<string | undefined>();
+   const { checkActiveJob, cancelActiveJob } = useActiveJobCheck();
 
   // Queue message combos for friendly waiting experience
   const queueMessageCombos = [
@@ -308,9 +310,11 @@ const UpscalerArcanoTool: React.FC = () => {
     }
  
      // Check if user has active job in any tool
-     const { hasActiveJob, activeTool } = await checkActiveJob(user.id);
-     if (hasActiveJob && activeTool) {
-       setActiveToolName(activeTool);
+     const activeCheck = await checkActiveJob(user.id);
+     if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+       setActiveToolName(activeCheck.activeTool);
+       setActiveJobId(activeCheck.activeJobId);
+       setActiveStatus(activeCheck.activeStatus);
        setShowActiveJobModal(true);
        return;
      }
@@ -1252,12 +1256,15 @@ const UpscalerArcanoTool: React.FC = () => {
         reason={noCreditsReason}
       />
        
-       {/* Active Job Block Modal */}
-       <ActiveJobBlockModal
-         isOpen={showActiveJobModal}
-         onClose={() => setShowActiveJobModal(false)}
-         activeTool={activeToolName}
-       />
+      {/* Active Job Block Modal */}
+      <ActiveJobBlockModal
+        isOpen={showActiveJobModal}
+        onClose={() => setShowActiveJobModal(false)}
+        activeTool={activeToolName}
+        activeJobId={activeJobId}
+        activeStatus={activeStatus}
+        onCancelJob={cancelActiveJob}
+      />
     </div>
   );
 };

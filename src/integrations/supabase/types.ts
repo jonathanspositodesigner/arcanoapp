@@ -2992,6 +2992,14 @@ export type Database = {
       update_pose_changer_queue_positions: { Args: never; Returns: undefined }
       update_queue_positions: { Args: never; Returns: undefined }
       update_veste_ai_queue_positions: { Args: never; Returns: undefined }
+      user_cancel_ai_job: {
+        Args: { p_job_id: string; p_table_name: string }
+        Returns: {
+          error_message: string
+          refunded_amount: number
+          success: boolean
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "partner"
