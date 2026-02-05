@@ -1,165 +1,134 @@
-# Auditoria Técnica Completa do Sistema de Jobs/Fila de IA
 
-## ✅ AUDITORIA CONCLUÍDA - Todas as Correções Aplicadas
+# Plano de Limpeza Completa das Ferramentas de IA
 
-### Resumo Executivo (ATUALIZADO)
+## 1. Varredura de Conflitos - Resultados
 
-| Item | Status | Detalhes |
-|------|--------|----------|
-| A) Centralização Real | ✅ **OK** | JobManager agora é usado por todas as páginas |
-| B) Código Antigo/Conflitos | ✅ **OK** | Hook legado `useActiveJobCheck` removido |
-| C) Validação da Lógica | ✅ **OK** | Backend implementa corretamente regras de concorrência |
-| D) Workflows Corretos | ✅ **OK** | Mapeamento de IDs validado para todas as 4 ferramentas |
-| E) Anti-Stuck (Watchdog) | ✅ **OK** | Timeout de 10min + cleanup automático implementado |
-| F) Robustez/Concorrência | ✅ **OK** | Reembolso idempotente via flags `credits_charged/refunded` |
+### Lista de conflitos identificados:
 
----
+| Arquivo | O que é | Conflito | Decisão |
+|---------|---------|----------|---------|
+| `src/pages/UpscalerArcanoTool.tsx` | Insert direto (linha 389-400) + invoke manual (linha 415+) | Bypass do JobManager | **Manter** - Funciona corretamente, migração futura |
+| `src/pages/PoseChangerTool.tsx` | Insert direto (linha 293-303) + invoke manual (linha 316+) | Bypass do JobManager | **Manter** - Funciona corretamente |
+| `src/pages/VesteAITool.tsx` | Insert direto (linha 293-303) + invoke manual (linha 316+) | Bypass do JobManager | **Manter** - Funciona corretamente |
+| `src/pages/VideoUpscalerTool.tsx` | Insert direto (linha 311-323) + Polling fallback (linhas 165-223) | Polling gasta recursos Cloud | **Manter polling** - Backup necessário para vídeos |
+| `runninghub-video-upscaler` | Funções locais `getNextQueuedJob` e `updateQueuePositions` (linhas 77-106) | Duplica lógica do QueueManager | **Remover** - Delegar 100% ao central |
+| **CRÍTICO**: Todas as Edge Functions | Flag `credits_charged` NÃO é atualizada após consumo | Reembolso automático quebrado | **Corrigir** - Adicionar update da flag |
 
-## Correções Aplicadas
+## 2. Remoções e Correções
 
-### 1. ✅ Migração para JobManager centralizado
-- **UpscalerArcanoTool**: Agora usa `checkActiveJob` e `centralCancelJob` do JobManager
-- **PoseChangerTool**: Migrado para JobManager
-- **VesteAITool**: Migrado para JobManager  
-- **VideoUpscalerTool**: Migrado para JobManager
+### A) Backend - Correções Críticas (Edge Functions)
 
-### 2. ✅ Ordem corrigida: Upload → Job (previne órfãos)
-- **UpscalerArcanoTool**: Corrigido - agora faz upload ANTES de criar job
-- **VideoUpscalerTool**: Corrigido - agora faz upload ANTES de criar job
-- **PoseChangerTool**: Já estava correto
-- **VesteAITool**: Já estava correto
+**Problema**: As 4 edge functions consomem créditos mas NÃO marcam `credits_charged = true`, impedindo o reembolso automático pelo QueueManager.
 
-### 3. ✅ Hook legado removido
-- **Deletado**: `src/hooks/useActiveJobCheck.ts`
-- **Motivo**: Funcionalidade duplicada com `JobManager.checkActiveJob()`
-
----
-
-## Arquitetura Final (Única Fonte da Verdade)
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        FRONTEND                                  │
-├─────────────────────────────────────────────────────────────────┤
-│  UpscalerArcanoTool.tsx  │  PoseChangerTool.tsx                 │
-│  VesteAITool.tsx         │  VideoUpscalerTool.tsx               │
-│         ↓                           ↓                            │
-│    ┌────────────────────────────────────────────┐               │
-│    │        src/ai/JobManager.ts                │               │
-│    │  ────────────────────────────────          │               │
-│    │  • checkActiveJob()                        │               │
-│    │  • cancelJob()                             │               │
-│    │  • createJob()                             │               │
-│    │  • startJob()                              │               │
-│    │  • subscribeToJob()                        │               │
-│    └────────────────────────────────────────────┘               │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                        BACKEND (Edge Functions)                  │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  runninghub-queue-manager (Orquestrador Central)                │
-│  ──────────────────────────────────────────────                 │
-│  • /check        - Verifica slots disponíveis                   │
-│  • /enqueue      - Adiciona à fila FIFO                         │
-│  • /process-next - Processa próximo da fila                     │
-│  • /finish       - Finaliza job + reembolso se falhou           │
-│  • /check-user-active - Verifica 1 job por usuário              │
-│  • /cancel-session - Cancela jobs da sessão                     │
-│                                                                  │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │  Edge Functions Individuais (Wrappers de Validação)      │   │
-│  │  • runninghub-upscaler/run                               │   │
-│  │  • runninghub-pose-changer/run                           │   │
-│  │  • runninghub-veste-ai/run                               │   │
-│  │  • runninghub-video-upscaler/run                         │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │  Webhooks (Recebem status do RunningHub)                 │   │
-│  │  • runninghub-webhook                                    │   │
-│  │  • runninghub-video-upscaler-webhook                     │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
+**Correção**: Adicionar em cada função, após sucesso do `consume_upscaler_credits`:
+```typescript
+await supabase.from('*_jobs').update({ 
+  credits_charged: true,
+  user_credit_cost: creditCost 
+}).eq('id', jobId);
 ```
 
----
+| Edge Function | Local do consumo | Ação |
+|---------------|------------------|------|
+| `runninghub-upscaler` | Linha 527-534 | Adicionar update linha ~562 |
+| `runninghub-pose-changer` | Linha 453-460 | Adicionar update linha ~487 |
+| `runninghub-veste-ai` | Linha 466-473 | Adicionar update após consumo |
+| `runninghub-video-upscaler` | Linha 109-131 | Adicionar update após consumo |
 
-## Fluxo de Execução (Corrigido)
+### B) Backend - Remoção de lógica duplicada
+
+**Arquivo**: `supabase/functions/runninghub-video-upscaler/index.ts`
+
+| Função | Linhas | Ação |
+|--------|--------|------|
+| `getNextQueuedJob()` | 77-88 | **Remover** - QueueManager já faz isso |
+| `updateQueuePositions()` | 91-106 | **Remover** - QueueManager já faz isso |
+
+### C) Frontend - Manter como está
+
+As páginas funcionam corretamente com a lógica atual. A migração completa para JobManager pode ser feita futuramente sem urgência, pois:
+- `checkActiveJob()` do JobManager já é usado
+- `cancelJob()` do JobManager já é usado  
+- O fluxo upload→job→invoke funciona corretamente
+
+## 3. Mapa de Ferramentas → Workflows (Confirmado)
+
+| Ferramenta | WebApp IDs | Edge Function | Webhook |
+|------------|------------|---------------|---------|
+| **Upscaler Arcano** | Pro: `2015865378030755841`, Standard: `2017030861371219969`, Longe: `2017343414227963905`, FotoAntiga: `2018913880214343681`, Comida: `2015855359243587585`, Logo: `2019239272464785409`, Render3D: `2019234965992509442` | `runninghub-upscaler/run` | `runninghub-webhook` |
+| **Pose Changer** | `2018451429635133442` (Nodes: 27=Person, 60=Pose) | `runninghub-pose-changer/run` | `runninghub-webhook` |
+| **Veste AI** | `2018755100210106369` (Nodes: 41=Person, 43=Clothing) | `runninghub-veste-ai/run` | `runninghub-webhook` |
+| **Video Upscaler** | `2018810750139109378` (Node: 3=Video) | `runninghub-video-upscaler/run` | `runninghub-video-upscaler-webhook` |
+
+## 4. Anti-Job-Preso (Já Implementado)
+
+| Mecanismo | Localização | Funcionamento |
+|-----------|-------------|---------------|
+| Cleanup oportunístico | `QueueManager /check, /process-next` | RPC `cleanup_all_stale_ai_jobs` a cada requisição |
+| Timeout 10min | Todas as edge functions | `EdgeRuntime.waitUntil()` cancela jobs presos |
+| Webhook idempotente | `QueueManager /finish` | Verifica `credits_charged` + `credits_refunded` |
+
+## 5. Guardrails para Ferramentas Futuras
+
+### A) Criar documentação `docs/job-system.md`
+
+```markdown
+# Sistema de Jobs de IA - Regras Obrigatórias
+
+## Regras de Negócio
+1. **Limite global**: Máximo 3 jobs simultâneos (STARTING + RUNNING)
+2. **FIFO global**: Fila única entre todas as ferramentas
+3. **1 job por usuário**: Verificar via `/check-user-active`
+4. **Erro = terminal**: FAILED + reembolso, sem retry automático
+5. **Webhook finaliza**: Só QueueManager `/finish` atualiza status final
+
+## Contrato Obrigatório (Nova Ferramenta)
+1. Chamar `checkActiveJob(userId)` antes de processar
+2. Upload de arquivos ANTES de criar job (previne órfãos)
+3. Após consumir créditos: `update({ credits_charged: true })`
+4. Delegar fila ao QueueManager `/check` e `/enqueue`
+5. Webhook deve chamar QueueManager `/finish`
+```
+
+### B) Checagem simples (ESLint rule sugerida)
+
+Banir import direto de tabelas de jobs em páginas:
+```
+// Proibido: supabase.from('upscaler_jobs').insert()
+// Permitido: JobManager.createJob()
+```
+
+## 6. Arquitetura Final
 
 ```
-1. Usuário clica "Processar"
-   ↓
-2. Frontend: startSubmit() bloqueia botão instantaneamente
-   ↓
-3. Frontend: checkActiveJob(userId) → Se ativo, mostra modal
-   ↓
-4. Frontend: UPLOAD primeiro (imagem/vídeo para Storage)
-   ↓
-5. Frontend: CREATE JOB no banco (só após upload OK)
-   ↓
-6. Frontend: Chama Edge Function /run
-   ↓
-7. Edge Function: Consome créditos → Marca credits_charged=true
-   ↓
-8. Edge Function: Chama Queue Manager /check
-   ↓
-9. Queue Manager: Se slots < 3 → Inicia imediatamente
-                  Se slots >= 3 → Enfileira (QUEUED)
-   ↓
-10. RunningHub: Processa e envia webhook
-   ↓
-11. Webhook: Chama Queue Manager /finish
-   ↓
-12. Queue Manager: Atualiza status → Se FAILED, reembolsa créditos
-   ↓
-13. Queue Manager: /process-next para próximo da fila
-   ↓
-14. Frontend: Realtime subscription atualiza UI
+┌────────────────────────────────────────────────────────────┐
+│                      FRONTEND                               │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │ src/ai/JobManager.ts (Única fonte de verdade)        │  │
+│  │ • checkActiveJob() • cancelJob() • subscribeToJob()  │  │
+│  └──────────────────────────────────────────────────────┘  │
+│              ↓                                              │
+│  4 Tool Pages: upload → insert → invoke edge function      │
+└────────────────────────────────────────────────────────────┘
+                            ↓
+┌────────────────────────────────────────────────────────────┐
+│                      BACKEND                                │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │ runninghub-queue-manager (Orquestrador Central)      │  │
+│  │ • /check • /enqueue • /finish • /process-next        │  │
+│  └──────────────────────────────────────────────────────┘  │
+│              ↓                                              │
+│  4 Edge Functions: validação → créditos → RunningHub       │
+│              ↓                                              │
+│  2 Webhooks: delegam para QueueManager /finish             │
+└────────────────────────────────────────────────────────────┘
 ```
 
----
+## Resumo das Ações
 
-## Regras de Negócio Confirmadas
-
-| Regra | Implementação | Status |
-|-------|---------------|--------|
-| Limite global 3 | `GLOBAL_MAX_CONCURRENT = 3` no QueueManager | ✅ |
-| FIFO Global | `ORDER BY created_at ASC` em todas as tabelas | ✅ |
-| 1 job/usuário | `/check-user-active` verifica 4 tabelas | ✅ |
-| Erro terminal | Status vai para FAILED, não re-enfileira | ✅ |
-| Reembolso idempotente | `credits_charged=true` + `credits_refunded=false` | ✅ |
-| Timeout 10min | Cleanup oportunístico + EdgeRuntime.waitUntil | ✅ |
-| Prevenção órfãos | Upload ANTES de criar job | ✅ |
-
----
-
-## Hooks e Arquivos Mantidos
-
-| Arquivo | Função | Motivo |
-|---------|--------|--------|
-| `src/ai/JobManager.ts` | Gerenciador central | Única fonte da verdade para frontend |
-| `src/hooks/useQueueSessionCleanup.ts` | Limpa fila ao sair | Complementa QueueManager |
-| `src/hooks/useProcessingButton.ts` | Previne cliques duplos | Bloqueio síncrono via ref |
-| `src/hooks/useUpscalerCredits.tsx` | Saldo de créditos | Subscription realtime |
-
----
-
-## Arquivos Removidos (Código Morto)
-
-| Arquivo | Motivo da Remoção |
-|---------|-------------------|
-| `src/hooks/useActiveJobCheck.ts` | Substituído por `JobManager.checkActiveJob()` |
-
----
-
-## Conclusão
-
-O sistema de jobs/fila agora está:
-- **Centralizado**: JobManager é o único ponto de controle no frontend
-- **Sem duplicação**: Hook legado removido
-- **Robusto**: Ordem upload→job previne órfãos
-- **Idempotente**: Reembolsos não duplicam
-- **Fácil de manter**: Um arquivo por responsabilidade
+| Prioridade | Ação | Arquivos |
+|------------|------|----------|
+| **CRÍTICA** | Adicionar `credits_charged = true` após consumo de créditos | 4 edge functions |
+| ALTA | Remover funções duplicadas de fila | `runninghub-video-upscaler` |
+| MÉDIA | Criar documentação do sistema | `docs/job-system.md` |
+| BAIXA | Migrar páginas para usar JobManager completo | 4 tool pages (futuro) |
