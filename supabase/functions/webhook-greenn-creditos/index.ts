@@ -1,4 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
 // Declaração do EdgeRuntime para TypeScript
 declare const EdgeRuntime: {
@@ -448,7 +449,7 @@ async function processGreennCreditosWebhook(
 // ============================================================================
 // HANDLER PRINCIPAL
 // ============================================================================
-Deno.serve(async (req) => {
+serve(async (req) => {
   const requestId = crypto.randomUUID().slice(0, 8)
   const startTime = Date.now()
 

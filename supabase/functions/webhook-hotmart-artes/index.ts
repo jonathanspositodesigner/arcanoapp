@@ -1,4 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -734,7 +735,7 @@ async function processHotmartWebhook(
 // ============================================================================
 // HANDLER PRINCIPAL - ACK RÁPIDO + BACKGROUND PROCESSING
 // ============================================================================
-Deno.serve(async (req) => {
+serve(async (req) => {
   const requestId = generateRequestId()
   
   // Handle CORS preflight
