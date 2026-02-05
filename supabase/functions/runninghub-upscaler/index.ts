@@ -16,6 +16,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const WEBAPP_ID_PRO = '2015865378030755841';
 const WEBAPP_ID_STANDARD = '2017030861371219969';
 const WEBAPP_ID_LONGE = '2017343414227963905';
+ const WEBAPP_ID_FOTO_ANTIGA = '2018913880214343681';
+ const WEBAPP_ID_COMIDA = '2015855359243587585';
 const MAX_CONCURRENT_JOBS = 3;
 
 // Rate limit configuration
@@ -28,7 +30,7 @@ if (!RUNNINGHUB_API_KEY) {
   console.error('[RunningHub] CRITICAL: Missing RUNNINGHUB_API_KEY secret');
 }
 
-console.log('[RunningHub] Config loaded - PRO:', WEBAPP_ID_PRO, 'STANDARD:', WEBAPP_ID_STANDARD);
+console.log('[RunningHub] Config loaded - PRO:', WEBAPP_ID_PRO, 'STANDARD:', WEBAPP_ID_STANDARD, 'FOTO_ANTIGA:', WEBAPP_ID_FOTO_ANTIGA, 'COMIDA:', WEBAPP_ID_COMIDA);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -309,7 +311,8 @@ async function handleRun(req: Request) {
     version,
     framingMode,
     userId,
-    creditCost
+     creditCost,
+     category
   } = await req.json();
   
   // ========== INPUT VALIDATION ==========
@@ -422,8 +425,8 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Validate framingMode
-  if (framingMode !== undefined && !['longe', 'perto'].includes(framingMode)) {
+   // Validate framingMode (only required for non-special workflows)
+   if (framingMode !== undefined && framingMode !== null && !['longe', 'perto'].includes(framingMode)) {
     return new Response(JSON.stringify({ 
       error: 'Invalid framing mode', 
       code: 'INVALID_FRAMING_MODE'
@@ -432,6 +435,18 @@ async function handleRun(req: Request) {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
+ 
+   // Validate category if provided
+   const validCategories = ['pessoas_perto', 'pessoas_longe', 'comida', 'fotoAntiga', 'logo', 'render3d'];
+   if (category !== undefined && !validCategories.includes(category)) {
+     return new Response(JSON.stringify({ 
+       error: 'Invalid category', 
+       code: 'INVALID_CATEGORY'
+     }), {
+       status: 400,
+       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+     });
+   }
 
   // Determine which fileName to use for RunningHub
   let rhFileName = fileName;
@@ -531,10 +546,23 @@ async function handleRun(req: Request) {
 
   console.log(`[RunningHub] Credits consumed successfully. New balance: ${creditResult[0].new_balance}`);
 
-  // Select WebApp ID based on version and framing mode
-  const isLongeMode = framingMode === 'longe';
-  const webappId = isLongeMode ? WEBAPP_ID_LONGE : (version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD);
-  console.log(`[RunningHub] Processing job ${jobId} - version: ${version}, framingMode: ${framingMode}, webappId: ${webappId}, rhFileName: ${rhFileName}`);
+   // Select WebApp ID based on category, version and framing mode
+   const isLongeMode = framingMode === 'longe' && category?.startsWith('pessoas');
+   const isFotoAntigaMode = category === 'fotoAntiga';
+   const isComidaMode = category === 'comida';
+   
+   let webappId: string;
+   if (isFotoAntigaMode) {
+     webappId = WEBAPP_ID_FOTO_ANTIGA;
+   } else if (isComidaMode) {
+     webappId = WEBAPP_ID_COMIDA;
+   } else if (isLongeMode) {
+     webappId = WEBAPP_ID_LONGE;
+   } else {
+     webappId = version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD;
+   }
+   
+   console.log(`[RunningHub] Processing job ${jobId} - category: ${category}, version: ${version}, framingMode: ${framingMode}, webappId: ${webappId}, rhFileName: ${rhFileName}`);
 
   try {
     // Update job with input file name
@@ -641,13 +669,30 @@ async function handleRun(req: Request) {
     // Build node info list
     let nodeInfoList: any[];
     
-    if (isLongeMode) {
+     if (isFotoAntigaMode) {
+       // === FOTO ANTIGA ===
+       // Only image, no other parameters
+       nodeInfoList = [
+         { nodeId: "139", fieldName: "image", fieldValue: rhFileName },
+       ];
+       console.log(`[RunningHub] Using FOTO ANTIGA workflow - only image`);
+     } else if (isComidaMode) {
+       // === COMIDA/OBJETO ===
+       // Image + detail level (0.70-1.00)
+       nodeInfoList = [
+         { nodeId: "50", fieldName: "image", fieldValue: rhFileName },
+         { nodeId: "48", fieldName: "value", fieldValue: String(detailDenoise || 0.85) },
+       ];
+       console.log(`[RunningHub] Using COMIDA/OBJETO workflow - detail: ${detailDenoise}`);
+     } else if (isLongeMode) {
+       // === DE LONGE ===
       nodeInfoList = [
         { nodeId: "1", fieldName: "image", fieldValue: rhFileName },
         { nodeId: "7", fieldName: "value", fieldValue: String(resolution || 2048) },
       ];
       console.log(`[RunningHub] Using "De Longe" WebApp with simplified nodeInfoList`);
     } else {
+       // === PADRÃO (Pessoas Perto, Logo, 3D) ===
       const resolutionNodeId = version === 'pro' ? "73" : "75";
       
       nodeInfoList = [
@@ -659,6 +704,7 @@ async function handleRun(req: Request) {
       if (prompt) {
         nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
       }
+       console.log(`[RunningHub] Using STANDARD/PRO workflow`);
     }
 
     const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
