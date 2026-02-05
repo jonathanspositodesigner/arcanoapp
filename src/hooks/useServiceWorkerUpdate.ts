@@ -51,6 +51,13 @@ export const useServiceWorkerUpdate = () => {
 
     // Check on mount
     checkForUpdates();
+ 
+     // Listen for controller change (new SW took over)
+     const handleControllerChange = () => {
+       console.log('[SW] New service worker activated');
+     };
+     
+     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 
     // Check when app becomes visible (user returns from background)
     const handleVisibilityChange = () => {
@@ -79,6 +86,7 @@ export const useServiceWorkerUpdate = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('pageshow', handlePageShow);
+       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
   }, []);
 };

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import { LocaleProvider } from "./contexts/LocaleContext";
+ import { UpdateAvailableBanner } from "./components/UpdateAvailableBanner";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./lib/i18n"; // Initialize i18n
 // Critical pages - keep static for fast initial load
@@ -124,6 +125,7 @@ const PackAgendas = lazy(() => import("./pages/PackAgendas"));
 const ComboArtesArcanas = lazy(() => import("./pages/ComboArtesArcanas"));
 const PlanosCreditos = lazy(() => import("./pages/PlanosCreditos"));
 const FerramentasIAAplicativo = lazy(() => import("./pages/FerramentasIAAplicativo"));
+ const ForceUpdate = lazy(() => import("./pages/ForceUpdate"));
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
@@ -155,6 +157,7 @@ const AppContent = () => {
     <TooltipProvider>
       <Toaster />
       <Sonner />
+       <UpdateAvailableBanner />
       
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
@@ -278,8 +281,10 @@ const AppContent = () => {
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
           <Route path="/planos-creditos" element={<PlanosCreditos />} />
           <Route path="/ferramentas-ia-aplicativo" element={<FerramentasIAAplicativo />} />
+           <Route path="/force-update" element={<ForceUpdate />} />
           
-          <Route path="*" element={<NotFound />} />
+           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </TooltipProvider>
