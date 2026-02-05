@@ -275,7 +275,7 @@ const ToolVersionEditor = ({
             {currentVersion.name}
           </Badge>
           <span className="text-sm text-muted-foreground">
-            {currentVersion.unlock_days === 0 ? 'Acesso imediato' : `Desbloqueia em ${currentVersion.unlock_days} dias`}
+            Acesso imediato
           </span>
         </div>
         {versions.length > 1 && (
@@ -382,30 +382,12 @@ const ToolVersionEditor = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Dias para Desbloqueio
-              </Label>
-              <Input
-                type="number"
-                min={0}
-                value={currentVersion.unlock_days}
-                onChange={(e) => onUpdateVersion(selectedIndex, { unlock_days: parseInt(e.target.value) || 0 })}
-                placeholder="0 = acesso imediato"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                0 = acesso imediato após compra
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Label>Visível</Label>
-              <Switch
-                checked={currentVersion.is_visible}
-                onCheckedChange={(checked) => onUpdateVersion(selectedIndex, { is_visible: checked })}
-              />
-            </div>
+          <div className="flex items-center gap-3">
+            <Label>Visível</Label>
+            <Switch
+              checked={currentVersion.is_visible}
+              onCheckedChange={(checked) => onUpdateVersion(selectedIndex, { is_visible: checked })}
+            />
           </div>
 
           {/* Cover Image */}

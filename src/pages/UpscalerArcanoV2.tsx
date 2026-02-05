@@ -42,8 +42,6 @@ const UpscalerArcanoV2 = () => {
   const { planType, isLoading: promptsLoading } = usePremiumStatus();
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramenta-ia-artes/upscaller-arcano' });
   
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [isLoadingCheck, setIsLoadingCheck] = useState(true);
   const [selectedLesson, setSelectedLesson] = useState(0);
 
   // Gamification state
@@ -146,77 +144,16 @@ const UpscalerArcanoV2 = () => {
     }
   }, [isToolButtonUnlocked, justUnlocked]);
 
-  // Check if 7 days have passed since purchase
+  // Redirect if no access
   useEffect(() => {
-    const checkUnlockStatus = async () => {
-      if (!user) {
-        setIsLoadingCheck(false);
-        return;
-      }
-
-      try {
-        // 1) Prefer user_pack_purchases
-        const { data, error } = await supabase
-          .from('user_pack_purchases')
-          .select('purchased_at')
-          .eq('user_id', user.id)
-          .in('pack_slug', ['upscaller-arcano', 'upscaler-arcano'])
-          .eq('is_active', true)
-          .order('purchased_at', { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
-        if (!error && data?.purchased_at) {
-          const purchaseDate = new Date(data.purchased_at);
-          const unlockDate = new Date(purchaseDate);
-          unlockDate.setDate(unlockDate.getDate() + 7);
-          setIsUnlocked(new Date() >= unlockDate);
-          return;
-        }
-
-        // 2) Fallback: subscription-based access (if applicable)
-        const { data: premiumData, error: premiumError } = await supabase
-          .from('premium_artes_users')
-          .select('subscribed_at, created_at')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .order('created_at', { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
-        if (!premiumError && premiumData) {
-          const dt = premiumData.subscribed_at || premiumData.created_at;
-          if (dt) {
-            const purchaseDate = new Date(dt);
-            const unlockDate = new Date(purchaseDate);
-            unlockDate.setDate(unlockDate.getDate() + 7);
-            setIsUnlocked(new Date() >= unlockDate);
-          }
-        }
-      } catch (err) {
-        console.error('Error checking unlock status:', err);
-      } finally {
-        setIsLoadingCheck(false);
-      }
-    };
-
-    if (!premiumLoading) {
-      checkUnlockStatus();
-    }
-  }, [user, premiumLoading]);
-
-  // Redirect if no access or not unlocked
-  useEffect(() => {
-    if (!premiumLoading && !promptsLoading && !isLoadingCheck) {
+    if (!premiumLoading && !promptsLoading) {
       if (!user || !hasAccess) {
         navigate("/ferramentas-ia");
-      } else if (!isUnlocked) {
-        navigate("/ferramenta-ia-artes/upscaller-arcano");
       }
     }
-  }, [premiumLoading, promptsLoading, isLoadingCheck, user, hasAccess, isUnlocked, navigate]);
+  }, [premiumLoading, promptsLoading, user, hasAccess, navigate]);
 
-  const isLoading = premiumLoading || promptsLoading || isLoadingCheck;
+  const isLoading = premiumLoading || promptsLoading;
 
   if (isLoading) {
     return (
@@ -226,7 +163,7 @@ const UpscalerArcanoV2 = () => {
     );
   }
 
-  if (!user || !hasAccess || !isUnlocked) {
+  if (!user || !hasAccess) {
     return null;
   }
 

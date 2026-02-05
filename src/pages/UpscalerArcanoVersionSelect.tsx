@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lock, Unlock, Sparkles, Zap, Target, Star } from "lucide-react";
+import { Lock, Unlock, Sparkles, Zap, Target, Star, ChevronRight } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,7 +31,6 @@ interface ToolVersion {
   cover_url: string | null;
   display_order: number;
   is_visible: boolean;
-  unlock_days: number;
   badges: ToolVersionBadge[];
   localized?: {
     es?: LocalizedVersionContent;
@@ -63,7 +62,6 @@ const FALLBACK_VERSIONS: ToolVersion[] = [
     cover_url: null,
     display_order: 0,
     is_visible: true,
-    unlock_days: 0,
     badges: []
   },
   {
@@ -73,7 +71,6 @@ const FALLBACK_VERSIONS: ToolVersion[] = [
     cover_url: null,
     display_order: 1,
     is_visible: true,
-    unlock_days: 7,
     badges: [
       { text: 'NOVO', icon: 'sparkles', color: 'yellow' },
       { text: 'MAIS RÁPIDO', icon: 'zap', color: 'blue' },
@@ -97,8 +94,6 @@ const UpscalerArcanoVersionSelect = () => {
   // Smart back navigation - for ES keep original behavior, for PT use smart back
   const { goBack } = useSmartBackNavigation({ fallback: toolsHomePath });
   
-  const [purchaseDate, setPurchaseDate] = useState<Date | null>(null);
-  const [isLoadingPurchase, setIsLoadingPurchase] = useState(true);
   const [versions, setVersions] = useState<ToolVersion[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(true);
 
@@ -138,58 +133,7 @@ const UpscalerArcanoVersionSelect = () => {
     fetchVersions();
   }, []);
 
-  // Fetch purchase date for 7-day lock calculation
-  useEffect(() => {
-    const fetchPurchaseDate = async () => {
-      if (!user) {
-        setIsLoadingPurchase(false);
-        return;
-      }
-
-      try {
-        // 1) Prefer user_pack_purchases
-        const { data, error } = await supabase
-          .from('user_pack_purchases')
-          .select('purchased_at')
-          .eq('user_id', user.id)
-          .in('pack_slug', ['upscaller-arcano', 'upscaler-arcano'])
-          .eq('is_active', true)
-          .order('purchased_at', { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
-        if (!error && data?.purchased_at) {
-          setPurchaseDate(new Date(data.purchased_at));
-          return;
-        }
-
-        // 2) Fallback: subscription-based access (if applicable)
-        const { data: premiumData, error: premiumError } = await supabase
-          .from('premium_artes_users')
-          .select('subscribed_at, created_at')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .order('created_at', { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
-        if (!premiumError && premiumData) {
-          const dt = premiumData.subscribed_at || premiumData.created_at;
-          if (dt) setPurchaseDate(new Date(dt));
-        }
-      } catch (err) {
-        console.error('Error fetching purchase date:', err);
-      } finally {
-        setIsLoadingPurchase(false);
-      }
-    };
-
-    if (!premiumLoading) {
-      fetchPurchaseDate();
-    }
-  }, [user, premiumLoading]);
-
-  const isLoading = premiumLoading || promptsLoading || isLoadingPurchase || loadingVersions;
+  const isLoading = premiumLoading || promptsLoading || loadingVersions;
 
   if (isLoading) {
     return (
@@ -229,43 +173,9 @@ const UpscalerArcanoVersionSelect = () => {
   }
 
   // Helper functions
-  const getUnlockDate = (version: ToolVersion) => {
-    // HARDCODED: v1 SEMPRE liberada imediatamente
-    if (version.slug === 'v1') return null;
-    
-    // Normaliza unlock_days para número
-    const unlockDays = Number(version.unlock_days ?? 0);
-    if (unlockDays <= 0) return null;
-    if (!purchaseDate) return null;
-    
-    // Clamp purchaseDate to prevent future dates from blocking access
-    const now = new Date();
-    const baseDate = purchaseDate > now ? now : purchaseDate;
-    
-    const unlockDate = new Date(baseDate);
-    unlockDate.setDate(unlockDate.getDate() + unlockDays);
-    return unlockDate;
-  };
-
-  const isVersionUnlocked = (version: ToolVersion) => {
-    // HARDCODED: v1 SEMPRE liberada imediatamente
-    if (version.slug === 'v1') return true;
-    
-    // Normaliza unlock_days para número
-    const unlockDays = Number(version.unlock_days ?? 0);
-    if (unlockDays <= 0) return true;
-    
-    const unlockDate = getUnlockDate(version);
-    if (!unlockDate) return false;
-    return new Date() >= unlockDate;
-  };
-
-  const getDaysRemaining = (version: ToolVersion) => {
-    const unlockDate = getUnlockDate(version);
-    if (!unlockDate) return 0;
-    
-    const diffMs = unlockDate.getTime() - new Date().getTime();
-    return diffMs > 0 ? Math.ceil(diffMs / (1000 * 60 * 60 * 24)) : 0;
+  const isVersionUnlocked = (_version: ToolVersion) => {
+    // Todas as versões são desbloqueadas imediatamente para quem tem o pack
+    return true;
   };
 
   const formatDate = (date: Date) => {
@@ -285,17 +195,8 @@ const UpscalerArcanoVersionSelect = () => {
   };
 
   const handleVersionClick = (version: ToolVersion) => {
-    const isUnlocked = isVersionUnlocked(version);
-    
-    // If version has unlock_days > 0 and user only has unlimited access, show upgrade
-    if (version.unlock_days > 0 && isArcanoUnlimitedOnly) {
-      return; // Don't navigate, use button instead
-    }
-    
-    if (isUnlocked) {
-      // Always use dynamic route - database is the source of truth
-      navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
-    }
+    // Sempre navega - todas as versões estão desbloqueadas
+    navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
   };
 
   const getVersionImage = (version: ToolVersion, index: number) => {
@@ -304,16 +205,8 @@ const UpscalerArcanoVersionSelect = () => {
     return index === 0 ? upscalerV1Image : upscalerV2Image;
   };
 
-  const getVersionColors = (version: ToolVersion, isUnlocked: boolean) => {
-    if (version.unlock_days > 0) {
-      if (isArcanoUnlimitedOnly) {
-        return 'bg-gradient-to-br from-orange-900/50 to-red-800/30 border-orange-500/30 hover:border-orange-400/50';
-      }
-      if (isUnlocked) {
-        return 'bg-gradient-to-br from-yellow-900/50 to-orange-800/30 border-yellow-500/30 hover:border-yellow-400/50';
-      }
-      return 'bg-gradient-to-br from-gray-900/50 to-gray-800/30 border-gray-600/30';
-    }
+  const getVersionColors = (_version: ToolVersion, _isUnlocked: boolean) => {
+    // Todas as versões usam o mesmo estilo - desbloqueadas
     return 'bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/30 hover:border-purple-400/50';
   };
 
@@ -329,16 +222,13 @@ const UpscalerArcanoVersionSelect = () => {
         {/* Version Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {versions.map((version, index) => {
-            const isUnlocked = isVersionUnlocked(version);
-            const unlockDate = getUnlockDate(version);
-            const daysRemaining = getDaysRemaining(version);
-            const isClickable = (isUnlocked && !(version.unlock_days > 0 && isArcanoUnlimitedOnly)) || version.unlock_days === 0;
+            const isUnlocked = true; // Todas desbloqueadas
 
             return (
               <Card 
                 key={version.id}
                 className={`relative overflow-hidden transition-all ${
-                  isClickable ? 'cursor-pointer group' : 'cursor-not-allowed'
+                  'cursor-pointer group'
                 } ${getVersionColors(version, isUnlocked)}`}
                 onClick={() => handleVersionClick(version)}
               >
@@ -347,28 +237,8 @@ const UpscalerArcanoVersionSelect = () => {
                   <img 
                     src={getVersionImage(version, index)} 
                     alt={`Upscaler Arcano ${version.name}`} 
-                    className={`w-full h-full object-cover transition-transform duration-300 ${
-                      isUnlocked && !(version.unlock_days > 0 && isArcanoUnlimitedOnly) 
-                        ? 'group-hover:scale-105' 
-                        : version.unlock_days > 0 && isArcanoUnlimitedOnly 
-                          ? '' 
-                          : 'grayscale'
-                    }`}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
-                  {/* Cadeado para usuários bloqueados OU Arcano Unlimited que precisam fazer upgrade */}
-                  {((!isUnlocked && version.unlock_days > 0) || (version.unlock_days > 0 && isArcanoUnlimitedOnly)) && (
-                    <div className={`absolute inset-0 flex items-center justify-center ${
-                      isArcanoUnlimitedOnly 
-                        ? 'bg-black/40' 
-                        : 'bg-black/60'
-                    }`}>
-                      <Lock className={`h-16 w-16 ${
-                        isArcanoUnlimitedOnly 
-                          ? 'text-orange-400' 
-                          : 'text-gray-400'
-                      }`} />
-                    </div>
-                  )}
                   
                   {/* Badges at bottom of image */}
                   {version.badges && version.badges.length > 0 && (
@@ -392,36 +262,15 @@ const UpscalerArcanoVersionSelect = () => {
 
                 {/* Status Badge - top right */}
                 <div className="absolute top-4 right-4">
-                  {version.unlock_days > 0 && isArcanoUnlimitedOnly ? (
-                    <div className="flex items-center gap-1.5 bg-orange-500/20 backdrop-blur-sm text-orange-400 px-3 py-1 rounded-full text-xs font-medium">
-                      <Sparkles className="h-3 w-3" />
-                      {t('versionSelect.upgrade')}
-                    </div>
-                  ) : isUnlocked ? (
-                    <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
-                      <Unlock className="h-3 w-3" />
-                      {t('versionSelect.available')}
-                    </div>
-                  ) : version.unlock_days > 0 ? (
-                    <div className="flex items-center gap-1.5 bg-red-500/20 backdrop-blur-sm text-red-400 px-3 py-1 rounded-full text-xs font-medium">
-                      <Lock className="h-3 w-3" />
-                      {t('versionSelect.locked')}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
-                      <Unlock className="h-3 w-3" />
-                      {t('versionSelect.available')}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
+                    <Unlock className="h-3 w-3" />
+                    {t('versionSelect.available')}
+                  </div>
                 </div>
 
                 {/* Version Badge - top left */}
                 <div className="absolute top-4 left-4">
-                  <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg ${
-                    isUnlocked || isArcanoUnlimitedOnly
-                      ? version.unlock_days > 0 ? 'bg-white text-orange-600' : 'bg-white text-purple-900'
-                      : 'bg-white/80 text-gray-700'
-                  }`}>
+                  <div className="px-4 py-1.5 rounded-full text-sm font-black shadow-lg bg-white text-purple-900">
                     {getVersionName(version)}
                   </div>
                 </div>
@@ -431,49 +280,17 @@ const UpscalerArcanoVersionSelect = () => {
                   <h2 className="text-lg md:text-xl font-bold text-foreground mb-3">
                     {t('upscaler.title')}
                   </h2>
-                  
-                  {/* Unlock Info - only for pack owners waiting */}
-                  {!isUnlocked && !isArcanoUnlimitedOnly && unlockDate && version.unlock_days > 0 && (
-                    <div className="bg-gray-800/50 rounded-lg p-3 mb-3 border border-gray-700/50">
-                      <p className="text-sm text-gray-300">
-                        <span className="font-medium text-yellow-400">{t('versionSelect.unlocksAt')}:</span>{' '}
-                        {formatDate(unlockDate)}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {t('versionSelect.daysRemaining', { count: daysRemaining })}
-                      </p>
-                    </div>
-                  )}
-                  
-                  {/* Button logic based on access type */}
-                  {version.unlock_days > 0 && isArcanoUnlimitedOnly ? (
-                    <Button 
-                      className="w-full bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-500 hover:to-red-400 text-white group-hover:scale-[1.02] transition-transform"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(upscalerPlansPath);
-                      }}
-                    >
-                      {t('versionSelect.acquireUpdated')}
-                    </Button>
-                  ) : isUnlocked ? (
-                    <Button 
-                      className={`w-full text-white group-hover:scale-[1.02] transition-transform ${
-                        version.unlock_days > 0 
-                          ? 'bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-500 hover:to-orange-400'
-                          : 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400'
-                      }`}
-                    >
-                      {t('versionSelect.accessLessons')}
-                    </Button>
-                  ) : (
-                    <Button 
-                      disabled
-                      className="w-full bg-gray-700 text-gray-400 cursor-not-allowed"
-                    >
-                      {t('versionSelect.locked')}
-                    </Button>
-                  )}
+
+                  {/* Button - sempre disponível */}
+                  <Button 
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white group-hover:scale-[1.02] transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
+                    }}
+                  >
+                    {t('ferramentas.accessTool')} <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
                 </div>
               </Card>
             );
