@@ -8,13 +8,14 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
- import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 import PoseLibraryModal from '@/components/pose-changer/PoseLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
- import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
@@ -56,8 +57,8 @@ const PoseChangerTool: React.FC = () => {
   const sessionIdRef = useRef<string>('');
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   
-  // CRITICAL: Synchronous flag to prevent duplicate API calls
-  const processingRef = useRef(false);
+  // CRITICAL: Instant button lock to prevent duplicate clicks
+  const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   
   // Ref for zoom/pan control
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
@@ -110,11 +111,11 @@ const PoseChangerTool: React.FC = () => {
             setStatus('completed');
             setProgress(100);
             refetchCredits();
-            processingRef.current = false;
+            endSubmit();
             toast.success('Pose alterada com sucesso!');
           } else if (newData.status === 'failed') {
             setStatus('error');
-            processingRef.current = false;
+            endSubmit();
             toast.error(newData.error_message || 'Erro no processamento');
           } else if (newData.status === 'running') {
             setStatus('processing');
@@ -223,23 +224,22 @@ const PoseChangerTool: React.FC = () => {
   };
 
   const handleProcess = async () => {
-    // CRITICAL: Prevent duplicate calls with synchronous check
-    if (processingRef.current) {
-      console.log('[PoseChanger] Already processing, ignoring duplicate call');
+    // CRITICAL: Instant lock to prevent duplicate clicks
+    if (!startSubmit()) {
+      console.log('[PoseChanger] Already submitting, ignoring duplicate click');
       return;
     }
-    processingRef.current = true;
 
     if (!personImage || !referenceImage || !personFile) {
       toast.error('Por favor, selecione ambas as imagens');
-      processingRef.current = false;
+      endSubmit();
       return;
     }
 
     if (!user?.id) {
       setNoCreditsReason('not_logged');
       setShowNoCreditsModal(true);
-      processingRef.current = false;
+      endSubmit();
       return;
     }
  
@@ -250,14 +250,14 @@ const PoseChangerTool: React.FC = () => {
       setActiveJobId(activeCheck.activeJobId);
       setActiveStatus(activeCheck.activeStatus);
       setShowActiveJobModal(true);
-      processingRef.current = false;
+      endSubmit();
       return;
     }
 
     if (credits < CREDIT_COST) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
-      processingRef.current = false;
+      endSubmit();
       return;
     }
 
@@ -365,7 +365,7 @@ const PoseChangerTool: React.FC = () => {
       console.error('[PoseChanger] Process error:', error);
       setStatus('error');
       toast.error(error.message || 'Erro ao processar imagem');
-      processingRef.current = false;
+      endSubmit();
     }
   };
 
@@ -388,7 +388,7 @@ const PoseChangerTool: React.FC = () => {
   };
 
   const handleReset = () => {
-    processingRef.current = false;
+    endSubmit();
     setPersonImage(null);
     setPersonFile(null);
     setReferenceImage(null);
@@ -456,10 +456,15 @@ const PoseChangerTool: React.FC = () => {
             <Button
               size="sm"
               className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
-              disabled={!canProcess || isProcessing}
+              disabled={!canProcess || isProcessing || isSubmitting}
               onClick={handleProcess}
             >
-              {status === 'uploading' ? (
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  Iniciando...
+                </>
+              ) : status === 'uploading' ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
                   Enviando...

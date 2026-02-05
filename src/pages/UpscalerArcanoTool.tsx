@@ -17,11 +17,12 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
- import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
- import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -82,6 +83,9 @@ const UpscalerArcanoTool: React.FC = () => {
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
   const [currentQueueCombo, setCurrentQueueCombo] = useState(0);
+
+  // CRITICAL: Instant button lock to prevent duplicate clicks
+  const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
  
    // Active job block modal state
    const [showActiveJobModal, setShowActiveJobModal] = useState(false);
@@ -298,26 +302,35 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // Process image
   const processImage = async () => {
+    // CRITICAL: Instant lock to prevent duplicate clicks
+    if (!startSubmit()) {
+      console.log('[Upscaler] Already submitting, ignoring duplicate click');
+      return;
+    }
+
     if (!inputImage) {
       toast.error(t('upscalerTool.errors.selectFirst'));
+      endSubmit();
       return;
     }
 
     if (!user?.id) {
       setNoCreditsReason('not_logged');
       setShowNoCreditsModal(true);
+      endSubmit();
       return;
     }
- 
-     // Check if user has active job in any tool
-     const activeCheck = await checkActiveJob(user.id);
-     if (activeCheck.hasActiveJob && activeCheck.activeTool) {
-       setActiveToolName(activeCheck.activeTool);
-       setActiveJobId(activeCheck.activeJobId);
-       setActiveStatus(activeCheck.activeStatus);
-       setShowActiveJobModal(true);
-       return;
-     }
+
+    // Check if user has active job in any tool
+    const activeCheck = await checkActiveJob(user.id);
+    if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+      setActiveToolName(activeCheck.activeTool);
+      setActiveJobId(activeCheck.activeJobId);
+      setActiveStatus(activeCheck.activeStatus);
+      setShowActiveJobModal(true);
+      endSubmit();
+      return;
+    }
 
     const creditCost = version === 'pro' ? 80 : 60;
     
@@ -325,6 +338,7 @@ const UpscalerArcanoTool: React.FC = () => {
     if (credits < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
+      endSubmit();
       return;
     }
 
@@ -439,6 +453,7 @@ const UpscalerArcanoTool: React.FC = () => {
         solution: 'Tente novamente ou use uma imagem menor.'
       });
       toast.error('Erro ao processar imagem');
+      endSubmit();
     }
   };
 
@@ -487,11 +502,12 @@ const UpscalerArcanoTool: React.FC = () => {
     setJobId(null);
     setIsWaitingInQueue(false);
     setQueuePosition(0);
+    endSubmit();
     // Clear file input to allow re-selecting same file
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, []);
+  }, [endSubmit]);
 
   // Slider handlers for before/after comparison
   const updateSliderPositionFromClientX = useCallback((clientX: number) => {
@@ -942,13 +958,23 @@ const UpscalerArcanoTool: React.FC = () => {
               <Button
                 className="w-full py-3 text-sm font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
                 onClick={processImage}
+                disabled={isSubmitting}
               >
-                <Sparkles className="w-4 h-4 mr-2" />
-                {t('upscalerTool.buttons.increaseQuality')}
-                <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                  <Coins className="w-3.5 h-3.5" />
-                  {version === 'pro' ? '80' : '60'}
-                </span>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Iniciando...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {t('upscalerTool.buttons.increaseQuality')}
+                    <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                      <Coins className="w-3.5 h-3.5" />
+                      {version === 'pro' ? '80' : '60'}
+                    </span>
+                  </>
+                )}
               </Button>
             )}
 
