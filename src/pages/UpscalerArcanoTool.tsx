@@ -58,6 +58,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const [customPrompt, setCustomPrompt] = useState('');
   const [promptCategory, setPromptCategory] = useState<PromptCategory>('pessoas_perto');
   const [pessoasFraming, setPessoasFraming] = useState<PessoasFraming>('perto');
+   const [comidaDetailLevel, setComidaDetailLevel] = useState(0.85);
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [inputFileName, setInputFileName] = useState<string>('');
   const [outputImage, setOutputImage] = useState<string | null>(null);
@@ -133,6 +134,11 @@ const UpscalerArcanoTool: React.FC = () => {
   // Flag to check if we're in "De Longe" mode (full body photos use different WebApp)
   const isLongeMode = pessoasFraming === 'longe' && promptCategory.startsWith('pessoas');
 
+   // Flags for special workflows (Foto Antiga and Comida/Objeto)
+   const isSpecialWorkflow = promptCategory === 'fotoAntiga' || promptCategory === 'comida';
+   const isFotoAntigaMode = promptCategory === 'fotoAntiga';
+   const isComidaMode = promptCategory === 'comida';
+ 
   // Get the final prompt to send
   const getFinalPrompt = (): string => {
     if (useCustomPrompt) {
@@ -366,13 +372,15 @@ const UpscalerArcanoTool: React.FC = () => {
         body: {
           jobId: job.id,
           imageUrl: imageUrl,
-          detailDenoise: detailDenoise,
-          prompt: getFinalPrompt(),
-          resolution: resolutionValue,
           version: version,
-          framingMode: framingMode,
           userId: user.id,
-          creditCost: creditCost
+           creditCost: creditCost,
+           category: promptCategory,
+           // Conditional parameters based on workflow type
+           detailDenoise: isComidaMode ? comidaDetailLevel : (isSpecialWorkflow ? undefined : detailDenoise),
+           resolution: isSpecialWorkflow ? undefined : resolutionValue,
+           prompt: isSpecialWorkflow ? undefined : getFinalPrompt(),
+           framingMode: isSpecialWorkflow ? undefined : framingMode,
         }
       });
 
@@ -627,13 +635,14 @@ const UpscalerArcanoTool: React.FC = () => {
                           : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
                       }`}
                     >
-                      {cat === 'pessoas' ? 'Pessoas' : cat === 'comida' ? 'Comida' : cat === 'fotoAntiga' ? 'Antiga' : cat === 'logo' ? 'Logo' : '3D'}
+                       {cat === 'pessoas' ? 'Pessoas' : cat === 'comida' ? 'Comida/Objeto' : cat === 'fotoAntiga' ? 'Foto Antiga' : cat === 'logo' ? 'Logo' : '3D'}
                     </ToggleGroupItem>
                   ))}
                 </ToggleGroup>
 
                 {/* Pessoas Framing Selector */}
                 {promptCategory.startsWith('pessoas') && (
+                 !isSpecialWorkflow && (
                   <div className="mt-3 pt-3 border-t border-purple-500/20">
                     <ToggleGroup 
                       type="single" 
@@ -682,12 +691,12 @@ const UpscalerArcanoTool: React.FC = () => {
                       </ToggleGroupItem>
                     </ToggleGroup>
                   </div>
-                )}
+                 ))}
               </Card>
             )}
 
-            {/* Detail Level Slider - PRO only, not in Longe mode */}
-            {version === 'pro' && !isLongeMode && (
+             {/* Detail Level Slider - PRO only, not in Longe mode, not in special workflows */}
+             {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5">
@@ -711,7 +720,33 @@ const UpscalerArcanoTool: React.FC = () => {
               </Card>
             )}
 
-            {/* Resolution Selector */}
+             {/* Comida/Objeto Detail Level Slider (0.70 to 1.00) */}
+             {isComidaMode && (
+               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                 <div className="flex items-center justify-between mb-1">
+                   <div className="flex items-center gap-1.5">
+                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                     <span className="text-xs font-medium text-white">Nível de Detalhes</span>
+                   </div>
+                   <span className="text-xs text-purple-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
+                 </div>
+                 <Slider
+                   value={[comidaDetailLevel]}
+                   onValueChange={([value]) => setComidaDetailLevel(value)}
+                   min={0.70}
+                   max={1.00}
+                   step={0.01}
+                   className="w-full"
+                 />
+                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+                   <span>Mais Fiel</span>
+                   <span>Mais Criativo</span>
+                 </div>
+               </Card>
+             )}
+ 
+             {/* Resolution Selector - hide for special workflows */}
+             {!isSpecialWorkflow && (
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs font-medium text-white">📐 Resolução</span>
@@ -744,9 +779,10 @@ const UpscalerArcanoTool: React.FC = () => {
                 </ToggleGroupItem>
               </ToggleGroup>
             </Card>
+             )}
 
-            {/* Custom Prompt - PRO only, not in Longe mode */}
-            {version === 'pro' && !isLongeMode && (
+             {/* Custom Prompt - PRO only, not in Longe mode, not in special workflows */}
+             {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5">
