@@ -1,115 +1,352 @@
 
-# Plano: Forçar Atualização do PWA para Todos os Usuários
 
-## Problema Identificado
+# Plano: Forçar Atualização do PWA com Botão Manual
 
-Existe uma **dessincronização de versões** no código:
+## O Problema no iOS
 
-| Arquivo | Versão Atual | Deveria Ser |
-|---------|--------------|-------------|
-| `App.tsx` | 5.3.0 ✅ | - |
-| `vite.config.ts` (cacheId) | 5.2.0 ❌ | 5.3.0 |
-| `useServiceWorkerUpdate.ts` (currentCacheId) | 5.2.0 ❌ | 5.3.0 |
-| `ForceUpdateModal.tsx` (APP_VERSION) | 5.2.0 ❌ | 5.3.0 |
+O iOS tem um comportamento muito agressivo de cache para PWAs:
+- O Service Worker fica em cache por mais tempo
+- Mesmo com `skipWaiting`, o iOS pode ignorar
+- A única forma 100% garantida é fechar e reabrir o app
 
-Por causa disso, os caches antigos **não estão sendo invalidados** e os usuários continuam com a versão antiga.
+## Solução em 2 Partes
 
----
+### Parte 1: Banner "Atualização Disponível" (Frontend)
 
-## Solução
+Criar um componente que:
+1. Detecta quando há um novo Service Worker esperando
+2. Mostra um banner fixo no topo da tela
+3. Ao clicar, executa uma atualização completa
 
-Sincronizar todas as versões para **5.3.0** nos seguintes arquivos:
+### Parte 2: Notificação Push para Forçar Atualização
 
-### Arquivo 1: `vite.config.ts`
-
-Atualizar o `cacheId` e o cache de imagens:
-
-```typescript
-// Linha 57: Atualizar cacheId
-cacheId: "arcanoapp-v5.3.0",
-
-// Linha 76: Atualizar cache de imagens
-cacheName: "arcanoapp-images-v5.3.0",
-```
-
-### Arquivo 2: `src/hooks/useServiceWorkerUpdate.ts`
-
-Atualizar a referência de versão:
-
-```typescript
-// Linha 92: Atualizar currentCacheId
-const currentCacheId = 'arcanoapp-v5.3.0';
-```
-
-### Arquivo 3: `src/components/ForceUpdateModal.tsx`
-
-Atualizar a constante de versão para referência:
-
-```typescript
-// Linha 2: Atualizar APP_VERSION
-export const APP_VERSION = '5.3.0';
-```
+Enviar uma notificação push para todos os usuários com:
+- Título: "🔄 Atualização Disponível"
+- Corpo: "Toque aqui para atualizar o app"
+- URL: Uma rota especial que força limpeza de cache
 
 ---
 
-## Como Funciona a Atualização
+## Mudanças Técnicas
 
-Quando o usuário abrir o app após a publicação:
+### Arquivo 1: Criar `src/components/UpdateAvailableBanner.tsx`
+
+```typescript
+import { useState, useEffect } from 'react';
+import { RefreshCw, X } from 'lucide-react';
+import { cleanOldCaches } from '@/hooks/useServiceWorkerUpdate';
+
+export const UpdateAvailableBanner = () => {
+  const [showBanner, setShowBanner] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+
+    const checkForWaitingWorker = async () => {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration?.waiting) {
+        setShowBanner(true);
+      }
+    };
+
+    // Check immediately
+    checkForWaitingWorker();
+
+    // Listen for new service workers
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      // New SW took control - reload automatically
+      window.location.reload();
+    });
+
+    // Check when updatefound fires
+    navigator.serviceWorker.ready.then((registration) => {
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version available
+              setShowBanner(true);
+            }
+          });
+        }
+      });
+    });
+  }, []);
+
+  const handleUpdate = async () => {
+    setIsUpdating(true);
+    
+    try {
+      // 1. Clean ALL caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+        console.log('[Update] All caches cleared');
+      }
+
+      // 2. Tell waiting SW to skip waiting
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration?.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+
+      // 3. Unregister and re-register SW
+      if (registration) {
+        await registration.unregister();
+        console.log('[Update] SW unregistered');
+      }
+
+      // 4. Force reload without cache
+      // Use cache-busting query param for iOS
+      const url = new URL(window.location.href);
+      url.searchParams.set('_v', Date.now().toString());
+      window.location.href = url.toString();
+      
+    } catch (error) {
+      console.error('[Update] Error:', error);
+      // Fallback: hard reload
+      window.location.reload();
+    }
+  };
+
+  if (!showBanner) return null;
+
+  return (
+    <div className="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white px-4 py-3 shadow-lg">
+      <div className="flex items-center justify-between max-w-screen-xl mx-auto">
+        <div className="flex items-center gap-2">
+          <RefreshCw className={`w-5 h-5 ${isUpdating ? 'animate-spin' : ''}`} />
+          <span className="text-sm font-medium">
+            {isUpdating ? 'Atualizando...' : 'Nova versão disponível!'}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleUpdate}
+            disabled={isUpdating}
+            className="bg-white text-fuchsia-600 px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-fuchsia-100 transition-colors disabled:opacity-50"
+          >
+            Atualizar Agora
+          </button>
+          <button
+            onClick={() => setShowBanner(false)}
+            className="text-white/80 hover:text-white p-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+### Arquivo 2: Criar rota `/force-update` em `src/pages/ForceUpdate.tsx`
+
+Uma página especial que força limpeza de cache quando acessada via notificação push:
+
+```typescript
+import { useEffect, useState } from 'react';
+import { RefreshCw, CheckCircle } from 'lucide-react';
+
+const ForceUpdate = () => {
+  const [status, setStatus] = useState<'cleaning' | 'done'>('cleaning');
+
+  useEffect(() => {
+    const forceCleanAndReload = async () => {
+      try {
+        // 1. Delete ALL caches
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          console.log('[ForceUpdate] Deleting caches:', cacheNames);
+          await Promise.all(cacheNames.map(name => caches.delete(name)));
+        }
+
+        // 2. Unregister ALL service workers
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const registration of registrations) {
+            await registration.unregister();
+            console.log('[ForceUpdate] Unregistered SW:', registration.scope);
+          }
+        }
+
+        // 3. Clear localStorage timestamp to force fresh check
+        localStorage.removeItem('sw-last-check-at');
+
+        setStatus('done');
+
+        // 4. Redirect to home after 1 second
+        setTimeout(() => {
+          // Use cache-busting param
+          window.location.href = '/?_v=' + Date.now();
+        }, 1000);
+
+      } catch (error) {
+        console.error('[ForceUpdate] Error:', error);
+        window.location.href = '/';
+      }
+    };
+
+    forceCleanAndReload();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center text-white p-4">
+      {status === 'cleaning' ? (
+        <>
+          <RefreshCw className="w-16 h-16 text-fuchsia-500 animate-spin mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Atualizando...</h1>
+          <p className="text-gray-400">Limpando cache e baixando nova versão</p>
+        </>
+      ) : (
+        <>
+          <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Atualizado!</h1>
+          <p className="text-gray-400">Redirecionando...</p>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default ForceUpdate;
+```
+
+### Arquivo 3: Atualizar `src/App.tsx`
+
+Adicionar o banner e a nova rota:
+
+```typescript
+// Adicionar imports
+import { UpdateAvailableBanner } from './components/UpdateAvailableBanner';
+const ForceUpdate = lazy(() => import("./pages/ForceUpdate"));
+
+// No AppContent, adicionar o banner logo após o Sonner:
+<UpdateAvailableBanner />
+
+// Adicionar rota:
+<Route path="/force-update" element={<ForceUpdate />} />
+```
+
+### Arquivo 4: Atualizar `src/hooks/useServiceWorkerUpdate.ts`
+
+Adicionar listener para `controllerchange`:
+
+```typescript
+// Adicionar no useEffect principal:
+// Listen for controller change (new SW took over)
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+  console.log('[SW] New service worker activated, reloading...');
+  // The UpdateAvailableBanner will handle the reload
+});
+```
+
+---
+
+## Como Funciona
+
+### Cenário 1: Usuário Abre o App
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ 1. Usuário abre o app                                           │
+│ 1. App inicia e verifica Service Worker                        │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 2. Service Worker detecta novo cacheId (v5.3.0)                 │
-│    → Configuração "autoUpdate" + "skipWaiting" ativadas         │
+│ 2. Se há SW aguardando (nova versão disponível):                │
+│    → Mostra banner roxo no topo: "Nova versão disponível!"      │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 3. useServiceWorkerUpdate executa cleanOldCaches()              │
-│    → Deleta todos os caches que NÃO contêm "arcanoapp-v5.3.0"   │
-│    → Isso inclui "arcanoapp-v5.2.0" e anteriores                │
+│ 3. Usuário clica "Atualizar Agora":                             │
+│    → Limpa TODOS os caches                                      │
+│    → Desregistra Service Worker                                 │
+│    → Recarrega página com cache-buster                          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Cenário 2: Notificação Push
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. Admin envia push: "Atualização Disponível"                   │
+│    URL: /force-update                                           │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 4. Novo Service Worker assume controle (SKIP_WAITING)           │
-│    → App carrega arquivos novos do servidor                     │
+│ 2. Usuário toca na notificação                                  │
+│    → Abre /force-update                                         │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 3. Página /force-update executa:                                │
+│    → Mostra "Atualizando..." com spinner                        │
+│    → Deleta todos os caches                                     │
+│    → Desregistra todos os SWs                                   │
+│    → Redireciona para / com cache-buster                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## O Que Acontece em Cada Situação
+## Ação Imediata: Enviar Push de Atualização
 
-| Situação do Usuário | O Que Acontece |
-|---------------------|----------------|
-| **App aberto no navegador** | Próximo refresh ou foco = atualização automática |
-| **PWA instalado no celular** | Próxima abertura do app = atualização automática |
-| **App em segundo plano** | Quando voltar ao primeiro plano = verificação de updates |
+Após implementar, você pode ir em **Admin > Push Notifications** e enviar:
+
+| Campo | Valor |
+|-------|-------|
+| **Título** | 🔄 Atualização Importante! |
+| **Mensagem** | Toque aqui para atualizar o ArcanoApp para a versão mais recente |
+| **URL** | /force-update |
+
+Todos que receberem e tocarem na notificação serão forçados a limpar o cache e baixar a versão nova.
 
 ---
 
-## Arquivos a Modificar
+## Limitação Conhecida do iOS
 
-| Arquivo | Mudança |
-|---------|---------|
-| `vite.config.ts` | Atualizar `cacheId` para v5.3.0 |
-| `src/hooks/useServiceWorkerUpdate.ts` | Atualizar `currentCacheId` para v5.3.0 |
-| `src/components/ForceUpdateModal.tsx` | Atualizar `APP_VERSION` para v5.3.0 |
+Mesmo com tudo isso, o iOS pode ainda cachear agressivamente. A solução **100% garantida** para iOS é instruir o usuário a:
+
+1. Fechar o app completamente (deslizar para cima no multitarefa)
+2. Reabrir o app
+
+Podemos adicionar essa instrução no banner quando detectamos iOS:
+
+```typescript
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+// No banner, mostrar texto extra para iOS:
+{isIOS && (
+  <p className="text-xs text-white/70 mt-1">
+    Se não funcionar, feche o app e abra novamente
+  </p>
+)}
+```
+
+---
+
+## Arquivos a Criar/Modificar
+
+| Arquivo | Ação |
+|---------|------|
+| `src/components/UpdateAvailableBanner.tsx` | **CRIAR** - Banner de atualização |
+| `src/pages/ForceUpdate.tsx` | **CRIAR** - Página de force update |
+| `src/App.tsx` | **MODIFICAR** - Adicionar banner e rota |
+| `src/hooks/useServiceWorkerUpdate.ts` | **MODIFICAR** - Adicionar listener |
 
 ---
 
 ## Resultado Esperado
 
-Após publicar essas mudanças:
+1. Usuários verão um **banner roxo** no topo quando houver atualização
+2. Ao clicar "Atualizar Agora", o app limpa cache e recarrega
+3. Via **push notification** para `/force-update`, usuários são forçados a atualizar
+4. No iOS, se ainda não funcionar, o banner mostra instrução para fechar e reabrir
 
-1. **Todos os usuários** que abrirem o app receberão a nova versão
-2. **Caches antigos** serão deletados automaticamente
-3. **Não há modal de bloqueio** - a atualização acontece silenciosamente em background
-4. **Parâmetros de marketing preservados** - sem redirecionamentos forçados
-
-A atualização é **gradual** - cada usuário recebe quando abre o app ou quando o app volta do segundo plano.
