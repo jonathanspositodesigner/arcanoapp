@@ -623,21 +623,40 @@ const UpscalerArcanoTool: React.FC = () => {
                       }
                     }
                   }}
-                  className="flex flex-wrap gap-1"
+                  className="flex flex-col gap-1"
                 >
-                  {['pessoas', 'comida', 'fotoAntiga', 'logo', 'render3d'].map((cat) => (
-                    <ToggleGroupItem 
-                      key={cat}
-                      value={cat} 
-                      className={`px-2 py-1 text-[10px] rounded-md transition-all ${
-                        (cat === 'pessoas' ? promptCategory.startsWith('pessoas') : promptCategory === cat)
-                          ? 'bg-purple-600 text-white border border-purple-400' 
-                          : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                      }`}
-                    >
-                       {cat === 'pessoas' ? 'Pessoas' : cat === 'comida' ? 'Comida/Objeto' : cat === 'fotoAntiga' ? 'Foto Antiga' : cat === 'logo' ? 'Logo' : '3D'}
-                    </ToggleGroupItem>
-                  ))}
+                  {/* Top row: 3 buttons */}
+                  <div className="flex gap-1">
+                    {['pessoas', 'comida', 'fotoAntiga'].map((cat) => (
+                      <ToggleGroupItem 
+                        key={cat}
+                        value={cat} 
+                        className={`flex-1 px-2 py-1 text-[10px] rounded-md transition-all ${
+                          (cat === 'pessoas' ? promptCategory.startsWith('pessoas') : promptCategory === cat)
+                            ? 'bg-purple-600 text-white border border-purple-400' 
+                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                        }`}
+                      >
+                        {cat === 'pessoas' ? 'Pessoas' : cat === 'comida' ? 'Comida/Objeto' : 'Foto Antiga'}
+                      </ToggleGroupItem>
+                    ))}
+                  </div>
+                  {/* Bottom row: 2 buttons */}
+                  <div className="flex gap-1">
+                    {['render3d', 'logo'].map((cat) => (
+                      <ToggleGroupItem 
+                        key={cat}
+                        value={cat} 
+                        className={`flex-1 px-2 py-1 text-[10px] rounded-md transition-all ${
+                          promptCategory === cat
+                            ? 'bg-purple-600 text-white border border-purple-400' 
+                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                        }`}
+                      >
+                        {cat === 'render3d' ? 'Selo 3D' : 'Logo/Arte'}
+                      </ToggleGroupItem>
+                    ))}
+                  </div>
                 </ToggleGroup>
 
                 {/* Pessoas Framing Selector */}
