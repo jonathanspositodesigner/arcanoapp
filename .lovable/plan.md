@@ -1,232 +1,132 @@
 
+# Plano: Renomear Botão para "Biblioteca de Roupas" no Veste AI
 
-# Plano: Padronizar Todos os Botões "Voltar" com navigate(-1)
+## Problema Identificado
 
-## Objetivo
+O componente `ImageUploadCard.tsx` possui o texto **hardcoded** "Biblioteca de Poses" (linha 170), que é exibido tanto na ferramenta Pose Changer quanto na Veste AI. Como a Veste AI é para trocar **roupas**, o botão deveria mostrar "Biblioteca de Roupas".
 
-Atualizar **TODOS** os botões de voltar do site para usar `navigate(-1)` diretamente, garantindo que o usuário sempre volte para a página anterior do histórico do navegador.
+## Solução
 
----
-
-## Arquivos a Modificar
-
-### Grupo 1: Páginas de Ferramentas e Seleção
-
-| Arquivo | Atual | Novo |
-|---------|-------|------|
-| `src/pages/UpscalerSelectionPage.tsx:20` | `navigate("/ferramentas-ia-aplicativo")` | `navigate(-1)` |
-| `src/pages/PlanosCreditos.tsx:124` | Já usa `navigate(-1)` | ✅ Sem mudança |
-
-### Grupo 2: Páginas de Login e Auth
-
-| Arquivo | Atual | Novo |
-|---------|-------|------|
-| `src/pages/UserLogin.tsx:93` | `navigate("/")` | `navigate(-1)` |
-| `src/pages/UserLoginArtes.tsx:60` | `navigate("/")` | `navigate(-1)` |
-| `src/pages/UserLoginArtesMusicos.tsx:60` | `navigate("/")` | `navigate(-1)` |
-| `src/pages/ForgotPassword.tsx:68` | `navigate("/login")` | `navigate(-1)` |
-| `src/pages/ForgotPasswordArtes.tsx:76` | `navigate("/login-artes")` | `navigate(-1)` |
-| `src/pages/AdminLogin.tsx:216` | `navigate("/")` | `navigate(-1)` |
-| `src/pages/PartnerLogin.tsx:58` | `navigate("/")` | `navigate(-1)` |
-| `src/pages/PartnerLoginUnified.tsx:147` | `navigate("/")` | `navigate(-1)` |
-
-### Grupo 3: Páginas de Configurações e Perfil
-
-| Arquivo | Atual | Novo |
-|---------|-------|------|
-| `src/pages/ProfileSettings.tsx:198` | `navigate("/biblioteca-prompts")` | `navigate(-1)` |
-
-### Grupo 4: Páginas Utilitárias
-
-| Arquivo | Atual | Novo |
-|---------|-------|------|
-| `src/pages/InstallApp.tsx:57` | `navigate("/")` | `navigate(-1)` |
-| `src/pages/ContributePrompts.tsx:226` | `navigate("/")` | `navigate(-1)` |
-| `src/pages/AdminUpload.tsx:407` | `navigate("/")` | `navigate(-1)` |
-
-### Grupo 5: Páginas de Biblioteca
-
-| Arquivo | Atual | Novo |
-|---------|-------|------|
-| `src/pages/BibliotecaArtesHub.tsx:79` | `navigate("/")` | `navigate(-1)` |
-
-### Grupo 6: Páginas de Planos (link "já comprei")
-
-| Arquivo | Atual | Novo |
-|---------|-------|------|
-| `src/pages/PlanosArtes.tsx:575` | `navigate("/login-artes")` | Manter (é link para login, não voltar) |
+Adicionar uma prop `libraryButtonLabel` ao componente `ImageUploadCard` para permitir customização do texto do botão. O texto padrão será "Biblioteca de Poses" para manter compatibilidade com o Pose Changer.
 
 ---
 
-## Mudanças por Arquivo
+## Mudanças Planejadas
 
-### 1. `src/pages/UpscalerSelectionPage.tsx`
+### Arquivo 1: `src/components/pose-changer/ImageUploadCard.tsx`
+
+#### 1.1 Adicionar nova prop na interface
 
 ```text
-// Antes (linha 20)
-onBack={() => navigate("/ferramentas-ia-aplicativo")}
-
-// Depois
-onBack={() => navigate(-1)}
+interface ImageUploadCardProps {
+  title: string;
+  subtitle?: string;
+  image: string | null;
+  onImageChange: (image: string | null, file?: File) => void;
+  showLibraryButton?: boolean;
+  onOpenLibrary?: () => void;
+  libraryButtonLabel?: string;  // ← NOVO
+  className?: string;
+  disabled?: boolean;
+}
 ```
 
-### 2. `src/pages/UserLogin.tsx`
+#### 1.2 Adicionar na desestruturação do componente
 
 ```text
-// Antes (linha 93)
-onClick={() => navigate("/")}
-
-// Depois
-onClick={() => navigate(-1)}
+const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
+  title,
+  subtitle,
+  image,
+  onImageChange,
+  showLibraryButton = false,
+  onOpenLibrary,
+  libraryButtonLabel = 'Biblioteca de Poses',  // ← NOVO com valor padrão
+  className,
+  disabled = false,
+}) => {
 ```
 
-### 3. `src/pages/UserLoginArtes.tsx`
+#### 1.3 Usar a prop no botão (linha 170)
 
 ```text
-// Antes (linha 60)
-onClick={() => navigate("/")}
+// Antes
+<Library className="w-3 h-3 mr-1" />
+Biblioteca de Poses
 
 // Depois
-onClick={() => navigate(-1)}
-```
-
-### 4. `src/pages/UserLoginArtesMusicos.tsx`
-
-```text
-// Antes (linha 60)
-onClick={() => navigate("/")}
-
-// Depois
-onClick={() => navigate(-1)}
-```
-
-### 5. `src/pages/ForgotPassword.tsx`
-
-```text
-// Antes (linha 68)
-onClick={() => navigate("/login")}
-
-// Depois
-onClick={() => navigate(-1)}
-```
-
-### 6. `src/pages/ForgotPasswordArtes.tsx`
-
-```text
-// Antes (linha 76)
-onClick={() => navigate("/login-artes")}
-
-// Depois
-onClick={() => navigate(-1)}
-```
-
-### 7. `src/pages/AdminLogin.tsx`
-
-```text
-// Antes (linha 216)
-onClick={() => navigate("/")}
-
-// Depois
-onClick={() => navigate(-1)}
-```
-
-### 8. `src/pages/PartnerLogin.tsx`
-
-```text
-// Antes (linha 58)
-onClick={() => navigate("/")}
-
-// Depois
-onClick={() => navigate(-1)}
-```
-
-### 9. `src/pages/PartnerLoginUnified.tsx`
-
-```text
-// Antes (linha 147)
-onClick={() => navigate("/")}
-
-// Depois
-onClick={() => navigate(-1)}
-```
-
-### 10. `src/pages/ProfileSettings.tsx`
-
-```text
-// Antes (linha 198)
-onClick={() => navigate("/biblioteca-prompts")}
-
-// Depois
-onClick={() => navigate(-1)}
-```
-
-### 11. `src/pages/InstallApp.tsx`
-
-```text
-// Antes (linha 57)
-onClick={() => navigate("/")}
-
-// Depois
-onClick={() => navigate(-1)}
-```
-
-### 12. `src/pages/ContributePrompts.tsx`
-
-```text
-// Antes (linha 226)
-onClick={() => navigate("/")}
-
-// Depois
-onClick={() => navigate(-1)}
-```
-
-### 13. `src/pages/AdminUpload.tsx`
-
-```text
-// Antes (linha 407)
-onClick={() => navigate("/")}
-
-// Depois
-onClick={() => navigate(-1)}
-```
-
-### 14. `src/pages/BibliotecaArtesHub.tsx`
-
-```text
-// Antes (linha 79)
-onClick={() => navigate("/")}
-
-// Depois
-onClick={() => navigate(-1)}
+<Library className="w-3 h-3 mr-1" />
+{libraryButtonLabel}
 ```
 
 ---
 
-## Resumo
+### Arquivo 2: `src/pages/VesteAITool.tsx`
 
-| Total de Arquivos | 14 |
-|-------------------|-----|
-| Páginas de Auth | 8 |
-| Páginas de Ferramentas | 1 |
-| Páginas de Perfil | 1 |
-| Páginas Utilitárias | 3 |
-| Páginas de Biblioteca | 1 |
+#### 2.1 Adicionar a prop no ImageUploadCard de roupa (linha 427-434)
+
+```text
+// Antes
+<ImageUploadCard
+  title="Roupa de Referência"
+  image={clothingImage}
+  onImageChange={handleClothingImageChange}
+  showLibraryButton
+  onOpenLibrary={() => setShowClothingLibrary(true)}
+  disabled={isProcessing}
+/>
+
+// Depois
+<ImageUploadCard
+  title="Roupa de Referência"
+  image={clothingImage}
+  onImageChange={handleClothingImageChange}
+  showLibraryButton
+  libraryButtonLabel="Biblioteca de Roupas"  // ← NOVO
+  onOpenLibrary={() => setShowClothingLibrary(true)}
+  disabled={isProcessing}
+/>
+```
 
 ---
 
-## Resultado Esperado
+## Resultado Visual
 
-Após esta mudança, **todos** os botões "Voltar" do site vão:
+### Pose Changer (não muda):
+```text
+┌─────────────────────────┐
+│ Pose de Referência      │
+│ [imagem]                │
+│ ┌─────────────────────┐ │
+│ │ 📚 Biblioteca de Poses│ │  ← Mantém "Poses"
+│ └─────────────────────┘ │
+└─────────────────────────┘
+```
 
-1. Voltar para a página anterior do histórico do navegador
-2. Funcionar corretamente independente de como o usuário chegou na página
-3. Comportamento consistente em todo o site
+### Veste AI (corrigido):
+```text
+┌─────────────────────────┐
+│ Roupa de Referência     │
+│ [imagem]                │
+│ ┌──────────────────────┐│
+│ │ 📚 Biblioteca de Roupas│ │  ← Agora mostra "Roupas"
+│ └──────────────────────┘│
+└─────────────────────────┘
+```
 
 ---
 
-## Arquivos que NÃO serão modificados
+## Resumo das Mudanças
 
-- `src/pages/PlanosArtes.tsx:575` - Este é um link "Já comprou um pack?" que leva para login, não é um botão de voltar
-- `src/pages/AdminLogin.tsx:279` - O `handleBackToLogin` interno da página (volta para step anterior, não navegação)
-- Páginas que já usam `useSmartBackNavigation` (UpscalerArcanoTool, VesteAITool, etc.) - já funcionam corretamente
+| Arquivo | Mudança |
+|---------|---------|
+| `ImageUploadCard.tsx` | + Prop `libraryButtonLabel` com default "Biblioteca de Poses" |
+| `ImageUploadCard.tsx` | Usar `{libraryButtonLabel}` no texto do botão |
+| `VesteAITool.tsx` | Passar `libraryButtonLabel="Biblioteca de Roupas"` |
 
+---
+
+## Arquivos que NÃO mudam
+
+- `PoseChangerTool.tsx` - Continua usando o padrão "Biblioteca de Poses"
+- `ClothingLibraryModal.tsx` - Já tem título correto "Biblioteca de Roupas" (linha 103)
