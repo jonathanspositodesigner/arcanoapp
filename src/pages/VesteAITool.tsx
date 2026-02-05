@@ -429,6 +429,7 @@ const VesteAITool: React.FC = () => {
               image={clothingImage}
               onImageChange={handleClothingImageChange}
               showLibraryButton
+              libraryButtonLabel="Biblioteca de Roupas"
               onOpenLibrary={() => setShowClothingLibrary(true)}
               disabled={isProcessing}
             />

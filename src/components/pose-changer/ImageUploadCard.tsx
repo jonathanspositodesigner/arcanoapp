@@ -11,6 +11,7 @@ interface ImageUploadCardProps {
   onImageChange: (image: string | null, file?: File) => void;
   showLibraryButton?: boolean;
   onOpenLibrary?: () => void;
+  libraryButtonLabel?: string;
   className?: string;
   disabled?: boolean;
 }
@@ -22,6 +23,7 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
   onImageChange,
   showLibraryButton = false,
   onOpenLibrary,
+  libraryButtonLabel = 'Biblioteca de Poses',
   className,
   disabled = false,
 }) => {
@@ -167,7 +169,7 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
             disabled={disabled}
           >
             <Library className="w-3 h-3 mr-1" />
-            Biblioteca de Poses
+            {libraryButtonLabel}
           </Button>
         </div>
       )}
