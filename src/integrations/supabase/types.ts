@@ -2798,6 +2798,14 @@ export type Database = {
           success: boolean
         }[]
       }
+      admin_cancel_job: {
+        Args: { p_job_id: string; p_table_name: string }
+        Returns: {
+          error_message: string
+          refunded_amount: number
+          success: boolean
+        }[]
+      }
       check_profile_exists: {
         Args: { check_email: string }
         Returns: {
@@ -2816,6 +2824,14 @@ export type Database = {
           allowed: boolean
           current_count: number
           reset_at: string
+        }[]
+      }
+      cleanup_all_stale_ai_jobs: {
+        Args: never
+        Returns: {
+          cancelled_count: number
+          refunded_credits: number
+          table_name: string
         }[]
       }
       cleanup_monthly_logs: { Args: never; Returns: undefined }
