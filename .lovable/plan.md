@@ -124,11 +124,19 @@ Banir import direto de tabelas de jobs em páginas:
 └────────────────────────────────────────────────────────────┘
 ```
 
-## Resumo das Ações
+## Resumo das Ações - CONCLUÍDO ✅
 
-| Prioridade | Ação | Arquivos |
-|------------|------|----------|
-| **CRÍTICA** | Adicionar `credits_charged = true` após consumo de créditos | 4 edge functions |
-| ALTA | Remover funções duplicadas de fila | `runninghub-video-upscaler` |
-| MÉDIA | Criar documentação do sistema | `docs/job-system.md` |
-| BAIXA | Migrar páginas para usar JobManager completo | 4 tool pages (futuro) |
+| Prioridade | Ação | Status |
+|------------|------|--------|
+| **CRÍTICA** | Adicionar `credits_charged = true` após consumo de créditos | ✅ FEITO |
+| ALTA | Remover funções duplicadas de fila | ✅ FEITO |
+| MÉDIA | Criar documentação do sistema | ✅ FEITO (`docs/job-system.md`) |
+| BAIXA | Migrar páginas para usar JobManager completo | 📋 Futuro |
+
+## Arquivos Modificados
+
+- `supabase/functions/runninghub-upscaler/index.ts` - Adicionado `credits_charged = true`
+- `supabase/functions/runninghub-pose-changer/index.ts` - Adicionado `credits_charged = true`
+- `supabase/functions/runninghub-veste-ai/index.ts` - Adicionado `credits_charged = true`
+- `supabase/functions/runninghub-video-upscaler/index.ts` - Removidas funções duplicadas + Adicionado `credits_charged = true`
+- `docs/job-system.md` - Criada documentação completa do sistema

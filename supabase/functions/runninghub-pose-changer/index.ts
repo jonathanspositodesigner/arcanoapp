@@ -486,6 +486,16 @@ async function handleRun(req: Request) {
 
   console.log(`[PoseChanger] Credits consumed. New balance: ${creditResult[0].new_balance}`);
 
+  // CRITICAL: Mark credits as charged for idempotent refund on failure
+  await supabase
+    .from('pose_changer_jobs')
+    .update({ 
+      credits_charged: true,
+      user_credit_cost: creditCost
+    })
+    .eq('id', jobId);
+  console.log(`[PoseChanger] Job ${jobId} marked as credits_charged=true`);
+
   try {
     // ========================================
     // VERIFICAR DISPONIBILIDADE VIA QUEUE MANAGER CENTRALIZADO (MULTI-API)

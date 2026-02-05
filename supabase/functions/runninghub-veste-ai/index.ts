@@ -499,6 +499,16 @@ async function handleRun(req: Request) {
 
   console.log(`[VesteAI] Credits consumed. New balance: ${creditResult[0].new_balance}`);
 
+  // CRITICAL: Mark credits as charged for idempotent refund on failure
+  await supabase
+    .from('veste_ai_jobs')
+    .update({ 
+      credits_charged: true,
+      user_credit_cost: creditCost
+    })
+    .eq('id', jobId);
+  console.log(`[VesteAI] Job ${jobId} marked as credits_charged=true`);
+
   try {
     // Update job with input file names
     await supabase

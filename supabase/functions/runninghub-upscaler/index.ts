@@ -560,6 +560,16 @@ async function handleRun(req: Request) {
 
   console.log(`[RunningHub] Credits consumed successfully. New balance: ${creditResult[0].new_balance}`);
 
+  // CRITICAL: Mark credits as charged for idempotent refund on failure
+  await supabase
+    .from('upscaler_jobs')
+    .update({ 
+      credits_charged: true,
+      user_credit_cost: creditCost
+    })
+    .eq('id', jobId);
+  console.log(`[RunningHub] Job ${jobId} marked as credits_charged=true`);
+
    // Select WebApp ID based on category, version and framing mode
    const isLongeMode = framingMode === 'longe' && category?.startsWith('pessoas');
    const isFotoAntigaMode = category === 'fotoAntiga';

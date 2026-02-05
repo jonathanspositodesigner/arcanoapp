@@ -74,36 +74,9 @@ async function checkQueueAvailability(supabase: any): Promise<{
   }
 }
 
-// Get next queued job for this tool
-async function getNextQueuedJob(supabase: any): Promise<any> {
-  const { data } = await supabase
-    .from('video_upscaler_jobs')
-    .select('*')
-    .eq('status', 'queued')
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  return data;
-}
-
-// Update queue positions
-async function updateQueuePositions(supabase: any): Promise<void> {
-  const { data: queuedJobs } = await supabase
-    .from('video_upscaler_jobs')
-    .select('id')
-    .eq('status', 'queued')
-    .order('created_at', { ascending: true });
-
-  if (queuedJobs) {
-    for (let i = 0; i < queuedJobs.length; i++) {
-      await supabase
-        .from('video_upscaler_jobs')
-        .update({ position: i + 1 })
-        .eq('id', queuedJobs[i].id);
-    }
-  }
-}
+// NOTE: getNextQueuedJob and updateQueuePositions were REMOVED
+// Queue management is now 100% delegated to runninghub-queue-manager
+// This prevents duplicate logic and ensures global FIFO ordering
 
 // Consume credits from user balance
 async function consumeCredits(supabase: any, userId: string, amount: number): Promise<{ success: boolean; error?: string }> {
@@ -229,6 +202,16 @@ serve(async (req) => {
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      // CRITICAL: Mark credits as charged for idempotent refund on failure
+      await supabase
+        .from('video_upscaler_jobs')
+        .update({ 
+          credits_charged: true,
+          user_credit_cost: creditCost || CREDIT_COST
+        })
+        .eq('id', jobId);
+      console.log(`[VideoUpscaler] Job ${jobId} marked as credits_charged=true`);
 
       // Get the RunningHub API key - use account from Queue Manager or fallback
       const defaultApiKey = Deno.env.get("RUNNINGHUB_API_KEY");
