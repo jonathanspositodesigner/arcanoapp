@@ -13,6 +13,7 @@ import ToolsHeader from '@/components/ToolsHeader';
 import VideoUploadCard from '@/components/video-upscaler/VideoUploadCard';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import { JobDebugPanel } from '@/components/ai-tools';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
@@ -53,6 +54,10 @@ const VideoUpscalerTool: React.FC = () => {
   const [queuePosition, setQueuePosition] = useState(0);
   const [queueMessageIndex, setQueueMessageIndex] = useState(0);
 
+  // Debug state for observability
+  const [currentStep, setCurrentStep] = useState<string | null>(null);
+  const [failedAtStep, setFailedAtStep] = useState<string | null>(null);
+  const [debugErrorMessage, setDebugErrorMessage] = useState<string | null>(null);
   // Session management
   const sessionIdRef = useRef<string>('');
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -102,6 +107,11 @@ const VideoUpscalerTool: React.FC = () => {
         (payload) => {
           const newData = payload.new as any;
           console.log('[VideoUpscaler] Job update:', newData);
+
+          // Debug/observability (shown when Debug Mode is enabled)
+          setCurrentStep(newData.current_step || newData.status);
+          setFailedAtStep(newData.failed_at_step || null);
+          setDebugErrorMessage(newData.error_message || null);
 
           if (newData.status === 'completed' && newData.output_url) {
             setOutputVideoUrl(newData.output_url);
@@ -195,7 +205,7 @@ const VideoUpscalerTool: React.FC = () => {
         try {
           const { data: job } = await supabase
             .from('video_upscaler_jobs')
-            .select('status, output_url, error_message')
+            .select('status, output_url, error_message, current_step, failed_at_step')
             .eq('id', jobId)
             .maybeSingle();
 
@@ -424,6 +434,9 @@ const VideoUpscalerTool: React.FC = () => {
     setProgress(0);
     setJobId(null);
     setQueuePosition(0);
+    setCurrentStep(null);
+    setFailedAtStep(null);
+    setDebugErrorMessage(null);
   };
 
   const handleDownload = () => {
@@ -529,6 +542,16 @@ const VideoUpscalerTool: React.FC = () => {
                 Sair da Fila
               </Button>
             )}
+
+            <JobDebugPanel
+              jobId={jobId}
+              tableName="video_upscaler_jobs"
+              currentStep={currentStep}
+              failedAtStep={failedAtStep}
+              errorMessage={debugErrorMessage}
+              position={queuePosition}
+              status={status}
+            />
           </div>
 
           {/* Right Side - Result Viewer (5/7 on desktop ~72%) */}
