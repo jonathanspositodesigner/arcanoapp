@@ -1,142 +1,163 @@
 
-# Plano de Limpeza Completa das Ferramentas de IA
 
-## 1. Varredura de Conflitos - Resultados
+# Correção dos Conflitos: `createJob` e `markJobFailed`
 
-### Lista de conflitos identificados:
+## Conflitos Identificados
 
-| Arquivo | O que é | Conflito | Decisão |
-|---------|---------|----------|---------|
-| `src/pages/UpscalerArcanoTool.tsx` | Insert direto (linha 389-400) + invoke manual (linha 415+) | Bypass do JobManager | **Manter** - Funciona corretamente, migração futura |
-| `src/pages/PoseChangerTool.tsx` | Insert direto (linha 293-303) + invoke manual (linha 316+) | Bypass do JobManager | **Manter** - Funciona corretamente |
-| `src/pages/VesteAITool.tsx` | Insert direto (linha 293-303) + invoke manual (linha 316+) | Bypass do JobManager | **Manter** - Funciona corretamente |
-| `src/pages/VideoUpscalerTool.tsx` | Insert direto (linha 311-323) + Polling fallback (linhas 165-223) | Polling gasta recursos Cloud | **Manter polling** - Backup necessário para vídeos |
-| `runninghub-video-upscaler` | Funções locais `getNextQueuedJob` e `updateQueuePositions` (linhas 77-106) | Duplica lógica do QueueManager | **Remover** - Delegar 100% ao central |
-| **CRÍTICO**: Todas as Edge Functions | Flag `credits_charged` NÃO é atualizada após consumo | Reembolso automático quebrado | **Corrigir** - Adicionar update da flag |
+### Conflito 1: `markJobFailed` (CRÍTICO)
+**Problema:** O `JobManager.ts` (frontend) marca jobs como `failed` diretamente no banco SEM reembolsar créditos.
 
-## 2. Remoções e Correções
-
-### A) Backend - Correções Críticas (Edge Functions)
-
-**Problema**: As 4 edge functions consomem créditos mas NÃO marcam `credits_charged = true`, impedindo o reembolso automático pelo QueueManager.
-
-**Correção**: Adicionar em cada função, após sucesso do `consume_upscaler_credits`:
 ```typescript
-await supabase.from('*_jobs').update({ 
-  credits_charged: true,
-  user_credit_cost: creditCost 
-}).eq('id', jobId);
+// JobManager.ts linhas 283-302 - PROBLEMÁTICO
+async function markJobFailed(tableName, jobId, errorMessage) {
+  await supabase.from(tableName).update({
+    status: 'failed',
+    error_message: errorMessage,
+    completed_at: new Date().toISOString(),
+  }).eq('id', jobId);
+}
 ```
 
-| Edge Function | Local do consumo | Ação |
-|---------------|------------------|------|
-| `runninghub-upscaler` | Linha 527-534 | Adicionar update linha ~562 |
-| `runninghub-pose-changer` | Linha 453-460 | Adicionar update linha ~487 |
-| `runninghub-veste-ai` | Linha 466-473 | Adicionar update após consumo |
-| `runninghub-video-upscaler` | Linha 109-131 | Adicionar update após consumo |
+**Consequência:** Se o frontend falhar em comunicar com a edge function, o job vai para FAILED mas os créditos NÃO são reembolsados.
 
-### B) Backend - Remoção de lógica duplicada
+**Solução:** Chamar o endpoint `/finish` do QueueManager ao invés de update direto. O QueueManager já tem lógica de reembolso idempotente (linhas 184-213).
 
-**Arquivo**: `supabase/functions/runninghub-video-upscaler/index.ts`
+---
 
-| Função | Linhas | Ação |
-|--------|--------|------|
-| `getNextQueuedJob()` | 77-88 | **Remover** - QueueManager já faz isso |
-| `updateQueuePositions()` | 91-106 | **Remover** - QueueManager já faz isso |
+### Conflito 2: `createJob` (MENOR)
+**Problema:** O `JobManager.ts` cria jobs com `status: 'queued'` antes de saber se há vaga.
 
-### C) Frontend - Manter como está
-
-As páginas funcionam corretamente com a lógica atual. A migração completa para JobManager pode ser feita futuramente sem urgência, pois:
-- `checkActiveJob()` do JobManager já é usado
-- `cancelJob()` do JobManager já é usado  
-- O fluxo upload→job→invoke funciona corretamente
-
-## 3. Mapa de Ferramentas → Workflows (Confirmado)
-
-| Ferramenta | WebApp IDs | Edge Function | Webhook |
-|------------|------------|---------------|---------|
-| **Upscaler Arcano** | Pro: `2015865378030755841`, Standard: `2017030861371219969`, Longe: `2017343414227963905`, FotoAntiga: `2018913880214343681`, Comida: `2015855359243587585`, Logo: `2019239272464785409`, Render3D: `2019234965992509442` | `runninghub-upscaler/run` | `runninghub-webhook` |
-| **Pose Changer** | `2018451429635133442` (Nodes: 27=Person, 60=Pose) | `runninghub-pose-changer/run` | `runninghub-webhook` |
-| **Veste AI** | `2018755100210106369` (Nodes: 41=Person, 43=Clothing) | `runninghub-veste-ai/run` | `runninghub-webhook` |
-| **Video Upscaler** | `2018810750139109378` (Node: 3=Video) | `runninghub-video-upscaler/run` | `runninghub-video-upscaler-webhook` |
-
-## 4. Anti-Job-Preso (Já Implementado)
-
-| Mecanismo | Localização | Funcionamento |
-|-----------|-------------|---------------|
-| Cleanup oportunístico | `QueueManager /check, /process-next` | RPC `cleanup_all_stale_ai_jobs` a cada requisição |
-| Timeout 10min | Todas as edge functions | `EdgeRuntime.waitUntil()` cancela jobs presos |
-| Webhook idempotente | `QueueManager /finish` | Verifica `credits_charged` + `credits_refunded` |
-
-## 5. Guardrails para Ferramentas Futuras
-
-### A) Criar documentação `docs/job-system.md`
-
-```markdown
-# Sistema de Jobs de IA - Regras Obrigatórias
-
-## Regras de Negócio
-1. **Limite global**: Máximo 3 jobs simultâneos (STARTING + RUNNING)
-2. **FIFO global**: Fila única entre todas as ferramentas
-3. **1 job por usuário**: Verificar via `/check-user-active`
-4. **Erro = terminal**: FAILED + reembolso, sem retry automático
-5. **Webhook finaliza**: Só QueueManager `/finish` atualiza status final
-
-## Contrato Obrigatório (Nova Ferramenta)
-1. Chamar `checkActiveJob(userId)` antes de processar
-2. Upload de arquivos ANTES de criar job (previne órfãos)
-3. Após consumir créditos: `update({ credits_charged: true })`
-4. Delegar fila ao QueueManager `/check` e `/enqueue`
-5. Webhook deve chamar QueueManager `/finish`
+```typescript
+// JobManager.ts linhas 179-184 - INCONSISTENTE
+const insertData = {
+  session_id: sessionId,
+  user_id: userId,
+  status: 'queued' as const,  // ← Define antes de verificar
+  ...payload,
+};
 ```
 
-### B) Checagem simples (ESLint rule sugerida)
+**Consequência:** Jobs entram como `queued` mesmo quando poderiam ir direto para `starting` ou `running`.
 
-Banir import direto de tabelas de jobs em páginas:
-```
-// Proibido: supabase.from('upscaler_jobs').insert()
-// Permitido: JobManager.createJob()
-```
+**Solução:** Criar com `status: 'pending'` (estado inicial neutro) e deixar a edge function decidir o estado real após verificar a fila.
 
-## 6. Arquitetura Final
+---
 
-```
-┌────────────────────────────────────────────────────────────┐
-│                      FRONTEND                               │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ src/ai/JobManager.ts (Única fonte de verdade)        │  │
-│  │ • checkActiveJob() • cancelJob() • subscribeToJob()  │  │
-│  └──────────────────────────────────────────────────────┘  │
-│              ↓                                              │
-│  4 Tool Pages: upload → insert → invoke edge function      │
-└────────────────────────────────────────────────────────────┘
-                            ↓
-┌────────────────────────────────────────────────────────────┐
-│                      BACKEND                                │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ runninghub-queue-manager (Orquestrador Central)      │  │
-│  │ • /check • /enqueue • /finish • /process-next        │  │
-│  └──────────────────────────────────────────────────────┘  │
-│              ↓                                              │
-│  4 Edge Functions: validação → créditos → RunningHub       │
-│              ↓                                              │
-│  2 Webhooks: delegam para QueueManager /finish             │
-└────────────────────────────────────────────────────────────┘
+## Correções a Implementar
+
+### 1. Corrigir `markJobFailed` (JobManager.ts)
+
+**Antes:**
+```typescript
+async function markJobFailed(tableName, jobId, errorMessage) {
+  await supabase.from(tableName).update({
+    status: 'failed',
+    error_message: errorMessage,
+    completed_at: new Date().toISOString(),
+  }).eq('id', jobId);
+}
 ```
 
-## Resumo das Ações - CONCLUÍDO ✅
+**Depois:**
+```typescript
+async function markJobFailed(tableName, jobId, errorMessage) {
+  try {
+    // Chamar QueueManager /finish para garantir reembolso
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          table: tableName,
+          jobId: jobId,
+          status: 'failed',
+          errorMessage: errorMessage,
+        }),
+      }
+    );
+    
+    if (!response.ok) {
+      console.error('[JobManager] markJobFailed via QueueManager failed:', response.status);
+      // Fallback: update direto (sem reembolso, mas pelo menos marca)
+      await supabase.from(tableName).update({
+        status: 'failed',
+        error_message: errorMessage,
+        completed_at: new Date().toISOString(),
+      }).eq('id', jobId);
+    }
+  } catch (error) {
+    console.error('[JobManager] markJobFailed exception:', error);
+  }
+}
+```
 
-| Prioridade | Ação | Status |
-|------------|------|--------|
-| **CRÍTICA** | Adicionar `credits_charged = true` após consumo de créditos | ✅ FEITO |
-| ALTA | Remover funções duplicadas de fila | ✅ FEITO |
-| MÉDIA | Criar documentação do sistema | ✅ FEITO (`docs/job-system.md`) |
-| BAIXA | Migrar páginas para usar JobManager completo | 📋 Futuro |
+---
+
+### 2. Corrigir `createJob` (JobManager.ts)
+
+**Antes:**
+```typescript
+const insertData = {
+  session_id: sessionId,
+  user_id: userId,
+  status: 'queued' as const,
+  ...payload,
+};
+```
+
+**Depois:**
+```typescript
+const insertData = {
+  session_id: sessionId,
+  user_id: userId,
+  status: 'pending' as const,  // Estado neutro - edge function decide
+  ...payload,
+};
+```
+
+---
+
+### 3. Atualizar tipo `JobStatus`
+
+Adicionar `'pending'` como estado válido:
+
+```typescript
+export type JobStatus = 'pending' | 'queued' | 'starting' | 'running' | 'completed' | 'failed' | 'cancelled';
+```
+
+---
 
 ## Arquivos Modificados
 
-- `supabase/functions/runninghub-upscaler/index.ts` - Adicionado `credits_charged = true`
-- `supabase/functions/runninghub-pose-changer/index.ts` - Adicionado `credits_charged = true`
-- `supabase/functions/runninghub-veste-ai/index.ts` - Adicionado `credits_charged = true`
-- `supabase/functions/runninghub-video-upscaler/index.ts` - Removidas funções duplicadas + Adicionado `credits_charged = true`
-- `docs/job-system.md` - Criada documentação completa do sistema
+| Arquivo | Mudança |
+|---------|---------|
+| `src/ai/JobManager.ts` | Corrigir `markJobFailed` + `createJob` + tipo `JobStatus` |
+
+---
+
+## Fluxo Após Correção
+
+```text
+1. createJob() → insere com status: 'pending'
+2. startJob() → chama edge function
+   └─ Se falhar comunicação → markJobFailed() → chama /finish → REEMBOLSA
+3. Edge function:
+   └─ Verifica fila via /check
+   └─ Se há vaga → status: 'starting'/'running'
+   └─ Se não há vaga → status: 'queued' (enqueue)
+4. Webhook → chama /finish → finaliza + reembolsa se falhou
+```
+
+---
+
+## Benefícios
+
+1. **Reembolso garantido:** Todo job que falha passa pelo QueueManager `/finish`
+2. **Status consistente:** Edge function decide estado inicial, não o frontend
+3. **Idempotência mantida:** QueueManager continua verificando flags antes de reembolsar
+4. **Fallback seguro:** Se `/finish` falhar, ainda marca como failed (sem reembolso, mas evita job preso)
+
