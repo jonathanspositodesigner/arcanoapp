@@ -318,6 +318,26 @@ serve(async (req) => {
 
       console.log(`[VideoUpscaler] Job ${jobId} started successfully. Task ID: ${taskId}`);
 
+      // TIMEOUT SAFETY: Cancel job if no callback in 10 minutes
+      EdgeRuntime.waitUntil((async () => {
+        await new Promise(r => setTimeout(r, 10 * 60 * 1000)); // 10 minutes
+        
+        const { data: job } = await supabase
+          .from('video_upscaler_jobs')
+          .select('status')
+          .eq('id', jobId)
+          .single();
+        
+        if (job && (job.status === 'running' || job.status === 'queued')) {
+          console.log(`[VideoUpscaler] TIMEOUT: Job ${jobId} stuck for 10min, cancelling...`);
+          
+          await supabase.rpc('user_cancel_ai_job', {
+            p_table_name: 'video_upscaler_jobs',
+            p_job_id: jobId
+          });
+        }
+      })());
+
       return new Response(
         JSON.stringify({ success: true, jobId, taskId }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
