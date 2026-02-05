@@ -1,289 +1,295 @@
 
-# Plano: Workflows Dedicados para Logo e Arte + Selos 3D
+# Plano: Remover Completamente a Lógica de unlock_days
 
-## Resumo
+## Objetivo
 
-Implementar dois workflows especializados que eliminam o uso de prompts e funcionam como Foto Antiga e Comida/Objeto:
-
-| Categoria | WebApp ID | Node Imagem | Node Detalhe | Padrão | Recomendado |
-|-----------|-----------|-------------|--------------|--------|-------------|
-| **Logo e Arte** | `2019239272464785409` | 39 | 33 | 0.40 | 0.30 a 0.60 |
-| **Selos 3D** | `2019234965992509442` | 301 | 300 | 0.80 | 0.70 a 0.90 |
-
-**Comportamento**: Slider de Nível de Detalhe só aparece na versão PRO.
-
----
-
-## Mudanças Técnicas
-
-### Arquivo 1: Backend - `supabase/functions/runninghub-upscaler/index.ts`
-
-#### 1.1 Adicionar constantes de WebApp IDs
-
-```text
-const WEBAPP_ID_LOGO = '2019239272464785409';
-const WEBAPP_ID_RENDER3D = '2019234965992509442';
-```
-
-#### 1.2 Adicionar detecção dos novos modos
-
-```text
-const isLogoMode = category === 'logo';
-const isRender3dMode = category === 'render3d';
-```
-
-#### 1.3 Atualizar seleção de WebApp ID
-
-```text
-let webappId: string;
-if (isFotoAntigaMode) {
-  webappId = WEBAPP_ID_FOTO_ANTIGA;
-} else if (isComidaMode) {
-  webappId = WEBAPP_ID_COMIDA;
-} else if (isLogoMode) {
-  webappId = WEBAPP_ID_LOGO;
-} else if (isRender3dMode) {
-  webappId = WEBAPP_ID_RENDER3D;
-} else if (isLongeMode) {
-  webappId = WEBAPP_ID_LONGE;
-} else {
-  webappId = version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD;
-}
-```
-
-#### 1.4 Adicionar construção de nodeInfoList para Logo e Arte
-
-```text
-} else if (isLogoMode) {
-  // === LOGO E ARTE ===
-  // Node 39: image, Node 33: value (detail level)
-  nodeInfoList = [
-    { nodeId: "39", fieldName: "image", fieldValue: rhFileName },
-  ];
-  
-  // Detail level only for PRO version
-  if (version === 'pro' && detailDenoise !== undefined) {
-    nodeInfoList.push({ 
-      nodeId: "33", 
-      fieldName: "value", 
-      fieldValue: String(detailDenoise) 
-    });
-  }
-  
-  console.log(`[RunningHub] Using LOGO workflow - version: ${version}, detail: ${detailDenoise}`);
-}
-```
-
-#### 1.5 Adicionar construção de nodeInfoList para Selos 3D
-
-```text
-} else if (isRender3dMode) {
-  // === SELOS 3D ===
-  // Node 301: image, Node 300: value (detail level)
-  nodeInfoList = [
-    { nodeId: "301", fieldName: "image", fieldValue: rhFileName },
-  ];
-  
-  // Detail level only for PRO version
-  if (version === 'pro' && detailDenoise !== undefined) {
-    nodeInfoList.push({ 
-      nodeId: "300", 
-      fieldName: "value", 
-      fieldValue: String(detailDenoise) 
-    });
-  }
-  
-  console.log(`[RunningHub] Using RENDER3D workflow - version: ${version}, detail: ${detailDenoise}`);
-}
-```
-
----
-
-### Arquivo 2: Frontend - `src/pages/UpscalerArcanoTool.tsx`
-
-#### 2.1 Adicionar estados para níveis de detalhe
-
-```text
-const [logoDetailLevel, setLogoDetailLevel] = useState(0.40);
-const [render3dDetailLevel, setRender3dDetailLevel] = useState(0.80);
-```
-
-#### 2.2 Atualizar flags de workflows especiais
-
-```text
-const isSpecialWorkflow = promptCategory === 'fotoAntiga' || promptCategory === 'comida' || promptCategory === 'logo' || promptCategory === 'render3d';
-const isFotoAntigaMode = promptCategory === 'fotoAntiga';
-const isComidaMode = promptCategory === 'comida';
-const isLogoMode = promptCategory === 'logo';
-const isRender3dMode = promptCategory === 'render3d';
-```
-
-#### 2.3 Atualizar chamada à edge function
-
-```text
-detailDenoise: isComidaMode 
-  ? comidaDetailLevel 
-  : isLogoMode 
-    ? (version === 'pro' ? logoDetailLevel : undefined)
-    : isRender3dMode
-      ? (version === 'pro' ? render3dDetailLevel : undefined)
-      : (isSpecialWorkflow ? undefined : detailDenoise),
-```
-
-#### 2.4 Adicionar slider de Logo e Arte (PRO only)
-
-```text
-{/* Logo/Arte Detail Level Slider - PRO only */}
-{isLogoMode && version === 'pro' && (
-  <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
-    <div className="flex items-center justify-between mb-1">
-      <div className="flex items-center gap-1.5">
-        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-        <span className="text-xs font-medium text-white">Nível de Detalhe</span>
-      </div>
-      <span className="text-xs text-purple-300 font-mono">{logoDetailLevel.toFixed(2)}</span>
-    </div>
-    <Slider
-      value={[logoDetailLevel]}
-      onValueChange={([value]) => setLogoDetailLevel(value)}
-      min={0.01}
-      max={1.00}
-      step={0.01}
-      className="w-full"
-    />
-    <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-      <span>Mais Fidelidade</span>
-      <span>Mais Criatividade</span>
-    </div>
-    <p className="text-[9px] text-purple-300/40 mt-1 text-center">
-      Recomendado: 0,30 a 0,60
-    </p>
-  </Card>
-)}
-```
-
-#### 2.5 Adicionar slider de Selos 3D (PRO only)
-
-```text
-{/* Selos 3D Detail Level Slider - PRO only */}
-{isRender3dMode && version === 'pro' && (
-  <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
-    <div className="flex items-center justify-between mb-1">
-      <div className="flex items-center gap-1.5">
-        <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-        <span className="text-xs font-medium text-white">Nível de Detalhe</span>
-      </div>
-      <span className="text-xs text-purple-300 font-mono">{render3dDetailLevel.toFixed(2)}</span>
-    </div>
-    <Slider
-      value={[render3dDetailLevel]}
-      onValueChange={([value]) => setRender3dDetailLevel(value)}
-      min={0.01}
-      max={1.00}
-      step={0.01}
-      className="w-full"
-    />
-    <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-      <span>Mais Fidelidade</span>
-      <span>Mais Criatividade</span>
-    </div>
-    <p className="text-[9px] text-purple-300/40 mt-1 text-center">
-      Recomendado: 0,70 a 0,90
-    </p>
-  </Card>
-)}
-```
-
----
-
-## Fluxo de Dados
-
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│                            LOGO E ARTE                                  │
-├─────────────────────────────────────────────────────────────────────────┤
-│  Standard: Apenas imagem                                                │
-│  PRO: Imagem + Slider (0.01-1.00, padrão 0.40)                         │
-│                                                                         │
-│  → WebApp ID: 2019239272464785409                                       │
-│  → Node 39: image                                                       │
-│  → Node 33: value (PRO only)                                            │
-└─────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────┐
-│                            SELOS 3D                                     │
-├─────────────────────────────────────────────────────────────────────────┤
-│  Standard: Apenas imagem                                                │
-│  PRO: Imagem + Slider (0.01-1.00, padrão 0.80)                         │
-│                                                                         │
-│  → WebApp ID: 2019234965992509442                                       │
-│  → Node 301: image                                                      │
-│  → Node 300: value (PRO only)                                           │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Interface Visual
-
-### Versão Standard (ambas categorias)
-```text
-┌─────────────────────────────────┐
-│ [Tipo de Imagem: Logo e Arte]  │
-│                                 │
-│ ┌─────────────────────────────┐ │
-│ │      Upload de Imagem       │ │
-│ │         (apenas)            │ │
-│ └─────────────────────────────┘ │
-│                                 │
-│ [Processar Imagem]              │
-└─────────────────────────────────┘
-```
-
-### Versão PRO (ambas categorias)
-```text
-┌─────────────────────────────────┐
-│ [Tipo de Imagem: Selos 3D]     │
-│                                 │
-│ ┌─────────────────────────────┐ │
-│ │      Upload de Imagem       │ │
-│ └─────────────────────────────┘ │
-│                                 │
-│ ┌─────────────────────────────┐ │
-│ │ Nível de Detalhe      0.80  │ │
-│ │ ────────────●───────────    │ │
-│ │ Mais Fidelidade  Mais Criat.│ │
-│ │    Recomendado: 0,70 a 0,90 │ │
-│ └─────────────────────────────┘ │
-│                                 │
-│ [Processar Imagem]              │
-└─────────────────────────────────┘
-```
+Eliminar toda a lógica de bloqueio por dias do Upscaler Arcano, tanto do frontend quanto do banco de dados. Quem comprou o pack terá acesso imediato a TODAS as versões.
 
 ---
 
 ## Resumo das Mudanças
 
-| Arquivo | Tipo | Mudança |
-|---------|------|---------|
-| `runninghub-upscaler/index.ts` | Backend | + `WEBAPP_ID_LOGO` e `WEBAPP_ID_RENDER3D` |
-| `runninghub-upscaler/index.ts` | Backend | + Detecção `isLogoMode` e `isRender3dMode` |
-| `runninghub-upscaler/index.ts` | Backend | + nodeInfoList para Logo (Nodes 39, 33) |
-| `runninghub-upscaler/index.ts` | Backend | + nodeInfoList para Selos 3D (Nodes 301, 300) |
-| `UpscalerArcanoTool.tsx` | Frontend | + Estados `logoDetailLevel` e `render3dDetailLevel` |
-| `UpscalerArcanoTool.tsx` | Frontend | + Flags `isLogoMode` e `isRender3dMode` |
-| `UpscalerArcanoTool.tsx` | Frontend | + Sliders de detalhe para ambas categorias (PRO) |
-| `UpscalerArcanoTool.tsx` | Frontend | Atualizar lógica de `detailDenoise` na requisição |
+### Arquivos Frontend a Modificar
+
+| Arquivo | Mudança |
+|---------|---------|
+| `UpscalerArcanoVersionSelect.tsx` | Remover funções `getUnlockDate`, `getDaysRemaining`, simplificar `isVersionUnlocked` |
+| `UpscalerArcanoV2.tsx` | Remover verificação de 7 dias, definir `isUnlocked = true` |
+| `ToolVersionLessons.tsx` | Simplificar `isVersionUnlocked`, remover tela de bloqueio |
+| `ToolVersionEditor.tsx` | Remover campo "Dias para Desbloqueio" do admin |
+| `AdminManagePacks.tsx` | Remover `unlock_days` da criação de versões |
+
+### Atualização do Banco de Dados
+
+| Tabela | Mudança |
+|--------|---------|
+| `artes_packs.tool_versions` | Setar `unlock_days: 0` para todas as versões existentes |
 
 ---
 
-## Categorias Finais com Workflows Dedicados
+## Mudanças Técnicas Detalhadas
 
-| Categoria | Workflow Dedicado | Controles Visíveis |
-|-----------|-------------------|-------------------|
-| Pessoas | ❌ (usa Standard/PRO) | Resolução, Prompt, Enquadramento, Detalhe |
-| Paisagem/Ambiente | ❌ (usa Standard/PRO) | Resolução, Prompt, Enquadramento, Detalhe |
-| Foto Antiga | ✅ WebApp Próprio | Apenas Imagem |
-| Comida/Objeto | ✅ WebApp Próprio | Imagem + Slider PRO |
-| Logo e Arte | ✅ WebApp Próprio | Imagem + Slider PRO |
-| Selos 3D | ✅ WebApp Próprio | Imagem + Slider PRO |
+### Arquivo 1: `src/pages/UpscalerArcanoVersionSelect.tsx`
+
+#### Remover interface ToolVersion.unlock_days
+```typescript
+// Antes (linha 34)
+unlock_days: number;
+
+// Depois - REMOVER esta linha
+```
+
+#### Remover FALLBACK_VERSIONS unlock_days
+```typescript
+// Antes (linhas 58-83)
+const FALLBACK_VERSIONS: ToolVersion[] = [
+  {
+    ...
+    unlock_days: 0,  // ← REMOVER
+    ...
+  },
+  {
+    ...
+    unlock_days: 7,  // ← REMOVER
+    ...
+  }
+];
+```
+
+#### Remover estados e efeitos de purchaseDate (linhas 100-190)
+```typescript
+// REMOVER completamente:
+const [purchaseDate, setPurchaseDate] = useState<Date | null>(null);
+const [isLoadingPurchase, setIsLoadingPurchase] = useState(true);
+
+// REMOVER useEffect que busca purchaseDate (linhas 142-190)
+```
+
+#### Simplificar isLoading
+```typescript
+// Antes
+const isLoading = premiumLoading || promptsLoading || isLoadingPurchase || loadingVersions;
+
+// Depois
+const isLoading = premiumLoading || promptsLoading || loadingVersions;
+```
+
+#### Simplificar/Remover funções helper (linhas 232-269)
+```typescript
+// REMOVER getUnlockDate, getDaysRemaining completamente
+// Simplificar isVersionUnlocked:
+const isVersionUnlocked = (version: ToolVersion) => {
+  // Todas as versões são desbloqueadas imediatamente
+  return true;
+};
+```
+
+#### Simplificar lógica de renderização dos cards
+- Remover verificações de `version.unlock_days > 0`
+- Remover exibição de "unlockDate" e "daysRemaining"
+- Remover ícone de cadeado para versões bloqueadas
+- Remover badge "BLOQUEADO"
+- Todos os cards mostram "Disponível"
+
+---
+
+### Arquivo 2: `src/pages/UpscalerArcanoV2.tsx`
+
+#### Remover estado isUnlocked e isLoadingCheck
+```typescript
+// ANTES (linhas 45-46)
+const [isUnlocked, setIsUnlocked] = useState(false);
+const [isLoadingCheck, setIsLoadingCheck] = useState(true);
+
+// DEPOIS - REMOVER e usar valores fixos
+```
+
+#### Substituir useEffect de verificação de 7 dias (linhas 149-206)
+```typescript
+// REMOVER todo o useEffect e simplificar:
+// Não há mais verificação de dias - acesso imediato
+```
+
+#### Simplificar useEffect de redirecionamento (linhas 209-217)
+```typescript
+// Remover verificação de !isUnlocked
+useEffect(() => {
+  if (!premiumLoading && !promptsLoading) {
+    if (!user || !hasAccess) {
+      navigate("/ferramentas-ia");
+    }
+  }
+}, [premiumLoading, promptsLoading, user, hasAccess, navigate]);
+```
+
+#### Simplificar verificação de renderização (linha 229)
+```typescript
+// ANTES
+if (!user || !hasAccess || !isUnlocked) return null;
+
+// DEPOIS
+if (!user || !hasAccess) return null;
+```
+
+---
+
+### Arquivo 3: `src/pages/ToolVersionLessons.tsx`
+
+#### Remover interface ToolVersion.unlock_days
+```typescript
+// ANTES (linha 45)
+unlock_days: number;
+
+// DEPOIS - REMOVER
+```
+
+#### Remover estado purchaseDate e useEffect relacionado (linhas 145, 339-365)
+```typescript
+// REMOVER:
+const [purchaseDate, setPurchaseDate] = useState<Date | null>(null);
+
+// REMOVER useEffect que busca purchaseDate
+```
+
+#### Simplificar função isVersionUnlocked (linhas 408-430)
+```typescript
+// ANTES - lógica complexa de unlock_days
+
+// DEPOIS - sempre retorna true
+const isVersionUnlocked = () => true;
+```
+
+#### Remover tela de bloqueio (linhas 446-471)
+```typescript
+// REMOVER todo este bloco:
+if (!isVersionUnlocked()) {
+  // ... tela de bloqueio
+}
+```
+
+---
+
+### Arquivo 4: `src/components/ToolVersionEditor.tsx`
+
+#### Remover campo "Dias para Desbloqueio" do formulário admin (linhas 385-401)
+```typescript
+// REMOVER todo este bloco:
+<div>
+  <Label className="flex items-center gap-2">
+    <Calendar className="w-4 h-4" />
+    Dias para Desbloqueio
+  </Label>
+  <Input
+    type="number"
+    min={0}
+    value={currentVersion.unlock_days}
+    onChange={(e) => onUpdateVersion(selectedIndex, { unlock_days: parseInt(e.target.value) || 0 })}
+    placeholder="0 = acesso imediato"
+  />
+  <p className="text-xs text-muted-foreground mt-1">
+    0 = acesso imediato após compra
+  </p>
+</div>
+```
+
+#### Remover texto de status "Desbloqueia em X dias" (linha 278)
+```typescript
+// ANTES
+{currentVersion.unlock_days === 0 ? 'Acesso imediato' : `Desbloqueia em ${currentVersion.unlock_days} dias`}
+
+// DEPOIS
+{'Acesso imediato'}
+```
+
+---
+
+### Arquivo 5: `src/pages/AdminManagePacks.tsx`
+
+#### Atualizar createEmptyVersion (linha 600)
+```typescript
+// ANTES
+unlock_days: versionNumber === 1 ? 0 : 7,
+
+// DEPOIS
+unlock_days: 0,  // Todas as versões têm acesso imediato
+```
+
+---
+
+## Atualização do Banco de Dados
+
+### Query SQL para atualizar versões existentes
+
+```sql
+-- Setar unlock_days = 0 para todas as versões do Upscaler Arcano
+UPDATE artes_packs
+SET tool_versions = (
+  SELECT jsonb_agg(
+    CASE 
+      WHEN elem->>'unlock_days' IS NOT NULL 
+      THEN elem || '{"unlock_days": 0}'::jsonb
+      ELSE elem
+    END
+  )
+  FROM jsonb_array_elements(tool_versions) elem
+)
+WHERE slug = 'upscaller-arcano'
+  AND tool_versions IS NOT NULL
+  AND jsonb_array_length(tool_versions) > 0;
+```
+
+Esta query vai setar `unlock_days: 0` para todas as versões (v1, v2, v2.5) do Upscaler Arcano, garantindo acesso imediato para todos os compradores.
+
+---
+
+## Fluxo Antes vs Depois
+
+```text
+ANTES:
+┌──────────────────────────────────────┐
+│ Usuário compra Upscaler Arcano       │
+└─────────────┬────────────────────────┘
+              │
+              ▼
+┌──────────────────────────────────────┐
+│ v1.0: Acesso imediato ✓              │
+│ v2.0: Aguardar 7 dias (cadeado) ✗    │
+│ v2.5: Aguardar 7 dias (cadeado) ✗    │
+└──────────────────────────────────────┘
+
+DEPOIS:
+┌──────────────────────────────────────┐
+│ Usuário compra Upscaler Arcano       │
+└─────────────┬────────────────────────┘
+              │
+              ▼
+┌──────────────────────────────────────┐
+│ v1.0: Acesso imediato ✓              │
+│ v2.0: Acesso imediato ✓              │
+│ v2.5: Acesso imediato ✓              │
+└──────────────────────────────────────┘
+```
+
+---
+
+## Resumo Final
+
+| Categoria | Ação |
+|-----------|------|
+| **Frontend** | Remover toda lógica de `unlock_days`, `purchaseDate`, cadeados e telas de bloqueio |
+| **Admin** | Remover campo "Dias para Desbloqueio" do editor de versões |
+| **Banco de Dados** | Atualizar `tool_versions` para setar `unlock_days: 0` em todas as versões |
+| **Resultado** | Acesso imediato a TODAS as versões para quem comprou o pack |
+
+---
+
+## Arquivos Modificados
+
+| Arquivo | Linhas Afetadas |
+|---------|-----------------|
+| `src/pages/UpscalerArcanoVersionSelect.tsx` | ~150 linhas removidas/simplificadas |
+| `src/pages/UpscalerArcanoV2.tsx` | ~70 linhas removidas |
+| `src/pages/ToolVersionLessons.tsx` | ~80 linhas removidas |
+| `src/components/ToolVersionEditor.tsx` | ~20 linhas removidas |
+| `src/pages/AdminManagePacks.tsx` | 1 linha modificada |
+| Banco de dados | 1 query de update |
