@@ -234,16 +234,18 @@ const FerramentasIAAplicativo = () => {
           {t('ferramentas.description')}
         </p>
 
-        {/* Button for unlimited upscaler owners */}
-        <div className="text-center mb-6">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/ferramentas-ia")}
-            className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10 hover:text-yellow-300 text-sm sm:text-base"
-          >
-            COMPROU O UPSCALER ILIMITADO? CLIQUE AQUI
-          </Button>
-        </div>
+        {/* Button for unlimited upscaler owners - ONLY shows for pack owners */}
+        {hasAccessToPack('upscaller-arcano') && (
+          <div className="text-center mb-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/ferramentas-ia")}
+              className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10 hover:text-yellow-300 text-sm sm:text-base"
+            >
+              COMPROU O UPSCALER ILIMITADO? CLIQUE AQUI
+            </Button>
+          </div>
+        )}
 
         {/* Single grid - no separation by access */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
