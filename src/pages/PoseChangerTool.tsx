@@ -69,6 +69,7 @@ const PoseChangerTool: React.FC = () => {
    // Active job block modal
    const [showActiveJobModal, setShowActiveJobModal] = useState(false);
    const [activeToolName, setActiveToolName] = useState<string>('');
+   const [activeJobStatus, setActiveJobStatus] = useState<string>('');
    const { checkActiveJob } = useActiveJobCheck();
 
   const canProcess = personImage && referenceImage && status === 'idle';
@@ -242,9 +243,10 @@ const PoseChangerTool: React.FC = () => {
     }
  
      // Check if user has active job in any tool
-     const { hasActiveJob, activeTool } = await checkActiveJob(user.id);
+     const { hasActiveJob, activeTool, activeStatus } = await checkActiveJob(user.id);
      if (hasActiveJob && activeTool) {
        setActiveToolName(activeTool);
+       setActiveJobStatus(activeStatus || '');
        setShowActiveJobModal(true);
        processingRef.current = false;
        return;
@@ -676,6 +678,7 @@ const PoseChangerTool: React.FC = () => {
          isOpen={showActiveJobModal}
          onClose={() => setShowActiveJobModal(false)}
          activeTool={activeToolName}
+         activeStatus={activeJobStatus}
        />
     </div>
   );

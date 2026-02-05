@@ -66,6 +66,7 @@ const VideoUpscalerTool: React.FC = () => {
    // Active job block modal
    const [showActiveJobModal, setShowActiveJobModal] = useState(false);
    const [activeToolName, setActiveToolName] = useState<string>('');
+   const [activeJobStatus, setActiveJobStatus] = useState<string>('');
    const { checkActiveJob } = useActiveJobCheck();
 
   const canProcess = videoUrl && videoFile && status === 'idle';
@@ -275,9 +276,10 @@ const VideoUpscalerTool: React.FC = () => {
     }
  
      // Check if user has active job in any tool
-     const { hasActiveJob, activeTool } = await checkActiveJob(user.id);
+     const { hasActiveJob, activeTool, activeStatus } = await checkActiveJob(user.id);
      if (hasActiveJob && activeTool) {
        setActiveToolName(activeTool);
+       setActiveJobStatus(activeStatus || '');
        setShowActiveJobModal(true);
        processingRef.current = false;
        return;
@@ -638,6 +640,7 @@ const VideoUpscalerTool: React.FC = () => {
          isOpen={showActiveJobModal}
          onClose={() => setShowActiveJobModal(false)}
          activeTool={activeToolName}
+         activeStatus={activeJobStatus}
        />
     </div>
   );

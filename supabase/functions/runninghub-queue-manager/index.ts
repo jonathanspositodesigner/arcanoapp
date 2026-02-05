@@ -772,7 +772,14 @@ async function updateAllQueuePositions(): Promise<void> {
 }
  
  /**
+  * ORPHAN JOB DETECTION THRESHOLD (in milliseconds)
+  * Jobs older than this with no task_id/started_at/position are considered orphans
+  */
+ const ORPHAN_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes
+
+ /**
   * /check-user-active - Verifica se o usuário tem algum job ativo em QUALQUER ferramenta
+  * AGORA COM AUTO-HEAL: cancela automaticamente jobs órfãos (queued sem task_id/started_at)
   */
  async function handleCheckUserActive(req: Request): Promise<Response> {
    try {
@@ -795,9 +802,10 @@ async function updateAllQueuePositions(): Promise<void> {
      
      // Verificar em TODAS as tabelas de jobs
      for (const table of JOB_TABLES) {
+       // Buscar campos adicionais para detectar jobs órfãos
        const { data, error } = await supabase
          .from(table)
-         .select('id, status')
+         .select('id, status, created_at, started_at, task_id, position, waited_in_queue, user_credit_cost')
          .eq('user_id', userId)
          .in('status', ['running', 'queued'])
          .limit(1)
@@ -809,12 +817,55 @@ async function updateAllQueuePositions(): Promise<void> {
        }
        
        if (data) {
-         console.log(`[QueueManager] User ${userId} has active job in ${table}`);
+         // CHECK FOR ORPHAN JOB (queued but never actually started)
+         // Criteria:
+         // 1. status = 'queued'
+         // 2. task_id IS NULL (never sent to RunningHub)
+         // 3. started_at IS NULL (never started processing)
+         // 4. position IS NULL (never assigned a queue position)
+         // 5. waited_in_queue = false (never properly queued)
+         // 6. user_credit_cost = 0 or NULL (credits not consumed yet)
+         // 7. created_at is older than threshold (not a just-created job)
+         const isOrphanCandidate = 
+           data.status === 'queued' &&
+           !data.task_id &&
+           !data.started_at &&
+           !data.position &&
+           !data.waited_in_queue;
+         
+         const createdAt = new Date(data.created_at).getTime();
+         const age = Date.now() - createdAt;
+         const isStale = age > ORPHAN_THRESHOLD_MS;
+         
+         // Credits weren't consumed (0, null, or undefined)
+         const creditsNotConsumed = !data.user_credit_cost || data.user_credit_cost === 0;
+         
+         if (isOrphanCandidate && isStale && creditsNotConsumed) {
+           // AUTO-HEAL: Cancel this orphan job
+           console.log(`[QueueManager] AUTO-HEALING orphan job ${data.id} in ${table} (age: ${Math.round(age/1000)}s)`);
+           
+           await supabase
+             .from(table)
+             .update({
+               status: 'cancelled',
+               error_message: 'Auto-clean: orphan queued job (client failed before enqueue/run)',
+               completed_at: new Date().toISOString(),
+             })
+             .eq('id', data.id);
+           
+           // Continue checking other tables (don't block)
+           continue;
+         }
+         
+         // Real active job found
+         console.log(`[QueueManager] User ${userId} has active job in ${table}: ${data.id} (status: ${data.status})`);
          return new Response(JSON.stringify({
            hasActiveJob: true,
            activeTool: toolNames[table],
+           activeTable: table,
            activeJobId: data.id,
            activeStatus: data.status,
+           createdAt: data.created_at,
          }), {
            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
          });
