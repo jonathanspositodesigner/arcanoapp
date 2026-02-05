@@ -52,6 +52,9 @@ export function useAIToolProcessor(config: AIToolConfig): UseAIToolProcessorRetu
   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
   const [activeToolName, setActiveToolName] = useState('');
   const [activeJobStatus, setActiveJobStatus] = useState('');
+  const [activeJobId, setActiveJobId] = useState('');
+  const [activeTable, setActiveTable] = useState('');
+  const [activeStartedAt, setActiveStartedAt] = useState<string | undefined>();
 
   // Refs
   const processingRef = useRef(false);
@@ -242,10 +245,13 @@ export function useAIToolProcessor(config: AIToolConfig): UseAIToolProcessorRetu
       }
 
       // Check for active job
-      const { hasActiveJob, activeTool, activeStatus } = await checkActiveJob(user.id);
-      if (hasActiveJob && activeTool) {
-        setActiveToolName(activeTool);
-        setActiveJobStatus(activeStatus || '');
+      const activeJobResult = await checkActiveJob(user.id);
+      if (activeJobResult.hasActiveJob && activeJobResult.activeTool) {
+        setActiveToolName(activeJobResult.activeTool);
+        setActiveJobStatus(activeJobResult.activeStatus || '');
+        setActiveJobId(activeJobResult.activeJobId || '');
+        setActiveTable(activeJobResult.activeTable || '');
+        setActiveStartedAt(activeJobResult.startedAt);
         setShowActiveJobModal(true);
         processingRef.current = false;
         return false;
@@ -412,6 +418,9 @@ export function useAIToolProcessor(config: AIToolConfig): UseAIToolProcessorRetu
     setShowActiveJobModal,
     activeToolName,
     activeJobStatus,
+    activeJobId,
+    activeTable,
+    activeStartedAt,
 
     // Actions
     startJob,

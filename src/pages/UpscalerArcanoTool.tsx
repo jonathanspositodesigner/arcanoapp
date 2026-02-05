@@ -94,6 +94,9 @@ const UpscalerArcanoTool: React.FC = () => {
   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
   const [activeToolName, setActiveToolName] = useState('');
   const [activeJobStatus, setActiveJobStatus] = useState('');
+  const [activeJobId, setActiveJobId] = useState('');
+  const [activeTable, setActiveTable] = useState('');
+  const [activeStartedAt, setActiveStartedAt] = useState<string | undefined>();
 
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -326,10 +329,13 @@ const UpscalerArcanoTool: React.FC = () => {
       return;
     }
 
-    const { hasActiveJob, activeTool, activeStatus } = await checkActiveJob(user.id);
-    if (hasActiveJob && activeTool) {
-      setActiveToolName(activeTool);
-      setActiveJobStatus(activeStatus || '');
+    const activeJobResult = await checkActiveJob(user.id);
+    if (activeJobResult.hasActiveJob && activeJobResult.activeTool) {
+      setActiveToolName(activeJobResult.activeTool);
+      setActiveJobStatus(activeJobResult.activeStatus || '');
+      setActiveJobId(activeJobResult.activeJobId || '');
+      setActiveTable(activeJobResult.activeTable || '');
+      setActiveStartedAt(activeJobResult.startedAt);
       setShowActiveJobModal(true);
       processingRef.current = false;
       return;
@@ -1046,7 +1052,15 @@ const UpscalerArcanoTool: React.FC = () => {
       </div>
 
       <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
-      <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeStatus={activeJobStatus} />
+      <ActiveJobBlockModal 
+        isOpen={showActiveJobModal} 
+        onClose={() => setShowActiveJobModal(false)} 
+        activeTool={activeToolName} 
+        activeStatus={activeJobStatus}
+        activeJobId={activeJobId}
+        activeTable={activeTable}
+        activeStartedAt={activeStartedAt}
+      />
     </div>
   );
 };

@@ -1,12 +1,13 @@
 import { useCallback } from 'react';
 
-interface ActiveJobResult {
+export interface ActiveJobResult {
   hasActiveJob: boolean;
   activeTool: string | null;
   activeTable?: string;
   activeJobId?: string;
   activeStatus?: string;
   createdAt?: string;
+  startedAt?: string;
 }
 
 export function useActiveJobCheck() {
@@ -64,5 +65,45 @@ export function useActiveJobCheck() {
     }
   }, []);
   
-  return { checkActiveJob, cancelUserQueuedJobs };
+  /**
+   * Force cancel any job (running or queued)
+   * Used when user wants to manually cancel an active job
+   */
+  const forceCancelJob = useCallback(async (
+    table: string, 
+    jobId: string, 
+    userId: string
+  ): Promise<{ success: boolean; refunded?: number; wasRunning?: boolean }> => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/force-cancel-job`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ table, jobId, userId }),
+        }
+      );
+      
+      if (!response.ok) {
+        console.error('[ActiveJobCheck] Force cancel failed:', response.status);
+        return { success: false };
+      }
+      
+      const result = await response.json();
+      console.log('[ActiveJobCheck] Force cancelled job:', result);
+      return {
+        success: result.success || result.cancelled,
+        refunded: result.refunded,
+        wasRunning: result.wasRunning,
+      };
+    } catch (error) {
+      console.error('[ActiveJobCheck] Force cancel error:', error);
+      return { success: false };
+    }
+  }, []);
+  
+  return { checkActiveJob, cancelUserQueuedJobs, forceCancelJob };
 }

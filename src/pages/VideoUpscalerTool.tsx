@@ -47,6 +47,9 @@ const VideoUpscalerTool: React.FC = () => {
     setShowActiveJobModal,
     activeToolName,
     activeJobStatus,
+    activeJobId,
+    activeTable,
+    activeStartedAt,
     startJob,
     cancelJob,
     reset,
@@ -371,6 +374,9 @@ const VideoUpscalerTool: React.FC = () => {
         onClose={() => setShowActiveJobModal(false)}
         activeTool={activeToolName}
         activeStatus={activeJobStatus}
+        activeJobId={activeJobId}
+        activeTable={activeTable}
+        activeStartedAt={activeStartedAt}
       />
     </div>
   );
