@@ -18,6 +18,8 @@ const WEBAPP_ID_STANDARD = '2017030861371219969';
 const WEBAPP_ID_LONGE = '2017343414227963905';
  const WEBAPP_ID_FOTO_ANTIGA = '2018913880214343681';
  const WEBAPP_ID_COMIDA = '2015855359243587585';
+ const WEBAPP_ID_LOGO = '2019239272464785409';
+ const WEBAPP_ID_RENDER3D = '2019234965992509442';
 const MAX_CONCURRENT_JOBS = 3;
 
 // Rate limit configuration
@@ -30,7 +32,7 @@ if (!RUNNINGHUB_API_KEY) {
   console.error('[RunningHub] CRITICAL: Missing RUNNINGHUB_API_KEY secret');
 }
 
-console.log('[RunningHub] Config loaded - PRO:', WEBAPP_ID_PRO, 'STANDARD:', WEBAPP_ID_STANDARD, 'FOTO_ANTIGA:', WEBAPP_ID_FOTO_ANTIGA, 'COMIDA:', WEBAPP_ID_COMIDA);
+console.log('[RunningHub] Config loaded - PRO:', WEBAPP_ID_PRO, 'STANDARD:', WEBAPP_ID_STANDARD, 'FOTO_ANTIGA:', WEBAPP_ID_FOTO_ANTIGA, 'COMIDA:', WEBAPP_ID_COMIDA, 'LOGO:', WEBAPP_ID_LOGO, 'RENDER3D:', WEBAPP_ID_RENDER3D);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -438,7 +440,7 @@ async function handleRun(req: Request) {
   }
  
    // Validate category if provided
-   const validCategories = ['pessoas_perto', 'pessoas_longe', 'comida', 'fotoAntiga', 'logo', 'render3d'];
+   const validCategories = ['pessoas_perto', 'pessoas_longe', 'comida', 'fotoAntiga', 'logo', 'render3d', 'paisagem'];
    if (category !== undefined && !validCategories.includes(category)) {
      return new Response(JSON.stringify({ 
        error: 'Invalid category', 
@@ -562,12 +564,18 @@ async function handleRun(req: Request) {
    const isLongeMode = framingMode === 'longe' && category?.startsWith('pessoas');
    const isFotoAntigaMode = category === 'fotoAntiga';
    const isComidaMode = category === 'comida';
+   const isLogoMode = category === 'logo';
+   const isRender3dMode = category === 'render3d';
    
    let webappId: string;
    if (isFotoAntigaMode) {
      webappId = WEBAPP_ID_FOTO_ANTIGA;
    } else if (isComidaMode) {
      webappId = WEBAPP_ID_COMIDA;
+   } else if (isLogoMode) {
+     webappId = WEBAPP_ID_LOGO;
+   } else if (isRender3dMode) {
+     webappId = WEBAPP_ID_RENDER3D;
    } else if (isLongeMode) {
      webappId = WEBAPP_ID_LONGE;
    } else {
@@ -696,6 +704,40 @@ async function handleRun(req: Request) {
          { nodeId: "48", fieldName: "value", fieldValue: String(detailDenoise || 0.85) },
        ];
        console.log(`[RunningHub] Using COMIDA/OBJETO workflow - detail: ${detailDenoise}`);
+    } else if (isLogoMode) {
+      // === LOGO E ARTE ===
+      // Node 39: image, Node 33: value (detail level, PRO only)
+      nodeInfoList = [
+        { nodeId: "39", fieldName: "image", fieldValue: rhFileName },
+      ];
+      
+      // Detail level only for PRO version
+      if (version === 'pro' && detailDenoise !== undefined) {
+        nodeInfoList.push({ 
+          nodeId: "33", 
+          fieldName: "value", 
+          fieldValue: String(detailDenoise) 
+        });
+      }
+      
+      console.log(`[RunningHub] Using LOGO workflow - version: ${version}, detail: ${detailDenoise}`);
+    } else if (isRender3dMode) {
+      // === SELOS 3D ===
+      // Node 301: image, Node 300: value (detail level, PRO only)
+      nodeInfoList = [
+        { nodeId: "301", fieldName: "image", fieldValue: rhFileName },
+      ];
+      
+      // Detail level only for PRO version
+      if (version === 'pro' && detailDenoise !== undefined) {
+        nodeInfoList.push({ 
+          nodeId: "300", 
+          fieldName: "value", 
+          fieldValue: String(detailDenoise) 
+        });
+      }
+      
+      console.log(`[RunningHub] Using RENDER3D workflow - version: ${version}, detail: ${detailDenoise}`);
      } else if (isLongeMode) {
        // === DE LONGE ===
       nodeInfoList = [

@@ -62,6 +62,8 @@ const UpscalerArcanoTool: React.FC = () => {
   const [pessoasFraming, setPessoasFraming] = useState<PessoasFraming>('perto');
    const [comidaDetailLevel, setComidaDetailLevel] = useState(0.85);
    const [editingLevel, setEditingLevel] = useState(0.10);
+  const [logoDetailLevel, setLogoDetailLevel] = useState(0.40);
+  const [render3dDetailLevel, setRender3dDetailLevel] = useState(0.80);
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [inputFileName, setInputFileName] = useState<string>('');
   const [outputImage, setOutputImage] = useState<string | null>(null);
@@ -143,9 +145,11 @@ const UpscalerArcanoTool: React.FC = () => {
   const isLongeMode = pessoasFraming === 'longe' && promptCategory.startsWith('pessoas');
 
    // Flags for special workflows (Foto Antiga and Comida/Objeto)
-   const isSpecialWorkflow = promptCategory === 'fotoAntiga' || promptCategory === 'comida';
+   const isSpecialWorkflow = promptCategory === 'fotoAntiga' || promptCategory === 'comida' || promptCategory === 'logo' || promptCategory === 'render3d';
    const isFotoAntigaMode = promptCategory === 'fotoAntiga';
    const isComidaMode = promptCategory === 'comida';
+   const isLogoMode = promptCategory === 'logo';
+   const isRender3dMode = promptCategory === 'render3d';
  
   // Get the final prompt to send
   const getFinalPrompt = (): string => {
@@ -393,7 +397,13 @@ const UpscalerArcanoTool: React.FC = () => {
            creditCost: creditCost,
            category: promptCategory,
            // Conditional parameters based on workflow type
-           detailDenoise: isComidaMode ? comidaDetailLevel : (isSpecialWorkflow ? undefined : detailDenoise),
+           detailDenoise: isComidaMode 
+             ? comidaDetailLevel 
+             : isLogoMode 
+               ? (version === 'pro' ? logoDetailLevel : undefined)
+               : isRender3dMode
+                 ? (version === 'pro' ? render3dDetailLevel : undefined)
+                 : (isSpecialWorkflow ? undefined : detailDenoise),
            resolution: isSpecialWorkflow ? undefined : resolutionValue,
            prompt: isSpecialWorkflow ? undefined : getFinalPrompt(),
            framingMode: isSpecialWorkflow ? undefined : framingMode,
@@ -806,6 +816,62 @@ const UpscalerArcanoTool: React.FC = () => {
                </Card>
              )}
  
+             {/* Logo/Arte Detail Level Slider - PRO only */}
+             {isLogoMode && version === 'pro' && (
+               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                 <div className="flex items-center justify-between mb-1">
+                   <div className="flex items-center gap-1.5">
+                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                     <span className="text-xs font-medium text-white">Nível de Detalhe</span>
+                   </div>
+                   <span className="text-xs text-purple-300 font-mono">{logoDetailLevel.toFixed(2)}</span>
+                 </div>
+                 <Slider
+                   value={[logoDetailLevel]}
+                   onValueChange={([value]) => setLogoDetailLevel(value)}
+                   min={0.01}
+                   max={1.00}
+                   step={0.01}
+                   className="w-full"
+                 />
+                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+                   <span>Mais Fidelidade</span>
+                   <span>Mais Criatividade</span>
+                 </div>
+                 <p className="text-[9px] text-purple-300/40 mt-1 text-center">
+                   Recomendado: 0,30 a 0,60
+                 </p>
+               </Card>
+             )}
+
+             {/* Selos 3D Detail Level Slider - PRO only */}
+             {isRender3dMode && version === 'pro' && (
+               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                 <div className="flex items-center justify-between mb-1">
+                   <div className="flex items-center gap-1.5">
+                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                     <span className="text-xs font-medium text-white">Nível de Detalhe</span>
+                   </div>
+                   <span className="text-xs text-purple-300 font-mono">{render3dDetailLevel.toFixed(2)}</span>
+                 </div>
+                 <Slider
+                   value={[render3dDetailLevel]}
+                   onValueChange={([value]) => setRender3dDetailLevel(value)}
+                   min={0.01}
+                   max={1.00}
+                   step={0.01}
+                   className="w-full"
+                 />
+                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+                   <span>Mais Fidelidade</span>
+                   <span>Mais Criatividade</span>
+                 </div>
+                 <p className="text-[9px] text-purple-300/40 mt-1 text-center">
+                   Recomendado: 0,70 a 0,90
+                 </p>
+               </Card>
+             )}
+
              {/* Resolution Selector - hide for special workflows */}
              {!isSpecialWorkflow && (
             <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
