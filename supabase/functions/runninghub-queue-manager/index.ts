@@ -141,6 +141,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
         return await handleEnqueue(req);
       case 'cancel-session':
         return await handleCancelSession(req);
+      case 'cancel-job':
+        return await handleCancelJob(req);
        case 'check-user-active':
          return await handleCheckUserActive(req);
       default:
@@ -770,12 +772,16 @@ async function updateAllQueuePositions(): Promise<void> {
   
   console.log(`[QueueManager] Updated GLOBAL positions for ${allQueuedJobs.length} queued jobs`);
 }
- 
- /**
-  * ORPHAN JOB DETECTION THRESHOLD (in milliseconds)
-  * Jobs older than this with no task_id/started_at/position are considered orphans
-  */
- const ORPHAN_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes
+
+/**
+ * ORPHAN JOB DETECTION THRESHOLDS (in milliseconds)
+ * - ORPHAN_THRESHOLD_FAKE_QUEUED_MS: For jobs with waited_in_queue=false (never really queued)
+ *   These are "ghost" jobs from client failures during upload/invoke - cancel aggressively
+ * - ORPHAN_THRESHOLD_REAL_QUEUED_MS: For jobs with waited_in_queue=true (real queue)
+ *   These may be legitimate waiting jobs - be more conservative
+ */
+const ORPHAN_THRESHOLD_FAKE_QUEUED_MS = 20 * 1000; // 20 seconds for fake queued
+const ORPHAN_THRESHOLD_REAL_QUEUED_MS = 3 * 60 * 1000; // 3 minutes for real queued
 
  /**
   * /check-user-active - Verifica se o usuário tem algum job ativo em QUALQUER ferramenta
@@ -867,14 +873,19 @@ async function updateAllQueuePositions(): Promise<void> {
           
           const createdAt = new Date(data.created_at).getTime();
           const age = Date.now() - createdAt;
-          const isStale = age > ORPHAN_THRESHOLD_MS;
           
           // Credits weren't consumed (0, null, or undefined)
           const creditsNotConsumed = !data.user_credit_cost || data.user_credit_cost === 0;
           
+          // Use appropriate threshold based on whether it's a fake or real queued job
+          const thresholdMs = data.waited_in_queue 
+            ? ORPHAN_THRESHOLD_REAL_QUEUED_MS 
+            : ORPHAN_THRESHOLD_FAKE_QUEUED_MS;
+          const isStale = age > thresholdMs;
+          
           if (isOrphanCandidate && isStale && creditsNotConsumed) {
             // AUTO-HEAL: Cancel this orphan job
-            console.log(`[QueueManager] AUTO-HEALING orphan job ${data.id} in ${table} (age: ${Math.round(age/1000)}s)`);
+            console.log(`[QueueManager] AUTO-HEALING orphan job ${data.id} in ${table} (age: ${Math.round(age/1000)}s, threshold: ${Math.round(thresholdMs/1000)}s)`);
             
             await supabase
               .from(table)
@@ -918,7 +929,111 @@ async function updateAllQueuePositions(): Promise<void> {
        error: error instanceof Error ? error.message : 'Unknown error' 
      }), {
        status: 500,
-       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-     });
-   }
- }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  }
+
+/**
+ * /cancel-job - Cancela um job específico por jobId
+ * Mais preciso que cancel-session, usado como failsafe após erros de invoke
+ */
+async function handleCancelJob(req: Request): Promise<Response> {
+  try {
+    const { table, jobId, userId } = await req.json();
+    
+    if (!table || !jobId || !userId) {
+      return new Response(JSON.stringify({ error: 'table, jobId and userId are required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    if (!JOB_TABLES.includes(table as JobTable)) {
+      return new Response(JSON.stringify({ error: 'Invalid table' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Get the job to verify ownership and status
+    const { data: job, error: jobError } = await supabase
+      .from(table)
+      .select('id, user_id, status, waited_in_queue, user_credit_cost')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    if (jobError || !job) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Verify ownership
+    if (job.user_id !== userId) {
+      return new Response(JSON.stringify({ error: 'Not authorized to cancel this job' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Only cancel queued jobs
+    if (job.status !== 'queued') {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        reason: 'Job is not in queue',
+        currentStatus: job.status 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Cancel the job
+    await supabase
+      .from(table)
+      .update({
+        status: 'cancelled',
+        error_message: 'Cancelled via cancel-job endpoint',
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', jobId);
+    
+    // Refund credits if they were consumed
+    if (job.user_credit_cost && job.user_credit_cost > 0) {
+      try {
+        await supabase.rpc('refund_upscaler_credits', {
+          _user_id: userId,
+          _amount: job.user_credit_cost,
+          _description: 'Refund: job cancelled'
+        });
+        console.log(`[QueueManager] Refunded ${job.user_credit_cost} credits to ${userId}`);
+      } catch (refundError) {
+        console.error(`[QueueManager] Failed to refund credits:`, refundError);
+      }
+    }
+    
+    // Update queue positions
+    await updateAllQueuePositions();
+    
+    console.log(`[QueueManager] Cancelled job ${jobId} in ${table} for user ${userId}`);
+    
+    return new Response(JSON.stringify({
+      success: true,
+      cancelled: true,
+      jobId,
+      refunded: job.user_credit_cost || 0,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error) {
+    console.error('[QueueManager] CancelJob error:', error);
+    return new Response(JSON.stringify({ 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
