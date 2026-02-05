@@ -1,198 +1,165 @@
 
-## Objetivo (sem enrolação)
-Garantir que **nenhuma** das ferramentas de IA (Upscaler imagem, Upscaler vídeo, Pose Changer, Veste AI) consiga deixar **job fantasma** “queued” preso na fila (bloqueando o usuário), mesmo com:
-- app fechando no iPhone/PWA
-- queda de rede no meio do upload
-- erro/retorno antecipado do backend (ex.: saldo insuficiente, erro de crédito)
-- fila cheia (job vai para “queued” de verdade)
+## Diagnóstico (com prova no banco)
+O usuário **não está com 2 jobs**. Ele está com **1 job “fantasma”** que ficou preso como `queued` após dar erro no Upscaler.
+
+Acabei de consultar e o job mais recente desse usuário é:
+- **Tabela:** `upscaler_jobs`
+- **id:** `c6a78951-734d-4577-831a-56bc8848d102`
+- **status:** `queued`
+- **waited_in_queue:** `false`
+- **task_id / started_at / position:** `NULL`
+- **user_credit_cost:** `0`
+- **error_message:** `NULL`
+- **created_at:** `2026-02-05 14:17:50+00`
+
+Isso é exatamente o cenário que bloqueia o `/check-user-active` (porque ele vê `queued`) e impede o usuário de tentar de novo.
+
+## Por que isso ainda acontece (causa raiz)
+Mesmo com “upload primeiro”, ainda existe um ponto crítico:
+
+1) **O frontend cria o job no banco com `status: 'queued'`**
+   - Isso acontece em `UpscalerArcanoTool.tsx` (linha ~374+), antes do invoke.
+2) Quando o invoke dá erro (“Edge Function returned a non-2xx”), **o job deveria virar `failed` imediatamente**.
+3) Só que existem 2 situações que deixam o job preso:
+   - **(A) Backend retorna non-2xx em caminhos de validação / rate limit / erro antes de marcar o job no banco**, e o job fica como estava (queued).
+   - **(B) O frontend não executa o update de cleanup (ou falha) e não há um “failsafe” central** pra finalizar esse job imediatamente.
+
+Além disso, o Upscaler de imagem **não tem o lock síncrono** `processingRef` que você já usa no Pose/Video/Veste, então clique duplo/rápido pode piorar o cenário (criando mais de um job e/ou estourando rate-limit).
+
+## Objetivo que você exigiu (regra do sistema)
+1) **Se deu erro, job não pode ficar em fila**: deve virar `failed` ou `cancelled` imediatamente.
+2) **A única forma de ir pra fila** é se realmente **já existirem 3 jobs rodando** no limite global (somando ferramentas).
+3) **Padrão único** de lógica (upload + criar job + start + fila + cleanup) para todas as ferramentas.
 
 ---
 
-## O que eu já conferi no código (estado atual)
-### 1) Onde os jobs são criados (frontend)
-Só existem 4 páginas criando jobs dessas ferramentas:
-- `src/pages/UpscalerArcanoTool.tsx`  ✅ cria em `upscaler_jobs`
-- `src/pages/VideoUpscalerTool.tsx` ✅ cria em `video_upscaler_jobs`
-- `src/pages/PoseChangerTool.tsx` ✅ cria em `pose_changer_jobs`
-- `src/pages/VesteAITool.tsx` ✅ cria em `veste_ai_jobs`
+## O que vou implementar (refatoração padronizada e centralizada)
 
-### 2) Quem está “seguro” e quem está “vazando job órfão”
-- **Veste AI** e **Pose Changer** já estão no padrão correto: **upload primeiro → cria job depois**.
-  - Isso já reduz drasticamente órfãos em iOS.
-- **Upscaler Arcano (imagem)** e **Video Upscaler (vídeo)** ainda estão no padrão perigoso: **cria job → depois faz upload**.
-  - Se o iPhone “mata” o app durante o upload, fica **job queued** sem task/position e o usuário fica bloqueado.
+### Fase 1 — “Nunca mais fica queued por erro” (failsafe obrigatório)
+#### 1.1 Backend: garantir finalização do job em QUALQUER retorno non-2xx
+Arquivos:
+- `supabase/functions/runninghub-upscaler/index.ts`
+- `supabase/functions/runninghub-pose-changer/index.ts`
+- `supabase/functions/runninghub-veste-ai/index.ts`
+- `supabase/functions/runninghub-video-upscaler/index.ts`
 
-### 3) Falha crítica extra (backend) que também cria “job preso”
-Nos backends:
-- `runninghub-upscaler`, `runninghub-veste-ai`, `runninghub-pose-changer` têm caminhos de retorno (principalmente **crédito/saldo insuficiente** ou erro no RPC) que **retornam resposta sem marcar o job como failed/cancelled**.
-  - Resultado: job fica “queued” e bloqueia o usuário.
-- O `runninghub-video-upscaler` já marca `failed` em insuficiência de créditos (ponto positivo).
+Mudança padrão:
+- Criar helper interno (dentro do próprio `index.ts`) tipo `markJobFailed(table, jobId, msg, code?)`.
+- Em **todos** os retornos que hoje fazem `return new Response(..., { status: 400/429/500 })`:
+  - Se `jobId` existir, **atualizar o job**:
+    - `status='failed'`
+    - `error_message='CODE: ...'`
+    - `completed_at=now()`
+- Importante para o seu caso: caminhos como **rate limit** e **validações** também precisam marcar o job.
 
-### 4) Outra falha importante (vídeo + fila cheia)
-Hoje o `VideoUpscalerTool.tsx` salva `input_file_name: videoFile.name` no job.
-- Só que **quando o job entra na fila**, o orquestrador (fila global) e também o processador do vídeo esperam usar `input_file_name` como **URL do vídeo** para rodar depois.
-- Se ficar só o “nome do arquivo”, job enfileirado pode falhar/ficar inconsistente.
+Detalhe importante:
+- Hoje o rate limit do `runninghub-upscaler` acontece antes de ler o body. Vou alterar para:
+  - **Para `/run`**: ler JSON com try/catch (safe), extrair `jobId` e `userId`, aplicar rate limit e, se negar, **marcar job failed**.
+  - Isso elimina “queued sem erro_message”.
 
-### 5) Situação do banco agora (auditoria rápida)
-Rodei uma consulta procurando “órfãos clássicos” (queued + sem task_id/started_at/position, >10 min) nas 4 tabelas e, neste momento, estava **zerado**.
-Isso não elimina o bug: significa só que **agora** não tem órfão antigo, mas o código ainda permite criar.
+#### 1.2 Queue Manager: “auto-heal agressivo” quando detecta queued fake
+Arquivo:
+- `supabase/functions/runninghub-queue-manager/index.ts` (`handleCheckUserActive`)
 
----
+Hoje ele só auto-cancela órfão após 2 min. Vou ajustar para:
+- Se `status='queued'` + `waited_in_queue=false` + `task_id/started_at/position` null + `user_credit_cost=0/null`:
+  - auto-cancelar com threshold bem menor (ex.: 10–20s), porque isso **não é fila real**, é “starting/bug”.
 
-## Correções propostas (em camadas, cobrindo todas as ferramentas)
-
-### Camada A — “Blindagem” definitiva no frontend (onde hoje ainda vaza)
-#### A1) Upscaler Arcano (imagem): “upload primeiro, job depois” + status correto de fila
-Arquivo: `src/pages/UpscalerArcanoTool.tsx`
-
-Mudanças:
-1) Gerar `jobId = crypto.randomUUID()` antes de qualquer coisa.
-2) Fazer upload para storage usando `jobId` no path:
-   - Ex.: `upscaler/${jobId}.${ext}`
-3) **Só depois** do upload OK, inserir na tabela:
-   - `id: jobId`
-   - `session_id`, `user_id`, `status: 'queued'`, parâmetros etc.
-4) Invocar `runninghub-upscaler/run` passando `jobId` e `imageUrl`.
-5) Se der erro **depois** de criar job (ex.: falha no invoke), atualizar a linha do job para `failed`/`cancelled` com `completed_at` e `error_message`.
-
-Ajuste adicional obrigatório:
-- Hoje o hook `useQueueSessionCleanup(sessionId, status)` só cancela se `status === 'queued' || 'waiting'`.
-- No Upscaler imagem, quando o job entra em `queued` pelo realtime, você só seta `isWaitingInQueue`, mas **não muda `status`**.
-- Vou alinhar isso:
-  - adicionar `'waiting'` ao `ProcessingStatus`
-  - quando receber `job.status === 'queued'` no realtime, fazer `setStatus('waiting')`
-  - isso garante que o cleanup funcione quando o usuário fecha o app enquanto está na fila.
-
-#### A2) Video Upscaler: “upload primeiro, job depois” + salvar URL no campo certo
-Arquivo: `src/pages/VideoUpscalerTool.tsx`
-
-Mudanças:
-1) Gerar `jobId` antes.
-2) Upload do vídeo primeiro → obter `videoStorageUrl`.
-3) Inserir job depois do upload, com:
-   - `id: jobId`
-   - `input_file_name: videoStorageUrl` (sim, o nome do campo é ruim, mas é o que existe e é o que a fila usa)
-   - metadados (width/height/duration), `session_id`, `user_id`, `status: 'queued'`
-4) Chamar `runninghub-video-upscaler/run` com `jobId` e `videoUrl: videoStorageUrl`.
-5) Em erro pós-insert, marcar job como `failed/cancelled`.
-
-Impacto:
-- Se o app morrer durante upload: **não existe job no banco ainda**, logo **não trava ninguém**.
-- Se entrar em fila global: quando for processar depois, o backend terá a URL correta.
+Isso garante que mesmo que algum cliente “antigo cacheado” gere job quebrado, ele se auto-limpa quase instantâneo.
 
 ---
 
-### Camada B — “Não deixar job queued preso por retorno antecipado” no backend (todas as ferramentas)
-Aqui a regra vai ser: **qualquer erro/retorno antecipado precisa finalizar o job no banco**.
+### Fase 2 — Centralizar lógica de “start job” no frontend (padrão único)
+Criar um único hook utilitário e migrar as 4 ferramentas para usar o mesmo fluxo.
 
-#### B1) Upscaler (imagem)
-Arquivo: `supabase/functions/runninghub-upscaler/index.ts`
+#### 2.1 Criar hook central: `useAiToolJobRunner`
+Novo arquivo (frontend):
+- `src/hooks/useAiToolJobRunner.ts` (ou `src/lib/ai-tools/jobRunner.ts`)
 
-Mudanças:
-1) Se der erro no processamento de créditos (`creditError`) → atualizar `upscaler_jobs`:
-   - `status='failed'`, `error_message='CREDIT_ERROR: ...'`, `completed_at=now()`
-2) Se `INSUFFICIENT_CREDITS` → atualizar job também:
-   - `status='failed'`, `error_message='INSUFFICIENT_CREDITS: ...'`, `completed_at=now()`
-3) Hardening para evitar “crédito consumido mas job ainda parece órfão”:
-   - assim que o consumo de crédito der sucesso, fazer **um update imediato**:
-     - `user_credit_cost = creditCost`
-   - isso ajuda a:
-     - impedir auto-clean “errado” em job que já consumiu
-     - permitir refund se o usuário cancelar enquanto queued
+Ele padroniza:
+1) `processingRef` (lock síncrono) — evita clique duplo e estourar rate limit
+2) `checkActiveJob` antes de iniciar
+3) Upload(s) primeiro (com paths padronizados por ferramenta + jobId)
+4) Criar job no banco sempre com **status “não fila”** (ex.: `status='starting'`), e só virar `queued` se o backend realmente enfileirar.
+5) Invoke do backend
+6) Se invoke der erro:
+   - marcar job `failed` (update direto) e
+   - chamar um “failsafe” extra: endpoint que cancela job `queued` fake (ver Fase 3)
 
-#### B2) Veste AI
-Arquivo: `supabase/functions/runninghub-veste-ai/index.ts`
+#### 2.2 Migrar ferramentas para o mesmo padrão
+Arquivos:
+- `src/pages/UpscalerArcanoTool.tsx`
+- `src/pages/VideoUpscalerTool.tsx`
+- `src/pages/PoseChangerTool.tsx`
+- `src/pages/VesteAITool.tsx`
 
-Mudanças:
-- Mesmo padrão do Upscaler:
-  - se crédito falhar → `veste_ai_jobs.status='failed'` + `completed_at`
-  - se insuficiente → idem
-- (Opcional) após sucesso no crédito: setar `user_credit_cost = creditCost` cedo, para suportar refund em cancelamento.
-
-#### B3) Pose Changer
-Arquivo: `supabase/functions/runninghub-pose-changer/index.ts`
-
-Mudanças idênticas às do Veste AI (finalizar job em qualquer retorno antecipado de crédito).
-
-#### B4) Video Upscaler (backend)
-Arquivo: `supabase/functions/runninghub-video-upscaler/index.ts`
-
-Mesmo já tratando insuficiente com `failed`, ainda falta hardening:
-- garantir que, ao entrar no `/run`, o job tenha o `input_file_name` correto (URL) caso algum cliente antigo ainda insira “nome do arquivo”.
-  - atualização defensiva: se `input_file_name` não parece URL e veio `videoUrl` no body, setar `input_file_name = videoUrl` antes de enfileirar.
+Padrão final idêntico entre todas:
+- lock síncrono
+- upload -> insert job `starting` -> invoke -> realtime update -> UI
 
 ---
 
-### Camada C — Robustez extra no “check-user-active” (evitar edge cases)
-Arquivo: `supabase/functions/runninghub-queue-manager/index.ts`
+### Fase 3 — “Botão/ação de destravar” e cancelamento do job da tentativa
+Hoje o modal “Liberar fila” cancela `queued` via `cancel-session` por userId. Isso é bom, mas eu vou deixar mais preciso para não mexer na fila real indevidamente.
 
-Hoje já existe auto-heal com:
-- queued + sem task_id/started_at/position + waited_in_queue false + credit_cost 0/null + idade > 2 min → cancela
+#### 3.1 Backend: novo endpoint `cancel-job` (preciso por jobId)
+Arquivo:
+- `supabase/functions/runninghub-queue-manager/index.ts`
 
-Melhorias que eu vou aplicar para não ter “falso negativo”:
-1) Tornar a busca determinística:
-   - buscar **primeiro** jobs `running`
-   - depois jobs `queued` (e aí aplicar auto-heal)
-   - isso evita o caso raro: usuário ter 2 registros (um running real + um queued órfão) e o `limit(1)` pegar o órfão e “pular” o running.
-2) Se encontrar um órfão e cancelar, **re-checar a mesma tabela** antes de seguir, garantindo que não existe um running real ali.
+Endpoint:
+- `/cancel-job` com `{ table, jobId, userId }`
+- Regra:
+  - Só cancela se `job.user_id === userId` e `status='queued'`
+  - Se `waited_in_queue=false`, é “queued fake/starting” => pode cancelar sempre
+  - Se `waited_in_queue=true`, cancela somente se usuário confirmar (UI) — mantém sua regra de fila real
 
----
-
-## Plano de testes (para provar que não cria órfão e não trava fila)
-### Testes manuais (principalmente iPhone/PWA)
-1) **Upscaler imagem**
-   - iniciar upscale
-   - durante upload, matar o app (multitarefa → fechar)
-   - voltar e tentar de novo
-   - esperado: não existe job queued “fantasma” (porque job só nasce após upload)
-2) **Video Upscaler**
-   - simular fila cheia (3 jobs rodando)
-   - iniciar vídeo
-   - esperado:
-     - job entra em queued com posição
-     - quando processar depois, ele roda usando a URL correta (input_file_name = URL)
-3) **Saldo insuficiente / falha de crédito**
-   - forçar cenário com poucos créditos
-   - iniciar ferramenta
-   - esperado:
-     - backend devolve erro e **job fica failed**, não queued
-     - usuário não fica bloqueado na próxima tentativa
-4) **Cancelar fila**
-   - entrar em queued (fila real)
-   - sair da página
-   - esperado:
-     - cancel-session cancela + reordena fila
-     - se tiver `user_credit_cost`, créditos voltam
-
-### Auditoria pós-publicação (monitoramento)
-Rodar (internamente) queries de:
-- queued antigos sem task/position
-- queued com input_file_name inválido (vídeo)
-- contagem por tabela e idade média
+#### 3.2 Frontend: no catch do invoke, cancelar job automaticamente
+- Se `invoke` falhar (non-2xx), além de marcar `failed`:
+  - chamar `cancel-job` para garantir que não sobra nada “queued”.
 
 ---
 
-## Arquivos que serão alterados (resumo)
-Frontend:
-- `src/pages/UpscalerArcanoTool.tsx` (mudar ordem: upload → insert; status waiting)
-- `src/pages/VideoUpscalerTool.tsx` (upload → insert; input_file_name = URL)
+## Como vou garantir a regra “só vai pra fila se já tem 3 rodando”
+1) O **único lugar** que seta `waited_in_queue=true` e dá `position` será:
+   - `runninghub-queue-manager/enqueue`
+2) No backend das ferramentas, só chama `/enqueue` se `slotsAvailable <= 0`.
+3) Se o `/check` do queue-manager falhar por qualquer motivo:
+   - fallback: contar `running` nas 4 tabelas direto no banco (mesma lógica do queue-manager) para decidir.
+   - Isso evita “enfileirar por engano” quando `/check` falha.
 
+---
+
+## Testes (obrigatórios, end-to-end)
+1) Upscaler imagem: provocar erro proposital (ex.: estourar rate limit clicando rápido)
+   - esperado: job vira `failed` e **não bloqueia retry**
+2) Upscaler imagem: provocar erro de validação (mandar categoria inválida via dev)
+   - esperado: job vira `failed`
+3) Simular 3 jobs running (ou forçar via ambiente de teste)
+   - esperado: 4º job vira `queued` com `waited_in_queue=true` e `position` preenchido
+4) Repetir os 3 cenários acima para Pose / Veste / Video
+
+---
+
+## Arquivos que vou mexer (resumo)
 Backend (funções):
-- `supabase/functions/runninghub-upscaler/index.ts` (finalizar job em erro de crédito; setar user_credit_cost cedo)
-- `supabase/functions/runninghub-veste-ai/index.ts` (finalizar job em erro de crédito)
-- `supabase/functions/runninghub-pose-changer/index.ts` (finalizar job em erro de crédito)
-- `supabase/functions/runninghub-video-upscaler/index.ts` (hardening de input_file_name/URL)
-- `supabase/functions/runninghub-queue-manager/index.ts` (refinar check-user-active para não “pular running real”)
+- `supabase/functions/runninghub-upscaler/index.ts`
+- `supabase/functions/runninghub-pose-changer/index.ts`
+- `supabase/functions/runninghub-veste-ai/index.ts`
+- `supabase/functions/runninghub-video-upscaler/index.ts`
+- `supabase/functions/runninghub-queue-manager/index.ts` (auto-heal + cancel-job)
+
+Frontend:
+- `src/hooks/useAiToolJobRunner.ts` (novo)
+- `src/pages/UpscalerArcanoTool.tsx`
+- `src/pages/VideoUpscalerTool.tsx`
+- `src/pages/PoseChangerTool.tsx`
+- `src/pages/VesteAITool.tsx`
+- `src/components/ai-tools/ActiveJobBlockModal.tsx` (ajustar para usar cancel-job quando status queued)
 
 ---
 
-## Resultado esperado (o que muda na prática)
-- Fechou o app no iPhone durante upload: **não cria job no banco** → **não trava fila**.
-- Se backend negar crédito/der erro: job vira **failed** (com completed_at) → **não bloqueia o usuário**.
-- Vídeo enfileirado (fila cheia) passa a ter **URL persistida** → fila global consegue processar corretamente depois.
-- Mesmo que um “órfão” apareça por alguma condição extrema, o sistema tem:
-  - auto-heal do check-user-active
-  - cancel-session + refund quando aplicável
-  - estados de UI alinhados para cleanup funcionar (incluindo Upscaler imagem)
-
----
+## Resultado final esperado
+- Se o backend devolver qualquer erro: o job **não fica “queued”** preso.
+- Retry funciona imediatamente.
+- Fila só aparece quando o limite global estiver realmente cheio.
+- Todas as ferramentas seguem exatamente a mesma lógica (um padrão único).
