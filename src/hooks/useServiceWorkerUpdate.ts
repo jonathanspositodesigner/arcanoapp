@@ -89,7 +89,7 @@ export const cleanOldCaches = async () => {
   
   try {
     const cacheNames = await caches.keys();
-    const currentCacheId = 'arcanoapp-v5.2.0';
+    const currentCacheId = 'arcanoapp-v5.3.0';
     
     console.log('[SW] Found caches:', cacheNames);
     
