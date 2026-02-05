@@ -1742,13 +1742,18 @@ export type Database = {
           api_account: string
           completed_at: string | null
           created_at: string | null
+          credits_charged: boolean | null
+          credits_refunded: boolean | null
           error_message: string | null
           id: string
+          job_payload: Json | null
           output_url: string | null
           person_file_name: string | null
+          person_image_url: string | null
           position: number | null
           queue_wait_seconds: number | null
           reference_file_name: string | null
+          reference_image_url: string | null
           rh_cost: number | null
           session_id: string
           started_at: string | null
@@ -1762,13 +1767,18 @@ export type Database = {
           api_account?: string
           completed_at?: string | null
           created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
           error_message?: string | null
           id?: string
+          job_payload?: Json | null
           output_url?: string | null
           person_file_name?: string | null
+          person_image_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
           reference_file_name?: string | null
+          reference_image_url?: string | null
           rh_cost?: number | null
           session_id: string
           started_at?: string | null
@@ -1782,13 +1792,18 @@ export type Database = {
           api_account?: string
           completed_at?: string | null
           created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
           error_message?: string | null
           id?: string
+          job_payload?: Json | null
           output_url?: string | null
           person_file_name?: string | null
+          person_image_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
           reference_file_name?: string | null
+          reference_image_url?: string | null
           rh_cost?: number | null
           session_id?: string
           started_at?: string | null
@@ -2307,12 +2322,18 @@ export type Database = {
       upscaler_jobs: {
         Row: {
           api_account: string
+          category: string | null
           completed_at: string | null
           created_at: string | null
+          credits_charged: boolean | null
+          credits_refunded: boolean | null
           detail_denoise: number | null
           error_message: string | null
+          framing_mode: string | null
           id: string
           input_file_name: string | null
+          input_url: string | null
+          job_payload: Json | null
           output_url: string | null
           position: number | null
           prompt: string | null
@@ -2325,16 +2346,23 @@ export type Database = {
           task_id: string | null
           user_credit_cost: number | null
           user_id: string | null
+          version: string | null
           waited_in_queue: boolean | null
         }
         Insert: {
           api_account?: string
+          category?: string | null
           completed_at?: string | null
           created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
           detail_denoise?: number | null
           error_message?: string | null
+          framing_mode?: string | null
           id?: string
           input_file_name?: string | null
+          input_url?: string | null
+          job_payload?: Json | null
           output_url?: string | null
           position?: number | null
           prompt?: string | null
@@ -2347,16 +2375,23 @@ export type Database = {
           task_id?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
+          version?: string | null
           waited_in_queue?: boolean | null
         }
         Update: {
           api_account?: string
+          category?: string | null
           completed_at?: string | null
           created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
           detail_denoise?: number | null
           error_message?: string | null
+          framing_mode?: string | null
           id?: string
           input_file_name?: string | null
+          input_url?: string | null
+          job_payload?: Json | null
           output_url?: string | null
           position?: number | null
           prompt?: string | null
@@ -2369,6 +2404,7 @@ export type Database = {
           task_id?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
+          version?: string | null
           waited_in_queue?: boolean | null
         }
         Relationships: [
@@ -2499,12 +2535,17 @@ export type Database = {
         Row: {
           api_account: string
           clothing_file_name: string | null
+          clothing_image_url: string | null
           completed_at: string | null
           created_at: string | null
+          credits_charged: boolean | null
+          credits_refunded: boolean | null
           error_message: string | null
           id: string
+          job_payload: Json | null
           output_url: string | null
           person_file_name: string | null
+          person_image_url: string | null
           position: number | null
           queue_wait_seconds: number | null
           rh_cost: number | null
@@ -2519,12 +2560,17 @@ export type Database = {
         Insert: {
           api_account?: string
           clothing_file_name?: string | null
+          clothing_image_url?: string | null
           completed_at?: string | null
           created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
           error_message?: string | null
           id?: string
+          job_payload?: Json | null
           output_url?: string | null
           person_file_name?: string | null
+          person_image_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
           rh_cost?: number | null
@@ -2539,12 +2585,17 @@ export type Database = {
         Update: {
           api_account?: string
           clothing_file_name?: string | null
+          clothing_image_url?: string | null
           completed_at?: string | null
           created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
           error_message?: string | null
           id?: string
+          job_payload?: Json | null
           output_url?: string | null
           person_file_name?: string | null
+          person_image_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
           rh_cost?: number | null
@@ -2571,9 +2622,12 @@ export type Database = {
           api_account: string
           completed_at: string | null
           created_at: string | null
+          credits_charged: boolean | null
+          credits_refunded: boolean | null
           error_message: string | null
           id: string
           input_file_name: string | null
+          job_payload: Json | null
           output_url: string | null
           position: number | null
           queue_wait_seconds: number | null
@@ -2586,6 +2640,7 @@ export type Database = {
           user_id: string | null
           video_duration_seconds: number | null
           video_height: number | null
+          video_url: string | null
           video_width: number | null
           waited_in_queue: boolean | null
         }
@@ -2593,9 +2648,12 @@ export type Database = {
           api_account?: string
           completed_at?: string | null
           created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
           error_message?: string | null
           id?: string
           input_file_name?: string | null
+          job_payload?: Json | null
           output_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
@@ -2608,6 +2666,7 @@ export type Database = {
           user_id?: string | null
           video_duration_seconds?: number | null
           video_height?: number | null
+          video_url?: string | null
           video_width?: number | null
           waited_in_queue?: boolean | null
         }
@@ -2615,9 +2674,12 @@ export type Database = {
           api_account?: string
           completed_at?: string | null
           created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
           error_message?: string | null
           id?: string
           input_file_name?: string | null
+          job_payload?: Json | null
           output_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
@@ -2630,6 +2692,7 @@ export type Database = {
           user_id?: string | null
           video_duration_seconds?: number | null
           video_height?: number | null
+          video_url?: string | null
           video_width?: number | null
           waited_in_queue?: boolean | null
         }

@@ -1,23 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
- import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 /**
- * RUNNINGHUB QUEUE MANAGER - MULTI-API ARCHITECTURE
+ * RUNNINGHUB QUEUE MANAGER - CENTRALIZED JOB ORCHESTRATOR
  * 
  * Função ÚNICA e CENTRALIZADA para gerenciar a fila global de todas as ferramentas de IA.
- * Suporta múltiplas contas RunningHub (1 a N) com balanceamento automático.
  * 
- * Arquitetura:
- * - Detecta automaticamente quais API keys estão configuradas
- * - Balanceia jobs entre contas disponíveis (3 slots por conta)
- * - Fila global FIFO quando todas as contas estão lotadas
+ * REGRAS:
+ * 1. Máximo 3 jobs simultâneos GLOBAL (STARTING ou RUNNING)
+ * 2. Fila FIFO global quando exceder 3
+ * 3. 1 job ativo por usuário (QUEUED/STARTING/RUNNING)
+ * 4. Erro = terminal + reembolso obrigatório
+ * 5. Reembolso idempotente (credits_charged + credits_refunded)
  * 
  * Endpoints:
- * - /check - Verifica disponibilidade global e retorna conta disponível
- * - /process-next - Processa o próximo job da fila global
- * - /status - Retorna status completo com breakdown por conta
- * - /enqueue - Adiciona job à fila global
+ * - /check - Verifica disponibilidade global
+ * - /check-user-active - Verifica se usuário tem job ativo
+ * - /process-next - Processa próximo job da fila global
+ * - /finish - Finaliza job (chamado pelos webhooks)
  * - /cancel-session - Cancela jobs de uma sessão
+ * - /status - Status completo da fila
+ * - /enqueue - Adiciona job à fila
  */
 
 const corsHeaders = {
@@ -29,100 +32,189 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// =====================================================
-// CONFIGURAÇÃO - LIMITE GLOBAL FIXO
-// =====================================================
-// REGRA DE NEGÓCIO: Máximo de 3 jobs simultâneos GLOBAL, independente de quantas contas existem
+// LIMITE GLOBAL FIXO: 3 jobs simultâneos
 const GLOBAL_MAX_CONCURRENT = 3;
 const SLOTS_PER_ACCOUNT = 3;
 
-// Estrutura de conta de API
 interface ApiAccount {
-  name: string;        // 'primary', 'account_2', 'account_3', etc.
+  name: string;
   apiKey: string;
   maxSlots: number;
 }
 
-/**
- * Detecta automaticamente quais contas RunningHub estão configuradas
- * Retorna array de contas disponíveis em ordem de prioridade
- */
-function getAvailableApiAccounts(): ApiAccount[] {
-  const accounts: ApiAccount[] = [];
-  
-  // Conta 1 - Primary (obrigatória)
-  const key1 = (Deno.env.get('RUNNINGHUB_API_KEY') || '').trim();
-  if (key1) {
-    accounts.push({
-      name: 'primary',
-      apiKey: key1,
-      maxSlots: SLOTS_PER_ACCOUNT,
-    });
-  }
-  
-  // Conta 2
-  const key2 = (Deno.env.get('RUNNINGHUB_API_KEY_2') || '').trim();
-  if (key2) {
-    accounts.push({
-      name: 'account_2',
-      apiKey: key2,
-      maxSlots: SLOTS_PER_ACCOUNT,
-    });
-  }
-  
-  // Conta 3
-  const key3 = (Deno.env.get('RUNNINGHUB_API_KEY_3') || '').trim();
-  if (key3) {
-    accounts.push({
-      name: 'account_3',
-      apiKey: key3,
-      maxSlots: SLOTS_PER_ACCOUNT,
-    });
-  }
-  
-  // Conta 4
-  const key4 = (Deno.env.get('RUNNINGHUB_API_KEY_4') || '').trim();
-  if (key4) {
-    accounts.push({
-      name: 'account_4',
-      apiKey: key4,
-      maxSlots: SLOTS_PER_ACCOUNT,
-    });
-  }
-  
-  // Conta 5
-  const key5 = (Deno.env.get('RUNNINGHUB_API_KEY_5') || '').trim();
-  if (key5) {
-    accounts.push({
-      name: 'account_5',
-      apiKey: key5,
-      maxSlots: SLOTS_PER_ACCOUNT,
-    });
-  }
-  
-  console.log(`[QueueManager] Detected ${accounts.length} API account(s): ${accounts.map(a => a.name).join(', ')}`);
-  return accounts;
-}
-
-// WebApp IDs para cada ferramenta
 const WEBAPP_IDS = {
   upscaler_jobs: {
     pro: '2015865378030755841',
     standard: '2017030861371219969',
     longe: '2017343414227963905',
+    fotoAntiga: '2018913880214343681',
+    comida: '2015855359243587585',
+    logo: '2019239272464785409',
+    render3d: '2019234965992509442',
   },
   pose_changer_jobs: '2018451429635133442',
   veste_ai_jobs: '2018755100210106369',
   video_upscaler_jobs: '2018810750139109378',
 };
 
-// Tabelas de jobs
 const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs'] as const;
 type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
- serve(async (req) => {
+// ==================== HELPERS ====================
+
+function getAvailableApiAccounts(): ApiAccount[] {
+  const accounts: ApiAccount[] = [];
+  
+  const key1 = (Deno.env.get('RUNNINGHUB_API_KEY') || '').trim();
+  if (key1) accounts.push({ name: 'primary', apiKey: key1, maxSlots: SLOTS_PER_ACCOUNT });
+  
+  const key2 = (Deno.env.get('RUNNINGHUB_API_KEY_2') || '').trim();
+  if (key2) accounts.push({ name: 'account_2', apiKey: key2, maxSlots: SLOTS_PER_ACCOUNT });
+  
+  const key3 = (Deno.env.get('RUNNINGHUB_API_KEY_3') || '').trim();
+  if (key3) accounts.push({ name: 'account_3', apiKey: key3, maxSlots: SLOTS_PER_ACCOUNT });
+  
+  const key4 = (Deno.env.get('RUNNINGHUB_API_KEY_4') || '').trim();
+  if (key4) accounts.push({ name: 'account_4', apiKey: key4, maxSlots: SLOTS_PER_ACCOUNT });
+  
+  const key5 = (Deno.env.get('RUNNINGHUB_API_KEY_5') || '').trim();
+  if (key5) accounts.push({ name: 'account_5', apiKey: key5, maxSlots: SLOTS_PER_ACCOUNT });
+  
+  return accounts;
+}
+
+async function getRunningCountByAccount(accountName: string): Promise<number> {
+  let total = 0;
+  for (const table of JOB_TABLES) {
+    const { count } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['running', 'starting'])
+      .eq('api_account', accountName);
+    total += count || 0;
+  }
+  return total;
+}
+
+async function getGlobalRunningCount(): Promise<number> {
+  let total = 0;
+  for (const table of JOB_TABLES) {
+    const { count } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['running', 'starting']);
+    total += count || 0;
+  }
+  return total;
+}
+
+async function getAccountWithAvailableSlot(): Promise<ApiAccount | null> {
+  const accounts = getAvailableApiAccounts();
+  for (const account of accounts) {
+    const runningCount = await getRunningCountByAccount(account.name);
+    if (runningCount < account.maxSlots) {
+      return account;
+    }
+  }
+  return null;
+}
+
+async function getTotalQueuedCount(): Promise<number> {
+  let total = 0;
+  for (const table of JOB_TABLES) {
+    const { count } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'queued');
+    total += count || 0;
+  }
+  return total;
+}
+
+async function cleanupStaleJobs(): Promise<number> {
+  try {
+    console.log('[QueueManager] Running opportunistic cleanup...');
+    const { data, error } = await supabase.rpc('cleanup_all_stale_ai_jobs');
+    if (error) {
+      console.error('[QueueManager] Cleanup error:', error);
+      return 0;
+    }
+    let totalCancelled = 0;
+    if (Array.isArray(data)) {
+      for (const row of data) {
+        totalCancelled += row.cancelled_count || 0;
+      }
+    }
+    if (totalCancelled > 0) {
+      console.log(`[QueueManager] Cleanup: ${totalCancelled} stale jobs cancelled`);
+      await updateAllQueuePositions();
+    }
+    return totalCancelled;
+  } catch (e) {
+    console.error('[QueueManager] Cleanup exception:', e);
+    return 0;
+  }
+}
+
+async function updateAllQueuePositions(): Promise<void> {
+  interface QueuedJob { id: string; created_at: string; table: JobTable; }
+  const allQueuedJobs: QueuedJob[] = [];
+  
+  for (const table of JOB_TABLES) {
+    const { data: jobs } = await supabase.from(table).select('id, created_at').eq('status', 'queued');
+    if (jobs) {
+      for (const job of jobs) {
+        allQueuedJobs.push({ ...job, table });
+      }
+    }
+  }
+  
+  allQueuedJobs.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  
+  for (let i = 0; i < allQueuedJobs.length; i++) {
+    const job = allQueuedJobs[i];
+    await supabase.from(job.table).update({ position: i + 1 }).eq('id', job.id);
+  }
+  
+  console.log(`[QueueManager] Updated GLOBAL positions for ${allQueuedJobs.length} queued jobs`);
+}
+
+async function refundCreditsIfNeeded(
+  table: string,
+  jobId: string,
+  userId: string | null,
+  creditCost: number | null,
+  creditsCharged: boolean,
+  creditsRefunded: boolean
+): Promise<number> {
+  // Só reembolsa se foi cobrado E ainda não foi reembolsado
+  if (!creditsCharged || creditsRefunded || !creditCost || creditCost <= 0 || !userId) {
+    return 0;
+  }
+  
+  try {
+    await supabase.rpc('refund_upscaler_credits', {
+      _user_id: userId,
+      _amount: creditCost,
+      _description: 'Estorno automático: job falhou'
+    });
+    
+    // Marcar como reembolsado
+    await supabase.from(table).update({ credits_refunded: true }).eq('id', jobId);
+    
+    console.log(`[QueueManager] Refunded ${creditCost} credits to ${userId}`);
+    return creditCost;
+  } catch (error) {
+    console.error('[QueueManager] Refund error:', error);
+    return 0;
+  }
+}
+
+// ==================== MAIN HANDLER ====================
+
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -135,17 +227,19 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     switch (path) {
       case 'check':
-        return await handleCheck(req);
+        return await handleCheck();
+      case 'check-user-active':
+        return await handleCheckUserActive(req);
       case 'process-next':
         return await handleProcessNext();
+      case 'finish':
+        return await handleFinish(req);
       case 'status':
         return await handleStatus();
       case 'enqueue':
         return await handleEnqueue(req);
       case 'cancel-session':
         return await handleCancelSession(req);
-       case 'check-user-active':
-         return await handleCheckUserActive(req);
       default:
         return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
           status: 400,
@@ -161,217 +255,27 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   }
 });
 
-/**
- * Conta jobs em execução POR CONTA em TODAS as tabelas
- */
-async function getRunningCountByAccount(accountName: string): Promise<number> {
-  let total = 0;
-  
-  for (const table of JOB_TABLES) {
-    const { count, error } = await supabase
-      .from(table)
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'running')
-      .eq('api_account', accountName);
-    
-    if (error) {
-      console.error(`[QueueManager] Error counting ${table} for ${accountName}:`, error);
-    } else {
-      total += count || 0;
-    }
-  }
-  
-  return total;
-}
+// ==================== ENDPOINT HANDLERS ====================
 
-/**
- * Conta TOTAL de jobs em execução em TODAS as tabelas e contas
- */
-async function getGlobalRunningCount(): Promise<number> {
-  let total = 0;
-  
-  for (const table of JOB_TABLES) {
-    const { count, error } = await supabase
-      .from(table)
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'running');
-    
-    if (error) {
-      console.error(`[QueueManager] Error counting ${table}:`, error);
-    } else {
-      total += count || 0;
-    }
-  }
-  
-  return total;
-}
-
-/**
- * Encontra uma conta com slot disponível
- * Retorna a conta ou null se todas estiverem lotadas
- */
-async function getAccountWithAvailableSlot(): Promise<ApiAccount | null> {
-  const accounts = getAvailableApiAccounts();
-  
-  for (const account of accounts) {
-    const runningCount = await getRunningCountByAccount(account.name);
-    console.log(`[QueueManager] Account ${account.name}: ${runningCount}/${account.maxSlots} slots used`);
-    
-    if (runningCount < account.maxSlots) {
-      return account;
-    }
-  }
-  
-  return null;
-}
-
-/**
- * Retorna estatísticas detalhadas por conta
- */
-async function getAccountsStats(): Promise<Array<{
-  name: string;
-  running: number;
-  maxSlots: number;
-  available: number;
-}>> {
-  const accounts = getAvailableApiAccounts();
-  const stats = [];
-  
-  for (const account of accounts) {
-    const running = await getRunningCountByAccount(account.name);
-    stats.push({
-      name: account.name,
-      running,
-      maxSlots: account.maxSlots,
-      available: Math.max(0, account.maxSlots - running),
-    });
-  }
-  
-  return stats;
-}
-
-/**
- * Conta jobs na fila de cada tabela
- */
-async function getQueuedCounts(): Promise<Record<JobTable, number>> {
-  const counts: Record<string, number> = {};
-  
-  for (const table of JOB_TABLES) {
-    const { count, error } = await supabase
-      .from(table)
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'queued');
-    
-    counts[table] = error ? 0 : (count || 0);
-  }
-  
-  return counts as Record<JobTable, number>;
-}
-
-/**
- * Calcula a posição GLOBAL de um job na fila (considerando TODAS as ferramentas)
- */
-async function getGlobalQueuePosition(jobCreatedAt: string): Promise<number> {
-  let position = 1;
-  
-  for (const table of JOB_TABLES) {
-    const { count } = await supabase
-      .from(table)
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'queued')
-      .lt('created_at', jobCreatedAt);
-    
-    position += count || 0;
-  }
-  
-  return position;
-}
-
-/**
- * Conta TODOS os jobs na fila global
- */
-async function getTotalQueuedCount(): Promise<number> {
-  let total = 0;
-  
-  for (const table of JOB_TABLES) {
-    const { count } = await supabase
-      .from(table)
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'queued');
-    
-    total += count || 0;
-  }
-  
-  return total;
-}
-
-/**
- * Executa limpeza oportunista de jobs travados (>10 min)
- * Chama a função do banco que é SECURITY DEFINER (não precisa de auth)
- * A função retorna um conjunto de rows, uma por tabela, com cancelled_count
- */
-async function cleanupStaleJobs(): Promise<number> {
-  try {
-    console.log('[QueueManager] Running opportunistic cleanup...');
-    const { data, error } = await supabase.rpc('cleanup_all_stale_ai_jobs');
-    
-    if (error) {
-      console.error('[QueueManager] Cleanup error:', error);
-      return 0;
-    }
-    
-    // A função retorna array de { table_name, cancelled_count, refunded_credits }
-    // Somar todos os cancelled_count
-    let totalCancelled = 0;
-    if (Array.isArray(data)) {
-      for (const row of data) {
-        totalCancelled += row.cancelled_count || 0;
-      }
-    }
-    
-    if (totalCancelled > 0) {
-      console.log(`[QueueManager] Cleanup: ${totalCancelled} stale jobs cancelled`);
-      // Atualizar posições globais após limpar jobs travados
-      await updateAllQueuePositions();
-    }
-    
-    return totalCancelled;
-  } catch (e) {
-    console.error('[QueueManager] Cleanup exception:', e);
-    return 0;
-  }
-}
-
-/**
- * /check - Verifica disponibilidade e retorna conta com slot livre
- * REGRA: Máximo 3 jobs simultâneos GLOBAL (não 3 por conta)
- */
-async function handleCheck(req: Request): Promise<Response> {
-  // LIMPEZA OPORTUNISTA: limpar jobs travados antes de verificar disponibilidade
+async function handleCheck(): Promise<Response> {
   await cleanupStaleJobs();
   
   const globalRunning = await getGlobalRunningCount();
   const totalQueued = await getTotalQueuedCount();
-  
-  // REGRA DE NEGÓCIO: Limite global de 3, não por conta
   const slotsAvailable = Math.max(0, GLOBAL_MAX_CONCURRENT - globalRunning);
   
-  // Se tem slots disponíveis MAS tem jobs na fila, a fila tem prioridade
-  // Isso evita que um job novo "fure" a fila
+  // Se tem slots E não tem fila, pode iniciar imediatamente
   const mustQueue = globalRunning >= GLOBAL_MAX_CONCURRENT || totalQueued > 0;
-  
-  // Encontrar conta com slot disponível (para uso da API key)
   const availableAccount = await getAccountWithAvailableSlot();
   
-  console.log(`[QueueManager] /check: running=${globalRunning}, queued=${totalQueued}, slotsAvailable=${slotsAvailable}, mustQueue=${mustQueue}`);
+  console.log(`[QueueManager] /check: running=${globalRunning}, queued=${totalQueued}, mustQueue=${mustQueue}`);
   
   return new Response(JSON.stringify({
     available: !mustQueue && availableAccount !== null,
     running: globalRunning,
     maxConcurrent: GLOBAL_MAX_CONCURRENT,
-    slotsAvailable: slotsAvailable,
-    totalQueued: totalQueued,
-    // Informações da conta disponível (para uso pelas Edge Functions)
+    slotsAvailable,
+    totalQueued,
     accountName: availableAccount?.name || null,
     accountApiKey: availableAccount?.apiKey || null,
   }), {
@@ -379,9 +283,265 @@ async function handleCheck(req: Request): Promise<Response> {
   });
 }
 
-/**
- * /enqueue - Adiciona job à fila e retorna posição GLOBAL
- */
+async function handleCheckUserActive(req: Request): Promise<Response> {
+  try {
+    await cleanupStaleJobs();
+    
+    const { userId } = await req.json();
+    
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'userId is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    const toolNames: Record<JobTable, string> = {
+      'upscaler_jobs': 'Upscaler Arcano',
+      'video_upscaler_jobs': 'Video Upscaler',
+      'pose_changer_jobs': 'Pose Changer',
+      'veste_ai_jobs': 'Veste AI',
+    };
+    
+    // Verificar em TODAS as tabelas - incluir STARTING
+    for (const table of JOB_TABLES) {
+      const { data, error } = await supabase
+        .from(table)
+        .select('id, status')
+        .eq('user_id', userId)
+        .in('status', ['running', 'queued', 'starting'])
+        .limit(1)
+        .maybeSingle();
+      
+      if (error) {
+        console.error(`[QueueManager] Error checking ${table}:`, error);
+        continue;
+      }
+      
+      if (data) {
+        console.log(`[QueueManager] User ${userId} has active job in ${table}`);
+        return new Response(JSON.stringify({
+          hasActiveJob: true,
+          activeTool: toolNames[table],
+          activeJobId: data.id,
+          activeStatus: data.status,
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+    
+    return new Response(JSON.stringify({
+      hasActiveJob: false,
+      activeTool: null,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error) {
+    console.error('[QueueManager] CheckUserActive error:', error);
+    return new Response(JSON.stringify({ 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+async function handleProcessNext(): Promise<Response> {
+  await cleanupStaleJobs();
+  
+  const globalRunning = await getGlobalRunningCount();
+  if (globalRunning >= GLOBAL_MAX_CONCURRENT) {
+    console.log(`[QueueManager] Global limit reached: ${globalRunning}/${GLOBAL_MAX_CONCURRENT}`);
+    return new Response(JSON.stringify({ processed: false, reason: 'Global limit reached' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  const availableAccount = await getAccountWithAvailableSlot();
+  if (!availableAccount) {
+    return new Response(JSON.stringify({ processed: false, reason: 'No slots available' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  // Buscar job mais antigo na fila (FIFO global)
+  let oldestJob: { table: JobTable; job: any } | null = null;
+  
+  for (const table of JOB_TABLES) {
+    const { data: job } = await supabase
+      .from(table)
+      .select('*')
+      .eq('status', 'queued')
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    
+    if (!job) continue;
+    
+    if (!oldestJob || new Date(job.created_at) < new Date(oldestJob.job.created_at)) {
+      oldestJob = { table, job };
+    }
+  }
+  
+  if (!oldestJob) {
+    return new Response(JSON.stringify({ processed: false, reason: 'No queued jobs' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  console.log(`[QueueManager] Processing next job from ${oldestJob.table}: ${oldestJob.job.id}`);
+  
+  const queueWaitSeconds = Math.round(
+    (Date.now() - new Date(oldestJob.job.created_at).getTime()) / 1000
+  );
+  
+  // Marcar como STARTING (ocupa vaga)
+  await supabase
+    .from(oldestJob.table)
+    .update({
+      status: 'starting',
+      started_at: new Date().toISOString(),
+      position: 0,
+      queue_wait_seconds: queueWaitSeconds,
+      api_account: availableAccount.name,
+    })
+    .eq('id', oldestJob.job.id);
+  
+  // Iniciar no RunningHub
+  const result = await startJobOnRunningHub(oldestJob.table, oldestJob.job, availableAccount);
+  
+  await updateAllQueuePositions();
+  
+  return new Response(JSON.stringify({
+    processed: true,
+    table: oldestJob.table,
+    jobId: oldestJob.job.id,
+    taskId: result.taskId,
+    queueWaitSeconds,
+    accountUsed: availableAccount.name,
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+async function handleFinish(req: Request): Promise<Response> {
+  try {
+    const { table, jobId, status, outputUrl, errorMessage, taskId, rhCost } = await req.json();
+    
+    if (!table || !jobId) {
+      return new Response(JSON.stringify({ error: 'table and jobId are required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    console.log(`[QueueManager] /finish: ${table}/${jobId} status=${status}`);
+    
+    // Buscar dados do job
+    const { data: job } = await supabase
+      .from(table)
+      .select('user_id, user_credit_cost, credits_charged, credits_refunded')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    if (!job) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    const isFailure = status === 'failed' || status === 'cancelled';
+    
+    // Se falhou, reembolsar créditos (idempotente)
+    let refundedAmount = 0;
+    if (isFailure) {
+      refundedAmount = await refundCreditsIfNeeded(
+        table,
+        jobId,
+        job.user_id,
+        job.user_credit_cost,
+        job.credits_charged ?? false,
+        job.credits_refunded ?? false
+      );
+    }
+    
+    // Atualizar job
+    const updateData: Record<string, any> = {
+      status: status,
+      completed_at: new Date().toISOString(),
+    };
+    
+    if (outputUrl) updateData.output_url = outputUrl;
+    if (errorMessage) updateData.error_message = errorMessage;
+    if (rhCost) updateData.rh_cost = rhCost;
+    
+    await supabase.from(table).update(updateData).eq('id', jobId);
+    
+    // Processar próximo da fila
+    try {
+      await handleProcessNext();
+    } catch (e) {
+      console.error('[QueueManager] Error processing next:', e);
+    }
+    
+    return new Response(JSON.stringify({
+      success: true,
+      refundedAmount,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error) {
+    console.error('[QueueManager] Finish error:', error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+async function handleStatus(): Promise<Response> {
+  const accounts = getAvailableApiAccounts();
+  const accountsStats = [];
+  
+  for (const account of accounts) {
+    const running = await getRunningCountByAccount(account.name);
+    accountsStats.push({
+      name: account.name,
+      running,
+      maxSlots: account.maxSlots,
+      available: Math.max(0, account.maxSlots - running),
+    });
+  }
+  
+  const queuedCounts: Record<string, number> = {};
+  for (const table of JOB_TABLES) {
+    const { count } = await supabase.from(table).select('*', { count: 'exact', head: true }).eq('status', 'queued');
+    queuedCounts[table] = count || 0;
+  }
+  
+  const totalQueued = Object.values(queuedCounts).reduce((a, b) => a + b, 0);
+  const totalRunning = accountsStats.reduce((sum, acc) => sum + acc.running, 0);
+  
+  return new Response(JSON.stringify({
+    totalMaxSlots: GLOBAL_MAX_CONCURRENT,
+    totalRunning,
+    totalSlotsAvailable: Math.max(0, GLOBAL_MAX_CONCURRENT - totalRunning),
+    totalQueued,
+    accounts: accountsStats,
+    queuedByTool: queuedCounts,
+    running: totalRunning,
+    maxConcurrent: GLOBAL_MAX_CONCURRENT,
+    slotsAvailable: Math.max(0, GLOBAL_MAX_CONCURRENT - totalRunning),
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
 async function handleEnqueue(req: Request): Promise<Response> {
   try {
     const { table, jobId, creditCost } = await req.json();
@@ -393,52 +553,41 @@ async function handleEnqueue(req: Request): Promise<Response> {
       });
     }
     
-    if (!JOB_TABLES.includes(table as JobTable)) {
-      return new Response(JSON.stringify({ error: 'Invalid table' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    const { data: job } = await supabase.from(table).select('created_at').eq('id', jobId).maybeSingle();
     
-    // Obter created_at do job
-    const { data: job, error: jobError } = await supabase
-      .from(table)
-      .select('created_at')
-      .eq('id', jobId)
-      .maybeSingle();
-    
-    if (jobError || !job) {
+    if (!job) {
       return new Response(JSON.stringify({ error: 'Job not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
     
-    // Calcular posição GLOBAL na fila
-    const globalPosition = await getGlobalQueuePosition(job.created_at);
-    
-    // Atualizar job com status queued e posição global
-    const updateData: Record<string, any> = {
-      status: 'queued',
-      position: globalPosition,
-      waited_in_queue: true,
-    };
-    
-    if (creditCost !== undefined) {
-      updateData.user_credit_cost = creditCost;
+    // Calcular posição global
+    let position = 1;
+    for (const t of JOB_TABLES) {
+      const { count } = await supabase
+        .from(t)
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'queued')
+        .lt('created_at', job.created_at);
+      position += count || 0;
     }
     
-    await supabase
-      .from(table)
-      .update(updateData)
-      .eq('id', jobId);
+    const updateData: Record<string, any> = {
+      status: 'queued',
+      position,
+      waited_in_queue: true,
+    };
+    if (creditCost !== undefined) updateData.user_credit_cost = creditCost;
     
-    console.log(`[QueueManager] Job ${jobId} enqueued at GLOBAL position ${globalPosition}`);
+    await supabase.from(table).update(updateData).eq('id', jobId);
+    
+    console.log(`[QueueManager] Job ${jobId} enqueued at position ${position}`);
     
     return new Response(JSON.stringify({
       success: true,
       queued: true,
-      position: globalPosition,
+      position,
       totalQueued: await getTotalQueuedCount(),
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -453,9 +602,6 @@ async function handleEnqueue(req: Request): Promise<Response> {
   }
 }
 
-/**
- * /cancel-session - Cancela todos os jobs QUEUED de uma sessão
- */
 async function handleCancelSession(req: Request): Promise<Response> {
   try {
     const { sessionId, userId } = await req.json();
@@ -473,7 +619,7 @@ async function handleCancelSession(req: Request): Promise<Response> {
     for (const table of JOB_TABLES) {
       let query = supabase
         .from(table)
-        .select('id, user_id, user_credit_cost')
+        .select('id, user_id, user_credit_cost, credits_charged, credits_refunded')
         .eq('status', 'queued');
       
       if (sessionId) {
@@ -482,42 +628,35 @@ async function handleCancelSession(req: Request): Promise<Response> {
         query = query.eq('user_id', userId);
       }
       
-      const { data: queuedJobs, error } = await query;
-      
-      if (error || !queuedJobs || queuedJobs.length === 0) continue;
+      const { data: queuedJobs } = await query;
+      if (!queuedJobs || queuedJobs.length === 0) continue;
       
       for (const job of queuedJobs) {
+        // Reembolsar se necessário (idempotente)
+        await refundCreditsIfNeeded(
+          table,
+          job.id,
+          job.user_id,
+          job.user_credit_cost,
+          job.credits_charged ?? false,
+          job.credits_refunded ?? false
+        );
+        
         await supabase
           .from(table)
           .update({
             status: 'cancelled',
             error_message: 'User left page while in queue',
             completed_at: new Date().toISOString(),
+            credits_refunded: true,
           })
           .eq('id', job.id);
-        
-        // Devolver créditos se foram consumidos
-        if (job.user_credit_cost && job.user_id) {
-          try {
-            await supabase.rpc('refund_upscaler_credits', {
-              _user_id: job.user_id,
-              _amount: job.user_credit_cost,
-              _description: 'Refund: cancelled while in queue'
-            });
-            console.log(`[QueueManager] Refunded ${job.user_credit_cost} credits to ${job.user_id}`);
-          } catch (refundError) {
-            console.error(`[QueueManager] Failed to refund credits:`, refundError);
-          }
-        }
         
         cancelledJobs.push({ table, id: job.id });
         totalCancelled++;
       }
     }
     
-    console.log(`[QueueManager] Cancelled ${totalCancelled} queued jobs for session ${sessionId || userId}`);
-    
-    // Atualizar posições da fila global
     if (totalCancelled > 0) {
       await updateAllQueuePositions();
     }
@@ -539,134 +678,8 @@ async function handleCancelSession(req: Request): Promise<Response> {
   }
 }
 
-/**
- * /status - Retorna status completo da fila global com breakdown por conta
- */
-async function handleStatus(): Promise<Response> {
-  const accounts = getAvailableApiAccounts();
-  const accountsStats = await getAccountsStats();
-  const queuedCounts = await getQueuedCounts();
-  const totalQueued = Object.values(queuedCounts).reduce((a, b) => a + b, 0);
-  const totalRunning = accountsStats.reduce((sum, acc) => sum + acc.running, 0);
-  
-  return new Response(JSON.stringify({
-    // Totais globais - REGRA: limite é GLOBAL_MAX_CONCURRENT, não soma das contas
-    totalMaxSlots: GLOBAL_MAX_CONCURRENT,
-    totalRunning,
-    totalSlotsAvailable: Math.max(0, GLOBAL_MAX_CONCURRENT - totalRunning),
-    totalQueued,
-    // Breakdown por conta
-    accounts: accountsStats,
-    // Breakdown por ferramenta (fila)
-    queuedByTool: queuedCounts,
-    // Compatibilidade com código antigo - usar limite global
-    running: totalRunning,
-    maxConcurrent: GLOBAL_MAX_CONCURRENT,
-    slotsAvailable: Math.max(0, GLOBAL_MAX_CONCURRENT - totalRunning),
-  }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
+// ==================== RUNNINGHUB INTEGRATION ====================
 
-/**
- * /process-next - Processa o próximo job na fila global (FIFO cross-tool)
- * Chamado pelos webhooks quando um job termina
- * REGRA: Máximo 3 jobs simultâneos GLOBAL
- */
-async function handleProcessNext(): Promise<Response> {
-  // LIMPEZA OPORTUNISTA: limpar jobs travados antes de processar
-  await cleanupStaleJobs();
-  
-  // Verificar limite GLOBAL de 3 jobs
-  const globalRunning = await getGlobalRunningCount();
-  if (globalRunning >= GLOBAL_MAX_CONCURRENT) {
-    console.log(`[QueueManager] Global limit reached: ${globalRunning}/${GLOBAL_MAX_CONCURRENT}`);
-    return new Response(JSON.stringify({ processed: false, reason: 'Global limit reached' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-  
-  // Verificar se há conta com slot disponível
-  const availableAccount = await getAccountWithAvailableSlot();
-  
-  if (!availableAccount) {
-    console.log('[QueueManager] No slots available in any account');
-    return new Response(JSON.stringify({ processed: false, reason: 'No slots available' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-  
-  // Buscar o job mais antigo na fila de TODAS as tabelas
-  let oldestJob: { table: JobTable; job: any } | null = null;
-  
-  for (const table of JOB_TABLES) {
-    const { data: job, error } = await supabase
-      .from(table)
-      .select('*')
-      .eq('status', 'queued')
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    
-    if (error || !job) continue;
-    
-    if (!oldestJob || new Date(job.created_at) < new Date(oldestJob.job.created_at)) {
-      oldestJob = { table, job };
-    }
-  }
-  
-  if (!oldestJob) {
-    console.log('[QueueManager] No jobs in queue');
-    return new Response(JSON.stringify({ processed: false, reason: 'No queued jobs' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-  
-  console.log(`[QueueManager] Processing next job from ${oldestJob.table}: ${oldestJob.job.id} using account ${availableAccount.name}`);
-  
-  // Calcular tempo de espera na fila
-  const queueWaitSeconds = Math.round(
-    (Date.now() - new Date(oldestJob.job.created_at).getTime()) / 1000
-  );
-  
-  // Marcar como running e associar à conta
-  await supabase
-    .from(oldestJob.table)
-    .update({
-      status: 'running',
-      started_at: new Date().toISOString(),
-      position: 0,
-      queue_wait_seconds: queueWaitSeconds,
-      api_account: availableAccount.name,
-    })
-    .eq('id', oldestJob.job.id);
-  
-  // Iniciar processamento no RunningHub com a API key da conta disponível
-  const result = await startJobOnRunningHub(
-    oldestJob.table, 
-    oldestJob.job, 
-    availableAccount
-  );
-  
-  // Atualizar posições das filas
-  await updateAllQueuePositions();
-  
-  return new Response(JSON.stringify({
-    processed: true,
-    table: oldestJob.table,
-    jobId: oldestJob.job.id,
-    taskId: result.taskId,
-    queueWaitSeconds,
-    accountUsed: availableAccount.name,
-  }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
-
-/**
- * Inicia um job no RunningHub baseado no tipo de ferramenta
- * AGORA RECEBE A CONTA (com API key) A SER USADA
- */
 async function startJobOnRunningHub(
   table: JobTable, 
   job: any,
@@ -679,29 +692,83 @@ async function startJobOnRunningHub(
   
   switch (table) {
     case 'upscaler_jobs':
-      webappId = WEBAPP_IDS.upscaler_jobs.pro;
-      nodeInfoList = [
-        { nodeId: "26", fieldName: "image", fieldValue: job.input_file_name },
-        { nodeId: "25", fieldName: "value", fieldValue: job.detail_denoise || 0.15 },
-      ];
-      if (job.prompt) {
-        nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: job.prompt });
+      // Determinar WebApp baseado na categoria e versão persistidas
+      const category = job.category || 'pessoas_perto';
+      const version = job.version || 'standard';
+      const framingMode = job.framing_mode || 'perto';
+      
+      if (category === 'fotoAntiga') {
+        webappId = WEBAPP_IDS.upscaler_jobs.fotoAntiga;
+        nodeInfoList = [
+          { nodeId: "139", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+        ];
+      } else if (category === 'comida') {
+        webappId = WEBAPP_IDS.upscaler_jobs.comida;
+        nodeInfoList = [
+          { nodeId: "50", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+        ];
+        if (version === 'pro' && job.detail_denoise !== undefined) {
+          nodeInfoList.push({ nodeId: "48", fieldName: "value", fieldValue: job.detail_denoise });
+        }
+      } else if (category === 'logo') {
+        webappId = WEBAPP_IDS.upscaler_jobs.logo;
+        nodeInfoList = [
+          { nodeId: "39", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+        ];
+        if (version === 'pro' && job.detail_denoise !== undefined) {
+          nodeInfoList.push({ nodeId: "33", fieldName: "value", fieldValue: job.detail_denoise });
+        }
+      } else if (category === 'render3d') {
+        webappId = WEBAPP_IDS.upscaler_jobs.render3d;
+        nodeInfoList = [
+          { nodeId: "301", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+        ];
+        if (version === 'pro' && job.detail_denoise !== undefined) {
+          nodeInfoList.push({ nodeId: "300", fieldName: "value", fieldValue: job.detail_denoise });
+        }
+      } else if (framingMode === 'longe') {
+        webappId = WEBAPP_IDS.upscaler_jobs.longe;
+        nodeInfoList = [
+          { nodeId: "26", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+        ];
+        if (job.resolution) {
+          const resValue = job.resolution === '4k' ? 4096 : 2048;
+          nodeInfoList.push({ nodeId: "75", fieldName: "value", fieldValue: resValue });
+        }
+      } else {
+        webappId = version === 'pro' ? WEBAPP_IDS.upscaler_jobs.pro : WEBAPP_IDS.upscaler_jobs.standard;
+        const resNodeId = version === 'pro' ? '73' : '75';
+        
+        nodeInfoList = [
+          { nodeId: "26", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+        ];
+        
+        if (job.detail_denoise !== undefined) {
+          nodeInfoList.push({ nodeId: "25", fieldName: "value", fieldValue: job.detail_denoise });
+        }
+        if (job.prompt) {
+          nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: job.prompt });
+        }
+        if (job.resolution) {
+          const resValue = job.resolution === '4k' ? 4096 : 2048;
+          nodeInfoList.push({ nodeId: resNodeId, fieldName: "value", fieldValue: resValue });
+        }
       }
       break;
       
     case 'pose_changer_jobs':
       webappId = WEBAPP_IDS.pose_changer_jobs;
       nodeInfoList = [
-        { nodeId: "27", fieldName: "image", fieldValue: job.person_file_name },
-        { nodeId: "60", fieldName: "image", fieldValue: job.reference_file_name },
+        { nodeId: "27", fieldName: "image", fieldValue: job.person_image_url || job.person_file_name },
+        { nodeId: "60", fieldName: "image", fieldValue: job.reference_image_url || job.reference_file_name },
       ];
       break;
       
     case 'veste_ai_jobs':
       webappId = WEBAPP_IDS.veste_ai_jobs;
       nodeInfoList = [
-        { nodeId: "41", fieldName: "image", fieldValue: job.person_file_name },
-        { nodeId: "43", fieldName: "image", fieldValue: job.clothing_file_name },
+        { nodeId: "41", fieldName: "image", fieldValue: job.person_image_url || job.person_file_name },
+        { nodeId: "43", fieldName: "image", fieldValue: job.clothing_image_url || job.clothing_file_name },
       ];
       break;
       
@@ -709,7 +776,7 @@ async function startJobOnRunningHub(
       webappId = WEBAPP_IDS.video_upscaler_jobs;
       const videoWebhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-video-upscaler-webhook`;
       nodeInfoList = [
-        { nodeId: "3", fieldName: "video", fieldValue: job.input_file_name },
+        { nodeId: "3", fieldName: "video", fieldValue: job.video_url || job.input_file_name },
       ];
       return await callRunningHubApi(webappId, nodeInfoList, videoWebhookUrl, table, job.id, account);
       
@@ -721,9 +788,6 @@ async function startJobOnRunningHub(
   return await callRunningHubApi(webappId, nodeInfoList, webhookUrl, table, job.id, account);
 }
 
-/**
- * Chama a API do RunningHub COM A API KEY DA CONTA ESPECIFICADA
- */
 async function callRunningHubApi(
   webappId: string,
   nodeInfoList: any[],
@@ -739,7 +803,7 @@ async function callRunningHubApi(
     webhookUrl,
   };
   
-  console.log(`[QueueManager] Calling RunningHub for ${table} using account ${account.name}:`, JSON.stringify(requestBody));
+  console.log(`[QueueManager] Calling RunningHub (${account.name}):`, JSON.stringify(requestBody));
   
   try {
     const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`, {
@@ -752,7 +816,7 @@ async function callRunningHubApi(
     });
     
     const data = await response.json();
-    console.log(`[QueueManager] RunningHub response (account ${account.name}):`, JSON.stringify(data));
+    console.log(`[QueueManager] RunningHub response:`, JSON.stringify(data));
     
     if (data.taskId) {
       await supabase
@@ -760,13 +824,28 @@ async function callRunningHubApi(
         .update({ 
           task_id: data.taskId,
           api_account: account.name,
+          status: 'running',
         })
         .eq('id', jobId);
       
-      console.log(`[QueueManager] Job ${jobId} started with taskId: ${data.taskId} on account ${account.name}`);
       return { taskId: data.taskId };
     } else {
       const errorMsg = data.message || data.error || 'Failed to start job';
+      
+      // Buscar dados para reembolso
+      const { data: job } = await supabase
+        .from(table)
+        .select('user_id, user_credit_cost, credits_charged, credits_refunded')
+        .eq('id', jobId)
+        .maybeSingle();
+      
+      if (job) {
+        await refundCreditsIfNeeded(
+          table, jobId, job.user_id, job.user_credit_cost,
+          job.credits_charged ?? false, job.credits_refunded ?? false
+        );
+      }
+      
       await supabase
         .from(table)
         .update({
@@ -776,12 +855,24 @@ async function callRunningHubApi(
         })
         .eq('id', jobId);
       
-      console.error(`[QueueManager] Failed to start job ${jobId}:`, errorMsg);
       return { taskId: null };
     }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[QueueManager] Error calling RunningHub:`, error);
+    
+    const { data: job } = await supabase
+      .from(table)
+      .select('user_id, user_credit_cost, credits_charged, credits_refunded')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    if (job) {
+      await refundCreditsIfNeeded(
+        table, jobId, job.user_id, job.user_credit_cost,
+        job.credits_charged ?? false, job.credits_refunded ?? false
+      );
+    }
     
     await supabase
       .from(table)
@@ -795,116 +886,3 @@ async function callRunningHubApi(
     return { taskId: null };
   }
 }
-
-/**
- * Atualiza posições da fila GLOBALMENTE em todas as tabelas
- */
-async function updateAllQueuePositions(): Promise<void> {
-  interface QueuedJob {
-    id: string;
-    created_at: string;
-    table: JobTable;
-  }
-  
-  const allQueuedJobs: QueuedJob[] = [];
-  
-  for (const table of JOB_TABLES) {
-    const { data: jobs } = await supabase
-      .from(table)
-      .select('id, created_at')
-      .eq('status', 'queued');
-    
-    if (jobs) {
-      for (const job of jobs) {
-        allQueuedJobs.push({ ...job, table });
-      }
-    }
-  }
-  
-  // Ordenar globalmente por created_at (FIFO)
-  allQueuedJobs.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-  
-  // Atualizar posições globalmente
-  for (let i = 0; i < allQueuedJobs.length; i++) {
-    const job = allQueuedJobs[i];
-    await supabase
-      .from(job.table)
-      .update({ position: i + 1 })
-      .eq('id', job.id);
-  }
-  
-  console.log(`[QueueManager] Updated GLOBAL positions for ${allQueuedJobs.length} queued jobs`);
-}
- 
- /**
-  * /check-user-active - Verifica se o usuário tem algum job ativo em QUALQUER ferramenta
-  */
- async function handleCheckUserActive(req: Request): Promise<Response> {
-   try {
-     // LIMPEZA OPORTUNISTA: limpar jobs travados antes de verificar
-     // Isso evita bloquear usuário por job fantasma
-     await cleanupStaleJobs();
-     
-     const { userId } = await req.json();
-     
-     if (!userId) {
-       return new Response(JSON.stringify({ error: 'userId is required' }), {
-         status: 400,
-         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-       });
-     }
-     
-     // Mapeamento de tabela para nome amigável da ferramenta
-     const toolNames: Record<JobTable, string> = {
-       'upscaler_jobs': 'Upscaler Arcano',
-       'video_upscaler_jobs': 'Video Upscaler',
-       'pose_changer_jobs': 'Pose Changer',
-       'veste_ai_jobs': 'Veste AI',
-     };
-     
-     // Verificar em TODAS as tabelas de jobs
-     for (const table of JOB_TABLES) {
-       const { data, error } = await supabase
-         .from(table)
-         .select('id, status')
-         .eq('user_id', userId)
-         .in('status', ['running', 'queued'])
-         .limit(1)
-         .maybeSingle();
-       
-       if (error) {
-         console.error(`[QueueManager] Error checking ${table}:`, error);
-         continue;
-       }
-       
-       if (data) {
-         console.log(`[QueueManager] User ${userId} has active job in ${table}`);
-         return new Response(JSON.stringify({
-           hasActiveJob: true,
-           activeTool: toolNames[table],
-           activeJobId: data.id,
-           activeStatus: data.status,
-         }), {
-           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-         });
-       }
-     }
-     
-     // Nenhum job ativo encontrado
-     return new Response(JSON.stringify({
-       hasActiveJob: false,
-       activeTool: null,
-     }), {
-       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-     });
-     
-   } catch (error) {
-     console.error('[QueueManager] CheckUserActive error:', error);
-     return new Response(JSON.stringify({ 
-       error: error instanceof Error ? error.message : 'Unknown error' 
-     }), {
-       status: 500,
-       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-     });
-   }
- }

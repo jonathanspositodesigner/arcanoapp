@@ -2,18 +2,18 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 /**
- * RUNNINGHUB WEBHOOK
+ * RUNNINGHUB WEBHOOK - CENTRALIZED
  * 
  * Webhook ÚNICO que recebe callbacks do RunningHub para:
  * - Upscaler Arcano (upscaler_jobs)
  * - Pose Changer (pose_changer_jobs)
  * - Veste AI (veste_ai_jobs)
  * 
- * Quando um job termina, chama o Queue Manager centralizado para processar
- * o próximo job na fila global.
- * 
- * Nota: Video Upscaler usa webhook próprio (runninghub-video-upscaler-webhook)
- * por ter formato de resposta diferente.
+ * Quando um job termina, delega para o Queue Manager /finish
+ * que cuida de:
+ * - Finalizar job
+ * - Reembolsar créditos se falhou
+ * - Processar próximo da fila
  */
 
 const corsHeaders = {
@@ -26,7 +26,6 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// Tabelas de jobs de imagem (Video Upscaler tem webhook próprio)
 const IMAGE_JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs'] as const;
 
 serve(async (req) => {
@@ -36,9 +35,8 @@ serve(async (req) => {
 
   try {
     const payload = await req.json();
-    console.log('[Webhook] Received payload:', JSON.stringify(payload));
+    console.log('[Webhook] Received:', JSON.stringify(payload));
 
-    // RunningHub API v2 webhook format
     const event = payload.event;
     const taskId = payload.taskId;
     const eventData = payload.eventData || {};
@@ -46,9 +44,8 @@ serve(async (req) => {
     
     console.log(`[Webhook] Event: ${event}, TaskId: ${taskId}, Status: ${taskStatus}`);
 
-    // Só processa eventos TASK_END
+    // Só processa TASK_END
     if (event !== 'TASK_END') {
-      console.log('[Webhook] Ignoring non-TASK_END event');
       return new Response(JSON.stringify({ success: true, message: 'Event ignored' }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -56,25 +53,21 @@ serve(async (req) => {
     }
 
     if (!taskId) {
-      console.error('[Webhook] No taskId in payload');
+      console.error('[Webhook] No taskId');
       return new Response(JSON.stringify({ error: 'Missing taskId' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Extrair URL de output dos results
+    // Extrair output
     let outputUrl: string | null = null;
     let errorMessage: string | null = null;
 
     const results = eventData.results || [];
-    
     if (Array.isArray(results) && results.length > 0) {
       const imageResult = results.find((r: any) => 
-        r.outputType === 'png' || 
-        r.outputType === 'jpg' || 
-        r.outputType === 'jpeg' || 
-        r.outputType === 'webp'
+        ['png', 'jpg', 'jpeg', 'webp'].includes(r.outputType)
       );
       outputUrl = imageResult?.url || results[0]?.url || null;
     }
@@ -83,14 +76,12 @@ serve(async (req) => {
       errorMessage = eventData.errorMessage || eventData.errorCode || 'Processing failed';
     }
 
-    console.log(`[Webhook] OutputUrl: ${outputUrl}, Error: ${errorMessage}`);
-
-    // Encontrar o job em uma das tabelas
+    // Encontrar job
     let jobTable: string | null = null;
     let jobData: any = null;
 
     for (const table of IMAGE_JOB_TABLES) {
-      const { data: job, error } = await supabase
+      const { data: job } = await supabase
         .from(table)
         .select('id, started_at, user_credit_cost')
         .eq('task_id', taskId)
@@ -105,14 +96,14 @@ serve(async (req) => {
     }
 
     if (!jobData || !jobTable) {
-      console.log('[Webhook] Job not found in any table');
+      console.log('[Webhook] Job not found');
       return new Response(JSON.stringify({ success: true, message: 'Job not found' }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Calcular custo RH baseado no tempo de processamento (0.2 RH por segundo)
+    // Calcular custo RH
     const completedAt = new Date();
     let rhCost = 0;
     
@@ -120,49 +111,48 @@ serve(async (req) => {
       const startedAt = new Date(jobData.started_at);
       const processingSeconds = Math.max(1, Math.ceil((completedAt.getTime() - startedAt.getTime()) / 1000));
       rhCost = Math.round(processingSeconds * 0.2);
-      console.log(`[Webhook] Processing time: ${processingSeconds}s, RH Cost: ${rhCost}`);
     }
 
-    // Atualizar o job
     const newStatus = errorMessage ? 'failed' : (outputUrl ? 'completed' : 'failed');
-    
-    const { error: updateError } = await supabase
-      .from(jobTable)
-      .update({
-        status: newStatus,
-        output_url: outputUrl,
-        error_message: errorMessage || (newStatus === 'failed' ? 'No output received' : null),
-        completed_at: completedAt.toISOString(),
-        rh_cost: rhCost > 0 ? rhCost : null
-      })
-      .eq('task_id', taskId);
+    const finalError = errorMessage || (newStatus === 'failed' ? 'No output received' : null);
 
-    if (updateError) {
-      console.error('[Webhook] Error updating job:', updateError);
-    } else {
-      console.log(`[Webhook] Job updated - Status: ${newStatus}, RH Cost: ${rhCost}`);
-    }
-
-    // ========================================
-    // CHAMAR O QUEUE MANAGER CENTRALIZADO
-    // ========================================
-    // Isso processa o próximo job na fila global (de qualquer ferramenta)
+    // Delegar para Queue Manager /finish
     try {
-      const queueManagerUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/process-next`;
-      console.log('[Webhook] Calling Queue Manager to process next job...');
+      const finishUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`;
       
-      const response = await fetch(queueManagerUrl, {
+      const response = await fetch(finishUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
         },
+        body: JSON.stringify({
+          table: jobTable,
+          jobId: jobData.id,
+          status: newStatus,
+          outputUrl,
+          errorMessage: finalError,
+          taskId,
+          rhCost,
+        }),
       });
       
       const result = await response.json();
-      console.log('[Webhook] Queue Manager response:', JSON.stringify(result));
+      console.log('[Webhook] Queue Manager /finish response:', JSON.stringify(result));
     } catch (queueError) {
       console.error('[Webhook] Error calling Queue Manager:', queueError);
+      
+      // Fallback: atualizar diretamente
+      await supabase
+        .from(jobTable)
+        .update({
+          status: newStatus,
+          output_url: outputUrl,
+          error_message: finalError,
+          completed_at: completedAt.toISOString(),
+          rh_cost: rhCost > 0 ? rhCost : null
+        })
+        .eq('task_id', taskId);
     }
 
     return new Response(JSON.stringify({ success: true }), {
@@ -171,7 +161,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('[Webhook] Unhandled error:', error);
+    console.error('[Webhook] Error:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -4,11 +4,11 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 /**
  * RUNNINGHUB VIDEO UPSCALER WEBHOOK
  * 
- * Webhook específico para Video Upscaler porque o formato de resposta
- * do RunningHub para vídeo é diferente (dados dentro de eventData).
- * 
- * Quando um job termina, chama o Queue Manager centralizado para processar
- * o próximo job na fila global.
+ * Webhook específico para Video Upscaler (formato diferente).
+ * Delega para Queue Manager /finish para:
+ * - Finalizar job
+ * - Reembolsar créditos se falhou
+ * - Processar próximo da fila
  */
 
 const corsHeaders = {
@@ -29,9 +29,9 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const payload = await req.json();
-    console.log("[VideoUpscaler Webhook] Received payload:", JSON.stringify(payload));
+    console.log("[VideoUpscaler Webhook] Received:", JSON.stringify(payload));
 
-    // RunningHub envia dados dentro de eventData para webhooks de vídeo
+    // RunningHub envia dados dentro de eventData para vídeo
     const eventData = payload.eventData || payload;
     
     const taskId = eventData.taskId || payload.taskId;
@@ -40,114 +40,109 @@ serve(async (req) => {
     const errorMessage = eventData.errorMessage || eventData.failedReason?.message || "";
     const usage = eventData.usage || {};
     
-    // Calcular custo RH do usage
     const rhCost = usage.consumeCoins ? parseInt(usage.consumeCoins) : 0;
-    
-    // Obter URL de output
     const outputUrl = results.length > 0 ? results[0].url : null;
 
     if (!taskId) {
-      console.error("[VideoUpscaler Webhook] Missing taskId in payload");
+      console.error("[VideoUpscaler Webhook] Missing taskId");
       return new Response(
         JSON.stringify({ success: false, error: "Missing taskId" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Encontrar o job
+    // Encontrar job
     const { data: job, error: findError } = await supabase
       .from('video_upscaler_jobs')
-      .select('*')
+      .select('id, started_at, user_credit_cost')
       .eq('task_id', taskId)
       .maybeSingle();
 
     if (findError || !job) {
-      console.error("[VideoUpscaler Webhook] Job not found for taskId:", taskId);
+      console.error("[VideoUpscaler Webhook] Job not found:", taskId);
       return new Response(
         JSON.stringify({ success: false, error: "Job not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[VideoUpscaler Webhook] Found job ${job.id} with status ${status}`);
+    console.log(`[VideoUpscaler Webhook] Found job ${job.id}, status: ${status}`);
 
-    // Calcular custo RH baseado no tempo de processamento
+    // Calcular custo RH baseado no tempo
     let calculatedRhCost = rhCost;
     if (job.started_at && (status === "SUCCESS" || status === "FAILED")) {
       const startedAt = new Date(job.started_at);
       const completedAt = new Date();
       const processingSeconds = (completedAt.getTime() - startedAt.getTime()) / 1000;
       calculatedRhCost = Math.round(processingSeconds * 0.2);
-      console.log(`[VideoUpscaler Webhook] Processing time: ${processingSeconds}s, RH cost: ${calculatedRhCost}`);
     }
 
-    // Atualizar status do job
+    // Determinar status final
+    let newStatus: string;
+    let finalError: string | null = null;
+
     if (status === "SUCCESS") {
-      if (!outputUrl) {
-        console.error("[VideoUpscaler Webhook] SUCCESS but no output URL");
-        await supabase
-          .from('video_upscaler_jobs')
-          .update({
-            status: 'failed',
-            error_message: 'No output URL received',
-            completed_at: new Date().toISOString(),
-            rh_cost: calculatedRhCost,
-          })
-          .eq('id', job.id);
-      } else {
-        await supabase
-          .from('video_upscaler_jobs')
-          .update({
-            status: 'completed',
-            output_url: outputUrl,
-            completed_at: new Date().toISOString(),
-            rh_cost: calculatedRhCost,
-          })
-          .eq('id', job.id);
-
-        console.log(`[VideoUpscaler Webhook] Job ${job.id} completed: ${outputUrl}`);
-      }
+      newStatus = outputUrl ? 'completed' : 'failed';
+      if (!outputUrl) finalError = 'No output URL received';
     } else if (status === "FAILED") {
-      await supabase
-        .from('video_upscaler_jobs')
-        .update({
-          status: 'failed',
-          error_message: errorMessage || 'Unknown error',
-          completed_at: new Date().toISOString(),
-          rh_cost: calculatedRhCost,
-        })
-        .eq('id', job.id);
-
-      console.log(`[VideoUpscaler Webhook] Job ${job.id} failed: ${errorMessage}`);
+      newStatus = 'failed';
+      finalError = errorMessage || 'Unknown error';
     } else if (status === "RUNNING" || status === "QUEUED") {
+      // Ainda processando, só atualizar status
       await supabase
         .from('video_upscaler_jobs')
         .update({ status: 'running' })
         .eq('id', job.id);
-
-      console.log(`[VideoUpscaler Webhook] Job ${job.id} status: ${status}`);
+      
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } else {
+      // Status desconhecido
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // ========================================
-    // CHAMAR O QUEUE MANAGER CENTRALIZADO
-    // ========================================
-    if (status === "SUCCESS" || status === "FAILED") {
-      try {
-        const queueManagerUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/process-next`;
-        console.log('[VideoUpscaler Webhook] Calling Queue Manager...');
-        
-        await fetch(queueManagerUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          },
-        });
-        
-        console.log("[VideoUpscaler Webhook] Queue Manager triggered");
-      } catch (e) {
-        console.error("[VideoUpscaler Webhook] Failed to call Queue Manager:", e);
-      }
+    // Delegar para Queue Manager /finish
+    try {
+      const finishUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`;
+      
+      const response = await fetch(finishUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+        body: JSON.stringify({
+          table: 'video_upscaler_jobs',
+          jobId: job.id,
+          status: newStatus,
+          outputUrl,
+          errorMessage: finalError,
+          taskId,
+          rhCost: calculatedRhCost,
+        }),
+      });
+      
+      const result = await response.json();
+      console.log("[VideoUpscaler Webhook] Queue Manager response:", JSON.stringify(result));
+    } catch (e) {
+      console.error("[VideoUpscaler Webhook] Error calling Queue Manager:", e);
+      
+      // Fallback: atualizar diretamente
+      await supabase
+        .from('video_upscaler_jobs')
+        .update({
+          status: newStatus,
+          output_url: outputUrl,
+          error_message: finalError,
+          completed_at: new Date().toISOString(),
+          rh_cost: calculatedRhCost,
+        })
+        .eq('id', job.id);
     }
 
     return new Response(
