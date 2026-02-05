@@ -172,18 +172,17 @@ serve(async (req) => {
 
     // Tool is properly configured with WebApp ID: 2018755100210106369
 
-    // Apply rate limiting
-    if (path === 'upload' || path === 'run') {
-      const rateConfig = path === 'upload' ? RATE_LIMIT_UPLOAD : RATE_LIMIT_RUN;
+    // Apply rate limiting - for /run we need to read body first to get jobId
+    if (path === 'upload') {
       const rateLimitResult = await checkRateLimit(
         clientIP, 
-        `runninghub-veste-ai/${path}`,
-        rateConfig.maxRequests,
-        rateConfig.windowSeconds
+        `runninghub-veste-ai/upload`,
+        RATE_LIMIT_UPLOAD.maxRequests,
+        RATE_LIMIT_UPLOAD.windowSeconds
       );
       
       if (!rateLimitResult.allowed) {
-        console.warn(`[RateLimit] IP ${clientIP} exceeded limit for ${path}`);
+        console.warn(`[RateLimit] IP ${clientIP} exceeded limit for upload`);
         return new Response(JSON.stringify({ 
           error: 'Too many requests. Please wait before trying again.',
           code: 'RATE_LIMIT_EXCEEDED',
@@ -193,9 +192,6 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' },
         });
       }
-    }
-
-    if (path === 'upload') {
       return await handleUpload(req);
     } else if (path === 'run') {
       return await handleRun(req);
