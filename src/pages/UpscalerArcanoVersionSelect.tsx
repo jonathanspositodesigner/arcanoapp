@@ -51,31 +51,32 @@ const COLOR_MAP = {
   purple: 'bg-purple-500/30 text-purple-300',
   green: 'bg-green-500/30 text-green-300',
   orange: 'bg-orange-500/30 text-orange-300',
+   gray: 'bg-gray-500/30 text-gray-300',
 };
 
 // Fallback versions for backwards compatibility
 const FALLBACK_VERSIONS: ToolVersion[] = [
   {
-    id: 'v1',
-    name: 'v1.0',
-    slug: 'v1',
+     id: 'v2',
+     name: 'v2.5',
+     slug: 'v2',
     cover_url: null,
     display_order: 0,
     is_visible: true,
-    badges: []
+     badges: [
+       { text: 'NOVO', icon: 'sparkles', color: 'yellow' },
+       { text: 'MAIS RÁPIDO', icon: 'zap', color: 'blue' },
+       { text: 'MAIOR FIDELIDADE', icon: 'target', color: 'purple' }
+     ]
   },
   {
-    id: 'v2',
-    name: 'v2.0',
-    slug: 'v2',
+     id: 'v1',
+     name: 'v1.5',
+     slug: 'v1',
     cover_url: null,
     display_order: 1,
     is_visible: true,
-    badges: [
-      { text: 'NOVO', icon: 'sparkles', color: 'yellow' },
-      { text: 'MAIS RÁPIDO', icon: 'zap', color: 'blue' },
-      { text: 'MAIOR FIDELIDADE', icon: 'target', color: 'purple' }
-    ]
+     badges: []
   }
 ];
 
@@ -199,10 +200,10 @@ const UpscalerArcanoVersionSelect = () => {
     navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
   };
 
-  const getVersionImage = (version: ToolVersion, index: number) => {
+   const getVersionImage = (version: ToolVersion) => {
     if (version.cover_url) return version.cover_url;
     // Fallback to old images
-    return index === 0 ? upscalerV1Image : upscalerV2Image;
+     return version.slug === 'v1' ? upscalerV1Image : upscalerV2Image;
   };
 
   const getVersionColors = (_version: ToolVersion, _isUnlocked: boolean) => {
@@ -221,8 +222,10 @@ const UpscalerArcanoVersionSelect = () => {
 
         {/* Version Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {versions.map((version, index) => {
+           {versions.map((version) => {
             const isUnlocked = true; // Todas desbloqueadas
+             // Check if this is the legacy/deprecated version (v1 or v1.5)
+             const isLegacyVersion = version.slug === 'v1' || version.name.toLowerCase().includes('1.5') || version.name.toLowerCase().includes('1.0');
 
             return (
               <Card 
@@ -235,7 +238,7 @@ const UpscalerArcanoVersionSelect = () => {
                 {/* Image with overlay if locked */}
                 <div className="aspect-[3/4] overflow-hidden relative">
                   <img 
-                    src={getVersionImage(version, index)} 
+                     src={getVersionImage(version)} 
                     alt={`Upscaler Arcano ${version.name}`} 
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
@@ -260,13 +263,19 @@ const UpscalerArcanoVersionSelect = () => {
                   )}
                 </div>
 
-                {/* Status Badge - top right */}
-                <div className="absolute top-4 right-4">
-                  <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
-                    <Unlock className="h-3 w-3" />
-                    {t('versionSelect.available')}
+                 {/* Status Badge - top right (or "defasada" badge) */}
+                 <div className="absolute top-4 right-4 flex flex-col gap-2">
+                   {isLegacyVersion ? (
+                     <div className="flex items-center gap-1.5 bg-gray-600/80 backdrop-blur-sm text-gray-200 px-3 py-1 rounded-full text-xs font-medium">
+                       Versão defasada
+                     </div>
+                   ) : (
+                     <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
+                       <Unlock className="h-3 w-3" />
+                       {t('versionSelect.available')}
+                     </div>
+                   )}
                   </div>
-                </div>
 
                 {/* Version Badge - top left */}
                 <div className="absolute top-4 left-4">
