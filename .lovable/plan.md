@@ -1,223 +1,167 @@
 
+# Auto-Cancelamento de Jobs Travados + Modal Melhorado
 
-# Unificação das Ferramentas de IA - Hook Centralizado
+## Resumo
 
-## Problema Atual
+Implementar duas melhorias no sistema unificado de ferramentas de IA:
 
-Cada ferramenta (Upscaler, Pose Changer, Veste AI, Video Upscaler) tem **~400-500 linhas de código duplicado** para:
-- Prevenção de duplicação (`processingRef`)
-- Gerenciamento de sessão (`sessionIdRef`)
-- Timeout de 10 minutos
-- Conexão Realtime com Supabase
-- Verificação de créditos
-- Verificação de job ativo
-- Estados de processamento
-- Limpeza de fila ao sair da página
-- Upload para Storage
-- Tratamento de erros
-- Rotação de mensagens de fila
-
-**Total de duplicação:** ~1600 linhas espalhadas em 4 arquivos
+1. **Auto-cancelamento**: Jobs com status "running" há mais de 10 minutos são automaticamente cancelados (no servidor)
+2. **Modal melhorado**: Quando usuário tenta iniciar novo job tendo outro ativo, mostrar detalhes do job ativo com opção de cancelar
 
 ---
 
-## Solução: `useAIToolProcessor` Hook Unificado
+## Mudanças
 
-Criar **UM ÚNICO HOOK** que encapsula toda a lógica comum. As ferramentas individuais passam apenas:
-- Nome da tabela de jobs
-- Edge function a chamar
-- Custo em créditos
-- Callback para montar o payload específico
+### 1. Backend: `runninghub-queue-manager/index.ts`
 
----
-
-## Estrutura do Hook
-
-```text
-src/hooks/useAIToolProcessor.ts
-├── Estados
-│   ├── status: 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error'
-│   ├── progress: number
-│   ├── jobId: string | null
-│   ├── queuePosition: number
-│   ├── outputUrl: string | null
-│   └── error: ErrorDetails | null
-│
-├── Refs (internos)
-│   ├── processingRef (lock síncrono anti-duplicação)
-│   ├── sessionIdRef (UUID da sessão)
-│   ├── realtimeChannelRef (subscription Supabase)
-│   └── timeoutRef (10 min fallback)
-│
-├── Hooks Internos Consumidos
-│   ├── useQueueSessionCleanup (auto-cancel ao sair)
-│   ├── useJobReconciliation (polling silencioso)
-│   └── useActiveJobCheck (bloqueio de jobs simultâneos)
-│
-├── Funções Expostas
-│   ├── startJob(inputData) - Inicia processamento
-│   ├── cancelJob() - Cancela job na fila
-│   ├── reset() - Volta ao estado inicial
-│   └── uploadToStorage(file, prefix) - Upload helper
-│
-└── Retorno
-    └── { status, progress, jobId, queuePosition, outputUrl, error, 
-          startJob, cancelJob, reset, uploadToStorage, isProcessing }
-```
-
----
-
-## Configuração por Ferramenta
-
-Cada ferramenta passa uma configuração simples:
+Adicionar endpoint `/force-cancel-job` que cancela qualquer job (running ou queued) do usuário:
 
 ```typescript
-interface AIToolConfig {
-  toolName: string;                    // 'upscaler' | 'pose-changer' | 'veste-ai' | 'video-upscaler'
-  tableName: string;                   // 'upscaler_jobs' | 'pose_changer_jobs' | etc.
-  edgeFunctionPath: string;            // 'runninghub-upscaler/run'
-  creditCost: number;                  // 60, 80, 150
-  storagePath: string;                 // 'upscaler' | 'pose-changer' | etc.
-  successMessage?: string;             // Toast de sucesso
-  queueMessages?: QueueMessage[];      // Mensagens personalizadas de espera
+// Novo endpoint para forçar cancelamento de job running
+async function handleForceCancelJob(req: Request): Promise<Response> {
+  const { table, jobId, userId } = await req.json();
+  
+  // Permite cancelar jobs running (não só queued)
+  // 1. Atualiza status para 'cancelled'
+  // 2. Devolve créditos
+  // 3. Atualiza fila
+}
+```
+
+Também aumentar o threshold de reconciliação de 8 para 10 minutos para alinhar com o timeout do frontend.
+
+### 2. Frontend: `useActiveJobCheck.ts`
+
+Adicionar função `forceCancel` para cancelar qualquer job:
+
+```typescript
+interface ActiveJobResult {
+  hasActiveJob: boolean;
+  activeTool: string | null;
+  activeTable?: string;
+  activeJobId?: string;
+  activeStatus?: string;
+  createdAt?: string;
+  startedAt?: string;  // NOVO - para mostrar há quanto tempo está rodando
+}
+
+const forceCancelJob = async (table: string, jobId: string, userId: string): Promise<boolean> => {
+  // Chama /force-cancel-job
+}
+```
+
+### 3. Frontend: `ActiveJobBlockModal.tsx`
+
+Redesenhar o modal para mostrar informações do job ativo e permitir cancelamento:
+
+```text
+┌─────────────────────────────────────────────────┐
+│ ⚠️ Trabalho em Andamento                        │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  Você tem um trabalho ativo:                    │
+│                                                 │
+│  ┌───────────────────────────────────────────┐  │
+│  │ 🎨 Upscaler Arcano                        │  │
+│  │ Status: Processando...                    │  │
+│  │ Iniciado há: 3 minutos                    │  │
+│  │                                           │  │
+│  │ [🗑️ Cancelar Este Trabalho]              │  │
+│  └───────────────────────────────────────────┘  │
+│                                                 │
+│  Você só pode ter um trabalho por vez.          │
+│                                                 │
+│              [Entendi]                          │
+└─────────────────────────────────────────────────┘
+```
+
+Props adicionais:
+- `activeJobId: string`
+- `activeTable: string`
+- `startedAt?: string`
+- `onJobCancelled?: () => void`
+
+### 4. Frontend: `useAIToolProcessor.ts`
+
+Adicionar os novos campos ao retorno do hook para alimentar o modal:
+
+```typescript
+// Novos estados
+const [activeJobId, setActiveJobId] = useState('');
+const [activeTable, setActiveTable] = useState('');
+const [activeStartedAt, setActiveStartedAt] = useState<string | undefined>();
+
+// No checkActiveJob:
+if (hasActiveJob && activeTool) {
+  setActiveToolName(activeTool);
+  setActiveJobStatus(activeStatus || '');
+  setActiveJobId(result.activeJobId || '');
+  setActiveTable(result.activeTable || '');
+  setActiveStartedAt(result.startedAt);
+  setShowActiveJobModal(true);
+}
+
+// Retorno adicional
+return {
+  // ... existing
+  activeJobId,
+  activeTable,
+  activeStartedAt,
+};
+```
+
+### 5. Tipos: `src/types/ai-tools.ts`
+
+Adicionar novos campos ao tipo de retorno:
+
+```typescript
+interface UseAIToolProcessorReturn {
+  // ... existing
+  activeJobId: string;
+  activeTable: string;
+  activeStartedAt?: string;
 }
 ```
 
 ---
 
-## Exemplo de Uso (Pose Changer Refatorado)
-
-```typescript
-// ANTES: ~500 linhas de código
-// DEPOIS: ~150 linhas focadas só na UI
-
-const PoseChangerTool = () => {
-  const { user } = usePremiumStatus();
-  const { balance: credits } = useUpscalerCredits(user?.id);
-  
-  const {
-    status,
-    progress,
-    queuePosition,
-    outputUrl,
-    isProcessing,
-    startJob,
-    cancelJob,
-    reset,
-    uploadToStorage,
-  } = useAIToolProcessor({
-    toolName: 'pose-changer',
-    tableName: 'pose_changer_jobs',
-    edgeFunctionPath: 'runninghub-pose-changer/run',
-    creditCost: 60,
-    storagePath: 'pose-changer',
-    successMessage: 'Pose alterada com sucesso!',
-  });
-
-  // Estados específicos da UI
-  const [personImage, setPersonImage] = useState<string | null>(null);
-  const [referenceImage, setReferenceImage] = useState<string | null>(null);
-
-  const handleProcess = async () => {
-    // Comprime e faz upload
-    const personUrl = await uploadToStorage(personFile, 'person');
-    const referenceUrl = await uploadToStorage(referenceFile, 'reference');
-    
-    // Inicia o job com payload específico
-    await startJob({
-      personImageUrl: personUrl,
-      referenceImageUrl: referenceUrl,
-    });
-  };
-
-  // ... resto é só UI pura (inputs, preview, botões)
-};
-```
-
----
-
-## Arquivos a Criar/Modificar
-
-### Novos Arquivos
-1. **`src/hooks/useAIToolProcessor.ts`** (~250 linhas)
-   - Hook principal com toda lógica unificada
-
-2. **`src/types/ai-tools.ts`** (~50 linhas)
-   - Tipos compartilhados (AIToolConfig, ProcessingStatus, etc.)
-
-### Arquivos a Refatorar
-3. **`src/pages/PoseChangerTool.tsx`**
-   - De ~500 linhas → ~150 linhas (só UI)
-
-4. **`src/pages/VesteAITool.tsx`**
-   - De ~500 linhas → ~150 linhas (só UI)
-
-5. **`src/pages/VideoUpscalerTool.tsx`**
-   - De ~700 linhas → ~250 linhas (só UI + lógica de trim)
-
-6. **`src/pages/UpscalerArcanoTool.tsx`**
-   - De ~1350 linhas → ~600 linhas (só UI + configurações de prompt)
-
-### Arquivos a Deletar (código migrado para hook)
-- Lógica duplicada será removida de cada página
-
----
-
-## Benefícios
-
-| Métrica | Antes | Depois |
-|---------|-------|--------|
-| Linhas duplicadas | ~1600 | 0 |
-| Linhas totais AI tools | ~3050 | ~1300 |
-| Arquivos para corrigir bug | 4 | 1 |
-| Consistência entre ferramentas | Parcial | 100% |
-
----
-
-## Fluxo Interno do Hook
+## Fluxo de Cancelamento
 
 ```text
-startJob(payload)
+Usuário clica "Cancelar Este Trabalho"
     │
-    ├── if (processingRef.current) return ❌
+    ├── Frontend chama forceCancelJob(table, jobId, userId)
     │
-    ├── processingRef.current = true ✓
+    ├── Backend /force-cancel-job:
+    │       ├── Atualiza job para status='cancelled'
+    │       ├── Devolve créditos via refund_upscaler_credits
+    │       └── Atualiza posições da fila
     │
-    ├── checkActiveJob() → hasActiveJob? → BLOCK
+    ├── Realtime: job atualizado dispara evento
+    │       └── Se tinha outra aba aberta, ela vê o cancelamento
     │
-    ├── checkCredits() → insufficient? → BLOCK
-    │
-    ├── setStatus('uploading')
-    │
-    ├── createJobInDB() → jobId
-    │
-    ├── subscribeToRealtime(jobId)
-    │
-    ├── startTimeout(10min)
-    │
-    ├── callEdgeFunction(payload)
-    │       │
-    │       ├── success → setStatus('processing')
-    │       ├── queued → setStatus('waiting') + setQueuePosition
-    │       └── error → setStatus('error')
-    │
-    └── Realtime listener
-            │
-            ├── 'completed' → setOutputUrl + setStatus('completed') + processingRef = false
-            ├── 'failed' → setStatus('error') + processingRef = false
-            ├── 'running' → setStatus('processing')
-            └── 'queued' → setStatus('waiting') + update position
+    └── Modal fecha + callback onJobCancelled()
+            └── Usuário pode tentar novamente
 ```
 
 ---
 
-## Ordem de Implementação
+## Arquivos a Modificar
 
-1. Criar `src/types/ai-tools.ts` com tipos compartilhados
-2. Criar `src/hooks/useAIToolProcessor.ts` com lógica completa
-3. Refatorar `PoseChangerTool.tsx` (mais simples, serve de validação)
-4. Refatorar `VesteAITool.tsx`
-5. Refatorar `VideoUpscalerTool.tsx`
-6. Refatorar `UpscalerArcanoTool.tsx` (mais complexo, por último)
-7. Testar todas as ferramentas
+| Arquivo | Mudança |
+|---------|---------|
+| `supabase/functions/runninghub-queue-manager/index.ts` | Novo endpoint `/force-cancel-job` + threshold 10min |
+| `src/hooks/useActiveJobCheck.ts` | Adicionar `forceCancelJob()` + campos extras no retorno |
+| `src/hooks/useAIToolProcessor.ts` | Armazenar e expor dados do job ativo |
+| `src/types/ai-tools.ts` | Novos campos no tipo de retorno |
+| `src/components/ai-tools/ActiveJobBlockModal.tsx` | Redesenhar com detalhes do job + botão cancelar |
 
+---
+
+## Resultado Esperado
+
+1. **Jobs travados**: Se ficar 10+ min em "running" sem resposta do RunningHub, o watchdog no servidor cancela automaticamente e devolve créditos
+
+2. **Modal informativo**: Usuário vê exatamente qual job está ativo, há quanto tempo, e pode cancelar direto do modal
+
+3. **Uma única fonte de verdade**: Toda essa lógica fica centralizada no hook unificado e edge function, não precisa duplicar em cada ferramenta
