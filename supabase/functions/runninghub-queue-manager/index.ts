@@ -141,6 +141,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
         return await handleEnqueue(req);
       case 'cancel-session':
         return await handleCancelSession(req);
+       case 'check-user-active':
+         return await handleCheckUserActive(req);
       default:
         return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
           status: 400,
@@ -768,3 +770,72 @@ async function updateAllQueuePositions(): Promise<void> {
   
   console.log(`[QueueManager] Updated GLOBAL positions for ${allQueuedJobs.length} queued jobs`);
 }
+ 
+ /**
+  * /check-user-active - Verifica se o usuário tem algum job ativo em QUALQUER ferramenta
+  */
+ async function handleCheckUserActive(req: Request): Promise<Response> {
+   try {
+     const { userId } = await req.json();
+     
+     if (!userId) {
+       return new Response(JSON.stringify({ error: 'userId is required' }), {
+         status: 400,
+         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+       });
+     }
+     
+     // Mapeamento de tabela para nome amigável da ferramenta
+     const toolNames: Record<JobTable, string> = {
+       'upscaler_jobs': 'Upscaler Arcano',
+       'video_upscaler_jobs': 'Video Upscaler',
+       'pose_changer_jobs': 'Pose Changer',
+       'veste_ai_jobs': 'Veste AI',
+     };
+     
+     // Verificar em TODAS as tabelas de jobs
+     for (const table of JOB_TABLES) {
+       const { data, error } = await supabase
+         .from(table)
+         .select('id, status')
+         .eq('user_id', userId)
+         .in('status', ['running', 'queued'])
+         .limit(1)
+         .maybeSingle();
+       
+       if (error) {
+         console.error(`[QueueManager] Error checking ${table}:`, error);
+         continue;
+       }
+       
+       if (data) {
+         console.log(`[QueueManager] User ${userId} has active job in ${table}`);
+         return new Response(JSON.stringify({
+           hasActiveJob: true,
+           activeTool: toolNames[table],
+           activeJobId: data.id,
+           activeStatus: data.status,
+         }), {
+           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+         });
+       }
+     }
+     
+     // Nenhum job ativo encontrado
+     return new Response(JSON.stringify({
+       hasActiveJob: false,
+       activeTool: null,
+     }), {
+       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+     });
+     
+   } catch (error) {
+     console.error('[QueueManager] CheckUserActive error:', error);
+     return new Response(JSON.stringify({ 
+       error: error instanceof Error ? error.message : 'Unknown error' 
+     }), {
+       status: 500,
+       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+     });
+   }
+ }

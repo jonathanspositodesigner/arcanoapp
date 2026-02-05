@@ -8,11 +8,13 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
+ import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 import ClothingLibraryModal from '@/components/veste-ai/ClothingLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
+ import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
@@ -63,6 +65,11 @@ const VesteAITool: React.FC = () => {
   // No credits modal
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
+ 
+   // Active job block modal
+   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
+   const [activeToolName, setActiveToolName] = useState<string>('');
+   const { checkActiveJob } = useActiveJobCheck();
 
   const canProcess = personImage && clothingImage && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
@@ -233,6 +240,15 @@ const VesteAITool: React.FC = () => {
       processingRef.current = false;
       return;
     }
+ 
+     // Check if user has active job in any tool
+     const { hasActiveJob, activeTool } = await checkActiveJob(user.id);
+     if (hasActiveJob && activeTool) {
+       setActiveToolName(activeTool);
+       setShowActiveJobModal(true);
+       processingRef.current = false;
+       return;
+     }
 
     if (credits < CREDIT_COST) {
       setNoCreditsReason('insufficient');
@@ -607,6 +623,13 @@ const VesteAITool: React.FC = () => {
         onClose={() => setShowNoCreditsModal(false)}
         reason={noCreditsReason}
       />
+       
+       {/* Active Job Block Modal */}
+       <ActiveJobBlockModal
+         isOpen={showActiveJobModal}
+         onClose={() => setShowActiveJobModal(false)}
+         activeTool={activeToolName}
+       />
     </div>
   );
 };

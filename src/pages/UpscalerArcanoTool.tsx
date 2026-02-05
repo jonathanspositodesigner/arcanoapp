@@ -17,9 +17,11 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
+ import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
+ import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -78,6 +80,11 @@ const UpscalerArcanoTool: React.FC = () => {
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
   const [currentQueueCombo, setCurrentQueueCombo] = useState(0);
+ 
+   // Active job block modal state
+   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
+   const [activeToolName, setActiveToolName] = useState<string>('');
+   const { checkActiveJob } = useActiveJobCheck();
 
   // Queue message combos for friendly waiting experience
   const queueMessageCombos = [
@@ -295,6 +302,14 @@ const UpscalerArcanoTool: React.FC = () => {
       setShowNoCreditsModal(true);
       return;
     }
+ 
+     // Check if user has active job in any tool
+     const { hasActiveJob, activeTool } = await checkActiveJob(user.id);
+     if (hasActiveJob && activeTool) {
+       setActiveToolName(activeTool);
+       setShowActiveJobModal(true);
+       return;
+     }
 
     const creditCost = version === 'pro' ? 80 : 60;
     
@@ -1170,6 +1185,13 @@ const UpscalerArcanoTool: React.FC = () => {
         onClose={() => setShowNoCreditsModal(false)}
         reason={noCreditsReason}
       />
+       
+       {/* Active Job Block Modal */}
+       <ActiveJobBlockModal
+         isOpen={showActiveJobModal}
+         onClose={() => setShowActiveJobModal(false)}
+         activeTool={activeToolName}
+       />
     </div>
   );
 };
