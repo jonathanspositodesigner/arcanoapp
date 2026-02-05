@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Shirt } from 'lucide-react';
+import { User, Shirt, Flame } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -11,22 +11,22 @@ interface ClothingLibraryModalProps {
 }
 
 type GenderFilter = 'masculino' | 'feminino';
-type CategoryFilter = 'casual' | 'formal' | 'esportivo' | 'elegante';
+type CategoryFilter = 'artista' | 'politico' | 'esportivo' | 'formal' | 'empresarial' | 'casual';
 
 // Placeholder clothing items - these will be replaced with real images later
 const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ id: string; label: string; color: string }>>> = {
   masculino: {
-    casual: [
-      { id: 'm-c1', label: 'Camiseta Básica', color: 'from-blue-600 to-blue-800' },
-      { id: 'm-c2', label: 'Polo Casual', color: 'from-indigo-600 to-indigo-800' },
-      { id: 'm-c3', label: 'Jeans & Camisa', color: 'from-slate-600 to-slate-800' },
-      { id: 'm-c4', label: 'Moletom', color: 'from-gray-600 to-gray-800' },
+    artista: [
+      { id: 'm-a1', label: 'Look Palco', color: 'from-purple-600 to-purple-800' },
+      { id: 'm-a2', label: 'Estilo Rockstar', color: 'from-red-600 to-red-800' },
+      { id: 'm-a3', label: 'Visual Artístico', color: 'from-fuchsia-600 to-fuchsia-800' },
+      { id: 'm-a4', label: 'Outfit Show', color: 'from-violet-600 to-violet-800' },
     ],
-    formal: [
-      { id: 'm-f1', label: 'Terno Clássico', color: 'from-gray-700 to-gray-900' },
-      { id: 'm-f2', label: 'Camisa Social', color: 'from-blue-700 to-blue-900' },
-      { id: 'm-f3', label: 'Blazer', color: 'from-indigo-700 to-indigo-900' },
-      { id: 'm-f4', label: 'Gravata & Colete', color: 'from-violet-700 to-violet-900' },
+    politico: [
+      { id: 'm-p1', label: 'Terno Político', color: 'from-blue-700 to-blue-900' },
+      { id: 'm-p2', label: 'Visual Campanha', color: 'from-indigo-700 to-indigo-900' },
+      { id: 'm-p3', label: 'Look Institucional', color: 'from-slate-700 to-slate-900' },
+      { id: 'm-p4', label: 'Estilo Autoridade', color: 'from-gray-700 to-gray-900' },
     ],
     esportivo: [
       { id: 'm-e1', label: 'Conjunto Academia', color: 'from-green-600 to-green-800' },
@@ -34,25 +34,37 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
       { id: 'm-e3', label: 'Short Esportivo', color: 'from-cyan-600 to-cyan-800' },
       { id: 'm-e4', label: 'Agasalho', color: 'from-emerald-600 to-emerald-800' },
     ],
-    elegante: [
-      { id: 'm-el1', label: 'Smoking', color: 'from-slate-800 to-black' },
-      { id: 'm-el2', label: 'Terno Slim', color: 'from-purple-700 to-purple-900' },
-      { id: 'm-el3', label: 'Camisa Cetim', color: 'from-rose-700 to-rose-900' },
-      { id: 'm-el4', label: 'Look Premium', color: 'from-amber-700 to-amber-900' },
+    formal: [
+      { id: 'm-f1', label: 'Terno Clássico', color: 'from-gray-700 to-gray-900' },
+      { id: 'm-f2', label: 'Camisa Social', color: 'from-blue-700 to-blue-900' },
+      { id: 'm-f3', label: 'Blazer', color: 'from-indigo-700 to-indigo-900' },
+      { id: 'm-f4', label: 'Gravata & Colete', color: 'from-violet-700 to-violet-900' },
+    ],
+    empresarial: [
+      { id: 'm-emp1', label: 'Look Executivo', color: 'from-slate-800 to-black' },
+      { id: 'm-emp2', label: 'CEO Style', color: 'from-blue-800 to-blue-950' },
+      { id: 'm-emp3', label: 'Business Casual', color: 'from-indigo-800 to-indigo-950' },
+      { id: 'm-emp4', label: 'Empresário', color: 'from-gray-800 to-gray-950' },
+    ],
+    casual: [
+      { id: 'm-c1', label: 'Camiseta Básica', color: 'from-blue-600 to-blue-800' },
+      { id: 'm-c2', label: 'Polo Casual', color: 'from-indigo-600 to-indigo-800' },
+      { id: 'm-c3', label: 'Jeans & Camisa', color: 'from-slate-600 to-slate-800' },
+      { id: 'm-c4', label: 'Moletom', color: 'from-gray-600 to-gray-800' },
     ],
   },
   feminino: {
-    casual: [
-      { id: 'f-c1', label: 'Blusa Básica', color: 'from-pink-600 to-pink-800' },
-      { id: 'f-c2', label: 'Jeans & Top', color: 'from-rose-600 to-rose-800' },
-      { id: 'f-c3', label: 'Vestido Casual', color: 'from-fuchsia-600 to-fuchsia-800' },
-      { id: 'f-c4', label: 'Moletom Cropped', color: 'from-purple-600 to-purple-800' },
+    artista: [
+      { id: 'f-a1', label: 'Look Diva', color: 'from-purple-600 to-purple-800' },
+      { id: 'f-a2', label: 'Visual Popstar', color: 'from-pink-600 to-pink-800' },
+      { id: 'f-a3', label: 'Estilo Cantora', color: 'from-fuchsia-600 to-fuchsia-800' },
+      { id: 'f-a4', label: 'Outfit Show', color: 'from-violet-600 to-violet-800' },
     ],
-    formal: [
-      { id: 'f-f1', label: 'Blazer Feminino', color: 'from-gray-700 to-gray-900' },
-      { id: 'f-f2', label: 'Vestido Social', color: 'from-blue-700 to-blue-900' },
-      { id: 'f-f3', label: 'Saia & Blusa', color: 'from-indigo-700 to-indigo-900' },
-      { id: 'f-f4', label: 'Tailleur', color: 'from-violet-700 to-violet-900' },
+    politico: [
+      { id: 'f-p1', label: 'Tailleur Político', color: 'from-blue-700 to-blue-900' },
+      { id: 'f-p2', label: 'Visual Campanha', color: 'from-indigo-700 to-indigo-900' },
+      { id: 'f-p3', label: 'Look Institucional', color: 'from-slate-700 to-slate-900' },
+      { id: 'f-p4', label: 'Estilo Autoridade', color: 'from-gray-700 to-gray-900' },
     ],
     esportivo: [
       { id: 'f-e1', label: 'Legging & Top', color: 'from-green-600 to-green-800' },
@@ -60,20 +72,34 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
       { id: 'f-e3', label: 'Short Fitness', color: 'from-cyan-600 to-cyan-800' },
       { id: 'f-e4', label: 'Agasalho', color: 'from-emerald-600 to-emerald-800' },
     ],
-    elegante: [
-      { id: 'f-el1', label: 'Vestido Longo', color: 'from-red-700 to-red-900' },
-      { id: 'f-el2', label: 'Vestido Festa', color: 'from-pink-700 to-pink-900' },
-      { id: 'f-el3', label: 'Look Gala', color: 'from-amber-700 to-amber-900' },
-      { id: 'f-el4', label: 'Conjunto Premium', color: 'from-rose-700 to-rose-900' },
+    formal: [
+      { id: 'f-f1', label: 'Blazer Feminino', color: 'from-gray-700 to-gray-900' },
+      { id: 'f-f2', label: 'Vestido Social', color: 'from-blue-700 to-blue-900' },
+      { id: 'f-f3', label: 'Saia & Blusa', color: 'from-indigo-700 to-indigo-900' },
+      { id: 'f-f4', label: 'Tailleur', color: 'from-violet-700 to-violet-900' },
+    ],
+    empresarial: [
+      { id: 'f-emp1', label: 'Look Executiva', color: 'from-slate-800 to-black' },
+      { id: 'f-emp2', label: 'CEO Style', color: 'from-blue-800 to-blue-950' },
+      { id: 'f-emp3', label: 'Business Casual', color: 'from-indigo-800 to-indigo-950' },
+      { id: 'f-emp4', label: 'Empresária', color: 'from-gray-800 to-gray-950' },
+    ],
+    casual: [
+      { id: 'f-c1', label: 'Blusa Básica', color: 'from-pink-600 to-pink-800' },
+      { id: 'f-c2', label: 'Jeans & Top', color: 'from-rose-600 to-rose-800' },
+      { id: 'f-c3', label: 'Vestido Casual', color: 'from-fuchsia-600 to-fuchsia-800' },
+      { id: 'f-c4', label: 'Moletom Cropped', color: 'from-purple-600 to-purple-800' },
     ],
   },
 };
 
-const CATEGORIES: Array<{ id: CategoryFilter; label: string }> = [
-  { id: 'casual', label: 'Casual' },
-  { id: 'formal', label: 'Formal' },
+const CATEGORIES: Array<{ id: CategoryFilter; label: string; isHot?: boolean }> = [
+  { id: 'artista', label: 'Artista' },
+  { id: 'politico', label: 'Político', isHot: true },
   { id: 'esportivo', label: 'Esportivo' },
-  { id: 'elegante', label: 'Elegante' },
+  { id: 'formal', label: 'Formal' },
+  { id: 'empresarial', label: 'Empresarial' },
+  { id: 'casual', label: 'Casual' },
 ];
 
 const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
@@ -82,7 +108,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
   onSelectClothing,
 }) => {
   const [genderFilter, setGenderFilter] = useState<GenderFilter>('masculino');
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('casual');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('artista');
 
   const handleSelectClothing = (clothingId: string) => {
     // For now, we'll use a placeholder URL pattern
@@ -137,7 +163,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
         </div>
 
         {/* Category Filter Tabs */}
-        <div className="flex gap-1 mt-3 flex-shrink-0 overflow-x-auto pb-1">
+        <div className="flex gap-1 mt-3 flex-shrink-0 overflow-x-auto pb-1 flex-wrap">
           {CATEGORIES.map((cat) => (
             <Button
               key={cat.id}
@@ -145,13 +171,16 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
               size="sm"
               onClick={() => setCategoryFilter(cat.id)}
               className={cn(
-                "text-xs whitespace-nowrap",
+                "text-xs whitespace-nowrap relative",
                 categoryFilter === cat.id
                   ? "bg-purple-600 text-white"
                   : "text-purple-300 hover:bg-purple-500/20"
               )}
             >
               {cat.label}
+              {cat.isHot && (
+                <Flame className="w-3 h-3 ml-1 text-orange-400 inline-block" />
+              )}
             </Button>
           ))}
         </div>
