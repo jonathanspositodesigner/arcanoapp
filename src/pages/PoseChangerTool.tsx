@@ -295,7 +295,7 @@ const PoseChangerTool: React.FC = () => {
         .insert({
           session_id: sessionIdRef.current,
           user_id: user.id,
-          status: 'queued',
+          status: 'pending',
           person_file_name: personUrl.split('/').pop() || 'person.webp',
           reference_file_name: referenceUrl.split('/').pop() || 'reference.webp',
         })

@@ -313,7 +313,7 @@ const VideoUpscalerTool: React.FC = () => {
         .insert({
           session_id: sessionIdRef.current,
           user_id: user.id,
-          status: 'queued',
+          status: 'pending',
           video_width: videoMetadata?.width,
           video_height: videoMetadata?.height,
           video_duration_seconds: videoMetadata?.duration,
