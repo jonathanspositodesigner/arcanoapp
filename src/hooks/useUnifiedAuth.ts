@@ -241,12 +241,17 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         password,
       });
       
-      if (error) {
-        console.error('[UnifiedAuth] Login error:', error);
-        toast.error(t('errors.invalidCredentials'));
-        setState(prev => ({ ...prev, isLoading: false }));
-        return;
-      }
+       if (error) {
+         console.error('[UnifiedAuth] Login error:', error);
+         const msg = (error.message || '').toLowerCase();
+         if (msg.includes('email not confirmed') || msg.includes('email_not_confirmed')) {
+           toast.error('Confirme seu email antes de entrar.');
+         } else {
+           toast.error(t('errors.invalidCredentials'));
+         }
+         setState(prev => ({ ...prev, isLoading: false }));
+         return;
+       }
       
       if (!data.user) {
         toast.error(t('errors.loginError'));
@@ -349,25 +354,22 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
           password_changed: true,
         }, { onConflict: 'id' });
         
-        // Try to auto-login
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          const { error: loginError } = await supabase.auth.signInWithPassword({
-            email: normalizedEmail,
-            password,
-          });
-          
-          if (loginError) {
-            toast.success(t('success.accountCreatedSuccess'));
-            setState(prev => ({ ...prev, step: 'email', isLoading: false }));
-            return;
-          }
-        }
-        
-        toast.success(t('success.accountCreatedSuccess'));
-        config.onSignupSuccess?.();
-        navigate(config.defaultRedirect);
-      }
+         // Try to auto-login (if email confirmations are disabled in backend)
+         const { data: { session } } = await supabase.auth.getSession();
+
+         // If there is no session, the platform is requiring email confirmation.
+         // In this case we must show the "check your email" success screen instead of redirecting.
+         if (!session) {
+           toast.success(t('success.accountCreatedSuccess'));
+           config.onSignupSuccess?.();
+           setState(prev => ({ ...prev, isLoading: false }));
+           return;
+         }
+
+         toast.success(t('success.accountCreatedSuccess'));
+         config.onSignupSuccess?.();
+         navigate(config.defaultRedirect);
+       }
       
       setState(prev => ({ ...prev, isLoading: false }));
       
