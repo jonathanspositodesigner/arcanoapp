@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { 
   RefreshCw, Coins, TrendingUp, Clock, Users, 
   CheckCircle, XCircle, Timer, ChevronLeft, ChevronRight,
-  Cpu, ArrowUpDown
+  Cpu, ArrowUpDown, Ban, Loader2
 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -73,6 +73,7 @@ const AdminAIToolsUsageTab = () => {
   const [dateFilter, setDateFilter] = useState("7days");
   const [toolFilter, setToolFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
 
   const getDateRange = () => {
     const now = new Date();
@@ -194,8 +195,57 @@ const AdminAIToolsUsageTab = () => {
       "Upscaler Arcano": "bg-purple-500/20 text-purple-400 border-purple-500/30",
       "Pose Changer": "bg-orange-500/20 text-orange-400 border-orange-500/30",
       "Veste AI": "bg-pink-500/20 text-pink-400 border-pink-500/30",
+      "Video Upscaler": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
     };
     return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
+  };
+
+  const getTableName = (toolName: string): string => {
+    switch (toolName) {
+      case "Upscaler Arcano": return "upscaler_jobs";
+      case "Pose Changer": return "pose_changer_jobs";
+      case "Veste AI": return "veste_ai_jobs";
+      case "Video Upscaler": return "video_upscaler_jobs";
+      default: return "upscaler_jobs";
+    }
+  };
+
+  const handleCancelJob = async (record: UsageRecord) => {
+    if (cancellingJobId) return;
+    
+    const confirmed = window.confirm(
+      `Cancelar job de "${record.user_name || record.user_email}"?\n\n` +
+      `Serão estornados ${record.user_credit_cost} créditos automaticamente.`
+    );
+    
+    if (!confirmed) return;
+    
+    setCancellingJobId(record.id);
+    
+    try {
+      const tableName = getTableName(record.tool_name);
+      
+      const { data, error } = await supabase.rpc('admin_cancel_job', {
+        p_table_name: tableName,
+        p_job_id: record.id
+      });
+      
+      if (error) throw error;
+      
+      const result = data?.[0];
+      
+      if (result?.success) {
+        toast.success(`Job cancelado! ${result.refunded_amount} créditos estornados.`);
+        fetchData(); // Refresh the list
+      } else {
+        toast.error(result?.error_message || "Erro ao cancelar job");
+      }
+    } catch (error: any) {
+      console.error("Error cancelling job:", error);
+      toast.error(error.message || "Erro ao cancelar job");
+    } finally {
+      setCancellingJobId(null);
+    }
   };
 
   return (
@@ -367,18 +417,19 @@ const AdminAIToolsUsageTab = () => {
                   <TableHead className="whitespace-nowrap text-right">Custo RH</TableHead>
                   <TableHead className="whitespace-nowrap text-right">Crédito Usuário</TableHead>
                   <TableHead className="whitespace-nowrap text-right">Lucro</TableHead>
+                  <TableHead className="whitespace-nowrap text-center">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8">
+                    <TableCell colSpan={11} className="text-center py-8">
                       <RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : filteredRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                       Nenhum registro encontrado
                     </TableCell>
                   </TableRow>
@@ -417,6 +468,28 @@ const AdminAIToolsUsageTab = () => {
                       </TableCell>
                       <TableCell className={`text-right font-mono text-sm font-bold ${record.profit > 0 ? 'text-green-400' : record.profit < 0 ? 'text-red-400' : ''}`}>
                         {record.profit !== 0 ? (record.profit > 0 ? '+' : '') + record.profit : "-"}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {(record.status === 'running' || record.status === 'queued') ? (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleCancelJob(record)}
+                            disabled={cancellingJobId === record.id}
+                            className="h-7 px-2 text-xs"
+                          >
+                            {cancellingJobId === record.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <>
+                                <Ban className="h-3 w-3 mr-1" />
+                                Cancelar
+                              </>
+                            )}
+                          </Button>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">-</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
