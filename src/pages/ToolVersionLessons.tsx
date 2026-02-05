@@ -142,7 +142,6 @@ const ToolVersionLessons = () => {
   const [version, setVersion] = useState<ToolVersion | null>(null);
   const [toolName, setToolName] = useState("");
   const [selectedLesson, setSelectedLesson] = useState(0);
-  const [purchaseDate, setPurchaseDate] = useState<Date | null>(null);
   
   // Gamification state
   const [watchedLessons, setWatchedLessons] = useState<number[]>(() => {
@@ -335,35 +334,6 @@ const ToolVersionLessons = () => {
     fetchVersionData();
   }, [toolSlug, versionSlug]);
 
-  // Fetch purchase date
-  useEffect(() => {
-    const fetchPurchaseDate = async () => {
-      if (!user || !toolSlug) return;
-
-      try {
-        const { data } = await supabase
-          .from('user_pack_purchases')
-          .select('purchased_at')
-          .eq('user_id', user.id)
-          .eq('pack_slug', toolSlug)
-          .eq('is_active', true)
-          .order('purchased_at', { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
-        if (data?.purchased_at) {
-          setPurchaseDate(new Date(data.purchased_at));
-        }
-      } catch (error) {
-        console.error('Error fetching purchase date:', error);
-      }
-    };
-
-    if (!premiumLoading && user) {
-      fetchPurchaseDate();
-    }
-  }, [user, premiumLoading, toolSlug]);
-
   if (loading || premiumLoading) {
     return (
       <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
@@ -406,27 +376,8 @@ const ToolVersionLessons = () => {
 
   // Check if version is unlocked
   const isVersionUnlocked = () => {
-    if (!version) return false;
-    
-    // HARDCODED: v1 do Upscaler Arcano SEMPRE liberada imediatamente
-    if (toolSlug === 'upscaller-arcano' && versionSlug === 'v1') return true;
-    
-    // Normaliza unlock_days para número (evita "0" string ou null)
-    const unlockDays = Number(version.unlock_days ?? 0);
-    
-    // unlock_days <= 0 means immediately unlocked, no date check needed
-    if (unlockDays <= 0) return true;
-    
-    // For versions with unlock_days > 0, we need a purchase date
-    if (!purchaseDate) return false;
-    
-    // Clamp purchaseDate to prevent future dates from blocking access
-    const now = new Date();
-    const baseDate = purchaseDate > now ? now : purchaseDate;
-    
-    const unlockDate = new Date(baseDate);
-    unlockDate.setDate(unlockDate.getDate() + unlockDays);
-    return now >= unlockDate;
+    // Todas as versões são desbloqueadas imediatamente para quem tem acesso
+    return true;
   };
 
   if (!version) {
@@ -436,33 +387,6 @@ const ToolVersionLessons = () => {
           <h1 className="text-2xl font-bold text-white">{t('toolLessons.versionNotFound')}</h1>
           <p className="text-purple-300">{t('toolLessons.versionNotFoundDesc')}</p>
           <Button onClick={() => navigate(toolSelectPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
-            {t('upscaler.back')}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isVersionUnlocked()) {
-    const now = new Date();
-    const baseDate = purchaseDate && purchaseDate <= now ? purchaseDate : now;
-    const unlockDate = new Date(baseDate);
-    unlockDate.setDate(unlockDate.getDate() + version.unlock_days);
-    
-    const diffMs = unlockDate.getTime() - now.getTime();
-    const daysRemaining = diffMs > 0 ? Math.ceil(diffMs / (1000 * 60 * 60 * 24)) : 0;
-    const formattedDate = unlockDate.toLocaleDateString(locale === 'es' ? 'es-ES' : 'pt-BR');
-
-    return (
-      <div className="min-h-screen bg-[#0D0221]">
-        <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <Lock className="w-16 h-16 mx-auto text-purple-400" />
-          <h1 className="text-2xl font-bold text-white">{toolName} - {versionName}</h1>
-          <p className="text-purple-300">{t('toolLessons.versionLocked')}</p>
-          <p className="text-yellow-500 font-medium">
-            {t('toolLessons.unlocksOn', { date: formattedDate, days: daysRemaining })}
-          </p>
-          <Button variant="outline" onClick={locale === 'es' ? () => navigate(toolSelectPath) : goBack} className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20">
             {t('upscaler.back')}
           </Button>
         </div>

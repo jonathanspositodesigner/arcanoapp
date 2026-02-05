@@ -597,7 +597,7 @@ const AdminManagePacks = () => {
     cover_url: null,
     display_order: versionNumber - 1,
     is_visible: true,
-    unlock_days: versionNumber === 1 ? 0 : 7,
+    unlock_days: 0,
     badges: [],
     lessons: [],
     webhook: {
