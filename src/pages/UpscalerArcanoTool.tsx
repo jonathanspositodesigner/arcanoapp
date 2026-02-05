@@ -110,6 +110,12 @@ const UpscalerArcanoTool: React.FC = () => {
   const beforeTransformRef = useRef<HTMLDivElement>(null);
   const sessionIdRef = useRef<string>('');
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  
+  // CRITICAL: Synchronous flag to prevent duplicate API calls
+  const processingRef = useRef(false);
+  
+  // Timeout ref for 10 minute fallback
+  const timeoutRef = useRef<number | null>(null);
 
   // Initialize session ID (fresh each visit - no recovery)
   useEffect(() => {
@@ -119,29 +125,43 @@ const UpscalerArcanoTool: React.FC = () => {
   // Cleanup queued jobs when user leaves page
   useQueueSessionCleanup(sessionIdRef.current, status);
 
-  // Reconciliation polling - fallback when webhook doesn't arrive
-  const { reconcileNow } = useJobReconciliation({
+  // Reconciliation polling - self-healing silencioso (não dispara UI updates)
+  useJobReconciliation({
     table: 'upscaler_jobs',
     jobId,
     status,
     pollingInterval: 15000, // 15 seconds
     enabled: status === 'processing',
-    onReconciled: (result) => {
-      console.log('[Upscaler] Job reconciled:', result);
-      if (result.jobStatus === 'completed') {
-        // O Realtime vai pegar a mudança, mas podemos forçar update
-        toast.success(t('upscalerTool.toast.success'));
-      } else if (result.jobStatus === 'failed') {
-        setStatus('error');
-        setLastError({
-          message: result.errorMessage || 'Processing failed',
-          code: result.errorCode || 'TASK_FAILED',
-          solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
-        });
-        toast.error('Erro no processamento. Tente novamente.');
-      }
-    },
   });
+  
+  // Timeout de 10 minutos - único fallback que mostra erro na UI
+  useEffect(() => {
+    if (status === 'processing') {
+      // Iniciar timer de 10 minutos
+      timeoutRef.current = window.setTimeout(() => {
+        setStatus('error');
+        processingRef.current = false;
+        setLastError({
+          message: 'Tempo limite excedido',
+          code: 'TIMEOUT',
+          solution: 'A operação demorou mais de 10 minutos. Tente novamente.'
+        });
+        toast.error('Tempo limite excedido (10 min). Tente novamente.');
+      }, 10 * 60 * 1000);
+    } else {
+      // Limpar timeout quando status muda
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [status]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -323,14 +343,23 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // Process image
   const processImage = async () => {
+    // CRITICAL: Prevent duplicate calls with synchronous check
+    if (processingRef.current) {
+      console.log('[Upscaler] Already processing, ignoring duplicate call');
+      return;
+    }
+    processingRef.current = true;
+    
     if (!inputImage) {
       toast.error(t('upscalerTool.errors.selectFirst'));
+      processingRef.current = false;
       return;
     }
 
     if (!user?.id) {
       setNoCreditsReason('not_logged');
       setShowNoCreditsModal(true);
+      processingRef.current = false;
       return;
     }
  
@@ -340,6 +369,7 @@ const UpscalerArcanoTool: React.FC = () => {
        setActiveToolName(activeTool);
        setActiveJobStatus(activeStatus || '');
        setShowActiveJobModal(true);
+       processingRef.current = false;
        return;
      }
 
@@ -349,6 +379,7 @@ const UpscalerArcanoTool: React.FC = () => {
     if (credits < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
+      processingRef.current = false;
       return;
     }
 
@@ -482,6 +513,7 @@ const UpscalerArcanoTool: React.FC = () => {
       }
       
       setStatus('error');
+      processingRef.current = false;
       setLastError({
         message: error.message || 'Erro desconhecido',
         code: 'UPLOAD_ERROR',
@@ -501,6 +533,7 @@ const UpscalerArcanoTool: React.FC = () => {
         .update({ status: 'cancelled' })
         .eq('id', jobId);
       
+      processingRef.current = false;
       setStatus('idle');
       setIsWaitingInQueue(false);
       setQueuePosition(0);
@@ -526,6 +559,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // Reset tool
   const resetTool = useCallback(() => {
+    processingRef.current = false;
     setInputImage(null);
     setInputFileName('');
     setOutputImage(null);

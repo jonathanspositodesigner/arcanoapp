@@ -16,8 +16,6 @@ interface UseJobReconciliationOptions {
   status: string;
   /** Intervalo de polling em ms (default: 15000 = 15s) */
   pollingInterval?: number;
-  /** Callback quando job é reconciliado com sucesso/falha */
-  onReconciled?: (result: ReconcileResult) => void;
   /** Habilitar ou desabilitar o polling */
   enabled?: boolean;
 }
@@ -26,13 +24,16 @@ interface UseJobReconciliationOptions {
  * Hook para polling de reconciliação de jobs de IA
  * Verifica periodicamente o status real no RunningHub e atualiza o banco
  * Serve como fallback quando o webhook não chega
+ * 
+ * IMPORTANTE: Este hook NÃO dispara callbacks para a UI.
+ * O único responsável por atualizar a UI é o Realtime (webhook) ou timeout.
+ * Este polling serve apenas para "self-healing" silencioso do banco.
  */
 export function useJobReconciliation({
   table,
   jobId,
   status,
   pollingInterval = 15000,
-  onReconciled,
   enabled = true,
 }: UseJobReconciliationOptions) {
   const intervalRef = useRef<number | null>(null);
@@ -67,18 +68,19 @@ export function useJobReconciliation({
       const result: ReconcileResult = await response.json();
       console.log(`[Reconciliation] Result:`, result);
       
-      if (result.updated && onReconciled) {
-        onReconciled(result);
-      }
+      // IMPORTANTE: Não disparamos callback para a UI!
+      // O Realtime vai pegar a mudança no banco e atualizar a UI.
+      // Este polling serve apenas para garantir que o banco esteja atualizado.
       
       return result;
     } catch (error) {
       console.error('[Reconciliation] Error:', error);
+      // Erros de polling são silenciosos - não afetam a UI
       return null;
     } finally {
       isReconcilingRef.current = false;
     }
-  }, [jobId, table, onReconciled]);
+  }, [jobId, table]);
 
   // Iniciar/parar polling baseado no status
   useEffect(() => {

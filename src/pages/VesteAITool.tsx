@@ -84,23 +84,40 @@ const VesteAITool: React.FC = () => {
   // Cleanup queued jobs when user leaves page
   useQueueSessionCleanup(sessionIdRef.current, status);
 
-  // Reconciliation polling - fallback when webhook doesn't arrive
+  // Reconciliation polling - self-healing silencioso (não dispara UI updates)
   useJobReconciliation({
     table: 'veste_ai_jobs',
     jobId,
     status,
     pollingInterval: 15000,
     enabled: status === 'processing',
-    onReconciled: (result) => {
-      console.log('[VesteAI] Job reconciled:', result);
-      if (result.jobStatus === 'completed') {
-        toast.success('Roupa aplicada com sucesso!');
-      } else if (result.jobStatus === 'failed') {
-        setStatus('error');
-        toast.error(result.errorMessage || 'Erro no processamento');
-      }
-    },
   });
+  
+  // Timeout de 10 minutos - único fallback que mostra erro na UI
+  const timeoutRef = useRef<number | null>(null);
+  
+  useEffect(() => {
+    if (status === 'processing') {
+      // Iniciar timer de 10 minutos
+      timeoutRef.current = window.setTimeout(() => {
+        setStatus('error');
+        processingRef.current = false;
+        toast.error('Tempo limite excedido (10 min). Tente novamente.');
+      }, 10 * 60 * 1000);
+    } else {
+      // Limpar timeout quando status muda
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [status]);
 
   // Subscribe to realtime updates for a job
   const subscribeToJobUpdates = useCallback((jId: string) => {
