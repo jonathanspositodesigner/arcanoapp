@@ -30,8 +30,10 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 // =====================================================
-// CONFIGURAÇÃO MULTI-API
+// CONFIGURAÇÃO - LIMITE GLOBAL FIXO
 // =====================================================
+// REGRA DE NEGÓCIO: Máximo de 3 jobs simultâneos GLOBAL, independente de quantas contas existem
+const GLOBAL_MAX_CONCURRENT = 3;
 const SLOTS_PER_ACCOUNT = 3;
 
 // Estrutura de conta de API
@@ -304,21 +306,71 @@ async function getTotalQueuedCount(): Promise<number> {
 }
 
 /**
+ * Executa limpeza oportunista de jobs travados (>10 min)
+ * Chama a função do banco que é SECURITY DEFINER (não precisa de auth)
+ * A função retorna um conjunto de rows, uma por tabela, com cancelled_count
+ */
+async function cleanupStaleJobs(): Promise<number> {
+  try {
+    console.log('[QueueManager] Running opportunistic cleanup...');
+    const { data, error } = await supabase.rpc('cleanup_all_stale_ai_jobs');
+    
+    if (error) {
+      console.error('[QueueManager] Cleanup error:', error);
+      return 0;
+    }
+    
+    // A função retorna array de { table_name, cancelled_count, refunded_credits }
+    // Somar todos os cancelled_count
+    let totalCancelled = 0;
+    if (Array.isArray(data)) {
+      for (const row of data) {
+        totalCancelled += row.cancelled_count || 0;
+      }
+    }
+    
+    if (totalCancelled > 0) {
+      console.log(`[QueueManager] Cleanup: ${totalCancelled} stale jobs cancelled`);
+      // Atualizar posições globais após limpar jobs travados
+      await updateAllQueuePositions();
+    }
+    
+    return totalCancelled;
+  } catch (e) {
+    console.error('[QueueManager] Cleanup exception:', e);
+    return 0;
+  }
+}
+
+/**
  * /check - Verifica disponibilidade e retorna conta com slot livre
+ * REGRA: Máximo 3 jobs simultâneos GLOBAL (não 3 por conta)
  */
 async function handleCheck(req: Request): Promise<Response> {
-  const accounts = getAvailableApiAccounts();
-  const totalMaxSlots = accounts.reduce((sum, acc) => sum + acc.maxSlots, 0);
-  const globalRunning = await getGlobalRunningCount();
+  // LIMPEZA OPORTUNISTA: limpar jobs travados antes de verificar disponibilidade
+  await cleanupStaleJobs();
   
-  // Encontrar conta com slot disponível
+  const globalRunning = await getGlobalRunningCount();
+  const totalQueued = await getTotalQueuedCount();
+  
+  // REGRA DE NEGÓCIO: Limite global de 3, não por conta
+  const slotsAvailable = Math.max(0, GLOBAL_MAX_CONCURRENT - globalRunning);
+  
+  // Se tem slots disponíveis MAS tem jobs na fila, a fila tem prioridade
+  // Isso evita que um job novo "fure" a fila
+  const mustQueue = globalRunning >= GLOBAL_MAX_CONCURRENT || totalQueued > 0;
+  
+  // Encontrar conta com slot disponível (para uso da API key)
   const availableAccount = await getAccountWithAvailableSlot();
   
+  console.log(`[QueueManager] /check: running=${globalRunning}, queued=${totalQueued}, slotsAvailable=${slotsAvailable}, mustQueue=${mustQueue}`);
+  
   return new Response(JSON.stringify({
-    available: availableAccount !== null,
+    available: !mustQueue && availableAccount !== null,
     running: globalRunning,
-    maxConcurrent: totalMaxSlots,
-    slotsAvailable: totalMaxSlots - globalRunning,
+    maxConcurrent: GLOBAL_MAX_CONCURRENT,
+    slotsAvailable: slotsAvailable,
+    totalQueued: totalQueued,
     // Informações da conta disponível (para uso pelas Edge Functions)
     accountName: availableAccount?.name || null,
     accountApiKey: availableAccount?.apiKey || null,
@@ -495,23 +547,22 @@ async function handleStatus(): Promise<Response> {
   const accountsStats = await getAccountsStats();
   const queuedCounts = await getQueuedCounts();
   const totalQueued = Object.values(queuedCounts).reduce((a, b) => a + b, 0);
-  const totalMaxSlots = accounts.reduce((sum, acc) => sum + acc.maxSlots, 0);
   const totalRunning = accountsStats.reduce((sum, acc) => sum + acc.running, 0);
   
   return new Response(JSON.stringify({
-    // Totais globais
-    totalMaxSlots,
+    // Totais globais - REGRA: limite é GLOBAL_MAX_CONCURRENT, não soma das contas
+    totalMaxSlots: GLOBAL_MAX_CONCURRENT,
     totalRunning,
-    totalSlotsAvailable: totalMaxSlots - totalRunning,
+    totalSlotsAvailable: Math.max(0, GLOBAL_MAX_CONCURRENT - totalRunning),
     totalQueued,
     // Breakdown por conta
     accounts: accountsStats,
     // Breakdown por ferramenta (fila)
     queuedByTool: queuedCounts,
-    // Compatibilidade com código antigo
+    // Compatibilidade com código antigo - usar limite global
     running: totalRunning,
-    maxConcurrent: totalMaxSlots,
-    slotsAvailable: totalMaxSlots - totalRunning,
+    maxConcurrent: GLOBAL_MAX_CONCURRENT,
+    slotsAvailable: Math.max(0, GLOBAL_MAX_CONCURRENT - totalRunning),
   }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
@@ -520,8 +571,21 @@ async function handleStatus(): Promise<Response> {
 /**
  * /process-next - Processa o próximo job na fila global (FIFO cross-tool)
  * Chamado pelos webhooks quando um job termina
+ * REGRA: Máximo 3 jobs simultâneos GLOBAL
  */
 async function handleProcessNext(): Promise<Response> {
+  // LIMPEZA OPORTUNISTA: limpar jobs travados antes de processar
+  await cleanupStaleJobs();
+  
+  // Verificar limite GLOBAL de 3 jobs
+  const globalRunning = await getGlobalRunningCount();
+  if (globalRunning >= GLOBAL_MAX_CONCURRENT) {
+    console.log(`[QueueManager] Global limit reached: ${globalRunning}/${GLOBAL_MAX_CONCURRENT}`);
+    return new Response(JSON.stringify({ processed: false, reason: 'Global limit reached' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
   // Verificar se há conta com slot disponível
   const availableAccount = await getAccountWithAvailableSlot();
   
@@ -777,6 +841,10 @@ async function updateAllQueuePositions(): Promise<void> {
   */
  async function handleCheckUserActive(req: Request): Promise<Response> {
    try {
+     // LIMPEZA OPORTUNISTA: limpar jobs travados antes de verificar
+     // Isso evita bloquear usuário por job fantasma
+     await cleanupStaleJobs();
+     
      const { userId } = await req.json();
      
      if (!userId) {
