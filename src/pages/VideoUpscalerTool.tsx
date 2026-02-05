@@ -7,12 +7,13 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
- import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useJobReconciliation } from '@/hooks/useJobReconciliation';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import VideoUploadCard from '@/components/video-upscaler/VideoUploadCard';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
- import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -79,6 +80,24 @@ const VideoUpscalerTool: React.FC = () => {
 
   // Cleanup queued jobs when user leaves page
   useQueueSessionCleanup(sessionIdRef.current, status);
+
+  // Reconciliation polling - fallback when webhook doesn't arrive
+  useJobReconciliation({
+    table: 'video_upscaler_jobs',
+    jobId,
+    status,
+    pollingInterval: 20000, // 20 seconds for video (takes longer)
+    enabled: status === 'processing',
+    onReconciled: (result) => {
+      console.log('[VideoUpscaler] Job reconciled:', result);
+      if (result.jobStatus === 'completed') {
+        toast.success('Vídeo processado com sucesso!');
+      } else if (result.jobStatus === 'failed') {
+        setStatus('error');
+        toast.error(result.errorMessage || 'Erro no processamento');
+      }
+    },
+  });
 
   // Subscribe to realtime updates for a job
   const subscribeToJobUpdates = useCallback((jId: string) => {

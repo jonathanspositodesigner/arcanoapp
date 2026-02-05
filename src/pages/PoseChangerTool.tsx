@@ -8,13 +8,14 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
- import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useJobReconciliation } from '@/hooks/useJobReconciliation';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 import PoseLibraryModal from '@/components/pose-changer/PoseLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
- import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
@@ -82,6 +83,24 @@ const PoseChangerTool: React.FC = () => {
 
   // Cleanup queued jobs when user leaves page
   useQueueSessionCleanup(sessionIdRef.current, status);
+
+  // Reconciliation polling - fallback when webhook doesn't arrive
+  useJobReconciliation({
+    table: 'pose_changer_jobs',
+    jobId,
+    status,
+    pollingInterval: 15000,
+    enabled: status === 'processing',
+    onReconciled: (result) => {
+      console.log('[PoseChanger] Job reconciled:', result);
+      if (result.jobStatus === 'completed') {
+        toast.success('Pose alterada com sucesso!');
+      } else if (result.jobStatus === 'failed') {
+        setStatus('error');
+        toast.error(result.errorMessage || 'Erro no processamento');
+      }
+    },
+  });
 
   // Subscribe to realtime updates for a job
   const subscribeToJobUpdates = useCallback((jId: string) => {

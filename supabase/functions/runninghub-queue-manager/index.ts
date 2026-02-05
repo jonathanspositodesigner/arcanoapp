@@ -119,7 +119,10 @@ type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
- Deno.serve(async (req) => {
+// Timeout para jobs "running" (em minutos)
+const STALE_RUNNING_THRESHOLD_MINUTES = 8;
+
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -143,8 +146,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
         return await handleCancelSession(req);
       case 'cancel-job':
         return await handleCancelJob(req);
-       case 'check-user-active':
-         return await handleCheckUserActive(req);
+      case 'check-user-active':
+        return await handleCheckUserActive(req);
+      case 'reconcile-task':
+        return await handleReconcileTask(req);
       default:
         return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
           status: 400,
@@ -306,8 +311,14 @@ async function getTotalQueuedCount(): Promise<number> {
 
 /**
  * /check - Verifica disponibilidade e retorna conta com slot livre
+ * AGORA COM WATCHDOG: reconcilia jobs running travados antes de verificar slots
  */
 async function handleCheck(req: Request): Promise<Response> {
+  // Rodar watchdog de forma assíncrona (não bloqueia a resposta)
+  reconcileStaleRunningJobs().catch(err => {
+    console.error('[QueueManager] Watchdog error in /check:', err);
+  });
+  
   const accounts = getAvailableApiAccounts();
   const totalMaxSlots = accounts.reduce((sum, acc) => sum + acc.maxSlots, 0);
   const globalRunning = await getGlobalRunningCount();
@@ -1036,4 +1047,363 @@ async function handleCancelJob(req: Request): Promise<Response> {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
+}
+
+/**
+ * Consulta o status real de uma task no RunningHub e atualiza o banco
+ * Usado como fallback quando webhook não chega
+ */
+async function queryRunningHubTaskStatus(
+  taskId: string, 
+  apiKey: string
+): Promise<{
+  status: 'RUNNING' | 'SUCCESS' | 'FAILED' | 'UNKNOWN';
+  errorCode?: string;
+  errorMessage?: string;
+  results?: any[];
+}> {
+  try {
+    const response = await fetch('https://www.runninghub.ai/openapi/v2/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ taskId }),
+    });
+
+    if (!response.ok) {
+      console.error(`[QueueManager] RunningHub query failed: ${response.status}`);
+      return { status: 'UNKNOWN', errorMessage: `HTTP ${response.status}` };
+    }
+
+    const data = await response.json();
+    console.log(`[QueueManager] RunningHub query response for ${taskId}:`, JSON.stringify(data));
+
+    // RunningHub API response structure
+    if (data.code === 0) {
+      const taskStatus = data.data?.taskStatus;
+      
+      if (taskStatus === 'SUCCESS') {
+        return {
+          status: 'SUCCESS',
+          results: data.data?.results || [],
+        };
+      } else if (taskStatus === 'FAILED') {
+        return {
+          status: 'FAILED',
+          errorCode: data.data?.errorCode,
+          errorMessage: data.data?.errorMessage || 'Task failed on RunningHub',
+        };
+      } else if (taskStatus === 'RUNNING' || taskStatus === 'PENDING' || taskStatus === 'QUEUED') {
+        return { status: 'RUNNING' };
+      }
+    }
+
+    // Handle error responses
+    if (data.code !== 0) {
+      return {
+        status: 'FAILED',
+        errorCode: String(data.code),
+        errorMessage: data.message || 'RunningHub API error',
+      };
+    }
+
+    return { status: 'UNKNOWN' };
+  } catch (error) {
+    console.error(`[QueueManager] Error querying RunningHub:`, error);
+    return {
+      status: 'UNKNOWN',
+      errorMessage: error instanceof Error ? error.message : 'Query failed',
+    };
+  }
+}
+
+/**
+ * Obtém a API key correta para uma conta
+ */
+function getApiKeyForAccount(accountName: string): string | null {
+  const accounts = getAvailableApiAccounts();
+  const account = accounts.find(a => a.name === accountName);
+  return account?.apiKey || accounts[0]?.apiKey || null;
+}
+
+/**
+ * /reconcile-task - Consulta status real no RunningHub e atualiza o banco
+ * Entrada: { table, jobId } ou { taskId }
+ * Saída: { status, errorCode, errorMessage, results, updated }
+ */
+async function handleReconcileTask(req: Request): Promise<Response> {
+  try {
+    const { table, jobId, taskId: directTaskId } = await req.json();
+    
+    let targetTable: JobTable | null = null;
+    let job: any = null;
+    let taskId: string | null = directTaskId || null;
+    
+    // Se passou jobId, buscar o job no banco
+    if (table && jobId) {
+      if (!JOB_TABLES.includes(table as JobTable)) {
+        return new Response(JSON.stringify({ error: 'Invalid table' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      targetTable = table as JobTable;
+      const { data, error } = await supabase
+        .from(targetTable)
+        .select('*')
+        .eq('id', jobId)
+        .maybeSingle();
+      
+      if (error || !data) {
+        return new Response(JSON.stringify({ error: 'Job not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      job = data;
+      taskId = job.task_id;
+    }
+    // Se passou apenas taskId, procurar em todas as tabelas
+    else if (directTaskId) {
+      for (const t of JOB_TABLES) {
+        const { data } = await supabase
+          .from(t)
+          .select('*')
+          .eq('task_id', directTaskId)
+          .maybeSingle();
+        
+        if (data) {
+          targetTable = t;
+          job = data;
+          break;
+        }
+      }
+      
+      if (!job) {
+        return new Response(JSON.stringify({ error: 'Job not found for taskId' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } else {
+      return new Response(JSON.stringify({ error: 'Either (table + jobId) or taskId is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Se não tem task_id, o job ainda não foi enviado ao RunningHub
+    if (!taskId) {
+      return new Response(JSON.stringify({
+        status: 'NO_TASK_ID',
+        message: 'Job has no task_id yet (not sent to RunningHub)',
+        jobStatus: job.status,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Obter API key correta baseada na conta usada
+    const apiKey = getApiKeyForAccount(job.api_account || 'primary');
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: 'No API key available' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Consultar status real no RunningHub
+    const rhStatus = await queryRunningHubTaskStatus(taskId, apiKey);
+    console.log(`[QueueManager] Reconcile taskId ${taskId}: status=${rhStatus.status}`);
+    
+    let updated = false;
+    
+    // Se o job ainda está como running no banco mas já terminou no RH
+    if (job.status === 'running') {
+      if (rhStatus.status === 'SUCCESS') {
+        // Calcular rh_cost baseado no tempo de processamento
+        const startedAt = job.started_at ? new Date(job.started_at) : new Date(job.created_at);
+        const completedAt = new Date();
+        const processingSeconds = Math.round((completedAt.getTime() - startedAt.getTime()) / 1000);
+        const rhCost = Math.ceil(processingSeconds / 60); // 1 crédito por minuto (arredondado pra cima)
+        
+        // Extrair output_url dos results
+        const outputUrl = rhStatus.results?.[0]?.url || rhStatus.results?.[0]?.fileUrl || null;
+        
+        await supabase
+          .from(targetTable!)
+          .update({
+            status: 'completed',
+            output_url: outputUrl,
+            completed_at: completedAt.toISOString(),
+            rh_cost: rhCost,
+          })
+          .eq('id', job.id);
+        
+        updated = true;
+        console.log(`[QueueManager] Reconciled job ${job.id}: SUCCESS -> completed`);
+        
+        // Processar próximo da fila
+        await handleProcessNext();
+        
+      } else if (rhStatus.status === 'FAILED') {
+        await supabase
+          .from(targetTable!)
+          .update({
+            status: 'failed',
+            error_message: rhStatus.errorMessage || `RunningHub error: ${rhStatus.errorCode}`,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', job.id);
+        
+        updated = true;
+        console.log(`[QueueManager] Reconciled job ${job.id}: FAILED -> failed`);
+        
+        // Devolver créditos
+        if (job.user_credit_cost && job.user_id) {
+          try {
+            await supabase.rpc('refund_upscaler_credits', {
+              _user_id: job.user_id,
+              _amount: job.user_credit_cost,
+              _description: `Refund: ${rhStatus.errorMessage || 'RunningHub error'}`
+            });
+            console.log(`[QueueManager] Refunded ${job.user_credit_cost} credits to ${job.user_id}`);
+          } catch (refundError) {
+            console.error(`[QueueManager] Failed to refund credits:`, refundError);
+          }
+        }
+        
+        // Processar próximo da fila
+        await handleProcessNext();
+      }
+    }
+    
+    return new Response(JSON.stringify({
+      taskId,
+      rhStatus: rhStatus.status,
+      errorCode: rhStatus.errorCode,
+      errorMessage: rhStatus.errorMessage,
+      results: rhStatus.results,
+      jobStatus: updated ? (rhStatus.status === 'SUCCESS' ? 'completed' : 'failed') : job.status,
+      updated,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error) {
+    console.error('[QueueManager] ReconcileTask error:', error);
+    return new Response(JSON.stringify({ 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+/**
+ * Reconcilia jobs "running" que estão presos há muito tempo
+ * Chama RunningHub para verificar status real e atualiza o banco
+ */
+async function reconcileStaleRunningJobs(): Promise<number> {
+  const staleThreshold = new Date(Date.now() - STALE_RUNNING_THRESHOLD_MINUTES * 60 * 1000);
+  let reconciledCount = 0;
+  
+  for (const table of JOB_TABLES) {
+    const { data: staleJobs, error } = await supabase
+      .from(table)
+      .select('id, task_id, api_account, user_id, user_credit_cost, started_at, created_at')
+      .eq('status', 'running')
+      .lt('started_at', staleThreshold.toISOString())
+      .limit(5); // Limitar para não sobrecarregar
+    
+    if (error || !staleJobs || staleJobs.length === 0) continue;
+    
+    console.log(`[QueueManager] Found ${staleJobs.length} stale running jobs in ${table}`);
+    
+    for (const job of staleJobs) {
+      if (!job.task_id) {
+        // Job sem task_id travado em running = erro crítico, marcar como failed
+        await supabase
+          .from(table)
+          .update({
+            status: 'failed',
+            error_message: 'Job timeout: no task_id after threshold',
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', job.id);
+        reconciledCount++;
+        continue;
+      }
+      
+      const apiKey = getApiKeyForAccount(job.api_account || 'primary');
+      if (!apiKey) continue;
+      
+      const rhStatus = await queryRunningHubTaskStatus(job.task_id, apiKey);
+      
+      if (rhStatus.status === 'SUCCESS') {
+        const outputUrl = rhStatus.results?.[0]?.url || rhStatus.results?.[0]?.fileUrl || null;
+        const startedAt = job.started_at ? new Date(job.started_at) : new Date(job.created_at);
+        const completedAt = new Date();
+        const processingSeconds = Math.round((completedAt.getTime() - startedAt.getTime()) / 1000);
+        const rhCost = Math.ceil(processingSeconds / 60);
+        
+        await supabase
+          .from(table)
+          .update({
+            status: 'completed',
+            output_url: outputUrl,
+            completed_at: completedAt.toISOString(),
+            rh_cost: rhCost,
+          })
+          .eq('id', job.id);
+        
+        console.log(`[QueueManager] Watchdog: Job ${job.id} SUCCESS -> completed`);
+        reconciledCount++;
+        
+      } else if (rhStatus.status === 'FAILED' || rhStatus.status === 'UNKNOWN') {
+        // Se UNKNOWN após threshold, também marcar como failed
+        const errorMsg = rhStatus.status === 'FAILED'
+          ? (rhStatus.errorMessage || `RunningHub error: ${rhStatus.errorCode}`)
+          : 'Job timeout: unable to verify status';
+        
+        await supabase
+          .from(table)
+          .update({
+            status: 'failed',
+            error_message: errorMsg,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', job.id);
+        
+        // Devolver créditos
+        if (job.user_credit_cost && job.user_id) {
+          try {
+            await supabase.rpc('refund_upscaler_credits', {
+              _user_id: job.user_id,
+              _amount: job.user_credit_cost,
+              _description: `Refund: ${errorMsg}`
+            });
+          } catch (e) {
+            console.error(`[QueueManager] Watchdog refund error:`, e);
+          }
+        }
+        
+        console.log(`[QueueManager] Watchdog: Job ${job.id} ${rhStatus.status} -> failed`);
+        reconciledCount++;
+      }
+      // Se RUNNING, deixar continuar (ainda está processando normalmente)
+    }
+  }
+  
+  if (reconciledCount > 0) {
+    // Processar fila após liberar slots
+    await handleProcessNext();
+  }
+  
+  return reconciledCount;
 }
