@@ -119,8 +119,8 @@ type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// Timeout para jobs "running" (em minutos)
-const STALE_RUNNING_THRESHOLD_MINUTES = 8;
+// Timeout para jobs "running" (em minutos) - alinhado com frontend
+const STALE_RUNNING_THRESHOLD_MINUTES = 10;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -150,6 +150,8 @@ Deno.serve(async (req) => {
         return await handleCheckUserActive(req);
       case 'reconcile-task':
         return await handleReconcileTask(req);
+      case 'force-cancel-job':
+        return await handleForceCancelJob(req);
       default:
         return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
           status: 400,
@@ -846,6 +848,7 @@ const ORPHAN_THRESHOLD_REAL_QUEUED_MS = 3 * 60 * 1000; // 3 minutes for real que
             activeJobId: data.id,
             activeStatus: data.status,
             createdAt: data.created_at,
+            startedAt: data.started_at,
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
@@ -920,6 +923,7 @@ const ORPHAN_THRESHOLD_REAL_QUEUED_MS = 3 * 60 * 1000; // 3 minutes for real que
             activeJobId: data.id,
             activeStatus: data.status,
             createdAt: data.created_at,
+            startedAt: data.started_at,
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
@@ -1406,4 +1410,122 @@ async function reconcileStaleRunningJobs(): Promise<number> {
   }
   
   return reconciledCount;
+}
+
+/**
+ * /force-cancel-job - Força cancelamento de qualquer job (running ou queued)
+ * Usado quando usuário quer cancelar um job em andamento manualmente
+ */
+async function handleForceCancelJob(req: Request): Promise<Response> {
+  try {
+    const { table, jobId, userId } = await req.json();
+    
+    if (!table || !jobId || !userId) {
+      return new Response(JSON.stringify({ error: 'table, jobId and userId are required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    if (!JOB_TABLES.includes(table as JobTable)) {
+      return new Response(JSON.stringify({ error: 'Invalid table' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Get the job to verify ownership and status
+    const { data: job, error: jobError } = await supabase
+      .from(table)
+      .select('id, user_id, status, user_credit_cost, task_id, api_account')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    if (jobError || !job) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Verify ownership
+    if (job.user_id !== userId) {
+      return new Response(JSON.stringify({ error: 'Not authorized to cancel this job' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Only cancel jobs that are running or queued
+    if (job.status !== 'queued' && job.status !== 'running') {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        reason: 'Job is not active',
+        currentStatus: job.status 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    const wasRunning = job.status === 'running';
+    
+    // Cancel the job
+    await supabase
+      .from(table)
+      .update({
+        status: 'cancelled',
+        error_message: wasRunning 
+          ? 'Cancelled by user while processing' 
+          : 'Cancelled by user while in queue',
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', jobId);
+    
+    // Refund credits if they were consumed
+    let refundedAmount = 0;
+    if (job.user_credit_cost && job.user_credit_cost > 0) {
+      try {
+        await supabase.rpc('refund_upscaler_credits', {
+          _user_id: userId,
+          _amount: job.user_credit_cost,
+          _description: wasRunning 
+            ? 'Refund: cancelled by user while processing' 
+            : 'Refund: cancelled by user while in queue'
+        });
+        refundedAmount = job.user_credit_cost;
+        console.log(`[QueueManager] Force-cancelled: Refunded ${job.user_credit_cost} credits to ${userId}`);
+      } catch (refundError) {
+        console.error(`[QueueManager] Failed to refund credits:`, refundError);
+      }
+    }
+    
+    // Update queue positions
+    await updateAllQueuePositions();
+    
+    // If was running, process next in queue
+    if (wasRunning) {
+      await handleProcessNext();
+    }
+    
+    console.log(`[QueueManager] Force-cancelled job ${jobId} in ${table} for user ${userId} (was ${wasRunning ? 'running' : 'queued'})`);
+    
+    return new Response(JSON.stringify({
+      success: true,
+      cancelled: true,
+      jobId,
+      wasRunning,
+      refunded: refundedAmount,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error) {
+    console.error('[QueueManager] ForceCancelJob error:', error);
+    return new Response(JSON.stringify({ 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 }

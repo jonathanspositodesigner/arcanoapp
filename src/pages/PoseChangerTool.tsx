@@ -40,6 +40,9 @@ const PoseChangerTool: React.FC = () => {
     setShowActiveJobModal,
     activeToolName,
     activeJobStatus,
+    activeJobId,
+    activeTable,
+    activeStartedAt,
     startJob,
     cancelJob,
     reset,
@@ -362,6 +365,9 @@ const PoseChangerTool: React.FC = () => {
         onClose={() => setShowActiveJobModal(false)}
         activeTool={activeToolName}
         activeStatus={activeJobStatus}
+        activeJobId={activeJobId}
+        activeTable={activeTable}
+        activeStartedAt={activeStartedAt}
       />
     </div>
   );

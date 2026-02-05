@@ -73,6 +73,9 @@ export interface UseAIToolProcessorReturn extends AIToolProcessorState, AIToolPr
   setShowActiveJobModal: (show: boolean) => void;
   activeToolName: string;
   activeJobStatus: string;
+  activeJobId: string;
+  activeTable: string;
+  activeStartedAt?: string;
 }
 
 // Default queue messages used across tools
