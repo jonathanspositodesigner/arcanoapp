@@ -17,6 +17,7 @@ import PoseLibraryModal from '@/components/pose-changer/PoseLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
+import { cancelJob as centralCancelJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -373,17 +374,25 @@ const PoseChangerTool: React.FC = () => {
     if (!jobId) return;
 
     try {
-      await supabase
-        .from('pose_changer_jobs')
-        .update({ status: 'cancelled' })
-        .eq('id', jobId);
-
-      setStatus('idle');
-      setJobId(null);
-      setQueuePosition(0);
-      toast.info('Processamento cancelado');
+      const result = await centralCancelJob('pose_changer', jobId);
+      
+      if (result.success) {
+        setStatus('idle');
+        setJobId(null);
+        setQueuePosition(0);
+        endSubmit();
+        if (result.refundedAmount > 0) {
+          toast.success(`Cancelado! ${result.refundedAmount} créditos devolvidos.`);
+        } else {
+          toast.info('Processamento cancelado');
+        }
+        refetchCredits();
+      } else {
+        toast.error(result.errorMessage || 'Erro ao cancelar');
+      }
     } catch (error) {
       console.error('[PoseChanger] Cancel error:', error);
+      toast.error('Erro ao cancelar processamento');
     }
   };
 

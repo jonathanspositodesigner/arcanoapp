@@ -23,6 +23,7 @@ import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import { cancelJob as centralCancelJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -457,23 +458,31 @@ const UpscalerArcanoTool: React.FC = () => {
     }
   };
 
-  // Cancel queue
+  // Cancel queue - using centralized JobManager
   const cancelQueue = async () => {
     if (!jobId) return;
 
     try {
-      await supabase
-        .from('upscaler_jobs')
-        .update({ status: 'cancelled' })
-        .eq('id', jobId);
+      const result = await centralCancelJob('upscaler', jobId);
       
-      setStatus('idle');
-      setIsWaitingInQueue(false);
-      setQueuePosition(0);
-      setJobId(null);
-      toast.info('Saiu da fila');
+      if (result.success) {
+        setStatus('idle');
+        setIsWaitingInQueue(false);
+        setQueuePosition(0);
+        setJobId(null);
+        endSubmit();
+        if (result.refundedAmount > 0) {
+          toast.success(`Cancelado! ${result.refundedAmount} créditos devolvidos.`);
+        } else {
+          toast.info('Saiu da fila');
+        }
+        refetchCredits();
+      } else {
+        toast.error(result.errorMessage || 'Erro ao cancelar');
+      }
     } catch (error) {
       console.error('[Upscaler] Error cancelling:', error);
+      toast.error('Erro ao cancelar');
     }
   };
 

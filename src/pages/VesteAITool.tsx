@@ -17,6 +17,7 @@ import ClothingLibraryModal from '@/components/veste-ai/ClothingLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
+import { cancelJob as centralCancelJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -373,18 +374,25 @@ const VesteAITool: React.FC = () => {
     if (!jobId) return;
 
     try {
-      await supabase
-        .from('veste_ai_jobs')
-        .update({ status: 'cancelled' })
-        .eq('id', jobId);
-
-      setStatus('idle');
-      setJobId(null);
-      setQueuePosition(0);
-      endSubmit();
-      toast.info('Processamento cancelado');
+      const result = await centralCancelJob('veste_ai', jobId);
+      
+      if (result.success) {
+        setStatus('idle');
+        setJobId(null);
+        setQueuePosition(0);
+        endSubmit();
+        if (result.refundedAmount > 0) {
+          toast.success(`Cancelado! ${result.refundedAmount} créditos devolvidos.`);
+        } else {
+          toast.info('Processamento cancelado');
+        }
+        refetchCredits();
+      } else {
+        toast.error(result.errorMessage || 'Erro ao cancelar');
+      }
     } catch (error) {
       console.error('[VesteAI] Cancel error:', error);
+      toast.error('Erro ao cancelar processamento');
     }
   };
 
