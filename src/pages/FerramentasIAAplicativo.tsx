@@ -161,7 +161,7 @@ const FerramentasIAAplicativo = () => {
         }`}
         onClick={() => !isComingSoon && handleToolClick(tool)}
       >
-        <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
+        <div className="aspect-[4/5] sm:aspect-[3/4] relative overflow-hidden">
           {tool.cover_url ? (
             <img 
               src={tool.cover_url} 
@@ -180,11 +180,11 @@ const FerramentasIAAplicativo = () => {
             </div>
           )}
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 via-50% to-transparent flex flex-col justify-end p-4">
-            <h3 className="font-bold text-base sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 via-50% to-transparent flex flex-col justify-end p-3 sm:p-4">
+            <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
               {toolNameOverrides[tool.slug] || tool.name}
             </h3>
-            <p className="text-xs sm:text-sm text-white/80 text-center mt-1 line-clamp-2">
+            <p className="text-[10px] sm:text-sm text-white/80 text-center mt-1 line-clamp-2">
               {description}
             </p>
             
@@ -192,21 +192,22 @@ const FerramentasIAAplicativo = () => {
               <Button
                 size="sm"
                 disabled
-                className="mt-3 w-full text-sm font-medium bg-gray-600 text-gray-300 cursor-not-allowed"
+                className="mt-2 sm:mt-3 w-full text-xs sm:text-sm font-medium bg-gray-600 text-gray-300 cursor-not-allowed"
               >
                 Em Breve
               </Button>
             ) : (
               <Button
                 size="sm"
-                className={`mt-3 w-full text-sm font-medium ${
+                className={`mt-2 sm:mt-3 w-full text-xs sm:text-sm font-medium ${
                   hasAccess 
                     ? "bg-green-500 hover:bg-green-600" 
                     : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
                 } text-white`}
               >
-                <Play className="h-4 w-4 mr-2" />
-                {t('ferramentas.accessTool')}
+                <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">{t('ferramentas.accessTool')}</span>
+                <span className="sm:hidden">Acessar</span>
               </Button>
             )}
           </div>
@@ -234,7 +235,7 @@ const FerramentasIAAplicativo = () => {
         </p>
 
         {/* Single grid - no separation by access */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {tools.map(renderToolCard)}
         </div>
 
