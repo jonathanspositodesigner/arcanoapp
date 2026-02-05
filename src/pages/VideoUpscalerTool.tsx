@@ -7,12 +7,13 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
- import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import VideoUploadCard from '@/components/video-upscaler/VideoUploadCard';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
- import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -56,8 +57,8 @@ const VideoUpscalerTool: React.FC = () => {
   const sessionIdRef = useRef<string>('');
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   
-  // CRITICAL: Synchronous flag to prevent duplicate API calls
-  const processingRef = useRef(false);
+  // CRITICAL: Instant button lock to prevent duplicate clicks
+  const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
 
   // No credits modal
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
@@ -107,11 +108,11 @@ const VideoUpscalerTool: React.FC = () => {
             setStatus('completed');
             setProgress(100);
             refetchCredits();
-            processingRef.current = false;
+            endSubmit();
             toast.success('Vídeo upscalado com sucesso!');
           } else if (newData.status === 'failed') {
             setStatus('error');
-            processingRef.current = false;
+            endSubmit();
             toast.error(newData.error_message || 'Erro no processamento');
           } else if (newData.status === 'running') {
             setStatus('processing');
@@ -205,11 +206,11 @@ const VideoUpscalerTool: React.FC = () => {
             setStatus('completed');
             setProgress(100);
             refetchCredits();
-            processingRef.current = false;
+            endSubmit();
             toast.success('Vídeo upscalado com sucesso!');
           } else if (job.status === 'failed') {
             setStatus('error');
-            processingRef.current = false;
+            endSubmit();
             toast.error(job.error_message || 'Erro no processamento');
           }
         } catch (e) {
@@ -256,23 +257,22 @@ const VideoUpscalerTool: React.FC = () => {
   };
 
   const handleProcess = async () => {
-    // CRITICAL: Prevent duplicate calls with synchronous check
-    if (processingRef.current) {
-      console.log('[VideoUpscaler] Already processing, ignoring duplicate call');
+    // CRITICAL: Instant lock to prevent duplicate clicks
+    if (!startSubmit()) {
+      console.log('[VideoUpscaler] Already submitting, ignoring duplicate click');
       return;
     }
-    processingRef.current = true;
 
     if (!videoUrl || !videoFile) {
       toast.error('Por favor, selecione um vídeo');
-      processingRef.current = false;
+      endSubmit();
       return;
     }
 
     if (!user?.id) {
       setNoCreditsReason('not_logged');
       setShowNoCreditsModal(true);
-      processingRef.current = false;
+      endSubmit();
       return;
     }
  
@@ -283,14 +283,14 @@ const VideoUpscalerTool: React.FC = () => {
       setActiveJobId(activeCheck.activeJobId);
       setActiveStatus(activeCheck.activeStatus);
       setShowActiveJobModal(true);
-      processingRef.current = false;
+      endSubmit();
       return;
     }
 
     if (credits < CREDIT_COST) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
-      processingRef.current = false;
+      endSubmit();
       return;
     }
 
@@ -361,7 +361,7 @@ const VideoUpscalerTool: React.FC = () => {
         setNoCreditsReason('insufficient');
         setShowNoCreditsModal(true);
         setStatus('idle');
-        processingRef.current = false;
+        endSubmit();
         return;
       } else if (runResult.code === 'RATE_LIMIT_EXCEEDED') {
         throw new Error('Muitas requisições. Aguarde 1 minuto e tente novamente.');
@@ -377,7 +377,7 @@ const VideoUpscalerTool: React.FC = () => {
       console.error('[VideoUpscaler] Process error:', error);
       setStatus('error');
       toast.error(error.message || 'Erro ao processar vídeo');
-      processingRef.current = false;
+      endSubmit();
     }
   };
 
@@ -393,7 +393,7 @@ const VideoUpscalerTool: React.FC = () => {
       setStatus('idle');
       setJobId(null);
       setQueuePosition(0);
-      processingRef.current = false;
+      endSubmit();
       toast.info('Processamento cancelado');
     } catch (error) {
       console.error('[VideoUpscaler] Cancel error:', error);
@@ -401,7 +401,7 @@ const VideoUpscalerTool: React.FC = () => {
   };
 
   const handleReset = () => {
-    processingRef.current = false;
+    endSubmit();
     if (videoUrl && videoUrl.startsWith('blob:')) {
       URL.revokeObjectURL(videoUrl);
     }
@@ -471,10 +471,15 @@ const VideoUpscalerTool: React.FC = () => {
             <Button
               size="sm"
               className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
-              disabled={!canProcess || isProcessing}
+              disabled={!canProcess || isProcessing || isSubmitting}
               onClick={handleProcess}
             >
-              {status === 'uploading' ? (
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  Iniciando...
+                </>
+              ) : status === 'uploading' ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
                   Enviando...
