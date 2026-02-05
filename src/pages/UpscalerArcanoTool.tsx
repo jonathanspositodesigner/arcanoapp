@@ -390,7 +390,7 @@ const UpscalerArcanoTool: React.FC = () => {
         .from('upscaler_jobs')
         .insert({
           session_id: sessionIdRef.current,
-          status: 'queued',
+          status: 'pending',
           detail_denoise: detailDenoise,
           prompt: getFinalPrompt(),
           user_id: user.id,

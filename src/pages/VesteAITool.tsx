@@ -295,7 +295,7 @@ const VesteAITool: React.FC = () => {
         .insert({
           session_id: sessionIdRef.current,
           user_id: user.id,
-          status: 'queued',
+          status: 'pending',
           person_file_name: personUrl.split('/').pop() || 'person.webp',
           clothing_file_name: clothingUrl.split('/').pop() || 'clothing.webp',
         })
