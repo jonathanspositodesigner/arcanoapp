@@ -1,98 +1,223 @@
 
 
-# Correção: Erro Prematuro na UI do Upscaler
+# Unificação das Ferramentas de IA - Hook Centralizado
 
-## Problema Identificado
+## Problema Atual
 
-O hook `useJobReconciliation` está chamando o endpoint `/reconcile-task` a cada 15 segundos enquanto o job está "processing". Se a consulta ao RunningHub falhar (por qualquer motivo - rate limit, rede, etc), o callback `onReconciled` dispara com status FAILED ou UNKNOWN, e a UI mostra erro mesmo que a task esteja rodando normalmente no RunningHub.
+Cada ferramenta (Upscaler, Pose Changer, Veste AI, Video Upscaler) tem **~400-500 linhas de código duplicado** para:
+- Prevenção de duplicação (`processingRef`)
+- Gerenciamento de sessão (`sessionIdRef`)
+- Timeout de 10 minutos
+- Conexão Realtime com Supabase
+- Verificação de créditos
+- Verificação de job ativo
+- Estados de processamento
+- Limpeza de fila ao sair da página
+- Upload para Storage
+- Tratamento de erros
+- Rotação de mensagens de fila
 
-## Solução
+**Total de duplicação:** ~1600 linhas espalhadas em 4 arquivos
 
-Remover completamente a lógica que exibe erro no frontend baseada no resultado do polling. O único responsável por mostrar SUCCESS ou FAILED será:
+---
 
-1. **Webhook** (via Realtime) - resposta oficial do RunningHub
-2. **Timeout de 10 minutos** - se o webhook não chegar em 10 minutos, exibir mensagem de timeout (não erro da API)
+## Solução: `useAIToolProcessor` Hook Unificado
 
-O polling continuará existindo apenas para **atualizar silenciosamente** o banco quando o RunningHub confirmar SUCCESS/FAILED. Erros de consulta ou status UNKNOWN nunca serão propagados para a UI.
+Criar **UM ÚNICO HOOK** que encapsula toda a lógica comum. As ferramentas individuais passam apenas:
+- Nome da tabela de jobs
+- Edge function a chamar
+- Custo em créditos
+- Callback para montar o payload específico
 
-## Mudanças
+---
 
-### 1. `src/hooks/useJobReconciliation.ts`
-- Remover o callback `onReconciled` (ou torná-lo opcional e silencioso)
-- O polling agora só serve como "self-healing" do banco, não dispara mudanças na UI
-- Manter o console.log para debug
+## Estrutura do Hook
 
-### 2. `src/pages/UpscalerArcanoTool.tsx`
-- **Remover** o callback `onReconciled` que seta `setStatus('error')` 
-- **Adicionar** timer de 10 minutos para timeout (usando `useEffect` + `setTimeout`)
-- Quando timeout ocorrer: mostrar mensagem "Tempo excedido. Tente novamente." (não "RunningHub API error")
-- Adicionar lock síncrono (`processingRef`) para prevenir chamadas duplicadas
+```text
+src/hooks/useAIToolProcessor.ts
+├── Estados
+│   ├── status: 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error'
+│   ├── progress: number
+│   ├── jobId: string | null
+│   ├── queuePosition: number
+│   ├── outputUrl: string | null
+│   └── error: ErrorDetails | null
+│
+├── Refs (internos)
+│   ├── processingRef (lock síncrono anti-duplicação)
+│   ├── sessionIdRef (UUID da sessão)
+│   ├── realtimeChannelRef (subscription Supabase)
+│   └── timeoutRef (10 min fallback)
+│
+├── Hooks Internos Consumidos
+│   ├── useQueueSessionCleanup (auto-cancel ao sair)
+│   ├── useJobReconciliation (polling silencioso)
+│   └── useActiveJobCheck (bloqueio de jobs simultâneos)
+│
+├── Funções Expostas
+│   ├── startJob(inputData) - Inicia processamento
+│   ├── cancelJob() - Cancela job na fila
+│   ├── reset() - Volta ao estado inicial
+│   └── uploadToStorage(file, prefix) - Upload helper
+│
+└── Retorno
+    └── { status, progress, jobId, queuePosition, outputUrl, error, 
+          startJob, cancelJob, reset, uploadToStorage, isProcessing }
+```
 
-### 3. `src/pages/VideoUpscalerTool.tsx`
-- Mesma correção: remover `onReconciled` que dispara erro na UI
-- Adicionar timer de timeout
+---
 
-### 4. `src/pages/PoseChangerTool.tsx`
-- Mesma correção
+## Configuração por Ferramenta
 
-### 5. `src/pages/VesteAITool.tsx`
-- Mesma correção
-
-## Lógica do Timeout (10 minutos)
+Cada ferramenta passa uma configuração simples:
 
 ```typescript
-// Quando job entra em "processing":
-const timeoutRef = useRef<number | null>(null);
+interface AIToolConfig {
+  toolName: string;                    // 'upscaler' | 'pose-changer' | 'veste-ai' | 'video-upscaler'
+  tableName: string;                   // 'upscaler_jobs' | 'pose_changer_jobs' | etc.
+  edgeFunctionPath: string;            // 'runninghub-upscaler/run'
+  creditCost: number;                  // 60, 80, 150
+  storagePath: string;                 // 'upscaler' | 'pose-changer' | etc.
+  successMessage?: string;             // Toast de sucesso
+  queueMessages?: QueueMessage[];      // Mensagens personalizadas de espera
+}
+```
 
-useEffect(() => {
-  if (status === 'processing') {
-    // Iniciar timer de 10 minutos
-    timeoutRef.current = window.setTimeout(() => {
-      setStatus('error');
-      setLastError({
-        message: 'Tempo limite excedido',
-        code: 'TIMEOUT',
-        solution: 'A operação demorou mais de 10 minutos. Tente novamente.'
-      });
-    }, 10 * 60 * 1000); // 10 minutos
-  }
+---
+
+## Exemplo de Uso (Pose Changer Refatorado)
+
+```typescript
+// ANTES: ~500 linhas de código
+// DEPOIS: ~150 linhas focadas só na UI
+
+const PoseChangerTool = () => {
+  const { user } = usePremiumStatus();
+  const { balance: credits } = useUpscalerCredits(user?.id);
   
-  return () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  const {
+    status,
+    progress,
+    queuePosition,
+    outputUrl,
+    isProcessing,
+    startJob,
+    cancelJob,
+    reset,
+    uploadToStorage,
+  } = useAIToolProcessor({
+    toolName: 'pose-changer',
+    tableName: 'pose_changer_jobs',
+    edgeFunctionPath: 'runninghub-pose-changer/run',
+    creditCost: 60,
+    storagePath: 'pose-changer',
+    successMessage: 'Pose alterada com sucesso!',
+  });
+
+  // Estados específicos da UI
+  const [personImage, setPersonImage] = useState<string | null>(null);
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
+
+  const handleProcess = async () => {
+    // Comprime e faz upload
+    const personUrl = await uploadToStorage(personFile, 'person');
+    const referenceUrl = await uploadToStorage(referenceFile, 'reference');
+    
+    // Inicia o job com payload específico
+    await startJob({
+      personImageUrl: personUrl,
+      referenceImageUrl: referenceUrl,
+    });
   };
-}, [status]);
 
-// Limpar timeout quando job completar/falhar via Realtime
+  // ... resto é só UI pura (inputs, preview, botões)
+};
 ```
 
-## Fluxo Final
+---
 
+## Arquivos a Criar/Modificar
+
+### Novos Arquivos
+1. **`src/hooks/useAIToolProcessor.ts`** (~250 linhas)
+   - Hook principal com toda lógica unificada
+
+2. **`src/types/ai-tools.ts`** (~50 linhas)
+   - Tipos compartilhados (AIToolConfig, ProcessingStatus, etc.)
+
+### Arquivos a Refatorar
+3. **`src/pages/PoseChangerTool.tsx`**
+   - De ~500 linhas → ~150 linhas (só UI)
+
+4. **`src/pages/VesteAITool.tsx`**
+   - De ~500 linhas → ~150 linhas (só UI)
+
+5. **`src/pages/VideoUpscalerTool.tsx`**
+   - De ~700 linhas → ~250 linhas (só UI + lógica de trim)
+
+6. **`src/pages/UpscalerArcanoTool.tsx`**
+   - De ~1350 linhas → ~600 linhas (só UI + configurações de prompt)
+
+### Arquivos a Deletar (código migrado para hook)
+- Lógica duplicada será removida de cada página
+
+---
+
+## Benefícios
+
+| Métrica | Antes | Depois |
+|---------|-------|--------|
+| Linhas duplicadas | ~1600 | 0 |
+| Linhas totais AI tools | ~3050 | ~1300 |
+| Arquivos para corrigir bug | 4 | 1 |
+| Consistência entre ferramentas | Parcial | 100% |
+
+---
+
+## Fluxo Interno do Hook
+
+```text
+startJob(payload)
+    │
+    ├── if (processingRef.current) return ❌
+    │
+    ├── processingRef.current = true ✓
+    │
+    ├── checkActiveJob() → hasActiveJob? → BLOCK
+    │
+    ├── checkCredits() → insufficient? → BLOCK
+    │
+    ├── setStatus('uploading')
+    │
+    ├── createJobInDB() → jobId
+    │
+    ├── subscribeToRealtime(jobId)
+    │
+    ├── startTimeout(10min)
+    │
+    ├── callEdgeFunction(payload)
+    │       │
+    │       ├── success → setStatus('processing')
+    │       ├── queued → setStatus('waiting') + setQueuePosition
+    │       └── error → setStatus('error')
+    │
+    └── Realtime listener
+            │
+            ├── 'completed' → setOutputUrl + setStatus('completed') + processingRef = false
+            ├── 'failed' → setStatus('error') + processingRef = false
+            ├── 'running' → setStatus('processing')
+            └── 'queued' → setStatus('waiting') + update position
 ```
-1. Usuário clica "Aumentar Qualidade"
-   └── processingRef.current = true (previne duplicação)
-   └── Upload + Criar job no banco
-   └── Chamar Edge Function
-   └── status = 'processing'
-   └── Iniciar timer de 10 minutos
 
-2. Enquanto processando:
-   └── Polling silencioso a cada 15s (não exibe nada na UI)
-   └── Se Realtime receber 'completed' → mostrar resultado
-   └── Se Realtime receber 'failed' → mostrar erro do RunningHub
-   └── Se timer expirar (10 min) → mostrar timeout
+---
 
-3. Quando terminar:
-   └── processingRef.current = false
-   └── Cancelar timer
-```
+## Ordem de Implementação
 
-## Resultado Esperado
-
-- **Nunca mais** aparece "RunningHub API error" durante processamento normal
-- Erro só aparece se:
-  - Webhook trouxer FAILED (erro real do RunningHub)
-  - Timeout de 10 minutos (algo travou de verdade)
-- Tasks duplicadas prevenidas via `processingRef`
+1. Criar `src/types/ai-tools.ts` com tipos compartilhados
+2. Criar `src/hooks/useAIToolProcessor.ts` com lógica completa
+3. Refatorar `PoseChangerTool.tsx` (mais simples, serve de validação)
+4. Refatorar `VesteAITool.tsx`
+5. Refatorar `VideoUpscalerTool.tsx`
+6. Refatorar `UpscalerArcanoTool.tsx` (mais complexo, por último)
+7. Testar todas as ferramentas
 
