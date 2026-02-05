@@ -17,11 +17,12 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
- import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
+import { useJobReconciliation } from '@/hooks/useJobReconciliation';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
- import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -117,6 +118,30 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // Cleanup queued jobs when user leaves page
   useQueueSessionCleanup(sessionIdRef.current, status);
+
+  // Reconciliation polling - fallback when webhook doesn't arrive
+  const { reconcileNow } = useJobReconciliation({
+    table: 'upscaler_jobs',
+    jobId,
+    status,
+    pollingInterval: 15000, // 15 seconds
+    enabled: status === 'processing',
+    onReconciled: (result) => {
+      console.log('[Upscaler] Job reconciled:', result);
+      if (result.jobStatus === 'completed') {
+        // O Realtime vai pegar a mudança, mas podemos forçar update
+        toast.success(t('upscalerTool.toast.success'));
+      } else if (result.jobStatus === 'failed') {
+        setStatus('error');
+        setLastError({
+          message: result.errorMessage || 'Processing failed',
+          code: result.errorCode || 'TASK_FAILED',
+          solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
+        });
+        toast.error('Erro no processamento. Tente novamente.');
+      }
+    },
+  });
 
   // Cleanup on unmount
   useEffect(() => {
