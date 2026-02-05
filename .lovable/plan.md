@@ -1,333 +1,186 @@
 
 
-# Plano: Forçar Atualização do PWA com Botão Manual
+# Plano: Cancelar Jobs Presos e Verificação Global Automática
 
-## O Problema no iOS
+## Situação Atual
 
-O iOS tem um comportamento muito agressivo de cache para PWAs:
-- O Service Worker fica em cache por mais tempo
-- Mesmo com `skipWaiting`, o iOS pode ignorar
-- A única forma 100% garantida é fechar e reabrir o app
+Existe um job preso no status "running" há mais de 7 minutos para o usuário Vinicius (vinnynunesrio@gmail.com):
 
-## Solução em 2 Partes
+| ID Job | User ID | Status | Créditos | Tempo |
+|--------|---------|--------|----------|-------|
+| `11d174d4-7deb-452e-a10b-62a7cdb9abb8` | `858e37be-1c69-4655-a972-5c873df9d522` | running | 60 | ~7 min |
 
-### Parte 1: Banner "Atualização Disponível" (Frontend)
+O sistema atual só cancela jobs em **fila** (`queued`), não jobs que estão **processando** (`running`) eternamente.
 
-Criar um componente que:
-1. Detecta quando há um novo Service Worker esperando
-2. Mostra um banner fixo no topo da tela
-3. Ao clicar, executa uma atualização completa
+---
 
-### Parte 2: Notificação Push para Forçar Atualização
+## Solução em 3 Partes
 
-Enviar uma notificação push para todos os usuários com:
-- Título: "🔄 Atualização Disponível"
-- Corpo: "Toque aqui para atualizar o app"
-- URL: Uma rota especial que força limpeza de cache
+### Parte 1: Botão "Cancelar e Estornar" no Painel Admin
+
+Adicionar uma coluna de **Ações** na tabela de histórico com um botão para cancelar manualmente jobs com status `running` ou `queued`, devolvendo os créditos automaticamente.
+
+### Parte 2: Função SQL para Limpeza Global Automática
+
+Criar uma função `cleanup_all_stale_ai_jobs()` que:
+1. Identifica jobs `running` ou `queued` há mais de 10 minutos em **todas as 4 tabelas**
+2. Para cada um, chama `refund_upscaler_credits()` para devolver os créditos
+3. Atualiza o status para `failed` com mensagem explicativa
+
+### Parte 3: Cron Job (Opcional - Execução Automática)
+
+Configurar um cron job no PostgreSQL para executar a limpeza a cada 5 minutos automaticamente.
 
 ---
 
 ## Mudanças Técnicas
 
-### Arquivo 1: Criar `src/components/UpdateAvailableBanner.tsx`
+### Arquivo 1: Nova Migração SQL
 
-```typescript
-import { useState, useEffect } from 'react';
-import { RefreshCw, X } from 'lucide-react';
-import { cleanOldCaches } from '@/hooks/useServiceWorkerUpdate';
+Criar função `cleanup_all_stale_ai_jobs()` que limpa todas as tabelas:
 
-export const UpdateAvailableBanner = () => {
-  const [showBanner, setShowBanner] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
-
-    const checkForWaitingWorker = async () => {
-      const registration = await navigator.serviceWorker.getRegistration();
-      if (registration?.waiting) {
-        setShowBanner(true);
-      }
-    };
-
-    // Check immediately
-    checkForWaitingWorker();
-
-    // Listen for new service workers
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      // New SW took control - reload automatically
-      window.location.reload();
-    });
-
-    // Check when updatefound fires
-    navigator.serviceWorker.ready.then((registration) => {
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New version available
-              setShowBanner(true);
-            }
-          });
-        }
-      });
-    });
-  }, []);
-
-  const handleUpdate = async () => {
-    setIsUpdating(true);
+```sql
+CREATE OR REPLACE FUNCTION public.cleanup_all_stale_ai_jobs()
+RETURNS TABLE(table_name TEXT, cancelled_count INTEGER, refunded_credits INTEGER)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  job RECORD;
+  total_cancelled INTEGER := 0;
+  total_refunded INTEGER := 0;
+  stale_threshold INTERVAL := INTERVAL '10 minutes';
+BEGIN
+  -- Limpar upscaler_jobs
+  FOR job IN 
+    SELECT id, user_id, user_credit_cost 
+    FROM upscaler_jobs 
+    WHERE status IN ('running', 'queued') 
+    AND created_at < NOW() - stale_threshold
+  LOOP
+    -- Estornar créditos
+    IF job.user_credit_cost > 0 AND job.user_id IS NOT NULL THEN
+      PERFORM refund_upscaler_credits(job.user_id, job.user_credit_cost, 
+        'Refund: job timeout after 10 minutes');
+      total_refunded := total_refunded + job.user_credit_cost;
+    END IF;
     
-    try {
-      // 1. Clean ALL caches
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(name => caches.delete(name)));
-        console.log('[Update] All caches cleared');
-      }
-
-      // 2. Tell waiting SW to skip waiting
-      const registration = await navigator.serviceWorker.getRegistration();
-      if (registration?.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      }
-
-      // 3. Unregister and re-register SW
-      if (registration) {
-        await registration.unregister();
-        console.log('[Update] SW unregistered');
-      }
-
-      // 4. Force reload without cache
-      // Use cache-busting query param for iOS
-      const url = new URL(window.location.href);
-      url.searchParams.set('_v', Date.now().toString());
-      window.location.href = url.toString();
-      
-    } catch (error) {
-      console.error('[Update] Error:', error);
-      // Fallback: hard reload
-      window.location.reload();
-    }
-  };
-
-  if (!showBanner) return null;
-
-  return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white px-4 py-3 shadow-lg">
-      <div className="flex items-center justify-between max-w-screen-xl mx-auto">
-        <div className="flex items-center gap-2">
-          <RefreshCw className={`w-5 h-5 ${isUpdating ? 'animate-spin' : ''}`} />
-          <span className="text-sm font-medium">
-            {isUpdating ? 'Atualizando...' : 'Nova versão disponível!'}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleUpdate}
-            disabled={isUpdating}
-            className="bg-white text-fuchsia-600 px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-fuchsia-100 transition-colors disabled:opacity-50"
-          >
-            Atualizar Agora
-          </button>
-          <button
-            onClick={() => setShowBanner(false)}
-            className="text-white/80 hover:text-white p-1"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+    -- Marcar como failed
+    UPDATE upscaler_jobs SET 
+      status = 'failed',
+      error_message = 'Trabalho cancelado automaticamente após 10 minutos. Créditos estornados.',
+      completed_at = NOW()
+    WHERE id = job.id;
+    
+    total_cancelled := total_cancelled + 1;
+  END LOOP;
+  
+  table_name := 'upscaler_jobs';
+  cancelled_count := total_cancelled;
+  refunded_credits := total_refunded;
+  RETURN NEXT;
+  
+  -- Repetir para pose_changer_jobs, veste_ai_jobs, video_upscaler_jobs...
+  -- (código completo para todas as 4 tabelas)
+END;
+$$;
 ```
 
-### Arquivo 2: Criar rota `/force-update` em `src/pages/ForceUpdate.tsx`
+### Arquivo 2: Nova Edge Function `admin-cancel-job`
 
-Uma página especial que força limpeza de cache quando acessada via notificação push:
+Endpoint para cancelar um job específico manualmente:
 
 ```typescript
-import { useEffect, useState } from 'react';
-import { RefreshCw, CheckCircle } from 'lucide-react';
+// supabase/functions/admin-cancel-job/index.ts
 
-const ForceUpdate = () => {
-  const [status, setStatus] = useState<'cleaning' | 'done'>('cleaning');
-
-  useEffect(() => {
-    const forceCleanAndReload = async () => {
-      try {
-        // 1. Delete ALL caches
-        if ('caches' in window) {
-          const cacheNames = await caches.keys();
-          console.log('[ForceUpdate] Deleting caches:', cacheNames);
-          await Promise.all(cacheNames.map(name => caches.delete(name)));
-        }
-
-        // 2. Unregister ALL service workers
-        if ('serviceWorker' in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          for (const registration of registrations) {
-            await registration.unregister();
-            console.log('[ForceUpdate] Unregistered SW:', registration.scope);
-          }
-        }
-
-        // 3. Clear localStorage timestamp to force fresh check
-        localStorage.removeItem('sw-last-check-at');
-
-        setStatus('done');
-
-        // 4. Redirect to home after 1 second
-        setTimeout(() => {
-          // Use cache-busting param
-          window.location.href = '/?_v=' + Date.now();
-        }, 1000);
-
-      } catch (error) {
-        console.error('[ForceUpdate] Error:', error);
-        window.location.href = '/';
-      }
-    };
-
-    forceCleanAndReload();
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center text-white p-4">
-      {status === 'cleaning' ? (
-        <>
-          <RefreshCw className="w-16 h-16 text-fuchsia-500 animate-spin mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Atualizando...</h1>
-          <p className="text-gray-400">Limpando cache e baixando nova versão</p>
-        </>
-      ) : (
-        <>
-          <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Atualizado!</h1>
-          <p className="text-gray-400">Redirecionando...</p>
-        </>
-      )}
-    </div>
-  );
-};
-
-export default ForceUpdate;
+// POST { table: 'upscaler_jobs', jobId: 'uuid' }
+// 1. Verifica se usuário é admin
+// 2. Busca o job e seu user_credit_cost
+// 3. Chama refund_upscaler_credits()
+// 4. Atualiza status para 'cancelled'
+// 5. Retorna sucesso
 ```
 
-### Arquivo 3: Atualizar `src/App.tsx`
+### Arquivo 3: Atualizar `AdminAIToolsUsageTab.tsx`
 
-Adicionar o banner e a nova rota:
+Adicionar coluna de ações na tabela:
 
-```typescript
-// Adicionar imports
-import { UpdateAvailableBanner } from './components/UpdateAvailableBanner';
-const ForceUpdate = lazy(() => import("./pages/ForceUpdate"));
+```tsx
+// Nova coluna na tabela
+<TableHead className="whitespace-nowrap">Ações</TableHead>
 
-// No AppContent, adicionar o banner logo após o Sonner:
-<UpdateAvailableBanner />
-
-// Adicionar rota:
-<Route path="/force-update" element={<ForceUpdate />} />
-```
-
-### Arquivo 4: Atualizar `src/hooks/useServiceWorkerUpdate.ts`
-
-Adicionar listener para `controllerchange`:
-
-```typescript
-// Adicionar no useEffect principal:
-// Listen for controller change (new SW took over)
-navigator.serviceWorker.addEventListener('controllerchange', () => {
-  console.log('[SW] New service worker activated, reloading...');
-  // The UpdateAvailableBanner will handle the reload
-});
+// Célula com botão de cancelar (apenas para running/queued)
+<TableCell>
+  {(record.status === 'running' || record.status === 'queued') && (
+    <Button
+      variant="destructive"
+      size="sm"
+      onClick={() => handleCancelJob(record)}
+    >
+      <XCircle className="w-4 h-4 mr-1" />
+      Cancelar
+    </Button>
+  )}
+</TableCell>
 ```
 
 ---
 
-## Como Funciona
-
-### Cenário 1: Usuário Abre o App
+## Fluxo de Cancelamento Manual
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ 1. App inicia e verifica Service Worker                        │
+│ Admin clica em "Cancelar" em um job preso                       │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 2. Se há SW aguardando (nova versão disponível):                │
-│    → Mostra banner roxo no topo: "Nova versão disponível!"      │
+│ Frontend chama Edge Function admin-cancel-job                    │
+│ { table: "upscaler_jobs", jobId: "11d174d4-..." }               │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 3. Usuário clica "Atualizar Agora":                             │
-│    → Limpa TODOS os caches                                      │
-│    → Desregistra Service Worker                                 │
-│    → Recarrega página com cache-buster                          │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Cenário 2: Notificação Push
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. Admin envia push: "Atualização Disponível"                   │
-│    URL: /force-update                                           │
+│ Edge Function:                                                   │
+│ 1. Verifica se chamador é admin                                 │
+│ 2. Busca job e user_credit_cost (60 créditos)                   │
+│ 3. Chama refund_upscaler_credits(user_id, 60)                   │
+│ 4. Atualiza job: status='cancelled', error_message='...'        │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 2. Usuário toca na notificação                                  │
-│    → Abre /force-update                                         │
-└─────────────────────┬───────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 3. Página /force-update executa:                                │
-│    → Mostra "Atualizando..." com spinner                        │
-│    → Deleta todos os caches                                     │
-│    → Desregistra todos os SWs                                   │
-│    → Redireciona para / com cache-buster                        │
+│ Usuário recebe 60 créditos de volta automaticamente             │
+│ Job aparece como "Cancelado" no painel                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Ação Imediata: Enviar Push de Atualização
+## Fluxo de Limpeza Automática (a cada 5 min)
 
-Após implementar, você pode ir em **Admin > Push Notifications** e enviar:
-
-| Campo | Valor |
-|-------|-------|
-| **Título** | 🔄 Atualização Importante! |
-| **Mensagem** | Toque aqui para atualizar o ArcanoApp para a versão mais recente |
-| **URL** | /force-update |
-
-Todos que receberem e tocarem na notificação serão forçados a limpar o cache e baixar a versão nova.
-
----
-
-## Limitação Conhecida do iOS
-
-Mesmo com tudo isso, o iOS pode ainda cachear agressivamente. A solução **100% garantida** para iOS é instruir o usuário a:
-
-1. Fechar o app completamente (deslizar para cima no multitarefa)
-2. Reabrir o app
-
-Podemos adicionar essa instrução no banner quando detectamos iOS:
-
-```typescript
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-// No banner, mostrar texto extra para iOS:
-{isIOS && (
-  <p className="text-xs text-white/70 mt-1">
-    Se não funcionar, feche o app e abra novamente
-  </p>
-)}
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ Cron job executa cleanup_all_stale_ai_jobs() a cada 5 minutos   │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ Função SQL percorre as 4 tabelas:                               │
+│ - upscaler_jobs                                                 │
+│ - pose_changer_jobs                                             │
+│ - veste_ai_jobs                                                 │
+│ - video_upscaler_jobs                                           │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ Para cada job com status running/queued > 10 minutos:           │
+│ 1. refund_upscaler_credits(user_id, user_credit_cost)           │
+│ 2. UPDATE status = 'failed'                                     │
+│ 3. UPDATE error_message = 'Timeout após 10 minutos'             │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -336,17 +189,26 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/UpdateAvailableBanner.tsx` | **CRIAR** - Banner de atualização |
-| `src/pages/ForceUpdate.tsx` | **CRIAR** - Página de force update |
-| `src/App.tsx` | **MODIFICAR** - Adicionar banner e rota |
-| `src/hooks/useServiceWorkerUpdate.ts` | **MODIFICAR** - Adicionar listener |
+| `Nova migração SQL` | **CRIAR** - Função `cleanup_all_stale_ai_jobs()` |
+| `supabase/functions/admin-cancel-job/index.ts` | **CRIAR** - Endpoint para cancelar job manual |
+| `src/components/admin/AdminAIToolsUsageTab.tsx` | **MODIFICAR** - Adicionar botão de cancelar |
+
+---
+
+## Ação Imediata
+
+Após implementar, você poderá:
+
+1. **Cancelar manualmente** o job preso do Vinicius clicando no botão "Cancelar"
+2. **Os 60 créditos serão devolvidos** automaticamente
+3. **Jobs futuros** que ficarem presos mais de 10 minutos serão cancelados e estornados automaticamente
 
 ---
 
 ## Resultado Esperado
 
-1. Usuários verão um **banner roxo** no topo quando houver atualização
-2. Ao clicar "Atualizar Agora", o app limpa cache e recarrega
-3. Via **push notification** para `/force-update`, usuários são forçados a atualizar
-4. No iOS, se ainda não funcionar, o banner mostra instrução para fechar e reabrir
+- Botão **vermelho "Cancelar"** aparece apenas em jobs `running` ou `queued`
+- Ao clicar, o job é cancelado e créditos são devolvidos
+- Toast de confirmação: "Job cancelado e 60 créditos estornados"
+- Limpeza automática a cada 5 minutos remove jobs abandonados
 
