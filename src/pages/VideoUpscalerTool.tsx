@@ -7,14 +7,13 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
-import { useActiveJobCheck } from '@/hooks/useActiveJobCheck';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import VideoUploadCard from '@/components/video-upscaler/VideoUploadCard';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { cancelJob as centralCancelJob } from '@/ai/JobManager';
+import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -70,7 +69,7 @@ const VideoUpscalerTool: React.FC = () => {
    const [activeToolName, setActiveToolName] = useState<string>('');
    const [activeJobId, setActiveJobId] = useState<string | undefined>();
    const [activeStatus, setActiveStatus] = useState<string | undefined>();
-   const { checkActiveJob, cancelActiveJob } = useActiveJobCheck();
+   // Now using centralized checkActiveJob from JobManager
 
   const canProcess = videoUrl && videoFile && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
@@ -300,7 +299,15 @@ const VideoUpscalerTool: React.FC = () => {
     setOutputVideoUrl(null);
 
     try {
-      // Step 1: Create job in database
+      // Step 1: Upload video FIRST (before creating job to prevent orphans)
+      setProgress(10);
+      console.log('[VideoUpscaler] Uploading video...');
+      const videoStorageUrl = await uploadToStorage(videoFile);
+      console.log('[VideoUpscaler] Video uploaded:', videoStorageUrl);
+      setProgress(30);
+
+      // Step 2: Create job in database ONLY AFTER successful upload
+      // This prevents orphaned jobs if user closes page during upload
       const { data: job, error: jobError } = await supabase
         .from('video_upscaler_jobs')
         .insert({
@@ -310,7 +317,7 @@ const VideoUpscalerTool: React.FC = () => {
           video_width: videoMetadata?.width,
           video_height: videoMetadata?.height,
           video_duration_seconds: videoMetadata?.duration,
-          input_file_name: videoFile.name,
+          input_file_name: videoStorageUrl.split('/').pop() || videoFile.name,
         })
         .select()
         .single();
@@ -320,12 +327,8 @@ const VideoUpscalerTool: React.FC = () => {
       }
 
       setJobId(job.id);
-      console.log('[VideoUpscaler] Job created:', job.id);
-
-      // Step 2: Upload video to storage
-      setProgress(20);
-      const videoStorageUrl = await uploadToStorage(videoFile);
-      console.log('[VideoUpscaler] Video uploaded:', videoStorageUrl);
+      console.log('[VideoUpscaler] Job created with video:', job.id);
+      setProgress(40);
 
       // Step 3: Call edge function
       setProgress(40);
@@ -657,7 +660,7 @@ const VideoUpscalerTool: React.FC = () => {
         activeTool={activeToolName}
         activeJobId={activeJobId}
         activeStatus={activeStatus}
-        onCancelJob={cancelActiveJob}
+        onCancelJob={centralCancelJob}
       />
     </div>
   );
