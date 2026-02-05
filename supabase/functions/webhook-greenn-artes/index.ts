@@ -876,11 +876,17 @@ async function processGreennArtesWebhook(supabase: any, payload: any, logId: str
       }).eq('id', logId)
 
       // Send email (non-blocking failure)
-      const packInfo = processedPacks.length > 1 ? `${processedPacks.length} Packs` : packMapping?.packSlug || 'Pack'
-      try {
-        await sendWelcomeEmail(supabase, email, clientName, packInfo, requestId, packMapping?.isFerramentaIA || false, userLocale)
-      } catch (e) {
-        console.log(`   ├─ ⚠️ Falha no email (acesso já liberado)`)
+      // SKIP email for Upscaler Arcano (vitalício) - requested by admin
+      const isUpscalerArcano = processedPacks.includes('upscaller-arcano') || packMapping?.packSlug === 'upscaller-arcano'
+      if (isUpscalerArcano) {
+        console.log(`   ├─ ⏭️ Email de boas-vindas PULADO (Upscaler Arcano vitalício)`)
+      } else {
+        const packInfo = processedPacks.length > 1 ? `${processedPacks.length} Packs` : packMapping?.packSlug || 'Pack'
+        try {
+          await sendWelcomeEmail(supabase, email, clientName, packInfo, requestId, packMapping?.isFerramentaIA || false, userLocale)
+        } catch (e) {
+          console.log(`   ├─ ⚠️ Falha no email (acesso já liberado)`)
+        }
       }
 
       console.log(`\n✅ [${requestId}] PROCESSAMENTO CONCLUÍDO - Packs: ${processedPacks.join(', ')}`)

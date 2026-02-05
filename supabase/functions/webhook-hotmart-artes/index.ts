@@ -714,20 +714,26 @@ async function processHotmartWebhook(
     }).eq('id', logId)
 
     // Enviar email de boas-vindas (em try/catch separado)
-    // Agora enviamos para TODOS: novos, recompras e reativações
-    // A diferença é que clientes antigos NÃO recebem a senha no email
-    const wasInactive = existingPack && !existingPack.is_active
-    const isReturningCustomer = !isNewUser && (existingPack || wasInactive)
-    const shouldSendEmail = isNewUser || !existingPack || wasInactive
+    // SKIP email for Upscaler Arcano (vitalício) - requested by admin
+    const isUpscalerArcano = mapping.packSlug === 'upscaller-arcano'
+    if (isUpscalerArcano) {
+      console.log(`   ├─ ⏭️ Email de boas-vindas PULADO (Upscaler Arcano vitalício)`)
+    } else {
+      // Agora enviamos para TODOS: novos, recompras e reativações
+      // A diferença é que clientes antigos NÃO recebem a senha no email
+      const wasInactive = existingPack && !existingPack.is_active
+      const isReturningCustomer = !isNewUser && (existingPack || wasInactive)
+      const shouldSendEmail = isNewUser || !existingPack || wasInactive
 
-    if (shouldSendEmail) {
-      console.log(`   ├─ 📧 Enviando email de boas-vindas...`)
-      console.log(`   ├─ Tipo: ${isNewUser ? 'NOVO (com senha)' : 'ANTIGO (sem senha)'}`)
-      try {
-        // Passar transaction para deduplicação e isNewUser para decidir se mostra senha
-        await sendWelcomeEmail(supabase, email, name, productName, requestId, transaction, !isReturningCustomer)
-      } catch (emailError) {
-        console.log(`   ├─ ⚠️ Falha no email (acesso já liberado): ${emailError}`)
+      if (shouldSendEmail) {
+        console.log(`   ├─ 📧 Enviando email de boas-vindas...`)
+        console.log(`   ├─ Tipo: ${isNewUser ? 'NOVO (com senha)' : 'ANTIGO (sem senha)'}`)
+        try {
+          // Passar transaction para deduplicação e isNewUser para decidir se mostra senha
+          await sendWelcomeEmail(supabase, email, name, productName, requestId, transaction, !isReturningCustomer)
+        } catch (emailError) {
+          console.log(`   ├─ ⚠️ Falha no email (acesso já liberado): ${emailError}`)
+        }
       }
     }
 
