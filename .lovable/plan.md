@@ -1,352 +1,144 @@
 
+## Diagnóstico (o que está acontecendo de verdade)
 
-# Plano: Forçar Atualização do PWA com Botão Manual
+O bloqueio “você já tem um trabalho em andamento / dois ao mesmo tempo” vem do endpoint **`runninghub-queue-manager/check-user-active`**, que simplesmente procura no banco qualquer job do usuário com `status IN ('queued','running')`.
 
-## O Problema no iOS
+No caso desse usuário, eu já encontrei no banco um job **preso**:
 
-O iOS tem um comportamento muito agressivo de cache para PWAs:
-- O Service Worker fica em cache por mais tempo
-- Mesmo com `skipWaiting`, o iOS pode ignorar
-- A única forma 100% garantida é fechar e reabrir o app
+- Tabela: `upscaler_jobs`
+- `status`: `queued`
+- `task_id`: `null`
+- `started_at`: `null`
+- `position`: `null`
+- `waited_in_queue`: `false`
+- Id do job: `6b56dbb4-328d-460e-8aa1-4aaa8146641b`
+- Criado há horas (ou seja: não é fila “de verdade”, é job órfão)
 
-## Solução em 2 Partes
+Isso é exatamente o “fantasma” que faz o sistema achar que ele já está em job ativo.
 
-### Parte 1: Banner "Atualização Disponível" (Frontend)
+### Por que esse job órfão aparece
+No **Upscaler Arcano** (e também no **VideoUpscaler**) o fluxo atual cria o job no banco **antes** do upload e **antes** da chamada do backend. Se qualquer coisa falhar depois (upload, invoke, rede, iOS suspendendo o app), o job fica `queued` para sempre.
 
-Criar um componente que:
-1. Detecta quando há um novo Service Worker esperando
-2. Mostra um banner fixo no topo da tela
-3. Ao clicar, executa uma atualização completa
+E pior: o hook `useQueueSessionCleanup(sessionId, status)` só cancela se o status da UI for `'queued'` ou `'waiting'`, mas no `UpscalerArcanoTool` o status da UI é `'uploading'|'processing'|'error'...` (não existe `'waiting'`), então o cleanup quase nunca dispara.
 
-### Parte 2: Notificação Push para Forçar Atualização
-
-Enviar uma notificação push para todos os usuários com:
-- Título: "🔄 Atualização Disponível"
-- Corpo: "Toque aqui para atualizar o app"
-- URL: Uma rota especial que força limpeza de cache
+Resultado: job fica “pendurado” e bloqueia o usuário indefinidamente.
 
 ---
 
-## Mudanças Técnicas
-
-### Arquivo 1: Criar `src/components/UpdateAvailableBanner.tsx`
-
-```typescript
-import { useState, useEffect } from 'react';
-import { RefreshCw, X } from 'lucide-react';
-import { cleanOldCaches } from '@/hooks/useServiceWorkerUpdate';
-
-export const UpdateAvailableBanner = () => {
-  const [showBanner, setShowBanner] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
-
-    const checkForWaitingWorker = async () => {
-      const registration = await navigator.serviceWorker.getRegistration();
-      if (registration?.waiting) {
-        setShowBanner(true);
-      }
-    };
-
-    // Check immediately
-    checkForWaitingWorker();
-
-    // Listen for new service workers
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      // New SW took control - reload automatically
-      window.location.reload();
-    });
-
-    // Check when updatefound fires
-    navigator.serviceWorker.ready.then((registration) => {
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New version available
-              setShowBanner(true);
-            }
-          });
-        }
-      });
-    });
-  }, []);
-
-  const handleUpdate = async () => {
-    setIsUpdating(true);
-    
-    try {
-      // 1. Clean ALL caches
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(name => caches.delete(name)));
-        console.log('[Update] All caches cleared');
-      }
-
-      // 2. Tell waiting SW to skip waiting
-      const registration = await navigator.serviceWorker.getRegistration();
-      if (registration?.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      }
-
-      // 3. Unregister and re-register SW
-      if (registration) {
-        await registration.unregister();
-        console.log('[Update] SW unregistered');
-      }
-
-      // 4. Force reload without cache
-      // Use cache-busting query param for iOS
-      const url = new URL(window.location.href);
-      url.searchParams.set('_v', Date.now().toString());
-      window.location.href = url.toString();
-      
-    } catch (error) {
-      console.error('[Update] Error:', error);
-      // Fallback: hard reload
-      window.location.reload();
-    }
-  };
-
-  if (!showBanner) return null;
-
-  return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white px-4 py-3 shadow-lg">
-      <div className="flex items-center justify-between max-w-screen-xl mx-auto">
-        <div className="flex items-center gap-2">
-          <RefreshCw className={`w-5 h-5 ${isUpdating ? 'animate-spin' : ''}`} />
-          <span className="text-sm font-medium">
-            {isUpdating ? 'Atualizando...' : 'Nova versão disponível!'}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleUpdate}
-            disabled={isUpdating}
-            className="bg-white text-fuchsia-600 px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-fuchsia-100 transition-colors disabled:opacity-50"
-          >
-            Atualizar Agora
-          </button>
-          <button
-            onClick={() => setShowBanner(false)}
-            className="text-white/80 hover:text-white p-1"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-```
-
-### Arquivo 2: Criar rota `/force-update` em `src/pages/ForceUpdate.tsx`
-
-Uma página especial que força limpeza de cache quando acessada via notificação push:
-
-```typescript
-import { useEffect, useState } from 'react';
-import { RefreshCw, CheckCircle } from 'lucide-react';
-
-const ForceUpdate = () => {
-  const [status, setStatus] = useState<'cleaning' | 'done'>('cleaning');
-
-  useEffect(() => {
-    const forceCleanAndReload = async () => {
-      try {
-        // 1. Delete ALL caches
-        if ('caches' in window) {
-          const cacheNames = await caches.keys();
-          console.log('[ForceUpdate] Deleting caches:', cacheNames);
-          await Promise.all(cacheNames.map(name => caches.delete(name)));
-        }
-
-        // 2. Unregister ALL service workers
-        if ('serviceWorker' in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          for (const registration of registrations) {
-            await registration.unregister();
-            console.log('[ForceUpdate] Unregistered SW:', registration.scope);
-          }
-        }
-
-        // 3. Clear localStorage timestamp to force fresh check
-        localStorage.removeItem('sw-last-check-at');
-
-        setStatus('done');
-
-        // 4. Redirect to home after 1 second
-        setTimeout(() => {
-          // Use cache-busting param
-          window.location.href = '/?_v=' + Date.now();
-        }, 1000);
-
-      } catch (error) {
-        console.error('[ForceUpdate] Error:', error);
-        window.location.href = '/';
-      }
-    };
-
-    forceCleanAndReload();
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center text-white p-4">
-      {status === 'cleaning' ? (
-        <>
-          <RefreshCw className="w-16 h-16 text-fuchsia-500 animate-spin mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Atualizando...</h1>
-          <p className="text-gray-400">Limpando cache e baixando nova versão</p>
-        </>
-      ) : (
-        <>
-          <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Atualizado!</h1>
-          <p className="text-gray-400">Redirecionando...</p>
-        </>
-      )}
-    </div>
-  );
-};
-
-export default ForceUpdate;
-```
-
-### Arquivo 3: Atualizar `src/App.tsx`
-
-Adicionar o banner e a nova rota:
-
-```typescript
-// Adicionar imports
-import { UpdateAvailableBanner } from './components/UpdateAvailableBanner';
-const ForceUpdate = lazy(() => import("./pages/ForceUpdate"));
-
-// No AppContent, adicionar o banner logo após o Sonner:
-<UpdateAvailableBanner />
-
-// Adicionar rota:
-<Route path="/force-update" element={<ForceUpdate />} />
-```
-
-### Arquivo 4: Atualizar `src/hooks/useServiceWorkerUpdate.ts`
-
-Adicionar listener para `controllerchange`:
-
-```typescript
-// Adicionar no useEffect principal:
-// Listen for controller change (new SW took over)
-navigator.serviceWorker.addEventListener('controllerchange', () => {
-  console.log('[SW] New service worker activated, reloading...');
-  // The UpdateAvailableBanner will handle the reload
-});
-```
+## Objetivo da correção
+1) **Destravar usuários automaticamente** quando existir job órfão “fake queued”.
+2) **Impedir que novos jobs órfãos sejam criados** no Upscaler/VideoUpscaler.
+3) Dar uma saída fácil no UI (“Liberar fila / Cancelar job preso”) quando o bloqueio ocorrer.
 
 ---
 
-## Como Funciona
+## Entrega em 3 camadas (robusta)
 
-### Cenário 1: Usuário Abre o App
+### Camada A — “Auto-cura” no backend do gerenciador de fila (resolve o problema para todos)
+Alterar `supabase/functions/runninghub-queue-manager/index.ts` em `handleCheckUserActive` para:
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. App inicia e verifica Service Worker                        │
-└─────────────────────┬───────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 2. Se há SW aguardando (nova versão disponível):                │
-│    → Mostra banner roxo no topo: "Nova versão disponível!"      │
-└─────────────────────┬───────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 3. Usuário clica "Atualizar Agora":                             │
-│    → Limpa TODOS os caches                                      │
-│    → Desregistra Service Worker                                 │
-│    → Recarrega página com cache-buster                          │
-└─────────────────────────────────────────────────────────────────┘
-```
+1. Buscar (por tabela) não só `id, status`, mas também:
+   - `created_at, started_at, task_id, position, waited_in_queue, user_credit_cost`
+2. Se encontrar `status='queued'` **e** o job tiver perfil de “órfão”:
+   - `task_id IS NULL`
+   - `started_at IS NULL`
+   - `position IS NULL`
+   - `waited_in_queue = false`
+   - `user_credit_cost` é `0`/`null` (garantia de que não cobrou crédito)
+   - `created_at < now() - intervalo` (ex.: 2–5 minutos)
+3. Então **auto-cancelar** esse job (update):
+   - `status='cancelled'`
+   - `error_message='Auto-clean: orphan queued job (client failed before enqueue/run)'`
+   - `completed_at=now()`
+4. Continuar o loop (como se não tivesse job ativo) e só bloquear se achar um job ativo “de verdade”.
 
-### Cenário 2: Notificação Push
+Com isso, mesmo que o usuário tenha um job fantasma, o próprio “check de bloqueio” vai limpar e liberar.
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. Admin envia push: "Atualização Disponível"                   │
-│    URL: /force-update                                           │
-└─────────────────────┬───────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 2. Usuário toca na notificação                                  │
-│    → Abre /force-update                                         │
-└─────────────────────┬───────────────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 3. Página /force-update executa:                                │
-│    → Mostra "Atualizando..." com spinner                        │
-│    → Deleta todos os caches                                     │
-│    → Desregistra todos os SWs                                   │
-│    → Redireciona para / com cache-buster                        │
-└─────────────────────────────────────────────────────────────────┘
-```
+**Por que é seguro**: esse tipo de órfão é justamente o job que nunca começou (sem task_id, sem started_at, sem posição de fila) e sem crédito consumido.
 
 ---
 
-## Ação Imediata: Enviar Push de Atualização
+### Camada B — Botão de “Liberar agora” no modal (saída manual pro usuário)
+Atualizar o fluxo de bloqueio para permitir que o usuário destrave sem precisar chamar você:
 
-Após implementar, você pode ir em **Admin > Push Notifications** e enviar:
+1. Expandir o retorno de `check-user-active` para incluir:
+   - `activeTable` (ex.: `upscaler_jobs`)
+   - `activeStatus`
+   - `activeJobId`
+   - `createdAt` (opcional, mas ajuda)
+2. Atualizar as páginas (`UpscalerArcanoTool`, `PoseChangerTool`, `VesteAITool`, `VideoUpscalerTool`) para guardar também `activeJobId/activeStatus`.
+3. Atualizar `ActiveJobBlockModal`:
+   - Se `activeStatus === 'queued'`, exibir botão **“Liberar fila”**.
+   - Ao clicar, chamar o endpoint já existente:
+     - `POST /runninghub-queue-manager/cancel-session` com `{ userId }`
+   - Fechar modal e permitir tentar novamente.
 
-| Campo | Valor |
-|-------|-------|
-| **Título** | 🔄 Atualização Importante! |
-| **Mensagem** | Toque aqui para atualizar o ArcanoApp para a versão mais recente |
-| **URL** | /force-update |
-
-Todos que receberem e tocarem na notificação serão forçados a limpar o cache e baixar a versão nova.
-
----
-
-## Limitação Conhecida do iOS
-
-Mesmo com tudo isso, o iOS pode ainda cachear agressivamente. A solução **100% garantida** para iOS é instruir o usuário a:
-
-1. Fechar o app completamente (deslizar para cima no multitarefa)
-2. Reabrir o app
-
-Podemos adicionar essa instrução no banner quando detectamos iOS:
-
-```typescript
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-// No banner, mostrar texto extra para iOS:
-{isIOS && (
-  <p className="text-xs text-white/70 mt-1">
-    Se não funcionar, feche o app e abra novamente
-  </p>
-)}
-```
+Observação: `cancel-session` hoje cancela **queued** (não running). Isso é perfeito para o caso típico de “job fantasma”.
 
 ---
 
-## Arquivos a Criar/Modificar
+### Camada C — Corrigir a causa raiz no frontend (parar de criar job órfão)
+#### 1) Upscaler Arcano: upload primeiro, job depois
+Refatorar `src/pages/UpscalerArcanoTool.tsx` para o fluxo:
 
-| Arquivo | Ação |
-|---------|------|
-| `src/components/UpdateAvailableBanner.tsx` | **CRIAR** - Banner de atualização |
-| `src/pages/ForceUpdate.tsx` | **CRIAR** - Página de force update |
-| `src/App.tsx` | **MODIFICAR** - Adicionar banner e rota |
-| `src/hooks/useServiceWorkerUpdate.ts` | **MODIFICAR** - Adicionar listener |
+1. Gerar um `jobId` no cliente: `crypto.randomUUID()`
+2. Fazer upload para storage usando esse `jobId` (ex.: `upscaler/${jobId}.${ext}`)
+3. Só depois do upload OK:
+   - inserir na tabela `upscaler_jobs` com `id: jobId`, `session_id`, `user_id`, etc.
+4. Chamar `runninghub-upscaler/run` com `jobId` + `imageUrl`.
+
+Isso elimina 99% dos “queued órfãos”.
+
+#### 2) VideoUpscaler: mesmo princípio
+Em `src/pages/VideoUpscalerTool.tsx`, trocar para:
+1. Upload do vídeo primeiro
+2. Criar o job no banco depois do upload
+3. Invocar `runninghub-video-upscaler/run`
+
+#### 3) Se der erro depois de criar job, finalizar job no banco
+Mesmo com o fluxo corrigido, ainda pode falhar depois de inserir (por exemplo, falha no invoke). Então:
+- Em `catch`, se existir `jobId`, fazer update no job:
+  - `status='failed'` ou `cancelled'`
+  - `error_message` com motivo
+  - `completed_at=now()`
 
 ---
 
-## Resultado Esperado
+## Correção adicional (importante): `useQueueSessionCleanup` no Upscaler Arcano
+Hoje o `useQueueSessionCleanup(sessionId, status)` não funciona direito no Upscaler porque `status` nunca é `'queued'`/`'waiting'`.
 
-1. Usuários verão um **banner roxo** no topo quando houver atualização
-2. Ao clicar "Atualizar Agora", o app limpa cache e recarrega
-3. Via **push notification** para `/force-update`, usuários são forçados a atualizar
-4. No iOS, se ainda não funcionar, o banner mostra instrução para fechar e reabrir
+Vou ajustar a chamada (ou o próprio hook) para considerar estados como `uploading` como “em risco de órfão” quando já existe job pendente, por exemplo:
+
+- Passar para o hook um status “compatível”:
+  - quando `status === 'uploading'` ou existe um `jobId` sem conclusão, tratar como `'queued'` para fins de cleanup
+- Alternativa melhor (mais correta): mudar a assinatura do hook para receber um boolean `shouldCancelOnLeave` ao invés de string.
+
+---
+
+## Passo imediato (para esse usuário específico)
+Assim que eu implementar as mudanças acima:
+- o `check-user-active` vai **auto-cancelar** esse job órfão e o usuário volta a conseguir usar na hora.
+
+Se você quiser “destravar agora” sem esperar, a solução técnica é chamar o endpoint existente:
+- `runninghub-queue-manager/cancel-session` com `{ userId }`
+Mas eu só vou executar isso quando estivermos no modo de implementação (fora deste modo de leitura).
+
+---
+
+## Testes (pra garantir que não volta)
+1) Reproduzir erro forçando falha no meio (ex.: desligar rede depois do “criar job” / durante upload) e confirmar que:
+   - não fica job `queued` sem `position/task_id/started_at`
+2) Confirmar que o modal de bloqueio agora oferece **“Liberar fila”** quando for `queued`.
+3) Confirmar que jobs em fila real (com `position` e `waited_in_queue=true`) continuam bloqueando corretamente (comportamento desejado).
+4) Validar em iPhone PWA: fechar app no multitarefa durante upload e confirmar que não deixa “fantasma”.
+
+---
+
+## Arquivos que vou mexer (quando você aprovar a implementação)
+- `supabase/functions/runninghub-queue-manager/index.ts` (auto-cura + retornar mais info do job)
+- `src/hooks/useActiveJobCheck.ts` (tipos/retorno com mais campos)
+- `src/components/ai-tools/ActiveJobBlockModal.tsx` (botão “Liberar fila”)
+- `src/pages/UpscalerArcanoTool.tsx` (upload antes, job depois + cleanup em catch)
+- `src/pages/VideoUpscalerTool.tsx` (upload antes, job depois + cleanup em catch)
+- (opcional) `src/hooks/useQueueSessionCleanup.ts` ou ajuste da forma como ele é chamado no Upscaler
 
