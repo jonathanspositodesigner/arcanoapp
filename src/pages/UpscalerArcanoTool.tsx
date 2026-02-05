@@ -59,6 +59,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const [promptCategory, setPromptCategory] = useState<PromptCategory>('pessoas_perto');
   const [pessoasFraming, setPessoasFraming] = useState<PessoasFraming>('perto');
    const [comidaDetailLevel, setComidaDetailLevel] = useState(0.85);
+   const [editingLevel, setEditingLevel] = useState(0.10);
   const [inputImage, setInputImage] = useState<string | null>(null);
   const [inputFileName, setInputFileName] = useState<string>('');
   const [outputImage, setOutputImage] = useState<string | null>(null);
@@ -381,6 +382,7 @@ const UpscalerArcanoTool: React.FC = () => {
            resolution: isSpecialWorkflow ? undefined : resolutionValue,
            prompt: isSpecialWorkflow ? undefined : getFinalPrompt(),
            framingMode: isSpecialWorkflow ? undefined : framingMode,
+           editingLevel: (version === 'pro' && promptCategory === 'pessoas_perto') ? editingLevel : undefined,
         }
       });
 
@@ -739,6 +741,31 @@ const UpscalerArcanoTool: React.FC = () => {
               </Card>
             )}
 
+             {/* Editing Level Slider - PRO + Pessoas + De Perto only */}
+             {version === 'pro' && promptCategory === 'pessoas_perto' && (
+               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+                 <div className="flex items-center justify-between mb-1">
+                   <div className="flex items-center gap-1.5">
+                     <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+                     <span className="text-xs font-medium text-white">Nível de Edição</span>
+                   </div>
+                   <span className="text-xs text-purple-300 font-mono">{editingLevel.toFixed(2)}</span>
+                 </div>
+                 <Slider
+                   value={[editingLevel]}
+                   onValueChange={([value]) => setEditingLevel(value)}
+                   min={0}
+                   max={1}
+                   step={0.01}
+                   className="w-full"
+                 />
+                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+                   <span>Menos Edição</span>
+                   <span>Mais Edição</span>
+                 </div>
+               </Card>
+             )}
+ 
              {/* Comida/Objeto Detail Level Slider (0.70 to 1.00) */}
              {isComidaMode && (
                <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">

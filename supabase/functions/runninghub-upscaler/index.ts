@@ -312,7 +312,8 @@ async function handleRun(req: Request) {
     framingMode,
     userId,
      creditCost,
-     category
+     category,
+     editingLevel
   } = await req.json();
   
   // ========== INPUT VALIDATION ==========
@@ -448,6 +449,17 @@ async function handleRun(req: Request) {
      });
    }
 
+   // Validate editingLevel (0-1 range, optional)
+   if (editingLevel !== undefined && (typeof editingLevel !== 'number' || editingLevel < 0 || editingLevel > 1)) {
+     return new Response(JSON.stringify({ 
+       error: 'Invalid editing level (must be 0-1)', 
+       code: 'INVALID_EDITING_LEVEL'
+     }), {
+       status: 400,
+       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+     });
+   }
+ 
   // Determine which fileName to use for RunningHub
   let rhFileName = fileName;
 
@@ -701,6 +713,16 @@ async function handleRun(req: Request) {
         { nodeId: resolutionNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
       ];
 
+       // Add editingLevel for PRO + Pessoas Perto (node 91)
+       if (version === 'pro' && category === 'pessoas_perto' && editingLevel !== undefined) {
+         nodeInfoList.push({ 
+           nodeId: "91", 
+           fieldName: "value", 
+           fieldValue: String(editingLevel) 
+         });
+         console.log(`[RunningHub] Adding editingLevel (node 91): ${editingLevel}`);
+       }
+ 
       if (prompt) {
         nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
       }
