@@ -1,169 +1,204 @@
 
-# Plano: Corrigir Layout Mobile da Página Ferramentas-IA-Aplicativo
+# Plano: Compactar Layout Mobile da Página Upscaler Selection
 
 ## Problemas Identificados
 
-### 1. PromoToolsBanner (Faixa Promocional)
-O banner está com layout quebrado no mobile:
-- Badge "OFERTA LIMITADA" e texto estão lado a lado causando corte
-- Botão X mal posicionado
-- Espaçamento apertado demais
-
-### 2. Cards das Ferramentas
-Os cards estão completamente quebrados no mobile:
-- Aspect ratio muito baixo (`aspect-[16/9]`) faz os cards achatados
-- Texto dos botões "Acessar Ferramenta" cortado
-- Padding interno insuficiente
-- Layout geral desalinhado
+1. **Hero Section muito grande** - Ícone de 80px, título e descrição longa ocupam muito espaço
+2. **Cards muito grandes** - Padding p-8, ícones 64px, descrições longas
+3. **"Max 1280px" não é um feature** - Trocar por "Max 10 segundos"
+4. **Texto inferior desnecessário no mobile** - A frase final ocupa espaço
 
 ---
 
 ## Mudanças Planejadas
 
-### Arquivo 1: `src/components/PromoToolsBanner.tsx`
+### Arquivo: `src/pages/UpscalerSelectionPage.tsx`
 
-**Problema**: Layout flex em linha única causa sobreposição no mobile
+### 1. Hero Section - Compactar no Mobile
 
-**Solução**: Reorganizar para layout em coluna no mobile
+| Elemento | Antes | Depois (Mobile) |
+|----------|-------|-----------------|
+| Ícone container | `w-20 h-20` | `w-12 h-12 sm:w-20 sm:h-20` |
+| Ícone interno | `w-10 h-10` | `w-6 h-6 sm:w-10 sm:h-10` |
+| Margin bottom | `mb-6` | `mb-3 sm:mb-6` |
+| Título | `text-3xl` | `text-xl sm:text-3xl` |
+| Margin título | `mb-4` | `mb-2 sm:mb-4` |
+| Descrição | Texto longo | **Esconder no mobile** |
+| Section margin | `mb-12` | `mb-6 sm:mb-12` |
+| Padding top | `py-8` | `py-4 sm:py-8` |
 
-| Antes | Depois |
-|-------|--------|
-| `flex items-center justify-center gap-2` | `flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-4` |
-| Badge e texto na mesma linha | Badge em cima, texto embaixo no mobile |
-| Botão X posicionado absolutamente | Botão X fixo no canto superior direito |
+### 2. Cards - Layout Compacto no Mobile
+
+| Elemento | Antes | Depois (Mobile) |
+|----------|-------|-----------------|
+| Card padding | `p-8` | `p-4 sm:p-8` |
+| Ícone container | `w-16 h-16` | `w-10 h-10 sm:w-16 sm:h-16` |
+| Ícone interno | `w-8 h-8` | `w-5 h-5 sm:w-8 sm:h-8` |
+| Margin ícone | `mb-6` | `mb-3 sm:mb-6` |
+| Título | `text-2xl` | `text-lg sm:text-2xl` |
+| Margin título | `mb-3` | `mb-1.5 sm:mb-3` |
+| Descrição | Texto longo | **Texto curto no mobile** |
+| Margin descrição | `mb-6` | `mb-3 sm:mb-6` |
+| Tags | `text-sm` | `text-xs sm:text-sm` |
+| Gap grid | `gap-6` | `gap-3 sm:gap-6` |
+
+### 3. Descrições Resumidas (Mobile)
+
+**Imagem - Antes:**
+> "Aumente a resolução de suas imagens até 4x mantendo a qualidade e nitidez. Ideal para fotos, artes digitais e ilustrações."
+
+**Imagem - Depois (Mobile):**
+> "Aumente até 4x a resolução das suas imagens"
+
+**Vídeo - Antes:**
+> "Melhore a qualidade de vídeos curtos com IA. Perfeito para clips, reels e vídeos de até 10 segundos."
+
+**Vídeo - Depois (Mobile):**
+> "Melhore a qualidade de vídeos curtos"
+
+### 4. Trocar Feature Tag do Vídeo
 
 ```text
-// Estrutura atualizada
-<div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
-  {/* Badge - centralizado no mobile */}
-  <div className="...">OFERTA LIMITADA</div>
-  
-  {/* Texto - quebra linha no mobile */}
-  <p className="text-white text-[11px] sm:text-sm ...">
-    comece agora mesmo a usar nossas ferramentas de IA com 30% de desconto
+// Antes
+<Zap /> Max 1280px
+
+// Depois
+<Zap /> Max 10 segundos
+```
+
+### 5. Esconder Texto Inferior no Mobile
+
+```text
+// Antes
+<p className="text-center text-purple-400/60 text-sm mt-12 max-w-md mx-auto">
+  Ambos os upscalers utilizam...
+</p>
+
+// Depois
+<p className="hidden sm:block text-center text-purple-400/60 text-sm mt-12 max-w-md mx-auto">
+  ...
+</p>
+```
+
+---
+
+## Comparação Visual
+
+### Antes (Mobile):
+```text
+┌────────────────────────┐
+│                        │
+│      (  ✨  )          │  ← Ícone grande
+│                        │
+│   Upscaler Arcano V3   │  ← Título grande
+│                        │
+│  Escolha o tipo de     │
+│  mídia que deseja...   │  ← Descrição longa
+│                        │
+├────────────────────────┤
+│                        │
+│   [🖼️]                 │  ← Card Imagem
+│   Upscaler de Imagem   │
+│                        │
+│   Aumente a resolução  │
+│   de suas imagens...   │  ← Muito texto
+│   (continua...)        │
+│                        │
+│   [Até 4x] [60-80 cr]  │
+│                        │
+│   Selecionar →         │
+│                        │
+├────────────────────────┤
+│         ⬇️              │  ← PRECISA ROLAR!
+│   [🎬] Card Vídeo      │
+└────────────────────────┘
+```
+
+### Depois (Mobile):
+```text
+┌────────────────────────┐
+│   (✨)  Upscaler V3    │  ← Compacto
+│                        │
+├────────────────────────┤
+│ [🖼️] Upscaler Imagem   │
+│ Aumente até 4x         │  ← Texto curto
+│ [4x] [60-80 cr] →      │
+├────────────────────────┤
+│ [🎬] Upscaler Vídeo    │
+│ Melhore vídeos curtos  │  ← Texto curto
+│ [10s] [150 cr] →       │  ← Max 10 segundos
+└────────────────────────┘
+  ↑ TUDO VISÍVEL SEM ROLAR
+```
+
+---
+
+## Código Principal das Mudanças
+
+### Hero Compacto
+```text
+<div className="text-center mb-6 sm:mb-12">
+  <div className="inline-flex ... w-12 h-12 sm:w-20 sm:h-20 ... mb-3 sm:mb-6">
+    <Sparkles className="w-6 h-6 sm:w-10 sm:h-10" />
+  </div>
+  <h1 className="text-xl sm:text-3xl md:text-4xl ... mb-2 sm:mb-4">
+    Upscaler Arcano V3
+  </h1>
+  {/* Descrição escondida no mobile */}
+  <p className="hidden sm:block text-purple-300 ...">
+    Escolha o tipo de mídia...
   </p>
 </div>
-
-{/* Botão X - posição absoluta fixa */}
-<button className="absolute top-1/2 right-2 -translate-y-1/2 ...">
-  <X />
-</button>
 ```
 
-### Arquivo 2: `src/pages/FerramentasIAAplicativo.tsx`
-
-**Problema 1**: Aspect ratio dos cards muito baixo no mobile
+### Descrições Responsivas
 ```text
-// Antes
-aspect-[16/9] sm:aspect-[3/4]
+{/* Imagem */}
+<p className="...">
+  <span className="hidden sm:inline">
+    Aumente a resolução de suas imagens até 4x mantendo a qualidade e nitidez. 
+    Ideal para fotos, artes digitais e ilustrações.
+  </span>
+  <span className="sm:hidden">
+    Aumente até 4x a resolução das suas imagens
+  </span>
+</p>
 
-// Depois - cards mais altos no mobile
-aspect-[3/4] sm:aspect-[3/4]
+{/* Vídeo */}
+<p className="...">
+  <span className="hidden sm:inline">
+    Melhore a qualidade de vídeos curtos com IA. 
+    Perfeito para clips, reels e vídeos de até 10 segundos.
+  </span>
+  <span className="sm:hidden">
+    Melhore a qualidade de vídeos curtos
+  </span>
+</p>
 ```
 
-**Problema 2**: Padding interno dos cards insuficiente
+### Feature Tag Corrigida
 ```text
-// Antes
-p-4
+{/* Antes */}
+<Zap /> Max 1280px
 
-// Depois - padding maior no mobile
-p-3 sm:p-4
-```
-
-**Problema 3**: Texto dos botões cortado
-
-O botão "Acessar Ferramenta" está sendo cortado porque:
-- O ícone Play + texto são muito largos para cards pequenos
-- Precisa ajustar o texto ou usar abreviação no mobile
-
-```text
-// Antes
-<Button>
-  <Play /> Acessar Ferramenta
-</Button>
-
-// Depois - texto mais curto no mobile
-<Button className="text-xs sm:text-sm">
-  <Play className="h-3 w-3 sm:h-4 sm:w-4" />
-  <span className="hidden sm:inline">Acessar Ferramenta</span>
-  <span className="sm:hidden">Acessar</span>
-</Button>
-```
-
-**Problema 4**: Grid gap insuficiente
-```text
-// Antes
-gap-4
-
-// Depois - gap menor no mobile para mais espaço
-gap-3 sm:gap-4
+{/* Depois */}
+<Zap /> Max 10 segundos
 ```
 
 ---
 
-## Resumo Visual das Mudanças
+## Resumo das Mudanças
 
-### Banner - Antes vs Depois
-
-```text
-ANTES (mobile):
-┌──────────────────────────────────────────┐
-│ [OFERTA LIMITADA] texto cortado aqui... X│
-└──────────────────────────────────────────┘
-
-DEPOIS (mobile):
-┌──────────────────────────────────────────┐
-│        [OFERTA LIMITADA]               X │
-│  comece agora mesmo a usar nossas        │
-│  ferramentas de IA com 30% de desconto   │
-└──────────────────────────────────────────┘
-```
-
-### Cards - Antes vs Depois
-
-```text
-ANTES (mobile):
-┌─────────────┬─────────────┐
-│   Imagem    │   Imagem    │  ← Cards muito baixos
-│  [Acessar Fe│ [Em Br      │  ← Texto cortado
-└─────────────┴─────────────┘
-
-DEPOIS (mobile):
-┌─────────────┬─────────────┐
-│             │             │
-│   Imagem    │   Imagem    │  ← Cards mais altos
-│             │             │
-│   Título    │   Título    │
-│  [Acessar]  │ [Em Breve]  │  ← Texto completo
-└─────────────┴─────────────┘
-```
+| Área | Mudança |
+|------|---------|
+| Hero | Ícone menor, título menor, descrição escondida no mobile |
+| Cards | Padding menor, ícones menores, descrições curtas |
+| Feature Vídeo | "Max 1280px" → "Max 10 segundos" |
+| Texto inferior | Escondido no mobile |
+| Grid gap | Reduzido de 6 para 3 no mobile |
 
 ---
 
-## Arquivos a Modificar
+## Arquivo a Modificar
 
-| Arquivo | Mudanças |
-|---------|----------|
-| `src/components/PromoToolsBanner.tsx` | Layout flex-col no mobile, reposicionar botão X |
-| `src/pages/FerramentasIAAplicativo.tsx` | Aspect ratio, padding, texto dos botões, gap do grid |
-
----
-
-## Detalhes Técnicos
-
-### PromoToolsBanner.tsx - Mudanças Específicas
-
-1. Container interno: `flex flex-col sm:flex-row`
-2. Padding vertical aumentado: `py-3 sm:py-2`
-3. Badge centralizado no mobile
-4. Texto com `text-[11px] sm:text-sm` e `text-center`
-5. Botão X com posição absoluta fixa: `absolute top-1/2 right-2 -translate-y-1/2`
-
-### FerramentasIAAplicativo.tsx - Mudanças Específicas
-
-1. Card aspect ratio: `aspect-[4/5]` no mobile (mais alto)
-2. Overlay padding: `p-3 sm:p-4`
-3. Título: `text-sm sm:text-lg`
-4. Descrição: `text-[10px] sm:text-sm`
-5. Botão: texto abreviado no mobile + tamanhos menores
-6. Grid: `gap-3 sm:gap-4`
+`src/pages/UpscalerSelectionPage.tsx`
