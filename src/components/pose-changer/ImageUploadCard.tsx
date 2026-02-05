@@ -64,6 +64,8 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) handleFileSelect(file);
+    // Reset input value to allow re-selecting the same file
+    e.target.value = '';
   }, [handleFileSelect]);
 
   const handleRemove = useCallback((e: React.MouseEvent) => {
