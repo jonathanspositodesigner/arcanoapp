@@ -535,6 +535,16 @@ async function handleRun(req: Request) {
 
   if (creditError) {
     console.error('[RunningHub] Credit consumption error:', creditError);
+    // CRITICAL: Mark job as failed to prevent orphan
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        status: 'failed', 
+        error_message: `CREDIT_ERROR: ${creditError.message}`,
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', jobId);
+    
     return new Response(JSON.stringify({ 
       error: 'Erro ao processar créditos',
       code: 'CREDIT_ERROR',
@@ -548,6 +558,16 @@ async function handleRun(req: Request) {
   if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
     const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
     console.log('[RunningHub] Insufficient credits:', errorMsg);
+    // CRITICAL: Mark job as failed to prevent orphan
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        status: 'failed', 
+        error_message: `INSUFFICIENT_CREDITS: ${errorMsg}`,
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', jobId);
+    
     return new Response(JSON.stringify({ 
       error: errorMsg,
       code: 'INSUFFICIENT_CREDITS',
