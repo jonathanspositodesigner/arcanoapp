@@ -2,32 +2,76 @@
 
 ## Diagnóstico
 
-O job `2019471503829110786` está com status `running` no banco de dados desde `18:01:40`, mas nunca recebeu o callback de conclusão do RunningHub. O webhook (`runninghub-webhook`) não registrou nenhuma chamada.
+A função `cleanup_all_stale_ai_jobs()` existe no banco, mas nunca é chamada porque não existe um cron configurado. Você quer uma solução sem serviços externos - e a solução é simples:
 
-**Causa raiz identificada**: As funções de RunningHub ainda estão usando `esm.sh` para importar o Supabase client, enquanto as outras 22 funções já foram migradas para `npm:`. Isso pode causar falhas de bundling/deploy, resultando em webhooks não funcionais.
+**Usar `EdgeRuntime.waitUntil()` para disparar uma verificação após 10 minutos no momento que o job é iniciado.**
 
-## O que será feito
+## Solução Proposta
 
-### 1. Corrigir 6 funções de RunningHub para usar `npm:` em vez de `esm.sh`
+Quando um job é iniciado com sucesso (status `running`), a Edge Function dispara uma "tarefa de fundo" que:
+1. Espera 10 minutos (`setTimeout` de 600.000ms)
+2. Verifica se o job ainda está com status `running` ou `queued`
+3. Se sim, marca como `failed` e estorna os créditos
+
+### Mudança Técnica
+
+Adicionar em cada função de IA (upscaler, pose-changer, veste-ai, video-upscaler) um bloco após iniciar o job:
+
+```typescript
+// TIMEOUT SAFETY: Cancel job if no response in 10 minutes
+EdgeRuntime.waitUntil((async () => {
+  await new Promise(r => setTimeout(r, 10 * 60 * 1000)); // 10 minutes
+  
+  // Check if job is still pending
+  const { data: job } = await supabase
+    .from('upscaler_jobs')
+    .select('status')
+    .eq('id', jobId)
+    .single();
+  
+  if (job && (job.status === 'running' || job.status === 'queued')) {
+    console.log(`[Timeout] Job ${jobId} stuck for 10min, cancelling...`);
+    
+    // Cancel and refund
+    await supabase.rpc('user_cancel_ai_job', {
+      p_table_name: 'upscaler_jobs',
+      p_job_id: jobId
+    });
+  }
+})());
+```
+
+## Arquivos a Modificar
 
 | Arquivo | Mudança |
 |---------|---------|
-| `runninghub-webhook/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
-| `runninghub-upscaler/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
-| `runninghub-pose-changer/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
-| `runninghub-veste-ai/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
-| `runninghub-video-upscaler/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
-| `runninghub-video-upscaler-webhook/index.ts` | `esm.sh/@supabase/supabase-js@2` → `npm:@supabase/supabase-js@2` |
+| `runninghub-upscaler/index.ts` | Adicionar waitUntil após iniciar job |
+| `runninghub-pose-changer/index.ts` | Adicionar waitUntil após iniciar job |
+| `runninghub-veste-ai/index.ts` | Adicionar waitUntil após iniciar job |
+| `runninghub-video-upscaler/index.ts` | Adicionar waitUntil após iniciar job |
 
-### 2. Fazer deploy de todas as 6 funções
+## Como Funciona
 
-### 3. Corrigir manualmente o job pendente
+```text
+[Job Iniciado] ──► EdgeRuntime.waitUntil() dispara timer
+                           │
+                     [10 minutos]
+                           │
+                           ▼
+                  Verifica status do job
+                           │
+              ┌────────────┴────────────┐
+              ▼                         ▼
+        [completed/failed]         [running/queued]
+              │                         │
+              ▼                         ▼
+         Nada a fazer            Cancela + Estorna
+```
 
-Depois do deploy, vou atualizar o status do job para `failed` e estornar os 60 créditos do usuário.
+## Resultado Esperado
 
-## Resultado esperado
-
-- Todas as funções de IA usando o padrão estável (`npm:`)
-- Webhooks funcionando corretamente
-- Próximos jobs receberão os callbacks normalmente
+- Jobs que não recebem callback em 10 minutos são automaticamente cancelados
+- Créditos são estornados ao usuário
+- Zero custos de cloud/cron externo
+- Funciona dentro da própria requisição que inicia o job
 
