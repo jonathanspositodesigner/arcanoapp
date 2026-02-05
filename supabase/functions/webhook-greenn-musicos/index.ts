@@ -1,4 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -385,7 +386,7 @@ async function processGreennMusicosWebhook(supabase: any, payload: any, logId: s
 // ============================================================================
 // HANDLER PRINCIPAL - ACK RÁPIDO
 // ============================================================================
-Deno.serve(async (req) => {
+serve(async (req) => {
   const startTime = Date.now()
   const requestId = crypto.randomUUID().slice(0, 8)
   

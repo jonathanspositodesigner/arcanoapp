@@ -1,4 +1,5 @@
- import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+ import { createClient } from 'npm:@supabase/supabase-js@2';
 
 /**
  * RUNNINGHUB QUEUE MANAGER - MULTI-API ARCHITECTURE
@@ -119,7 +120,7 @@ type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
- Deno.serve(async (req) => {
+ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

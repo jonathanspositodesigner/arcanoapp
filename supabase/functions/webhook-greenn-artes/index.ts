@@ -1,3 +1,4 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -920,7 +921,7 @@ async function processGreennArtesWebhook(supabase: any, payload: any, logId: str
 // ============================================================================
 // HANDLER PRINCIPAL - ACK RÁPIDO
 // ============================================================================
-Deno.serve(async (req) => {
+serve(async (req) => {
   const startTime = Date.now()
   const requestId = crypto.randomUUID().slice(0, 8)
   
