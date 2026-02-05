@@ -646,6 +646,26 @@ async function handleRun(req: Request) {
         .eq('id', jobId);
       
       console.log(`[VesteAI] Job ${jobId} started with taskId: ${runData.taskId}`);
+
+      // TIMEOUT SAFETY: Cancel job if no callback in 10 minutes
+      EdgeRuntime.waitUntil((async () => {
+        await new Promise(r => setTimeout(r, 10 * 60 * 1000)); // 10 minutes
+        
+        const { data: job } = await supabase
+          .from('veste_ai_jobs')
+          .select('status')
+          .eq('id', jobId)
+          .single();
+        
+        if (job && (job.status === 'running' || job.status === 'queued')) {
+          console.log(`[VesteAI] TIMEOUT: Job ${jobId} stuck for 10min, cancelling...`);
+          
+          await supabase.rpc('user_cancel_ai_job', {
+            p_table_name: 'veste_ai_jobs',
+            p_job_id: jobId
+          });
+        }
+      })());
       
       return new Response(JSON.stringify({ 
         success: true, 
