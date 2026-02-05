@@ -1,284 +1,423 @@
-# Sistema de Jobs/Fila de IA - 100% Centralizado ✅
 
-## Status Final: COMPLETO
 
-| Página | Status | Notas |
-|--------|--------|-------|
-| **UpscalerArcanoTool.tsx** | ✅ OK | Status inicial: `pending` |
-| **PoseChangerTool.tsx** | ✅ OK | Status inicial: `pending` |
-| **VesteAITool.tsx** | ✅ OK | Status inicial: `pending` |
-| **VideoUpscalerTool.tsx** | ✅ OK | Status inicial: `pending` + polling fallback (aceitável) |
+# Plano: Sistema de Logs e Diagnóstico para Jobs de IA
 
----
+## Objetivo
 
-## Correções Aplicadas
-
-1. ✅ Removidas rotas legadas `/queue-status` e `/process-queue` do `runninghub-video-upscaler`
-2. ✅ Alterado status inicial de `'queued'` para `'pending'` nas 4 páginas
-- `checkActiveJob()` do JobManager (linha 25, 325-333)
-- `cancelJob()` do JobManager (linha 25, 467-492)
-- `useQueueSessionCleanup()` para cleanup de sessão (linha 124)
-- `useProcessingButton()` para prevenir cliques duplos (linha 88)
-- Realtime subscription para updates do job (linhas 168-234)
-- Estado da UI baseado no estado real do job (Realtime)
-
-#### ⚠️ O que PRECISA CORREÇÃO:
-
-**Conflito 1: Insert direto no banco (linhas 389-400)**
-```typescript
-const { data: job, error: jobError } = await supabase
-  .from('upscaler_jobs')
-  .insert({
-    session_id: sessionIdRef.current,
-    status: 'queued',  // ← Define status localmente
-    ...
-  })
-```
-**Problema:** Cria job diretamente sem usar `JobManager.createJob()`, e define `status: 'queued'` que deveria ser `'pending'`.
-
-**Conflito 2: Invoke manual da edge function (linhas 415-436)**
-```typescript
-const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler/run', {...});
-```
-**Problema:** Chama edge function diretamente sem usar `JobManager.startJob()`.
-
-**Conflito 3: Estados locais de UI (linhas 77-80)**
-```typescript
-const [isWaitingInQueue, setIsWaitingInQueue] = useState(false);
-const [queuePosition, setQueuePosition] = useState(0);
-```
-**Problema:** Mantém estado duplicado de fila que pode conflitar com o estado real. **PORÉM** estes são atualizados via Realtime (linha 217-220), então **NÃO é conflito grave** - são espelhos do estado central.
+Implementar observabilidade completa no sistema de fila/jobs de IA, permitindo:
+1. Identificar rapidamente onde e por que um job falhou
+2. Ver o histórico de etapas executadas por cada job
+3. Acessar erros brutos da RunningHub/webhooks sem mascaramento
+4. Visualizar status e etapas na UI para o usuário
 
 ---
 
-### 2. PoseChangerTool.tsx (704 linhas)
+## Arquitetura Proposta
 
-#### ✅ O que está CORRETO:
-- `checkActiveJob()` do JobManager (linha 19, 247-255)
-- `cancelJob()` do JobManager (linha 19, 372-396)
-- `useQueueSessionCleanup()` (linha 86)
-- `useProcessingButton()` (linha 61)
-- Realtime subscription (linhas 88-132)
-
-#### ⚠️ O que PRECISA CORREÇÃO:
-
-**Conflito 1: Insert direto no banco (linhas 293-303)**
-```typescript
-const { data: job, error: jobError } = await supabase
-  .from('pose_changer_jobs')
-  .insert({
-    session_id: sessionIdRef.current,
-    user_id: user.id,
-    status: 'queued',  // ← Deveria ser 'pending'
-    ...
-  })
+```text
+┌────────────────────────────────────────────────────────────────┐
+│                      TABELAS DE JOBS                            │
+│  ┌────────────────────────────────────────────────────────────┐│
+│  │ + current_step (text)      → etapa atual do job            ││
+│  │ + step_history (jsonb[])   → array de etapas executadas    ││
+│  │ + raw_api_response (jsonb) → resposta bruta da RunningHub  ││
+│  │ + raw_webhook_payload(jsonb)→ payload bruto do webhook     ││
+│  │ + failed_at_step (text)    → etapa onde falhou             ││
+│  └────────────────────────────────────────────────────────────┘│
+└────────────────────────────────────────────────────────────────┘
+                            ↓
+┌────────────────────────────────────────────────────────────────┐
+│                      EDGE FUNCTIONS                             │
+│  • Registrar cada etapa em step_history                        │
+│  • Atualizar current_step a cada transição                     │
+│  • Em caso de erro: marcar failed_at_step + salvar raw_*       │
+└────────────────────────────────────────────────────────────────┘
+                            ↓
+┌────────────────────────────────────────────────────────────────┐
+│                      FRONTEND UI                                │
+│  • Exibir current_step e position ao usuário                   │
+│  • Se erro: mostrar failed_at_step + mensagem clara            │
+│  • Modal de detalhes (admin): step_history + payloads raw      │
+└────────────────────────────────────────────────────────────────┘
 ```
 
-**Conflito 2: Invoke manual da edge function (linhas 316-327)**
+---
+
+## Etapas do Job (Definição)
+
+| Step Code | Nome Visível | Descrição |
+|-----------|--------------|-----------|
+| `upload` | Upload de Imagem | Imagem sendo enviada para storage |
+| `insert` | Criando Job | Registro criado no banco |
+| `credits` | Verificando Créditos | Consumo de créditos |
+| `queue_check` | Verificando Fila | Consultando slots disponíveis |
+| `queued` | Aguardando na Fila | Job está na fila FIFO |
+| `starting` | Iniciando Processamento | Chamando API RunningHub |
+| `running` | Processando | RunningHub executando workflow |
+| `webhook_received` | Callback Recebido | Webhook da RunningHub chegou |
+| `completed` | Concluído | Resultado disponível |
+| `failed` | Falhou | Erro em alguma etapa |
+| `cancelled` | Cancelado | Cancelado pelo usuário |
+
+---
+
+## Mudanças no Banco de Dados
+
+### Migration: Adicionar colunas de observabilidade
+
+Adicionar às 4 tabelas de jobs (`upscaler_jobs`, `pose_changer_jobs`, `veste_ai_jobs`, `video_upscaler_jobs`):
+
+```sql
+-- Etapa atual do job (para UI)
+ALTER TABLE upscaler_jobs ADD COLUMN IF NOT EXISTS current_step text DEFAULT 'upload';
+ALTER TABLE pose_changer_jobs ADD COLUMN IF NOT EXISTS current_step text DEFAULT 'upload';
+ALTER TABLE veste_ai_jobs ADD COLUMN IF NOT EXISTS current_step text DEFAULT 'upload';
+ALTER TABLE video_upscaler_jobs ADD COLUMN IF NOT EXISTS current_step text DEFAULT 'upload';
+
+-- Histórico de etapas (para debug)
+ALTER TABLE upscaler_jobs ADD COLUMN IF NOT EXISTS step_history jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE pose_changer_jobs ADD COLUMN IF NOT EXISTS step_history jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE veste_ai_jobs ADD COLUMN IF NOT EXISTS step_history jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE video_upscaler_jobs ADD COLUMN IF NOT EXISTS step_history jsonb DEFAULT '[]'::jsonb;
+
+-- Resposta bruta da API RunningHub
+ALTER TABLE upscaler_jobs ADD COLUMN IF NOT EXISTS raw_api_response jsonb;
+ALTER TABLE pose_changer_jobs ADD COLUMN IF NOT EXISTS raw_api_response jsonb;
+ALTER TABLE veste_ai_jobs ADD COLUMN IF NOT EXISTS raw_api_response jsonb;
+ALTER TABLE video_upscaler_jobs ADD COLUMN IF NOT EXISTS raw_api_response jsonb;
+
+-- Payload bruto do webhook
+ALTER TABLE upscaler_jobs ADD COLUMN IF NOT EXISTS raw_webhook_payload jsonb;
+ALTER TABLE pose_changer_jobs ADD COLUMN IF NOT EXISTS raw_webhook_payload jsonb;
+ALTER TABLE veste_ai_jobs ADD COLUMN IF NOT EXISTS raw_webhook_payload jsonb;
+ALTER TABLE video_upscaler_jobs ADD COLUMN IF NOT EXISTS raw_webhook_payload jsonb;
+
+-- Etapa onde falhou (para UI)
+ALTER TABLE upscaler_jobs ADD COLUMN IF NOT EXISTS failed_at_step text;
+ALTER TABLE pose_changer_jobs ADD COLUMN IF NOT EXISTS failed_at_step text;
+ALTER TABLE veste_ai_jobs ADD COLUMN IF NOT EXISTS failed_at_step text;
+ALTER TABLE video_upscaler_jobs ADD COLUMN IF NOT EXISTS failed_at_step text;
+```
+
+---
+
+## Mudanças nas Edge Functions
+
+### 1. Função Helper: `logStep()`
+
+Adicionar ao QueueManager e edge functions uma função para registrar etapas:
+
 ```typescript
-const { data: runResult, error: runError } = await supabase.functions.invoke(
-  'runninghub-pose-changer/run',
-  {...}
+async function logStep(
+  table: string,
+  jobId: string,
+  step: string,
+  details?: Record<string, any>
+): Promise<void> {
+  const timestamp = new Date().toISOString();
+  const entry = { step, timestamp, ...details };
+  
+  await supabase
+    .from(table)
+    .update({
+      current_step: step,
+      step_history: supabase.sql`step_history || ${JSON.stringify([entry])}::jsonb`
+    })
+    .eq('id', jobId);
+  
+  console.log(`[${table}] Job ${jobId}: ${step}`, details || '');
+}
+```
+
+### 2. Edge Functions de Ferramentas
+
+Instrumentar cada ponto crítico:
+
+```typescript
+// runninghub-upscaler/run (exemplo)
+
+// Após upload para RunningHub
+await logStep('upscaler_jobs', jobId, 'upload', { fileName: rhFileName });
+
+// Após consumir créditos
+await logStep('upscaler_jobs', jobId, 'credits', { cost: creditCost, newBalance });
+
+// Ao verificar fila
+await logStep('upscaler_jobs', jobId, 'queue_check', { slotsAvailable, globalRunning });
+
+// Se enfileirar
+await logStep('upscaler_jobs', jobId, 'queued', { position });
+
+// Ao chamar RunningHub
+await logStep('upscaler_jobs', jobId, 'starting', { webappId, accountName });
+
+// Em caso de erro
+await supabase.from('upscaler_jobs').update({
+  status: 'failed',
+  current_step: 'failed',
+  failed_at_step: 'credits', // ou qual step falhou
+  error_message: errorMessage,
+  raw_api_response: apiResponse // resposta bruta
+}).eq('id', jobId);
+await logStep('upscaler_jobs', jobId, 'failed', { error: errorMessage, at_step: 'credits' });
+```
+
+### 3. QueueManager `/finish`
+
+Salvar payload do webhook:
+
+```typescript
+// handleFinish()
+await supabase.from(table).update({
+  status: newStatus,
+  raw_webhook_payload: webhookPayload,
+  current_step: newStatus,
+  failed_at_step: isError ? 'webhook_received' : null,
+}).eq('id', jobId);
+await logStep(table, jobId, isError ? 'failed' : 'completed', { outputUrl, errorMessage });
+```
+
+### 4. Webhooks
+
+Salvar payload bruto antes de processar:
+
+```typescript
+// runninghub-webhook
+await supabase.from(jobTable).update({
+  raw_webhook_payload: payload
+}).eq('id', jobId);
+await logStep(jobTable, jobId, 'webhook_received', { event, taskStatus });
+```
+
+---
+
+## Mudanças no Frontend
+
+### 1. Atualizar Realtime Subscription
+
+As páginas já usam Realtime. Adicionar campos ao `SELECT`:
+
+```typescript
+// Dentro do onUpdate do Realtime
+const newData = payload.new as {
+  status: string;
+  current_step: string;
+  position: number;
+  failed_at_step: string | null;
+  error_message: string | null;
+  output_url: string | null;
+};
+```
+
+### 2. Exibir Etapa Atual na UI
+
+Adicionar indicador visual de etapa:
+
+```typescript
+// Novo componente: JobStepIndicator.tsx
+const STEP_LABELS: Record<string, string> = {
+  upload: 'Enviando imagem...',
+  insert: 'Preparando...',
+  credits: 'Verificando créditos...',
+  queue_check: 'Verificando fila...',
+  queued: 'Aguardando na fila',
+  starting: 'Iniciando processamento...',
+  running: 'Processando com IA...',
+  webhook_received: 'Finalizando...',
+  completed: 'Concluído!',
+  failed: 'Erro no processamento',
+  cancelled: 'Cancelado',
+};
+
+const JobStepIndicator = ({ step, failedAtStep, errorMessage }: Props) => (
+  <div className="flex items-center gap-2">
+    <span className="text-sm text-purple-200">
+      {STEP_LABELS[step] || step}
+    </span>
+    {failedAtStep && (
+      <span className="text-xs text-red-400">
+        Falhou em: {STEP_LABELS[failedAtStep]}
+      </span>
+    )}
+  </div>
 );
 ```
 
----
+### 3. Modal de Detalhes (Admin/Debug)
 
-### 3. VesteAITool.tsx (656 linhas)
-
-#### ✅ O que está CORRETO:
-- `checkActiveJob()` do JobManager (linha 19, 247-255)
-- `cancelJob()` do JobManager (linha 19, 372-396)
-- `useQueueSessionCleanup()` (linha 86)
-- `useProcessingButton()` (linha 61)
-- Realtime subscription (linhas 88-132)
-
-#### ⚠️ O que PRECISA CORREÇÃO:
-
-**Conflito 1: Insert direto no banco (linhas 293-303)**
-```typescript
-const { data: job, error: jobError } = await supabase
-  .from('veste_ai_jobs')
-  .insert({
-    session_id: sessionIdRef.current,
-    user_id: user.id,
-    status: 'queued',  // ← Deveria ser 'pending'
-    ...
-  })
-```
-
-**Conflito 2: Invoke manual da edge function (linhas 316-327)**
-```typescript
-const { data: runResult, error: runError } = await supabase.functions.invoke(
-  'runninghub-veste-ai/run',
-  {...}
-);
-```
-
----
-
-### 4. VideoUpscalerTool.tsx (669 linhas)
-
-#### ✅ O que está CORRETO:
-- `checkActiveJob()` do JobManager (linha 16, 280-288)
-- `cancelJob()` do JobManager (linha 16, 388-411)
-- `useQueueSessionCleanup()` (linha 83)
-- `useProcessingButton()` (linha 61)
-- Realtime subscription (linhas 85-129)
-
-#### ⚠️ O que PRECISA CORREÇÃO:
-
-**Conflito 1: Insert direto no banco (linhas 311-323)**
-```typescript
-const { data: job, error: jobError } = await supabase
-  .from('video_upscaler_jobs')
-  .insert({
-    session_id: sessionIdRef.current,
-    user_id: user.id,
-    status: 'queued',  // ← Deveria ser 'pending'
-    ...
-  })
-```
-
-**Conflito 2: Invoke manual da edge function (linhas 337-347)**
-```typescript
-const { data: runResult, error: runError } = await supabase.functions.invoke(
-  'runninghub-video-upscaler/run',
-  {...}
-);
-```
-
-**Conflito 3: Polling Fallback LOCAL (linhas 165-223)**
-```typescript
-// Polling fallback de ÚLTIMO RECURSO - só ativa após 3 minutos sem resposta
-const pollAttemptsRef = useRef(0);
-const pollStartTimeRef = useRef<number | null>(null);
-
-useEffect(() => {
-  // Lógica de polling local para verificar status do job
-  const { data: job } = await supabase
-    .from('video_upscaler_jobs')
-    .select('status, output_url, error_message')
-    .eq('id', jobId)
-    .maybeSingle();
-  ...
-}, [jobId, status, refetchCredits]);
-```
-**Problema:** Implementa polling local para verificar status do job. **PORÉM** este é um fallback de emergência que só roda após 3 minutos e no máximo 3 vezes, para casos onde o webhook falha. **NÃO é conflito crítico** - é um mecanismo de resiliência necessário para vídeos que demoram mais.
-
----
-
-## Tabela de Conflitos
-
-| Página | Insert Direto | Invoke Direto | Status `queued` | Polling Local | Lógica de Fila Local |
-|--------|--------------|---------------|-----------------|---------------|---------------------|
-| Upscaler | ⚠️ Sim (L389) | ⚠️ Sim (L415) | ⚠️ Sim | ❌ Não | ❌ Não |
-| Pose | ⚠️ Sim (L293) | ⚠️ Sim (L316) | ⚠️ Sim | ❌ Não | ❌ Não |
-| Veste | ⚠️ Sim (L293) | ⚠️ Sim (L316) | ⚠️ Sim | ❌ Não | ❌ Não |
-| Video | ⚠️ Sim (L311) | ⚠️ Sim (L337) | ⚠️ Sim | ⚠️ Sim (L165) | ❌ Não |
-
----
-
-## O que NÃO existe (CORRETO):
-
-✅ Nenhuma página implementa:
-- Fila local própria
-- Contagem de concorrência local
-- Retry automático local
-- Bloqueio de múltiplos jobs duplicando regra (usam `checkActiveJob` centralizado)
-- Chamada direta ao RunningHub (todas passam pela edge function)
-- Timer para "gerenciar" status por conta própria (usam Realtime)
-
-✅ Todas as páginas dependem de:
-- Estado real do job via Supabase Realtime
-- `checkActiveJob()` centralizado para bloquear múltiplos jobs
-- `cancelJob()` centralizado para cancelamento com reembolso
-
----
-
-## Avaliação de Risco
-
-### ⚠️ BAIXO RISCO: Insert direto + Invoke direto
-
-**Por que não é crítico:**
-1. O fluxo funciona corretamente
-2. A edge function é quem decide o status real (não a página)
-3. O Realtime sincroniza o estado da UI com o banco
-4. Créditos são consumidos e reembolsados corretamente no backend
-
-**Por que seria ideal corrigir:**
-1. Centralização completa no JobManager
-2. Facilita manutenção futura
-3. Garante que o status inicial seja `pending` (não `queued`)
-
-### ✅ ACEITÁVEL: Polling no VideoUpscaler
-
-**Por que é aceitável:**
-1. É um fallback de emergência (3min delay, máx 3 tentativas)
-2. Vídeos demoram mais e precisam de resiliência extra
-3. Não conflita com a lógica central - apenas lê o estado do banco
-4. Não tenta gerenciar fila ou concorrência
-
----
-
-## Correções Necessárias
-
-### Opção A: Migração Completa para JobManager (Recomendado para futuro)
-
-Refatorar as 4 páginas para:
-1. Usar `JobManager.createJob()` ao invés de insert direto
-2. Usar `JobManager.startJob()` ao invés de invoke direto
-3. Usar `JobManager.subscribeToJob()` ao invés de subscription manual
-
-**Impacto:** Alto (muitas mudanças)
-**Benefício:** Centralização 100%
-
-### Opção B: Correção Mínima do Status (Recomendado agora)
-
-Alterar apenas o status inicial de `'queued'` para `'pending'` nas 4 páginas:
+Novo componente para visualizar histórico completo:
 
 ```typescript
-// ANTES
-.insert({ status: 'queued', ... })
+// JobDebugModal.tsx
+interface JobDebugModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  jobId: string;
+  tableName: string;
+}
 
-// DEPOIS
-.insert({ status: 'pending', ... })
+// Busca job com todos os campos de debug
+const { data: job } = await supabase
+  .from(tableName)
+  .select(`
+    id, status, current_step, failed_at_step,
+    error_message, step_history,
+    raw_api_response, raw_webhook_payload,
+    created_at, started_at, completed_at
+  `)
+  .eq('id', jobId)
+  .single();
+
+// Exibe timeline de step_history
+// Exibe raw payloads em JSON formatado
+// Exibe error_message completo
 ```
 
-**Impacto:** Baixo (4 linhas)
-**Benefício:** Consistência com JobManager.createJob()
+### 4. Mensagem de Erro Clara
+
+Atualizar toast/UI de erro:
+
+```typescript
+// Quando job falha
+if (status === 'failed') {
+  const stepLabel = STEP_LABELS[failedAtStep] || failedAtStep;
+  toast.error(`Erro em "${stepLabel}": ${errorMessage}`, {
+    duration: 10000,
+    description: 'Toque para ver detalhes'
+  });
+}
+```
 
 ---
 
-## Confirmação Final
+## Arquivos a Modificar
 
-### O que as páginas FAZEM (correto):
-1. ✅ Coletam inputs do usuário (imagens/vídeos)
-2. ✅ Fazem upload para Storage
-3. ✅ Chamam edge function via invoke (que delega ao QueueManager)
-4. ✅ Renderizam UI baseada no estado central (Realtime)
-5. ✅ Usam `checkActiveJob` centralizado para bloquear múltiplos jobs
-6. ✅ Usam `cancelJob` centralizado para cancelamento
-
-### O que as páginas NÃO FAZEM (correto):
-1. ✅ Não implementam fila local
-2. ✅ Não contam concorrência local
-3. ✅ Não fazem retry automático
-4. ✅ Não chamam RunningHub diretamente
-5. ✅ Não gerenciam status por conta própria (dependem do Realtime)
-
-### Único ponto de melhoria:
-⚠️ Status inicial `queued` ao invés de `pending` (inconsistência com JobManager)
+| Arquivo | Mudanças |
+|---------|----------|
+| `supabase/migrations/XXXX_add_job_observability.sql` | Nova migration com colunas |
+| `supabase/functions/runninghub-queue-manager/index.ts` | Função `logStep()` + instrumentação |
+| `supabase/functions/runninghub-upscaler/index.ts` | Instrumentação de etapas |
+| `supabase/functions/runninghub-pose-changer/index.ts` | Instrumentação de etapas |
+| `supabase/functions/runninghub-veste-ai/index.ts` | Instrumentação de etapas |
+| `supabase/functions/runninghub-video-upscaler/index.ts` | Instrumentação de etapas |
+| `supabase/functions/runninghub-webhook/index.ts` | Salvar raw payload |
+| `supabase/functions/runninghub-video-upscaler-webhook/index.ts` | Salvar raw payload |
+| `src/components/ai-tools/JobStepIndicator.tsx` | **NOVO** - Indicador de etapa |
+| `src/components/ai-tools/JobDebugModal.tsx` | **NOVO** - Modal de debug |
+| `src/pages/UpscalerArcanoTool.tsx` | Exibir etapa + modal debug |
+| `src/pages/PoseChangerTool.tsx` | Exibir etapa + modal debug |
+| `src/pages/VesteAITool.tsx` | Exibir etapa + modal debug |
+| `src/pages/VideoUpscalerTool.tsx` | Exibir etapa + modal debug |
 
 ---
 
-## Decisão
+## Onde Ficam os Logs
 
-**As 4 páginas estão funcionalmente corretas e dependem do sistema centralizado.**
+| Tipo de Log | Localização | Como Acessar |
+|-------------|-------------|--------------|
+| **Etapa atual** | Coluna `current_step` | Realtime na UI |
+| **Histórico completo** | Coluna `step_history` (JSONB) | Modal de debug / SQL |
+| **Resposta RunningHub** | Coluna `raw_api_response` | Modal de debug / SQL |
+| **Payload Webhook** | Coluna `raw_webhook_payload` | Modal de debug / SQL |
+| **Etapa da falha** | Coluna `failed_at_step` | UI + Modal de debug |
+| **Erro completo** | Coluna `error_message` | UI + Modal de debug |
+| **Logs console** | Edge Function logs | Backend → Edge Logs |
 
-O único ajuste necessário é alterar o status inicial de `'queued'` para `'pending'` nos 4 inserts, para manter consistência com a correção já feita no `JobManager.createJob()`.
+---
 
-Isso garante que:
-1. A edge function decide o estado real (`starting`, `running` ou `queued`)
-2. O frontend não assume que o job está na fila antes da verificação
+## Como a UI Mostra Etapa/Erro
+
+### Durante processamento:
+```
+┌─────────────────────────────────────┐
+│  🔄 Processando com IA...           │
+│  ━━━━━━━━━━░░░░░░░░░░ 45%          │
+└─────────────────────────────────────┘
+```
+
+### Na fila:
+```
+┌─────────────────────────────────────┐
+│  ⏳ Aguardando na fila              │
+│  Posição: #2                        │
+│  ───────────────────────────────    │
+│  💡 Fila com alta demanda, já já!   │
+└─────────────────────────────────────┘
+```
+
+### Quando erro:
+```
+┌─────────────────────────────────────┐
+│  ❌ Erro no processamento           │
+│  Falhou em: Processando com IA      │
+│  ───────────────────────────────    │
+│  VRAM overflow: image too large     │
+│  [Ver Detalhes] [Tentar Novamente]  │
+└─────────────────────────────────────┘
+```
+
+---
+
+## Como Debugar
+
+### 1. Via UI (Modal de Debug)
+
+Clicar em "Ver Detalhes" no erro abre modal com:
+- Timeline de etapas executadas
+- Timestamps de cada transição
+- Resposta bruta da API
+- Payload do webhook
+- Mensagem de erro completa
+
+### 2. Via SQL (Admin)
+
+```sql
+SELECT 
+  id,
+  status,
+  current_step,
+  failed_at_step,
+  error_message,
+  step_history,
+  raw_api_response,
+  raw_webhook_payload,
+  created_at,
+  started_at,
+  completed_at
+FROM upscaler_jobs
+WHERE id = 'uuid-do-job'
+ORDER BY created_at DESC
+LIMIT 1;
+```
+
+### 3. Via Edge Function Logs
+
+Acessar Backend → Edge Logs → Filtrar por função:
+- `runninghub-queue-manager`
+- `runninghub-upscaler`
+- `runninghub-webhook`
+
+Cada log inclui `[tabela] Job {id}: {step}` para facilitar busca.
+
+---
+
+## Resumo Entregável
+
+| Item | Descrição |
+|------|-----------|
+| **Onde os logs ficam** | Colunas `step_history`, `raw_api_response`, `raw_webhook_payload` nas tabelas de jobs |
+| **Como a UI mostra etapa** | Componente `JobStepIndicator` exibe `current_step` traduzido |
+| **Como a UI mostra erro** | `failed_at_step` + `error_message` visíveis no card de status |
+| **Como debugar** | Modal `JobDebugModal` com timeline + payloads raw, ou query SQL direta |
+| **Logs de backend** | Console logs estruturados nas edge functions |
+
+---
+
+## Benefícios
+
+1. **Zero adivinhação**: Sabe exatamente onde e por que falhou
+2. **Erro real visível**: Mensagem da RunningHub sem mascaramento
+3. **Histórico completo**: Timeline de cada etapa para reconstruir problema
+4. **UI informativa**: Usuário sabe em que etapa está o job
+5. **Debug rápido**: Modal de detalhes para análise imediata
 
