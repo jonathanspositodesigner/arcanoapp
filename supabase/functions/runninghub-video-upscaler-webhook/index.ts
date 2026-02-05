@@ -25,6 +25,36 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Helper para log de etapas
+  const logStep = async (jobId: string, step: string, details?: Record<string, any>) => {
+    const timestamp = new Date().toISOString();
+    const entry = { step, timestamp, ...details };
+    
+    try {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const { data: job } = await supabase
+        .from('video_upscaler_jobs')
+        .select('step_history')
+        .eq('id', jobId)
+        .maybeSingle();
+      
+      const currentHistory = (job?.step_history as any[]) || [];
+      const newHistory = [...currentHistory, entry];
+      
+      await supabase
+        .from('video_upscaler_jobs')
+        .update({
+          current_step: step,
+          step_history: newHistory,
+        })
+        .eq('id', jobId);
+      
+      console.log(`[VideoUpscaler Webhook] Job ${jobId}: ${step}`, details || '');
+    } catch (e) {
+      console.error(`[logStep] Error:`, e);
+    }
+  };
+
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -67,6 +97,14 @@ serve(async (req) => {
     }
 
     console.log(`[VideoUpscaler Webhook] Found job ${job.id}, status: ${status}`);
+
+    // Salvar payload bruto do webhook
+    await supabase
+      .from('video_upscaler_jobs')
+      .update({ raw_webhook_payload: payload })
+      .eq('id', job.id);
+    
+    await logStep(job.id, 'webhook_received', { status, hasOutput: !!outputUrl });
 
     // Calcular custo RH baseado no tempo
     let calculatedRhCost = rhCost;
@@ -124,6 +162,7 @@ serve(async (req) => {
           errorMessage: finalError,
           taskId,
           rhCost: calculatedRhCost,
+          webhookPayload: payload,
         }),
       });
       
@@ -137,12 +176,16 @@ serve(async (req) => {
         .from('video_upscaler_jobs')
         .update({
           status: newStatus,
+          current_step: newStatus,
           output_url: outputUrl,
           error_message: finalError,
+          failed_at_step: newStatus === 'failed' ? 'webhook_received' : null,
           completed_at: new Date().toISOString(),
           rh_cost: calculatedRhCost,
         })
         .eq('id', job.id);
+      
+      await logStep(job.id, newStatus, { outputUrl, error: finalError });
     }
 
     return new Response(

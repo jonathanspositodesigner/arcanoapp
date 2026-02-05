@@ -28,6 +28,42 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const IMAGE_JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs'] as const;
 
+/**
+ * logStep - Registra etapa do job para observabilidade
+ */
+async function logStep(
+  table: string,
+  jobId: string,
+  step: string,
+  details?: Record<string, any>
+): Promise<void> {
+  const timestamp = new Date().toISOString();
+  const entry = { step, timestamp, ...details };
+  
+  try {
+    const { data: job } = await supabase
+      .from(table)
+      .select('step_history')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    const currentHistory = (job?.step_history as any[]) || [];
+    const newHistory = [...currentHistory, entry];
+    
+    await supabase
+      .from(table)
+      .update({
+        current_step: step,
+        step_history: newHistory,
+      })
+      .eq('id', jobId);
+    
+    console.log(`[Webhook] ${table} Job ${jobId}: ${step}`, details || '');
+  } catch (e) {
+    console.error(`[logStep] Error:`, e);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -103,6 +139,18 @@ serve(async (req) => {
       });
     }
 
+    // Salvar payload bruto do webhook + log etapa
+    await supabase
+      .from(jobTable)
+      .update({ raw_webhook_payload: payload })
+      .eq('id', jobData.id);
+    
+    await logStep(jobTable, jobData.id, 'webhook_received', { 
+      event, 
+      taskStatus, 
+      hasOutput: !!outputUrl 
+    });
+
     // Calcular custo RH
     const completedAt = new Date();
     let rhCost = 0;
@@ -116,7 +164,7 @@ serve(async (req) => {
     const newStatus = errorMessage ? 'failed' : (outputUrl ? 'completed' : 'failed');
     const finalError = errorMessage || (newStatus === 'failed' ? 'No output received' : null);
 
-    // Delegar para Queue Manager /finish
+    // Delegar para Queue Manager /finish (com payload do webhook)
     try {
       const finishUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`;
       
@@ -134,6 +182,7 @@ serve(async (req) => {
           errorMessage: finalError,
           taskId,
           rhCost,
+          webhookPayload: payload,
         }),
       });
       
@@ -147,12 +196,16 @@ serve(async (req) => {
         .from(jobTable)
         .update({
           status: newStatus,
+          current_step: newStatus,
           output_url: outputUrl,
           error_message: finalError,
+          failed_at_step: newStatus === 'failed' ? 'webhook_received' : null,
           completed_at: completedAt.toISOString(),
           rh_cost: rhCost > 0 ? rhCost : null
         })
         .eq('task_id', taskId);
+      
+      await logStep(jobTable, jobData.id, newStatus, { outputUrl, error: finalError });
     }
 
     return new Response(JSON.stringify({ success: true }), {

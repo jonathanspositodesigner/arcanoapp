@@ -1744,7 +1744,9 @@ export type Database = {
           created_at: string | null
           credits_charged: boolean | null
           credits_refunded: boolean | null
+          current_step: string | null
           error_message: string | null
+          failed_at_step: string | null
           id: string
           job_payload: Json | null
           output_url: string | null
@@ -1752,12 +1754,15 @@ export type Database = {
           person_image_url: string | null
           position: number | null
           queue_wait_seconds: number | null
+          raw_api_response: Json | null
+          raw_webhook_payload: Json | null
           reference_file_name: string | null
           reference_image_url: string | null
           rh_cost: number | null
           session_id: string
           started_at: string | null
           status: string
+          step_history: Json | null
           task_id: string | null
           user_credit_cost: number | null
           user_id: string | null
@@ -1769,7 +1774,9 @@ export type Database = {
           created_at?: string | null
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
+          current_step?: string | null
           error_message?: string | null
+          failed_at_step?: string | null
           id?: string
           job_payload?: Json | null
           output_url?: string | null
@@ -1777,12 +1784,15 @@ export type Database = {
           person_image_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
           reference_file_name?: string | null
           reference_image_url?: string | null
           rh_cost?: number | null
           session_id: string
           started_at?: string | null
           status?: string
+          step_history?: Json | null
           task_id?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
@@ -1794,7 +1804,9 @@ export type Database = {
           created_at?: string | null
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
+          current_step?: string | null
           error_message?: string | null
+          failed_at_step?: string | null
           id?: string
           job_payload?: Json | null
           output_url?: string | null
@@ -1802,12 +1814,15 @@ export type Database = {
           person_image_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
           reference_file_name?: string | null
           reference_image_url?: string | null
           rh_cost?: number | null
           session_id?: string
           started_at?: string | null
           status?: string
+          step_history?: Json | null
           task_id?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
@@ -2327,8 +2342,10 @@ export type Database = {
           created_at: string | null
           credits_charged: boolean | null
           credits_refunded: boolean | null
+          current_step: string | null
           detail_denoise: number | null
           error_message: string | null
+          failed_at_step: string | null
           framing_mode: string | null
           id: string
           input_file_name: string | null
@@ -2338,11 +2355,14 @@ export type Database = {
           position: number | null
           prompt: string | null
           queue_wait_seconds: number | null
+          raw_api_response: Json | null
+          raw_webhook_payload: Json | null
           resolution: number | null
           rh_cost: number | null
           session_id: string
           started_at: string | null
           status: string
+          step_history: Json | null
           task_id: string | null
           user_credit_cost: number | null
           user_id: string | null
@@ -2356,8 +2376,10 @@ export type Database = {
           created_at?: string | null
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
+          current_step?: string | null
           detail_denoise?: number | null
           error_message?: string | null
+          failed_at_step?: string | null
           framing_mode?: string | null
           id?: string
           input_file_name?: string | null
@@ -2367,11 +2389,14 @@ export type Database = {
           position?: number | null
           prompt?: string | null
           queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
           resolution?: number | null
           rh_cost?: number | null
           session_id: string
           started_at?: string | null
           status?: string
+          step_history?: Json | null
           task_id?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
@@ -2385,8 +2410,10 @@ export type Database = {
           created_at?: string | null
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
+          current_step?: string | null
           detail_denoise?: number | null
           error_message?: string | null
+          failed_at_step?: string | null
           framing_mode?: string | null
           id?: string
           input_file_name?: string | null
@@ -2396,11 +2423,14 @@ export type Database = {
           position?: number | null
           prompt?: string | null
           queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
           resolution?: number | null
           rh_cost?: number | null
           session_id?: string
           started_at?: string | null
           status?: string
+          step_history?: Json | null
           task_id?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
@@ -2540,7 +2570,9 @@ export type Database = {
           created_at: string | null
           credits_charged: boolean | null
           credits_refunded: boolean | null
+          current_step: string | null
           error_message: string | null
+          failed_at_step: string | null
           id: string
           job_payload: Json | null
           output_url: string | null
@@ -2548,10 +2580,13 @@ export type Database = {
           person_image_url: string | null
           position: number | null
           queue_wait_seconds: number | null
+          raw_api_response: Json | null
+          raw_webhook_payload: Json | null
           rh_cost: number | null
           session_id: string
           started_at: string | null
           status: string
+          step_history: Json | null
           task_id: string | null
           user_credit_cost: number | null
           user_id: string | null
@@ -2565,7 +2600,9 @@ export type Database = {
           created_at?: string | null
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
+          current_step?: string | null
           error_message?: string | null
+          failed_at_step?: string | null
           id?: string
           job_payload?: Json | null
           output_url?: string | null
@@ -2573,10 +2610,13 @@ export type Database = {
           person_image_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
           rh_cost?: number | null
           session_id: string
           started_at?: string | null
           status?: string
+          step_history?: Json | null
           task_id?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
@@ -2590,7 +2630,9 @@ export type Database = {
           created_at?: string | null
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
+          current_step?: string | null
           error_message?: string | null
+          failed_at_step?: string | null
           id?: string
           job_payload?: Json | null
           output_url?: string | null
@@ -2598,10 +2640,13 @@ export type Database = {
           person_image_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
           rh_cost?: number | null
           session_id?: string
           started_at?: string | null
           status?: string
+          step_history?: Json | null
           task_id?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
@@ -2624,17 +2669,22 @@ export type Database = {
           created_at: string | null
           credits_charged: boolean | null
           credits_refunded: boolean | null
+          current_step: string | null
           error_message: string | null
+          failed_at_step: string | null
           id: string
           input_file_name: string | null
           job_payload: Json | null
           output_url: string | null
           position: number | null
           queue_wait_seconds: number | null
+          raw_api_response: Json | null
+          raw_webhook_payload: Json | null
           rh_cost: number | null
           session_id: string
           started_at: string | null
           status: string
+          step_history: Json | null
           task_id: string | null
           user_credit_cost: number | null
           user_id: string | null
@@ -2650,17 +2700,22 @@ export type Database = {
           created_at?: string | null
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
+          current_step?: string | null
           error_message?: string | null
+          failed_at_step?: string | null
           id?: string
           input_file_name?: string | null
           job_payload?: Json | null
           output_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
           rh_cost?: number | null
           session_id: string
           started_at?: string | null
           status?: string
+          step_history?: Json | null
           task_id?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
@@ -2676,17 +2731,22 @@ export type Database = {
           created_at?: string | null
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
+          current_step?: string | null
           error_message?: string | null
+          failed_at_step?: string | null
           id?: string
           input_file_name?: string | null
           job_payload?: Json | null
           output_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
           rh_cost?: number | null
           session_id?: string
           started_at?: string | null
           status?: string
+          step_history?: Json | null
           task_id?: string | null
           user_credit_cost?: number | null
           user_id?: string | null

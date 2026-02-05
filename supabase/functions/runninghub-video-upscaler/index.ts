@@ -39,6 +39,79 @@ function checkRateLimit(userId: string): boolean {
   return true;
 }
 
+// ========== OBSERVABILITY HELPER ==========
+
+async function logStep(
+  supabase: any,
+  jobId: string,
+  step: string,
+  details?: Record<string, any>
+): Promise<void> {
+  const timestamp = new Date().toISOString();
+  const entry = { step, timestamp, ...details };
+  
+  try {
+    const { data: job } = await supabase
+      .from('video_upscaler_jobs')
+      .select('step_history')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    const currentHistory = (job?.step_history as any[]) || [];
+    const newHistory = [...currentHistory, entry];
+    
+    await supabase
+      .from('video_upscaler_jobs')
+      .update({
+        current_step: step,
+        step_history: newHistory,
+      })
+      .eq('id', jobId);
+    
+    console.log(`[VideoUpscaler] Job ${jobId}: ${step}`, details || '');
+  } catch (e) {
+    console.error(`[logStep] Error:`, e);
+  }
+}
+
+async function logStepFailure(
+  supabase: any,
+  jobId: string,
+  failedAtStep: string,
+  errorMessage: string,
+  rawResponse?: Record<string, any>
+): Promise<void> {
+  const timestamp = new Date().toISOString();
+  const entry = { step: 'failed', timestamp, at_step: failedAtStep, error: errorMessage };
+  
+  try {
+    const { data: job } = await supabase
+      .from('video_upscaler_jobs')
+      .select('step_history')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    const currentHistory = (job?.step_history as any[]) || [];
+    const newHistory = [...currentHistory, entry];
+    
+    const updateData: Record<string, any> = {
+      current_step: 'failed',
+      failed_at_step: failedAtStep,
+      step_history: newHistory,
+    };
+    
+    if (rawResponse) {
+      updateData.raw_api_response = rawResponse;
+    }
+    
+    await supabase.from('video_upscaler_jobs').update(updateData).eq('id', jobId);
+    
+    console.log(`[VideoUpscaler] Job ${jobId}: FAILED at ${failedAtStep}:`, errorMessage);
+  } catch (e) {
+    console.error(`[logStepFailure] Error:`, e);
+  }
+}
+
 // Verificar disponibilidade via Queue Manager centralizado (MULTI-API)
 async function checkQueueAvailability(supabase: any): Promise<{ 
   available: boolean; 
