@@ -15,6 +15,7 @@ import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 import PoseLibraryModal from '@/components/pose-changer/PoseLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import { JobDebugPanel } from '@/components/ai-tools';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 
@@ -53,6 +54,10 @@ const PoseChangerTool: React.FC = () => {
   const [queuePosition, setQueuePosition] = useState(0);
   const [queueMessageIndex, setQueueMessageIndex] = useState(0);
 
+  // Debug state for observability
+  const [currentStep, setCurrentStep] = useState<string | null>(null);
+  const [failedAtStep, setFailedAtStep] = useState<string | null>(null);
+  const [debugErrorMessage, setDebugErrorMessage] = useState<string | null>(null);
   // Session management
   const sessionIdRef = useRef<string>('');
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -105,6 +110,11 @@ const PoseChangerTool: React.FC = () => {
         (payload) => {
           const newData = payload.new as any;
           console.log('[PoseChanger] Job update:', newData);
+
+          // Debug/observability (shown when Debug Mode is enabled)
+          setCurrentStep(newData.current_step || newData.status);
+          setFailedAtStep(newData.failed_at_step || null);
+          setDebugErrorMessage(newData.error_message || null);
 
           if (newData.status === 'completed' && newData.output_url) {
             setOutputImage(newData.output_url);
@@ -407,6 +417,9 @@ const PoseChangerTool: React.FC = () => {
     setZoomLevel(1);
     setJobId(null);
     setQueuePosition(0);
+    setCurrentStep(null);
+    setFailedAtStep(null);
+    setDebugErrorMessage(null);
   };
 
   const handleDownload = () => {
@@ -511,6 +524,16 @@ const PoseChangerTool: React.FC = () => {
                 Sair da Fila
               </Button>
             )}
+
+            <JobDebugPanel
+              jobId={jobId}
+              tableName="pose_changer_jobs"
+              currentStep={currentStep}
+              failedAtStep={failedAtStep}
+              errorMessage={debugErrorMessage}
+              position={queuePosition}
+              status={status}
+            />
           </div>
 
           {/* Right Side - Result Viewer (5/7 on desktop ~72%) */}
