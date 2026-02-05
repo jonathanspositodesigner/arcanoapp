@@ -22,6 +22,7 @@ import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import { JobDebugPanel } from '@/components/ai-tools';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
@@ -78,6 +79,10 @@ const UpscalerArcanoTool: React.FC = () => {
   const [isWaitingInQueue, setIsWaitingInQueue] = useState(false);
   const [queuePosition, setQueuePosition] = useState(0);
   const [jobId, setJobId] = useState<string | null>(null);
+  
+  // Debug state for observability
+  const [currentStep, setCurrentStep] = useState<string | null>(null);
+  const [failedAtStep, setFailedAtStep] = useState<string | null>(null);
   
   // No credits modal state
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
@@ -188,6 +193,10 @@ const UpscalerArcanoTool: React.FC = () => {
         (payload) => {
           console.log('[Upscaler] Realtime update:', payload.new);
           const job = payload.new as any;
+
+          // Update debug state
+          setCurrentStep(job.current_step || job.status);
+          if (job.failed_at_step) setFailedAtStep(job.failed_at_step);
 
           if (job.status === 'completed' && job.output_url) {
             console.log('[Upscaler] Job completed! Output:', job.output_url);
@@ -1035,6 +1044,17 @@ const UpscalerArcanoTool: React.FC = () => {
                 </Button>
               </Card>
             )}
+
+            {/* Debug Panel - only visible when debug mode is ON */}
+            <JobDebugPanel
+              jobId={jobId}
+              tableName="upscaler_jobs"
+              currentStep={currentStep}
+              failedAtStep={failedAtStep}
+              errorMessage={lastError?.message}
+              position={queuePosition}
+              status={status}
+            />
           </div>
 
           {/* Right Side - Result Viewer (~72%) */}

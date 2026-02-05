@@ -6,8 +6,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import { LocaleProvider } from "./contexts/LocaleContext";
- import { UpdateAvailableBanner } from "./components/UpdateAvailableBanner";
+import { UpdateAvailableBanner } from "./components/UpdateAvailableBanner";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AIDebugProvider } from "./contexts/AIDebugContext";
 import "./lib/i18n"; // Initialize i18n
 // Critical pages - keep static for fast initial load
 import Index from "./pages/Index";
@@ -40,6 +41,7 @@ const PromptsDashboard = lazy(() => import("./pages/admin/PromptsDashboard"));
 const PromptsFerramentas = lazy(() => import("./pages/admin/PromptsFerramentas"));
 const PromptsMarketing = lazy(() => import("./pages/admin/PromptsMarketing"));
 const PromptsCustosIA = lazy(() => import("./pages/admin/PromptsCustosIA"));
+const PromptsDebugIA = lazy(() => import("./pages/admin/PromptsDebugIA"));
 const AdminCommunityReview = lazy(() => import("./pages/AdminCommunityReview"));
 const AdminArtesReview = lazy(() => import("./pages/AdminArtesReview"));
 const AdminManageImages = lazy(() => import("./pages/AdminManageImages"));
@@ -184,6 +186,7 @@ const AppContent = () => {
           <Route path="/admin-prompts/ferramentas" element={<PromptsFerramentas />} />
           <Route path="/admin-prompts/marketing" element={<PromptsMarketing />} />
           <Route path="/admin-prompts/custos-ia" element={<PromptsCustosIA />} />
+          <Route path="/admin-prompts/debug-ia" element={<PromptsDebugIA />} />
           <Route path="/admin-upload" element={<AdminUpload />} />
           <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
           <Route path="/admin-upload-artes-musicos" element={<AdminUploadArtesMusicos />} />
@@ -296,9 +299,11 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <LocaleProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
+          <AIDebugProvider>
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </AIDebugProvider>
         </AuthProvider>
       </LocaleProvider>
     </QueryClientProvider>
