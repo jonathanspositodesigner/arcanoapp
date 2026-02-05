@@ -6,7 +6,7 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
-import { Sparkles, CheckCircle, Loader2, Play, ShoppingCart, UserCheck } from "lucide-react";
+import { Sparkles, CheckCircle, Loader2, Play, ShoppingCart, UserCheck, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -257,6 +257,22 @@ const FerramentasIA = () => {
             >
               <UserCheck className="w-4 h-4 mr-2" />
               {t('ferramentas.firstAccess')}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Button for VIP users: has upscaler pack AND (is prompts premium OR has credits) */}
+      {hasUpscalerArcano && (promptsPlanType || credits > 0) && (
+        <div className="bg-gradient-to-r from-purple-900/50 to-fuchsia-900/50 border-b border-purple-500/30">
+          <div className="container mx-auto px-4 py-3">
+            <Button
+              onClick={() => navigate('/ferramentas-ia-aplicativo')}
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg"
+              size="sm"
+            >
+              <Smartphone className="w-4 h-4 mr-2" />
+              🚀 Acesse aqui a nossa nova ferramenta em forma de aplicativo
             </Button>
           </div>
         </div>
