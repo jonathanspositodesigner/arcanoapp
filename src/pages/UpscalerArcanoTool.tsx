@@ -436,20 +436,6 @@ const UpscalerArcanoTool: React.FC = () => {
     toast.success(t('upscalerTool.toast.downloaded'));
   }, [outputImage, t]);
 
-  // Download optimized input (DEBUG - temporary)
-  const downloadOptimizedInput = useCallback(() => {
-    if (!inputImage) return;
-
-    const link = document.createElement('a');
-    link.href = inputImage;
-    const baseName = (inputFileName || 'image').replace(/\.[^/.]+$/, '');
-    link.download = `optimized_${baseName}.webp`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('Imagem otimizada baixada!');
-  }, [inputImage, inputFileName]);
-
   // Reset tool
   const resetTool = useCallback(() => {
     setInputImage(null);
@@ -609,19 +595,6 @@ const UpscalerArcanoTool: React.FC = () => {
                 onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
               />
             </Card>
-
-            {/* DEBUG Button - Download Optimized Input (TEMPORARY) */}
-            {inputImage && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={downloadOptimizedInput}
-                className="w-full text-xs border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10"
-              >
-                <Download className="w-3 h-3 mr-1" />
-                Baixar Imagem Otimizada (DEBUG)
-              </Button>
-            )}
 
             {/* Image Type Selector - Only show when not using custom prompt */}
             {(!useCustomPrompt || version === 'standard') && (
