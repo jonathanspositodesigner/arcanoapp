@@ -1989,6 +1989,39 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_claims: {
+        Row: {
+          claimed_at: string
+          credit_type: string
+          credits_granted: number
+          id: string
+          ip_address: string | null
+          promo_code: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          credit_type?: string
+          credits_granted: number
+          id?: string
+          ip_address?: string | null
+          promo_code: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          credit_type?: string
+          credits_granted?: number
+          id?: string
+          ip_address?: string | null
+          promo_code?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       prompt_clicks: {
         Row: {
           clicked_at: string
