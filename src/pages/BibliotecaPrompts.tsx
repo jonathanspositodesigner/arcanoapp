@@ -684,6 +684,16 @@ const BibliotecaPrompts = () => {
           )}
 
           <h2 className="text-xl font-bold text-white mb-6">{t('sidebar.generateWithAI')}</h2>
+          
+          {/* Botão Ferramentas de IA destacado - PRIMEIRO */}
+          <Button 
+            onClick={() => navigate("/ferramentas-ia-aplicativo")} 
+            className="w-full mb-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-semibold h-auto py-4 px-4"
+          >
+            <Zap className="h-5 w-5 mr-2" />
+            {t('sidebar.aiTools')}
+          </Button>
+
           <div data-tutorial="ai-tools" className="space-y-3">
           {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
               <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30 hover:scale-105 transition-all duration-300">
@@ -698,15 +708,6 @@ const BibliotecaPrompts = () => {
               <Video className="h-5 w-5 ml-2 flex-shrink-0 text-purple-300" />
             </Button>
           </a>
-
-          {/* Botão Ferramentas de IA destacado */}
-          <Button 
-            onClick={() => navigate("/ferramentas-ia-aplicativo")} 
-            className="w-full mt-6 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-semibold h-auto py-4 px-4"
-          >
-            <Zap className="h-5 w-5 mr-2" />
-            {t('sidebar.aiTools')}
-          </Button>
         </aside>
 
         {/* Main Content */}
