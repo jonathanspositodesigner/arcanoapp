@@ -3004,6 +3004,17 @@ export type Database = {
           success: boolean
         }[]
       }
+      get_ai_tools_cost_averages: {
+        Args: never
+        Returns: {
+          avg_credit_cost: number
+          avg_rh_cost: number
+          tool_name: string
+          total_credit_cost: number
+          total_jobs: number
+          total_rh_cost: number
+        }[]
+      }
       get_ai_tools_usage: {
         Args: {
           p_end_date?: string
