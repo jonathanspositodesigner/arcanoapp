@@ -698,10 +698,8 @@ const BibliotecaPrompts = () => {
             onClick={() => navigate("/ferramentas-ia-aplicativo")} 
             className="w-full mb-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-medium h-auto py-2.5 px-2.5 text-xs flex items-center justify-between"
           >
-            <span className="flex items-center">
-              <Zap className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
-              {t('sidebar.aiTools')}
-            </span>
+            <span className="font-medium">{t('sidebar.aiTools')}</span>
+            <Zap className="h-3.5 w-3.5 ml-1.5 flex-shrink-0" />
           </Button>
 
           <div data-tutorial="ai-tools" className="space-y-1.5">
