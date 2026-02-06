@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Wrench, BarChart3, Megaphone, LogOut, Home, ArrowLeft, Sparkles, Music, FileText, Cpu, Bug } from "lucide-react";
+import { Wrench, BarChart3, Megaphone, LogOut, Home, ArrowLeft, Sparkles, Music, FileText, Cpu, Bug, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -38,7 +38,7 @@ const AdminSidebarPlatform = ({ platform, onLogout }: AdminSidebarPlatformProps)
   const location = useLocation();
   const config = platformConfig[platform];
 
-  const menuItems = [
+  const baseMenuItems = [
     {
       label: "FERRAMENTAS",
       path: config.basePath,
@@ -52,6 +52,16 @@ const AdminSidebarPlatform = ({ platform, onLogout }: AdminSidebarPlatformProps)
       description: "Campanhas e divulgação"
     },
     {
+      label: "DASHBOARD",
+      path: `${config.basePath}/dashboard`,
+      icon: BarChart3,
+      description: "Métricas e analytics"
+    }
+  ];
+
+  // Prompts-specific menu items (IA tools)
+  const promptsExtraItems = platform === "prompts" ? [
+    {
       label: "CUSTOS IA",
       path: `${config.basePath}/custos-ia`,
       icon: Cpu,
@@ -64,12 +74,14 @@ const AdminSidebarPlatform = ({ platform, onLogout }: AdminSidebarPlatformProps)
       description: "Simulação e diagnóstico"
     },
     {
-      label: "DASHBOARD",
-      path: `${config.basePath}/dashboard`,
-      icon: BarChart3,
-      description: "Métricas e analytics"
+      label: "RENTABILIDADE",
+      path: `${config.basePath}/rentabilidade`,
+      icon: TrendingUp,
+      description: "Análise de lucro por ferramenta"
     }
-  ];
+  ] : [];
+
+  const menuItems = [...baseMenuItems.slice(0, 2), ...promptsExtraItems, ...baseMenuItems.slice(2)];
 
   return (
     <aside className="w-64 min-h-screen bg-card border-r border-border flex flex-col">
