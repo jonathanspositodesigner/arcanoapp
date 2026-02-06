@@ -1,61 +1,77 @@
 
+# Correção: Erro de Upload + Imagem "Depois" Quebrada no Upscaler Arcano
 
-# Correção: Imagem "Depois" Quebrada no Upscaler na Segunda Utilização
+## Problemas Identificados
 
-## Problema Identificado
+### 1. Erro de Upload: "Unexpected token '<', '<html><h'..."
+**Causa:** Após a compressão da imagem (que converte para `.webp`), o código ainda usa a extensão original do arquivo (`.png`, `.jpg`) para definir o `storagePath` e o `contentType`.
 
-Na segunda vez que você usa o Upscaler Arcano, a imagem "DEPOIS" no comparador antes/depois aparece quebrada (ícone de imagem quebrada), mesmo que o job tenha sido concluído com sucesso.
-
-## Causa Raiz
-
-O problema está no componente `TransformWrapper` (biblioteca de zoom/pan) que **não está sendo remontado** quando uma nova imagem é recebida:
-
-- **Pose Changer**: usa `key={outputImage}` → força remontagem quando a imagem muda ✅
-- **Upscaler Arcano**: **NÃO** usa `key` → mantém estado interno antigo ❌
-
-Quando o estado interno do componente de zoom não é resetado, ele pode manter referências ou transformações da imagem anterior, causando o bug visual.
-
-## Solução
-
-Adicionar `key={outputImage}` no `TransformWrapper` do Upscaler para forçar a remontagem quando uma nova imagem de resultado é recebida.
-
-## Arquivo a Modificar
-
-| Arquivo | Mudança |
-|---------|---------|
-| `src/pages/UpscalerArcanoTool.tsx` | Adicionar `key={outputImage}` na linha 1162 |
-
-## Mudança Específica
-
-**Antes (linha 1162):**
-```tsx
-<TransformWrapper
-  initialScale={1}
-  minScale={1}
-  ...
+```typescript
+// Linha 421-423 - BUG
+const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
+const storagePath = `upscaler/${user.id}/${tempId}.${ext}`;  // Usa extensão antiga
 ```
 
-**Depois:**
-```tsx
+A função `optimizeForAI` sempre converte para WebP, então o arquivo resultante é WebP, mas estamos tentando fazer upload com extensão/content-type diferente. Isso pode causar problemas de proxy ou validação.
+
+### 2. Imagem "Depois" Quebrada na Segunda Utilização
+**Causa:** O `TransformWrapper` na linha 1162 não tem a prop `key={outputImage}`, então o componente de zoom não é remontado quando uma nova imagem é gerada. Isso faz com que mantenha referências ou estado da imagem anterior.
+
+---
+
+## Soluções
+
+### Correção 1: Forçar extensão .webp no upload
+
+**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
+
+**Mudança nas linhas 421-431:**
+
+```typescript
+// ANTES (bugado):
+const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
+const storagePath = `upscaler/${user.id}/${tempId}.${ext}`;
+// ...
+contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`
+
+// DEPOIS (corrigido):
+// Como optimizeForAI sempre converte para webp, forçar a extensão
+const storagePath = `upscaler/${user.id}/${tempId}.webp`;
+// ...
+contentType: 'image/webp'
+```
+
+### Correção 2: Adicionar key no TransformWrapper
+
+**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
+
+**Mudança na linha 1162:**
+
+```typescript
+// ANTES (bugado):
+<TransformWrapper
+  initialScale={1}
+
+// DEPOIS (corrigido):
 <TransformWrapper
   key={outputImage}
   initialScale={1}
-  minScale={1}
-  ...
 ```
 
-## Por Que Funciona
+---
 
-O React usa a prop `key` para identificar elementos únicos. Quando o `key` muda (nova URL de imagem), o React:
-1. Desmonta o componente antigo completamente
-2. Monta um novo componente "limpo"
-3. Todo o estado interno é resetado
-4. A nova imagem carrega corretamente
+## Arquivos a Modificar
+
+| Arquivo | Mudança | Linha |
+|---------|---------|-------|
+| `src/pages/UpscalerArcanoTool.tsx` | Forçar `.webp` no storagePath e contentType | 421-432 |
+| `src/pages/UpscalerArcanoTool.tsx` | Adicionar `key={outputImage}` no TransformWrapper | 1162 |
+
+---
 
 ## Impacto
 
-- ✅ Correção de 1 linha
-- ✅ Segue o mesmo padrão já usado no Pose Changer
-- ✅ Não afeta nenhuma outra funcionalidade
-- ✅ Resolve o bug da imagem quebrada na segunda utilização
-
+- Correção de 2 locais no mesmo arquivo
+- Não afeta nenhuma outra funcionalidade
+- Resolve ambos os bugs reportados
+- Segue o mesmo padrão já usado no Pose Changer (que tem `key={outputImage}`)
