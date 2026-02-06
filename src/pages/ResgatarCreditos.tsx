@@ -218,7 +218,7 @@ const ResgatarCreditos = () => {
                   setErrorReason(null);
                   setEmail('');
                 }}
-                className="w-full h-10 border-purple-500/30 text-purple-200 hover:bg-purple-500/10"
+                className="w-full h-10 border-purple-500/50 bg-purple-900/50 text-white hover:bg-purple-800/70"
               >
                 Tentar outro email
               </Button>
