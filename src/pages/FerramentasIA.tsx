@@ -29,20 +29,44 @@ const FerramentasIA = () => {
   const from = searchParams.get("from");
   
   // Redirect logic: ONLY users with Upscaler Arcano pack can access this page
+  // UNLESS they have already claimed the promo credits (they should use the new app)
   const { user, hasAccessToPack, isLoading: isPremiumLoading } = usePremiumArtesStatus();
   const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
   const hasUpscalerArcano = hasAccessToPack('upscaller-arcano');
+  const [hasClaimedPromo, setHasClaimedPromo] = useState<boolean | null>(null);
+  
+  // Check if user has claimed promo credits
+  useEffect(() => {
+    const checkPromoClaim = async () => {
+      if (!user) {
+        setHasClaimedPromo(false);
+        return;
+      }
+      
+      const { data } = await supabase
+        .from('promo_claims')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('promo_code', 'UPSCALER_1500')
+        .maybeSingle();
+      
+      setHasClaimedPromo(!!data);
+    };
+    
+    checkPromoClaim();
+  }, [user]);
   
   useEffect(() => {
-    // Wait for loading state
-    if (isPremiumLoading) return;
+    // Wait for loading states
+    if (isPremiumLoading || hasClaimedPromo === null) return;
     
-    // Redirect to app page if user does NOT have upscaller-arcano pack
-    // This page is EXCLUSIVE for pack owners
-    if (!user || !hasUpscalerArcano) {
+    // Redirect to app page if:
+    // 1. User does NOT have upscaller-arcano pack, OR
+    // 2. User HAS claimed promo credits (they should use the new app experience)
+    if (!user || !hasUpscalerArcano || hasClaimedPromo) {
       navigate('/ferramentas-ia-aplicativo', { replace: true });
     }
-  }, [isPremiumLoading, user, hasUpscalerArcano, navigate]);
+  }, [isPremiumLoading, user, hasUpscalerArcano, hasClaimedPromo, navigate]);
 
   const toolDescriptions: Record<string, string> = {
     "upscaller-arcano": t('ferramentas.descriptions.upscaler'),
