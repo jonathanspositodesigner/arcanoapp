@@ -241,7 +241,7 @@ const FerramentasIAAplicativo = () => {
               onClick={() => navigate("/ferramenta-ia-artes/upscaller-arcano/v2")}
               className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold shadow-lg shadow-purple-500/25 text-sm sm:text-base"
             >
-              COMPROU O UPSCALER ILIMITADO? CLIQUE AQUI
+              Upscaler Arcano - Versão Ilimitada
             </Button>
           </div>
         )}
