@@ -114,18 +114,18 @@ const ResgatarCreditos = () => {
       </div>
 
       {/* Main Card */}
-      <Card className="relative z-10 w-full max-w-md bg-gradient-to-br from-purple-900/40 to-fuchsia-900/20 border-purple-500/30 backdrop-blur-sm p-6 sm:p-8">
+      <Card className="relative z-10 w-full max-w-md bg-[#1a1025] border-2 border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
         {status === 'idle' || status === 'checking' ? (
           <>
             {/* Header */}
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 mb-4 shadow-lg shadow-fuchsia-500/30">
                 <Gift className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">
                 Resgate seus Créditos
               </h2>
-              <p className="text-purple-200/80 text-sm">
+              <p className="text-purple-300 text-sm">
                 1.500 créditos mensais para usar nas Ferramentas de IA
               </p>
             </div>
@@ -133,21 +133,21 @@ const ResgatarCreditos = () => {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-fuchsia-400" />
                 <Input
                   type="email"
                   placeholder="Digite o email da sua compra"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={status === 'checking'}
-                  className="pl-10 h-12 bg-purple-950/50 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-fuchsia-500"
+                  className="pl-10 h-12 bg-[#0d0912] border-2 border-purple-600/50 text-white placeholder:text-purple-400/60 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={status === 'checking'}
-                className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-base"
+                className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
               >
                 {status === 'checking' ? (
                   <>
@@ -164,23 +164,23 @@ const ResgatarCreditos = () => {
             </form>
 
             {/* Info */}
-            <p className="text-center text-purple-300/60 text-xs mt-4">
+            <p className="text-center text-purple-400 text-xs mt-4">
               Disponível apenas para quem comprou o Upscaler Arcano Vitalício
             </p>
           </>
         ) : status === 'success' ? (
           /* Success State */
           <div className="text-center py-4">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 mb-4">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 mb-4 shadow-lg shadow-green-500/30">
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">
               Parabéns! 🎉
             </h2>
-            <p className="text-green-300 text-lg font-semibold mb-2">
+            <p className="text-green-400 text-lg font-semibold mb-2">
               {creditsAdded.toLocaleString('pt-BR')} créditos adicionados!
             </p>
-            <p className="text-purple-200/80 text-sm mb-6">
+            <p className="text-purple-300 text-sm mb-6">
               Redirecionando para as Ferramentas de IA...
             </p>
             <div className="flex justify-center">
@@ -196,7 +196,7 @@ const ResgatarCreditos = () => {
             <h2 className="text-xl font-bold text-white mb-2">
               {errorReason === 'already_claimed' ? 'Promoção já resgatada' : 'Não foi possível resgatar'}
             </h2>
-            <p className="text-red-300/80 text-sm mb-6">
+            <p className="text-red-400 text-sm mb-6">
               {getErrorMessage(errorReason || 'error')}
             </p>
             
