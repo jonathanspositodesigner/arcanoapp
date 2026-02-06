@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AdminLayoutPlatform from "@/components/AdminLayoutPlatform";
 import AdminSimpleMetrics from "@/components/AdminSimpleMetrics";
+import ArtesEventosFerramentasContent from "@/components/admin/ArtesEventosFerramentasContent";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -36,13 +37,15 @@ const ArtesEventosDashboard = () => {
 
   return (
     <AdminLayoutPlatform platform="artes-eventos">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard - Artes Eventos</h1>
-        <p className="text-muted-foreground mb-6">Métricas essenciais da plataforma</p>
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Artes Eventos - Admin</h1>
+          <p className="text-muted-foreground">Painel administrativo da plataforma</p>
+        </div>
         
         {/* Year-End Promo Control Card */}
         {!loading && (
-          <Card className={`mb-6 overflow-hidden ${
+          <Card className={`overflow-hidden ${
             isActive 
               ? 'bg-gradient-to-r from-red-600 via-green-600 to-red-600 text-white border-0' 
               : 'bg-muted/50 border-dashed border-2'
@@ -99,7 +102,13 @@ const ArtesEventosDashboard = () => {
           </Card>
         )}
         
-        <AdminSimpleMetrics />
+        {/* Ferramentas primeiro */}
+        <ArtesEventosFerramentasContent />
+        
+        {/* Dashboard embaixo */}
+        <div className="pt-6 border-t border-border">
+          <AdminSimpleMetrics />
+        </div>
       </div>
     </AdminLayoutPlatform>
   );
