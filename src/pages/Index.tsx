@@ -299,8 +299,8 @@ const Index = () => {
       </header>
 
       {/* Conteúdo principal compacto */}
-      <main className="flex-1 flex flex-col items-center px-3 py-3 pt-14 md:px-10 lg:px-16">
-        <div className="w-full max-w-6xl">
+      <main className="flex-1 flex flex-col px-3 py-3 pt-14">
+        <div className="w-full max-w-7xl mx-auto">
           {/* Títulos compactos */}
           <FadeIn delay={150} duration={600}>
             <div className="mb-3 sm:mb-4">
