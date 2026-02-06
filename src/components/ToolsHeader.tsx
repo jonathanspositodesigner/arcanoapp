@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Coins, Lock, Settings, LogOut, Phone, LogIn, Sparkles, PlusCircle, Home } from "lucide-react";
+import { ArrowLeft, User, Coins, Lock, Settings, LogOut, Phone, LogIn, Sparkles, PlusCircle, Home, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import NavigationBlockerModal from "@/components/NavigationBlockerModal";
+import { MyCreationsModal } from "@/components/ai-tools/creations";
 
 interface ToolsHeaderProps {
   title?: string;
@@ -39,9 +40,10 @@ const ToolsHeader = ({
   const { user, logout } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
   const [userProfile, setUserProfile] = useState<{ name?: string; phone?: string } | null>(null);
+  const [showCreationsModal, setShowCreationsModal] = useState(false);
   
   // Hook de trava de navegação - bloqueia se job ativo
-  const { 
+  const {
     showConfirmModal, 
     confirmLeave, 
     cancelLeave, 
@@ -112,8 +114,21 @@ const ToolsHeader = ({
           ) : null}
         </div>
 
-        {/* Right Side: Login or Profile */}
+        {/* Right Side: My Creations + Login or Profile */}
         <div className="flex items-center gap-2">
+          {/* My Creations Button - only for logged users */}
+          {user && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowCreationsModal(true)}
+              className="text-purple-300 hover:text-white hover:bg-purple-500/20 hidden sm:flex"
+            >
+              <Library className="w-4 h-4 mr-2" />
+              <span className="hidden md:inline">Minhas Criações</span>
+            </Button>
+          )}
+          
           {!user ? (
             <Button
               variant="outline"
@@ -250,6 +265,12 @@ const ToolsHeader = ({
         onConfirmLeave={confirmLeave}
         onCancelLeave={cancelLeave}
         toolName={activeToolName}
+      />
+      
+      {/* Modal Minhas Criações */}
+      <MyCreationsModal 
+        open={showCreationsModal} 
+        onClose={() => setShowCreationsModal(false)} 
       />
     </header>
   );

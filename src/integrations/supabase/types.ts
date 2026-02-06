@@ -3082,6 +3082,17 @@ export type Database = {
           total: number
         }[]
       }
+      get_user_ai_creations: {
+        Args: { p_limit?: number; p_media_type?: string; p_offset?: number }
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          media_type: string
+          output_url: string
+          tool_name: string
+        }[]
+      }
       get_user_expired_packs: {
         Args: { _user_id: string }
         Returns: {
