@@ -299,139 +299,141 @@ const Index = () => {
       </header>
 
       {/* Conteúdo principal compacto */}
-      <main className="flex-1 flex flex-col items-start px-3 py-3 pt-14 md:px-10 lg:px-16">
-        {/* Títulos compactos */}
-        <FadeIn delay={150} duration={600}>
-          <div className="mb-3 sm:mb-4">
-            <h1 className="text-lg sm:text-xl font-bold text-primary mb-0.5">
-              {t('welcome')}
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {t('subtitle')}
-            </p>
-          </div>
-        </FadeIn>
-
-        {/* Loading state */}
-        {isLoading ? (
-          <div className="w-full animate-pulse">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-card border border-border rounded-xl overflow-hidden">
-                  <div className="aspect-[16/10] bg-muted" />
-                  <div className="p-2 sm:p-3 space-y-2">
-                    <div className="h-2 bg-muted rounded w-1/3" />
-                    <div className="h-3 bg-muted rounded w-2/3" />
-                    <div className="h-7 bg-muted rounded" />
-                  </div>
-                </div>
-              ))}
+      <main className="flex-1 flex flex-col items-center px-3 py-3 pt-14 md:px-10 lg:px-16">
+        <div className="w-full max-w-6xl">
+          {/* Títulos compactos */}
+          <FadeIn delay={150} duration={600}>
+            <div className="mb-3 sm:mb-4">
+              <h1 className="text-lg sm:text-xl font-bold text-primary mb-0.5">
+                {t('welcome')}
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                {t('subtitle')}
+              </p>
             </div>
-          </div>
-        ) : !isLoggedIn ? (
-          /* Usuário NÃO logado - mostrar todos os cards */
-          <section className="w-full">
-            <FadeIn delay={200} duration={500}>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="px-2 py-0.5 rounded-full bg-primary/15 border border-primary/40">
-                  <span className="text-primary text-[10px] sm:text-xs font-semibold">
-                    {t('discoverPlatforms')}
-                  </span>
-                </div>
-              </div>
-            </FadeIn>
-            
-            <StaggeredAnimation 
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-6xl mx-auto"
-              staggerDelay={150}
-              animation="fade-up"
-            >
-              {cards.map((card) => (
-                <div key={card.id} className="relative">
-                  <DiscoverCard card={card} />
-                </div>
-              ))}
-            </StaggeredAnimation>
-          </section>
-        ) : (
-          /* Usuário LOGADO - mostrar seções "Suas Compras" e "Veja também" */
-          <>
-            {/* Seção "Suas Compras" */}
-            {purchasedCards.length > 0 && (
-              <section className="w-full mb-4">
-                <FadeIn delay={200} duration={500}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/40">
-                      <span className="text-green-500 text-[10px] sm:text-xs font-semibold flex items-center gap-1">
-                        <Check className="h-2.5 w-2.5" />
-                        {t('yourPurchases')}
-                      </span>
+          </FadeIn>
+
+          {/* Loading state */}
+          {isLoading ? (
+            <div className="w-full animate-pulse">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-card border border-border rounded-xl overflow-hidden">
+                    <div className="aspect-[16/10] bg-muted" />
+                    <div className="p-2 sm:p-3 space-y-2">
+                      <div className="h-2 bg-muted rounded w-1/3" />
+                      <div className="h-3 bg-muted rounded w-2/3" />
+                      <div className="h-7 bg-muted rounded" />
                     </div>
                   </div>
-                </FadeIn>
-                
-                <StaggeredAnimation 
-                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-6xl mx-auto"
-                  staggerDelay={150}
-                  animation="fade-up"
-                >
-                  {purchasedCards.map((card) => (
-                    <div key={card.id} className="relative">
-                      <PurchasedCard card={card} />
+                ))}
+              </div>
+            </div>
+          ) : !isLoggedIn ? (
+            /* Usuário NÃO logado - mostrar todos os cards */
+            <section className="w-full">
+              <FadeIn delay={200} duration={500}>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="px-2 py-0.5 rounded-full bg-primary/15 border border-primary/40">
+                    <span className="text-primary text-[10px] sm:text-xs font-semibold">
+                      {t('discoverPlatforms')}
+                    </span>
+                  </div>
+                </div>
+              </FadeIn>
+              
+              <StaggeredAnimation 
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4"
+                staggerDelay={150}
+                animation="fade-up"
+              >
+                {cards.map((card) => (
+                  <div key={card.id} className="relative">
+                    <DiscoverCard card={card} />
+                  </div>
+                ))}
+              </StaggeredAnimation>
+            </section>
+          ) : (
+            /* Usuário LOGADO - mostrar seções "Suas Compras" e "Veja também" */
+            <>
+              {/* Seção "Suas Compras" */}
+              {purchasedCards.length > 0 && (
+                <section className="w-full mb-4">
+                  <FadeIn delay={200} duration={500}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/40">
+                        <span className="text-green-500 text-[10px] sm:text-xs font-semibold flex items-center gap-1">
+                          <Check className="h-2.5 w-2.5" />
+                          {t('yourPurchases')}
+                        </span>
+                      </div>
                     </div>
-                  ))}
-                </StaggeredAnimation>
-              </section>
-            )}
-
-            {/* Seção "Veja também" */}
-            {availableCards.length > 0 && (
-              <section className="w-full">
-                {purchasedCards.length > 0 && (
-                  <FadeIn delay={300} duration={500}>
-                    <h3 className="text-xs sm:text-sm text-muted-foreground mb-2 font-medium">
-                      {t('seeAlso')}
-                    </h3>
                   </FadeIn>
-                )}
-                
-                <StaggeredAnimation 
-                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-6xl mx-auto"
-                  staggerDelay={150}
-                  animation="fade-up"
-                >
-                  {availableCards.map((card) => (
-                    <div key={card.id} className="relative">
-                      <AvailableCard 
-                        card={card} 
-                        isComingSoon={isCardComingSoon(card.id)}
-                      />
-                    </div>
-                  ))}
-                </StaggeredAnimation>
-              </section>
-            )}
-          </>
-        )}
+                  
+                  <StaggeredAnimation 
+                    className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4"
+                    staggerDelay={150}
+                    animation="fade-up"
+                  >
+                    {purchasedCards.map((card) => (
+                      <div key={card.id} className="relative">
+                        <PurchasedCard card={card} />
+                      </div>
+                    ))}
+                  </StaggeredAnimation>
+                </section>
+              )}
 
-        {/* Links de acesso */}
-        <FadeIn delay={600} duration={600}>
-          <div className="mt-10 flex items-center justify-center gap-4">
-            <button 
-              onClick={() => navigate("/admin-login")} 
-              className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
-            >
-              {t('adminAccess')}
-            </button>
-            <span className="text-muted-foreground">•</span>
-            <button 
-              onClick={() => navigate("/parceiro-login-unificado")} 
-              className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
-            >
-              {t('collaboratorAccess')}
-            </button>
-          </div>
-        </FadeIn>
+              {/* Seção "Veja também" */}
+              {availableCards.length > 0 && (
+                <section className="w-full">
+                  {purchasedCards.length > 0 && (
+                    <FadeIn delay={300} duration={500}>
+                      <h3 className="text-xs sm:text-sm text-muted-foreground mb-2 font-medium">
+                        {t('seeAlso')}
+                      </h3>
+                    </FadeIn>
+                  )}
+                  
+                  <StaggeredAnimation 
+                    className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4"
+                    staggerDelay={150}
+                    animation="fade-up"
+                  >
+                    {availableCards.map((card) => (
+                      <div key={card.id} className="relative">
+                        <AvailableCard 
+                          card={card} 
+                          isComingSoon={isCardComingSoon(card.id)}
+                        />
+                      </div>
+                    ))}
+                  </StaggeredAnimation>
+                </section>
+              )}
+            </>
+          )}
+
+          {/* Links de acesso */}
+          <FadeIn delay={600} duration={600}>
+            <div className="mt-10 flex items-center justify-center gap-4">
+              <button 
+                onClick={() => navigate("/admin-login")} 
+                className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
+              >
+                {t('adminAccess')}
+              </button>
+              <span className="text-muted-foreground">•</span>
+              <button 
+                onClick={() => navigate("/parceiro-login-unificado")} 
+                className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
+              >
+                {t('collaboratorAccess')}
+              </button>
+            </div>
+          </FadeIn>
+        </div>
       </main>
 
       {/* Auth Modal */}
