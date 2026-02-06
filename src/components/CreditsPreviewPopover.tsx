@@ -58,19 +58,21 @@ const CreditsPreviewPopover = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Badge 
-          variant="outline" 
-          className={`cursor-pointer hover:bg-purple-800/50 ${
-            isDesktop 
-              ? "bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
-              : "bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1"
-          }`}
-        >
-          <Coins className={`text-yellow-400 ${isDesktop ? "w-3.5 h-3.5" : "w-3 h-3"}`} />
-          <span className={isDesktop ? "font-medium" : ""}>
-            {creditsLoading ? '...' : credits}
-          </span>
-        </Badge>
+        <button type="button" className="focus:outline-none">
+          <Badge 
+            variant="outline" 
+            className={`cursor-pointer hover:bg-purple-800/50 transition-colors ${
+              isDesktop 
+                ? "bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
+                : "bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1"
+            }`}
+          >
+            <Coins className={`text-yellow-400 ${isDesktop ? "w-3.5 h-3.5" : "w-3 h-3"}`} />
+            <span className={isDesktop ? "font-medium" : ""}>
+              {creditsLoading ? '...' : credits}
+            </span>
+          </Badge>
+        </button>
       </PopoverTrigger>
       <PopoverContent 
         className="w-64 p-3 bg-[#1A0A2E] border-purple-500/30"
