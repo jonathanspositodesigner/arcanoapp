@@ -157,7 +157,7 @@ const Index = () => {
       className="group bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary/50 relative"
     >
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9] md:aspect-square">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[3/2]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -193,7 +193,7 @@ const Index = () => {
       </div>
       
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9] md:aspect-square">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[3/2]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -235,7 +235,7 @@ const Index = () => {
       )}
       
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9] md:aspect-square">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[3/2]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -299,7 +299,7 @@ const Index = () => {
       </header>
 
       {/* Conteúdo principal compacto */}
-      <main className="flex-1 flex flex-col items-start px-3 py-3 pt-14">
+      <main className="flex-1 flex flex-col items-start px-3 py-3 pt-14 md:px-10 lg:px-16">
         {/* Títulos compactos */}
         <FadeIn delay={150} duration={600}>
           <div className="mb-3 sm:mb-4">
@@ -342,7 +342,7 @@ const Index = () => {
             </FadeIn>
             
             <StaggeredAnimation 
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-2.5 lg:gap-3 max-w-4xl"
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-6xl mx-auto"
               staggerDelay={150}
               animation="fade-up"
             >
@@ -371,7 +371,7 @@ const Index = () => {
                 </FadeIn>
                 
                 <StaggeredAnimation 
-                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-2.5 lg:gap-3 max-w-4xl"
+                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-6xl mx-auto"
                   staggerDelay={150}
                   animation="fade-up"
                 >
@@ -396,7 +396,7 @@ const Index = () => {
                 )}
                 
                 <StaggeredAnimation 
-                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-2.5 lg:gap-3 max-w-4xl"
+                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-6xl mx-auto"
                   staggerDelay={150}
                   animation="fade-up"
                 >
