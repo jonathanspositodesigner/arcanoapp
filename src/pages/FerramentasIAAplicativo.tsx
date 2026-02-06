@@ -150,6 +150,14 @@ const FerramentasIAAplicativo = () => {
     const hasAccess = checkToolAccess(tool.slug);
     const description = toolDescriptions[tool.slug] || "Ferramenta de IA";
     const isComingSoon = tool.slug === "forja-selos-3d-ilimitada";
+    const isUpscalerArcano = tool.slug === "upscaller-arcano";
+    const hasUpscalerPack = hasAccessToPack('upscaller-arcano');
+    
+    const handleCardClick = (e: React.MouseEvent) => {
+      // Don't trigger card click if clicking on buttons
+      if ((e.target as HTMLElement).closest('button')) return;
+      if (!isComingSoon) handleToolClick(tool);
+    };
     
     return (
       <Card 
@@ -159,7 +167,7 @@ const FerramentasIAAplicativo = () => {
             ? "cursor-not-allowed opacity-70" 
             : "cursor-pointer hover:ring-2 hover:ring-purple-400 hover:shadow-xl"
         }`}
-        onClick={() => !isComingSoon && handleToolClick(tool)}
+        onClick={handleCardClick}
       >
         <div className="aspect-[4/5] sm:aspect-[3/4] relative overflow-hidden">
           {tool.cover_url ? (
@@ -197,18 +205,50 @@ const FerramentasIAAplicativo = () => {
                 Em Breve
               </Button>
             ) : (
-              <Button
-                size="sm"
-                className={`mt-2 sm:mt-3 w-full text-xs sm:text-sm font-medium ${
-                  hasAccess 
-                    ? "bg-green-500 hover:bg-green-600" 
-                    : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
-                } text-white`}
-              >
-                <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">{t('ferramentas.accessTool')}</span>
-                <span className="sm:hidden">Acessar</span>
-              </Button>
+              <div className="flex flex-col gap-1.5 sm:gap-2 mt-2 sm:mt-3">
+                {/* Main button - Versão Aplicativo */}
+                <Button
+                  size="sm"
+                  className={`w-full text-xs sm:text-sm font-medium ${
+                    hasAccess 
+                      ? "bg-green-500 hover:bg-green-600" 
+                      : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
+                  } text-white`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToolClick(tool);
+                  }}
+                >
+                  <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  {isUpscalerArcano ? (
+                    <>
+                      <span className="hidden sm:inline">Upscaler Arcano - Versão Aplicativo</span>
+                      <span className="sm:hidden">Versão Aplicativo</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="hidden sm:inline">{t('ferramentas.accessTool')}</span>
+                      <span className="sm:hidden">Acessar</span>
+                    </>
+                  )}
+                </Button>
+                
+                {/* Second button - Versão Ilimitada (only for Upscaler Arcano pack owners) */}
+                {isUpscalerArcano && hasUpscalerPack && (
+                  <Button
+                    size="sm"
+                    className="w-full text-xs sm:text-sm font-medium bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate("/ferramenta-ia-artes/upscaller-arcano/v2");
+                    }}
+                  >
+                    <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Upscaler Arcano - Versão Ilimitada</span>
+                    <span className="sm:hidden">Versão Ilimitada</span>
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -234,17 +274,6 @@ const FerramentasIAAplicativo = () => {
           {t('ferramentas.description')}
         </p>
 
-        {/* Button for unlimited upscaler owners - ONLY shows for pack owners */}
-        {hasAccessToPack('upscaller-arcano') && (
-          <div className="text-center mb-6">
-            <Button
-              onClick={() => navigate("/ferramenta-ia-artes/upscaller-arcano/v2")}
-              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold shadow-lg shadow-purple-500/25 text-sm sm:text-base"
-            >
-              Upscaler Arcano - Versão Ilimitada
-            </Button>
-          </div>
-        )}
 
         {/* Single grid - no separation by access */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
