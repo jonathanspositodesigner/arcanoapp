@@ -832,11 +832,10 @@ serve(async (req) => {
     const logId = logEntry.id
     console.log(`   ✅ Log criado: ${logId}`)
 
-    // PASSO 3: Agendar processamento em background
-    // @ts-ignore - EdgeRuntime é disponível no Deno Deploy
-    EdgeRuntime.waitUntil(processHotmartWebhook(supabase, payload, logId, requestId))
+    // PASSO 3: Processar webhook
+    await processHotmartWebhook(supabase, payload, logId, requestId)
 
-    // PASSO 4: Responder 200 IMEDIATAMENTE (< 300ms)
+    // PASSO 4: Responder 200
     console.log(`\n🚀 [${requestId}] ACK RÁPIDO - Processamento agendado em background`)
     
     return new Response(JSON.stringify({ 
