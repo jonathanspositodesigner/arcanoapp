@@ -834,6 +834,14 @@ const BibliotecaPrompts = () => {
                         <Lock className="h-5 w-5 text-white" />
                       </div>
                     )}
+                    
+                    {/* Click count badge */}
+                    <div className="absolute bottom-2 left-2">
+                      <Badge variant="secondary" className="bg-purple-600/80 text-white text-[10px] flex items-center gap-1 w-fit">
+                        <Copy className="h-2.5 w-2.5" />
+                        {(item.clickCount || 0) + (item.bonusClicks || 0)}
+                      </Badge>
+                    </div>
                   </div>
 
                   {/* Card Content */}
