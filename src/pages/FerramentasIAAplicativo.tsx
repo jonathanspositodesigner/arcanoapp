@@ -233,20 +233,18 @@ const FerramentasIAAplicativo = () => {
                   )}
                 </Button>
                 
-                {/* Second button - Versão Ilimitada (only for Upscaler Arcano pack owners) */}
+                {/* Link - Versão Ilimitada (only for Upscaler Arcano pack owners) */}
                 {isUpscalerArcano && hasUpscalerPack && (
-                  <Button
-                    size="sm"
-                    className="w-full text-[11px] sm:text-sm h-8 sm:h-9 font-medium bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white"
+                  <button
+                    className="w-full text-[11px] sm:text-sm text-purple-300 hover:text-fuchsia-400 underline underline-offset-2 transition-colors py-1"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate("/ferramenta-ia-artes/upscaller-arcano/v2");
                     }}
                   >
-                    <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
                     <span className="hidden sm:inline">Upscaler Arcano - Versão Ilimitada</span>
                     <span className="sm:hidden">Versão Ilimitada</span>
-                  </Button>
+                  </button>
                 )}
               </div>
             )}
