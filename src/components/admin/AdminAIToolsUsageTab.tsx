@@ -11,8 +11,14 @@ import { toast } from "sonner";
 import { 
   RefreshCw, Coins, TrendingUp, Clock, Users, 
   CheckCircle, XCircle, Timer, ChevronLeft, ChevronRight,
-  Cpu, ArrowUpDown, Ban, Loader2
+  Cpu, ArrowUpDown, Ban, Loader2, AlertCircle
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -23,6 +29,7 @@ interface UsageRecord {
   user_email: string;
   user_name: string;
   status: string;
+  error_message: string | null;
   rh_cost: number;
   user_credit_cost: number;
   profit: number;
@@ -175,18 +182,34 @@ const AdminAIToolsUsageTab = () => {
     return format(new Date(dateString), "dd/MM/yyyy HH:mm", { locale: ptBR });
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
+  const getStatusBadge = (record: UsageRecord) => {
+    switch (record.status) {
       case "completed":
         return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Concluído</Badge>;
       case "failed":
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Falhou</Badge>;
+        return (
+          <div className="flex items-center gap-1.5">
+            <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Falhou</Badge>
+            {record.error_message && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertCircle className="h-4 w-4 text-red-400 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs bg-red-950 border-red-500/30">
+                    <p className="text-sm">{record.error_message}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        );
       case "running":
         return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Processando</Badge>;
       case "queued":
         return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Na Fila</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{record.status}</Badge>;
     }
   };
 
@@ -446,7 +469,7 @@ const AdminAIToolsUsageTab = () => {
                         </div>
                       </TableCell>
                       <TableCell>{getToolBadge(record.tool_name)}</TableCell>
-                      <TableCell>{getStatusBadge(record.status)}</TableCell>
+                      <TableCell>{getStatusBadge(record)}</TableCell>
                       <TableCell className="text-center">
                         {record.waited_in_queue ? (
                           <Badge variant="outline" className="text-orange-400 border-orange-500/30">Sim</Badge>
