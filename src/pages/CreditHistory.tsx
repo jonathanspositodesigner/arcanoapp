@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, History, TrendingDown, TrendingUp, Loader2, Coins, PlusCircle } from "lucide-react";
+import { ArrowLeft, History, Zap, TrendingUp, Loader2, Coins, PlusCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -135,7 +135,7 @@ const CreditHistory = () => {
                 >
                   <div className="flex items-center gap-3">
                     {tx.amount < 0 ? (
-                      <TrendingDown className="h-5 w-5 text-red-400" />
+                      <Zap className="h-5 w-5 text-purple-400" />
                     ) : (
                       <TrendingUp className="h-5 w-5 text-green-400" />
                     )}
@@ -148,8 +148,8 @@ const CreditHistory = () => {
                       </p>
                     </div>
                   </div>
-                  <span className={`text-base font-medium ${tx.amount < 0 ? 'text-red-400' : 'text-green-400'}`}>
-                    {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('pt-BR')}
+                  <span className={`text-base font-medium ${tx.amount < 0 ? 'text-purple-400' : 'text-green-400'}`}>
+                    {tx.amount > 0 ? '+' : ''}{Math.abs(tx.amount).toLocaleString('pt-BR')}
                   </span>
                 </div>
               ))}
