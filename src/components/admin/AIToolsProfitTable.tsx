@@ -201,6 +201,11 @@ const AIToolsProfitTable = () => {
       const credits = TOOL_CREDIT_COSTS[tool.tool_name] || tool.avg_credit_cost;
       const calc = calculateProfit(credits, tool.avg_rh_cost);
       
+      // Accumulated totals
+      const totalRevenue = calc.revenue * tool.total_jobs;
+      const totalCostAccum = calc.totalCost * tool.total_jobs;
+      const totalProfitAccum = calc.profit * tool.total_jobs;
+      
       return {
         name: tool.tool_name,
         credits,
@@ -208,6 +213,9 @@ const AIToolsProfitTable = () => {
         totalJobs: tool.total_jobs,
         apiCost: 0,
         isCustom: false,
+        totalRevenue,
+        totalCostAccum,
+        totalProfitAccum,
         ...calc,
       };
     });
@@ -223,6 +231,9 @@ const AIToolsProfitTable = () => {
         apiCost: tool.hasApiCost ? tool.apiCost : 0,
         isCustom: true,
         customId: tool.id,
+        totalRevenue: 0,
+        totalCostAccum: 0,
+        totalProfitAccum: 0,
         ...calc,
       };
     });
@@ -337,23 +348,26 @@ const AIToolsProfitTable = () => {
                     </TooltipProvider>
                   </TableHead>
                   <TableHead className="whitespace-nowrap text-right">Extra API</TableHead>
-                  <TableHead className="whitespace-nowrap text-right">Receita</TableHead>
-                  <TableHead className="whitespace-nowrap text-right">Custo Total</TableHead>
-                  <TableHead className="whitespace-nowrap text-right">Lucro</TableHead>
+                  <TableHead className="whitespace-nowrap text-right">Receita/Job</TableHead>
+                  <TableHead className="whitespace-nowrap text-right">Custo/Job</TableHead>
+                  <TableHead className="whitespace-nowrap text-right">Lucro/Job</TableHead>
+                  <TableHead className="whitespace-nowrap text-right bg-green-500/5">Receita Total</TableHead>
+                  <TableHead className="whitespace-nowrap text-right bg-orange-500/5">Custo Total</TableHead>
+                  <TableHead className="whitespace-nowrap text-right bg-green-500/5">Lucro Total</TableHead>
                   <TableHead className="whitespace-nowrap text-center">Margem</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8">
+                <TableRow>
+                    <TableCell colSpan={13} className="text-center py-8">
                       <RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : tableData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
                       Nenhum dado disponível
                     </TableCell>
                   </TableRow>
@@ -389,6 +403,16 @@ const AIToolsProfitTable = () => {
                       </TableCell>
                       <TableCell className={`text-right font-mono font-bold ${row.profit > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {formatBRL(row.profit)}
+                      </TableCell>
+                      {/* Accumulated Totals */}
+                      <TableCell className="text-right font-mono text-green-600 bg-green-500/5">
+                        {row.totalJobs > 0 ? formatBRL(row.totalRevenue) : "-"}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-orange-600 bg-orange-500/5">
+                        {row.totalJobs > 0 ? formatBRL(row.totalCostAccum) : "-"}
+                      </TableCell>
+                      <TableCell className={`text-right font-mono font-bold bg-green-500/5 ${row.totalProfitAccum > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {row.totalJobs > 0 ? formatBRL(row.totalProfitAccum) : "-"}
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge 
