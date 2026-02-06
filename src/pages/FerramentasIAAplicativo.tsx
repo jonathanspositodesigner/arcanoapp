@@ -238,9 +238,8 @@ const FerramentasIAAplicativo = () => {
         {hasAccessToPack('upscaller-arcano') && (
           <div className="text-center mb-6">
             <Button
-              variant="outline"
-              onClick={() => navigate("/ferramentas-ia")}
-              className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10 hover:text-yellow-300 text-sm sm:text-base"
+              onClick={() => navigate("/ferramenta-ia-artes/upscaller-arcano/v2")}
+              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold shadow-lg shadow-purple-500/25 text-sm sm:text-base"
             >
               COMPROU O UPSCALER ILIMITADO? CLIQUE AQUI
             </Button>
