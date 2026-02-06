@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Coins, History, TrendingDown, TrendingUp, Loader2, ChevronRight, PlusCircle } from "lucide-react";
+import { Coins, History, Zap, TrendingUp, Loader2, ChevronRight, PlusCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -124,7 +124,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown }: Cred
             >
               <div className="flex items-center gap-3">
                 {latestTransaction.amount < 0 ? (
-                  <TrendingDown className="h-4 w-4 text-red-400" />
+                  <Zap className="h-4 w-4 text-purple-400" />
                 ) : (
                   <TrendingUp className="h-4 w-4 text-green-400" />
                 )}
@@ -137,8 +137,8 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown }: Cred
                   </p>
                 </div>
               </div>
-              <span className={`text-sm font-medium ${latestTransaction.amount < 0 ? 'text-red-400' : 'text-green-400'}`}>
-                {latestTransaction.amount > 0 ? '+' : ''}{latestTransaction.amount.toLocaleString('pt-BR')}
+              <span className={`text-sm font-medium ${latestTransaction.amount < 0 ? 'text-purple-400' : 'text-green-400'}`}>
+                {latestTransaction.amount > 0 ? '+' : ''}{Math.abs(latestTransaction.amount).toLocaleString('pt-BR')}
               </span>
             </div>
 
