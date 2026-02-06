@@ -22,38 +22,28 @@ const UserLogin = () => {
     forgotPasswordRoute: '/forgot-password',
     defaultRedirect: redirectTo,
     t: (key: string) => t(key),
-    // Premium-specific validation
-    postLoginValidation: async (user) => {
-      const { data: isPremium, error: premiumError } = await supabase.rpc('is_premium');
-      if (premiumError || !isPremium) {
-        return { valid: false, error: t('errors.accessDenied') };
-      }
-      return { valid: true };
-    },
+    // No premium validation - allow all users to login
   });
 
-  // Check if user is already logged in and premium
+  // Check if user is already logged in and redirect
   useEffect(() => {
-    const checkPremiumStatus = async () => {
+    const checkLoginStatus = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: isPremium } = await supabase.rpc('is_premium');
-        if (isPremium) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('password_changed')
-            .eq('id', user.id)
-            .maybeSingle();
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('password_changed')
+          .eq('id', user.id)
+          .maybeSingle();
 
-          if (!profile || !profile.password_changed) {
-            navigate(`/change-password?redirect=${redirectTo}`);
-          } else {
-            navigate(redirectTo);
-          }
+        if (!profile || !profile.password_changed) {
+          navigate(`/change-password?redirect=${redirectTo}`);
+        } else {
+          navigate(redirectTo);
         }
       }
     };
-    checkPremiumStatus();
+    checkLoginStatus();
   }, [navigate, redirectTo]);
 
   return (
