@@ -1,133 +1,79 @@
 
-# Plano: Sistema Global de Notificação e Trava de Navegação para IAs
+## Objetivo (sem mexer em mais nada do que o necessário)
+Fazer o aviso aparecer **sempre que qualquer ação tentar sair da página enquanto um job de IA estiver em andamento** — incluindo o botão **Voltar** do header (que hoje está escapando).
 
-## Resumo
-Implementar duas funcionalidades globais que funcionarão automaticamente para **todas** as ferramentas de IA (atuais e futuras):
-
-1. **Som de Notificação** - Tocar um "ding" quando o job completar (sucesso ou falha)
-2. **Trava de Navegação** - Bloquear saída com aviso de perda de créditos durante processamento
+Vou fazer isso com **uma única alteração** (1 arquivo): `src/hooks/useNavigationGuard.ts`.
 
 ---
 
-## Como vai funcionar
+## O que está acontecendo (causa exata)
+Hoje o `useNavigationGuard` só intercepta:
+- `navigator.push(...)`
+- `navigator.replace(...)`
 
-```text
-┌─────────────────────────────────────────────────────────────────────┐
-│                         USUÁRIO NO APP                              │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│   [Upscaler] [Pose Changer] [Veste AI] [Video Upscaler]            │
-│        │            │            │            │                     │
-│        └────────────┴────────────┴────────────┘                    │
-│                           │                                         │
-│                    AIJobProvider (GLOBAL)                           │
-│                           │                                         │
-│        ┌──────────────────┴──────────────────┐                     │
-│        │                                      │                     │
-│   🔔 Som quando                         🚫 Trava navegação         │
-│   job terminar                          durante processamento       │
-│                                                                     │
-│   • Funciona em qualquer aba           • Aviso ao tentar sair       │
-│   • Mesmo minimizado                   • "Você perderá créditos!"   │
-│   • Alerta sonoro + toast              • Bloqueia botão "Voltar"    │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
+Mas o botão “Voltar” que você usa nas ferramentas vem do `useSmartBackNavigation()` e chama:
+- `navigate(-1)` → internamente vira `navigator.go(-1)`
+
+Como `go(-1)` **não está interceptado**, ele volta direto sem mostrar o modal.
+
+Além disso, o `shouldBlock` está bloqueando só quando o status global está em `starting`/`running`. Se no momento do clique ainda estiver `pending` (ou `queued`), também pode passar sem aviso.
 
 ---
 
-## Etapas de Implementação
+## Mudança mínima que vou aplicar (1 arquivo)
+### Arquivo: `src/hooks/useNavigationGuard.ts`
 
-### 1. Adicionar arquivo de som
-- Criar arquivo `public/sounds/notification.mp3` (som curto de "ding")
-- Som leve (~10KB) que funciona em todos os navegadores
+1) **Bloquear também em `pending` e `queued`**
+- Ajustar `shouldBlock` para bloquear em qualquer status “ativo” do contexto global (pending/queued/starting/running), em vez de apenas starting/running.
+- Isso garante que o aviso apareça assim que o job é registrado (antes mesmo de virar “running”).
 
-### 2. Criar Contexto Global `AIJobProvider`
-Novo arquivo: `src/contexts/AIJobContext.tsx`
+2) **Interceptar o “voltar” de verdade**
+Além de `push`/`replace`, também interceptar:
+- `navigator.go` (pega `navigate(-1)` e `navigate(1)`)
+- `navigator.back` e `navigator.forward` (se existirem)
 
-Este contexto vai:
-- Monitorar se há job ativo globalmente
-- Tocar som quando status mudar para `completed` ou `failed`
-- Expor estado `isJobRunning` para outros componentes
+O comportamento será:
+- Se `shouldBlock` estiver ativo e alguém chamar `go/back/forward/push/replace`, a navegação **não acontece**.
+- Abre o modal.
+- Se clicar “Sair e Perder Créditos”, executa a navegação pendente.
+- Se clicar “Continuar Esperando”, cancela e fica na página.
 
-### 3. Atualizar `useQueueSessionCleanup.ts`
-Expandir para bloquear navegação externa (fechar aba/atualizar) também quando:
-- Status = `starting` ou `running`
-- Mensagem: "Se você sair agora, perderá os créditos. Tem certeza?"
-
-### 4. Criar Hook `useNavigationGuard.ts`
-Novo hook que:
-- Usa `useBlocker` do React Router para navegação interna
-- Mostra modal de confirmação antes de permitir sair
-- Integra com o contexto global
-
-### 5. Integrar no `ToolsHeader.tsx`
-Modificar o componente de cabeçalho para:
-- Usar o novo hook de trava
-- Mostrar modal de confirmação quando usuário clicar em "Voltar"
-
-### 6. Envolver App com Provider
-Adicionar `AIJobProvider` no `App.tsx` para funcionar globalmente
+3) **Garantia anti-quebra**
+- Manter o mesmo padrão que já está funcionando (o “monkey patch” do navigator).
+- Restaurar todos os métodos originais no cleanup do `useEffect`, para não “contaminar” o app depois que o job terminar.
 
 ---
 
-## Arquivos a criar/modificar
+## Testes que vou fazer (pra garantir que não quebra mais nada)
+### Cenário principal (Upscaler)
+1. Entrar no Upscaler
+2. Iniciar um job (ficar em pending/queued/starting/running)
+3. Clicar:
+   - Botão **Voltar** do header
+   - Botão **Home** do header
+   - Qualquer botão que navegue para outra rota
+4. Confirmar que:
+   - O modal aparece sempre
+   - “Continuar esperando” não navega
+   - “Sair e perder créditos” navega
 
-| Arquivo | Ação | Descrição |
-|---------|------|-----------|
-| `public/sounds/notification.mp3` | Criar | Som de notificação |
-| `src/contexts/AIJobContext.tsx` | Criar | Contexto global de jobs |
-| `src/hooks/useNavigationGuard.ts` | Criar | Hook para trava de navegação interna |
-| `src/hooks/useQueueSessionCleanup.ts` | Modificar | Expandir para bloquear `running` |
-| `src/components/ToolsHeader.tsx` | Modificar | Integrar trava de navegação |
-| `src/App.tsx` | Modificar | Adicionar AIJobProvider |
+### Outras ferramentas
+Repetir o teste rápido em:
+- Pose Changer
+- Veste AI
+- Video Upscaler
 
----
-
-## Detalhes Técnicos
-
-### Som de Notificação
-```typescript
-// Exemplo de lógica
-const playNotificationSound = () => {
-  const audio = new Audio('/sounds/notification.mp3');
-  audio.volume = 0.5;
-  audio.play().catch(console.log); // Silencioso se browser bloquear
-};
-```
-
-### Trava de Navegação Interna (React Router)
-```typescript
-// Usando useBlocker do react-router-dom
-import { useBlocker } from 'react-router-dom';
-
-const blocker = useBlocker(
-  ({ currentLocation, nextLocation }) =>
-    isJobRunning && currentLocation.pathname !== nextLocation.pathname
-);
-```
-
-### Mensagem de Aviso
-> ⚠️ **Atenção!**
-> 
-> Você tem um processamento de IA em andamento. 
-> Se sair agora, perderá o resultado e os créditos serão cobrados.
->
-> Deseja sair mesmo assim?
->
-> [Continuar Esperando] [Sair e Perder]
+### Pós-job
+- Quando o job terminar (completed/failed/cancelled), confirmar que a navegação volta ao normal (sem modal).
 
 ---
 
-## Compatibilidade com Futuras IAs
+## Resultado esperado
+- Você não consegue mais “escapar” do aviso clicando no **Voltar** (nem em nenhum botão de navegação) enquanto o job estiver em andamento.
+- O comportamento fica consistente em todas as ferramentas que usam o header e o contexto global.
 
-Qualquer nova ferramenta de IA que:
-1. Use o `JobManager.ts` para criar jobs
-2. Registre sua tabela no `TABLE_MAP`
+---
 
-...automaticamente terá:
-- ✅ Som de notificação ao terminar
-- ✅ Trava de navegação durante processamento
-- ✅ Aviso de perda de créditos
-
-Não será necessário implementar nada extra por ferramenta!
+## Escopo (pra respeitar seu pedido)
+- Vou mexer **somente** em: `src/hooks/useNavigationGuard.ts`
+- Não vou alterar layout, páginas, banco, nem fluxo de job.
