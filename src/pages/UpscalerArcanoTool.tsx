@@ -418,9 +418,9 @@ const UpscalerArcanoTool: React.FC = () => {
         bytes[i] = binaryStr.charCodeAt(i);
       }
 
-      const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
+      // optimizeForAI always converts to WebP, so force the extension
       const tempId = crypto.randomUUID();
-      const storagePath = `upscaler/${user.id}/${tempId}.${ext}`;
+      const storagePath = `upscaler/${user.id}/${tempId}.webp`;
       
       setProgress(20);
       console.log('[Upscaler] Uploading image...');
@@ -428,7 +428,7 @@ const UpscalerArcanoTool: React.FC = () => {
       const { error: uploadError } = await supabase.storage
         .from('artes-cloudinary')
         .upload(storagePath, bytes.buffer, {
-          contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+          contentType: 'image/webp',
           upsert: true
         });
 
@@ -455,7 +455,7 @@ const UpscalerArcanoTool: React.FC = () => {
           detail_denoise: detailDenoise,
           prompt: getFinalPrompt(),
           user_id: user.id,
-          input_file_name: storagePath.split('/').pop() || `${tempId}.${ext}`,
+          input_file_name: storagePath.split('/').pop() || `${tempId}.webp`,
         })
         .select()
         .single();
@@ -1160,6 +1160,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 ) : status === 'completed' && outputImage ? (
                   /* Result View - Before/After Slider with Zoom */
                   <TransformWrapper
+                    key={outputImage}
                     initialScale={1}
                     minScale={1}
                     maxScale={6}
