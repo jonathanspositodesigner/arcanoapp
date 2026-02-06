@@ -1,6 +1,6 @@
 import { useState } from "react";
 import AdminLayoutPlatform from "@/components/AdminLayoutPlatform";
-import AdminAnalyticsDashboard from "@/components/AdminAnalyticsDashboard";
+import AdminSimpleMetrics from "@/components/AdminSimpleMetrics";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +38,7 @@ const ArtesEventosDashboard = () => {
     <AdminLayoutPlatform platform="artes-eventos">
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard - Artes Eventos</h1>
-        <p className="text-muted-foreground mb-6">Métricas e análise de comportamento dos usuários</p>
+        <p className="text-muted-foreground mb-6">Métricas essenciais da plataforma</p>
         
         {/* Year-End Promo Control Card */}
         {!loading && (
@@ -99,7 +99,7 @@ const ArtesEventosDashboard = () => {
           </Card>
         )}
         
-        <AdminAnalyticsDashboard platform="artes-eventos" />
+        <AdminSimpleMetrics />
       </div>
     </AdminLayoutPlatform>
   );
