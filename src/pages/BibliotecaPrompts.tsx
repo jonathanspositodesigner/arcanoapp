@@ -712,7 +712,7 @@ const BibliotecaPrompts = () => {
           {/* Botão Grupo da Comunidade */}
           <a href="https://chat.whatsapp.com/KkQmU8xiyda7KUSXiyc3pn" target="_blank" rel="noopener noreferrer" className="block mt-4">
             <Button variant="outline" className="w-full h-auto py-3 px-3 flex items-center justify-between text-left bg-green-600/30 border-green-500/50 text-white hover:bg-green-500/40 hover:scale-105 transition-all duration-300 text-sm">
-              <span className="font-medium truncate">Entrar para o grupo da comunidade</span>
+              <span className="font-medium truncate">Entrar no grupo do WhatsApp</span>
               <Users className="h-4 w-4 ml-2 flex-shrink-0 text-green-300" />
             </Button>
           </a>
