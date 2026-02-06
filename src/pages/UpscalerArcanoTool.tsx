@@ -1160,7 +1160,6 @@ const UpscalerArcanoTool: React.FC = () => {
                 ) : status === 'completed' && outputImage ? (
                   /* Result View - Before/After Slider with Zoom */
                   <TransformWrapper
-                    key={outputImage}
                     initialScale={1}
                     minScale={1}
                     maxScale={6}
