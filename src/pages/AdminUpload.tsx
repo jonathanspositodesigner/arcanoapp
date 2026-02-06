@@ -172,7 +172,7 @@ const AdminUpload = () => {
       // Optimize images before adding
       let processedFile = file;
       if (isImageFile(file)) {
-        const result = await optimizeImage(file);
+        const result = await optimizeImage(file, { maxWidthOrHeight: 800 });
         processedFile = result.file;
         if (result.savingsPercent > 0) {
           console.log(`Optimized ${file.name}: ${formatBytes(result.originalSize)} → ${formatBytes(result.optimizedSize)} (${result.savingsPercent}% saved)`);
