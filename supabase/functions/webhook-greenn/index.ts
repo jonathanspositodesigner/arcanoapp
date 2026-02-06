@@ -460,10 +460,8 @@ serve(async (req) => {
 
     const logId = logEntry.id
     console.log(`   ✅ Log criado: ${logId}`)
-
-    // Schedule background processing
-    // @ts-ignore
-    EdgeRuntime.waitUntil(processGreennWebhook(supabase, payload, logId, requestId))
+    // Processamento síncrono (Deno)
+    await processGreennWebhook(supabase, payload, logId, requestId)
 
     // Return 200 immediately
     const duration = Date.now() - startTime

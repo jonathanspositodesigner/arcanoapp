@@ -493,10 +493,8 @@ serve(async (req) => {
 
     const logId = logEntry.id
     console.log(`   ✅ Log criado: ${logId}`)
-
-    // Schedule background processing
-    // @ts-ignore
-    EdgeRuntime.waitUntil(processGreennMusicosWebhook(supabase, payload, logId, requestId))
+    // Processamento síncrono (Deno)
+    await processGreennMusicosWebhook(supabase, payload, logId, requestId)
 
     // Return 200 immediately
     const duration = Date.now() - startTime
