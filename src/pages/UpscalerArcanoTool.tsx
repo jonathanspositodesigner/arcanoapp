@@ -18,6 +18,7 @@ import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
+import { useAIJob } from '@/contexts/AIJobContext';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
@@ -53,6 +54,9 @@ const UpscalerArcanoTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  
+  // Contexto global de jobs - para notificação sonora e trava de navegação
+  const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
 
   // State
   const [version, setVersion] = useState<'standard' | 'pro'>('standard');
@@ -174,6 +178,9 @@ const UpscalerArcanoTool: React.FC = () => {
     if (!jobId) return;
 
     console.log('[Upscaler] Subscribing to Realtime for job:', jobId);
+    
+    // Registrar job no contexto global (para som e trava de navegação)
+    registerJob(jobId, 'Upscaler Arcano', 'pending');
 
     // Remove previous channel if exists
     if (realtimeChannelRef.current) {
@@ -193,6 +200,9 @@ const UpscalerArcanoTool: React.FC = () => {
         (payload) => {
           console.log('[Upscaler] Realtime update:', payload.new);
           const job = payload.new as any;
+          
+          // Atualizar contexto global (dispara som automaticamente em status terminal)
+          updateJobStatus(job.status);
 
           // Update debug state
           setCurrentStep(job.current_step || job.status);
@@ -240,7 +250,7 @@ const UpscalerArcanoTool: React.FC = () => {
       console.log('[Upscaler] Cleaning up Realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [jobId, t]);
+  }, [jobId, t, registerJob, updateJobStatus]);
 
   // Progress animation while processing
   useEffect(() => {
@@ -530,7 +540,9 @@ const UpscalerArcanoTool: React.FC = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [endSubmit]);
+    // Limpar job do contexto global
+    clearGlobalJob();
+  }, [endSubmit, clearGlobalJob]);
 
   // Slider handlers for before/after comparison
   const updateSliderPositionFromClientX = useCallback((clientX: number) => {

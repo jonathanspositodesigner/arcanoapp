@@ -9,6 +9,7 @@ import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
+import { useAIJob } from '@/contexts/AIJobContext';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
@@ -35,6 +36,9 @@ const PoseChangerTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  
+  // Contexto global de jobs - para notificação sonora e trava de navegação
+  const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
 
   // Image states
   const [personImage, setPersonImage] = useState<string | null>(null);
@@ -96,6 +100,9 @@ const PoseChangerTool: React.FC = () => {
     if (realtimeChannelRef.current) {
       supabase.removeChannel(realtimeChannelRef.current);
     }
+    
+    // Registrar job no contexto global (para som e trava de navegação)
+    registerJob(jId, 'Pose Changer', 'pending');
 
     const channel = supabase
       .channel(`pose-job-${jId}`)
@@ -110,6 +117,9 @@ const PoseChangerTool: React.FC = () => {
         (payload) => {
           const newData = payload.new as any;
           console.log('[PoseChanger] Job update:', newData);
+          
+          // Atualizar contexto global (dispara som automaticamente em status terminal)
+          updateJobStatus(newData.status);
 
           // Debug/observability (shown when Debug Mode is enabled)
           setCurrentStep(newData.current_step || newData.status);
@@ -139,7 +149,7 @@ const PoseChangerTool: React.FC = () => {
       .subscribe();
 
     realtimeChannelRef.current = channel;
-  }, [refetchCredits]);
+  }, [refetchCredits, registerJob, updateJobStatus, endSubmit]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -420,6 +430,8 @@ const PoseChangerTool: React.FC = () => {
     setCurrentStep(null);
     setFailedAtStep(null);
     setDebugErrorMessage(null);
+    // Limpar job do contexto global
+    clearGlobalJob();
   };
 
   const handleDownload = () => {
