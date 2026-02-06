@@ -157,7 +157,7 @@ const Index = () => {
       className="group bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary/50 relative"
     >
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9]">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[16/10]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -167,15 +167,15 @@ const Index = () => {
       </div>
       
       {/* Conteúdo */}
-      <div className="p-2 sm:p-2.5">
-        <p className="text-[10px] text-muted-foreground mb-0.5">{card.category}</p>
-        <h2 className="text-xs sm:text-sm font-semibold text-foreground mb-2 line-clamp-1">{card.title}</h2>
+      <div className="p-2 sm:p-2.5 md:p-4">
+        <p className="text-[10px] md:text-xs text-muted-foreground mb-0.5 md:mb-1">{card.category}</p>
+        <h2 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 md:mb-3 line-clamp-1">{card.title}</h2>
         <Button 
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] sm:text-xs h-7 sm:h-8"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] sm:text-xs md:text-sm h-7 sm:h-8 md:h-10"
           onClick={() => navigate(card.route)}
         >
           {t('access')}
-          <ExternalLink className="ml-1 h-3 w-3" />
+          <ExternalLink className="ml-1 h-3 w-3 md:h-4 md:w-4" />
         </Button>
       </div>
     </div>
@@ -187,13 +187,13 @@ const Index = () => {
       className="group bg-card border-2 border-green-500/30 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:border-green-500/50 relative"
     >
       {/* Badge de acesso */}
-      <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-500/90 text-white text-[9px] font-medium shadow-sm">
-        <Check className="h-2.5 w-2.5" />
+      <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-10 flex items-center gap-1 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full bg-green-500/90 text-white text-[9px] md:text-xs font-medium shadow-sm">
+        <Check className="h-2.5 w-2.5 md:h-3 md:w-3" />
         <span className="hidden sm:inline">{t('accessGranted')}</span>
       </div>
       
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9]">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[16/10]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -203,15 +203,15 @@ const Index = () => {
       </div>
       
       {/* Conteúdo */}
-      <div className="p-2 sm:p-2.5">
-        <p className="text-[10px] text-muted-foreground mb-0.5">{card.category}</p>
-        <h2 className="text-xs sm:text-sm font-semibold text-foreground mb-2 line-clamp-1">{card.title}</h2>
+      <div className="p-2 sm:p-2.5 md:p-4">
+        <p className="text-[10px] md:text-xs text-muted-foreground mb-0.5 md:mb-1">{card.category}</p>
+        <h2 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 md:mb-3 line-clamp-1">{card.title}</h2>
         <Button 
-          className="w-full bg-green-600 hover:bg-green-700 text-white text-[10px] sm:text-xs h-7 sm:h-8"
+          className="w-full bg-green-600 hover:bg-green-700 text-white text-[10px] sm:text-xs md:text-sm h-7 sm:h-8 md:h-10"
           onClick={() => navigate(card.route)}
         >
           {t('access')}
-          <ExternalLink className="ml-1 h-3 w-3" />
+          <ExternalLink className="ml-1 h-3 w-3 md:h-4 md:w-4" />
         </Button>
       </div>
     </div>
@@ -228,14 +228,14 @@ const Index = () => {
     >
       {/* Badge "Em Breve" */}
       {isComingSoon && (
-        <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-[9px] font-medium shadow-sm">
-          <Clock className="h-2.5 w-2.5" />
+        <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-10 flex items-center gap-1 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full bg-muted text-muted-foreground text-[9px] md:text-xs font-medium shadow-sm">
+          <Clock className="h-2.5 w-2.5 md:h-3 md:w-3" />
           <span className="hidden sm:inline">{t('comingSoon')}</span>
         </div>
       )}
       
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9]">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[16/10]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -247,16 +247,16 @@ const Index = () => {
       </div>
       
       {/* Conteúdo */}
-      <div className="p-2 sm:p-2.5">
-        <p className="text-[10px] text-muted-foreground mb-0.5">{card.category}</p>
-        <h2 className="text-xs sm:text-sm font-semibold text-foreground mb-2 line-clamp-1">{card.title}</h2>
+      <div className="p-2 sm:p-2.5 md:p-4">
+        <p className="text-[10px] md:text-xs text-muted-foreground mb-0.5 md:mb-1">{card.category}</p>
+        <h2 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 md:mb-3 line-clamp-1">{card.title}</h2>
         <Button 
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] sm:text-xs h-7 sm:h-8"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] sm:text-xs md:text-sm h-7 sm:h-8 md:h-10"
           onClick={() => !isComingSoon && navigate(card.route)}
           disabled={isComingSoon}
         >
           {isComingSoon ? t('comingSoon') : t('access')}
-          {!isComingSoon && <ExternalLink className="ml-1 h-3 w-3" />}
+          {!isComingSoon && <ExternalLink className="ml-1 h-3 w-3 md:h-4 md:w-4" />}
         </Button>
       </div>
     </div>
