@@ -890,27 +890,7 @@ async function handleRun(req: Request) {
         .update({ task_id: data.taskId })
         .eq('id', jobId);
 
-      // TIMEOUT SAFETY: Cancel job if no callback in 10 minutes
-      EdgeRuntime.waitUntil((async () => {
-        await new Promise(r => setTimeout(r, 10 * 60 * 1000)); // 10 minutes
-        
-        const { data: job } = await supabase
-          .from('upscaler_jobs')
-          .select('status')
-          .eq('id', jobId)
-          .single();
-        
-        if (job && (job.status === 'running' || job.status === 'queued')) {
-          console.log(`[RunningHub] TIMEOUT: Job ${jobId} stuck for 10min, cancelling...`);
-          
-          await supabase.rpc('user_cancel_ai_job', {
-            p_table_name: 'upscaler_jobs',
-            p_job_id: jobId
-          });
-        }
-      })());
-
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         success: true, 
         taskId: data.taskId,
         method: 'ai-app-v2'
