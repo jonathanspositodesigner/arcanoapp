@@ -207,13 +207,6 @@ const ProfileSettings = () => {
           {t('profile.title')}
         </h1>
 
-        {/* Credits Card */}
-        <CreditsCard 
-          credits={credits} 
-          creditsLoading={creditsLoading} 
-          userId={user?.id} 
-        />
-
         {/* Profile Information */}
         <Card className="p-6 bg-[#1A0A2E] border-purple-500/20">
           <h2 className="text-lg font-semibold mb-4 text-white">{t('profile.personalInfo')}</h2>
@@ -309,6 +302,13 @@ const ProfileSettings = () => {
             </Button>
           </form>
         </Card>
+
+        {/* Credits Card - below personal info */}
+        <CreditsCard 
+          credits={credits} 
+          creditsLoading={creditsLoading} 
+          userId={user?.id} 
+        />
 
         {/* Change Password */}
         <Card className="p-6 bg-[#1A0A2E] border-purple-500/20">
