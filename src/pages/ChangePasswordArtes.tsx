@@ -148,7 +148,7 @@ const ChangePasswordArtes = () => {
               </Button>
               
               <Button
-                onClick={() => navigate('/login-artes')}
+                onClick={() => navigate(-1)}
                 variant="ghost"
                 className="w-full text-white/40 hover:text-white"
               >

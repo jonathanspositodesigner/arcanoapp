@@ -54,7 +54,7 @@ const InstallApp = () => {
       <div className="container max-w-2xl mx-auto py-4 px-4">
         <Button
           variant="ghost"
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
