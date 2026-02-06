@@ -9,13 +9,11 @@ import AdminGoalsCard from "@/components/AdminGoalsCard";
 import WelcomeEmailsMonitor from "@/components/WelcomeEmailsMonitor";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AdminHubSidebar, { HubViewType } from "@/components/AdminHubSidebar";
-import AdminGeneralDashboard from "@/components/AdminGeneralDashboard";
-import HubGeneralMarketing from "@/components/HubGeneralMarketing";
+import AdminSimpleMetrics from "@/components/AdminSimpleMetrics";
 import PushNotificationsContent from "@/components/PushNotificationsContent";
 import PartnersManagementContent from "@/components/PartnersManagementContent";
 import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
 import AdminsManagementContent from "@/components/AdminsManagementContent";
-
 const AdminHub = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -144,9 +142,7 @@ const AdminHub = () => {
           </div>
         );
       case "dashboard":
-        return <AdminGeneralDashboard />;
-      case "marketing":
-        return <HubGeneralMarketing onNavigate={handleViewChange} />;
+        return <AdminSimpleMetrics />;
       case "push-notifications":
         return <PushNotificationsContent />;
       case "partners":
