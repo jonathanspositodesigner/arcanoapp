@@ -3014,6 +3014,7 @@ export type Database = {
         Returns: {
           completed_at: string
           created_at: string
+          error_message: string
           id: string
           processing_seconds: number
           profit: number
