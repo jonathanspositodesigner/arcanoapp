@@ -1,5 +1,15 @@
 import imageCompression from 'browser-image-compression';
 
+// Maximum dimension (width or height) allowed for AI tools
+export const MAX_AI_DIMENSION = 2000;
+
+export interface ImageDimensionValidation {
+  valid: boolean;
+  width: number;
+  height: number;
+  error?: string;
+}
+
 export interface OptimizationResult {
   file: File;
   originalSize: number;
@@ -146,6 +156,39 @@ export const formatBytes = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
+/**
+ * Validate image dimensions for AI tools
+ * Blocks images larger than MAX_AI_DIMENSION (2000px) in width or height
+ */
+export const validateImageDimensions = (file: File): Promise<ImageDimensionValidation> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      
+      if (img.width > MAX_AI_DIMENSION || img.height > MAX_AI_DIMENSION) {
+        resolve({
+          valid: false,
+          width: img.width,
+          height: img.height,
+          error: `Imagem muito grande (${img.width}x${img.height}). O limite máximo é ${MAX_AI_DIMENSION}x${MAX_AI_DIMENSION} pixels. Por favor, redimensione a imagem antes de enviar.`,
+        });
+      } else {
+        resolve({ valid: true, width: img.width, height: img.height });
+      }
+    };
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve({ valid: false, width: 0, height: 0, error: 'Não foi possível carregar a imagem.' });
+    };
+    
+    img.src = url;
+  });
+};
+
 export const useImageOptimizer = () => {
-  return { optimizeImage, optimizeForAI, isImageFile, formatBytes };
+  return { optimizeImage, optimizeForAI, isImageFile, formatBytes, validateImageDimensions };
 };

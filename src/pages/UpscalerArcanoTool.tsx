@@ -19,7 +19,7 @@ import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useAIJob } from '@/contexts/AIJobContext';
-import { optimizeForAI } from '@/hooks/useImageOptimizer';
+import { optimizeForAI, validateImageDimensions } from '@/hooks/useImageOptimizer';
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
@@ -266,7 +266,7 @@ const UpscalerArcanoTool: React.FC = () => {
     return () => clearInterval(interval);
   }, [status]);
 
-  // Handle file selection with aggressive compression
+  // Handle file selection with dimension validation and compression
   const handleFileSelect = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error(t('upscalerTool.errors.selectImage'));
@@ -275,6 +275,13 @@ const UpscalerArcanoTool: React.FC = () => {
 
     if (file.size > 10 * 1024 * 1024) {
       toast.error(t('upscalerTool.errors.maxSize'));
+      return;
+    }
+
+    // Validate dimensions BEFORE any processing (max 2000px)
+    const validation = await validateImageDimensions(file);
+    if (!validation.valid) {
+      toast.error(validation.error || 'Imagem inválida');
       return;
     }
 
