@@ -1,52 +1,39 @@
 
 
-# Plano: Adicionar Regra Máxima de Proteção de Edge Functions
+# Plano: Remover EdgeRuntime.waitUntil() de Todos os Webhooks
 
-## Objetivo
-Expandir o arquivo `.lovable/RULES.md` com uma regra absoluta que previna qualquer alteração que possa quebrar as Edge Functions existentes.
+## Problema
+Eu coloquei essa API incompatível (`EdgeRuntime.waitUntil()`) em 3 webhooks de pagamento. Essa API é exclusiva da Vercel e **NÃO FUNCIONA** no Deno/Supabase.
 
----
+## Arquivos Afetados
 
-## O que será adicionado
+| Arquivo | O que remover |
+|---------|---------------|
+| `webhook-greenn-creditos/index.ts` | Declaração (linhas 15-18) + chamada (linha 514-516) |
+| `webhook-hotmart-artes/index.ts` | Chamada (linha 837) + comentário @ts-ignore |
+| `webhook-greenn-artes/index.ts` | Chamada (linha 1049) + comentário @ts-ignore |
 
-### Nova seção: APIs Incompatíveis
+## Solução
 
-Uma lista explícita de APIs que **NUNCA** podem ser usadas porque não funcionam no ambiente Deno/Supabase:
+Remover o `EdgeRuntime.waitUntil()` e usar `await` diretamente. O processamento será feito **antes** de retornar a resposta (como estava funcionando antes).
 
-| API Proibida | Motivo |
-|--------------|--------|
-| `EdgeRuntime.waitUntil()` | API exclusiva da Vercel |
-| `context.waitUntil()` | API exclusiva da Cloudflare |
-| `process.env` | Node.js - usar `Deno.env.get()` |
+### Mudanças em cada arquivo:
 
-### Nova seção: Verificação Obrigatória
+**1. webhook-greenn-creditos/index.ts**
+- Remover linhas 15-18 (declaração do tipo)
+- Linha 514-516: Trocar `EdgeRuntime.waitUntil(processGreennCreditosWebhook(...))` por `await processGreennCreditosWebhook(...)`
 
-Antes de qualquer modificação em Edge Functions:
-1. Verificar se a função está online (não 404)
-2. Após mudança, testar se ainda responde
-3. Se quebrar, reverter imediatamente
+**2. webhook-hotmart-artes/index.ts**
+- Linha 837: Trocar `EdgeRuntime.waitUntil(...)` por `await processHotmartWebhook(...)`
+- Remover comentário `// @ts-ignore`
 
-### Nova seção: Histórico de Incidentes
+**3. webhook-greenn-artes/index.ts**
+- Linha 1049: Trocar `EdgeRuntime.waitUntil(...)` por `await processGreennArtesWebhook(...)`
+- Remover comentário `// @ts-ignore`
 
-Documentar o incidente de 06/02/2026 para referência futura:
-- Causa: uso de `EdgeRuntime.waitUntil()` 
-- Impacto: 36 funções offline (404)
-- Solução: redeploy total
+## Resultado Esperado
 
----
-
-## Arquivo a modificar
-
-| Arquivo | Ação |
-|---------|------|
-| `.lovable/RULES.md` | Adicionar novas seções de proteção |
-
----
-
-## Resultado esperado
-
-O arquivo RULES.md terá regras claras que impedem:
-1. Uso de APIs incompatíveis com Deno
-2. Modificações sem verificação prévia
-3. Repetição do incidente que causou 404 em massa
+- Webhooks voltam a funcionar sem erro
+- Processamento ocorre normalmente
+- Greenn/Hotmart recebem resposta após processamento completo
 
