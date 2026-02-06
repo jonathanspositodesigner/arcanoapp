@@ -1,273 +1,103 @@
 
+# Plano: Permitir Login de Usuários Não-Premium
 
-# Plano: Página de Resgate de 1.500 Créditos Mensais
+## Problema Identificado
+O modal de login da página `/login` (usado pela Biblioteca de Prompts) está **bloqueando usuários que não são premium** de fazer login. Isso acontece porque existe uma validação `postLoginValidation` que verifica se o usuário é premium antes de permitir o acesso.
 
-## Resumo
+## Comportamento Atual (Errado)
+1. Pessoa clica em "Login" na Biblioteca de Prompts
+2. Modal abre e pede email
+3. Pessoa coloca senha e tenta logar
+4. **Sistema verifica se é premium** → Se NÃO for, mostra "Acesso Negado" e desloga a pessoa
 
-Criar uma página em `/resgatar-creditos` onde usuários que **já compraram o Upscaler Arcano Vitalício** podem resgatar **1.500 créditos mensais** (válidos por 30 dias). O resgate é limitado a **uma vez por pessoa**.
+## Comportamento Desejado (Correto)
+1. Pessoa clica em "Login"
+2. Modal abre e pede email
+3. Pessoa coloca senha e loga normalmente
+4. Depois de logada, se NÃO for premium, continua vendo o botão "Torne-se Premium" para poder assinar
 
 ---
 
-## Fluxo de Usuário
+## Alterações Necessárias
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  Usuário clica no link /resgatar-creditos                   │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Página exibe formulário pedindo EMAIL                      │
-│  • Design minimalista com branding Arcano                   │
-│  • Campo de email + botão "Verificar e Resgatar"            │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Sistema verifica:                                          │
-│  1. Email existe no sistema?                                │
-│  2. Usuário tem pack 'upscaller-arcano' ativo?              │
-│  3. Usuário já resgatou antes?                              │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-     ┌─────────────────────┴─────────────────────┐
-     ▼                                           ▼
-┌──────────────────────┐              ┌────────────────────────┐
-│  ❌ NÃO ELEGÍVEL     │              │  ✅ ELEGÍVEL           │
-│  • Email não existe  │              │  • Adiciona 1.500      │
-│  • Não tem o pack    │              │    créditos mensais    │
-│  • Já resgatou       │              │  • Registra resgate    │
-│                      │              │  • Redireciona para    │
-│  Exibe mensagem +    │              │    /ferramentas-ia-    │
-│  botão "Ver Planos"  │              │    aplicativo          │
-└──────────────────────┘              └────────────────────────┘
+### Arquivo: `src/pages/UserLogin.tsx`
+
+**Remover a validação premium obrigatória:**
+
+```diff
+  const auth = useUnifiedAuth({
+    changePasswordRoute: '/change-password',
+    loginRoute: '/login',
+    forgotPasswordRoute: '/forgot-password',
+    defaultRedirect: redirectTo,
+    t: (key: string) => t(key),
+-   // Premium-specific validation
+-   postLoginValidation: async (user) => {
+-     const { data: isPremium, error: premiumError } = await supabase.rpc('is_premium');
+-     if (premiumError || !isPremium) {
+-       return { valid: false, error: t('errors.accessDenied') };
+-     }
+-     return { valid: true };
+-   },
+  });
 ```
 
----
+**Ajustar o useEffect para NÃO bloquear não-premium (apenas redirecionar se já logado):**
 
-## Componentes a Criar
-
-### 1. Página Frontend: `/resgatar-creditos`
-
-**Arquivo:** `src/pages/ResgatarCreditos.tsx`
-
-**Funcionalidades:**
-- Campo de input para email
-- Botão "Verificar e Resgatar"
-- Estados de loading durante verificação
-- Mensagens de erro/sucesso
-- Design consistente com as outras páginas de promo
-
-**Estados possíveis:**
-- `idle` - Aguardando input do email
-- `checking` - Verificando elegibilidade
-- `success` - Créditos resgatados, redirecionando
-- `error_not_found` - Email não encontrado ou sem pack
-- `error_already_claimed` - Já resgatou anteriormente
-
----
-
-### 2. Edge Function: `claim-promo-credits`
-
-**Arquivo:** `supabase/functions/claim-promo-credits/index.ts`
-
-**Fluxo interno:**
-1. Receber `{ email: string, promo_code: 'UPSCALER_1500' }`
-2. Buscar usuário por email na tabela `profiles`
-3. Se não encontrar → retornar `{ eligible: false, reason: 'not_found' }`
-4. Verificar se tem pack `upscaller-arcano` ativo em `user_pack_purchases`
-5. Se não tiver → retornar `{ eligible: false, reason: 'no_pack' }`
-6. Verificar se já resgatou na tabela `promo_claims`
-7. Se já resgatou → retornar `{ eligible: false, reason: 'already_claimed' }`
-8. Adicionar 1.500 créditos mensais via RPC `add_upscaler_credits`
-9. Registrar resgate na tabela `promo_claims`
-10. Retornar `{ eligible: true, credits_added: 1500, new_balance: X }`
-
----
-
-### 3. Tabela de Controle: `promo_claims`
-
-**Migration SQL:**
-
-```sql
-CREATE TABLE IF NOT EXISTS promo_claims (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  promo_code TEXT NOT NULL,
-  credits_granted INTEGER NOT NULL,
-  credit_type TEXT NOT NULL DEFAULT 'monthly',
-  claimed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  ip_address TEXT,
-  user_agent TEXT,
-  
-  -- Índice único para evitar resgates duplicados
-  CONSTRAINT unique_user_promo UNIQUE(user_id, promo_code)
-);
-
--- RLS: Apenas service role pode inserir/ler
-ALTER TABLE promo_claims ENABLE ROW LEVEL SECURITY;
-
--- Política: usuários autenticados podem ver seus próprios resgates
-CREATE POLICY "Users can view own claims"
-ON promo_claims FOR SELECT
-TO authenticated
-USING (auth.uid() = user_id);
+```diff
+  useEffect(() => {
+-   const checkPremiumStatus = async () => {
++   const checkLoginStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+-       const { data: isPremium } = await supabase.rpc('is_premium');
+-       if (isPremium) {
+-         const { data: profile } = await supabase
+-           .from('profiles')
+-           .select('password_changed')
+-           .eq('id', user.id)
+-           .maybeSingle();
+-
+-         if (!profile || !profile.password_changed) {
+-           navigate(`/change-password?redirect=${redirectTo}`);
+-         } else {
+-           navigate(redirectTo);
+-         }
++       const { data: profile } = await supabase
++         .from('profiles')
++         .select('password_changed')
++         .eq('id', user.id)
++         .maybeSingle();
++
++       if (!profile || !profile.password_changed) {
++         navigate(`/change-password?redirect=${redirectTo}`);
++       } else {
++         navigate(redirectTo);
+        }
+      }
+    };
+-   checkPremiumStatus();
++   checkLoginStatus();
+  }, [navigate, redirectTo]);
 ```
-
----
-
-## Design da Página
-
-**Visual:**
-- Fundo gradiente roxo/fuchsia (padrão do app)
-- Logo ArcanoApp no topo
-- Card central com:
-  - Título: "🎁 Resgate seus Créditos"
-  - Subtítulo: "1.500 créditos para usar nas Ferramentas de IA"
-  - Campo de email
-  - Botão CTA gradiente
-
-**Mensagens de feedback:**
-- ✅ Sucesso: "Parabéns! 1.500 créditos adicionados. Redirecionando..."
-- ❌ Não encontrado: "Compra não encontrada. Verifique se usou o email correto."
-- ⚠️ Já resgatou: "Você já resgatou essa promoção anteriormente."
-
----
-
-## Rota no App.tsx
-
-```tsx
-const ResgatarCreditos = lazy(() => import("./pages/ResgatarCreditos"));
-
-<Route path="/resgatar-creditos" element={<ResgatarCreditos />} />
-```
-
----
-
-## Arquivos a Criar/Modificar
-
-| Arquivo | Ação |
-|---------|------|
-| `src/pages/ResgatarCreditos.tsx` | ✨ Criar |
-| `src/App.tsx` | Adicionar rota |
-| `supabase/functions/claim-promo-credits/index.ts` | ✨ Criar |
-| Migration SQL (tabela `promo_claims`) | ✨ Criar |
-
----
-
-## Detalhes Técnicos
-
-### Verificação de elegibilidade (Edge Function)
-
-```typescript
-// 1. Buscar user_id pelo email
-const { data: profile } = await supabase
-  .from('profiles')
-  .select('id')
-  .eq('email', email.toLowerCase())
-  .maybeSingle();
-
-if (!profile) {
-  return { eligible: false, reason: 'not_found' };
-}
-
-// 2. Verificar pack upscaller-arcano ativo
-const { data: pack } = await supabase
-  .from('user_pack_purchases')
-  .select('id')
-  .eq('user_id', profile.id)
-  .eq('pack_slug', 'upscaller-arcano')
-  .eq('is_active', true)
-  .maybeSingle();
-
-if (!pack) {
-  return { eligible: false, reason: 'no_pack' };
-}
-
-// 3. Verificar se já resgatou
-const { data: existingClaim } = await supabase
-  .from('promo_claims')
-  .select('id')
-  .eq('user_id', profile.id)
-  .eq('promo_code', 'UPSCALER_1500')
-  .maybeSingle();
-
-if (existingClaim) {
-  return { eligible: false, reason: 'already_claimed' };
-}
-
-// 4. Adicionar créditos mensais
-const { data: creditResult } = await supabase.rpc('add_upscaler_credits', {
-  _user_id: profile.id,
-  _amount: 1500,
-  _description: 'Resgate promoção UPSCALER_1500'
-});
-
-// 5. Registrar resgate
-await supabase.from('promo_claims').insert({
-  user_id: profile.id,
-  promo_code: 'UPSCALER_1500',
-  credits_granted: 1500,
-  credit_type: 'monthly'
-});
-
-return { 
-  eligible: true, 
-  credits_added: 1500,
-  new_balance: creditResult?.[0]?.new_balance 
-};
-```
-
-### Página Frontend (simplificado)
-
-```tsx
-const ResgatarCreditos = () => {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
-  const navigate = useNavigate();
-
-  const handleSubmit = async () => {
-    setStatus('checking');
-    
-    const response = await fetch('/functions/v1/claim-promo-credits', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, promo_code: 'UPSCALER_1500' })
-    });
-    
-    const result = await response.json();
-    
-    if (result.eligible) {
-      setStatus('success');
-      toast.success('1.500 créditos adicionados!');
-      setTimeout(() => navigate('/ferramentas-ia-aplicativo'), 2000);
-    } else {
-      setStatus('error');
-      // Mapear reason para mensagem amigável
-      setErrorMessage(getErrorMessage(result.reason));
-    }
-  };
-  
-  // ... render com formulário e feedback
-};
-```
-
----
-
-## Segurança
-
-1. **Rate limiting**: A Edge Function pode limitar tentativas por IP
-2. **Validação de email**: Normalização e validação no backend
-3. **Constraint único**: A tabela `promo_claims` impede resgates duplicados a nível de banco
-4. **RLS**: Apenas service role pode inserir, usuários só podem ler próprios registros
 
 ---
 
 ## Resultado Esperado
 
-Após aprovação e implementação:
-- Página acessível em `/resgatar-creditos`
-- Usuários com Upscaler Arcano podem resgatar 1.500 créditos mensais uma vez
-- Créditos válidos por 30 dias (padrão mensal)
-- Redirecionamento automático para `/ferramentas-ia-aplicativo`
-- Controle de resgates para evitar abusos
+Após a alteração:
 
+| Cenário | Comportamento |
+|---------|---------------|
+| Usuário NÃO premium tenta logar | **PERMITE** login normalmente |
+| Após logado (não-premium) | Vê botão "Torne-se Premium" disponível |
+| Usuário premium tenta logar | Login normal (igual antes) |
+| Usuário já logado acessa /login | Redirecionado automaticamente |
+
+---
+
+## Observações Técnicas
+
+- A lógica de mostrar "Torne-se Premium" já existe no `BibliotecaPrompts.tsx` (linhas 505-510) e continuará funcionando
+- O `ToolsHeader.tsx` usa `/login-artes` que JÁ permite não-premium, então Ferramentas de IA não será afetado
+- Esta alteração unifica o comportamento: qualquer pessoa pode logar, premium ou não
