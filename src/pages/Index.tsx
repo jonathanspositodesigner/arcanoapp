@@ -154,10 +154,10 @@ const Index = () => {
   // Card para usuário NÃO logado (descoberta)
   const DiscoverCard = ({ card }: { card: CardData }) => (
     <div 
-      className="group bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary/50 relative"
+      className="group bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary/50 relative"
     >
-      {/* Imagem compacta */}
-      <div className="relative overflow-hidden aspect-[16/9] sm:aspect-[16/8]">
+      {/* Imagem */}
+      <div className="relative overflow-hidden aspect-[16/9]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -166,16 +166,16 @@ const Index = () => {
         />
       </div>
       
-      {/* Conteúdo compacto */}
-      <div className="p-1.5 sm:p-2">
-        <p className="text-[9px] sm:text-[10px] text-muted-foreground mb-0.5">{card.category}</p>
-        <h2 className="text-[11px] sm:text-xs font-semibold text-foreground mb-1.5 line-clamp-1">{card.title}</h2>
+      {/* Conteúdo */}
+      <div className="p-2 sm:p-2.5">
+        <p className="text-[10px] text-muted-foreground mb-0.5">{card.category}</p>
+        <h2 className="text-xs sm:text-sm font-semibold text-foreground mb-2 line-clamp-1">{card.title}</h2>
         <Button 
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[9px] sm:text-[10px] h-6 sm:h-7"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] sm:text-xs h-7 sm:h-8"
           onClick={() => navigate(card.route)}
         >
           {t('access')}
-          <ExternalLink className="ml-1 h-2.5 w-2.5 sm:h-3 sm:w-3" />
+          <ExternalLink className="ml-1 h-3 w-3" />
         </Button>
       </div>
     </div>
@@ -184,16 +184,16 @@ const Index = () => {
   // Card de compra realizada (com visual verde)
   const PurchasedCard = ({ card }: { card: CardData }) => (
     <div 
-      className="group bg-card border-2 border-green-500/30 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:border-green-500/50 relative"
+      className="group bg-card border-2 border-green-500/30 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:border-green-500/50 relative"
     >
-      {/* Badge de acesso compacto */}
-      <div className="absolute top-1 right-1 z-10 flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-green-500/90 text-white text-[8px] sm:text-[9px] font-medium shadow-sm">
-        <Check className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
+      {/* Badge de acesso */}
+      <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-500/90 text-white text-[9px] font-medium shadow-sm">
+        <Check className="h-2.5 w-2.5" />
         <span className="hidden sm:inline">{t('accessGranted')}</span>
       </div>
       
-      {/* Imagem compacta */}
-      <div className="relative overflow-hidden aspect-[16/9] sm:aspect-[16/8]">
+      {/* Imagem */}
+      <div className="relative overflow-hidden aspect-[16/9]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -202,16 +202,16 @@ const Index = () => {
         />
       </div>
       
-      {/* Conteúdo compacto */}
-      <div className="p-1.5 sm:p-2">
-        <p className="text-[9px] sm:text-[10px] text-muted-foreground mb-0.5">{card.category}</p>
-        <h2 className="text-[11px] sm:text-xs font-semibold text-foreground mb-1.5 line-clamp-1">{card.title}</h2>
+      {/* Conteúdo */}
+      <div className="p-2 sm:p-2.5">
+        <p className="text-[10px] text-muted-foreground mb-0.5">{card.category}</p>
+        <h2 className="text-xs sm:text-sm font-semibold text-foreground mb-2 line-clamp-1">{card.title}</h2>
         <Button 
-          className="w-full bg-green-600 hover:bg-green-700 text-white text-[9px] sm:text-[10px] h-6 sm:h-7"
+          className="w-full bg-green-600 hover:bg-green-700 text-white text-[10px] sm:text-xs h-7 sm:h-8"
           onClick={() => navigate(card.route)}
         >
           {t('access')}
-          <ExternalLink className="ml-1 h-2.5 w-2.5 sm:h-3 sm:w-3" />
+          <ExternalLink className="ml-1 h-3 w-3" />
         </Button>
       </div>
     </div>
@@ -220,22 +220,22 @@ const Index = () => {
   // Card disponível para compra (ou "Em Breve" para LATAM)
   const AvailableCard = ({ card, isComingSoon }: { card: CardData; isComingSoon: boolean }) => (
     <div 
-      className={`group bg-card border border-border rounded-lg overflow-hidden shadow-sm transition-all duration-300 relative ${
+      className={`group bg-card border border-border rounded-xl overflow-hidden shadow-sm transition-all duration-300 relative ${
         isComingSoon 
           ? 'grayscale opacity-60 cursor-not-allowed' 
           : 'hover:shadow-md hover:border-primary/50'
       }`}
     >
-      {/* Badge "Em Breve" compacto */}
+      {/* Badge "Em Breve" */}
       {isComingSoon && (
-        <div className="absolute top-1 right-1 z-10 flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-muted text-muted-foreground text-[8px] sm:text-[9px] font-medium shadow-sm">
-          <Clock className="h-2 w-2 sm:h-2.5 sm:w-2.5" />
+        <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-[9px] font-medium shadow-sm">
+          <Clock className="h-2.5 w-2.5" />
           <span className="hidden sm:inline">{t('comingSoon')}</span>
         </div>
       )}
       
-      {/* Imagem compacta */}
-      <div className="relative overflow-hidden aspect-[16/9] sm:aspect-[16/8]">
+      {/* Imagem */}
+      <div className="relative overflow-hidden aspect-[16/9]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -246,17 +246,17 @@ const Index = () => {
         />
       </div>
       
-      {/* Conteúdo compacto */}
-      <div className="p-1.5 sm:p-2">
-        <p className="text-[9px] sm:text-[10px] text-muted-foreground mb-0.5">{card.category}</p>
-        <h2 className="text-[11px] sm:text-xs font-semibold text-foreground mb-1.5 line-clamp-1">{card.title}</h2>
+      {/* Conteúdo */}
+      <div className="p-2 sm:p-2.5">
+        <p className="text-[10px] text-muted-foreground mb-0.5">{card.category}</p>
+        <h2 className="text-xs sm:text-sm font-semibold text-foreground mb-2 line-clamp-1">{card.title}</h2>
         <Button 
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[9px] sm:text-[10px] h-6 sm:h-7"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] sm:text-xs h-7 sm:h-8"
           onClick={() => !isComingSoon && navigate(card.route)}
           disabled={isComingSoon}
         >
           {isComingSoon ? t('comingSoon') : t('access')}
-          {!isComingSoon && <ExternalLink className="ml-1 h-2.5 w-2.5 sm:h-3 sm:w-3" />}
+          {!isComingSoon && <ExternalLink className="ml-1 h-3 w-3" />}
         </Button>
       </div>
     </div>
