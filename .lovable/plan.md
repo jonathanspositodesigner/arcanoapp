@@ -1,114 +1,66 @@
 
-# Plano: Exibir Motivo da Falha no Admin + Corrigir Créditos do Cliente
+
+# Plano: Otimização de Imagens para Admin Upload (800px + WebP)
 
 ## Resumo
 
-1. Adicionar a coluna `error_message` na RPC `get_ai_tools_usage`
-2. Exibir ícone de "!" com tooltip mostrando o erro quando status = `failed`
-3. Reembolsar os 80 créditos do cliente afetado
+Configurar as páginas de upload de admin para redimensionar automaticamente todas as imagens para no máximo **800px** (largura ou altura) e converter para **WebP** antes do upload.
 
 ---
 
-## Problema 1: Erro não aparece no Admin
+## Situação Atual
 
-### Causa
-A função RPC `get_ai_tools_usage` não retorna a coluna `error_message`, mesmo que ela exista nas tabelas de jobs.
+As páginas de admin upload já usam a função `optimizeImage`, mas com as configurações padrão:
+- **Dimensão máxima atual:** 2048px
+- **Formato:** WebP ✅ (já funciona)
 
-### Solução
-Alterar a RPC para incluir `error_message` em todos os SELECTs e no RETURNS TABLE.
+A função `optimizeImage` já suporta o parâmetro `maxWidthOrHeight`, só precisamos passar o valor `800`.
 
 ---
 
-## Problema 2: Cliente cobrado sem reembolso
+## Solução
 
-### Job Afetado
-- **Email:** eternalente@outlook.com
-- **Job ID:** `f137beec-7d3a-42e7-b1cc-e1a063ec7a19`
-- **Créditos:** 80 (não reembolsados)
-
-### Solução
-Script SQL para reembolsar os créditos.
+Passar `{ maxWidthOrHeight: 800 }` como segundo parâmetro da função `optimizeImage` nas duas páginas.
 
 ---
 
 ## Arquivos a Modificar
 
-| Arquivo | Mudança |
-|---------|---------|
-| Nova migration SQL | Alterar RPC `get_ai_tools_usage` para incluir `error_message` |
-| `src/components/admin/AdminAIToolsUsageTab.tsx` | Adicionar tooltip com ícone de exclamação |
+| Arquivo | Linha | Mudança |
+|---------|-------|---------|
+| `src/pages/AdminUpload.tsx` | 175 | `optimizeImage(file)` → `optimizeImage(file, { maxWidthOrHeight: 800 })` |
+| `src/pages/AdminUploadArtes.tsx` | 175 | `optimizeImage(file)` → `optimizeImage(file, { maxWidthOrHeight: 800 })` |
 
 ---
 
 ## Detalhes Técnicos
 
-### 1. Migration - Atualizar RPC
-
-A RPC precisa:
-- Adicionar `error_message TEXT` no `RETURNS TABLE`
-- Adicionar `uj.error_message`, `pcj.error_message`, `vaj.error_message`, `vuj.error_message` em cada SELECT do UNION
-
-### 2. Frontend - Tooltip com Erro
-
-Na função `getStatusBadge`, quando status = `failed`:
-
-```tsx
-case "failed":
-  return (
-    <div className="flex items-center gap-1.5">
-      <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Falhou</Badge>
-      {record.error_message && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <AlertCircle className="h-4 w-4 text-red-400 cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs">
-              <p>{record.error_message}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-    </div>
-  );
+### Antes (linha 175 em ambos os arquivos):
+```typescript
+const result = await optimizeImage(file);
 ```
 
-Isso requer:
-- Mudar `getStatusBadge(status)` para `getStatusBadge(record)` para ter acesso ao `error_message`
-- Adicionar imports do Tooltip e AlertCircle
-- Adicionar `error_message: string | null` na interface `UsageRecord`
-
-### 3. Reembolso do Cliente
-
-```sql
--- Reembolsar 80 créditos para o cliente
-INSERT INTO upscaler_credit_transactions (user_id, amount, transaction_type, description)
-SELECT user_id, 80, 'refund', 'Reembolso manual - job falhou sem estorno automático (f137beec)'
-FROM upscaler_jobs WHERE id = 'f137beec-7d3a-42e7-b1cc-e1a063ec7a19';
-
--- Marcar job como reembolsado
-UPDATE upscaler_jobs 
-SET credits_refunded = true 
-WHERE id = 'f137beec-7d3a-42e7-b1cc-e1a063ec7a19';
+### Depois:
+```typescript
+const result = await optimizeImage(file, { maxWidthOrHeight: 800 });
 ```
 
 ---
 
-## Resultado Final
+## Comportamento Resultante
 
-1. ✅ Erro aparece como tooltip ao passar o mouse sobre o ícone "!" 
-2. ✅ Cliente recebe seus 80 créditos de volta
-3. ✅ Histórico mostra exatamente o que aconteceu em cada job falho
+1. ✅ Imagens com largura ou altura > 800px serão redimensionadas para 800px (mantendo proporção)
+2. ✅ Todas as imagens serão convertidas para WebP (já funcionava)
+3. ✅ Qualidade de 85% (padrão otimizado)
+4. ✅ Imagens < 100KB não são processadas (já existe essa otimização)
+5. ✅ Processamento 100% no navegador do usuário (custo zero de servidor)
 
 ---
 
-## Exemplo Visual do Resultado
+## Impacto
 
-```
-┌──────────────────────────────────────────────────────────┐
-│ Status: [Falhou] ⚠️  ← Ao passar o mouse no ⚠️:          │
-│                      ┌────────────────────────────┐      │
-│                      │ Failed to start workflow   │      │
-│                      └────────────────────────────┘      │
-└──────────────────────────────────────────────────────────┘
-```
+- Mudança de **1 linha** em cada arquivo
+- Redução significativa no tamanho das imagens de preview/galeria
+- Carregamento mais rápido para usuários finais
+- Menor consumo de storage no banco de dados
+
