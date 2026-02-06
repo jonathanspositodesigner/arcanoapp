@@ -1,39 +1,133 @@
 
-# Plano: Migrar 6 Arquivos de Movies para Telão
+# Plano: Sistema Global de Notificação e Trava de Navegação para IAs
 
 ## Resumo
-Mover 6 arquivos que foram subidos incorretamente na Biblioteca de Artes Arcanas para a Biblioteca de Prompts, na categoria "Movies para Telão".
+Implementar duas funcionalidades globais que funcionarão automaticamente para **todas** as ferramentas de IA (atuais e futuras):
+
+1. **Som de Notificação** - Tocar um "ding" quando o job completar (sucesso ou falha)
+2. **Trava de Navegação** - Bloquear saída com aviso de perda de créditos durante processamento
 
 ---
 
-## Arquivos a serem migrados
+## Como vai funcionar
 
-| Título | Status Atual | Destino |
-|--------|--------------|---------|
-| Paredão | admin_artes (telao-led) | admin_prompts (Movies para Telão) |
-| Retrô syntwave | admin_artes (telao-led) | admin_prompts (Movies para Telão) |
-| Arrocha | admin_artes (telao-led) | admin_prompts (Movies para Telão) |
-| Sofrência | admin_artes (telao-led) | admin_prompts (Movies para Telão) |
-| Retrô 80s | admin_artes (telao-led) | admin_prompts (Movies para Telão) |
-| Cyberpunk | admin_artes (telao-led) | admin_prompts (Movies para Telão) |
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│                         USUÁRIO NO APP                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   [Upscaler] [Pose Changer] [Veste AI] [Video Upscaler]            │
+│        │            │            │            │                     │
+│        └────────────┴────────────┴────────────┘                    │
+│                           │                                         │
+│                    AIJobProvider (GLOBAL)                           │
+│                           │                                         │
+│        ┌──────────────────┴──────────────────┐                     │
+│        │                                      │                     │
+│   🔔 Som quando                         🚫 Trava navegação         │
+│   job terminar                          durante processamento       │
+│                                                                     │
+│   • Funciona em qualquer aba           • Aviso ao tentar sair       │
+│   • Mesmo minimizado                   • "Você perderá créditos!"   │
+│   • Alerta sonoro + toast              • Bloqueia botão "Voltar"    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Etapas
+## Etapas de Implementação
 
-### 1. Inserir os 6 registros na tabela admin_prompts
-- Copiar os dados (título, image_url, is_premium) para a Biblioteca de Prompts
-- Usar categoria "Movies para Telão" (já existe)
-- Campo `prompt` ficará com texto padrão "Prompt a ser adicionado" para você editar depois no painel de gerenciamento
+### 1. Adicionar arquivo de som
+- Criar arquivo `public/sounds/notification.mp3` (som curto de "ding")
+- Som leve (~10KB) que funciona em todos os navegadores
 
-### 2. Remover os 6 registros da tabela admin_artes
-- Deletar os registros originais para não ficarem duplicados
+### 2. Criar Contexto Global `AIJobProvider`
+Novo arquivo: `src/contexts/AIJobContext.tsx`
+
+Este contexto vai:
+- Monitorar se há job ativo globalmente
+- Tocar som quando status mudar para `completed` ou `failed`
+- Expor estado `isJobRunning` para outros componentes
+
+### 3. Atualizar `useQueueSessionCleanup.ts`
+Expandir para bloquear navegação externa (fechar aba/atualizar) também quando:
+- Status = `starting` ou `running`
+- Mensagem: "Se você sair agora, perderá os créditos. Tem certeza?"
+
+### 4. Criar Hook `useNavigationGuard.ts`
+Novo hook que:
+- Usa `useBlocker` do React Router para navegação interna
+- Mostra modal de confirmação antes de permitir sair
+- Integra com o contexto global
+
+### 5. Integrar no `ToolsHeader.tsx`
+Modificar o componente de cabeçalho para:
+- Usar o novo hook de trava
+- Mostrar modal de confirmação quando usuário clicar em "Voltar"
+
+### 6. Envolver App com Provider
+Adicionar `AIJobProvider` no `App.tsx` para funcionar globalmente
 
 ---
 
-## Resultado Final
+## Arquivos a criar/modificar
 
-Após a migração:
-- Os 6 movies aparecerão na Biblioteca de Prompts, categoria "Movies para Telão"
-- Você poderá editar cada um pelo painel admin para adicionar os prompts
-- Os arquivos de vídeo (MP4) continuam no mesmo storage, apenas a referência muda de tabela
+| Arquivo | Ação | Descrição |
+|---------|------|-----------|
+| `public/sounds/notification.mp3` | Criar | Som de notificação |
+| `src/contexts/AIJobContext.tsx` | Criar | Contexto global de jobs |
+| `src/hooks/useNavigationGuard.ts` | Criar | Hook para trava de navegação interna |
+| `src/hooks/useQueueSessionCleanup.ts` | Modificar | Expandir para bloquear `running` |
+| `src/components/ToolsHeader.tsx` | Modificar | Integrar trava de navegação |
+| `src/App.tsx` | Modificar | Adicionar AIJobProvider |
+
+---
+
+## Detalhes Técnicos
+
+### Som de Notificação
+```typescript
+// Exemplo de lógica
+const playNotificationSound = () => {
+  const audio = new Audio('/sounds/notification.mp3');
+  audio.volume = 0.5;
+  audio.play().catch(console.log); // Silencioso se browser bloquear
+};
+```
+
+### Trava de Navegação Interna (React Router)
+```typescript
+// Usando useBlocker do react-router-dom
+import { useBlocker } from 'react-router-dom';
+
+const blocker = useBlocker(
+  ({ currentLocation, nextLocation }) =>
+    isJobRunning && currentLocation.pathname !== nextLocation.pathname
+);
+```
+
+### Mensagem de Aviso
+> ⚠️ **Atenção!**
+> 
+> Você tem um processamento de IA em andamento. 
+> Se sair agora, perderá o resultado e os créditos serão cobrados.
+>
+> Deseja sair mesmo assim?
+>
+> [Continuar Esperando] [Sair e Perder]
+
+---
+
+## Compatibilidade com Futuras IAs
+
+Qualquer nova ferramenta de IA que:
+1. Use o `JobManager.ts` para criar jobs
+2. Registre sua tabela no `TABLE_MAP`
+
+...automaticamente terá:
+- ✅ Som de notificação ao terminar
+- ✅ Trava de navegação durante processamento
+- ✅ Aviso de perda de créditos
+
+Não será necessário implementar nada extra por ferramenta!
