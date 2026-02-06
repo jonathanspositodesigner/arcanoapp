@@ -40,14 +40,8 @@ const AdminSidebarPlatform = ({ platform, onLogout }: AdminSidebarPlatformProps)
 
   const menuItems = [
     {
-      label: "DASHBOARD",
-      path: config.basePath,
-      icon: BarChart3,
-      description: "Métricas e analytics"
-    },
-    {
       label: "FERRAMENTAS",
-      path: `${config.basePath}/ferramentas`,
+      path: config.basePath,
       icon: Wrench,
       description: "Gerenciar conteúdos"
     },
@@ -68,6 +62,12 @@ const AdminSidebarPlatform = ({ platform, onLogout }: AdminSidebarPlatformProps)
       path: `${config.basePath}/debug-ia`,
       icon: Bug,
       description: "Simulação e diagnóstico"
+    },
+    {
+      label: "DASHBOARD",
+      path: `${config.basePath}/dashboard`,
+      icon: BarChart3,
+      description: "Métricas e analytics"
     }
   ];
 
