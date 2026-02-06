@@ -201,27 +201,37 @@ const ResgatarCreditos = () => {
             </p>
             
             <div className="space-y-3">
-              {errorReason !== 'already_claimed' && (
+              {errorReason === 'already_claimed' ? (
                 <Button
-                  onClick={handleViewPlans}
+                  onClick={() => navigate('/ferramentas-ia-aplicativo')}
                   className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold"
                 >
-                  Ver Planos de Créditos
+                  Ir para a ferramenta
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
+              ) : (
+                <>
+                  <Button
+                    onClick={handleViewPlans}
+                    className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold"
+                  >
+                    Ver Planos de Créditos
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setStatus('idle');
+                      setErrorReason(null);
+                      setEmail('');
+                    }}
+                    className="w-full h-10 border-purple-500/50 bg-purple-900/50 text-white hover:bg-purple-800/70"
+                  >
+                    Tentar outro email
+                  </Button>
+                </>
               )}
-              
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setStatus('idle');
-                  setErrorReason(null);
-                  setEmail('');
-                }}
-                className="w-full h-10 border-purple-500/50 bg-purple-900/50 text-white hover:bg-purple-800/70"
-              >
-                Tentar outro email
-              </Button>
             </div>
           </div>
         )}
