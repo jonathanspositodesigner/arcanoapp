@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import RunningHubBonusModal from "@/components/RunningHubBonusModal";
+import CreditsPreviewPopover from "@/components/CreditsPreviewPopover";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -509,16 +510,12 @@ const BibliotecaPrompts = () => {
                 {t('header.becomePremium')}
               </Button>
               <div className="flex items-center gap-1">
-                <Badge 
-                  variant="outline" 
-                  className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:bg-purple-800/50"
-                  onClick={() => navigate('/credit-history')}
-                >
-                  <Coins className="w-3.5 h-3.5 text-yellow-400" />
-                  <span className="font-medium">
-                    {creditsLoading ? '...' : credits}
-                  </span>
-                </Badge>
+                <CreditsPreviewPopover 
+                  credits={credits} 
+                  creditsLoading={creditsLoading} 
+                  userId={user?.id || ''} 
+                  variant="desktop" 
+                />
                 <button
                   onClick={() => navigate('/planos-creditos')}
                   className="h-7 w-7 flex items-center justify-center rounded hover:bg-purple-500/10"
@@ -536,16 +533,12 @@ const BibliotecaPrompts = () => {
               {t('header.premiumActive')}
             </Badge>
             <div className="flex items-center gap-1">
-              <Badge 
-                variant="outline" 
-                className="bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:bg-purple-800/50"
-                onClick={() => navigate('/credit-history')}
-              >
-                <Coins className="w-3.5 h-3.5 text-yellow-400" />
-                <span className="font-medium">
-                  {creditsLoading ? '...' : credits}
-                </span>
-              </Badge>
+              <CreditsPreviewPopover 
+                credits={credits} 
+                creditsLoading={creditsLoading} 
+                userId={user?.id || ''} 
+                variant="desktop" 
+              />
               <button
                 onClick={() => navigate('/planos-creditos')}
                 className="h-7 w-7 flex items-center justify-center rounded hover:bg-purple-500/10"
@@ -581,13 +574,12 @@ const BibliotecaPrompts = () => {
               Premium
             </Button>
             <div className="flex items-center gap-1">
-              <Badge 
-                className="bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1 cursor-pointer"
-                onClick={() => navigate('/credit-history')}
-              >
-                <Coins className="w-3 h-3 text-yellow-400" />
-                {creditsLoading ? '...' : credits}
-              </Badge>
+              <CreditsPreviewPopover 
+                credits={credits} 
+                creditsLoading={creditsLoading} 
+                userId={user?.id || ''} 
+                variant="mobile" 
+              />
               <button
                 onClick={() => navigate('/planos-creditos')}
                 className="p-0.5 rounded hover:bg-purple-500/10"
@@ -605,13 +597,12 @@ const BibliotecaPrompts = () => {
               Premium
             </Badge>
             <div className="flex items-center gap-1">
-              <Badge 
-                className="bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1 cursor-pointer"
-                onClick={() => navigate('/credit-history')}
-              >
-                <Coins className="w-3 h-3 text-yellow-400" />
-                {creditsLoading ? '...' : credits}
-              </Badge>
+              <CreditsPreviewPopover 
+                credits={credits} 
+                creditsLoading={creditsLoading} 
+                userId={user?.id || ''} 
+                variant="mobile" 
+              />
               <button
                 onClick={() => navigate('/planos-creditos')}
                 className="p-0.5 rounded hover:bg-purple-500/10"
