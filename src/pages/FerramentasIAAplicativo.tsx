@@ -169,7 +169,7 @@ const FerramentasIAAplicativo = () => {
         }`}
         onClick={handleCardClick}
       >
-        <div className="aspect-[4/5] sm:aspect-[3/4] relative overflow-hidden">
+        <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
           {tool.cover_url ? (
             <img 
               src={tool.cover_url} 
@@ -205,11 +205,11 @@ const FerramentasIAAplicativo = () => {
                 Em Breve
               </Button>
             ) : (
-              <div className="flex flex-col gap-1.5 sm:gap-2 mt-2 sm:mt-3">
+              <div className="flex flex-col gap-1 sm:gap-2 mt-2 sm:mt-3">
                 {/* Main button - Versão Aplicativo */}
                 <Button
                   size="sm"
-                  className={`w-full text-xs sm:text-sm font-medium ${
+                  className={`w-full text-[11px] sm:text-sm h-8 sm:h-9 font-medium ${
                     hasAccess 
                       ? "bg-green-500 hover:bg-green-600" 
                       : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
@@ -219,7 +219,7 @@ const FerramentasIAAplicativo = () => {
                     handleToolClick(tool);
                   }}
                 >
-                  <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
                   {isUpscalerArcano ? (
                     <>
                       <span className="hidden sm:inline">Upscaler Arcano - Versão Aplicativo</span>
@@ -237,13 +237,13 @@ const FerramentasIAAplicativo = () => {
                 {isUpscalerArcano && hasUpscalerPack && (
                   <Button
                     size="sm"
-                    className="w-full text-xs sm:text-sm font-medium bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white"
+                    className="w-full text-[11px] sm:text-sm h-8 sm:h-9 font-medium bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate("/ferramenta-ia-artes/upscaller-arcano/v2");
                     }}
                   >
-                    <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
                     <span className="hidden sm:inline">Upscaler Arcano - Versão Ilimitada</span>
                     <span className="sm:hidden">Versão Ilimitada</span>
                   </Button>
@@ -276,7 +276,7 @@ const FerramentasIAAplicativo = () => {
 
 
         {/* Single grid - no separation by access */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {tools.map(renderToolCard)}
         </div>
 
