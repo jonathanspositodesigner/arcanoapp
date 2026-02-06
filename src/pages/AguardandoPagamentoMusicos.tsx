@@ -100,7 +100,7 @@ const AguardandoPagamentoMusicos = () => {
                 <ExternalLink className="w-4 h-4 mr-2" />{t('pendingMusicos.openCheckout')}
               </Button>
             )}
-            <Button onClick={() => navigate("/planos-artes-musicos")} variant="outline" className="w-full">
+            <Button onClick={() => navigate(-1)} variant="outline" className="w-full">
               <ArrowLeft className="w-4 h-4 mr-2" />{t('pendingMusicos.backToPlans')}
             </Button>
           </div>

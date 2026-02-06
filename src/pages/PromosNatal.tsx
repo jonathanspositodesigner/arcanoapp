@@ -285,7 +285,7 @@ const PromosNatal = () => {
         <Button
           variant="ghost"
           className="text-gray-700 hover:text-gray-900 hover:bg-white/50 mb-6"
-          onClick={() => navigate("/biblioteca-artes")}
+          onClick={() => navigate(-1)}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t('backToLibrary')}

@@ -191,7 +191,7 @@ const ChangePassword = () => {
             </Button>
             
             <Button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate(-1)}
               variant="ghost"
               className="w-full text-purple-400/70 hover:text-purple-300"
             >
