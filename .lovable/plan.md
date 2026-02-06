@@ -1,77 +1,114 @@
 
-# Correção: Erro de Upload + Imagem "Depois" Quebrada no Upscaler Arcano
+# Plano: Exibir Motivo da Falha no Admin + Corrigir Créditos do Cliente
 
-## Problemas Identificados
+## Resumo
 
-### 1. Erro de Upload: "Unexpected token '<', '<html><h'..."
-**Causa:** Após a compressão da imagem (que converte para `.webp`), o código ainda usa a extensão original do arquivo (`.png`, `.jpg`) para definir o `storagePath` e o `contentType`.
-
-```typescript
-// Linha 421-423 - BUG
-const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
-const storagePath = `upscaler/${user.id}/${tempId}.${ext}`;  // Usa extensão antiga
-```
-
-A função `optimizeForAI` sempre converte para WebP, então o arquivo resultante é WebP, mas estamos tentando fazer upload com extensão/content-type diferente. Isso pode causar problemas de proxy ou validação.
-
-### 2. Imagem "Depois" Quebrada na Segunda Utilização
-**Causa:** O `TransformWrapper` na linha 1162 não tem a prop `key={outputImage}`, então o componente de zoom não é remontado quando uma nova imagem é gerada. Isso faz com que mantenha referências ou estado da imagem anterior.
+1. Adicionar a coluna `error_message` na RPC `get_ai_tools_usage`
+2. Exibir ícone de "!" com tooltip mostrando o erro quando status = `failed`
+3. Reembolsar os 80 créditos do cliente afetado
 
 ---
 
-## Soluções
+## Problema 1: Erro não aparece no Admin
 
-### Correção 1: Forçar extensão .webp no upload
+### Causa
+A função RPC `get_ai_tools_usage` não retorna a coluna `error_message`, mesmo que ela exista nas tabelas de jobs.
 
-**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
+### Solução
+Alterar a RPC para incluir `error_message` em todos os SELECTs e no RETURNS TABLE.
 
-**Mudança nas linhas 421-431:**
+---
 
-```typescript
-// ANTES (bugado):
-const ext = (inputFileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
-const storagePath = `upscaler/${user.id}/${tempId}.${ext}`;
-// ...
-contentType: `image/${ext === 'jpg' ? 'jpeg' : ext}`
+## Problema 2: Cliente cobrado sem reembolso
 
-// DEPOIS (corrigido):
-// Como optimizeForAI sempre converte para webp, forçar a extensão
-const storagePath = `upscaler/${user.id}/${tempId}.webp`;
-// ...
-contentType: 'image/webp'
-```
+### Job Afetado
+- **Email:** eternalente@outlook.com
+- **Job ID:** `f137beec-7d3a-42e7-b1cc-e1a063ec7a19`
+- **Créditos:** 80 (não reembolsados)
 
-### Correção 2: Adicionar key no TransformWrapper
-
-**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
-
-**Mudança na linha 1162:**
-
-```typescript
-// ANTES (bugado):
-<TransformWrapper
-  initialScale={1}
-
-// DEPOIS (corrigido):
-<TransformWrapper
-  key={outputImage}
-  initialScale={1}
-```
+### Solução
+Script SQL para reembolsar os créditos.
 
 ---
 
 ## Arquivos a Modificar
 
-| Arquivo | Mudança | Linha |
-|---------|---------|-------|
-| `src/pages/UpscalerArcanoTool.tsx` | Forçar `.webp` no storagePath e contentType | 421-432 |
-| `src/pages/UpscalerArcanoTool.tsx` | Adicionar `key={outputImage}` no TransformWrapper | 1162 |
+| Arquivo | Mudança |
+|---------|---------|
+| Nova migration SQL | Alterar RPC `get_ai_tools_usage` para incluir `error_message` |
+| `src/components/admin/AdminAIToolsUsageTab.tsx` | Adicionar tooltip com ícone de exclamação |
 
 ---
 
-## Impacto
+## Detalhes Técnicos
 
-- Correção de 2 locais no mesmo arquivo
-- Não afeta nenhuma outra funcionalidade
-- Resolve ambos os bugs reportados
-- Segue o mesmo padrão já usado no Pose Changer (que tem `key={outputImage}`)
+### 1. Migration - Atualizar RPC
+
+A RPC precisa:
+- Adicionar `error_message TEXT` no `RETURNS TABLE`
+- Adicionar `uj.error_message`, `pcj.error_message`, `vaj.error_message`, `vuj.error_message` em cada SELECT do UNION
+
+### 2. Frontend - Tooltip com Erro
+
+Na função `getStatusBadge`, quando status = `failed`:
+
+```tsx
+case "failed":
+  return (
+    <div className="flex items-center gap-1.5">
+      <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Falhou</Badge>
+      {record.error_message && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <AlertCircle className="h-4 w-4 text-red-400 cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{record.error_message}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
+  );
+```
+
+Isso requer:
+- Mudar `getStatusBadge(status)` para `getStatusBadge(record)` para ter acesso ao `error_message`
+- Adicionar imports do Tooltip e AlertCircle
+- Adicionar `error_message: string | null` na interface `UsageRecord`
+
+### 3. Reembolso do Cliente
+
+```sql
+-- Reembolsar 80 créditos para o cliente
+INSERT INTO upscaler_credit_transactions (user_id, amount, transaction_type, description)
+SELECT user_id, 80, 'refund', 'Reembolso manual - job falhou sem estorno automático (f137beec)'
+FROM upscaler_jobs WHERE id = 'f137beec-7d3a-42e7-b1cc-e1a063ec7a19';
+
+-- Marcar job como reembolsado
+UPDATE upscaler_jobs 
+SET credits_refunded = true 
+WHERE id = 'f137beec-7d3a-42e7-b1cc-e1a063ec7a19';
+```
+
+---
+
+## Resultado Final
+
+1. ✅ Erro aparece como tooltip ao passar o mouse sobre o ícone "!" 
+2. ✅ Cliente recebe seus 80 créditos de volta
+3. ✅ Histórico mostra exatamente o que aconteceu em cada job falho
+
+---
+
+## Exemplo Visual do Resultado
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ Status: [Falhou] ⚠️  ← Ao passar o mouse no ⚠️:          │
+│                      ┌────────────────────────────┐      │
+│                      │ Failed to start workflow   │      │
+│                      └────────────────────────────┘      │
+└──────────────────────────────────────────────────────────┘
+```
