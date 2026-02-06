@@ -16,6 +16,8 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
 import { useTranslation } from "react-i18next";
 import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
+import { useNavigationGuard } from "@/hooks/useNavigationGuard";
+import NavigationBlockerModal from "@/components/NavigationBlockerModal";
 
 interface ToolsHeaderProps {
   title?: string;
@@ -37,6 +39,14 @@ const ToolsHeader = ({
   const { user, logout } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
   const [userProfile, setUserProfile] = useState<{ name?: string; phone?: string } | null>(null);
+  
+  // Hook de trava de navegação - bloqueia se job ativo
+  const { 
+    showConfirmModal, 
+    confirmLeave, 
+    cancelLeave, 
+    activeToolName 
+  } = useNavigationGuard();
 
   // Fetch user profile
   useEffect(() => {
@@ -234,6 +244,13 @@ const ToolsHeader = ({
           )}
         </div>
       </div>
+      {/* Modal de confirmação de saída */}
+      <NavigationBlockerModal
+        open={showConfirmModal}
+        onConfirmLeave={confirmLeave}
+        onCancelLeave={cancelLeave}
+        toolName={activeToolName}
+      />
     </header>
   );
 };

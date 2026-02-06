@@ -9,6 +9,7 @@ import { LocaleProvider } from "./contexts/LocaleContext";
 import { UpdateAvailableBanner } from "./components/UpdateAvailableBanner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AIDebugProvider } from "./contexts/AIDebugContext";
+import { AIJobProvider } from "./contexts/AIJobContext";
 import "./lib/i18n"; // Initialize i18n
 // Critical pages - keep static for fast initial load
 import Index from "./pages/Index";
@@ -307,9 +308,11 @@ const App = () => {
       <LocaleProvider>
         <AuthProvider>
           <AIDebugProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
+            <AIJobProvider>
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+            </AIJobProvider>
           </AIDebugProvider>
         </AuthProvider>
       </LocaleProvider>

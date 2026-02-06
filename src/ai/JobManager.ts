@@ -339,11 +339,15 @@ async function markJobFailed(
 /**
  * Subscribe para atualizações de um job via Realtime
  * Retorna uma função para cancelar a subscription
+ * 
+ * @param onStatusChange - Callback adicional para notificar mudanças de status
+ *                         Usado pelo AIJobContext para tocar som
  */
 export function subscribeToJob(
   toolType: ToolType,
   jobId: string,
-  onUpdate: (update: JobUpdate) => void
+  onUpdate: (update: JobUpdate) => void,
+  onStatusChange?: (status: JobStatus) => void
 ): () => void {
   const tableName = TABLE_MAP[toolType];
   
@@ -361,10 +365,17 @@ export function subscribeToJob(
       },
       (payload) => {
         const data = payload.new as any;
+        const status = data.status as JobStatus;
+        
         console.log(`[JobManager] Job update:`, data);
         
+        // Notificar callback de status (para AIJobContext)
+        if (onStatusChange) {
+          onStatusChange(status);
+        }
+        
         onUpdate({
-          status: data.status as JobStatus,
+          status,
           outputUrl: data.output_url,
           errorMessage: data.error_message,
           position: data.position,

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Hook para limpar jobs da fila quando usuário sai da página
@@ -8,8 +7,10 @@ import { supabase } from '@/integrations/supabase/client';
  * 1. beforeunload: tenta cancelar imediatamente quando usuário fecha a aba
  * 2. Cleanup no unmount: cancela se ainda estiver na fila
  * 
- * IMPORTANTE: Só cancela jobs com status 'queued' - jobs 'running' ou 'completed'
- * não são afetados para evitar perda de resultados.
+ * IMPORTANTE: 
+ * - Jobs 'queued' são cancelados com reembolso automático
+ * - Jobs 'starting' ou 'running' mostram aviso mas NÃO são cancelados
+ *   (créditos já consumidos na API externa)
  * 
  * @param sessionId - ID único da sessão do usuário
  * @param status - Status atual do job ('queued', 'running', etc)
@@ -31,19 +32,23 @@ export function useQueueSessionCleanup(
     sessionIdRef.current = sessionId;
   }, [sessionId]);
   
-  // Verifica se está em estado que pode ser cancelado
-  const canCancel = useCallback(() => {
-    // CRÍTICO: Só cancela se estiver ESPECIFICAMENTE na fila
-    // Não cancela running/completed/failed/etc
+  // Verifica se está em estado que pode ser cancelado COM REEMBOLSO
+  const canCancelWithRefund = useCallback(() => {
+    // CRÍTICO: Só cancela com reembolso se estiver ESPECIFICAMENTE na fila
     return statusRef.current === 'queued';
   }, []);
   
-  // Função para cancelar jobs da sessão
+  // Verifica se está em estado ativo (running/starting) - aviso sem cancelamento
+  const isActiveWithoutRefund = useCallback(() => {
+    return ['starting', 'running'].includes(statusRef.current);
+  }, []);
+  
+  // Função para cancelar jobs da sessão (apenas queued)
   const cancelSessionJobs = useCallback(async () => {
     const currentSessionId = sessionIdRef.current;
     
     // Só cancela se tiver sessionId E estiver na fila
-    if (!currentSessionId || !canCancel()) {
+    if (!currentSessionId || !canCancelWithRefund()) {
       console.log('[QueueCleanup] Skipping cancel - status:', statusRef.current);
       return;
     }
@@ -71,24 +76,32 @@ export function useQueueSessionCleanup(
     } catch (error) {
       console.error('[QueueCleanup] Failed to cancel session:', error);
     }
-  }, [canCancel]);
+  }, [canCancelWithRefund]);
   
-  // Configurar beforeunload
+  // Configurar beforeunload - aviso para AMBOS os casos
   useEffect(() => {
     if (!sessionId) return;
     
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Só mostrar confirmação e cancelar se estiver NA FILA (queued)
-      if (statusRef.current === 'queued') {
-        // Tentar cancelar via fetch com keepalive
+      const currentStatus = statusRef.current;
+      
+      // Se estiver na fila (queued) - aviso + cancelamento com reembolso
+      if (currentStatus === 'queued') {
         cancelSessionJobs();
-        
-        // Mostrar confirmação ao usuário
         e.preventDefault();
-        e.returnValue = 'Você tem um job na fila. Se sair, ele será cancelado.';
+        e.returnValue = 'Você tem um job na fila. Se sair, ele será cancelado e os créditos devolvidos.';
         return e.returnValue;
       }
-      // Se está running/completed/failed - não faz nada, deixa continuar
+      
+      // Se estiver rodando (starting/running) - apenas aviso SEM cancelamento
+      // Créditos já foram consumidos, só avisamos que vai perder o resultado
+      if (['starting', 'running'].includes(currentStatus)) {
+        e.preventDefault();
+        e.returnValue = 'Você tem um processamento em andamento. Se sair, perderá o resultado e os créditos serão cobrados.';
+        return e.returnValue;
+      }
+      
+      // Se completed/failed/cancelled - não faz nada
     };
     
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -100,9 +113,8 @@ export function useQueueSessionCleanup(
   
   // Cleanup no unmount - SÓ se ainda estiver queued
   useEffect(() => {
-    // Função vazia no mount
     return () => {
-      // Cleanup: só cancela se AINDA estiver na fila
+      // Cleanup: só cancela se AINDA estiver na fila (com reembolso)
       if (statusRef.current === 'queued' && sessionIdRef.current) {
         console.log('[QueueCleanup] Component unmounting while queued, cancelling...');
         
@@ -120,8 +132,9 @@ export function useQueueSessionCleanup(
           }
         ).catch(console.error);
       }
+      // Se estiver running/starting - NÃO cancela (perderia créditos de qualquer jeito)
     };
   }, []); // Empty deps - só roda no mount/unmount
   
-  return { cancelSessionJobs };
+  return { cancelSessionJobs, isActiveWithoutRefund };
 }
