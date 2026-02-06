@@ -157,38 +157,120 @@ export const formatBytes = (bytes: number): string => {
 };
 
 /**
+ * Get image dimensions without validation
+ * Returns width and height of the image
+ */
+export const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: img.width, height: img.height });
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Não foi possível carregar a imagem.'));
+    };
+
+    img.src = url;
+  });
+};
+
+/**
+ * Compress image to a maximum dimension (width or height) while maintaining aspect ratio
+ * Used for client-side compression before upload
+ * @param file - The image file to compress
+ * @param maxPx - Maximum dimension in pixels (e.g., 1999)
+ * @returns Compressed file with new dimensions
+ */
+export const compressToMaxDimension = async (
+  file: File,
+  maxPx: number
+): Promise<{ file: File; width: number; height: number }> => {
+  const { width, height } = await getImageDimensions(file);
+
+  // If already within limits, just return with dimensions
+  if (width <= maxPx && height <= maxPx) {
+    return { file, width, height };
+  }
+
+  try {
+    const compressedFile = await imageCompression(file, {
+      maxWidthOrHeight: maxPx,
+      useWebWorker: true,
+      fileType: 'image/webp',
+      initialQuality: 0.9,
+    });
+
+    // Get new dimensions after compression
+    const newDimensions = await getImageDimensions(compressedFile as File);
+
+    // Create a new file with .webp extension
+    const webpFileName = file.name.replace(/\.[^/.]+$/, '.webp');
+    const optimizedFile = new File([compressedFile], webpFileName, {
+      type: 'image/webp',
+    });
+
+    console.log(
+      `[compressToMaxDimension] ${file.name} (${width}x${height}) → ${webpFileName} (${newDimensions.width}x${newDimensions.height})`
+    );
+
+    return {
+      file: optimizedFile,
+      width: newDimensions.width,
+      height: newDimensions.height,
+    };
+  } catch (error) {
+    console.error('[compressToMaxDimension] Error:', error);
+    // Return original file with original dimensions if compression fails
+    return { file, width, height };
+  }
+};
+
+/**
  * Validate image dimensions for AI tools
- * Blocks images larger than MAX_AI_DIMENSION (2000px) in width or height
+ * Returns validation result with dimensions - does NOT block, just reports
  */
 export const validateImageDimensions = (file: File): Promise<ImageDimensionValidation> => {
   return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
-    
+
     img.onload = () => {
       URL.revokeObjectURL(url);
-      
+
       if (img.width > MAX_AI_DIMENSION || img.height > MAX_AI_DIMENSION) {
         resolve({
           valid: false,
           width: img.width,
           height: img.height,
-          error: `Imagem muito grande (${img.width}x${img.height}). O limite máximo é ${MAX_AI_DIMENSION}x${MAX_AI_DIMENSION} pixels. Por favor, redimensione a imagem antes de enviar.`,
+          error: `Imagem muito grande (${img.width}x${img.height}). O limite máximo é ${MAX_AI_DIMENSION}x${MAX_AI_DIMENSION} pixels.`,
         });
       } else {
         resolve({ valid: true, width: img.width, height: img.height });
       }
     };
-    
+
     img.onerror = () => {
       URL.revokeObjectURL(url);
       resolve({ valid: false, width: 0, height: 0, error: 'Não foi possível carregar a imagem.' });
     };
-    
+
     img.src = url;
   });
 };
 
 export const useImageOptimizer = () => {
-  return { optimizeImage, optimizeForAI, isImageFile, formatBytes, validateImageDimensions };
+  return {
+    optimizeImage,
+    optimizeForAI,
+    isImageFile,
+    formatBytes,
+    validateImageDimensions,
+    getImageDimensions,
+    compressToMaxDimension,
+  };
 };

@@ -19,11 +19,11 @@ import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useAIJob } from '@/contexts/AIJobContext';
-import { optimizeForAI, validateImageDimensions } from '@/hooks/useImageOptimizer';
+import { optimizeForAI, validateImageDimensions, getImageDimensions, compressToMaxDimension, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { JobDebugPanel } from '@/components/ai-tools';
+import { JobDebugPanel, ImageCompressionModal } from '@/components/ai-tools';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
@@ -102,6 +102,12 @@ const UpscalerArcanoTool: React.FC = () => {
    const [activeJobId, setActiveJobId] = useState<string | undefined>();
    const [activeStatus, setActiveStatus] = useState<string | undefined>();
    // Now using centralized checkActiveJob from JobManager
+
+  // Compression modal state
+  const [showCompressionModal, setShowCompressionModal] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingDimensions, setPendingDimensions] = useState<{ w: number; h: number } | null>(null);
+  const [inputDimensions, setInputDimensions] = useState<{ w: number; h: number } | null>(null);
 
   // Queue message combos for friendly waiting experience
   const queueMessageCombos = [
@@ -266,6 +272,27 @@ const UpscalerArcanoTool: React.FC = () => {
     return () => clearInterval(interval);
   }, [status]);
 
+  // Process file after dimension check or compression
+  const processFileWithDimensions = useCallback(async (file: File, dimensions: { width: number; height: number }) => {
+    // ALWAYS optimize for AI tools (1536px max) to prevent VRAM overflow
+    toast.info('Otimizando imagem...');
+    const optimizationResult = await optimizeForAI(file);
+    const processedFile = optimizationResult.file;
+
+    // Get final dimensions after optimization
+    const finalDims = await getImageDimensions(processedFile);
+    setInputDimensions({ w: finalDims.width, h: finalDims.height });
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setInputImage(e.target?.result as string);
+      setInputFileName(processedFile.name || file.name);
+      setOutputImage(null);
+      setStatus('idle');
+    };
+    reader.readAsDataURL(processedFile);
+  }, []);
+
   // Handle file selection with dimension validation and compression
   const handleFileSelect = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -278,27 +305,35 @@ const UpscalerArcanoTool: React.FC = () => {
       return;
     }
 
-    // Validate dimensions BEFORE any processing (max 2000px)
-    const validation = await validateImageDimensions(file);
-    if (!validation.valid) {
-      toast.error(validation.error || 'Imagem inválida');
-      return;
+    try {
+      // Get dimensions first
+      const dimensions = await getImageDimensions(file);
+      
+      // Check if image exceeds limit - show modal instead of error
+      if (dimensions.width > MAX_AI_DIMENSION || dimensions.height > MAX_AI_DIMENSION) {
+        setPendingFile(file);
+        setPendingDimensions({ w: dimensions.width, h: dimensions.height });
+        setShowCompressionModal(true);
+        return;
+      }
+
+      // Image is within limits, process directly
+      await processFileWithDimensions(file, dimensions);
+    } catch (error) {
+      console.error('[Upscaler] Error getting dimensions:', error);
+      toast.error('Erro ao processar imagem');
     }
+  }, [t, processFileWithDimensions]);
 
-    // ALWAYS optimize for AI tools (1536px max) to prevent VRAM overflow
-    toast.info('Otimizando imagem...');
-    const optimizationResult = await optimizeForAI(file);
-    const processedFile = optimizationResult.file;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setInputImage(e.target?.result as string);
-      setInputFileName(processedFile.name || file.name);
-      setOutputImage(null);
-      setStatus('idle');
-    };
-    reader.readAsDataURL(processedFile);
-  }, [t]);
+  // Handle compression complete from modal
+  const handleCompressionComplete = useCallback(async (compressedFile: File, newWidth: number, newHeight: number) => {
+    setShowCompressionModal(false);
+    setPendingFile(null);
+    setPendingDimensions(null);
+    
+    toast.success(`Imagem comprimida para ${newWidth}x${newHeight}px`);
+    await processFileWithDimensions(compressedFile, { width: newWidth, height: newHeight });
+  }, [processFileWithDimensions]);
 
   // Handle drop
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -670,7 +705,14 @@ const UpscalerArcanoTool: React.FC = () => {
                   <img src={inputImage} alt="Preview" className="w-12 h-12 object-cover rounded-lg" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-white truncate">{inputFileName || 'Imagem selecionada'}</p>
-                    <p className="text-[10px] text-purple-300/70">Clique para trocar</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] text-purple-300/70">Clique para trocar</p>
+                      {inputDimensions && (
+                        <span className="text-[10px] text-purple-400">
+                          📐 {inputDimensions.w}x{inputDimensions.h}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -1343,6 +1385,20 @@ const UpscalerArcanoTool: React.FC = () => {
         activeJobId={activeJobId}
         activeStatus={activeStatus}
         onCancelJob={centralCancelJob}
+      />
+
+      {/* Image Compression Modal */}
+      <ImageCompressionModal
+        isOpen={showCompressionModal}
+        onClose={() => {
+          setShowCompressionModal(false);
+          setPendingFile(null);
+          setPendingDimensions(null);
+        }}
+        file={pendingFile}
+        originalWidth={pendingDimensions?.w || 0}
+        originalHeight={pendingDimensions?.h || 0}
+        onCompress={handleCompressionComplete}
       />
     </div>
   );
