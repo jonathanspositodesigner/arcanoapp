@@ -108,7 +108,6 @@ running → failed (timeout 10min)
    - [ ] Consumir créditos via RPC `consume_upscaler_credits`
    - [ ] **CRÍTICO**: Marcar `credits_charged = true` após consumo
    - [ ] Chamar RunningHub com `webhookUrl` configurado
-   - [ ] Implementar timeout de 10 minutos via `EdgeRuntime.waitUntil()`
 
 3. **Webhook**
    - [ ] Receber eventos da RunningHub
@@ -140,9 +139,9 @@ running → failed (timeout 10min)
    - Cancela jobs em `running/queued/starting` há mais de 10 minutos
    - Reembolsa créditos automaticamente
 
-2. **Timeout nas Edge Functions**
-   - `EdgeRuntime.waitUntil()` com 10 minutos
-   - Se job ainda ativo após timeout: cancela via RPC
+2. **Timeout de 10 minutos**
+   - Gerenciado pelo cleanup oportunístico do QueueManager
+   - Jobs em `running/starting` há mais de 10 minutos são cancelados
 
 3. **Webhook Idempotente**
    - Verifica flags antes de processar

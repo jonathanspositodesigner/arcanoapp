@@ -1044,11 +1044,10 @@ serve(async (req) => {
     const logId = logEntry.id
     console.log(`   ✅ Log criado: ${logId}`)
 
-    // Schedule background processing
-    // @ts-ignore
-    EdgeRuntime.waitUntil(processGreennArtesWebhook(supabase, payload, logId, requestId))
+    // Processar webhook
+    await processGreennArtesWebhook(supabase, payload, logId, requestId)
 
-    // Return 200 immediately
+    // Retornar resposta
     const duration = Date.now() - startTime
     console.log(`\n🚀 [${requestId}] ACK RÁPIDO em ${duration}ms - Processamento em background`)
     
