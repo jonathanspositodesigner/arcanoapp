@@ -321,8 +321,6 @@ serve(async (req) => {
         return await handleEnqueue(req);
       case 'cancel-session':
         return await handleCancelSession(req);
-      case 'interrupt-task':
-        return await handleInterruptTask(req);
       default:
         return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
           status: 400,
@@ -775,115 +773,6 @@ async function handleCancelSession(req: Request): Promise<Response> {
   } catch (error) {
     console.error('[QueueManager] Cancel session error:', error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-}
-
-// ==================== INTERRUPT TASK (ADMIN) ====================
-
-/**
- * handleInterruptTask - Cancela uma task no RunningHub via API
- * 
- * Endpoint de administrador para forçar cancelamento de jobs travados.
- * Tenta cancelar via API do RunningHub e marca como cancelled no banco.
- */
-async function handleInterruptTask(req: Request): Promise<Response> {
-  try {
-    const { taskId, table, jobId } = await req.json();
-    
-    if (!taskId) {
-      return new Response(JSON.stringify({ error: 'taskId is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    console.log(`[QueueManager] Attempting to interrupt task ${taskId}`);
-    
-    // Tentar com todas as API keys disponíveis (não sabemos qual conta criou o job)
-    const accounts = getAvailableApiAccounts();
-    let interrupted = false;
-    let lastError = '';
-    
-    for (const account of accounts) {
-      try {
-        console.log(`[QueueManager] Trying interrupt with account ${account.name}...`);
-        
-        const response = await fetch('https://www.runninghub.ai/api/interrupt', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${account.apiKey}`,
-          },
-          body: JSON.stringify({ taskId }),
-        });
-        
-        const data = await response.json();
-        console.log(`[QueueManager] Interrupt response (${account.name}):`, JSON.stringify(data));
-        
-        if (response.ok || data.success) {
-          interrupted = true;
-          console.log(`[QueueManager] Task ${taskId} interrupted via ${account.name}`);
-          break;
-        } else {
-          lastError = data.message || data.error || 'Unknown error';
-        }
-      } catch (e) {
-        lastError = e instanceof Error ? e.message : 'Network error';
-        console.error(`[QueueManager] Interrupt error (${account.name}):`, e);
-      }
-    }
-    
-    // Se forneceu table e jobId, marcar como cancelled no banco
-    if (table && jobId && JOB_TABLES.includes(table)) {
-      // Buscar dados do job para reembolso
-      const { data: job } = await supabase
-        .from(table)
-        .select('user_id, user_credit_cost, credits_charged, credits_refunded, status')
-        .eq('id', jobId)
-        .maybeSingle();
-      
-      if (job && !['completed', 'cancelled', 'failed'].includes(job.status)) {
-        // Reembolsar se foi cobrado
-        if (job.user_id && job.user_credit_cost && job.credits_charged && !job.credits_refunded) {
-          await refundCreditsIfNeeded(
-            table, jobId, job.user_id, job.user_credit_cost,
-            job.credits_charged, job.credits_refunded
-          );
-        }
-        
-        // Marcar como cancelled
-        await supabase
-          .from(table)
-          .update({
-            status: 'cancelled',
-            error_message: 'Cancelled by admin via interrupt',
-            completed_at: new Date().toISOString(),
-          })
-          .eq('id', jobId);
-        
-        await updateAllQueuePositions();
-        console.log(`[QueueManager] Job ${jobId} marked as cancelled`);
-      }
-    }
-    
-    return new Response(JSON.stringify({
-      success: interrupted,
-      taskId,
-      message: interrupted 
-        ? 'Task interrupted successfully' 
-        : `Failed to interrupt: ${lastError}`,
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-    
-  } catch (error) {
-    console.error('[QueueManager] Interrupt task error:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
