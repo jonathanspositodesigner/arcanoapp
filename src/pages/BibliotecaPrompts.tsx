@@ -683,37 +683,37 @@ const BibliotecaPrompts = () => {
             </>
           )}
 
-          <h2 className="text-xl font-bold text-white mb-6">{t('sidebar.generateWithAI')}</h2>
+          <h2 className="text-lg font-bold text-white mb-4">{t('sidebar.generateWithAI')}</h2>
           
           {/* Botão Ferramentas de IA destacado - PRIMEIRO */}
           <Button 
             onClick={() => navigate("/ferramentas-ia-aplicativo")} 
-            className="w-full mb-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-semibold h-auto py-4 px-4"
+            className="w-full mb-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-semibold h-auto py-3 px-3 text-sm"
           >
-            <Zap className="h-5 w-5 mr-2" />
-            {t('sidebar.aiTools')}
+            <Zap className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="truncate">{t('sidebar.aiTools')}</span>
           </Button>
 
-          <div data-tutorial="ai-tools" className="space-y-3">
+          <div data-tutorial="ai-tools" className="space-y-2">
           {externalLinks.map(link => <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
-              <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30 hover:scale-105 transition-all duration-300">
-                <span className="font-medium">{link.name}</span>
-                <ExternalLink className="h-5 w-5 ml-2 flex-shrink-0 text-purple-300" />
+              <Button variant="outline" className="w-full h-auto py-3 px-3 flex items-center justify-between text-left bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30 hover:scale-105 transition-all duration-300 text-sm">
+                <span className="font-medium truncate">{link.name}</span>
+                <ExternalLink className="h-4 w-4 ml-2 flex-shrink-0 text-purple-300" />
               </Button>
             </a>)}
           </div>
-          <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block mt-3">
-            <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30 hover:scale-105 transition-all duration-300">
-              <span className="font-medium">{t('sidebar.generateVideoVEO3')}</span>
-              <Video className="h-5 w-5 ml-2 flex-shrink-0 text-purple-300" />
+          <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block mt-2">
+            <Button variant="outline" className="w-full h-auto py-3 px-3 flex items-center justify-between text-left bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30 hover:scale-105 transition-all duration-300 text-sm">
+              <span className="font-medium truncate">{t('sidebar.generateVideoVEO3')}</span>
+              <Video className="h-4 w-4 ml-2 flex-shrink-0 text-purple-300" />
             </Button>
           </a>
 
           {/* Botão Grupo da Comunidade */}
-          <a href="https://chat.whatsapp.com/KkQmU8xiyda7KUSXiyc3pn" target="_blank" rel="noopener noreferrer" className="block mt-6">
-            <Button variant="outline" className="w-full h-auto py-4 px-4 flex items-center justify-between text-left bg-green-600/30 border-green-500/50 text-white hover:bg-green-500/40 hover:scale-105 transition-all duration-300">
-              <span className="font-medium">Entrar para o grupo da comunidade</span>
-              <Users className="h-5 w-5 ml-2 flex-shrink-0 text-green-300" />
+          <a href="https://chat.whatsapp.com/KkQmU8xiyda7KUSXiyc3pn" target="_blank" rel="noopener noreferrer" className="block mt-4">
+            <Button variant="outline" className="w-full h-auto py-3 px-3 flex items-center justify-between text-left bg-green-600/30 border-green-500/50 text-white hover:bg-green-500/40 hover:scale-105 transition-all duration-300 text-sm">
+              <span className="font-medium truncate">Entrar para o grupo da comunidade</span>
+              <Users className="h-4 w-4 ml-2 flex-shrink-0 text-green-300" />
             </Button>
           </a>
         </aside>
