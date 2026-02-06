@@ -1,39 +1,52 @@
 
 
-# Plano: Remover EdgeRuntime.waitUntil() de Todos os Webhooks
+# Plano: Deletar Edge Function `ai-jobs-cancel-pending`
 
-## Problema
-Eu coloquei essa API incompatível (`EdgeRuntime.waitUntil()`) em 3 webhooks de pagamento. Essa API é exclusiva da Vercel e **NÃO FUNCIONA** no Deno/Supabase.
+## Resumo da Análise
 
-## Arquivos Afetados
+### O que essa função faz
+Função de **emergência manual** criada durante o incidente dos 404 para cancelar em massa jobs travados (`pending`/`queued`) nas 4 tabelas de AI:
+- `upscaler_jobs`
+- `pose_changer_jobs`  
+- `veste_ai_jobs`
+- `video_upscaler_jobs`
 
-| Arquivo | O que remover |
-|---------|---------------|
-| `webhook-greenn-creditos/index.ts` | Declaração (linhas 15-18) + chamada (linha 514-516) |
-| `webhook-hotmart-artes/index.ts` | Chamada (linha 837) + comentário @ts-ignore |
-| `webhook-greenn-artes/index.ts` | Chamada (linha 1049) + comentário @ts-ignore |
+### Verificação de Segurança
 
-## Solução
+| Verificação | Resultado |
+|-------------|-----------|
+| Chamada no frontend? | ❌ Nenhuma referência em `/src/` |
+| Chamada por outras Edge Functions? | ❌ Nenhuma |
+| Listada no config.toml? | ❌ Não está |
+| Usada por algum cron/scheduler? | ❌ Não |
+| Dependência de lógica crítica? | ❌ Não |
 
-Remover o `EdgeRuntime.waitUntil()` e usar `await` diretamente. O processamento será feito **antes** de retornar a resposta (como estava funcionando antes).
+### Por que pode deletar sem problemas
 
-### Mudanças em cada arquivo:
+1. **Isolada**: Ninguém chama essa função - era para uso manual via API
+2. **Substituída**: O sistema já tem `cleanup_all_stale_ai_jobs()` no QueueManager que faz limpeza automática de jobs travados (>10 min)
+3. **Sem integração**: Não está conectada a nenhum fluxo de usuário (upload, pagamento, login)
+4. **Emergência resolvida**: O incidente que motivou sua criação já foi corrigido
 
-**1. webhook-greenn-creditos/index.ts**
-- Remover linhas 15-18 (declaração do tipo)
-- Linha 514-516: Trocar `EdgeRuntime.waitUntil(processGreennCreditosWebhook(...))` por `await processGreennCreditosWebhook(...)`
+### Potencial problema se NÃO deletar
 
-**2. webhook-hotmart-artes/index.ts**
-- Linha 837: Trocar `EdgeRuntime.waitUntil(...)` por `await processHotmartWebhook(...)`
-- Remover comentário `// @ts-ignore`
+A função existe no servidor e pode ser chamada por qualquer usuário autenticado, o que teoricamente permite que alguém cancele seus próprios jobs pendentes sem passar pelo fluxo normal (mas isso não é um problema de segurança grave, apenas redundância).
 
-**3. webhook-greenn-artes/index.ts**
-- Linha 1049: Trocar `EdgeRuntime.waitUntil(...)` por `await processGreennArtesWebhook(...)`
-- Remover comentário `// @ts-ignore`
+---
+
+## Ação
+
+| Arquivo/Pasta | Ação |
+|---------------|------|
+| `supabase/functions/ai-jobs-cancel-pending/` | **DELETAR** pasta completa |
+
+Após deletar, a função será automaticamente removida do deploy.
+
+---
 
 ## Resultado Esperado
 
-- Webhooks voltam a funcionar sem erro
-- Processamento ocorre normalmente
-- Greenn/Hotmart recebem resposta após processamento completo
+- Função removida do servidor
+- Nenhum impacto no app (ninguém usa)
+- Menos código para manter
 
