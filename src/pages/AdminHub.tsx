@@ -116,22 +116,22 @@ const AdminHub = () => {
               <p className="text-muted-foreground">Cada plataforma possui seu próprio painel de gerenciamento</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
               {platforms.map((platform) => (
                 <Card
                   key={platform.id}
-                  className={`p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 ${platform.borderColor} ${platform.hoverBorder}`}
+                  className={`p-4 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 border-2 ${platform.borderColor} ${platform.hoverBorder}`}
                   onClick={() => navigate(platform.path)}
                 >
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className={`p-4 bg-gradient-to-r ${platform.color} rounded-full`}>
-                      <platform.icon className="h-10 w-10 text-white" />
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className={`p-2.5 bg-gradient-to-r ${platform.color} rounded-full`}>
+                      <platform.icon className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-foreground">{platform.title}</h3>
-                      <p className="text-sm font-medium text-primary">{platform.subtitle}</p>
+                      <h3 className="text-sm font-bold text-foreground">{platform.title}</h3>
+                      <p className="text-xs font-medium text-primary">{platform.subtitle}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground">{platform.description}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{platform.description}</p>
                   </div>
                 </Card>
               ))}
