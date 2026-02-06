@@ -461,8 +461,9 @@ async function sendWelcomeEmail(
 }
 
 // ============================================================================
-// PROCESSAMENTO EM BACKGROUND (via EdgeRuntime.waitUntil)
+// PROCESSAMENTO PRINCIPAL
 // ============================================================================
+
 async function processHotmartWebhook(
   supabase: any,
   payload: HotmartWebhookPayload,
