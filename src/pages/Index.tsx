@@ -157,7 +157,7 @@ const Index = () => {
       className="group bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary/50 relative"
     >
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[4/3]">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[3/2]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -167,9 +167,9 @@ const Index = () => {
       </div>
       
       {/* Conteúdo */}
-      <div className="p-2 sm:p-2.5 md:p-4">
-        <p className="text-[10px] md:text-xs text-muted-foreground mb-0.5 md:mb-1">{card.category}</p>
-        <h2 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 md:mb-3 line-clamp-1">{card.title}</h2>
+      <div className="p-2 sm:p-2.5 md:p-3">
+        <p className="text-[10px] md:text-[11px] text-muted-foreground mb-0.5">{card.category}</p>
+        <h2 className="text-xs sm:text-xs md:text-sm font-semibold text-foreground mb-2 line-clamp-1">{card.title}</h2>
         <Button 
           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] sm:text-xs md:text-sm h-7 sm:h-8 md:h-10"
           onClick={() => navigate(card.route)}
@@ -193,7 +193,7 @@ const Index = () => {
       </div>
       
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[4/3]">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[3/2]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -203,9 +203,9 @@ const Index = () => {
       </div>
       
       {/* Conteúdo */}
-      <div className="p-2 sm:p-2.5 md:p-4">
-        <p className="text-[10px] md:text-xs text-muted-foreground mb-0.5 md:mb-1">{card.category}</p>
-        <h2 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 md:mb-3 line-clamp-1">{card.title}</h2>
+      <div className="p-2 sm:p-2.5 md:p-3">
+        <p className="text-[10px] md:text-[11px] text-muted-foreground mb-0.5">{card.category}</p>
+        <h2 className="text-xs sm:text-xs md:text-sm font-semibold text-foreground mb-2 line-clamp-1">{card.title}</h2>
         <Button 
           className="w-full bg-green-600 hover:bg-green-700 text-white text-[10px] sm:text-xs md:text-sm h-7 sm:h-8 md:h-10"
           onClick={() => navigate(card.route)}
@@ -235,7 +235,7 @@ const Index = () => {
       )}
       
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[4/3]">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[3/2]">
         <img 
           src={card.image} 
           alt={card.title}
@@ -247,9 +247,9 @@ const Index = () => {
       </div>
       
       {/* Conteúdo */}
-      <div className="p-2 sm:p-2.5 md:p-4">
-        <p className="text-[10px] md:text-xs text-muted-foreground mb-0.5 md:mb-1">{card.category}</p>
-        <h2 className="text-xs sm:text-sm md:text-base font-semibold text-foreground mb-2 md:mb-3 line-clamp-1">{card.title}</h2>
+      <div className="p-2 sm:p-2.5 md:p-3">
+        <p className="text-[10px] md:text-[11px] text-muted-foreground mb-0.5">{card.category}</p>
+        <h2 className="text-xs sm:text-xs md:text-sm font-semibold text-foreground mb-2 line-clamp-1">{card.title}</h2>
         <Button 
           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] sm:text-xs md:text-sm h-7 sm:h-8 md:h-10"
           onClick={() => !isComingSoon && navigate(card.route)}
