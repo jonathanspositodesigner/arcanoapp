@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Coins, Lock, Settings, LogOut, Phone, LogIn, Sparkles, PlusCircle } from "lucide-react";
+import { ArrowLeft, User, Coins, Lock, Settings, LogOut, Phone, LogIn, Sparkles, PlusCircle, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -55,8 +55,19 @@ const ToolsHeader = ({
   return (
     <header className="sticky top-0 z-50 bg-[#0D0221]/95 backdrop-blur-lg border-b border-purple-500/20">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Left Side: Back Button + Title/Logo */}
+        {/* Left Side: Home + Back Button + Title/Logo */}
         <div className="flex items-center gap-3">
+          {/* Home Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+            title="Página Inicial"
+          >
+            <Home className="w-5 h-5" />
+          </Button>
+          
           {showBackButton && onBack && (
             <Button
               variant="ghost"
