@@ -3,6 +3,8 @@ import { Upload, X, ImageIcon, Library } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { validateImageDimensions } from '@/hooks/useImageOptimizer';
 
 interface ImageUploadCardProps {
   title: string;
@@ -31,10 +33,19 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
 
   const handleFileSelect = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione uma imagem válida.');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
+      toast.error('Arquivo muito grande. Máximo 10MB.');
+      return;
+    }
+
+    // Validate dimensions before processing
+    const validation = await validateImageDimensions(file);
+    if (!validation.valid) {
+      toast.error(validation.error || 'Imagem inválida');
       return;
     }
 
