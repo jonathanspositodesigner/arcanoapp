@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Coins, ArrowRight, TrendingUp, TrendingDown } from "lucide-react";
+import { Coins, ArrowRight, TrendingUp, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -96,16 +96,16 @@ const CreditsPreviewPopover = ({
                     {tx.amount > 0 ? (
                       <TrendingUp className="h-3 w-3 text-green-400 flex-shrink-0" />
                     ) : (
-                      <TrendingDown className="h-3 w-3 text-red-400 flex-shrink-0" />
+                      <Zap className="h-3 w-3 text-purple-400 flex-shrink-0" />
                     )}
                     <span className="text-purple-200 truncate">
                       {tx.description || tx.transaction_type}
                     </span>
                   </div>
                   <span className={`font-medium flex-shrink-0 ml-2 ${
-                    tx.amount > 0 ? "text-green-400" : "text-red-400"
+                    tx.amount > 0 ? "text-green-400" : "text-purple-400"
                   }`}>
-                    {tx.amount > 0 ? "+" : ""}{tx.amount}
+                    {tx.amount > 0 ? "+" : ""}{Math.abs(tx.amount)}
                   </span>
                 </div>
               ))}
