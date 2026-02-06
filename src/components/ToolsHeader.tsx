@@ -227,6 +227,17 @@ const ToolsHeader = ({
 
                   <DropdownMenuSeparator className="bg-purple-500/20" />
 
+                  {/* Minhas Criações - acessível no mobile via dropdown */}
+                  <DropdownMenuItem
+                    onClick={() => setShowCreationsModal(true)}
+                    className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
+                  >
+                    <Library className="w-4 h-4 mr-2" />
+                    Minhas Criações
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator className="bg-purple-500/20" />
+
                   {/* Actions */}
                   <DropdownMenuItem
                     onClick={() => navigate('/change-password')}
