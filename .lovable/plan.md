@@ -1,5 +1,4 @@
 
-
 # Plano: Padronizar Navegação de Retorno em Todo o Sistema
 
 ## Problema Identificado
@@ -15,7 +14,7 @@ Alterar todos os botões de voltar para usar `navigate(-1)` (voltar para página
 
 ---
 
-## Arquivos a Modificar (Total: 52 arquivos)
+## Arquivos a Modificar (Total: 22 arquivos identificados - Primeira Leva)
 
 ### Categoria 1: Perfil e Créditos (Alta Prioridade)
 
@@ -23,33 +22,30 @@ Alterar todos os botões de voltar para usar `navigate(-1)` (voltar para página
 |---------|-------|-------|----------|
 | `src/pages/CreditHistory.tsx` | 79 | `navigate("/profile-settings")` | `navigate(-1)` |
 | `src/pages/ProfileSettings.tsx` | 198 | `navigate("/biblioteca-prompts")` | `navigate(-1)` |
-| `src/pages/ProfileSettingsArtes.tsx` | 186 | `navigate("/biblioteca-artes")` | `navigate(-1)` |
+| `src/pages/ProfileSettingsArtes.tsx` | 186 | `navigate(fromMusicos ? "..." : "...")` | `navigate(-1)` |
 
 ### Categoria 2: Páginas de Planos
 
 | Arquivo | Linha | Atual | Correção |
 |---------|-------|-------|----------|
 | `src/pages/Planos.tsx` | 159 | `navigate('/biblioteca-prompts')` | `navigate(-1)` |
-| `src/pages/Planos2.tsx` | ~257 | `navigate('/biblioteca-prompts')` | `navigate(-1)` |
-| `src/pages/PlanosArtes.tsx` | ~348 | `navigate("/biblioteca-artes")` | `navigate(-1)` |
-| `src/pages/PlanosArtesMusicos.tsx` | ~133 | `navigate('/biblioteca-artes-musicos')` | `navigate(-1)` |
-| `src/pages/PlanosArtesMembro.tsx` | - | Rota fixa | `navigate(-1)` |
-| `src/pages/PlanosForjaSelos3D.tsx` | - | Rota fixa | `navigate(-1)` |
+| `src/pages/Planos2.tsx` | 257 | `navigate('/biblioteca-prompts')` | `navigate(-1)` |
+| `src/pages/PlanosArtes.tsx` | 348 | `navigate("/biblioteca-artes")` | `navigate(-1)` |
+| `src/pages/PlanosArtesMusicos.tsx` | 133 | `navigate('/biblioteca-artes-musicos')` | `navigate(-1)` |
+| `src/pages/PlanosArtesMembro.tsx` | 256 | `navigate("/biblioteca-artes")` | `navigate(-1)` |
+| `src/pages/PlanosForjaSelos3D.tsx` | 98 | `navigate("/biblioteca-artes")` | `navigate(-1)` |
 | `src/pages/UpgradePlano.tsx` | 207 | `navigate('/biblioteca-prompts')` | `navigate(-1)` |
 
 ### Categoria 3: Páginas de Login
 
-| Arquivo | Linha | Atual | Correção |
-|---------|-------|-------|----------|
+| Arquivo | Linha(s) | Atual | Correção |
+|---------|----------|-------|----------|
 | `src/pages/UserLogin.tsx` | 83 | `navigate("/")` | `navigate(-1)` |
-| `src/pages/UserLoginArtes.tsx` | ~60 | `navigate("/")` | `navigate(-1)` |
-| `src/pages/UserLoginArtesMusicos.tsx` | ~60 | `navigate("/")` | `navigate(-1)` |
+| `src/pages/UserLoginArtes.tsx` | 60 | `navigate("/")` | `navigate(-1)` |
+| `src/pages/UserLoginArtesMusicos.tsx` | 60 | `navigate("/")` | `navigate(-1)` |
 | `src/pages/ForgotPassword.tsx` | 51, 68 | `navigate("/login")` | `navigate(-1)` |
 | `src/pages/ForgotPasswordArtes.tsx` | 59, 76 | `navigate("/login-artes")` | `navigate(-1)` |
-| `src/pages/ForgotPasswordArtesMusicos.tsx` | ~50 | Rota fixa | `navigate(-1)` |
-| `src/pages/PartnerLogin.tsx` | - | Rota fixa | `navigate(-1)` |
-| `src/pages/PartnerLoginArtes.tsx` | - | Rota fixa | `navigate(-1)` |
-| `src/pages/PartnerLoginUnified.tsx` | - | Rota fixa | `navigate(-1)` |
+| `src/pages/ForgotPasswordArtesMusicos.tsx` | 39, 50 | `navigate("/login-artes-musicos")` | `navigate(-1)` |
 
 ### Categoria 4: Tutoriais e Outras Páginas
 
@@ -57,52 +53,28 @@ Alterar todos os botões de voltar para usar `navigate(-1)` (voltar para página
 |---------|-------|-------|----------|
 | `src/pages/TutorialArtes.tsx` | 112 | `navigate("/biblioteca-artes")` | `navigate(-1)` |
 | `src/pages/BibliotecaArtesHub.tsx` | 79 | `navigate("/")` | `navigate(-1)` |
-| `src/pages/InstallApp.tsx` | - | Rota fixa | `navigate(-1)` |
-| `src/pages/PromosNatal.tsx` | - | Rota fixa | `navigate(-1)` |
-| `src/pages/AguardandoPagamentoMusicos.tsx` | - | Rota fixa | `navigate(-1)` |
 
-### Categoria 5: Área de Parceiros
+---
 
-| Arquivo | Linha | Atual | Correção |
-|---------|-------|-------|----------|
-| `src/pages/PartnerDashboard.tsx` | 273 | `navigate('/parceiro-plataformas')` | `navigate(-1)` |
-| `src/pages/PartnerDashboardArtes.tsx` | - | Rota fixa | `navigate(-1)` |
-| `src/pages/PartnerDashboardMusicos.tsx` | - | Rota fixa | `navigate(-1)` |
-| `src/pages/PartnerUpload.tsx` | 325 | `navigate("/parceiro-dashboard")` | `navigate(-1)` |
-| `src/pages/PartnerUploadArtes.tsx` | 282 | `navigate("/parceiro-dashboard-artes")` | `navigate(-1)` |
-| `src/pages/PartnerUploadMusicos.tsx` | 213 | `navigate("/parceiro-dashboard-musicos")` | `navigate(-1)` |
+## Arquivos Restantes (Admin e Parceiros - Segunda Leva)
 
-### Categoria 6: Painel Administrativo
+Preciso também ler e corrigir os seguintes arquivos do painel administrativo e parceiros:
 
-| Arquivo | Atual | Correção |
-|---------|-------|----------|
-| `src/pages/AdminUpload.tsx` | `navigate("/admin")` | `navigate(-1)` |
-| `src/pages/AdminUploadArtes.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminUploadArtesMusicos.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminPartners.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminPartnersArtes.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminPremiumDashboard.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminPremiumMusicos.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminManagePartners.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminManagePremium.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminManagePromotions.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminPackPurchases.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminManageBanners.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminManageBlacklist.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminManageImages.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminManagePacks.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminManageAdmins.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminManageArtes.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminManageArtesMusicos.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminInstallStats.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminLeads.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminLogin.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminCategoriesPrompts.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminCollections.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminCommunityReview.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminArtesReview.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminCategoriesArtes.tsx` | Rota fixa | `navigate(-1)` |
-| `src/pages/AdminCategoriesMusicos.tsx` | Rota fixa | `navigate(-1)` |
+- `src/pages/PartnerDashboard.tsx`
+- `src/pages/PartnerDashboardArtes.tsx`
+- `src/pages/PartnerDashboardMusicos.tsx`
+- `src/pages/PartnerUpload.tsx`
+- `src/pages/PartnerUploadArtes.tsx`
+- `src/pages/PartnerUploadMusicos.tsx`
+- `src/pages/PartnerLogin.tsx`
+- `src/pages/PartnerLoginArtes.tsx`
+- `src/pages/PartnerLoginUnified.tsx`
+- `src/pages/AdminUpload.tsx` e variantes
+- `src/pages/AdminPartners.tsx` e variantes
+- `src/pages/AdminManage*.tsx` (vários)
+- `src/pages/InstallApp.tsx`
+- `src/pages/PromosNatal.tsx`
+- `src/pages/AguardandoPagamentoMusicos.tsx`
 
 ---
 
@@ -143,4 +115,3 @@ Alterar todos os botões de voltar para usar `navigate(-1)` (voltar para página
 - Lógica de autenticação
 - Fluxo de redirecionamento após login (usa parâmetro `?redirect=`)
 - Componentes de ferramentas de IA (já usam `useSmartBackNavigation`)
-
