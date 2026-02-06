@@ -157,7 +157,7 @@ const Index = () => {
       className="group bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:border-primary/50 relative"
     >
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[3/2]">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-square">
         <img 
           src={card.image} 
           alt={card.title}
@@ -193,7 +193,7 @@ const Index = () => {
       </div>
       
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[3/2]">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-square">
         <img 
           src={card.image} 
           alt={card.title}
@@ -235,7 +235,7 @@ const Index = () => {
       )}
       
       {/* Imagem */}
-      <div className="relative overflow-hidden aspect-[16/9] md:aspect-[3/2]">
+      <div className="relative overflow-hidden aspect-[16/9] md:aspect-square">
         <img 
           src={card.image} 
           alt={card.title}
