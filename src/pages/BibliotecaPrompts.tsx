@@ -650,35 +650,43 @@ const BibliotecaPrompts = () => {
           </div>
 
           {/* Install App Button */}
-          <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-semibold mb-2">
-            <Smartphone className="h-4 w-4 mr-2" />
-            {t('sidebar.installApp')}
+          <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full h-auto py-2.5 px-2.5 bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-medium mb-2 text-xs flex items-center justify-between">
+            <span className="flex items-center">
+              <Smartphone className="h-3.5 w-3.5 mr-1.5" />
+              {t('sidebar.installApp')}
+            </span>
           </Button>
 
           {/* Premium Badge - only show badge, buttons moved to top bar */}
           {isPremium && <div className="flex items-center justify-center gap-2 mb-4 p-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30">
-              <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
-              <span className="text-sm font-semibold text-yellow-400">{t('sidebar.premiumActive')}</span>
+              <Star className="h-3.5 w-3.5 text-yellow-500" fill="currentColor" />
+              <span className="text-xs font-semibold text-yellow-400">{t('sidebar.premiumActive')}</span>
             </div>}
 
           {/* Premium button for logged-in non-premium users */}
           {user && !isPremium && (
-            <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-semibold mb-2">
-              <Star className="h-4 w-4 mr-2" fill="currentColor" />
-              {t('sidebar.becomePremium')}
+            <Button onClick={() => navigate("/planos")} className="w-full h-auto py-2.5 px-2.5 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-medium mb-2 text-xs flex items-center justify-between">
+              <span className="flex items-center">
+                <Star className="h-3.5 w-3.5 mr-1.5" fill="currentColor" />
+                {t('sidebar.becomePremium')}
+              </span>
             </Button>
           )}
           
           {/* Login button only for non-logged users */}
           {!user && (
             <>
-              <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-semibold mb-2">
-                <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                {t('sidebar.becomePremium')}
+              <Button onClick={() => navigate("/planos")} className="w-full h-auto py-2.5 px-2.5 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-medium mb-2 text-xs flex items-center justify-between">
+                <span className="flex items-center">
+                  <Star className="h-3.5 w-3.5 mr-1.5" fill="currentColor" />
+                  {t('sidebar.becomePremium')}
+                </span>
               </Button>
-              <Button onClick={() => navigate("/login")} variant="outline" className="w-full bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-semibold mb-4">
-                <LogIn className="h-4 w-4 mr-2" />
-                {t('sidebar.makeLogin')}
+              <Button onClick={() => navigate("/login")} variant="outline" className="w-full h-auto py-2.5 px-2.5 bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-medium mb-4 text-xs flex items-center justify-between">
+                <span className="flex items-center">
+                  <LogIn className="h-3.5 w-3.5 mr-1.5" />
+                  {t('sidebar.makeLogin')}
+                </span>
               </Button>
             </>
           )}
@@ -688,10 +696,12 @@ const BibliotecaPrompts = () => {
           {/* Botão Ferramentas de IA destacado - PRIMEIRO */}
           <Button 
             onClick={() => navigate("/ferramentas-ia-aplicativo")} 
-            className="w-full mb-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-semibold h-auto py-2.5 px-2.5 text-xs"
+            className="w-full mb-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-medium h-auto py-2.5 px-2.5 text-xs flex items-center justify-between"
           >
-            <Zap className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
-            <span>{t('sidebar.aiTools')}</span>
+            <span className="flex items-center">
+              <Zap className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+              {t('sidebar.aiTools')}
+            </span>
           </Button>
 
           <div data-tutorial="ai-tools" className="space-y-1.5">
