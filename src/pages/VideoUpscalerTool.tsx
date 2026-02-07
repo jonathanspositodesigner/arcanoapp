@@ -19,6 +19,7 @@ import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
+import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -146,6 +147,19 @@ const VideoUpscalerTool: React.FC = () => {
         toast.success('Resultado carregado!');
       }
     }, []),
+  });
+
+  // PENDING WATCHDOG - Detecta jobs travados como 'pending' e marca como failed após 30s
+  useJobPendingWatchdog({
+    jobId,
+    status,
+    toolType: 'video_upscaler',
+    onJobFailed: useCallback((errorMessage) => {
+      console.log('[VideoUpscaler] Watchdog triggered - job stuck as pending');
+      setStatus('error');
+      toast.error(errorMessage);
+      endSubmit();
+    }, [endSubmit]),
   });
 
   // Registrar job no contexto global quando jobId muda (para som e trava de navegação)
