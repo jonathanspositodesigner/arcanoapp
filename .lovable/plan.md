@@ -1,127 +1,51 @@
 
-# Plano: Correção Robusta do Bug do Watchdog e Prevenção de Duplicados
 
-## Diagnóstico Completo
+# Plano: Corrigir Bug de Login "Primeiro Acesso" + Rate Limit
 
-### Problema 1: O Watchdog NUNCA Dispara (Bug Crítico)
-O hook `useJobPendingWatchdog` recebe `status` como parâmetro:
-```typescript
-// UpscalerArcanoTool.tsx linha 175-178
-useJobPendingWatchdog({
-  jobId,
-  status,  // ← Este é ProcessingStatus: 'idle' | 'uploading' | 'processing' | ...
-  toolType: 'upscaler',
-  ...
-});
-```
+## Diagnóstico
 
-O hook só ativa o timer quando `status === 'pending'`:
-```typescript
-// useJobPendingWatchdog.ts linha 55-56
-if (!jobId || status !== 'pending') {
-  // Limpar timeout se status mudou
-  ...
-  return;
-}
-```
+O usuário `contato.herculessantos@gmail.com` está preso em um loop porque:
 
-**MAS** o `ProcessingStatus` da UI **NUNCA** é `'pending'`! Os valores possíveis são:
-- `'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error'`
+1. **No banco `profiles`**: `password_changed = false`
+2. **Na realidade**: O usuário já tem senha (logou às 15:16 hoje)
 
-O status do **banco de dados** é `'pending'`, mas a UI usa seus próprios estados. O watchdog compara maçãs com laranjas e NUNCA funciona.
+### Fluxo Atual (Bug)
+1. Usuário digita email
+2. Sistema verifica: `password_changed = false` → "primeiro acesso"
+3. Tenta login automático com email como senha → FALHA (senha já foi mudada)
+4. Tenta enviar link de reset → RATE LIMIT (muitas tentativas em pouco tempo)
+5. Mostra erro genérico
 
-### Problema 2: Usuários Criam Jobs Duplicados
-O endpoint `check-user-active` (linha 489) só bloqueia se o usuário já tiver job com status:
-- `running`, `queued`, `starting`
-
-**NÃO inclui `pending`!** Então:
-1. Usuário cria job A (status: `pending`)
-2. Edge Function falha (job A fica órfão em `pending`)
-3. Usuário tenta novamente
-4. `check-user-active` retorna `hasActiveJob: false` (pending não conta)
-5. Usuário cria job B normalmente
-6. Admin vê: um `pending` e um `running` do mesmo usuário
+### Por Que Isso Acontece
+O campo `password_changed` não é atualizado quando:
+- O usuário muda a senha via link de reset
+- O usuário é criado pelo admin com senha diferente do email
 
 ---
 
-## Solução em 3 Partes (Sem Quebrar Nada)
+## Solução em 3 Partes
 
-### Parte 1: Corrigir o Hook `useJobPendingWatchdog`
-
-**Problema:** O hook depende de `status` da UI que nunca é `'pending'`.
-
-**Solução:** Mudar a lógica para:
-1. Iniciar timer quando existir `jobId` (independente do status da UI)
-2. Após 30s, consultar o **banco de dados** para verificar se ainda está `pending` E `task_id IS NULL`
-3. Se sim, marcar como failed e notificar usuário
-
-**Mudança de contrato do hook:**
-```typescript
-// ANTES: depende de status da UI
-useJobPendingWatchdog({
-  jobId,
-  status,  // ← ProcessingStatus (UI) - nunca é 'pending'
-  toolType: 'upscaler',
-  onJobFailed: ...
-});
-
-// DEPOIS: não depende de status da UI
-useJobPendingWatchdog({
-  jobId,
-  toolType: 'upscaler',
-  enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
-  onJobFailed: ...
-});
-```
-
-**Por que é seguro:**
-- O hook faz **verificação dupla** no banco antes de agir
-- Só marca como failed se: `status === 'pending'` E `task_id IS NULL` E `created_at > 30s`
-- Se o job já transitou para `queued/running/completed`, o hook NÃO faz nada
-
-### Parte 2: Incluir `pending` Recente no Bloqueio de Duplicados
-
-**Mudança:** No `handleCheckUserActive`, considerar `pending` como ativo **por 35 segundos**:
+### Parte 1: Corrigir Dados Imediatamente (SQL)
+Atualizar `password_changed = true` para todos os usuários que:
+- Já logaram antes (`last_sign_in_at IS NOT NULL`)
+- OU email foi confirmado (`email_confirmed_at IS NOT NULL`)
 
 ```sql
--- Adicionar à query
-OR (
-  status = 'pending' 
-  AND task_id IS NULL 
-  AND created_at > NOW() - INTERVAL '35 seconds'
-)
+UPDATE profiles p
+SET password_changed = true
+FROM auth.users u
+WHERE p.id = u.id
+  AND p.password_changed = false
+  AND u.last_sign_in_at IS NOT NULL;
 ```
 
-**Por que 35 segundos?** Alinhado com o watchdog (30s + margem).
+### Parte 2: Corrigir o Fluxo de Login (Código)
+Mudar a lógica do `checkEmail` para:
+- Se `password_changed = false` E auto-login falha E link dá rate limit → **Ir para tela de senha normal**
+- Mostrar mensagem clara ao invés de chave de tradução
 
-**Por que é seguro:**
-- Após 35s, o pending órfão será limpo (pelo watchdog ou cleanup)
-- Impede criação de jobs duplicados na janela de inicialização
-- Jobs que iniciaram normalmente (task_id preenchido) não são afetados
-
-### Parte 3: Cleanup Server-Side Oportunístico (30s)
-
-Adicionar limpeza automática de `pending` órfãos em endpoints frequentes do `runninghub-queue-manager`:
-
-```typescript
-async function cleanupOrphanPendingJobs(): Promise<number> {
-  // Para cada tabela, marcar como failed jobs com:
-  // - status = 'pending'
-  // - task_id IS NULL  
-  // - created_at < NOW() - 30 segundos
-}
-```
-
-Chamar no início de:
-- `/check`
-- `/check-user-active`
-- `/process-next`
-- `/finish`
-
-**Por que é seguro:**
-- Só afeta jobs que NUNCA iniciaram (`task_id IS NULL`)
-- Jobs normais (em fila ou processando) têm `task_id` preenchido
-- É idempotente (rodar múltiplas vezes não causa problemas)
+### Parte 3: Adicionar Tradução Faltante
+A chave `errors.errorSendingLink` existe no código default, mas precisa estar no arquivo de tradução também para consistência.
 
 ---
 
@@ -129,114 +53,120 @@ Chamar no início de:
 
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
-| `src/hooks/useJobPendingWatchdog.ts` | MODIFICAR | Não depender de status UI, usar enabled flag |
-| `src/pages/UpscalerArcanoTool.tsx` | MODIFICAR | Passar `enabled` ao invés de `status` |
-| `src/pages/PoseChangerTool.tsx` | MODIFICAR | Mesma mudança |
-| `src/pages/VesteAITool.tsx` | MODIFICAR | Mesma mudança |
-| `src/pages/VideoUpscalerTool.tsx` | MODIFICAR | Mesma mudança |
-| `supabase/functions/runninghub-queue-manager/index.ts` | MODIFICAR | Incluir pending no bloqueio + cleanup |
+| SQL (via migration) | EXECUTAR | Corrigir dados: `password_changed = true` para usuários existentes |
+| `src/hooks/useUnifiedAuth.ts` | MODIFICAR | Se auto-login e link falharem, ir para tela de senha |
+| `src/locales/pt/auth.json` | MODIFICAR | Adicionar `errorSendingLink` e `rateLimitWait` |
+| `src/locales/es/auth.json` | MODIFICAR | Adicionar traduções em espanhol |
 
 ---
 
-## Análise de Impacto: O Que NÃO Quebra
+## Mudança no Fluxo de Login
 
-### Fila Global (3 jobs simultâneos)
-- ✅ **NÃO AFETADO** - A fila continua usando `running`, `starting` para contar slots
-- O `pending` não ocupa vaga na fila, apenas bloqueia duplicados do mesmo usuário
+### Antes (Bug)
+```
+Email → password_changed=false → auto-login falha → link falha → ERRO
+```
 
-### Processamento Normal
-- ✅ **NÃO AFETADO** - Jobs que iniciam normalmente transitam para `starting/queued/running`
-- O watchdog verifica `task_id IS NULL` antes de agir
+### Depois (Corrigido)
+```
+Email → password_changed=false → auto-login falha → link falha → Vai para tela de senha normal
+```
 
-### Cleanup de 10 Minutos
-- ✅ **NÃO AFETADO** - Continua funcionando como backup
-- O cleanup de 30s é uma camada adicional, não substitui
-
-### Reembolso de Créditos
-- ✅ **NÃO AFETADO** - Jobs `pending` nunca cobram créditos (`credits_charged = false`)
-- O reembolso só acontece para jobs que foram cobrados
-
-### Edge Functions (Upscaler, Pose, Veste, Video)
-- ✅ **NÃO AFETADO** - Nenhuma mudança nas Edge Functions de processamento
+Se o rate limit acontecer, o usuário pode tentar digitar a senha que ele lembra.
 
 ---
 
-## Cenários de Teste
-
-| Cenário | Comportamento Esperado |
-|---------|------------------------|
-| Job criado, Edge Function falha | Em 30s: job marcado `failed`, usuário vê erro |
-| Job criado, usuário fecha aba | Em 30s: cleanup server-side marca `failed` |
-| Job criado, processa normalmente | Watchdog detecta `task_id` preenchido, NÃO age |
-| Usuário tenta criar 2º job em 10s | Bloqueado: "Você já tem job ativo" |
-| Usuário tenta criar 2º job após 35s | Permitido: pending órfão já foi limpo |
-| Job em fila normal | Não afetado: status é `queued`, não `pending` |
-
----
-
-## Código: Hook Corrigido
+## Código: Mudança no useUnifiedAuth.ts
 
 ```typescript
-/**
- * useJobPendingWatchdog v2 - Agora FUNCIONA!
- * 
- * Mudanças:
- * - Não depende mais de status da UI
- * - Usa flag 'enabled' para ativar/desativar
- * - Faz verificação tripla no banco: status=pending AND task_id=null AND age>30s
- */
-interface UseJobPendingWatchdogOptions {
-  jobId: string | null;
-  toolType: ToolType;
-  enabled: boolean;  // ← NOVO: ativo quando está processando
-  onJobFailed: (errorMessage: string) => void;
-}
-
-export function useJobPendingWatchdog({
-  jobId,
-  toolType,
-  enabled,  // ← Controla se deve monitorar
-  onJobFailed,
-}: UseJobPendingWatchdogOptions) {
-  // ...
-  useEffect(() => {
-    if (!enabled || !jobId) {
-      // Limpar e sair
-      return;
+// Case 2: First access (no password set) → try auto-login or send link
+if (profileExists && !passwordChanged) {
+  console.log('[UnifiedAuth] First access flow');
+  
+  // Try auto-login with email as password
+  const { error: autoLoginError } = await supabase.auth.signInWithPassword({
+    email: normalizedEmail,
+    password: normalizedEmail,
+  });
+  
+  if (!autoLoginError) {
+    // ... sucesso, redirecionar
+  }
+  
+  // Auto-login failed → try to send password creation link
+  console.log('[UnifiedAuth] Auto-login failed, sending link');
+  const { error: resetError } = await supabase.auth.resetPasswordForEmail(...);
+  
+  if (resetError) {
+    // NOVO: Se falhou o link (rate limit ou outro erro), 
+    // deixar o usuário tentar com a senha que ele lembra
+    console.log('[UnifiedAuth] Reset failed, going to password step');
+    
+    // Mostrar mensagem apropriada
+    if (resetError.message?.includes('429') || resetError.status === 429) {
+      toast.info('Link bloqueado temporariamente. Digite sua senha.');
+    } else {
+      toast.info('Problema ao enviar link. Tente com sua senha.');
     }
     
-    // Iniciar timer de 30s
-    timeoutRef.current = setTimeout(async () => {
-      // Consultar banco para verificação tripla
-      const { data: job } = await supabase
-        .from(tableName)
-        .select('status, task_id, created_at')
-        .eq('id', jobId)
-        .maybeSingle();
-      
-      if (!job) return;
-      
-      // Só agir se: pending + sem task_id + mais de 30s
-      const age = Date.now() - new Date(job.created_at).getTime();
-      if (job.status === 'pending' && !job.task_id && age > 30000) {
-        // Marcar como failed via RPC
-        await supabase.rpc('mark_pending_job_as_failed', {...});
-        onJobFailed('Falha ao iniciar. Tente novamente.');
-      }
-    }, 30000);
-    
-    return () => clearTimeout(timeoutRef.current);
-  }, [enabled, jobId, toolType, onJobFailed]);
+    // Ir para tela de senha ao invés de travar
+    setState(prev => ({
+      ...prev,
+      step: 'password',
+      verifiedEmail: normalizedEmail,
+      isLoading: false,
+    }));
+    return;
+  }
+  
+  // Link enviado com sucesso
+  // ...
 }
 ```
 
 ---
 
-## Resumo: Por Que Esta Solução É Segura
+## Correção de Dados (SQL)
 
-1. **Não mexe na lógica de fila** - Apenas adiciona proteção para pending órfãos
-2. **Verificação tripla** - status + task_id + idade antes de agir
-3. **Idempotente** - Rodar múltiplas vezes não causa problemas
-4. **Backward compatible** - Jobs normais não são afetados
-5. **Defense in depth** - 3 camadas: frontend (30s), server (30s), cleanup (10m)
+```sql
+-- Corrigir TODOS os usuários que já logaram mas têm password_changed=false
+UPDATE profiles p
+SET password_changed = true, updated_at = NOW()
+FROM auth.users u
+WHERE p.id = u.id
+  AND p.password_changed = false
+  AND (u.last_sign_in_at IS NOT NULL OR u.email_confirmed_at IS NOT NULL);
+```
+
+---
+
+## Traduções a Adicionar
+
+### Português (`src/locales/pt/auth.json`)
+
+```json
+"errors": {
+  "errorSendingLink": "Erro ao enviar link. Tente novamente.",
+  "rateLimitWait": "Muitas tentativas. Aguarde alguns segundos.",
+  "tryWithPassword": "Problema ao enviar link. Tente com sua senha."
+}
+```
+
+### Espanhol (`src/locales/es/auth.json`)
+
+```json
+"errors": {
+  "errorSendingLink": "Error al enviar enlace. Inténtalo de nuevo.",
+  "rateLimitWait": "Demasiados intentos. Espera unos segundos.",
+  "tryWithPassword": "Problema al enviar enlace. Intenta con tu contraseña."
+}
+```
+
+---
+
+## Resumo
+
+1. **Correção imediata**: SQL para marcar `password_changed = true` em usuários que já logaram
+2. **Correção de fluxo**: Se link falhar, ir para tela de senha (fallback)
+3. **Traduções**: Adicionar mensagens claras para rate limit
 
