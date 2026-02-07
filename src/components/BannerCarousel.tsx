@@ -38,7 +38,7 @@ const upscalerVideoBanner: VideoBanner = {
   buttonText: 'Adquirir Agora',
   buttonLink: '/planos-upscaler-arcano-69',
   secondaryText: 'Já adquiriu? acesse aqui',
-  secondaryLink: '/ferramentas-ia?from=artes',
+  secondaryLink: '/ferramentas-ia-aplicativo?from=artes',
   desktopVideoUrl: '/videos/upscaler-promo-desktop.mp4',
   mobileVideoUrl: '/videos/upscaler-promo-mobile.mp4',
 };

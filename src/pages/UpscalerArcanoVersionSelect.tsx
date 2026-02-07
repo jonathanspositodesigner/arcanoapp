@@ -87,8 +87,8 @@ const UpscalerArcanoVersionSelect = () => {
   const { user, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
   const { planType, isLoading: promptsLoading } = usePremiumStatus();
   
-  // Locale-aware paths
-  const toolsHomePath = locale === 'es' ? '/ferramentas-ia-es' : '/ferramentas-ia';
+  // Unified path for all locales
+  const toolsHomePath = '/ferramentas-ia-aplicativo';
   const upscalerPlansPath = locale === 'es' ? '/planos-upscaler-arcano-69-es' : '/planos-upscaler-arcano-69';
   const loginPath = `/login-artes?redirect=${encodeURIComponent('/ferramenta-ia-artes/upscaller-arcano')}`;
   

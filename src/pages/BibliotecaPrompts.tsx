@@ -773,7 +773,7 @@ const BibliotecaPrompts = () => {
                       {t('banner.buyNow')}
                     </Button>
                     <button 
-                      onClick={() => navigate("/ferramentas-ia")}
+                      onClick={() => navigate("/ferramentas-ia-aplicativo")}
                       className="text-white/80 hover:text-white text-xs sm:text-base underline underline-offset-4 transition-colors"
                     >
                       {t('banner.alreadyPurchased')}

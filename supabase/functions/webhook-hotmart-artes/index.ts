@@ -283,7 +283,7 @@ async function sendWelcomeEmail(
 
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
     const openTrackingPixel = `${trackingBaseUrl}?id=${trackingId}&action=open`
-    const platformUrl = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-es'
+    const platformUrl = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo'
     const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
 
     const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {

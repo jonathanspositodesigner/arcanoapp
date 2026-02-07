@@ -184,7 +184,7 @@ async function sendWelcomeEmail(
       return
     }
 
-    const platformUrl = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia'
+    const platformUrl = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo'
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
     const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
 

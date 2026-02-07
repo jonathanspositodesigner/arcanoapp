@@ -41,14 +41,14 @@ const MudarPose = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, isPremium, isLoading } = usePremiumArtesStatus();
-  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
 
   // Qualquer pack ativo dá acesso (ferramenta bônus)
   const hasAccess = isPremium;
 
   useEffect(() => {
     if (!isLoading && (!user || !hasAccess)) {
-      navigate("/ferramentas-ia");
+      navigate("/ferramentas-ia-aplicativo");
     }
   }, [isLoading, user, hasAccess, navigate]);
 

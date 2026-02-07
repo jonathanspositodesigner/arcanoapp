@@ -104,8 +104,7 @@ const AdminManageAdmins = lazy(() => import("./pages/AdminManageAdmins"));
 const ForjaSelos3DArtes = lazy(() => import("./pages/ForjaSelos3DArtes"));
 const TutorialArtes = lazy(() => import("./pages/TutorialArtes"));
 const FerramentaIAArtes = lazy(() => import("./pages/FerramentaIAArtes"));
-const FerramentasIA = lazy(() => import("./pages/FerramentasIA"));
-const FerramentasIAES = lazy(() => import("./pages/FerramentasIAES"));
+// Removed: FerramentasIA and FerramentasIAES - redirected to FerramentasIAAplicativo
 const AdminManagePromotions = lazy(() => import("./pages/AdminManagePromotions"));
 const AdminManageBlacklist = lazy(() => import("./pages/AdminManageBlacklist"));
 const AdminWebhookLogs = lazy(() => import("./pages/AdminWebhookLogs"));
@@ -268,8 +267,9 @@ const AppContent = () => {
           <Route path="/forja-selos-3d-artes" element={<ForjaSelos3DArtes />} />
           <Route path="/tutorial-artes/:slug" element={<TutorialArtes />} />
           <Route path="/ferramenta-ia-artes/:slug" element={<FerramentaIAArtes />} />
-          <Route path="/ferramentas-ia" element={<FerramentasIA />} />
-          <Route path="/ferramentas-ia-es" element={<FerramentasIAES />} />
+          {/* Redirects automáticos das páginas antigas para a nova */}
+          <Route path="/ferramentas-ia" element={<Navigate to="/ferramentas-ia-aplicativo" replace />} />
+          <Route path="/ferramentas-ia-es" element={<Navigate to="/ferramentas-ia-aplicativo" replace />} />
           <Route path="/admin-manage-promotions" element={<AdminManagePromotions />} />
           <Route path="/admin-blacklist" element={<AdminManageBlacklist />} />
           <Route path="/admin-webhook-logs" element={<AdminWebhookLogs />} />

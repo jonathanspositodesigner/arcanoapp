@@ -39,8 +39,8 @@ const FerramentaIAArtes = () => {
   const { isPremium, hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
   const { planType: promptsPlanType, isLoading: isPromptsLoading } = usePremiumStatus();
   
-  // Locale-aware paths
-  const toolsHomePath = locale === 'es' ? '/ferramentas-ia-es' : '/ferramentas-ia';
+  // Unified path for all locales
+  const toolsHomePath = '/ferramentas-ia-aplicativo';
   
   // Smart back navigation - for ES keep original behavior, for PT use smart back
   const { goBack } = useSmartBackNavigation({ fallback: toolsHomePath });

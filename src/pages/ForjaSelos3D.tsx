@@ -50,13 +50,13 @@ const ForjaSelos3D = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, isPremium, planType, isLoading } = usePremiumStatus();
-  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
 
   const hasAccess = isPremium && planType === "arcano_unlimited";
 
   useEffect(() => {
     if (!isLoading && (!user || !hasAccess)) {
-      navigate("/ferramentas-ia");
+      navigate("/ferramentas-ia-aplicativo");
     }
   }, [isLoading, user, hasAccess, navigate]);
 

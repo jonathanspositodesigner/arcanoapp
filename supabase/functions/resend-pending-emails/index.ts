@@ -40,7 +40,7 @@ const PRODUCT_NAMES: Record<number, string> = {
 
 // URLs de login por plataforma
 const PLATFORM_URLS: Record<string, string> = {
-  'ferramentas_ia': 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-es',
+  'ferramentas_ia': 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo',
   'artes': 'https://arcanoapp.voxvisual.com.br/login-artes',
   'musicos': 'https://arcanoapp.voxvisual.com.br/login-musicos',
   'promptverso': 'https://arcanoapp.voxvisual.com.br/login',

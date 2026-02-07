@@ -121,7 +121,7 @@ const Index = () => {
       title: t('cards.toolsTitle'),
       description: t('cards.toolsDescription'),
       image: cardFerramentasIA,
-      route: "/ferramentas-ia",
+      route: "/ferramentas-ia-aplicativo",
       imagePosition: "center center",
     },
   ];

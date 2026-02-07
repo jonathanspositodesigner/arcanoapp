@@ -21,7 +21,7 @@ const ForjaSelos3DArtes = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { hasAccessToPack, isLoading } = usePremiumArtesStatus();
-  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia' });
+  const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const [hasAccess, setHasAccess] = useState(false);
   const [checked, setChecked] = useState(false);
 
@@ -44,7 +44,7 @@ const ForjaSelos3DArtes = () => {
       setChecked(true);
       
       if (!access) {
-        navigate("/ferramentas-ia");
+        navigate("/ferramentas-ia-aplicativo");
       }
     }
   }, [isLoading, checked, hasAccessToPack, navigate]);

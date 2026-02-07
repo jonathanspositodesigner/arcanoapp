@@ -483,7 +483,7 @@ const BibliotecaArtes = () => {
         </button>
 
         <button onClick={() => {
-        navigate('/ferramentas-ia?from=artes');
+        navigate('/ferramentas-ia-aplicativo?from=artes');
         setSidebarOpen(false);
       }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-muted-foreground hover:bg-accent hover:text-foreground`}>
           <Cpu className="h-5 w-5" />
@@ -759,7 +759,7 @@ const BibliotecaArtes = () => {
             {!selectedPack && (
               <div className="flex flex-col sm:flex-row gap-2 my-4">
                 <button 
-                  onClick={() => navigate('/ferramentas-ia?from=artes')} 
+                  onClick={() => navigate('/ferramentas-ia-aplicativo?from=artes')} 
                   className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
                 >
                   <Cpu className="h-4 w-4" />
