@@ -195,8 +195,20 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         
         if (resetError) {
           console.error('[UnifiedAuth] Reset error:', resetError);
-          toast.error(t('errors.errorSendingLink'));
-          setState(prev => ({ ...prev, isLoading: false }));
+          // If link fails (rate limit or other), fallback to password step
+          const isRateLimit = resetError.message?.includes('429') || (resetError as any).status === 429;
+          if (isRateLimit) {
+            toast.info('Link bloqueado temporariamente. Digite sua senha.');
+          } else {
+            toast.info('Problema ao enviar link. Tente com sua senha.');
+          }
+          // Go to password step instead of blocking user
+          setState(prev => ({
+            ...prev,
+            step: 'password',
+            verifiedEmail: normalizedEmail,
+            isLoading: false,
+          }));
           return;
         }
         
