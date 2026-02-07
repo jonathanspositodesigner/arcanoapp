@@ -1,250 +1,223 @@
 
-# Sistema de Sincronização Tripla para Jobs de IA
+# Plano: Otimização de Imagem do Slider para Preview Mobile
 
-## Status: ✅ IMPLEMENTADO
+## Contexto do Problema
 
-### Componentes Criados
+No **mobile**, as imagens do slider (antes/depois) estão sendo exibidas em tamanho original (que pode ser 4K+), causando lentidão no carregamento e travamentos em dispositivos com pouca memória.
 
-1. **`src/hooks/useJobStatusSync.ts`** - Hook global que implementa:
-   - Realtime (primário): Supabase Realtime para updates instantâneos
-   - Polling Silencioso (backup): Inicia após 15s, roda a cada 5s por até 3 min
-   - Visibility Recovery: Ao voltar de outra aba, verifica imediatamente
+## Solução
 
-2. **`src/ai/JobManager.ts`** - Adicionada função `queryJobStatus()` para polling direto
-
-### Ferramentas Atualizadas
-
-- ✅ `UpscalerArcanoTool.tsx` - Usando useJobStatusSync
-- ✅ `PoseChangerTool.tsx` - Usando useJobStatusSync  
-- ✅ `VesteAITool.tsx` - Usando useJobStatusSync
-- ✅ `VideoUpscalerTool.tsx` - Usando useJobStatusSync (removido polling manual antigo)
-
-### Garantias
-
-| Item | Status |
-|------|--------|
-| Funciona offline parcial | ✅ Polling recupera quando volta |
-| Funciona em qualquer dispositivo | ✅ Não depende de WebSocket |
-| Funciona em qualquer rede | ✅ Fallback HTTP direto |
-| Não impacta performance | ✅ Polling leve e com timeout |
+Criar versões otimizadas das imagens (máximo 1500px) apenas para o **preview do slider no mobile**. As imagens originais continuam disponíveis para download e visualização em fullscreen.
 
 ---
 
-# Plano Anterior: Unificação de Rotas de Ferramentas de IA
-
-## Diagnóstico do Problema
-
-**Causa Raiz:** O frontend depende 100% do Supabase Realtime para receber atualizações de status dos jobs. Quando o Realtime falha silenciosamente (problemas de rede, WebSocket desconectado, dispositivo em standby), o usuário fica preso em "processando" eternamente, mesmo com o job já completo no banco.
-
-**Evidência:** O usuário `lindnelsonfelipe20@gmail.com` tem 5+ jobs marcados como `completed` no banco com `output_url` preenchido, mas o frontend não exibiu o resultado.
-
----
-
-## Arquitetura da Solução
+## Arquitetura
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    SISTEMA DE SINCRONIZAÇÃO TRIPLA                         │
+│                    FLUXO MOBILE DO SLIDER                                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  1. REALTIME (primário)                                                    │
-│     └── Subscription do Supabase Realtime (instantâneo)                    │
-│                                                                             │
-│  2. POLLING SILENCIOSO (backup automático)                                 │
-│     └── Inicia após 15s, roda a cada 5s, para após 3 min                   │
-│         (detecta status terminal mesmo sem Realtime)                       │
-│                                                                             │
-│  3. RECUPERAÇÃO POR VISIBILIDADE (quando usuário volta)                    │
-│     └── Ao voltar de outra aba/app, verifica imediatamente no banco        │
+│  Job Completo (status = 'completed')                                       │
+│       ↓                                                                     │
+│  [Desktop] → Exibe imagens originais diretamente                           │
+│       ↓                                                                     │
+│  [Mobile] → isOptimizingForSlider = true (mostra loading)                  │
+│       ↓                                                                     │
+│  Comprime inputImage e outputImage para 1500px (paralelo)                  │
+│       ↓                                                                     │
+│  Armazena em optimizedInputImage e optimizedOutputImage                    │
+│       ↓                                                                     │
+│  isOptimizingForSlider = false → Exibe slider com imagens otimizadas      │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Componentes a Criar/Modificar
+## Mudanças Técnicas
 
-### 1. CRIAR: Hook Global `useJobStatusSync`
-
-**Localização:** `src/hooks/useJobStatusSync.ts`
-
-Este hook encapsula a lógica de sincronização tripla e será usado por TODAS as ferramentas de IA:
+### 1. Novos Estados no UpscalerArcanoTool.tsx
 
 ```tsx
-interface UseJobStatusSyncOptions {
-  jobId: string | null;
-  toolType: 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler';
-  enabled: boolean;
-  onStatusChange: (update: JobUpdate) => void;
-}
-
-// Retorna função de cleanup
-const { cleanup } = useJobStatusSync({
-  jobId,
-  toolType: 'upscaler',
-  enabled: status === 'processing' || status === 'waiting',
-  onStatusChange: (update) => {
-    if (update.status === 'completed' && update.outputUrl) {
-      setOutputImage(update.outputUrl);
-      setStatus('completed');
-    } else if (update.status === 'failed') {
-      setStatus('error');
-    }
-  }
-});
+// Estados para imagens otimizadas do slider (apenas mobile)
+const [optimizedInputImage, setOptimizedInputImage] = useState<string | null>(null);
+const [optimizedOutputImage, setOptimizedOutputImage] = useState<string | null>(null);
+const [isOptimizingForSlider, setIsOptimizingForSlider] = useState(false);
 ```
 
-**Lógica Interna:**
+### 2. Detectar Mobile
 
-1. **Realtime Subscription** (como já existe)
-2. **Polling Silencioso:**
-   - Delay inicial: 15 segundos (dá tempo pro Realtime funcionar)
-   - Intervalo: 5 segundos
-   - Timeout máximo: 3 minutos (depois para de pollar)
-   - Consulta direta ao banco: `SELECT status, output_url, error_message FROM {table} WHERE id = {jobId}`
-3. **Visibility Recovery:**
-   - Listener em `document.visibilitychange`
-   - Quando `visibilityState === 'visible'` e há job ativo, consulta banco imediatamente
+Adicionar import do hook `useIsMobile`:
 
----
-
-### 2. MODIFICAR: Todas as Ferramentas de IA
-
-**Arquivos afetados:**
-- `src/pages/UpscalerArcanoTool.tsx`
-- `src/pages/PoseChangerTool.tsx`
-- `src/pages/VesteAITool.tsx`
-- `src/pages/VideoUpscalerTool.tsx`
-
-**Mudança:** Substituir a lógica atual de Realtime-only pelo novo hook `useJobStatusSync`.
-
-**Antes (UpscalerArcanoTool.tsx linhas 188-264):**
 ```tsx
-// Subscribe to Realtime updates when jobId changes
-useEffect(() => {
-  if (!jobId) return;
-  const channel = supabase.channel(`upscaler-job-${jobId}`)
-    .on('postgres_changes', {...}, (payload) => {...})
-    .subscribe();
-  // ...
-}, [jobId]);
+import { useIsMobile } from '@/hooks/use-mobile';
+
+// No componente:
+const isMobile = useIsMobile();
 ```
 
-**Depois:**
+### 3. Função de Otimização para Slider
+
+Criar função que comprime imagens para 1500px usando `compressToMaxDimension`:
+
 ```tsx
-// Sistema de sincronização tripla (Realtime + Polling + Visibility)
-useJobStatusSync({
-  jobId,
-  toolType: 'upscaler',
-  enabled: status === 'processing' || isWaitingInQueue,
-  onStatusChange: (update) => {
-    updateJobStatus(update.status);
-    setCurrentStep(update.currentStep || update.status);
+const SLIDER_PREVIEW_MAX_PX = 1500;
+
+const optimizeImagesForSlider = useCallback(async (
+  inputUrl: string,
+  outputUrl: string
+) => {
+  setIsOptimizingForSlider(true);
+  
+  try {
+    // Fetch ambas as imagens em paralelo
+    const [inputResponse, outputResponse] = await Promise.all([
+      fetch(inputUrl),
+      fetch(outputUrl)
+    ]);
     
-    if (update.status === 'completed' && update.outputUrl) {
-      setOutputImage(update.outputUrl);
-      setStatus('completed');
-      setProgress(100);
-      setIsWaitingInQueue(false);
-      toast.success(t('upscalerTool.toast.success'));
-    } else if (update.status === 'failed') {
-      setStatus('error');
-      setLastError({...});
-    } else if (update.status === 'running') {
-      setStatus('processing');
-      setIsWaitingInQueue(false);
-    } else if (update.status === 'queued') {
-      setIsWaitingInQueue(true);
-      setQueuePosition(update.position || 1);
-    }
+    const [inputBlob, outputBlob] = await Promise.all([
+      inputResponse.blob(),
+      outputResponse.blob()
+    ]);
+    
+    // Criar Files a partir dos blobs
+    const inputFile = new File([inputBlob], 'input.webp', { type: inputBlob.type });
+    const outputFile = new File([outputBlob], 'output.webp', { type: outputBlob.type });
+    
+    // Comprimir para 1500px em paralelo
+    const [optimizedInput, optimizedOutput] = await Promise.all([
+      compressToMaxDimension(inputFile, SLIDER_PREVIEW_MAX_PX),
+      compressToMaxDimension(outputFile, SLIDER_PREVIEW_MAX_PX)
+    ]);
+    
+    // Criar URLs para as imagens otimizadas
+    setOptimizedInputImage(URL.createObjectURL(optimizedInput.file));
+    setOptimizedOutputImage(URL.createObjectURL(optimizedOutput.file));
+    
+    console.log('[Upscaler] Slider images optimized for mobile preview');
+  } catch (error) {
+    console.error('[Upscaler] Failed to optimize slider images:', error);
+    // Fallback: usar imagens originais
+    setOptimizedInputImage(inputUrl);
+    setOptimizedOutputImage(outputUrl);
+  } finally {
+    setIsOptimizingForSlider(false);
   }
-});
+}, []);
 ```
 
----
+### 4. Trigger de Otimização Quando Job Completa
 
-### 3. ATUALIZAR: JobManager para Incluir Função de Query Direta
-
-**Arquivo:** `src/ai/JobManager.ts`
-
-Adicionar função para consulta direta ao banco (usada pelo polling):
+No callback `onStatusChange` do `useJobStatusSync`, após detectar `completed`:
 
 ```tsx
-export async function queryJobStatus(
-  toolType: ToolType,
-  jobId: string
-): Promise<JobUpdate | null> {
-  const tableName = TABLE_MAP[toolType];
+if (update.status === 'completed' && update.outputUrl) {
+  // ... código existente ...
   
-  const { data, error } = await supabase
-    .from(tableName)
-    .select('status, output_url, error_message, position, current_step')
-    .eq('id', jobId)
-    .maybeSingle();
-  
-  if (error || !data) return null;
-  
-  return {
-    status: data.status,
-    outputUrl: data.output_url,
-    errorMessage: data.error_message,
-    position: data.position,
-    currentStep: data.current_step,
-  };
+  // Otimizar imagens para slider no mobile
+  if (isMobile && inputImage) {
+    optimizeImagesForSlider(inputImage, update.outputUrl);
+  }
 }
 ```
 
----
+### 5. Lógica de Exibição do Slider
 
-## Fluxo de Recuperação
+Modificar a condição de exibição para:
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  CENÁRIO: Usuário inicia job e perde conexão Realtime                      │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  t=0s    Job iniciado, status = 'processing'                               │
-│          ├── Realtime subscription ativa (primário)                        │
-│          └── Polling NÃO iniciado ainda                                    │
-│                                                                             │
-│  t=15s   Polling backup inicia silenciosamente                             │
-│          └── Verifica banco a cada 5s                                      │
-│                                                                             │
-│  t=30s   Webhook atualiza banco: status = 'completed', output_url = '...'  │
-│          ├── Realtime FALHA (WebSocket desconectado)                       │
-│          └── Polling detecta mudança no banco → UI atualiza! ✅            │
-│                                                                             │
-│  OU                                                                         │
-│                                                                             │
-│  Usuário sai do app e volta:                                               │
-│          └── visibilitychange → Query imediata → UI atualiza! ✅           │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+```tsx
+{/* No mobile: espera otimização concluir antes de mostrar slider */}
+{status === 'completed' && outputImage && (!isMobile || !isOptimizingForSlider) ? (
+  // Slider component...
+  // Usar optimizedInputImage/optimizedOutputImage no mobile
+  // Usar inputImage/outputImage no desktop
+) : null}
+
+{/* Loading de otimização no mobile */}
+{status === 'completed' && isMobile && isOptimizingForSlider && (
+  <div className="flex flex-col items-center gap-3">
+    <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+    <p className="text-sm text-purple-300">Preparando visualização...</p>
+  </div>
+)}
+```
+
+### 6. Uso das Imagens Corretas no Slider
+
+```tsx
+{/* AFTER image */}
+<ResilientImage 
+  src={isMobile ? (optimizedOutputImage || outputImage) : outputImage} 
+  alt="Depois"
+  // ... props existentes
+/>
+
+{/* BEFORE image */}
+<img 
+  src={isMobile ? (optimizedInputImage || inputImage || '') : (inputImage || '')}
+  alt="Antes"
+  // ... props existentes
+/>
+```
+
+### 7. Cleanup de Object URLs
+
+No unmount ou reset do componente, liberar as URLs criadas:
+
+```tsx
+useEffect(() => {
+  return () => {
+    // Cleanup object URLs para evitar memory leaks
+    if (optimizedInputImage?.startsWith('blob:')) {
+      URL.revokeObjectURL(optimizedInputImage);
+    }
+    if (optimizedOutputImage?.startsWith('blob:')) {
+      URL.revokeObjectURL(optimizedOutputImage);
+    }
+  };
+}, [optimizedInputImage, optimizedOutputImage]);
+```
+
+### 8. Reset ao Iniciar Novo Job
+
+Na função `handleUpscale`, limpar estados anteriores:
+
+```tsx
+const handleUpscale = async () => {
+  // ... validações ...
+  
+  // Limpar imagens otimizadas anteriores
+  if (optimizedInputImage?.startsWith('blob:')) {
+    URL.revokeObjectURL(optimizedInputImage);
+  }
+  if (optimizedOutputImage?.startsWith('blob:')) {
+    URL.revokeObjectURL(optimizedOutputImage);
+  }
+  setOptimizedInputImage(null);
+  setOptimizedOutputImage(null);
+  
+  // ... resto do código ...
+};
 ```
 
 ---
 
-## Configurações do Polling
+## Arquivo Modificado
 
-| Parâmetro | Valor | Justificativa |
-|-----------|-------|---------------|
-| Delay inicial | 15s | Dá tempo pro Realtime funcionar (normal é <5s) |
-| Intervalo | 5s | Rápido o suficiente para UX, leve para o banco |
-| Timeout máximo | 180s (3min) | Evita polling infinito; após isso, job provavelmente falhou |
-| Execução | Silenciosa | Usuário não vê, apenas funciona como backup |
+| Arquivo | Ação |
+|---------|------|
+| `src/pages/UpscalerArcanoTool.tsx` | Adicionar estados, função de otimização, lógica condicional de exibição |
 
 ---
 
-## Arquivos a Criar/Modificar
+## Comportamento Final
 
-| Arquivo | Ação | Descrição |
-|---------|------|-----------|
-| `src/hooks/useJobStatusSync.ts` | **CRIAR** | Hook global de sincronização tripla |
-| `src/ai/JobManager.ts` | **MODIFICAR** | Adicionar `queryJobStatus()` |
-| `src/pages/UpscalerArcanoTool.tsx` | **MODIFICAR** | Usar novo hook |
-| `src/pages/PoseChangerTool.tsx` | **MODIFICAR** | Usar novo hook |
-| `src/pages/VesteAITool.tsx` | **MODIFICAR** | Usar novo hook |
-| `src/pages/VideoUpscalerTool.tsx` | **MODIFICAR** | Remover polling antigo, usar novo hook |
+| Dispositivo | Imagens no Slider | Download |
+|-------------|-------------------|----------|
+| **Desktop** | Originais (full-res) | Originais |
+| **Mobile** | Otimizadas (1500px max) | Originais |
 
 ---
 
@@ -252,31 +225,9 @@ export async function queryJobStatus(
 
 | Item | Status |
 |------|--------|
-| Funciona offline parcial | ✅ Polling recupera quando volta |
-| Funciona em qualquer dispositivo | ✅ Não depende de WebSocket |
-| Funciona em qualquer rede | ✅ Fallback HTTP direto |
-| Não impacta performance | ✅ Polling leve e com timeout |
+| Desktop não afetado | ✅ Continua usando imagens originais |
+| Download não afetado | ✅ Sempre baixa imagem original |
+| Performance mobile | ✅ Slider carrega mais rápido |
 | Edge Functions | ❌ Nenhuma alteração |
-| Webhooks | ❌ Nenhuma alteração |
 | Banco de dados | ❌ Nenhuma alteração |
-| Lógica de créditos | ❌ Intocada |
-
----
-
-## Padrão para Ferramentas Futuras
-
-Qualquer nova ferramenta de IA DEVE usar o hook `useJobStatusSync`:
-
-```tsx
-import { useJobStatusSync } from '@/hooks/useJobStatusSync';
-
-// Na função do componente:
-useJobStatusSync({
-  jobId,
-  toolType: 'nova_ferramenta',
-  enabled: isProcessing,
-  onStatusChange: handleStatusUpdate
-});
-```
-
-Isso garante que TODAS as ferramentas terão o sistema de sincronização tripla automaticamente.
+| Créditos | ❌ Nenhuma alteração |
