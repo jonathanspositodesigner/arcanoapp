@@ -1,5 +1,36 @@
 
-# Plano: Sistema Robusto de Sincronização de Jobs de IA (Anti-Travamento)
+# Sistema de Sincronização Tripla para Jobs de IA
+
+## Status: ✅ IMPLEMENTADO
+
+### Componentes Criados
+
+1. **`src/hooks/useJobStatusSync.ts`** - Hook global que implementa:
+   - Realtime (primário): Supabase Realtime para updates instantâneos
+   - Polling Silencioso (backup): Inicia após 15s, roda a cada 5s por até 3 min
+   - Visibility Recovery: Ao voltar de outra aba, verifica imediatamente
+
+2. **`src/ai/JobManager.ts`** - Adicionada função `queryJobStatus()` para polling direto
+
+### Ferramentas Atualizadas
+
+- ✅ `UpscalerArcanoTool.tsx` - Usando useJobStatusSync
+- ✅ `PoseChangerTool.tsx` - Usando useJobStatusSync  
+- ✅ `VesteAITool.tsx` - Usando useJobStatusSync
+- ✅ `VideoUpscalerTool.tsx` - Usando useJobStatusSync (removido polling manual antigo)
+
+### Garantias
+
+| Item | Status |
+|------|--------|
+| Funciona offline parcial | ✅ Polling recupera quando volta |
+| Funciona em qualquer dispositivo | ✅ Não depende de WebSocket |
+| Funciona em qualquer rede | ✅ Fallback HTTP direto |
+| Não impacta performance | ✅ Polling leve e com timeout |
+
+---
+
+# Plano Anterior: Unificação de Rotas de Ferramentas de IA
 
 ## Diagnóstico do Problema
 

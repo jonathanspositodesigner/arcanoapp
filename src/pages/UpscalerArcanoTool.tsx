@@ -27,6 +27,7 @@ import { JobDebugPanel, ImageCompressionModal, DownloadProgressOverlay } from '@
 import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -133,7 +134,6 @@ const UpscalerArcanoTool: React.FC = () => {
   const isDraggingRef = useRef(false);
   const beforeTransformRef = useRef<HTMLDivElement>(null);
   const sessionIdRef = useRef<string>('');
-  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Initialize session ID (fresh each visit - no recovery)
   useEffect(() => {
@@ -142,15 +142,6 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // Cleanup queued jobs when user leaves page
   useQueueSessionCleanup(sessionIdRef.current, status);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current);
-      }
-    };
-  }, []);
 
   // Reset promptCategory when custom prompt is disabled
   useEffect(() => {
@@ -184,84 +175,57 @@ const UpscalerArcanoTool: React.FC = () => {
     }
     return PROMPT_CATEGORIES[promptCategory];
   };
-  // Subscribe to Realtime updates when jobId changes
+  // SISTEMA DE SINCRONIZAÇÃO TRIPLA (Realtime + Polling + Visibility)
+  // Garante que o usuário sempre receba o resultado, mesmo com problemas de rede
+  useJobStatusSync({
+    jobId,
+    toolType: 'upscaler',
+    enabled: status === 'processing' || isWaitingInQueue || status === 'uploading',
+    onStatusChange: (update) => {
+      console.log('[Upscaler] JobSync update:', update);
+      
+      // Update debug state
+      setCurrentStep(update.currentStep || update.status);
+      
+      if (update.status === 'completed' && update.outputUrl) {
+        console.log('[Upscaler] Job completed! Output:', update.outputUrl);
+        setOutputImage(update.outputUrl);
+        setStatus('completed');
+        setProgress(100);
+        setIsWaitingInQueue(false);
+        setQueuePosition(0);
+        toast.success(t('upscalerTool.toast.success'));
+      } else if (update.status === 'failed') {
+        console.log('[Upscaler] Job failed:', update.errorMessage);
+        setStatus('error');
+        setLastError({
+          message: update.errorMessage || 'Processing failed',
+          code: 'TASK_FAILED',
+          solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
+        });
+        setIsWaitingInQueue(false);
+        toast.error('Erro no processamento. Tente novamente.');
+      } else if (update.status === 'running') {
+        console.log('[Upscaler] Job running');
+        setStatus('processing');
+        setIsWaitingInQueue(false);
+        setQueuePosition(0);
+        setProgress(prev => Math.min(prev + 5, 90));
+      } else if (update.status === 'queued') {
+        console.log('[Upscaler] Job queued at position:', update.position);
+        setIsWaitingInQueue(true);
+        setQueuePosition(update.position || 1);
+      }
+    },
+    onGlobalStatusChange: updateJobStatus,
+  });
+
+  // Registrar job no contexto global quando jobId muda (para som e trava de navegação)
   useEffect(() => {
-    if (!jobId) return;
-
-    console.log('[Upscaler] Subscribing to Realtime for job:', jobId);
-    
-    // Registrar job no contexto global (para som e trava de navegação)
-    registerJob(jobId, 'Upscaler Arcano', 'pending');
-
-    // Remove previous channel if exists
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current);
+    if (jobId) {
+      registerJob(jobId, 'Upscaler Arcano', 'pending');
     }
-
-    const channel = supabase
-      .channel(`upscaler-job-${jobId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'upscaler_jobs',
-          filter: `id=eq.${jobId}`
-        },
-        (payload) => {
-          console.log('[Upscaler] Realtime update:', payload.new);
-          const job = payload.new as any;
-          
-          // Atualizar contexto global (dispara som automaticamente em status terminal)
-          updateJobStatus(job.status);
-
-          // Update debug state
-          setCurrentStep(job.current_step || job.status);
-          if (job.failed_at_step) setFailedAtStep(job.failed_at_step);
-
-          if (job.status === 'completed' && job.output_url) {
-            console.log('[Upscaler] Job completed! Output:', job.output_url);
-            setOutputImage(job.output_url);
-            setStatus('completed');
-            setProgress(100);
-            setIsWaitingInQueue(false);
-            setQueuePosition(0);
-            toast.success(t('upscalerTool.toast.success'));
-          } else if (job.status === 'failed') {
-            console.log('[Upscaler] Job failed:', job.error_message);
-            setStatus('error');
-            setLastError({
-              message: job.error_message || 'Processing failed',
-              code: 'TASK_FAILED',
-              solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
-            });
-            setIsWaitingInQueue(false);
-            toast.error('Erro no processamento. Tente novamente.');
-          } else if (job.status === 'running') {
-            console.log('[Upscaler] Job running');
-            setStatus('processing');
-            setIsWaitingInQueue(false);
-            setQueuePosition(0);
-            // Start progress animation
-            setProgress(prev => Math.min(prev + 5, 90));
-          } else if (job.status === 'queued') {
-            console.log('[Upscaler] Job queued at position:', job.position);
-            setIsWaitingInQueue(true);
-            setQueuePosition(job.position || 1);
-          }
-        }
-      )
-      .subscribe((status) => {
-        console.log('[Upscaler] Realtime subscription status:', status);
-      });
-
-    realtimeChannelRef.current = channel;
-
-    return () => {
-      console.log('[Upscaler] Cleaning up Realtime subscription');
-      supabase.removeChannel(channel);
-    };
-  }, [jobId, t, registerJob, updateJobStatus]);
+  }, [jobId, registerJob]);
 
   // Progress animation while processing
   useEffect(() => {
