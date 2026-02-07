@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ZoomIn } from "lucide-react";
+import { ResilientImage } from "./ResilientImage";
 
 interface BeforeAfterSliderProps {
   beforeImage: string;
@@ -10,11 +11,13 @@ interface BeforeAfterSliderProps {
   onZoomClick?: () => void;
   locale?: 'pt' | 'es';
   aspectRatio?: string;
+  onDownloadClick?: () => void;
+  downloadFileName?: string;
 }
 
 /**
  * Standard BeforeAfterSlider for secondary images
- * Uses loading="lazy" and decoding="async" for non-LCP images
+ * Uses ResilientImage for robust loading with auto-retry and compression fallback
  */
 export const BeforeAfterSlider = ({ 
   beforeImage, 
@@ -23,13 +26,13 @@ export const BeforeAfterSlider = ({
   size = "default",
   onZoomClick,
   locale = 'pt',
-  aspectRatio
+  aspectRatio,
+  onDownloadClick,
+  downloadFileName
 }: BeforeAfterSliderProps) => {
   const { t: tOriginal } = useTranslation();
   const t = (key: string) => tOriginal(key, { lng: locale });
   const [sliderPosition, setSliderPosition] = useState(50);
-  const [beforeError, setBeforeError] = useState(false);
-  const [afterError, setAfterError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const touchStartRef = useRef({ x: 0, y: 0 });
@@ -105,34 +108,38 @@ export const BeforeAfterSlider = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* After Image (background) */}
-        <img 
-          src={afterError ? '/placeholder.svg' : afterImage} 
+        {/* After Image (background) - Using ResilientImage */}
+        <ResilientImage 
+          src={afterImage} 
           alt={locale === 'es' ? "Después" : "Depois"}
-          loading="lazy"
-          decoding="async"
-          onError={() => setAfterError(true)}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0"
+          timeout={8000}
+          compressOnFailure={true}
+          showDownloadOnFail={!!onDownloadClick}
+          onDownloadClick={onDownloadClick}
+          downloadFileName={downloadFileName}
+          locale={locale}
         />
         
-        {/* Before Image (clipped) */}
+        {/* Before Image (clipped) - Using ResilientImage */}
         <div 
           className="absolute inset-0 overflow-hidden"
           style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
         >
-          <img 
-            src={beforeError ? '/placeholder.svg' : beforeImage} 
+          <ResilientImage 
+            src={beforeImage} 
             alt={locale === 'es' ? "Antes" : "Antes"}
-            loading="lazy"
-            decoding="async"
-            onError={() => setBeforeError(true)}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0"
+            timeout={8000}
+            compressOnFailure={true}
+            showDownloadOnFail={false}
+            locale={locale}
           />
         </div>
 
         {/* Slider line */}
         <div 
-          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
+          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-10"
           style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
         >
           <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center">
@@ -144,10 +151,10 @@ export const BeforeAfterSlider = ({
         </div>
 
         {/* Labels */}
-        <div className="absolute top-4 left-4 bg-black/80 text-white text-sm font-semibold px-4 py-2 rounded-full">
+        <div className="absolute top-4 left-4 bg-black/80 text-white text-sm font-semibold px-4 py-2 rounded-full z-10">
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-full z-10">
           {t('tools:upscaler.beforeAfter.after')}
         </div>
 
@@ -158,7 +165,7 @@ export const BeforeAfterSlider = ({
               e.stopPropagation();
               onZoomClick();
             }}
-            className="absolute bottom-4 right-4 p-3 bg-black/70 hover:bg-black/90 rounded-full transition-all duration-300 hover:scale-110 border border-white/20"
+            className="absolute bottom-4 right-4 p-3 bg-black/70 hover:bg-black/90 rounded-full transition-all duration-300 hover:scale-110 border border-white/20 z-10"
           >
             <ZoomIn className="h-5 w-5 text-white" />
           </button>

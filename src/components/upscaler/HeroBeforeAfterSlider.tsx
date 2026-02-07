@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { ResilientImage } from "./ResilientImage";
 
 interface HeroBeforeAfterSliderProps {
   beforeImage: string;
@@ -22,8 +23,6 @@ export const HeroBeforeAfterSlider = ({
   const { t: tOriginal } = useTranslation();
   const t = (key: string) => tOriginal(key, { lng: locale });
   const [sliderPosition, setSliderPosition] = useState(50);
-  const [beforeError, setBeforeError] = useState(false);
-  const [afterError, setAfterError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const touchStartRef = useRef({ x: 0, y: 0 });
@@ -94,44 +93,42 @@ export const HeroBeforeAfterSlider = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* After Image (background) - LCP optimized */}
-        <img 
-          src={afterError ? '/placeholder.svg' : afterImage} 
+        {/* After Image (background) - Using ResilientImage for robust loading */}
+        <ResilientImage 
+          src={afterImage} 
           alt={locale === 'es' ? "Después" : "Depois"}
-          loading="eager"
-          fetchPriority="high"
-          decoding="sync"
-          onError={() => setAfterError(true)}
+          className="absolute inset-0"
           style={{
-            position: 'absolute',
-            inset: 0,
             width: '100%',
             height: '100%',
             objectFit: 'cover',
             objectPosition: 'center'
           }}
+          timeout={10000}
+          compressOnFailure={true}
+          showDownloadOnFail={false}
+          locale={locale}
         />
         
-        {/* Before Image (clipped) */}
+        {/* Before Image (clipped) - Using ResilientImage */}
         <div 
           className="absolute inset-0 overflow-hidden"
           style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
         >
-          <img 
-            src={beforeError ? '/placeholder.svg' : beforeImage} 
+          <ResilientImage 
+            src={beforeImage} 
             alt={locale === 'es' ? "Antes" : "Antes"}
-            loading="eager"
-            fetchPriority="high"
-            decoding="sync"
-            onError={() => setBeforeError(true)}
+            className="absolute inset-0"
             style={{
-              position: 'absolute',
-              inset: 0,
               width: '100%',
               height: '100%',
               objectFit: 'cover',
               objectPosition: 'center'
             }}
+            timeout={10000}
+            compressOnFailure={true}
+            showDownloadOnFail={false}
+            locale={locale}
           />
         </div>
 
