@@ -1,303 +1,242 @@
 
-# Plano: Watchdog de 30 Segundos para Jobs Pending
+# Plano: Correção Robusta do Bug do Watchdog e Prevenção de Duplicados
 
-## Problema Identificado
+## Diagnóstico Completo
 
-O job ficou travado como `pending` porque:
-1. Job criado no banco ✅ (linha 525-536)
-2. Chamada à Edge Function falhou (linha 551-576)
-3. Job ficou órfão - nunca foi iniciado
-4. O cleanup do banco só roda a cada 10 minutos e não incluía `pending`
-
-## Solução: Watchdog de 30 Segundos no Frontend
-
-### Arquitetura da Solução
-
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    WATCHDOG DE 30 SEGUNDOS PARA PENDING                 │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  FLUXO NORMAL:                                                          │
-│  1. [Job criado] → status: 'pending'                                    │
-│  2. [Edge Function chamada] → status: 'starting/queued/running'         │
-│  3. [Job processa] → status: 'completed' ou 'failed'                    │
-│                                                                         │
-│  FLUXO COM FALHA (ATUAL - SEM PROTEÇÃO):                               │
-│  1. [Job criado] → status: 'pending'                                    │
-│  2. [Edge Function FALHA] → status continua 'pending' PARA SEMPRE       │
-│  ❌ Usuário fica preso esperando eternamente                            │
-│                                                                         │
-│  FLUXO COM FALHA (NOVO - COM WATCHDOG):                                │
-│  1. [Job criado] → status: 'pending' + Timer de 30s inicia              │
-│  2. [Edge Function FALHA] → status continua 'pending'                   │
-│  3. [30 segundos depois] → Watchdog detecta                             │
-│  4. [Watchdog] → Marca job como 'failed' via RPC                        │
-│  5. [UI] → Mostra erro pro usuário imediatamente                        │
-│  ✅ Usuário pode tentar novamente                                       │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+### Problema 1: O Watchdog NUNCA Dispara (Bug Crítico)
+O hook `useJobPendingWatchdog` recebe `status` como parâmetro:
+```typescript
+// UpscalerArcanoTool.tsx linha 175-178
+useJobPendingWatchdog({
+  jobId,
+  status,  // ← Este é ProcessingStatus: 'idle' | 'uploading' | 'processing' | ...
+  toolType: 'upscaler',
+  ...
+});
 ```
+
+O hook só ativa o timer quando `status === 'pending'`:
+```typescript
+// useJobPendingWatchdog.ts linha 55-56
+if (!jobId || status !== 'pending') {
+  // Limpar timeout se status mudou
+  ...
+  return;
+}
+```
+
+**MAS** o `ProcessingStatus` da UI **NUNCA** é `'pending'`! Os valores possíveis são:
+- `'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error'`
+
+O status do **banco de dados** é `'pending'`, mas a UI usa seus próprios estados. O watchdog compara maçãs com laranjas e NUNCA funciona.
+
+### Problema 2: Usuários Criam Jobs Duplicados
+O endpoint `check-user-active` (linha 489) só bloqueia se o usuário já tiver job com status:
+- `running`, `queued`, `starting`
+
+**NÃO inclui `pending`!** Então:
+1. Usuário cria job A (status: `pending`)
+2. Edge Function falha (job A fica órfão em `pending`)
+3. Usuário tenta novamente
+4. `check-user-active` retorna `hasActiveJob: false` (pending não conta)
+5. Usuário cria job B normalmente
+6. Admin vê: um `pending` e um `running` do mesmo usuário
 
 ---
 
-## Arquivos a Criar/Modificar
+## Solução em 3 Partes (Sem Quebrar Nada)
+
+### Parte 1: Corrigir o Hook `useJobPendingWatchdog`
+
+**Problema:** O hook depende de `status` da UI que nunca é `'pending'`.
+
+**Solução:** Mudar a lógica para:
+1. Iniciar timer quando existir `jobId` (independente do status da UI)
+2. Após 30s, consultar o **banco de dados** para verificar se ainda está `pending` E `task_id IS NULL`
+3. Se sim, marcar como failed e notificar usuário
+
+**Mudança de contrato do hook:**
+```typescript
+// ANTES: depende de status da UI
+useJobPendingWatchdog({
+  jobId,
+  status,  // ← ProcessingStatus (UI) - nunca é 'pending'
+  toolType: 'upscaler',
+  onJobFailed: ...
+});
+
+// DEPOIS: não depende de status da UI
+useJobPendingWatchdog({
+  jobId,
+  toolType: 'upscaler',
+  enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+  onJobFailed: ...
+});
+```
+
+**Por que é seguro:**
+- O hook faz **verificação dupla** no banco antes de agir
+- Só marca como failed se: `status === 'pending'` E `task_id IS NULL` E `created_at > 30s`
+- Se o job já transitou para `queued/running/completed`, o hook NÃO faz nada
+
+### Parte 2: Incluir `pending` Recente no Bloqueio de Duplicados
+
+**Mudança:** No `handleCheckUserActive`, considerar `pending` como ativo **por 35 segundos**:
+
+```sql
+-- Adicionar à query
+OR (
+  status = 'pending' 
+  AND task_id IS NULL 
+  AND created_at > NOW() - INTERVAL '35 seconds'
+)
+```
+
+**Por que 35 segundos?** Alinhado com o watchdog (30s + margem).
+
+**Por que é seguro:**
+- Após 35s, o pending órfão será limpo (pelo watchdog ou cleanup)
+- Impede criação de jobs duplicados na janela de inicialização
+- Jobs que iniciaram normalmente (task_id preenchido) não são afetados
+
+### Parte 3: Cleanup Server-Side Oportunístico (30s)
+
+Adicionar limpeza automática de `pending` órfãos em endpoints frequentes do `runninghub-queue-manager`:
+
+```typescript
+async function cleanupOrphanPendingJobs(): Promise<number> {
+  // Para cada tabela, marcar como failed jobs com:
+  // - status = 'pending'
+  // - task_id IS NULL  
+  // - created_at < NOW() - 30 segundos
+}
+```
+
+Chamar no início de:
+- `/check`
+- `/check-user-active`
+- `/process-next`
+- `/finish`
+
+**Por que é seguro:**
+- Só afeta jobs que NUNCA iniciaram (`task_id IS NULL`)
+- Jobs normais (em fila ou processando) têm `task_id` preenchido
+- É idempotente (rodar múltiplas vezes não causa problemas)
+
+---
+
+## Arquivos a Modificar
 
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
-| **Migration SQL** | CRIAR | Incluir `pending` no cleanup + criar RPC para marcar como failed |
-| `src/hooks/useJobPendingWatchdog.ts` | CRIAR | Watchdog centralizado de 30s |
-| `src/pages/UpscalerArcanoTool.tsx` | MODIFICAR | Integrar watchdog |
-| `src/pages/PoseChangerTool.tsx` | MODIFICAR | Integrar watchdog |
-| `src/pages/VesteAITool.tsx` | MODIFICAR | Integrar watchdog |
-| `src/pages/VideoUpscalerTool.tsx` | MODIFICAR | Integrar watchdog |
+| `src/hooks/useJobPendingWatchdog.ts` | MODIFICAR | Não depender de status UI, usar enabled flag |
+| `src/pages/UpscalerArcanoTool.tsx` | MODIFICAR | Passar `enabled` ao invés de `status` |
+| `src/pages/PoseChangerTool.tsx` | MODIFICAR | Mesma mudança |
+| `src/pages/VesteAITool.tsx` | MODIFICAR | Mesma mudança |
+| `src/pages/VideoUpscalerTool.tsx` | MODIFICAR | Mesma mudança |
+| `supabase/functions/runninghub-queue-manager/index.ts` | MODIFICAR | Incluir pending no bloqueio + cleanup |
 
 ---
 
-## Parte 1: Migration SQL
+## Análise de Impacto: O Que NÃO Quebra
 
-### 1.1 Incluir `pending` no cleanup automático
+### Fila Global (3 jobs simultâneos)
+- ✅ **NÃO AFETADO** - A fila continua usando `running`, `starting` para contar slots
+- O `pending` não ocupa vaga na fila, apenas bloqueia duplicados do mesmo usuário
 
-Adicionar `'pending'` à lista de status que são limpos após 10 minutos (backup de segurança):
+### Processamento Normal
+- ✅ **NÃO AFETADO** - Jobs que iniciam normalmente transitam para `starting/queued/running`
+- O watchdog verifica `task_id IS NULL` antes de agir
 
-```sql
-WHERE status IN ('running', 'queued', 'starting', 'pending')
-```
+### Cleanup de 10 Minutos
+- ✅ **NÃO AFETADO** - Continua funcionando como backup
+- O cleanup de 30s é uma camada adicional, não substitui
 
-### 1.2 Criar RPC para marcar job como failed (usada pelo frontend)
+### Reembolso de Créditos
+- ✅ **NÃO AFETADO** - Jobs `pending` nunca cobram créditos (`credits_charged = false`)
+- O reembolso só acontece para jobs que foram cobrados
 
-```sql
-CREATE OR REPLACE FUNCTION public.mark_pending_job_as_failed(
-  p_table_name text, 
-  p_job_id uuid,
-  p_error_message text DEFAULT 'Timeout de inicialização - Edge Function não respondeu'
-)
-RETURNS boolean
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_user_id UUID;
-  v_current_status TEXT;
-  v_auth_user_id UUID;
-BEGIN
-  v_auth_user_id := auth.uid();
-  
-  -- Verificar autenticação
-  IF v_auth_user_id IS NULL THEN
-    RETURN FALSE;
-  END IF;
-
-  -- Buscar job atual
-  IF p_table_name = 'upscaler_jobs' THEN
-    SELECT user_id, status INTO v_user_id, v_current_status
-    FROM upscaler_jobs WHERE id = p_job_id;
-  ELSIF p_table_name = 'pose_changer_jobs' THEN
-    SELECT user_id, status INTO v_user_id, v_current_status
-    FROM pose_changer_jobs WHERE id = p_job_id;
-  -- ... demais tabelas
-  END IF;
-
-  -- Verificar dono e status pending
-  IF v_user_id != v_auth_user_id OR v_current_status != 'pending' THEN
-    RETURN FALSE;
-  END IF;
-
-  -- Marcar como failed (sem reembolso pois pending nunca cobrou créditos)
-  IF p_table_name = 'upscaler_jobs' THEN
-    UPDATE upscaler_jobs SET 
-      status = 'failed',
-      error_message = p_error_message,
-      completed_at = NOW()
-    WHERE id = p_job_id;
-  -- ... demais tabelas
-  END IF;
-
-  RETURN TRUE;
-END;
-$$;
-```
+### Edge Functions (Upscaler, Pose, Veste, Video)
+- ✅ **NÃO AFETADO** - Nenhuma mudança nas Edge Functions de processamento
 
 ---
 
-## Parte 2: Hook useJobPendingWatchdog
+## Cenários de Teste
 
-### Características
+| Cenário | Comportamento Esperado |
+|---------|------------------------|
+| Job criado, Edge Function falha | Em 30s: job marcado `failed`, usuário vê erro |
+| Job criado, usuário fecha aba | Em 30s: cleanup server-side marca `failed` |
+| Job criado, processa normalmente | Watchdog detecta `task_id` preenchido, NÃO age |
+| Usuário tenta criar 2º job em 10s | Bloqueado: "Você já tem job ativo" |
+| Usuário tenta criar 2º job após 35s | Permitido: pending órfão já foi limpo |
+| Job em fila normal | Não afetado: status é `queued`, não `pending` |
 
-- **Timeout de 30 segundos** para jobs `pending`
-- **Verificação dupla**: Consulta banco antes de marcar como failed (para não matar job que já iniciou)
-- **Notificação ao usuário** via callback
-- **Cleanup automático** quando componente desmonta
+---
 
-### Código
+## Código: Hook Corrigido
 
 ```typescript
 /**
- * useJobPendingWatchdog - Detecta e corrige jobs travados como 'pending'
+ * useJobPendingWatchdog v2 - Agora FUNCIONA!
  * 
- * Se um job fica 'pending' por mais de 30 segundos, algo deu errado na
- * chamada à Edge Function. Este watchdog marca o job como 'failed' via RPC
- * e notifica o usuário imediatamente.
+ * Mudanças:
+ * - Não depende mais de status da UI
+ * - Usa flag 'enabled' para ativar/desativar
+ * - Faz verificação tripla no banco: status=pending AND task_id=null AND age>30s
  */
-import { useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { ToolType, TABLE_MAP, queryJobStatus } from '@/ai/JobManager';
-
-const PENDING_TIMEOUT_MS = 30000; // 30 segundos
-
 interface UseJobPendingWatchdogOptions {
   jobId: string | null;
-  status: string;
   toolType: ToolType;
+  enabled: boolean;  // ← NOVO: ativo quando está processando
   onJobFailed: (errorMessage: string) => void;
 }
 
 export function useJobPendingWatchdog({
   jobId,
-  status,
   toolType,
+  enabled,  // ← Controla se deve monitorar
   onJobFailed,
 }: UseJobPendingWatchdogOptions) {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hasTriggeredRef = useRef(false);
-
+  // ...
   useEffect(() => {
-    // Só ativar para jobs pending
-    if (!jobId || status !== 'pending') {
-      // Limpar timeout se status mudou
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-      hasTriggeredRef.current = false;
+    if (!enabled || !jobId) {
+      // Limpar e sair
       return;
     }
-
-    // Já disparou para este job, não repetir
-    if (hasTriggeredRef.current) return;
-
-    console.log(`[PendingWatchdog] Starting 30s timer for job ${jobId}`);
-
+    
+    // Iniciar timer de 30s
     timeoutRef.current = setTimeout(async () => {
-      if (hasTriggeredRef.current) return;
-      hasTriggeredRef.current = true;
-
-      console.log(`[PendingWatchdog] 30s elapsed, checking job ${jobId}`);
-
-      // Verificar status atual no banco (pode ter mudado)
-      const currentJob = await queryJobStatus(toolType, jobId);
+      // Consultar banco para verificação tripla
+      const { data: job } = await supabase
+        .from(tableName)
+        .select('status, task_id, created_at')
+        .eq('id', jobId)
+        .maybeSingle();
       
-      if (!currentJob || currentJob.status !== 'pending') {
-        console.log(`[PendingWatchdog] Job already transitioned to ${currentJob?.status}`);
-        return;
+      if (!job) return;
+      
+      // Só agir se: pending + sem task_id + mais de 30s
+      const age = Date.now() - new Date(job.created_at).getTime();
+      if (job.status === 'pending' && !job.task_id && age > 30000) {
+        // Marcar como failed via RPC
+        await supabase.rpc('mark_pending_job_as_failed', {...});
+        onJobFailed('Falha ao iniciar. Tente novamente.');
       }
-
-      // Ainda pending após 30s = problema confirmado
-      console.warn(`[PendingWatchdog] Job stuck as pending, marking as failed`);
-
-      const tableName = TABLE_MAP[toolType];
-      const { data, error } = await supabase.rpc('mark_pending_job_as_failed', {
-        p_table_name: tableName,
-        p_job_id: jobId,
-        p_error_message: 'Falha ao iniciar processamento. A conexão com o servidor falhou. Tente novamente.',
-      });
-
-      if (error) {
-        console.error('[PendingWatchdog] RPC error:', error);
-      }
-
-      // Notificar UI independente do resultado da RPC
-      onJobFailed('Falha ao iniciar processamento. Tente novamente.');
-    }, PENDING_TIMEOUT_MS);
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-  }, [jobId, status, toolType, onJobFailed]);
+    }, 30000);
+    
+    return () => clearTimeout(timeoutRef.current);
+  }, [enabled, jobId, toolType, onJobFailed]);
 }
 ```
 
 ---
 
-## Parte 3: Integração nas Ferramentas
+## Resumo: Por Que Esta Solução É Segura
 
-### Exemplo no UpscalerArcanoTool.tsx
+1. **Não mexe na lógica de fila** - Apenas adiciona proteção para pending órfãos
+2. **Verificação tripla** - status + task_id + idade antes de agir
+3. **Idempotente** - Rodar múltiplas vezes não causa problemas
+4. **Backward compatible** - Jobs normais não são afetados
+5. **Defense in depth** - 3 camadas: frontend (30s), server (30s), cleanup (10m)
 
-```typescript
-import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
-
-// Dentro do componente:
-useJobPendingWatchdog({
-  jobId,
-  status,
-  toolType: 'upscaler',
-  onJobFailed: useCallback((errorMessage) => {
-    setStatus('error');
-    setLastError({
-      message: errorMessage,
-      code: 'INIT_TIMEOUT',
-      solution: 'Verifique sua conexão e tente novamente.',
-    });
-    toast.error(errorMessage);
-    endSubmit(); // Liberar botão
-  }, [endSubmit]),
-});
-```
-
-### Replicar nas outras ferramentas
-
-Mesmo padrão para:
-- `PoseChangerTool.tsx` → `toolType: 'pose'`
-- `VesteAITool.tsx` → `toolType: 'veste'`
-- `VideoUpscalerTool.tsx` → `toolType: 'video'`
-
----
-
-## Parte 4: Corrigir Job Atual
-
-Query para corrigir o job travado agora:
-
-```sql
-UPDATE upscaler_jobs 
-SET 
-  status = 'failed',
-  error_message = 'Job travado como pending - corrigido manualmente',
-  completed_at = NOW()
-WHERE id = 'fcba40e4-bcf9-4019-bd12-69d9aa98cee4';
-```
-
----
-
-## Resumo da Proteção em Camadas
-
-| Camada | Tempo | Ação | Responsável |
-|--------|-------|------|-------------|
-| **1. Watchdog Frontend** | 30 segundos | Marca como `failed` + notifica usuário | Hook no React |
-| **2. Cleanup Banco** | 10 minutos | Backup - limpa jobs órfãos + reembolsa | RPC periódica |
-
----
-
-## Resultado Final
-
-| Cenário | Antes | Depois |
-|---------|-------|--------|
-| Edge Function falha | Job fica `pending` para sempre | Usuário vê erro em 30s |
-| Usuário perde conexão | Job fica `pending` para sempre | Cleanup em 10min (backup) |
-| Edge Function demora | Funciona normal | Funciona normal |
-| Job processa com sucesso | Funciona normal | Funciona normal |
-
----
-
-## Ordem de Execução
-
-1. **Migration SQL** - RPC `mark_pending_job_as_failed` + incluir `pending` no cleanup
-2. **Query direta** - Corrigir o job travado atual
-3. **useJobPendingWatchdog** - Criar hook de watchdog de 30s
-4. **UpscalerArcanoTool** - Integrar watchdog
-5. **PoseChangerTool** - Integrar watchdog
-6. **VesteAITool** - Integrar watchdog
-7. **VideoUpscalerTool** - Integrar watchdog
