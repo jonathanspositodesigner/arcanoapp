@@ -51,6 +51,7 @@ export interface JobUpdate {
   outputUrl?: string;
   errorMessage?: string;
   position?: number;
+  currentStep?: string;
 }
 
 // Table names mapping
@@ -461,6 +462,42 @@ export async function checkCredits(
   } catch (error) {
     console.error('[JobManager] checkCredits exception:', error);
     return { balance: 0, sufficient: false, required: 0 };
+  }
+}
+
+/**
+ * Consulta direta ao banco para obter status de um job
+ * Usado pelo sistema de polling de backup quando Realtime falha
+ */
+export async function queryJobStatus(
+  toolType: ToolType,
+  jobId: string
+): Promise<JobUpdate | null> {
+  const tableName = TABLE_MAP[toolType];
+  
+  try {
+    const { data, error } = await supabase
+      .from(tableName as any)
+      .select('status, output_url, error_message, position, current_step')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    if (error || !data) {
+      console.error('[JobManager] queryJobStatus error:', error);
+      return null;
+    }
+    
+    const record = data as any;
+    return {
+      status: record.status,
+      outputUrl: record.output_url,
+      errorMessage: record.error_message,
+      position: record.position,
+      currentStep: record.current_step,
+    };
+  } catch (error) {
+    console.error('[JobManager] queryJobStatus exception:', error);
+    return null;
   }
 }
 

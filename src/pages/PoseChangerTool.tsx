@@ -20,6 +20,7 @@ import { JobDebugPanel, DownloadProgressOverlay } from '@/components/ai-tools';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -65,7 +66,6 @@ const PoseChangerTool: React.FC = () => {
   const [debugErrorMessage, setDebugErrorMessage] = useState<string | null>(null);
   // Session management
   const sessionIdRef = useRef<string>('');
-  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   
   // CRITICAL: Instant button lock to prevent duplicate clicks
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
@@ -98,69 +98,52 @@ const PoseChangerTool: React.FC = () => {
   // Cleanup queued jobs when user leaves page
   useQueueSessionCleanup(sessionIdRef.current, status);
 
-  // Subscribe to realtime updates for a job
-  const subscribeToJobUpdates = useCallback((jId: string) => {
-    // Cleanup previous subscription
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current);
+  // SISTEMA DE SINCRONIZAÇÃO TRIPLA (Realtime + Polling + Visibility)
+  // Garante que o usuário sempre receba o resultado, mesmo com problemas de rede
+  useJobStatusSync({
+    jobId,
+    toolType: 'pose_changer',
+    enabled: status === 'processing' || status === 'waiting' || status === 'uploading',
+    onStatusChange: (update) => {
+      console.log('[PoseChanger] JobSync update:', update);
+      
+      // Debug/observability (shown when Debug Mode is enabled)
+      setCurrentStep(update.currentStep || update.status);
+      if (update.errorMessage) setDebugErrorMessage(update.errorMessage);
+
+      if (update.status === 'completed' && update.outputUrl) {
+        setOutputImage(update.outputUrl);
+        setStatus('completed');
+        setProgress(100);
+        refetchCredits();
+        endSubmit();
+        toast.success('Pose alterada com sucesso!');
+      } else if (update.status === 'failed') {
+        setStatus('error');
+        endSubmit();
+        toast.error(update.errorMessage || 'Erro no processamento');
+      } else if (update.status === 'running') {
+        setStatus('processing');
+        setQueuePosition(0);
+      } else if (update.status === 'queued') {
+        setStatus('waiting');
+        setQueuePosition(update.position || 0);
+      }
+    },
+    onGlobalStatusChange: updateJobStatus,
+  });
+
+  // Registrar job no contexto global quando jobId muda (para som e trava de navegação)
+  useEffect(() => {
+    if (jobId) {
+      registerJob(jobId, 'Pose Changer', 'pending');
     }
-    
-    // Registrar job no contexto global (para som e trava de navegação)
-    registerJob(jId, 'Pose Changer', 'pending');
+  }, [jobId, registerJob]);
 
-    const channel = supabase
-      .channel(`pose-job-${jId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'pose_changer_jobs',
-          filter: `id=eq.${jId}`
-        },
-        (payload) => {
-          const newData = payload.new as any;
-          console.log('[PoseChanger] Job update:', newData);
-          
-          // Atualizar contexto global (dispara som automaticamente em status terminal)
-          updateJobStatus(newData.status);
-
-          // Debug/observability (shown when Debug Mode is enabled)
-          setCurrentStep(newData.current_step || newData.status);
-          setFailedAtStep(newData.failed_at_step || null);
-          setDebugErrorMessage(newData.error_message || null);
-
-          if (newData.status === 'completed' && newData.output_url) {
-            setOutputImage(newData.output_url);
-            setStatus('completed');
-            setProgress(100);
-            refetchCredits();
-            endSubmit();
-            toast.success('Pose alterada com sucesso!');
-          } else if (newData.status === 'failed') {
-            setStatus('error');
-            endSubmit();
-            toast.error(newData.error_message || 'Erro no processamento');
-          } else if (newData.status === 'running') {
-            setStatus('processing');
-            setQueuePosition(0);
-          } else if (newData.status === 'queued') {
-            setStatus('waiting');
-            setQueuePosition(newData.position || 0);
-          }
-        }
-      )
-      .subscribe();
-
-    realtimeChannelRef.current = channel;
-  }, [refetchCredits, registerJob, updateJobStatus, endSubmit]);
-
-  // Cleanup on unmount
+  // Cleanup on unmount - handled by useJobStatusSync now
   useEffect(() => {
     return () => {
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current);
-      }
+      // Cleanup is handled by useJobStatusSync
     };
   }, []);
 
@@ -381,8 +364,7 @@ const PoseChangerTool: React.FC = () => {
         throw new Error(runResult.error || 'Erro desconhecido');
       }
 
-      // Subscribe to job updates
-      subscribeToJobUpdates(job.id);
+      // O useJobStatusSync já cuida da sincronização tripla automaticamente
       refetchCredits();
 
     } catch (error: any) {

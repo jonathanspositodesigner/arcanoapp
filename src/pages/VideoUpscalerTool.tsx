@@ -17,6 +17,7 @@ import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { JobDebugPanel, DownloadProgressOverlay } from '@/components/ai-tools';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -65,7 +66,6 @@ const VideoUpscalerTool: React.FC = () => {
   const [debugErrorMessage, setDebugErrorMessage] = useState<string | null>(null);
   // Session management
   const sessionIdRef = useRef<string>('');
-  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   
   // CRITICAL: Instant button lock to prevent duplicate clicks
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
@@ -95,69 +95,53 @@ const VideoUpscalerTool: React.FC = () => {
   // Cleanup queued jobs when user leaves page
   useQueueSessionCleanup(sessionIdRef.current, status);
 
-  // Subscribe to realtime updates for a job
-  const subscribeToJobUpdates = useCallback((jId: string) => {
-    // Cleanup previous subscription
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current);
+  // SISTEMA DE SINCRONIZAÇÃO TRIPLA (Realtime + Polling + Visibility)
+  // Garante que o usuário sempre receba o resultado, mesmo com problemas de rede
+  // Substitui o antigo sistema Realtime-only + polling manual
+  useJobStatusSync({
+    jobId,
+    toolType: 'video_upscaler',
+    enabled: status === 'processing' || status === 'waiting' || status === 'uploading',
+    onStatusChange: (update) => {
+      console.log('[VideoUpscaler] JobSync update:', update);
+      
+      // Debug/observability (shown when Debug Mode is enabled)
+      setCurrentStep(update.currentStep || update.status);
+      if (update.errorMessage) setDebugErrorMessage(update.errorMessage);
+
+      if (update.status === 'completed' && update.outputUrl) {
+        setOutputVideoUrl(update.outputUrl);
+        setStatus('completed');
+        setProgress(100);
+        refetchCredits();
+        endSubmit();
+        toast.success('Vídeo upscalado com sucesso!');
+      } else if (update.status === 'failed') {
+        setStatus('error');
+        endSubmit();
+        toast.error(update.errorMessage || 'Erro no processamento');
+      } else if (update.status === 'running') {
+        setStatus('processing');
+        setQueuePosition(0);
+      } else if (update.status === 'queued') {
+        setStatus('waiting');
+        setQueuePosition(update.position || 0);
+      }
+    },
+    onGlobalStatusChange: updateJobStatus,
+  });
+
+  // Registrar job no contexto global quando jobId muda (para som e trava de navegação)
+  useEffect(() => {
+    if (jobId) {
+      registerJob(jobId, 'Video Upscaler', 'pending');
     }
-    
-    // Registrar job no contexto global (para som e trava de navegação)
-    registerJob(jId, 'Video Upscaler', 'pending');
+  }, [jobId, registerJob]);
 
-    const channel = supabase
-      .channel(`video-upscaler-job-${jId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'video_upscaler_jobs',
-          filter: `id=eq.${jId}`
-        },
-        (payload) => {
-          const newData = payload.new as any;
-          console.log('[VideoUpscaler] Job update:', newData);
-          
-          // Atualizar contexto global (dispara som automaticamente em status terminal)
-          updateJobStatus(newData.status);
-
-          // Debug/observability (shown when Debug Mode is enabled)
-          setCurrentStep(newData.current_step || newData.status);
-          setFailedAtStep(newData.failed_at_step || null);
-          setDebugErrorMessage(newData.error_message || null);
-
-          if (newData.status === 'completed' && newData.output_url) {
-            setOutputVideoUrl(newData.output_url);
-            setStatus('completed');
-            setProgress(100);
-            refetchCredits();
-            endSubmit();
-            toast.success('Vídeo upscalado com sucesso!');
-          } else if (newData.status === 'failed') {
-            setStatus('error');
-            endSubmit();
-            toast.error(newData.error_message || 'Erro no processamento');
-          } else if (newData.status === 'running') {
-            setStatus('processing');
-            setQueuePosition(0);
-          } else if (newData.status === 'queued') {
-            setStatus('waiting');
-            setQueuePosition(newData.position || 0);
-          }
-        }
-      )
-      .subscribe();
-
-    realtimeChannelRef.current = channel;
-  }, [refetchCredits, registerJob, updateJobStatus, endSubmit]);
-
-  // Cleanup on unmount
+  // Cleanup on unmount - handled by useJobStatusSync now
   useEffect(() => {
     return () => {
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current);
-      }
+      // Cleanup is handled by useJobStatusSync
     };
   }, []);
 
@@ -185,66 +169,6 @@ const VideoUpscalerTool: React.FC = () => {
     
     return () => clearInterval(interval);
   }, [status]);
-
-  // Polling fallback de ÚLTIMO RECURSO - só ativa após 3 minutos sem resposta
-  // Roda no máximo 3 vezes para não gastar Cloud desnecessariamente
-  const pollAttemptsRef = useRef(0);
-  const pollStartTimeRef = useRef<number | null>(null);
-  
-  useEffect(() => {
-    if (!jobId || status === 'completed' || status === 'error' || status === 'idle') {
-      pollAttemptsRef.current = 0;
-      pollStartTimeRef.current = null;
-      return;
-    }
-
-    // Marca quando o job começou a processar
-    if (!pollStartTimeRef.current) {
-      pollStartTimeRef.current = Date.now();
-    }
-
-    // Só começa o polling após 3 minutos (180000ms) E no máximo 3 tentativas
-    const DELAY_BEFORE_POLLING = 180000; // 3 minutos
-    const MAX_POLL_ATTEMPTS = 3;
-    const POLL_INTERVAL = 20000; // 20s entre tentativas
-
-    const checkTimeout = setTimeout(async () => {
-      const elapsed = Date.now() - (pollStartTimeRef.current || Date.now());
-      
-      // Só faz polling se passaram 3+ minutos e ainda não esgotou tentativas
-      if (elapsed >= DELAY_BEFORE_POLLING && pollAttemptsRef.current < MAX_POLL_ATTEMPTS) {
-        pollAttemptsRef.current += 1;
-        console.log(`[VideoUpscaler] Polling fallback #${pollAttemptsRef.current}/${MAX_POLL_ATTEMPTS} (após ${Math.round(elapsed/1000)}s)`);
-        
-        try {
-          const { data: job } = await supabase
-            .from('video_upscaler_jobs')
-            .select('status, output_url, error_message, current_step, failed_at_step')
-            .eq('id', jobId)
-            .maybeSingle();
-
-          if (!job) return;
-
-          if (job.status === 'completed' && job.output_url) {
-            setOutputVideoUrl(job.output_url);
-            setStatus('completed');
-            setProgress(100);
-            refetchCredits();
-            endSubmit();
-            toast.success('Vídeo upscalado com sucesso!');
-          } else if (job.status === 'failed') {
-            setStatus('error');
-            endSubmit();
-            toast.error(job.error_message || 'Erro no processamento');
-          }
-        } catch (e) {
-          console.error('[VideoUpscaler] Polling error:', e);
-        }
-      }
-    }, pollStartTimeRef.current ? Math.max(0, DELAY_BEFORE_POLLING - (Date.now() - pollStartTimeRef.current) + (pollAttemptsRef.current * POLL_INTERVAL)) : DELAY_BEFORE_POLLING);
-
-    return () => clearTimeout(checkTimeout);
-  }, [jobId, status, refetchCredits]);
 
   // Handle video upload
   const handleVideoChange = (url: string | null, file?: File, metadata?: VideoMetadata) => {
@@ -397,8 +321,7 @@ const VideoUpscalerTool: React.FC = () => {
         throw new Error(runResult.error || 'Erro desconhecido');
       }
 
-      // Subscribe to job updates
-      subscribeToJobUpdates(job.id);
+      // O useJobStatusSync já cuida da sincronização tripla automaticamente
       refetchCredits();
 
     } catch (error: any) {
