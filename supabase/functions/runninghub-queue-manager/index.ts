@@ -328,11 +328,84 @@ async function cleanupStaleJobs(): Promise<number> {
       console.log(`[QueueManager] Cleanup: ${totalCancelled} stale jobs cancelled`);
       await updateAllQueuePositions();
     }
+    
+    // Cleanup de pending órfãos (> 30s, task_id = null)
+    await cleanupOrphanPendingJobs();
+    
     return totalCancelled;
   } catch (e) {
     console.error('[QueueManager] Cleanup exception:', e);
     return 0;
   }
+}
+
+/**
+ * cleanupOrphanPendingJobs - Limpa jobs travados em 'pending' por mais de 30s
+ * 
+ * Critério seguro de limpeza:
+ * - status = 'pending'
+ * - task_id IS NULL (nunca iniciou no RunningHub)
+ * - created_at < NOW() - 30 segundos
+ * 
+ * Jobs que atendem este critério NUNCA iniciaram processamento, então:
+ * - Não têm créditos cobrados (credits_charged = false)
+ * - Podem ser marcados como 'failed' com segurança
+ */
+async function cleanupOrphanPendingJobs(): Promise<number> {
+  const PENDING_TIMEOUT_SECONDS = 30;
+  let totalCleaned = 0;
+  
+  try {
+    for (const table of JOB_TABLES) {
+      // Buscar pending órfãos
+      const { data: orphans, error } = await supabase
+        .from(table)
+        .select('id, created_at, user_id')
+        .eq('status', 'pending')
+        .is('task_id', null)
+        .lt('created_at', new Date(Date.now() - PENDING_TIMEOUT_SECONDS * 1000).toISOString());
+      
+      if (error) {
+        console.error(`[QueueManager] Error querying orphan pending jobs in ${table}:`, error);
+        continue;
+      }
+      
+      if (!orphans || orphans.length === 0) continue;
+      
+      console.log(`[QueueManager] Found ${orphans.length} orphan pending jobs in ${table}`);
+      
+      // Marcar como failed
+      for (const orphan of orphans) {
+        const { error: updateError } = await supabase
+          .from(table)
+          .update({
+            status: 'failed',
+            error_message: 'Falha ao iniciar: Edge Function não respondeu em 30s',
+            current_step: 'failed',
+            failed_at_step: 'pending_timeout',
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', orphan.id)
+          .eq('status', 'pending'); // Garantir que ainda está pending
+        
+        if (updateError) {
+          console.error(`[QueueManager] Error marking orphan ${orphan.id} as failed:`, updateError);
+        } else {
+          totalCleaned++;
+          console.log(`[QueueManager] Marked orphan pending job ${orphan.id} as failed`);
+        }
+      }
+    }
+    
+    if (totalCleaned > 0) {
+      console.log(`[QueueManager] Cleaned ${totalCleaned} orphan pending jobs total`);
+    }
+    
+  } catch (e) {
+    console.error('[QueueManager] cleanupOrphanPendingJobs exception:', e);
+  }
+  
+  return totalCleaned;
 }
 
 async function updateAllQueuePositions(): Promise<void> {
@@ -480,9 +553,14 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
       'veste_ai_jobs': 'Veste AI',
     };
     
-    // Verificar em TODAS as tabelas - incluir STARTING
+    // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
+    // CORREÇÃO: Incluir pending recente para evitar duplicados
+    const PENDING_GRACE_PERIOD_SECONDS = 35;
+    const pendingCutoff = new Date(Date.now() - PENDING_GRACE_PERIOD_SECONDS * 1000).toISOString();
+    
     for (const table of JOB_TABLES) {
-      const { data, error } = await supabase
+      // Primeiro: verificar jobs ativos (running, queued, starting)
+      const { data: activeJob, error: activeError } = await supabase
         .from(table)
         .select('id, status')
         .eq('user_id', userId)
@@ -490,18 +568,47 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
         .limit(1)
         .maybeSingle();
       
-      if (error) {
-        console.error(`[QueueManager] Error checking ${table}:`, error);
+      if (activeError) {
+        console.error(`[QueueManager] Error checking active jobs in ${table}:`, activeError);
         continue;
       }
       
-      if (data) {
-        console.log(`[QueueManager] User ${userId} has active job in ${table}`);
+      if (activeJob) {
+        console.log(`[QueueManager] User ${userId} has active job in ${table}: ${activeJob.id}`);
         return new Response(JSON.stringify({
           hasActiveJob: true,
           activeTool: toolNames[table],
-          activeJobId: data.id,
-          activeStatus: data.status,
+          activeJobId: activeJob.id,
+          activeStatus: activeJob.status,
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      // Segundo: verificar pending recente (< 35s, task_id null = ainda inicializando)
+      // Isso impede duplicados durante a janela de inicialização
+      const { data: pendingJob, error: pendingError } = await supabase
+        .from(table)
+        .select('id, status, created_at')
+        .eq('user_id', userId)
+        .eq('status', 'pending')
+        .is('task_id', null)
+        .gt('created_at', pendingCutoff)
+        .limit(1)
+        .maybeSingle();
+      
+      if (pendingError) {
+        console.error(`[QueueManager] Error checking pending jobs in ${table}:`, pendingError);
+        continue;
+      }
+      
+      if (pendingJob) {
+        console.log(`[QueueManager] User ${userId} has recent pending job in ${table}: ${pendingJob.id} (blocking duplicate)`);
+        return new Response(JSON.stringify({
+          hasActiveJob: true,
+          activeTool: toolNames[table],
+          activeJobId: pendingJob.id,
+          activeStatus: 'pending (initializing)',
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
