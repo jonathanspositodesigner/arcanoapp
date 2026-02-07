@@ -1351,6 +1351,39 @@ export type Database = {
         }
         Relationships: []
       }
+      job_notification_tokens: {
+        Row: {
+          consumed_at: string | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          job_id: string
+          table_name: string
+          token: string
+          user_id: string | null
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          job_id: string
+          table_name: string
+          token: string
+          user_id?: string | null
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          job_id?: string
+          table_name?: string
+          token?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           device_type: string
@@ -2225,6 +2258,7 @@ export type Database = {
           id: string
           p256dh: string
           user_agent: string | null
+          user_id: string | null
         }
         Insert: {
           auth: string
@@ -2236,6 +2270,7 @@ export type Database = {
           id?: string
           p256dh: string
           user_agent?: string | null
+          user_id?: string | null
         }
         Update: {
           auth?: string
@@ -2247,6 +2282,7 @@ export type Database = {
           id?: string
           p256dh?: string
           user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

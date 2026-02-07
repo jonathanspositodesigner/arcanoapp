@@ -4,3 +4,4 @@ export { default as JobDebugModal } from './JobDebugModal';
 export { default as JobDebugPanel } from './JobDebugPanel';
 export { default as ImageCompressionModal } from './ImageCompressionModal';
 export { DownloadProgressOverlay } from './DownloadProgressOverlay';
+export { default as NotificationPromptToast } from './NotificationPromptToast';
