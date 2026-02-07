@@ -3186,6 +3186,14 @@ export type Database = {
       is_premium: { Args: never; Returns: boolean }
       is_premium_artes: { Args: never; Returns: boolean }
       is_premium_musicos: { Args: never; Returns: boolean }
+      mark_pending_job_as_failed: {
+        Args: {
+          p_error_message?: string
+          p_job_id: string
+          p_table_name: string
+        }
+        Returns: boolean
+      }
       refund_upscaler_credits: {
         Args: { _amount: number; _description?: string; _user_id: string }
         Returns: {

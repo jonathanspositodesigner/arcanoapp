@@ -30,6 +30,7 @@ import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
+import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 
 // Max dimension for mobile slider preview optimization
 const SLIDER_PREVIEW_MAX_PX = 1500;
@@ -168,6 +169,24 @@ const UpscalerArcanoTool: React.FC = () => {
         toast.success('Resultado carregado!');
       }
     }, []),
+  });
+
+  // PENDING WATCHDOG - Detecta jobs travados como 'pending' e marca como failed após 30s
+  useJobPendingWatchdog({
+    jobId,
+    status,
+    toolType: 'upscaler',
+    onJobFailed: useCallback((errorMessage) => {
+      console.log('[Upscaler] Watchdog triggered - job stuck as pending');
+      setStatus('error');
+      setLastError({
+        message: errorMessage,
+        code: 'INIT_TIMEOUT',
+        solution: 'Verifique sua conexão e tente novamente.',
+      });
+      toast.error(errorMessage);
+      endSubmit();
+    }, [endSubmit]),
   });
 
   // Reset promptCategory when custom prompt is disabled
