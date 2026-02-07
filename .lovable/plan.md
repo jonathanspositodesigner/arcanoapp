@@ -4,11 +4,11 @@
 
 ## Resumo
 
-Você quer que a lógica de notificação e recuperação de job funcione em TODAS as ferramentas de IA (Upscaler, Pose Changer, Veste AI, Video Upscaler) e futuras, com uma implementação centralizada e reutilizável.
+Lógica de notificação e recuperação de job funcionando em TODAS as ferramentas de IA (Upscaler, Pose Changer, Veste AI, Video Upscaler), com implementação centralizada e reutilizável.
 
 ---
 
-## O Que Já Está Pronto
+## Status Final: ✅ COMPLETO
 
 | Componente | Status |
 |------------|--------|
@@ -17,151 +17,15 @@ Você quer que a lógica de notificação e recuperação de job funcione em TOD
 | `verify-notification-token` Edge Function | ✅ Criado |
 | `job_notification_tokens` tabela | ✅ Criada |
 | **UpscalerArcanoTool** | ✅ Integrado |
-| **PoseChangerTool** | ❌ Faltando |
-| **VesteAITool** | ❌ Faltando |
-| **VideoUpscalerTool** | ❌ Faltando |
-
----
-
-## Implementação em Cada Ferramenta
-
-Para cada ferramenta faltante, preciso adicionar:
-
-### 1. Import dos componentes/hooks
-
-```typescript
-import { NotificationPromptToast } from '@/components/ai-tools';
-import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
-```
-
-### 2. Hook de recuperação com callback específico
-
-Cada ferramenta tem campos diferentes, então o callback se adapta:
-
-**Pose Changer:**
-```typescript
-useNotificationTokenRecovery({
-  userId: user?.id,
-  toolTable: 'pose_changer_jobs',
-  onRecovery: useCallback((result) => {
-    if (result.outputUrl) {
-      setPersonImage(result.personImageUrl);
-      setReferenceImage(result.referenceImageUrl);
-      setOutputImage(result.outputUrl);
-      setJobId(result.jobId);
-      setStatus('completed');
-      setProgress(100);
-      toast.success('Resultado carregado!');
-    }
-  }, []),
-});
-```
-
-**Veste AI:**
-```typescript
-useNotificationTokenRecovery({
-  userId: user?.id,
-  toolTable: 'veste_ai_jobs',
-  onRecovery: useCallback((result) => {
-    if (result.outputUrl) {
-      setPersonImage(result.personImageUrl);
-      setClothingImage(result.clothingImageUrl);
-      setOutputImage(result.outputUrl);
-      setJobId(result.jobId);
-      setStatus('completed');
-      setProgress(100);
-      toast.success('Resultado carregado!');
-    }
-  }, []),
-});
-```
-
-**Video Upscaler:**
-```typescript
-useNotificationTokenRecovery({
-  userId: user?.id,
-  toolTable: 'video_upscaler_jobs',
-  onRecovery: useCallback((result) => {
-    if (result.outputUrl) {
-      setVideoUrl(result.inputUrl);
-      setOutputVideoUrl(result.outputUrl);
-      setJobId(result.jobId);
-      setStatus('completed');
-      setProgress(100);
-      toast.success('Resultado carregado!');
-    }
-  }, []),
-});
-```
-
-### 3. Toast de notificação no render
-
-Adicionar no final do JSX de cada ferramenta:
-
-```tsx
-{/* Notification prompt toast */}
-<NotificationPromptToast toolName="pose" />  // ou "look" ou "vídeo"
-```
-
----
-
-## Arquivos a Modificar
-
-| Arquivo | Modificações |
-|---------|--------------|
-| `src/pages/PoseChangerTool.tsx` | Adicionar imports + hook + toast |
-| `src/pages/VesteAITool.tsx` | Adicionar imports + hook + toast |
-| `src/pages/VideoUpscalerTool.tsx` | Adicionar imports + hook + toast |
-
----
-
-## Estrutura Central (Já Existente)
-
-O hook `useNotificationTokenRecovery` já é 100% genérico e centralizado:
-
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                    HOOK CENTRALIZADO: useNotificationTokenRecovery       │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  Props:                                                                  │
-│  ├── userId: string           (do usePremiumStatus)                     │
-│  ├── toolTable: enum          (upscaler/pose/veste/video)               │
-│  └── onRecovery: callback     (específico de cada ferramenta)           │
-│                                                                          │
-│  Funcionamento Interno:                                                  │
-│  1. Detecta ?nt= na URL                                                  │
-│  2. Chama verify-notification-token Edge Function                        │
-│  3. Verifica se table_name corresponde ao toolTable                     │
-│  4. Busca job específico no banco (switch por tabela)                   │
-│  5. Chama onRecovery com os dados do job                                │
-│  6. Limpa URL automaticamente                                           │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Padrão para Futuras Ferramentas
-
-Quando criar uma nova ferramenta de IA, basta:
-
-1. Adicionar o tipo de tabela no hook:
-```typescript
-toolTable: 'upscaler_jobs' | 'pose_changer_jobs' | 'veste_ai_jobs' | 'video_upscaler_jobs' | 'NOVA_FERRAMENTA_jobs';
-```
-
-2. Adicionar o case no switch do hook para buscar os campos corretos
-
-3. Usar o hook na nova ferramenta com callback específico
-
-4. Adicionar o toast com o nome da ferramenta
+| **PoseChangerTool** | ✅ Integrado |
+| **VesteAITool** | ✅ Integrado |
+| **VideoUpscalerTool** | ✅ Integrado |
 
 ---
 
 ## Resultado Final
 
-Após esta implementação, todas as ferramentas terão:
+Todas as ferramentas agora têm:
 
 | Funcionalidade | Upscaler | Pose | Veste | Video |
 |----------------|----------|------|-------|-------|
@@ -170,3 +34,36 @@ Após esta implementação, todas as ferramentas terão:
 | Notificação push ao completar | ✅ | ✅ | ✅ | ✅ |
 | Limpeza automática de URL | ✅ | ✅ | ✅ | ✅ |
 
+---
+
+## Padrão para Futuras Ferramentas
+
+Quando criar uma nova ferramenta de IA, basta:
+
+1. Adicionar o tipo de tabela no hook `useNotificationTokenRecovery`:
+```typescript
+toolTable: 'upscaler_jobs' | 'pose_changer_jobs' | 'veste_ai_jobs' | 'video_upscaler_jobs' | 'NOVA_FERRAMENTA_jobs';
+```
+
+2. Adicionar o case no switch do hook para buscar os campos corretos
+
+3. Usar o hook na nova ferramenta com callback específico:
+```typescript
+useNotificationTokenRecovery({
+  userId: user?.id,
+  toolTable: 'nova_ferramenta_jobs',
+  onRecovery: useCallback((result) => {
+    if (result.outputUrl) {
+      // Restaurar estado específico da ferramenta
+      setStatus('completed');
+      setProgress(100);
+      toast.success('Resultado carregado!');
+    }
+  }, []),
+});
+```
+
+4. Adicionar o toast com o nome da ferramenta:
+```tsx
+<NotificationPromptToast toolName="nome" />
+```

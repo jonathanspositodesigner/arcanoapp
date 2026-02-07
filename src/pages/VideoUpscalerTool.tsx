@@ -14,10 +14,11 @@ import ToolsHeader from '@/components/ToolsHeader';
 import VideoUploadCard from '@/components/video-upscaler/VideoUploadCard';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { JobDebugPanel, DownloadProgressOverlay } from '@/components/ai-tools';
+import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
+import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -129,6 +130,22 @@ const VideoUpscalerTool: React.FC = () => {
       }
     },
     onGlobalStatusChange: updateJobStatus,
+  });
+
+  // Hook para recuperar job via token de notificação push
+  useNotificationTokenRecovery({
+    userId: user?.id,
+    toolTable: 'video_upscaler_jobs',
+    onRecovery: useCallback((result) => {
+      if (result.outputUrl) {
+        setVideoUrl(result.inputUrl);
+        setOutputVideoUrl(result.outputUrl);
+        setJobId(result.jobId);
+        setStatus('completed');
+        setProgress(100);
+        toast.success('Resultado carregado!');
+      }
+    }, []),
   });
 
   // Registrar job no contexto global quando jobId muda (para som e trava de navegação)
@@ -636,6 +653,9 @@ const VideoUpscalerTool: React.FC = () => {
         mediaType="video"
         locale="pt"
       />
+
+      {/* Notification prompt toast */}
+      <NotificationPromptToast toolName="vídeo" />
     </div>
   );
 };
