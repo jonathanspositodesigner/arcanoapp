@@ -171,11 +171,12 @@ const UpscalerArcanoTool: React.FC = () => {
     }, []),
   });
 
-  // PENDING WATCHDOG - Detecta jobs travados como 'pending' e marca como failed após 30s
+  // PENDING WATCHDOG v2 - Detecta jobs travados como 'pending' e marca como failed após 30s
+  // CORREÇÃO: Usa 'enabled' ao invés de status da UI (que nunca é 'pending')
   useJobPendingWatchdog({
     jobId,
-    status,
     toolType: 'upscaler',
+    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
     onJobFailed: useCallback((errorMessage) => {
       console.log('[Upscaler] Watchdog triggered - job stuck as pending');
       setStatus('error');
