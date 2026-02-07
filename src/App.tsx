@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import { LocaleProvider } from "./contexts/LocaleContext";
-import { UpdateAvailableBanner } from "./components/UpdateAvailableBanner";
+
 import { AuthProvider } from "./contexts/AuthContext";
 import { AIDebugProvider } from "./contexts/AIDebugContext";
 import { AIJobProvider } from "./contexts/AIJobContext";
@@ -133,7 +133,7 @@ const ResgatarCreditos = lazy(() => import("./pages/ResgatarCreditos"));
 
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
-import { useServiceWorkerUpdate } from "./hooks/useServiceWorkerUpdate";
+
 
 // Loading fallback component
 const LoadingSpinner = () => (
@@ -154,14 +154,12 @@ const AppContent = () => {
   // Capture UTM parameters on app load
   useUtmTracker();
   
-  // Auto-update Service Worker and clean old caches on each session
-  useServiceWorkerUpdate();
 
   return (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-       <UpdateAvailableBanner />
+       
       
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
