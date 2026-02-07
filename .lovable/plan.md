@@ -1,83 +1,95 @@
 
-# Plano: Corrigir Carregamento Lento e Download no Safari - Minhas Criações
 
-## Diagnóstico dos Problemas
+# Plano: Corrigir Alinhamento do Slider Antes/Depois no Upscaler
 
-### Problema 1: Imagens demoram muito para carregar
-**Causa raiz identificada:**
-- O `CreationCard` usa `previewUrl = creation.thumbnail_url || creation.output_url`
-- Alguns jobs têm `thumbnail_url: null` no banco de dados (verificado: jobs `c49bc619...` e `6037823a...`)
-- Quando `thumbnail_url` é `null`, o código usa a `output_url` do CDN chinês RunningHub
-- Essas imagens são HD (4-8MB) e ficam em servidor na China = lentidão extrema
+## Problema Identificado
 
-**Por que alguns jobs não têm thumbnail?**
-- O sistema `generate-thumbnail` é "fire-and-forget" - pode falhar silenciosamente
-- Jobs mais antigos podem não ter sido processados
+Olhando as screenshots, o slider mostra as imagens ANTES e DEPOIS desalinhadas - elas deveriam estar perfeitamente sobrepostas para que ao arrastar o divisor, a comparação seja pixel-a-pixel.
 
-### Problema 2: Download não funciona no Safari (iOS/macOS)
-**Causa raiz identificada:**
-- O `CreationCard.handleDownload()` usa `fetch()` + `blob()` direto
-- O CDN chinês (rh-images-1252422369.cos.ap-beijing.myqcloud.com) bloqueia CORS
-- Safari é mais restritivo que Chrome com CORS
-- A Edge Function `download-proxy` existe mas **NÃO está sendo usada** no CreationCard
+### Causas Técnicas:
 
-**Solução existente que funciona:**
-- O `useResilientDownload` hook já resolve isso com 5 métodos de fallback
-- Usado no Upscaler, Pose Changer, Veste AI - funciona perfeitamente no Safari
+1. **ResilientImage usa `object-cover` internamente** (linha 258):
+   ```typescript
+   // ResilientImage.tsx linha 258
+   className="w-full h-full object-cover"  // ERRADO para este caso
+   ```
+
+2. **O style prop não é passado para o img interno** - O `ResilientImage` recebe `style={{ objectFit: 'contain' }}` mas aplica no container, não na imagem
+
+3. **Imagem ANTES usa img direto com `object-contain`** - enquanto DEPOIS usa ResilientImage com `object-cover` = desalinhamento
+
+4. **TransformComponent envolve apenas a imagem DEPOIS** - criando diferença de posicionamento
 
 ---
 
 ## Solução
 
-### Mudança 1: Usar `useResilientDownload` no CreationCard
+### Mudança 1: Corrigir ResilientImage para aceitar objectFit
 
-Substituir o `handleDownload` manual pelo hook que já funciona:
-
-```typescript
-// ANTES (não funciona no Safari):
-const handleDownload = async () => {
-  const response = await fetch(creation.output_url);  // ❌ CORS error
-  const blob = await response.blob();
-  // ...
-};
-
-// DEPOIS (funciona em todos browsers):
-import { useResilientDownload } from '@/hooks/useResilientDownload';
-
-const { download, isDownloading } = useResilientDownload();
-
-const handleDownload = () => {
-  download({
-    url: creation.output_url,
-    filename: `${creation.tool_name.replace(/\s/g, '-')}-${creation.id.slice(0, 8)}.${isVideo ? 'mp4' : 'png'}`,
-    mediaType: isVideo ? 'video' : 'image',
-    timeout: 15000,
-    locale: 'pt'
-  });
-};
-```
-
-### Mudança 2: Fallback inteligente para preview sem thumbnail
-
-Para jobs que não têm thumbnail, usar o proxy Edge Function para carregar preview:
+Modificar o `ResilientImage` para passar o `objectFit` correto para a tag `<img>` interna:
 
 ```typescript
-// Usar proxy para imagens do CDN chinês quando não houver thumbnail local
-const getProxyUrl = (originalUrl: string): string => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  if (!supabaseUrl) return originalUrl;
-  
-  // Se já é do nosso storage, usar direto
-  if (originalUrl.includes('supabase.co')) return originalUrl;
-  
-  // Usar proxy para CDN chinês
-  return `${supabaseUrl}/functions/v1/download-proxy?url=${encodeURIComponent(originalUrl)}`;
-};
+// ResilientImage.tsx
+interface ResilientImageProps {
+  // ... existing props
+  objectFit?: 'contain' | 'cover' | 'fill' | 'none';  // NOVO
+}
 
-const previewUrl = creation.thumbnail_url || getProxyUrl(creation.output_url);
+// Na tag img:
+<img
+  src={currentSrc}
+  alt={alt}
+  className={cn("w-full h-full", className)}
+  style={{
+    objectFit: objectFit || 'cover',  // Usar prop ou default
+    opacity: isLoaded ? 1 : 0,
+    ...style
+  }}
+/>
 ```
 
-**Benefício:** A Edge Function `download-proxy` faz o fetch server-side (sem CORS) e retorna a imagem.
+### Mudança 2: Corrigir estrutura no UpscalerArcanoTool
+
+Garantir que AMBAS as imagens tenham exatamente a mesma estrutura e posicionamento:
+
+```typescript
+{/* AFTER image */}
+<TransformComponent 
+  wrapperStyle={{ width: '100%', height: '100%' }}
+  contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+>
+  <ResilientImage 
+    src={outputImage} 
+    alt="Depois" 
+    className="w-full h-full"
+    objectFit="contain"  // NOVO PROP
+    // ...
+  />
+</TransformComponent>
+
+{/* BEFORE image - precisa estar na MESMA posição */}
+<div 
+  className="absolute inset-0 pointer-events-none overflow-hidden"
+  style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+>
+  <TransformComponent  // Usar MESMO wrapper
+    wrapperStyle={{ width: '100%', height: '100%' }}
+    contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+  >
+    <img 
+      src={inputImage} 
+      alt="Antes" 
+      className="w-full h-full"
+      style={{ objectFit: 'contain' }}
+      draggable={false}
+    />
+  </TransformComponent>
+</div>
+```
+
+### Mudança 3: Sincronizar transforms
+
+O `beforeTransformRef` sincroniza o zoom, mas precisa estar dentro do mesmo sistema de coordenadas. Vou ajustar para que ambas as imagens usem o mesmo container base.
 
 ---
 
@@ -85,134 +97,59 @@ const previewUrl = creation.thumbnail_url || getProxyUrl(creation.output_url);
 
 | Arquivo | Mudança |
 |---------|---------|
-| `src/components/ai-tools/creations/CreationCard.tsx` | Usar `useResilientDownload` + proxy para preview |
+| `src/components/upscaler/ResilientImage.tsx` | Adicionar prop `objectFit` e aplicar na img |
+| `src/pages/UpscalerArcanoTool.tsx` | Corrigir estrutura para ambas imagens ficarem perfeitamente sobrepostas |
 
 ---
 
 ## Detalhes Técnicos
 
-### Fluxo de Download Corrigido
+### Estrutura Correta do Slider
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│                FLUXO DE DOWNLOAD (TODOS BROWSERS)               │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  Usuário clica "Baixar"                                         │
-│       │                                                         │
-│       ▼                                                         │
-│  useResilientDownload.download()                                │
-│       │                                                         │
-│       ├─→ Método 0: Proxy Edge Function (melhor para iOS)       │
-│       │     └─→ window.location.href = proxy URL                │
-│       │         └─→ Edge Function faz fetch server-side         │
-│       │             └─→ Retorna com Content-Disposition         │
-│       │                                                         │
-│       ├─→ Método 1: Fetch + ReadableStream (fallback)           │
-│       ├─→ Método 2: Fetch + Cache Buster (fallback)             │
-│       ├─→ Método 3: Anchor tag (fallback)                       │
-│       ├─→ Método 4: Share API mobile (fallback)                 │
-│       └─→ Final: Abre nova aba                                  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  Container (relative, w-full, h-full)                        │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  TransformComponent (position: absolute, inset: 0)     │  │
+│  │  ┌──────────────────────────────────────────────────┐  │  │
+│  │  │  IMG DEPOIS (object-contain, centered)           │  │  │
+│  │  │                                                  │  │  │
+│  │  │                    [IMAGEM]                      │  │  │
+│  │  │                                                  │  │  │
+│  │  └──────────────────────────────────────────────────┘  │  │
+│  └────────────────────────────────────────────────────────┘  │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │  Overlay Clipped (position: absolute, inset: 0)        │  │
+│  │  clipPath: inset(0 50% 0 0)                            │  │
+│  │  ┌──────────────────────────────────────────────────┐  │  │
+│  │  │  IMG ANTES (object-contain, centered)            │  │  │
+│  │  │  MESMA posição que DEPOIS                        │  │  │
+│  │  │                    [IMAGEM]                      │  │  │
+│  │  │                                                  │  │  │
+│  │  └──────────────────────────────────────────────────┘  │  │
+│  └────────────────────────────────────────────────────────┘  │
+│  ┌──┐  Slider Line (z-20)                                    │
+│  │  │                                                        │
+│  │  │                                                        │
+│  │  │                                                        │
+│  └──┘                                                        │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-### Fluxo de Preview Corrigido
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                  FLUXO DE PREVIEW DE IMAGEM                     │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  CreationCard renderiza                                         │
-│       │                                                         │
-│       ▼                                                         │
-│  Tem thumbnail_url?                                             │
-│       │                                                         │
-│       ├─→ SIM: Usar thumbnail (Supabase Storage, rápido)        │
-│       │        https://xxx.supabase.co/storage/.../thumbnail    │
-│       │                                                         │
-│       └─→ NÃO: Usar proxy para output_url                       │
-│                https://xxx.supabase.co/functions/v1/            │
-│                download-proxy?url=CDN_CHINES_URL                │
-│                                                                 │
-│  Resultado: Imagem carrega via servidor (sem CORS)              │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+### Pontos Críticos:
+1. Ambas as imagens DEVEM usar `object-fit: contain`
+2. Ambas DEVEM estar no mesmo container com mesmas dimensões
+3. A imagem ANTES usa `clipPath` para mostrar apenas a porção à esquerda
+4. O zoom/pan deve ser sincronizado entre ambas
 
 ---
 
-## Código Completo da Mudança
+## Resultado Esperado
 
-```typescript
-// CreationCard.tsx - Mudanças principais
+Ao arrastar o slider:
+- A linha divisória move horizontalmente
+- À esquerda: imagem ANTES (baixa resolução)
+- À direita: imagem DEPOIS (alta resolução/upscaled)
+- Ambas perfeitamente alinhadas pixel-a-pixel
+- Funciona em mobile e desktop
 
-import { useResilientDownload } from '@/hooks/useResilientDownload';
-
-const CreationCard: React.FC<CreationCardProps> = ({ creation }) => {
-  const [imageError, setImageError] = useState(false);
-  const { download, isDownloading } = useResilientDownload();
-  
-  const { text: timeText, urgency } = formatTimeRemaining(creation.expires_at);
-  const isVideo = creation.media_type === 'video';
-  
-  // Função para obter URL de preview via proxy quando necessário
-  const getPreviewUrl = (): string => {
-    // Se tem thumbnail local, usar (rápido, sem CORS)
-    if (creation.thumbnail_url) {
-      return creation.thumbnail_url;
-    }
-    
-    // Se não tem thumbnail, usar proxy para buscar do CDN chinês
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (!supabaseUrl) return creation.output_url;
-    
-    // Já é do nosso storage? Usar direto
-    if (creation.output_url.includes('supabase.co')) {
-      return creation.output_url;
-    }
-    
-    // Usar proxy Edge Function
-    return `${supabaseUrl}/functions/v1/download-proxy?url=${encodeURIComponent(creation.output_url)}`;
-  };
-  
-  const previewUrl = getPreviewUrl();
-  
-  // Download usando hook resiliente (funciona no Safari)
-  const handleDownload = () => {
-    download({
-      url: creation.output_url,
-      filename: `${creation.tool_name.replace(/\s/g, '-')}-${creation.id.slice(0, 8)}.${isVideo ? 'mp4' : 'png'}`,
-      mediaType: isVideo ? 'video' : 'image',
-      timeout: 15000,
-      locale: 'pt'
-    });
-  };
-
-  // ... resto do componente
-};
-```
-
----
-
-## Vantagens da Solução
-
-| Problema | Solução | Benefício |
-|----------|---------|-----------|
-| Preview lento | Proxy server-side | Sem CORS, carrega em ~1-2s |
-| Download falha Safari | useResilientDownload | 5 fallbacks automáticos |
-| Código duplicado | Reutiliza hook existente | Menos manutenção |
-| CDN chinês instável | Edge Function como intermediário | Mais confiável |
-
----
-
-## Garantias de Segurança
-
-| Item | Status |
-|------|--------|
-| Edge Functions | Reutiliza `download-proxy` existente |
-| Banco de dados | Não é modificado |
-| Autenticação | Não afetada |
-| Outras ferramentas | Não afetadas |
-| Jobs em andamento | Não afetados |
