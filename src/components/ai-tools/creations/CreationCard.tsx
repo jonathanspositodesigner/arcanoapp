@@ -63,6 +63,10 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation }) => {
   const { text: timeText, urgency } = formatTimeRemaining(creation.expires_at);
   const isVideo = creation.media_type === 'video';
   
+  // Usar thumbnail para preview (funciona mesmo com CORS do CDN chinês)
+  // output_url continua sendo usada para download HD
+  const previewUrl = creation.thumbnail_url || creation.output_url;
+  
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
@@ -102,7 +106,7 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation }) => {
           </div>
         ) : isVideo ? (
           <video
-            src={creation.output_url}
+            src={previewUrl}
             className="w-full h-full object-contain"
             controls
             preload="metadata"
@@ -110,7 +114,7 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation }) => {
           />
         ) : (
           <img
-            src={creation.output_url}
+            src={previewUrl}
             alt={`Criação ${creation.tool_name}`}
             className="w-full h-full object-contain"
             loading="lazy"

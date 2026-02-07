@@ -6,6 +6,7 @@ export type MediaType = 'all' | 'image' | 'video';
 export interface Creation {
   id: string;
   output_url: string;
+  thumbnail_url: string | null;
   tool_name: string;
   media_type: 'image' | 'video';
   created_at: string;
