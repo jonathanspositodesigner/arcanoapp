@@ -1317,13 +1317,13 @@ const UpscalerArcanoTool: React.FC = () => {
                             {/* On mobile: use optimized image for preview, but ResilientImage uses original for download */}
                             <TransformComponent 
                               wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} 
-                              contentStyle={{ width: '100%', height: '100%' }}
+                              contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             >
                               <ResilientImage 
                                 src={isMobile && optimizedOutputImage ? optimizedOutputImage : outputImage} 
                                 alt="Depois" 
                                 className="w-full h-full"
-                                style={{ objectFit: 'contain' }}
+                                objectFit="contain"
                                 timeout={10000}
                                 compressOnFailure={true}
                                 showDownloadOnFail={true}
@@ -1335,18 +1335,19 @@ const UpscalerArcanoTool: React.FC = () => {
                             {/* BEFORE image - overlay clipped */}
                             {/* On mobile: use optimized image for preview */}
                             <div 
-                              className="absolute inset-0 pointer-events-none"
+                              className="absolute inset-0 pointer-events-none overflow-hidden"
                               style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
                             >
                               <div 
                                 ref={beforeTransformRef}
-                                className="w-full h-full"
+                                className="w-full h-full flex items-center justify-center"
                                 style={{ transformOrigin: '0% 0%' }}
                               >
                                 <img 
                                   src={isMobile && optimizedInputImage ? optimizedInputImage : (inputImage || '')} 
                                   alt="Antes" 
-                                  className="w-full h-full object-contain"
+                                  className="w-full h-full"
+                                  style={{ objectFit: 'contain' }}
                                   draggable={false}
                                 />
                               </div>

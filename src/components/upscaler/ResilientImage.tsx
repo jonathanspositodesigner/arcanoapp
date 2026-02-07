@@ -18,6 +18,7 @@ interface ResilientImageProps {
   onLoadSuccess?: () => void;
   onDownloadClick?: () => void;
   locale?: 'pt' | 'es';
+  objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
 }
 
 /**
@@ -42,7 +43,8 @@ export const ResilientImage = ({
   downloadFileName,
   onLoadSuccess,
   onDownloadClick,
-  locale = 'pt'
+  locale = 'pt',
+  objectFit = 'cover'
 }: ResilientImageProps) => {
   const [attempt, setAttempt] = useState(1);
   const [currentSrc, setCurrentSrc] = useState(src);
@@ -255,8 +257,9 @@ export const ResilientImage = ({
       <img
         src={currentSrc}
         alt={alt}
-        className="w-full h-full object-cover"
+        className="w-full h-full"
         style={{
+          objectFit,
           opacity: isLoaded ? 1 : 0,
           transition: 'opacity 0.3s ease-in-out'
         }}
