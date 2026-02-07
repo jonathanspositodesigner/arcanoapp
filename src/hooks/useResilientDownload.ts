@@ -19,7 +19,8 @@ interface DownloadState {
 /**
  * useResilientDownload - Hook global para download resiliente
  * 
- * 4 métodos de fallback silenciosos:
+ * 5 métodos de fallback silenciosos:
+ * 0. Proxy via Edge Function (NOVO - mais confiável para mobile/iOS)
  * 1. Fetch + ReadableStream (progresso real)
  * 2. Fetch + Cache Buster
  * 3. Anchor tag direta
@@ -56,6 +57,27 @@ export const useResilientDownload = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  // Method 0: Proxy via Edge Function (most reliable for mobile/iOS)
+  const proxyDownload = async (url: string, filename: string): Promise<boolean> => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    
+    if (!supabaseUrl) {
+      throw new Error('Supabase URL not configured');
+    }
+
+    const proxyUrl = `${supabaseUrl}/functions/v1/download-proxy?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
+    
+    console.debug('[ResilientDownload] Using proxy URL:', proxyUrl.substring(0, 100) + '...');
+    
+    // Use window.location.href for direct download trigger
+    // This works better on iOS Safari than creating anchor tags
+    window.location.href = proxyUrl;
+    
+    // Wait for download to initiate
+    await new Promise(r => setTimeout(r, 2000));
+    return true;
   };
 
   // Method 1: Fetch with progress tracking
@@ -105,6 +127,7 @@ export const useResilientDownload = () => {
     triggerBlobDownload(blob, filename);
     return true;
   };
+
   // Method 2: Fetch with cache buster
   const fetchWithCacheBuster = async (url: string, filename: string): Promise<boolean> => {
     const busterUrl = `${url}${url.includes('?') ? '&' : '?'}_t=${Date.now()}`;
@@ -182,7 +205,7 @@ export const useResilientDownload = () => {
     const { 
       url, 
       filename, 
-      timeout = 10000,
+      timeout = 15000, // Increased timeout for proxy
       onSuccess,
       onFallback,
       locale = 'pt'
@@ -192,10 +215,29 @@ export const useResilientDownload = () => {
     setState({ isDownloading: true, progress: 0 });
     
     console.debug('[ResilientDownload] Starting download:', filename);
+    console.debug('[ResilientDownload] URL:', url.substring(0, 80) + '...');
+
+    // Method 0: Proxy via Edge Function (most reliable for mobile/iOS)
+    try {
+      setState(s => ({ ...s, progress: 5 }));
+      console.debug('[ResilientDownload] Trying Method 0: Proxy Edge Function');
+      await proxyDownload(url, filename);
+      console.debug('[ResilientDownload] Method 0 succeeded (proxy redirect)');
+      setState({ isDownloading: false, progress: 100 });
+      onSuccess?.();
+      return;
+    } catch (err) {
+      if (isCancelledRef.current) {
+        setState({ isDownloading: false, progress: 0 });
+        return;
+      }
+      console.debug('[ResilientDownload] Method 0 failed:', (err as Error).message);
+    }
     
     // Method 1: Fetch with progress (silent)
     try {
-      setState(s => ({ ...s, progress: 5 }));
+      setState(s => ({ ...s, progress: 15 }));
+      console.debug('[ResilientDownload] Trying Method 1: Fetch with progress');
       await withTimeout(fetchWithProgress(url, filename), timeout);
       console.debug('[ResilientDownload] Method 1 succeeded');
       setState({ isDownloading: false, progress: 100 });
@@ -211,7 +253,8 @@ export const useResilientDownload = () => {
     
     // Method 2: Cache buster (silent)
     try {
-      setState(s => ({ ...s, progress: 25 }));
+      setState(s => ({ ...s, progress: 35 }));
+      console.debug('[ResilientDownload] Trying Method 2: Cache buster');
       await withTimeout(fetchWithCacheBuster(url, filename), timeout);
       console.debug('[ResilientDownload] Method 2 succeeded');
       setState({ isDownloading: false, progress: 100 });
@@ -227,7 +270,8 @@ export const useResilientDownload = () => {
     
     // Method 3: Anchor tag (silent)
     try {
-      setState(s => ({ ...s, progress: 50 }));
+      setState(s => ({ ...s, progress: 55 }));
+      console.debug('[ResilientDownload] Trying Method 3: Anchor tag');
       anchorDownload(url, filename);
       console.debug('[ResilientDownload] Method 3 triggered');
       // Give browser time to initiate download
@@ -243,6 +287,7 @@ export const useResilientDownload = () => {
     if (navigator.share) {
       try {
         setState(s => ({ ...s, progress: 75 }));
+        console.debug('[ResilientDownload] Trying Method 4: Share API');
         await withTimeout(shareApiDownload(url, filename), timeout);
         console.debug('[ResilientDownload] Method 4 succeeded');
         setState({ isDownloading: false, progress: 100 });

@@ -93,3 +93,6 @@ verify_jwt = false
 
 [functions.runninghub-video-upscaler-webhook]
 verify_jwt = false
+
+[functions.download-proxy]
+verify_jwt = false
