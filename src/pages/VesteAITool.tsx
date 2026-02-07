@@ -16,11 +16,12 @@ import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 import ClothingLibraryModal from '@/components/veste-ai/ClothingLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { JobDebugPanel, DownloadProgressOverlay } from '@/components/ai-tools';
+import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
+import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -131,6 +132,23 @@ const VesteAITool: React.FC = () => {
       }
     },
     onGlobalStatusChange: updateJobStatus,
+  });
+
+  // Hook para recuperar job via token de notificação push
+  useNotificationTokenRecovery({
+    userId: user?.id,
+    toolTable: 'veste_ai_jobs',
+    onRecovery: useCallback((result) => {
+      if (result.outputUrl) {
+        setPersonImage(result.personImageUrl || null);
+        setClothingImage(result.clothingImageUrl || null);
+        setOutputImage(result.outputUrl);
+        setJobId(result.jobId);
+        setStatus('completed');
+        setProgress(100);
+        toast.success('Resultado carregado!');
+      }
+    }, []),
   });
 
   // Registrar job no contexto global quando jobId muda (para som e trava de navegação)
@@ -682,6 +700,9 @@ const VesteAITool: React.FC = () => {
         mediaType="image"
         locale="pt"
       />
+
+      {/* Notification prompt toast */}
+      <NotificationPromptToast toolName="look" />
     </div>
   );
 };
