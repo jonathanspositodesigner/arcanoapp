@@ -1764,6 +1764,7 @@ export type Database = {
           status: string
           step_history: Json | null
           task_id: string | null
+          thumbnail_url: string | null
           user_credit_cost: number | null
           user_id: string | null
           waited_in_queue: boolean | null
@@ -1794,6 +1795,7 @@ export type Database = {
           status?: string
           step_history?: Json | null
           task_id?: string | null
+          thumbnail_url?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
           waited_in_queue?: boolean | null
@@ -1824,6 +1826,7 @@ export type Database = {
           status?: string
           step_history?: Json | null
           task_id?: string | null
+          thumbnail_url?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
           waited_in_queue?: boolean | null
@@ -2397,6 +2400,7 @@ export type Database = {
           status: string
           step_history: Json | null
           task_id: string | null
+          thumbnail_url: string | null
           user_credit_cost: number | null
           user_id: string | null
           version: string | null
@@ -2431,6 +2435,7 @@ export type Database = {
           status?: string
           step_history?: Json | null
           task_id?: string | null
+          thumbnail_url?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
           version?: string | null
@@ -2465,6 +2470,7 @@ export type Database = {
           status?: string
           step_history?: Json | null
           task_id?: string | null
+          thumbnail_url?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
           version?: string | null
@@ -2621,6 +2627,7 @@ export type Database = {
           status: string
           step_history: Json | null
           task_id: string | null
+          thumbnail_url: string | null
           user_credit_cost: number | null
           user_id: string | null
           waited_in_queue: boolean | null
@@ -2651,6 +2658,7 @@ export type Database = {
           status?: string
           step_history?: Json | null
           task_id?: string | null
+          thumbnail_url?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
           waited_in_queue?: boolean | null
@@ -2681,6 +2689,7 @@ export type Database = {
           status?: string
           step_history?: Json | null
           task_id?: string | null
+          thumbnail_url?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
           waited_in_queue?: boolean | null
@@ -2719,6 +2728,7 @@ export type Database = {
           status: string
           step_history: Json | null
           task_id: string | null
+          thumbnail_url: string | null
           user_credit_cost: number | null
           user_id: string | null
           video_duration_seconds: number | null
@@ -2750,6 +2760,7 @@ export type Database = {
           status?: string
           step_history?: Json | null
           task_id?: string | null
+          thumbnail_url?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
           video_duration_seconds?: number | null
@@ -2781,6 +2792,7 @@ export type Database = {
           status?: string
           step_history?: Json | null
           task_id?: string | null
+          thumbnail_url?: string | null
           user_credit_cost?: number | null
           user_id?: string | null
           video_duration_seconds?: number | null
@@ -3101,6 +3113,7 @@ export type Database = {
           id: string
           media_type: string
           output_url: string
+          thumbnail_url: string
           tool_name: string
         }[]
       }

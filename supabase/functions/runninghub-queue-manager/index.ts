@@ -580,6 +580,39 @@ async function handleFinish(req: Request): Promise<Response> {
       refundedAmount 
     });
     
+    // GERAR THUMBNAIL - apenas para jobs de imagem completados com sucesso
+    if (status === 'completed' && outputUrl && table !== 'video_upscaler_jobs') {
+      try {
+        console.log(`[QueueManager] Triggering thumbnail generation for ${jobId}`);
+        
+        // Buscar user_id do job
+        const { data: jobData } = await supabase
+          .from(table)
+          .select('user_id')
+          .eq('id', jobId)
+          .maybeSingle();
+        
+        // Chamar Edge Function de thumbnail (fire-and-forget, não bloqueia)
+        fetch(`${SUPABASE_URL}/functions/v1/generate-thumbnail`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` 
+          },
+          body: JSON.stringify({ 
+            imageUrl: outputUrl, 
+            jobId, 
+            table,
+            userId: jobData?.user_id || null
+          })
+        }).catch(e => console.error('[QueueManager] Thumbnail generation failed:', e));
+        
+      } catch (e) {
+        // Não bloquear se falhar - thumbnail é nice-to-have
+        console.error('[QueueManager] Error triggering thumbnail:', e);
+      }
+    }
+    
     // Processar próximo da fila
     try {
       await handleProcessNext();
