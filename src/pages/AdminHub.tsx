@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Music, FileText, Menu } from "lucide-react";
+import { Sparkles, Music, FileText, Menu, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminGoalsCard from "@/components/AdminGoalsCard";
@@ -14,12 +14,14 @@ import PushNotificationsContent from "@/components/PushNotificationsContent";
 import PartnersManagementContent from "@/components/PartnersManagementContent";
 import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
 import AdminsManagementContent from "@/components/AdminsManagementContent";
+
 const AdminHub = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeView, setActiveView] = useState<HubViewType>("home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isForcingUpdate, setIsForcingUpdate] = useState(false);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -57,6 +59,32 @@ const AdminHub = () => {
   const handleViewChange = (view: HubViewType) => {
     setActiveView(view);
     setIsMobileMenuOpen(false);
+  };
+
+  const handleForceUpdate = async () => {
+    if (!confirm("Enviar notificação de ATUALIZAÇÃO FORÇADA para TODOS os dispositivos inscritos?")) {
+      return;
+    }
+
+    setIsForcingUpdate(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-push-notification', {
+        body: {
+          title: "🔄 Atualização Disponível",
+          body: "Clique para atualizar o app para a versão mais recente!",
+          url: "/force-update"
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(`Notificação enviada para ${data?.sent || 0} dispositivos!`);
+    } catch (error) {
+      console.error('Error forcing update:', error);
+      toast.error("Erro ao enviar notificação de atualização");
+    } finally {
+      setIsForcingUpdate(false);
+    }
   };
 
   if (isLoading) {
@@ -169,23 +197,48 @@ const AdminHub = () => {
         />
       </div>
 
+      {/* Desktop Force Update Button - Fixed position */}
+      <div className="hidden md:flex fixed top-4 right-4 z-50">
+        <Button
+          variant="destructive"
+          onClick={handleForceUpdate}
+          disabled={isForcingUpdate}
+          className="gap-2 shadow-lg"
+        >
+          <RefreshCw className={`h-4 w-4 ${isForcingUpdate ? 'animate-spin' : ''}`} />
+          {isForcingUpdate ? 'Enviando...' : 'Forçar Update Global'}
+        </Button>
+      </div>
+
       {/* Mobile Menu */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border p-4 flex items-center justify-between">
         <h1 className="text-lg font-bold text-foreground">Painel Admin</h1>
-        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64">
-            <AdminHubSidebar 
-              activeView={activeView}
-              onViewChange={handleViewChange}
-              onLogout={handleLogout}
-            />
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleForceUpdate}
+            disabled={isForcingUpdate}
+            className="gap-1"
+          >
+            <RefreshCw className={`h-4 w-4 ${isForcingUpdate ? 'animate-spin' : ''}`} />
+            {isForcingUpdate ? 'Enviando...' : 'Forçar Update'}
+          </Button>
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-64">
+              <AdminHubSidebar 
+                activeView={activeView}
+                onViewChange={handleViewChange}
+                onLogout={handleLogout}
+              />
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
 
       {/* Main Content */}
