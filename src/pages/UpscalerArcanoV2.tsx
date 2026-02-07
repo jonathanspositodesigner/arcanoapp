@@ -148,7 +148,7 @@ const UpscalerArcanoV2 = () => {
   useEffect(() => {
     if (!premiumLoading && !promptsLoading) {
       if (!user || !hasAccess) {
-        navigate("/ferramentas-ia");
+        navigate("/ferramentas-ia-aplicativo");
       }
     }
   }, [premiumLoading, promptsLoading, user, hasAccess, navigate]);
