@@ -1,237 +1,132 @@
 
-# Plano: Thumbnails Persistentes para "Minhas Criações"
 
-## Diagnóstico do Problema
+# Plano: Remover Sistema de Atualização Automática do PWA
 
-As imagens na seção "Minhas Criações" estão aparecendo como **vazias** porque:
+## Resumo
 
-1. As URLs de saída são do RunningHub CDN (servidor na China): `rh-images-1252422369.cos.ap-beijing.myqcloud.com`
-2. Este servidor **bloqueia CORS** - o navegador não consegue carregar as imagens diretamente
-3. As imagens existem (confirmei fazendo fetch server-side), mas o `<img>` do navegador falha silenciosamente
+Vou **remover completamente** o sistema de atualização automática que força o app a baixar novas versões do Service Worker. Isso inclui:
 
-## Solução: Sistema de Thumbnails Persistentes
-
-Quando um job é completado com sucesso, o sistema vai:
-
-1. Gerar uma **thumbnail comprimida** (300px, WebP, ~15KB)
-2. Salvar no **nosso Storage** (domínio com CORS correto)
-3. Guardar a URL da thumbnail no banco de dados
-4. Usar a thumbnail para preview, mantendo URL original para download
+1. O hook `useServiceWorkerUpdate` (que verifica updates a cada 30 segundos)
+2. O componente `UpdateAvailableBanner` (banner que aparece pedindo atualização)
+3. Configurações do VitePWA que forçam atualização automática
 
 ---
 
-## Arquitetura
-
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       FLUXO DE THUMBNAIL                                    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  Job Completo (webhook recebido)                                           │
-│       │                                                                     │
-│       ▼                                                                     │
-│  [runninghub-webhook] → [runninghub-queue-manager /finish]                 │
-│                                │                                            │
-│                                ▼                                            │
-│                    Detecta: outputUrl presente                              │
-│                                │                                            │
-│                                ▼                                            │
-│              Chama: generate-thumbnail Edge Function                       │
-│                                │                                            │
-│                                ▼                                            │
-│           Fetch server-side + Compress + Upload Storage                    │
-│                                │                                            │
-│                                ▼                                            │
-│        Atualiza job.thumbnail_url com URL do nosso domínio                │
-│                                │                                            │
-│                                ▼                                            │
-│  [Minhas Criações] → Usa thumbnail_url (funciona no navegador!)           │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Mudanças Técnicas
-
-### 1. CRIAR: Bucket de Storage para Thumbnails
-
-```sql
--- Bucket público para thumbnails de criações IA
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('ai-thumbnails', 'ai-thumbnails', true);
-
--- RLS: Qualquer usuário autenticado pode ver thumbnails públicas
-CREATE POLICY "Thumbnails públicas para leitura"
-ON storage.objects FOR SELECT
-USING (bucket_id = 'ai-thumbnails');
-
--- RLS: Apenas service role pode inserir (via Edge Function)
-CREATE POLICY "Service role pode inserir thumbnails"
-ON storage.objects FOR INSERT
-WITH CHECK (bucket_id = 'ai-thumbnails' AND auth.role() = 'service_role');
-```
-
-### 2. ADICIONAR: Coluna `thumbnail_url` nas tabelas de jobs
-
-```sql
--- Adicionar coluna thumbnail_url em todas as tabelas de jobs
-ALTER TABLE upscaler_jobs ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
-ALTER TABLE pose_changer_jobs ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
-ALTER TABLE veste_ai_jobs ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
-ALTER TABLE video_upscaler_jobs ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
-```
-
-### 3. CRIAR: Edge Function `generate-thumbnail`
-
-Nova função que:
-- Recebe URL da imagem + job ID + tabela
-- Faz fetch server-side (bypassa CORS)
-- Comprime para 300px WebP (~15KB)
-- Faz upload para `ai-thumbnails/{table}/{jobId}.webp`
-- Atualiza o job com `thumbnail_url`
-
-```typescript
-// supabase/functions/generate-thumbnail/index.ts
-serve(async (req) => {
-  const { imageUrl, jobId, table, userId } = await req.json();
-  
-  // 1. Fetch imagem (server-side, sem CORS)
-  const response = await fetch(imageUrl);
-  const blob = await response.blob();
-  
-  // 2. Comprimir para 300px WebP (usando sharp ou canvas)
-  const thumbnail = await compressImage(blob, 300);
-  
-  // 3. Upload para Storage
-  const path = `${table}/${jobId}.webp`;
-  await supabase.storage.from('ai-thumbnails').upload(path, thumbnail);
-  
-  // 4. Gerar URL pública
-  const thumbnailUrl = `${SUPABASE_URL}/storage/v1/object/public/ai-thumbnails/${path}`;
-  
-  // 5. Atualizar job
-  await supabase.from(table).update({ thumbnail_url: thumbnailUrl }).eq('id', jobId);
-  
-  return { success: true, thumbnailUrl };
-});
-```
-
-### 4. MODIFICAR: `runninghub-queue-manager` /finish
-
-Adicionar chamada para gerar thumbnail quando job completa com sucesso:
-
-```typescript
-// Após atualizar o job com outputUrl
-if (status === 'completed' && outputUrl) {
-  try {
-    // Chamar Edge Function de thumbnail (assíncrono, não bloqueia)
-    fetch(`${SUPABASE_URL}/functions/v1/generate-thumbnail`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` 
-      },
-      body: JSON.stringify({ 
-        imageUrl: outputUrl, 
-        jobId, 
-        table,
-        userId: job.user_id 
-      })
-    }).catch(e => console.error('[QueueManager] Thumbnail generation failed:', e));
-  } catch (e) {
-    // Não bloquear se falhar - thumbnail é nice-to-have
-    console.error('[QueueManager] Error triggering thumbnail:', e);
-  }
-}
-```
-
-### 5. ATUALIZAR: RPC `get_user_ai_creations`
-
-Incluir `thumbnail_url` no retorno:
-
-```sql
-CREATE OR REPLACE FUNCTION public.get_user_ai_creations(...)
-RETURNS TABLE (
-  id UUID,
-  output_url TEXT,
-  thumbnail_url TEXT,  -- NOVO
-  tool_name TEXT,
-  media_type TEXT,
-  created_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ
-)
--- ... seleções com uj.thumbnail_url para cada UNION
-```
-
-### 6. ATUALIZAR: `CreationCard.tsx`
-
-Usar `thumbnail_url` para preview quando disponível:
-
-```tsx
-// Usar thumbnail para preview, output_url para download
-const previewUrl = creation.thumbnail_url || creation.output_url;
-
-<img
-  src={previewUrl}
-  alt={`Criação ${creation.tool_name}`}
-  className="w-full h-full object-contain"
-  loading="lazy"
-  onError={() => setImageError(true)}
-/>
-```
-
-### 7. ATUALIZAR: Interface `Creation` no hook
-
-```typescript
-export interface Creation {
-  id: string;
-  output_url: string;
-  thumbnail_url: string | null;  // NOVO
-  tool_name: string;
-  media_type: 'image' | 'video';
-  created_at: string;
-  expires_at: string;
-}
-```
-
-### 8. LIMPEZA AUTOMÁTICA
-
-As thumbnails seguem a mesma lógica de expiração de 5 dias. Podemos criar um cron job ou trigger para limpar:
-
-```sql
--- Função para limpar thumbnails expiradas (pode ser chamada periodicamente)
-CREATE OR REPLACE FUNCTION cleanup_expired_thumbnails()
-RETURNS void AS $$
-BEGIN
-  -- Deleta do storage os arquivos de jobs expirados
-  -- (implementação depende de como queremos fazer a limpeza)
-END;
-$$ LANGUAGE plpgsql;
-```
-
----
-
-## Arquivos Modificados/Criados
+## O Que Será Removido/Modificado
 
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
-| `supabase/functions/generate-thumbnail/index.ts` | **CRIAR** | Edge Function para gerar thumbnails |
-| `supabase/functions/runninghub-queue-manager/index.ts` | **MODIFICAR** | Chamar generate-thumbnail após job completar |
-| `supabase/config.toml` | **MODIFICAR** | Adicionar config do generate-thumbnail |
-| `src/components/ai-tools/creations/CreationCard.tsx` | **MODIFICAR** | Usar thumbnail_url para preview |
-| `src/components/ai-tools/creations/useMyCreations.ts` | **MODIFICAR** | Adicionar thumbnail_url à interface |
-| Migration SQL | **CRIAR** | Bucket + colunas thumbnail_url + RPC atualizada |
+| `src/hooks/useServiceWorkerUpdate.ts` | **DELETAR** | Hook que verifica updates automaticamente |
+| `src/components/UpdateAvailableBanner.tsx` | **DELETAR** | Banner de "Nova versão disponível" |
+| `src/App.tsx` | **MODIFICAR** | Remover imports e uso dos componentes acima |
+| `vite.config.ts` | **MODIFICAR** | Desativar `skipWaiting` e `clientsClaim` automáticos |
 
 ---
 
-## Por Que Funciona?
+## Arquivos que NÃO Serão Afetados
 
-| Problema Atual | Solução |
-|----------------|---------|
-| CORS bloqueia imagem no `<img>` | Thumbnail serve do nosso domínio (CORS OK) |
-| Imagens grandes no preview | Thumbnails de 300px (~15KB) carregam instantâneo |
-| Download precisa de URL original | `output_url` continua intacta para download HD |
+| Arquivo | Motivo |
+|---------|--------|
+| `src/pages/ForceUpdate.tsx` | Rota manual `/force-update` - **permanece** caso precise forçar manualmente no futuro |
+| `public/push-handler.js` | Handler de Push Notifications - **permanece** (não relacionado a updates) |
+| `src/hooks/usePushNotifications.ts` | Notificações push - **permanece** (usa SW mas não força update) |
+| `src/contexts/AIJobContext.tsx` | Jobs de IA - **permanece** intocado |
+| Todas as Edge Functions | **permanecem** intocadas |
+| Banco de dados | **permanece** intocado |
+
+---
+
+## Mudanças Detalhadas
+
+### 1. DELETAR: `src/hooks/useServiceWorkerUpdate.ts`
+
+Remover o arquivo inteiro. Este hook é responsável por:
+- Verificar updates a cada 30 segundos
+- Limpar caches antigos automaticamente
+- Enviar `SKIP_WAITING` para forçar novo SW
+
+### 2. DELETAR: `src/components/UpdateAvailableBanner.tsx`
+
+Remover o arquivo inteiro. Este componente:
+- Detecta quando há SW waiting
+- Mostra banner fixo no topo pedindo atualização
+- Força reload automático quando `controllerchange` dispara
+
+### 3. MODIFICAR: `src/App.tsx`
+
+**Remover linhas:**
+```tsx
+// REMOVER esta linha:
+import { UpdateAvailableBanner } from "./components/UpdateAvailableBanner";
+
+// REMOVER esta linha:
+import { useServiceWorkerUpdate } from "./hooks/useServiceWorkerUpdate";
+
+// REMOVER este comentário e chamada no AppContent:
+// Auto-update Service Worker and clean old caches on each session
+useServiceWorkerUpdate();
+
+// REMOVER este componente do JSX:
+<UpdateAvailableBanner />
+```
+
+### 4. MODIFICAR: `vite.config.ts`
+
+**Mudar de:**
+```typescript
+workbox: {
+  // ...
+  clientsClaim: true,
+  skipWaiting: true,
+  // ...
+}
+```
+
+**Para:**
+```typescript
+workbox: {
+  // ...
+  clientsClaim: false,
+  skipWaiting: false,
+  // ...
+}
+```
+
+Isso impede que o novo Service Worker:
+- `clientsClaim: false` → Não toma controle das tabs abertas automaticamente
+- `skipWaiting: false` → Não pula a fila de waiting automaticamente
+
+---
+
+## O Que Continua Funcionando
+
+| Funcionalidade | Status |
+|----------------|--------|
+| PWA instalável | ✅ Continua funcionando |
+| Cache de assets | ✅ Continua funcionando |
+| Push Notifications | ✅ Continua funcionando |
+| Ferramentas de IA | ✅ Continua funcionando |
+| Jobs em progresso | ✅ Não serão mais interrompidos |
+| `/force-update` manual | ✅ Disponível se precisar |
+| Offline mode | ✅ Continua funcionando |
+
+---
+
+## Comportamento Após a Mudança
+
+**ANTES:**
+- App verificava updates a cada 30 segundos
+- Quando detectava nova versão, mostrava banner
+- Ao clicar "Atualizar", forçava reload
+- Às vezes recarregava sozinho (causando problemas em jobs)
+
+**DEPOIS:**
+- App **não verifica** updates automaticamente
+- Usuário só recebe nova versão quando:
+  1. Fecha TODAS as abas do app e abre novamente
+  2. Ou acessa `/force-update` manualmente
+  3. Ou limpa cache do navegador manualmente
+- Jobs de IA nunca serão interrompidos por updates
 
 ---
 
@@ -239,18 +134,10 @@ $$ LANGUAGE plpgsql;
 
 | Item | Status |
 |------|--------|
-| Edge Functions existentes | ✅ Apenas ADICIONA código no /finish |
+| Edge Functions | ✅ INTOCADAS |
 | Webhooks de pagamento | ✅ INTOCADOS |
-| Banco de dados | ✅ Apenas ADICIONA colunas (não altera existentes) |
-| Créditos | ✅ INTOCADO |
-| Performance | ✅ Thumbnail gerada async (não bloqueia webhook) |
-| Storage | ✅ Bucket separado com RLS correto |
+| Banco de dados | ✅ INTOCADO |
+| Push Notifications | ✅ INTOCADO |
+| Créditos de IA | ✅ INTOCADO |
+| Jobs em andamento | ✅ Protegidos (sem reloads forçados) |
 
----
-
-## Benefícios Extras
-
-1. **Carregamento ultra-rápido** - Thumbnails de ~15KB vs imagens de 10MB+
-2. **Menos uso de banda do RunningHub** - Preview não depende do CDN da China
-3. **Mais confiável** - Se RunningHub estiver lento, preview ainda funciona
-4. **Experiência mobile** - Imagens leves = interface fluida
