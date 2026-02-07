@@ -51,8 +51,8 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}"],
         importScripts: ['/push-handler.js'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB
-        clientsClaim: false,
-        skipWaiting: false,
+        clientsClaim: true, // Allow new SW to take control immediately
+        skipWaiting: false, // Manual control via SKIP_WAITING message
         cleanupOutdatedCaches: true,
         cacheId: "arcanoapp-v5.3.0",
         navigateFallback: "/index.html",
