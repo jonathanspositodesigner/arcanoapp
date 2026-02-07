@@ -23,9 +23,10 @@ import { optimizeForAI, validateImageDimensions, getImageDimensions, compressToM
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { JobDebugPanel, ImageCompressionModal } from '@/components/ai-tools';
+import { JobDebugPanel, ImageCompressionModal, DownloadProgressOverlay } from '@/components/ai-tools';
 import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
+import { useResilientDownload } from '@/hooks/useResilientDownload';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -96,6 +97,9 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // CRITICAL: Instant button lock to prevent duplicate clicks
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
+  
+  // Resilient download hook for cross-device compatibility
+  const { isDownloading, progress: downloadProgress, download, cancel: cancelDownload } = useResilientDownload();
  
    // Active job block modal state
    const [showActiveJobModal, setShowActiveJobModal] = useState(false);
@@ -553,18 +557,19 @@ const UpscalerArcanoTool: React.FC = () => {
     }
   };
 
-  // Download result
-  const downloadResult = useCallback(() => {
+  // Download result with resilient fallbacks
+  const downloadResult = useCallback(async () => {
     if (!outputImage) return;
-
-    const link = document.createElement('a');
-    link.href = outputImage;
-    link.download = `upscaled-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success(t('upscalerTool.toast.downloaded'));
-  }, [outputImage, t]);
+    
+    await download({
+      url: outputImage,
+      filename: `upscaled-${Date.now()}.png`,
+      mediaType: 'image',
+      timeout: 10000,
+      onSuccess: () => toast.success(t('upscalerTool.toast.downloaded')),
+      locale: 'pt'
+    });
+  }, [outputImage, download, t]);
 
   // Reset tool
   const resetTool = useCallback(() => {
@@ -1406,6 +1411,15 @@ const UpscalerArcanoTool: React.FC = () => {
         originalWidth={pendingDimensions?.w || 0}
         originalHeight={pendingDimensions?.h || 0}
         onCompress={handleCompressionComplete}
+      />
+
+      {/* Download Progress Overlay */}
+      <DownloadProgressOverlay
+        isVisible={isDownloading}
+        progress={downloadProgress}
+        onCancel={cancelDownload}
+        mediaType="image"
+        locale="pt"
       />
     </div>
   );

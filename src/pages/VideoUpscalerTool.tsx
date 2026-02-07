@@ -14,8 +14,9 @@ import ToolsHeader from '@/components/ToolsHeader';
 import VideoUploadCard from '@/components/video-upscaler/VideoUploadCard';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { JobDebugPanel } from '@/components/ai-tools';
+import { JobDebugPanel, DownloadProgressOverlay } from '@/components/ai-tools';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
+import { useResilientDownload } from '@/hooks/useResilientDownload';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -68,6 +69,9 @@ const VideoUpscalerTool: React.FC = () => {
   
   // CRITICAL: Instant button lock to prevent duplicate clicks
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
+  
+  // Resilient download hook for cross-device compatibility
+  const { isDownloading, progress: downloadProgress, download, cancel: cancelDownload } = useResilientDownload();
 
   // No credits modal
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
@@ -451,16 +455,19 @@ const VideoUpscalerTool: React.FC = () => {
     clearGlobalJob();
   };
 
-  const handleDownload = () => {
+  // Download result with resilient fallbacks
+  const handleDownload = useCallback(async () => {
     if (!outputVideoUrl) return;
     
-    const link = document.createElement('a');
-    link.href = outputVideoUrl;
-    link.download = `video-upscaler-${Date.now()}.mp4`;
-    link.target = '_blank';
-    link.click();
-    toast.success('Download iniciado!');
-  };
+    await download({
+      url: outputVideoUrl,
+      filename: `video-upscaler-${Date.now()}.mp4`,
+      mediaType: 'video',
+      timeout: 10000,
+      onSuccess: () => toast.success('Download concluído!'),
+      locale: 'pt'
+    });
+  }, [outputVideoUrl, download]);
 
   const currentQueueMessage = queueMessages[queueMessageIndex];
 
@@ -696,6 +703,15 @@ const VideoUpscalerTool: React.FC = () => {
         activeJobId={activeJobId}
         activeStatus={activeStatus}
         onCancelJob={centralCancelJob}
+      />
+
+      {/* Download Progress Overlay */}
+      <DownloadProgressOverlay
+        isVisible={isDownloading}
+        progress={downloadProgress}
+        onCancel={cancelDownload}
+        mediaType="video"
+        locale="pt"
       />
     </div>
   );

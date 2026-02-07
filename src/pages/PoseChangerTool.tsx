@@ -16,9 +16,10 @@ import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 import PoseLibraryModal from '@/components/pose-changer/PoseLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { JobDebugPanel } from '@/components/ai-tools';
+import { JobDebugPanel, DownloadProgressOverlay } from '@/components/ai-tools';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
+import { useResilientDownload } from '@/hooks/useResilientDownload';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -68,6 +69,9 @@ const PoseChangerTool: React.FC = () => {
   
   // CRITICAL: Instant button lock to prevent duplicate clicks
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
+  
+  // Resilient download hook for cross-device compatibility
+  const { isDownloading, progress: downloadProgress, download, cancel: cancelDownload } = useResilientDownload();
   
   // Ref for zoom/pan control
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
@@ -434,16 +438,19 @@ const PoseChangerTool: React.FC = () => {
     clearGlobalJob();
   };
 
-  const handleDownload = () => {
+  // Download result with resilient fallbacks
+  const handleDownload = useCallback(async () => {
     if (!outputImage) return;
     
-    const link = document.createElement('a');
-    link.href = outputImage;
-    link.download = `pose-changer-${Date.now()}.png`;
-    link.target = '_blank';
-    link.click();
-    toast.success('Download iniciado!');
-  };
+    await download({
+      url: outputImage,
+      filename: `pose-changer-${Date.now()}.png`,
+      mediaType: 'image',
+      timeout: 10000,
+      onSuccess: () => toast.success('Download concluído!'),
+      locale: 'pt'
+    });
+  }, [outputImage, download]);
 
   const currentQueueMessage = queueMessages[queueMessageIndex];
 
@@ -731,6 +738,15 @@ const PoseChangerTool: React.FC = () => {
         activeJobId={activeJobId}
         activeStatus={activeStatus}
         onCancelJob={centralCancelJob}
+      />
+
+      {/* Download Progress Overlay */}
+      <DownloadProgressOverlay
+        isVisible={isDownloading}
+        progress={downloadProgress}
+        onCancel={cancelDownload}
+        mediaType="image"
+        locale="pt"
       />
     </div>
   );
