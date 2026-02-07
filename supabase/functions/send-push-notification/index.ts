@@ -291,7 +291,7 @@ serve(async (req) => {
   }
 
   try {
-    const { title, body, url } = await req.json();
+    const { title, body, url, user_id } = await req.json();
 
     if (!title || !body) {
       return new Response(
@@ -315,9 +315,15 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { data: subscriptions, error: fetchError } = await supabase
-      .from("push_subscriptions")
-      .select("*");
+    // Build query - optionally filter by user_id for targeted notifications
+    let query = supabase.from("push_subscriptions").select("*");
+    
+    if (user_id) {
+      console.log(`Sending targeted push to user: ${user_id}`);
+      query = query.eq("user_id", user_id);
+    }
+    
+    const { data: subscriptions, error: fetchError } = await query;
 
     if (fetchError) {
       console.error("Error fetching subscriptions:", fetchError);
@@ -334,7 +340,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Sending push to ${subscriptions.length} devices`);
+    console.log(`Sending push to ${subscriptions.length} devices${user_id ? ` for user ${user_id}` : ''}`);
     const notificationPayload = JSON.stringify({ title, body, url });
 
     let sentCount = 0;
@@ -378,14 +384,16 @@ serve(async (req) => {
       await supabase.from("push_subscriptions").delete().in("endpoint", expiredEndpoints);
     }
 
-    // Log notification
-    await supabase.from("push_notification_logs").insert({
-      title,
-      body,
-      url: url || null,
-      sent_count: sentCount,
-      failed_count: failedCount,
-    });
+    // Log notification only for broadcast (not targeted)
+    if (!user_id) {
+      await supabase.from("push_notification_logs").insert({
+        title,
+        body,
+        url: url || null,
+        sent_count: sentCount,
+        failed_count: failedCount,
+      });
+    }
 
     console.log(`Push complete: ${sentCount} sent, ${failedCount} failed`);
 

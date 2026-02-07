@@ -23,12 +23,13 @@ import { optimizeForAI, validateImageDimensions, getImageDimensions, compressToM
 import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { JobDebugPanel, ImageCompressionModal, DownloadProgressOverlay } from '@/components/ai-tools';
+import { JobDebugPanel, ImageCompressionModal, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
 import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 
 // Max dimension for mobile slider preview optimization
 const SLIDER_PREVIEW_MAX_PX = 1500;
@@ -151,6 +152,23 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // Cleanup queued jobs when user leaves page
   useQueueSessionCleanup(sessionIdRef.current, status);
+
+  // NOTIFICATION TOKEN RECOVERY - Recupera job via notificação push
+  useNotificationTokenRecovery({
+    userId: user?.id,
+    toolTable: 'upscaler_jobs',
+    onRecovery: useCallback((result) => {
+      console.log('[Upscaler] Recovering job from notification:', result);
+      if (result.outputUrl) {
+        setInputImage(result.inputUrl);
+        setOutputImage(result.outputUrl);
+        setJobId(result.jobId);
+        setStatus('completed');
+        setProgress(100);
+        toast.success('Resultado carregado!');
+      }
+    }, []),
+  });
 
   // Reset promptCategory when custom prompt is disabled
   useEffect(() => {
@@ -1482,6 +1500,9 @@ const UpscalerArcanoTool: React.FC = () => {
         mediaType="image"
         locale="pt"
       />
+
+      {/* Notification Prompt Toast */}
+      <NotificationPromptToast toolName="upscale" />
     </div>
   );
 };

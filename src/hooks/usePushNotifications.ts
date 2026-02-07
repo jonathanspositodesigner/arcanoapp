@@ -189,7 +189,10 @@ export function usePushNotifications() {
       const json = subscription.toJSON();
       console.log('[Push] Subscription created:', json.endpoint?.substring(0, 50));
 
-      // Save to database with discount eligibility
+      // Get current user for user_id association
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Save to database with discount eligibility and user_id
       const { error } = await supabase
         .from('push_subscriptions')
         .insert({
@@ -198,7 +201,8 @@ export function usePushNotifications() {
           auth: json.keys!.auth,
           device_type: getDeviceType(),
           user_agent: navigator.userAgent,
-          discount_eligible: true // Mark as eligible for 20% discount
+          discount_eligible: true, // Mark as eligible for 20% discount
+          user_id: user?.id || null // Associate with user for targeted notifications
         });
 
       if (error) {

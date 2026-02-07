@@ -62,6 +62,102 @@ type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+// ==================== NOTIFICATION HELPERS ====================
+
+const TOOL_CONFIG: Record<JobTable, { name: string; url: string; emoji: string }> = {
+  upscaler_jobs: { name: 'Upscaler Arcano', url: '/upscaler-arcano-tool', emoji: '✨' },
+  pose_changer_jobs: { name: 'Pose Changer', url: '/pose-changer-tool', emoji: '🎨' },
+  veste_ai_jobs: { name: 'Veste AI', url: '/veste-ai-tool', emoji: '👕' },
+  video_upscaler_jobs: { name: 'Video Upscaler', url: '/video-upscaler-tool', emoji: '🎬' },
+};
+
+/**
+ * sendJobCompletionNotification - Envia notificação push quando job completa
+ * Cria token temporário (15 min TTL) e envia push para todos os dispositivos do usuário
+ */
+async function sendJobCompletionNotification(
+  table: JobTable,
+  jobId: string,
+  userId: string
+): Promise<void> {
+  try {
+    // Verificar se usuário tem push subscriptions
+    const { data: subscriptions, error: subError } = await supabase
+      .from('push_subscriptions')
+      .select('id, endpoint, p256dh, auth')
+      .eq('user_id', userId);
+    
+    if (subError || !subscriptions || subscriptions.length === 0) {
+      console.log(`[QueueManager] No push subscriptions for user ${userId}`);
+      return;
+    }
+    
+    console.log(`[QueueManager] User ${userId} has ${subscriptions.length} push subscriptions`);
+    
+    // Gerar token temporário (15 minutos)
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    
+    // Salvar token
+    const { error: tokenError } = await supabase.from('job_notification_tokens').insert({
+      token,
+      table_name: table,
+      job_id: jobId,
+      user_id: userId,
+      expires_at: expiresAt.toISOString()
+    });
+    
+    if (tokenError) {
+      console.error('[QueueManager] Failed to create notification token:', tokenError);
+      return;
+    }
+    
+    // Limpar tokens expirados do usuário (housekeeping)
+    await supabase
+      .from('job_notification_tokens')
+      .delete()
+      .eq('user_id', userId)
+      .lt('expires_at', new Date().toISOString());
+    
+    // Preparar URL com token
+    const config = TOOL_CONFIG[table];
+    const notificationUrl = `${config.url}?nt=${token}`;
+    
+    // Enviar notificação via Edge Function existente
+    const notificationPayload = {
+      title: config.name,
+      body: `${config.emoji} Seu resultado ficou pronto! Toque para ver.`,
+      url: notificationUrl,
+    };
+    
+    console.log(`[QueueManager] Sending push notification for job ${jobId}:`, notificationPayload);
+    
+    // Usar a Edge Function send-push-notification modificada para enviar apenas para este usuário
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/send-push-notification`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+      },
+      body: JSON.stringify({
+        ...notificationPayload,
+        user_id: userId, // Novo parâmetro para filtrar por usuário
+      })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[QueueManager] Push notification failed:', errorText);
+    } else {
+      const result = await response.json();
+      console.log(`[QueueManager] Push notification sent:`, result);
+    }
+    
+  } catch (e) {
+    console.error('[QueueManager] sendJobCompletionNotification error:', e);
+  }
+}
+
 // ==================== OBSERVABILITY HELPER ====================
 
 /**
@@ -585,13 +681,6 @@ async function handleFinish(req: Request): Promise<Response> {
       try {
         console.log(`[QueueManager] Triggering thumbnail generation for ${jobId}`);
         
-        // Buscar user_id do job
-        const { data: jobData } = await supabase
-          .from(table)
-          .select('user_id')
-          .eq('id', jobId)
-          .maybeSingle();
-        
         // Chamar Edge Function de thumbnail (fire-and-forget, não bloqueia)
         fetch(`${SUPABASE_URL}/functions/v1/generate-thumbnail`, {
           method: 'POST',
@@ -603,13 +692,23 @@ async function handleFinish(req: Request): Promise<Response> {
             imageUrl: outputUrl, 
             jobId, 
             table,
-            userId: jobData?.user_id || null
+            userId: job?.user_id || null
           })
         }).catch(e => console.error('[QueueManager] Thumbnail generation failed:', e));
         
       } catch (e) {
         // Não bloquear se falhar - thumbnail é nice-to-have
         console.error('[QueueManager] Error triggering thumbnail:', e);
+      }
+    }
+    
+    // ENVIAR NOTIFICAÇÃO PUSH - quando job completa com sucesso
+    if (status === 'completed' && job?.user_id) {
+      try {
+        await sendJobCompletionNotification(table, jobId, job.user_id);
+      } catch (e) {
+        // Não bloquear se falhar - notificação é nice-to-have
+        console.error('[QueueManager] Error sending push notification:', e);
       }
     }
     
