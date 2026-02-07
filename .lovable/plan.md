@@ -1,233 +1,127 @@
 
-# Plano: Otimização de Imagem do Slider para Preview Mobile
+# Plano: Sistema de Download via Edge Function Proxy
 
-## Contexto do Problema
+## Garantia de Segurança
 
-No **mobile**, as imagens do slider (antes/depois) estão sendo exibidas em tamanho original (que pode ser 4K+), causando lentidão no carregamento e travamentos em dispositivos com pouca memória.
-
-## Solução
-
-Criar versões otimizadas das imagens (máximo 1500px) apenas para o **preview do slider no mobile**. As imagens originais continuam disponíveis para download e visualização em fullscreen.
-
----
-
-## Arquitetura
-
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    FLUXO MOBILE DO SLIDER                                  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  Job Completo (status = 'completed')                                       │
-│       ↓                                                                     │
-│  [Desktop] → Exibe imagens originais diretamente                           │
-│       ↓                                                                     │
-│  [Mobile] → isOptimizingForSlider = true (mostra loading)                  │
-│       ↓                                                                     │
-│  Comprime inputImage e outputImage para 1500px (paralelo)                  │
-│       ↓                                                                     │
-│  Armazena em optimizedInputImage e optimizedOutputImage                    │
-│       ↓                                                                     │
-│  isOptimizingForSlider = false → Exibe slider com imagens otimizadas      │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+✅ **CONFIRMADO: Nenhuma Edge Function existente será modificada**
+- Vou apenas CRIAR uma nova função `download-proxy`
+- O arquivo `config.toml` terá uma linha ADICIONADA no final
+- As 35 funções existentes continuam INTOCADAS
 
 ---
 
-## Mudanças Técnicas
+## O Que Será Criado/Modificado
 
-### 1. Novos Estados no UpscalerArcanoTool.tsx
+| Arquivo | Ação | Impacto |
+|---------|------|---------|
+| `supabase/functions/download-proxy/index.ts` | **CRIAR** | Nova função isolada |
+| `supabase/config.toml` | **ADICIONAR** | +3 linhas no final |
+| `src/hooks/useResilientDownload.ts` | **MODIFICAR** | Adicionar método proxy |
 
-```tsx
-// Estados para imagens otimizadas do slider (apenas mobile)
-const [optimizedInputImage, setOptimizedInputImage] = useState<string | null>(null);
-const [optimizedOutputImage, setOptimizedOutputImage] = useState<string | null>(null);
-const [isOptimizingForSlider, setIsOptimizingForSlider] = useState(false);
+---
+
+## 1. Nova Edge Function: download-proxy
+
+Função que age como intermediário para baixar imagens:
+
+```typescript
+// supabase/functions/download-proxy/index.ts
+serve(async (req) => {
+  // Recebe ?url=<imagem>&filename=<nome>
+  // Faz fetch server-side (sem CORS)
+  // Retorna com Content-Disposition: attachment
+});
 ```
 
-### 2. Detectar Mobile
+**Domínios permitidos (segurança):**
+- `rh-images-1252422369.cos.ap-beijing.myqcloud.com` (RunningHub CDN)
+- `runninghub.cn`, `runninghub.com`
+- `jooojbaljrshgpaxdlou.supabase.co` (nosso storage)
 
-Adicionar import do hook `useIsMobile`:
+---
 
-```tsx
-import { useIsMobile } from '@/hooks/use-mobile';
+## 2. Atualização: useResilientDownload.ts
 
-// No componente:
-const isMobile = useIsMobile();
-```
+Adicionar **novo método ANTES dos outros** (primeira tentativa):
 
-### 3. Função de Otimização para Slider
-
-Criar função que comprime imagens para 1500px usando `compressToMaxDimension`:
-
-```tsx
-const SLIDER_PREVIEW_MAX_PX = 1500;
-
-const optimizeImagesForSlider = useCallback(async (
-  inputUrl: string,
-  outputUrl: string
-) => {
-  setIsOptimizingForSlider(true);
+```typescript
+// Method 0: Proxy via Edge Function (most reliable for mobile)
+const proxyDownload = async (url: string, filename: string): Promise<boolean> => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const proxyUrl = `${supabaseUrl}/functions/v1/download-proxy?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
   
-  try {
-    // Fetch ambas as imagens em paralelo
-    const [inputResponse, outputResponse] = await Promise.all([
-      fetch(inputUrl),
-      fetch(outputUrl)
-    ]);
-    
-    const [inputBlob, outputBlob] = await Promise.all([
-      inputResponse.blob(),
-      outputResponse.blob()
-    ]);
-    
-    // Criar Files a partir dos blobs
-    const inputFile = new File([inputBlob], 'input.webp', { type: inputBlob.type });
-    const outputFile = new File([outputBlob], 'output.webp', { type: outputBlob.type });
-    
-    // Comprimir para 1500px em paralelo
-    const [optimizedInput, optimizedOutput] = await Promise.all([
-      compressToMaxDimension(inputFile, SLIDER_PREVIEW_MAX_PX),
-      compressToMaxDimension(outputFile, SLIDER_PREVIEW_MAX_PX)
-    ]);
-    
-    // Criar URLs para as imagens otimizadas
-    setOptimizedInputImage(URL.createObjectURL(optimizedInput.file));
-    setOptimizedOutputImage(URL.createObjectURL(optimizedOutput.file));
-    
-    console.log('[Upscaler] Slider images optimized for mobile preview');
-  } catch (error) {
-    console.error('[Upscaler] Failed to optimize slider images:', error);
-    // Fallback: usar imagens originais
-    setOptimizedInputImage(inputUrl);
-    setOptimizedOutputImage(outputUrl);
-  } finally {
-    setIsOptimizingForSlider(false);
-  }
-}, []);
-```
-
-### 4. Trigger de Otimização Quando Job Completa
-
-No callback `onStatusChange` do `useJobStatusSync`, após detectar `completed`:
-
-```tsx
-if (update.status === 'completed' && update.outputUrl) {
-  // ... código existente ...
-  
-  // Otimizar imagens para slider no mobile
-  if (isMobile && inputImage) {
-    optimizeImagesForSlider(inputImage, update.outputUrl);
-  }
-}
-```
-
-### 5. Lógica de Exibição do Slider
-
-Modificar a condição de exibição para:
-
-```tsx
-{/* No mobile: espera otimização concluir antes de mostrar slider */}
-{status === 'completed' && outputImage && (!isMobile || !isOptimizingForSlider) ? (
-  // Slider component...
-  // Usar optimizedInputImage/optimizedOutputImage no mobile
-  // Usar inputImage/outputImage no desktop
-) : null}
-
-{/* Loading de otimização no mobile */}
-{status === 'completed' && isMobile && isOptimizingForSlider && (
-  <div className="flex flex-col items-center gap-3">
-    <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-    <p className="text-sm text-purple-300">Preparando visualização...</p>
-  </div>
-)}
-```
-
-### 6. Uso das Imagens Corretas no Slider
-
-```tsx
-{/* AFTER image */}
-<ResilientImage 
-  src={isMobile ? (optimizedOutputImage || outputImage) : outputImage} 
-  alt="Depois"
-  // ... props existentes
-/>
-
-{/* BEFORE image */}
-<img 
-  src={isMobile ? (optimizedInputImage || inputImage || '') : (inputImage || '')}
-  alt="Antes"
-  // ... props existentes
-/>
-```
-
-### 7. Cleanup de Object URLs
-
-No unmount ou reset do componente, liberar as URLs criadas:
-
-```tsx
-useEffect(() => {
-  return () => {
-    // Cleanup object URLs para evitar memory leaks
-    if (optimizedInputImage?.startsWith('blob:')) {
-      URL.revokeObjectURL(optimizedInputImage);
-    }
-    if (optimizedOutputImage?.startsWith('blob:')) {
-      URL.revokeObjectURL(optimizedOutputImage);
-    }
-  };
-}, [optimizedInputImage, optimizedOutputImage]);
-```
-
-### 8. Reset ao Iniciar Novo Job
-
-Na função `handleUpscale`, limpar estados anteriores:
-
-```tsx
-const handleUpscale = async () => {
-  // ... validações ...
-  
-  // Limpar imagens otimizadas anteriores
-  if (optimizedInputImage?.startsWith('blob:')) {
-    URL.revokeObjectURL(optimizedInputImage);
-  }
-  if (optimizedOutputImage?.startsWith('blob:')) {
-    URL.revokeObjectURL(optimizedOutputImage);
-  }
-  setOptimizedInputImage(null);
-  setOptimizedOutputImage(null);
-  
-  // ... resto do código ...
+  // Abre link direto - navegador baixa automaticamente
+  window.location.href = proxyUrl;
+  await new Promise(r => setTimeout(r, 2000));
+  return true;
 };
 ```
 
----
-
-## Arquivo Modificado
-
-| Arquivo | Ação |
-|---------|------|
-| `src/pages/UpscalerArcanoTool.tsx` | Adicionar estados, função de otimização, lógica condicional de exibição |
-
----
-
-## Comportamento Final
-
-| Dispositivo | Imagens no Slider | Download |
-|-------------|-------------------|----------|
-| **Desktop** | Originais (full-res) | Originais |
-| **Mobile** | Otimizadas (1500px max) | Originais |
+**Novo fluxo de fallback:**
+1. ⭐ **Proxy Edge Function** (NOVO - funciona no iOS!)
+2. Fetch + ReadableStream
+3. Fetch + Cache Buster
+4. Anchor tag direct
+5. Share API (mobile)
+6. Open in new tab
 
 ---
 
-## Garantias
+## 3. Config.toml
+
+Adicionar no final do arquivo:
+
+```toml
+[functions.download-proxy]
+verify_jwt = false
+```
+
+---
+
+## Por Que Funciona no iOS Safari?
+
+| Problema Atual | Solução |
+|----------------|---------|
+| CORS bloqueado no fetch | Fetch acontece no servidor (sem CORS) |
+| Blob download não funciona | Link direto com `Content-Disposition: attachment` |
+| Share API falha | Não precisa de blob local |
+| PWA não baixa | Navegação normal para URL do nosso domínio |
+
+---
+
+## Fluxo Visual
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  ANTES (falha no iOS)                                          │
+├─────────────────────────────────────────────────────────────────┤
+│  [iOS Safari] ──X──► [RunningHub CDN]                          │
+│                ↑                                                 │
+│           CORS BLOCKED                                          │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  DEPOIS (funciona!)                                            │
+├─────────────────────────────────────────────────────────────────┤
+│  [iOS Safari] ───► [download-proxy] ───► [RunningHub CDN]     │
+│       │                  │                       │              │
+│       │   Content-Disposition: attachment        │              │
+│       │◄─────────────────┤◄──────────────────────┤              │
+│       │                                                         │
+│   DOWNLOAD INICIA AUTOMATICAMENTE ✅                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Garantias Finais
 
 | Item | Status |
 |------|--------|
-| Desktop não afetado | ✅ Continua usando imagens originais |
-| Download não afetado | ✅ Sempre baixa imagem original |
-| Performance mobile | ✅ Slider carrega mais rápido |
-| Edge Functions | ❌ Nenhuma alteração |
-| Banco de dados | ❌ Nenhuma alteração |
-| Créditos | ❌ Nenhuma alteração |
+| Edge Functions existentes | ✅ INTOCADAS |
+| Webhooks de pagamento | ✅ INTOCADOS |
+| Banco de dados | ✅ INTOCADO |
+| Créditos | ✅ INTOCADO |
+| Funciona iOS Safari | ✅ SIM |
+| Funciona Android | ✅ SIM |
+| Funciona Desktop | ✅ SIM (mantém fallbacks) |
