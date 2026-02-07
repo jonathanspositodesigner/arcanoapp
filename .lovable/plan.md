@@ -1,183 +1,209 @@
 
-# Plano: Corrigir Sistema de Atualização Forçada do PWA
+# Plano: Corrigir Carregamento Lento e Download no Safari - Minhas Criações
 
-## Diagnóstico do Problema
+## Diagnóstico dos Problemas
 
-Quando você clica no botão "Forçar Update Global" e depois na notificação:
+### Problema 1: Imagens demoram muito para carregar
+**Causa raiz identificada:**
+- O `CreationCard` usa `previewUrl = creation.thumbnail_url || creation.output_url`
+- Alguns jobs têm `thumbnail_url: null` no banco de dados (verificado: jobs `c49bc619...` e `6037823a...`)
+- Quando `thumbnail_url` é `null`, o código usa a `output_url` do CDN chinês RunningHub
+- Essas imagens são HD (4-8MB) e ficam em servidor na China = lentidão extrema
 
-1. A notificação abre `/force-update`
-2. A página limpa os caches e faz unregister do Service Worker
-3. **MAS** o Service Worker antigo ainda está ativo controlando a página
-4. O reload busca o `index.html` que ainda está cacheado pelo SW antigo
-5. Resultado: app continua na versão antiga
+**Por que alguns jobs não têm thumbnail?**
+- O sistema `generate-thumbnail` é "fire-and-forget" - pode falhar silenciosamente
+- Jobs mais antigos podem não ter sido processados
 
-### Problema específico do iOS/Safari
-- O `unregister()` do SW não é imediato no Safari
-- O cache do SW pode persistir mesmo após unregister
+### Problema 2: Download não funciona no Safari (iOS/macOS)
+**Causa raiz identificada:**
+- O `CreationCard.handleDownload()` usa `fetch()` + `blob()` direto
+- O CDN chinês (rh-images-1252422369.cos.ap-beijing.myqcloud.com) bloqueia CORS
+- Safari é mais restritivo que Chrome com CORS
+- A Edge Function `download-proxy` existe mas **NÃO está sendo usada** no CreationCard
+
+**Solução existente que funciona:**
+- O `useResilientDownload` hook já resolve isso com 5 métodos de fallback
+- Usado no Upscaler, Pose Changer, Veste AI - funciona perfeitamente no Safari
 
 ---
 
 ## Solução
 
-### Abordagem Multi-Camada
+### Mudança 1: Usar `useResilientDownload` no CreationCard
 
-Para garantir que funcione em todos os dispositivos (Android, iOS, Desktop):
-
-1. **Forçar `skipWaiting()` no Service Worker** - Ativar o novo SW imediatamente
-2. **Usar Headers HTTP para bypass de cache** - Garantir que o servidor entregue a versão nova
-3. **Múltiplos reloads com cache busting** - Forçar o navegador a buscar do servidor
-4. **Limpar localStorage e sessionStorage** - Remover qualquer estado antigo
-
----
-
-## Mudanças Técnicas
-
-### 1. MODIFICAR: `public/push-handler.js`
-
-Ao clicar na notificação de update, abrir com parâmetro especial:
-
-```javascript
-// Quando é notificação de update forçado, adicionar parâmetro
-const isForceUpdate = urlToOpen.includes('/force-update');
-const finalUrl = isForceUpdate 
-  ? `${urlToOpen}?force=${Date.now()}&hard=1` 
-  : urlToOpen;
-
-// Forçar abertura em nova janela (não reusar aba antiga com cache)
-if (isForceUpdate && clients.openWindow) {
-  return clients.openWindow(finalUrl);
-}
-```
-
-### 2. MODIFICAR: `src/pages/ForceUpdate.tsx`
-
-Implementar limpeza agressiva em múltiplas etapas:
+Substituir o `handleDownload` manual pelo hook que já funciona:
 
 ```typescript
-const forceCleanAndReload = async () => {
-  // 1. Limpar TODOS os tipos de storage
-  localStorage.clear();
-  sessionStorage.clear();
-  
-  // 2. Deletar todos os caches
-  const cacheNames = await caches.keys();
-  await Promise.all(cacheNames.map(name => caches.delete(name)));
-  
-  // 3. Forçar skipWaiting em qualquer SW waiting
-  const registrations = await navigator.serviceWorker.getRegistrations();
-  for (const reg of registrations) {
-    if (reg.waiting) {
-      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-    }
-    await reg.unregister();
-  }
-  
-  // 4. Aguardar um momento para garantir cleanup
-  await new Promise(r => setTimeout(r, 500));
-  
-  // 5. Fazer hard reload com fetch de origem
-  const response = await fetch('/', { 
-    cache: 'no-store',
-    headers: { 'Cache-Control': 'no-cache' }
+// ANTES (não funciona no Safari):
+const handleDownload = async () => {
+  const response = await fetch(creation.output_url);  // ❌ CORS error
+  const blob = await response.blob();
+  // ...
+};
+
+// DEPOIS (funciona em todos browsers):
+import { useResilientDownload } from '@/hooks/useResilientDownload';
+
+const { download, isDownloading } = useResilientDownload();
+
+const handleDownload = () => {
+  download({
+    url: creation.output_url,
+    filename: `${creation.tool_name.replace(/\s/g, '-')}-${creation.id.slice(0, 8)}.${isVideo ? 'mp4' : 'png'}`,
+    mediaType: isVideo ? 'video' : 'image',
+    timeout: 15000,
+    locale: 'pt'
   });
-  
-  // 6. Redirecionar com cache busting extremo
-  window.location.replace(`/?_force=${Date.now()}&_nocache=1`);
 };
 ```
 
-### 3. CRIAR: Listener no SW gerado pelo Vite
+### Mudança 2: Fallback inteligente para preview sem thumbnail
 
-Adicionar ao `vite.config.ts` um script inline que escuta mensagens de SKIP_WAITING:
-
-```typescript
-// Em workbox config:
-additionalManifestEntries: [],
-// Adicionar listener para SKIP_WAITING via importScripts ou inline
-```
-
-**Alternativa melhor**: Adicionar ao `public/push-handler.js`:
-
-```javascript
-// Listener para forçar skipWaiting
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
-    console.log('[Push Handler] Received SKIP_WAITING, activating immediately');
-    self.skipWaiting();
-  }
-});
-```
-
-### 4. MODIFICAR: `vite.config.ts`
-
-Reativar `skipWaiting` e `clientsClaim` apenas quando solicitado:
+Para jobs que não têm thumbnail, usar o proxy Edge Function para carregar preview:
 
 ```typescript
-workbox: {
-  // ... existing config
-  clientsClaim: true,  // Voltar para true
-  skipWaiting: false,  // Manter false para controle manual
-}
+// Usar proxy para imagens do CDN chinês quando não houver thumbnail local
+const getProxyUrl = (originalUrl: string): string => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) return originalUrl;
+  
+  // Se já é do nosso storage, usar direto
+  if (originalUrl.includes('supabase.co')) return originalUrl;
+  
+  // Usar proxy para CDN chinês
+  return `${supabaseUrl}/functions/v1/download-proxy?url=${encodeURIComponent(originalUrl)}`;
+};
+
+const previewUrl = creation.thumbnail_url || getProxyUrl(creation.output_url);
 ```
 
----
-
-## Fluxo Corrigido
-
-```text
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                    FLUXO DE ATUALIZAÇÃO FORÇADA                              │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  Admin clica "Forçar Update Global"                                         │
-│       │                                                                      │
-│       ▼                                                                      │
-│  Push notification enviada para todos dispositivos                           │
-│       │                                                                      │
-│       ▼                                                                      │
-│  Usuário clica na notificação                                                │
-│       │                                                                      │
-│       ▼                                                                      │
-│  push-handler.js abre /force-update?force=123&hard=1                        │
-│  (abre em NOVA janela para evitar cache da aba anterior)                    │
-│       │                                                                      │
-│       ▼                                                                      │
-│  ForceUpdate.tsx executa:                                                    │
-│    1. localStorage.clear() + sessionStorage.clear()                          │
-│    2. caches.delete() em TODOS os caches                                    │
-│    3. postMessage SKIP_WAITING para SW waiting                              │
-│    4. unregister() de todos os SWs                                          │
-│    5. Aguarda 500ms                                                          │
-│    6. fetch('/') com cache: 'no-store'                                      │
-│    7. location.replace com timestamp                                         │
-│       │                                                                      │
-│       ▼                                                                      │
-│  App carrega versão NOVA do servidor!                                        │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
+**Benefício:** A Edge Function `download-proxy` faz o fetch server-side (sem CORS) e retorna a imagem.
 
 ---
 
 ## Arquivos Modificados
 
-| Arquivo | Ação | Descrição |
-|---------|------|-----------|
-| `public/push-handler.js` | **MODIFICAR** | Abrir nova janela + listener SKIP_WAITING |
-| `src/pages/ForceUpdate.tsx` | **MODIFICAR** | Limpeza multi-etapa mais agressiva |
-| `vite.config.ts` | **MODIFICAR** | Reativar clientsClaim: true |
+| Arquivo | Mudança |
+|---------|---------|
+| `src/components/ai-tools/creations/CreationCard.tsx` | Usar `useResilientDownload` + proxy para preview |
 
 ---
 
-## Por Que Vai Funcionar Agora
+## Detalhes Técnicos
 
-| Problema Anterior | Solução |
-|-------------------|---------|
-| SW antigo ainda controla a página | Abre nova janela sem cache |
-| Unregister não é imediato | Envia SKIP_WAITING antes do unregister |
-| Cache HTTP persiste | Fetch com cache: 'no-store' |
-| iOS Safari teimoso | Múltiplas camadas de cache busting |
-| LocalStorage com estado antigo | localStorage.clear() |
+### Fluxo de Download Corrigido
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                FLUXO DE DOWNLOAD (TODOS BROWSERS)               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Usuário clica "Baixar"                                         │
+│       │                                                         │
+│       ▼                                                         │
+│  useResilientDownload.download()                                │
+│       │                                                         │
+│       ├─→ Método 0: Proxy Edge Function (melhor para iOS)       │
+│       │     └─→ window.location.href = proxy URL                │
+│       │         └─→ Edge Function faz fetch server-side         │
+│       │             └─→ Retorna com Content-Disposition         │
+│       │                                                         │
+│       ├─→ Método 1: Fetch + ReadableStream (fallback)           │
+│       ├─→ Método 2: Fetch + Cache Buster (fallback)             │
+│       ├─→ Método 3: Anchor tag (fallback)                       │
+│       ├─→ Método 4: Share API mobile (fallback)                 │
+│       └─→ Final: Abre nova aba                                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Fluxo de Preview Corrigido
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                  FLUXO DE PREVIEW DE IMAGEM                     │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  CreationCard renderiza                                         │
+│       │                                                         │
+│       ▼                                                         │
+│  Tem thumbnail_url?                                             │
+│       │                                                         │
+│       ├─→ SIM: Usar thumbnail (Supabase Storage, rápido)        │
+│       │        https://xxx.supabase.co/storage/.../thumbnail    │
+│       │                                                         │
+│       └─→ NÃO: Usar proxy para output_url                       │
+│                https://xxx.supabase.co/functions/v1/            │
+│                download-proxy?url=CDN_CHINES_URL                │
+│                                                                 │
+│  Resultado: Imagem carrega via servidor (sem CORS)              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Código Completo da Mudança
+
+```typescript
+// CreationCard.tsx - Mudanças principais
+
+import { useResilientDownload } from '@/hooks/useResilientDownload';
+
+const CreationCard: React.FC<CreationCardProps> = ({ creation }) => {
+  const [imageError, setImageError] = useState(false);
+  const { download, isDownloading } = useResilientDownload();
+  
+  const { text: timeText, urgency } = formatTimeRemaining(creation.expires_at);
+  const isVideo = creation.media_type === 'video';
+  
+  // Função para obter URL de preview via proxy quando necessário
+  const getPreviewUrl = (): string => {
+    // Se tem thumbnail local, usar (rápido, sem CORS)
+    if (creation.thumbnail_url) {
+      return creation.thumbnail_url;
+    }
+    
+    // Se não tem thumbnail, usar proxy para buscar do CDN chinês
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) return creation.output_url;
+    
+    // Já é do nosso storage? Usar direto
+    if (creation.output_url.includes('supabase.co')) {
+      return creation.output_url;
+    }
+    
+    // Usar proxy Edge Function
+    return `${supabaseUrl}/functions/v1/download-proxy?url=${encodeURIComponent(creation.output_url)}`;
+  };
+  
+  const previewUrl = getPreviewUrl();
+  
+  // Download usando hook resiliente (funciona no Safari)
+  const handleDownload = () => {
+    download({
+      url: creation.output_url,
+      filename: `${creation.tool_name.replace(/\s/g, '-')}-${creation.id.slice(0, 8)}.${isVideo ? 'mp4' : 'png'}`,
+      mediaType: isVideo ? 'video' : 'image',
+      timeout: 15000,
+      locale: 'pt'
+    });
+  };
+
+  // ... resto do componente
+};
+```
+
+---
+
+## Vantagens da Solução
+
+| Problema | Solução | Benefício |
+|----------|---------|-----------|
+| Preview lento | Proxy server-side | Sem CORS, carrega em ~1-2s |
+| Download falha Safari | useResilientDownload | 5 fallbacks automáticos |
+| Código duplicado | Reutiliza hook existente | Menos manutenção |
+| CDN chinês instável | Edge Function como intermediário | Mais confiável |
 
 ---
 
@@ -185,8 +211,8 @@ workbox: {
 
 | Item | Status |
 |------|--------|
-| Edge Functions | Não são modificadas |
+| Edge Functions | Reutiliza `download-proxy` existente |
 | Banco de dados | Não é modificado |
-| Autenticação | Usuário precisará fazer login novamente (localStorage limpo) |
-| Jobs de IA em progresso | Não afetados (o update é sob demanda) |
-| Push Notifications | Continuam funcionando |
+| Autenticação | Não afetada |
+| Outras ferramentas | Não afetadas |
+| Jobs em andamento | Não afetados |
