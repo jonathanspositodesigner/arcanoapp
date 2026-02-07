@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useResilientDownload } from '@/hooks/useResilientDownload';
 import type { Creation } from './useMyCreations';
 
 interface CreationCardProps {
@@ -58,35 +59,42 @@ function formatDate(dateString: string): string {
 
 const CreationCard: React.FC<CreationCardProps> = ({ creation }) => {
   const [imageError, setImageError] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const { download, isDownloading } = useResilientDownload();
   
   const { text: timeText, urgency } = formatTimeRemaining(creation.expires_at);
   const isVideo = creation.media_type === 'video';
   
-  // Usar thumbnail para preview (funciona mesmo com CORS do CDN chinês)
-  // output_url continua sendo usada para download HD
-  const previewUrl = creation.thumbnail_url || creation.output_url;
-  
-  const handleDownload = async () => {
-    setIsDownloading(true);
-    try {
-      const response = await fetch(creation.output_url);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${creation.tool_name.replace(/\s/g, '-')}-${creation.id.slice(0, 8)}.${isVideo ? 'mp4' : 'png'}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('[CreationCard] Download error:', error);
-      // Fallback: open in new tab
-      window.open(creation.output_url, '_blank');
-    } finally {
-      setIsDownloading(false);
+  // Função para obter URL de preview via proxy quando necessário
+  const getPreviewUrl = (): string => {
+    // Se tem thumbnail local, usar (rápido, sem CORS)
+    if (creation.thumbnail_url) {
+      return creation.thumbnail_url;
     }
+    
+    // Se não tem thumbnail, usar proxy para buscar do CDN chinês
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) return creation.output_url;
+    
+    // Já é do nosso storage? Usar direto
+    if (creation.output_url.includes('supabase.co')) {
+      return creation.output_url;
+    }
+    
+    // Usar proxy Edge Function para evitar CORS
+    return `${supabaseUrl}/functions/v1/download-proxy?url=${encodeURIComponent(creation.output_url)}`;
+  };
+  
+  const previewUrl = getPreviewUrl();
+  
+  // Download usando hook resiliente (funciona no Safari)
+  const handleDownload = () => {
+    download({
+      url: creation.output_url,
+      filename: `${creation.tool_name.replace(/\s/g, '-')}-${creation.id.slice(0, 8)}.${isVideo ? 'mp4' : 'png'}`,
+      mediaType: isVideo ? 'video' : 'image',
+      timeout: 15000,
+      locale: 'pt'
+    });
   };
 
   const urgencyColors = {
