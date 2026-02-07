@@ -28,7 +28,10 @@ import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
+import { useIsMobile } from '@/hooks/use-mobile';
 
+// Max dimension for mobile slider preview optimization
+const SLIDER_PREVIEW_MAX_PX = 1500;
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
 interface ErrorDetails {
@@ -57,6 +60,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  const isMobile = useIsMobile();
   
   // Contexto global de jobs - para notificação sonora e trava de navegação
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
@@ -114,6 +118,11 @@ const UpscalerArcanoTool: React.FC = () => {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingDimensions, setPendingDimensions] = useState<{ w: number; h: number } | null>(null);
   const [inputDimensions, setInputDimensions] = useState<{ w: number; h: number } | null>(null);
+
+  // Mobile slider optimization state (only for preview, download uses original)
+  const [optimizedInputImage, setOptimizedInputImage] = useState<string | null>(null);
+  const [optimizedOutputImage, setOptimizedOutputImage] = useState<string | null>(null);
+  const [isOptimizingForSlider, setIsOptimizingForSlider] = useState(false);
 
   // Queue message combos for friendly waiting experience
   const queueMessageCombos = [
@@ -175,6 +184,70 @@ const UpscalerArcanoTool: React.FC = () => {
     }
     return PROMPT_CATEGORIES[promptCategory];
   };
+
+  // Optimize images for mobile slider preview (1500px max)
+  const optimizeImagesForSlider = useCallback(async (
+    inputUrl: string,
+    outputUrl: string
+  ) => {
+    console.log('[Upscaler] Starting slider image optimization for mobile');
+    setIsOptimizingForSlider(true);
+    
+    try {
+      // Fetch both images in parallel
+      const [inputResponse, outputResponse] = await Promise.all([
+        fetch(inputUrl),
+        fetch(outputUrl)
+      ]);
+      
+      const [inputBlob, outputBlob] = await Promise.all([
+        inputResponse.blob(),
+        outputResponse.blob()
+      ]);
+      
+      // Create Files from blobs
+      const inputFile = new File([inputBlob], 'input.webp', { type: inputBlob.type });
+      const outputFile = new File([outputBlob], 'output.webp', { type: outputBlob.type });
+      
+      // Compress to 1500px in parallel
+      const [optimizedInput, optimizedOutput] = await Promise.all([
+        compressToMaxDimension(inputFile, SLIDER_PREVIEW_MAX_PX),
+        compressToMaxDimension(outputFile, SLIDER_PREVIEW_MAX_PX)
+      ]);
+      
+      // Create URLs for optimized images
+      const optimizedInputUrl = URL.createObjectURL(optimizedInput.file);
+      const optimizedOutputUrl = URL.createObjectURL(optimizedOutput.file);
+      
+      setOptimizedInputImage(optimizedInputUrl);
+      setOptimizedOutputImage(optimizedOutputUrl);
+      
+      console.log('[Upscaler] Slider images optimized for mobile preview:', {
+        inputDims: `${optimizedInput.width}x${optimizedInput.height}`,
+        outputDims: `${optimizedOutput.width}x${optimizedOutput.height}`
+      });
+    } catch (error) {
+      console.error('[Upscaler] Failed to optimize slider images:', error);
+      // Fallback: use original images
+      setOptimizedInputImage(inputUrl);
+      setOptimizedOutputImage(outputUrl);
+    } finally {
+      setIsOptimizingForSlider(false);
+    }
+  }, []);
+
+  // Cleanup object URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (optimizedInputImage?.startsWith('blob:')) {
+        URL.revokeObjectURL(optimizedInputImage);
+      }
+      if (optimizedOutputImage?.startsWith('blob:')) {
+        URL.revokeObjectURL(optimizedOutputImage);
+      }
+    };
+  }, [optimizedInputImage, optimizedOutputImage]);
+
   // SISTEMA DE SINCRONIZAÇÃO TRIPLA (Realtime + Polling + Visibility)
   // Garante que o usuário sempre receba o resultado, mesmo com problemas de rede
   useJobStatusSync({
@@ -195,6 +268,11 @@ const UpscalerArcanoTool: React.FC = () => {
         setIsWaitingInQueue(false);
         setQueuePosition(0);
         toast.success(t('upscalerTool.toast.success'));
+        
+        // Optimize images for mobile slider preview
+        if (isMobile && inputImage) {
+          optimizeImagesForSlider(inputImage, update.outputUrl);
+        }
       } else if (update.status === 'failed') {
         console.log('[Upscaler] Job failed:', update.errorMessage);
         setStatus('error');
@@ -373,6 +451,16 @@ const UpscalerArcanoTool: React.FC = () => {
     }
 
     // Credits will be consumed by the backend after successful job start
+
+    // Cleanup previous optimized slider images (mobile only)
+    if (optimizedInputImage?.startsWith('blob:')) {
+      URL.revokeObjectURL(optimizedInputImage);
+    }
+    if (optimizedOutputImage?.startsWith('blob:')) {
+      URL.revokeObjectURL(optimizedOutputImage);
+    }
+    setOptimizedInputImage(null);
+    setOptimizedOutputImage(null);
 
     setLastError(null);
     setStatus('uploading');
@@ -1127,7 +1215,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       Sair da fila
                     </Button>
                   </div>
-                ) : status === 'completed' && outputImage ? (
+                ) : status === 'completed' && outputImage && (!isMobile || !isOptimizingForSlider) ? (
                   /* Result View - Before/After Slider with Zoom */
                   <TransformWrapper
                     key={outputImage}
@@ -1226,12 +1314,13 @@ const UpscalerArcanoTool: React.FC = () => {
                         >
                           <div className="relative w-full h-full bg-black">
                             {/* AFTER image - Using ResilientImage for robust loading */}
+                            {/* On mobile: use optimized image for preview, but ResilientImage uses original for download */}
                             <TransformComponent 
                               wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} 
                               contentStyle={{ width: '100%', height: '100%' }}
                             >
                               <ResilientImage 
-                                src={outputImage} 
+                                src={isMobile && optimizedOutputImage ? optimizedOutputImage : outputImage} 
                                 alt="Depois" 
                                 className="w-full h-full"
                                 style={{ objectFit: 'contain' }}
@@ -1244,6 +1333,7 @@ const UpscalerArcanoTool: React.FC = () => {
                             </TransformComponent>
 
                             {/* BEFORE image - overlay clipped */}
+                            {/* On mobile: use optimized image for preview */}
                             <div 
                               className="absolute inset-0 pointer-events-none"
                               style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
@@ -1254,7 +1344,7 @@ const UpscalerArcanoTool: React.FC = () => {
                                 style={{ transformOrigin: '0% 0%' }}
                               >
                                 <img 
-                                  src={inputImage || ''} 
+                                  src={isMobile && optimizedInputImage ? optimizedInputImage : (inputImage || '')} 
                                   alt="Antes" 
                                   className="w-full h-full object-contain"
                                   draggable={false}
@@ -1304,6 +1394,12 @@ const UpscalerArcanoTool: React.FC = () => {
                       </div>
                     )}
                   </TransformWrapper>
+                ) : status === 'completed' && isMobile && isOptimizingForSlider ? (
+                  /* Mobile: Optimization loading state */
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                    <p className="text-sm text-purple-300">Preparando visualização...</p>
+                  </div>
                 ) : (status === 'uploading' || status === 'processing') && !isWaitingInQueue ? (
                   /* Processing State */
                   <div className="flex flex-col items-center justify-center gap-4">
