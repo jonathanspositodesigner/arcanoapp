@@ -5,6 +5,7 @@ export { BeforeAfterSlider } from './BeforeAfterSlider';
 export { LazyBeforeAfterSlider } from './LazyBeforeAfterSlider';
 export { FullscreenModal } from './FullscreenModal';
 export { LazyImage } from './LazyImage';
+export { ResilientImage } from './ResilientImage';
 export { SectionSkeleton } from './SectionSkeleton';
 export { SectionErrorBoundary } from './SectionErrorBoundary';
 export { LazySocialProofWrapper } from './LazySocialProofWrapper';

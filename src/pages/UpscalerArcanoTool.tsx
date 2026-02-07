@@ -24,6 +24,7 @@ import ToolsHeader from '@/components/ToolsHeader';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { JobDebugPanel, ImageCompressionModal } from '@/components/ai-tools';
+import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
@@ -1255,16 +1256,21 @@ const UpscalerArcanoTool: React.FC = () => {
                           }}
                         >
                           <div className="relative w-full h-full bg-black">
-                            {/* AFTER image */}
+                            {/* AFTER image - Using ResilientImage for robust loading */}
                             <TransformComponent 
                               wrapperStyle={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} 
                               contentStyle={{ width: '100%', height: '100%' }}
                             >
-                              <img 
+                              <ResilientImage 
                                 src={outputImage} 
                                 alt="Depois" 
-                                className="w-full h-full object-contain"
-                                draggable={false}
+                                className="w-full h-full"
+                                style={{ objectFit: 'contain' }}
+                                timeout={10000}
+                                compressOnFailure={true}
+                                showDownloadOnFail={true}
+                                onDownloadClick={downloadResult}
+                                downloadFileName={`upscaled-${Date.now()}.png`}
                               />
                             </TransformComponent>
 
