@@ -1,383 +1,345 @@
 
+# Plano: Sistema Global de Download e Visualização Resiliente para Todas as Ferramentas de IA
 
-# Plano: Sistema Resiliente de Carregamento de Imagens para Slider Antes/Depois
+## Escopo Global
 
-## Entendimento Confirmado
-
-1. **Download HD NÃO será tocado** - O `downloadResult()` continua usando `outputImage` original
-2. **Mudanças são APENAS para visualização no slider**
-3. **Auto-compressão silenciosa** - se a imagem original não carregar, criar versão leve (2000px + webp)
-4. **Fallback amigável** - Se tudo falhar, mostra mensagem "Visualização indisponível" + botão "Baixar em HD"
+Criar componentes e hooks **reutilizáveis** que serão o padrão para **TODAS** as ferramentas de IA atuais e futuras.
 
 ---
 
-## Arquitetura da Solução
+## Ferramentas de IA Afetadas
+
+| Ferramenta | Tipo de Mídia | Arquivo |
+|------------|---------------|---------|
+| Upscaler Arcano V3 | Imagem | `UpscalerArcanoTool.tsx` |
+| Pose Changer | Imagem | `PoseChangerTool.tsx` |
+| Veste AI | Imagem | `VesteAITool.tsx` |
+| Video Upscaler | Vídeo | `VideoUpscalerTool.tsx` |
+| **Futuras ferramentas** | Qualquer | Usarão os mesmos hooks |
+
+---
+
+## Arquitetura Global
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    FLUXO DE CARREGAMENTO RESILIENTE                        │
+│                    COMPONENTES GLOBAIS PARA AI TOOLS                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  outputImage (URL original do RunningHub)                                   │
-│       │                                                                     │
-│       ├──► Download HD: Usa URL original sempre ✓                          │
-│       │                                                                     │
-│       └──► Slider de Visualização:                                         │
-│             │                                                               │
-│             ▼                                                               │
-│       ┌─────────────────────────────────────────────────────────────┐      │
-│       │  ResilientImage - Tentativa 1: Carregar URL original        │      │
-│       │       ↓ (falha ou timeout 8s)                               │      │
-│       │  Tentativa 2: URL + cache buster (?_t=timestamp)            │      │
-│       │       ↓ (falha ou timeout 8s)                               │      │
-│       │  Tentativa 3: Fetch → Blob → Compressão 2000px/webp         │      │
-│       │       ↓ (se ainda falhar)                                   │      │
-│       │  Fallback: "Visualização indisponível" + Botão Baixar HD    │      │
-│       └─────────────────────────────────────────────────────────────┘      │
+│  src/hooks/                                                                 │
+│  └── useResilientDownload.ts  ← Hook global para download                  │
+│                                                                             │
+│  src/components/ai-tools/                                                   │
+│  ├── DownloadProgressOverlay.tsx  ← Overlay global de progresso            │
+│  ├── ResilientMediaViewer.tsx     ← Viewer global (imagem/vídeo)           │
+│  └── index.ts                     ← Exports atualizados                    │
+│                                                                             │
+│  src/components/upscaler/                                                   │
+│  └── ResilientImage.tsx           ← (já existe) Para sliders               │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Fallback Final - Design Visual
+## 1. Hook Global: `useResilientDownload`
+
+**Localização:** `src/hooks/useResilientDownload.ts`
+
+Suporta **imagens E vídeos** com 4 métodos de fallback silenciosos:
+
+```tsx
+interface DownloadOptions {
+  url: string;
+  filename: string;
+  mediaType?: 'image' | 'video';  // Detecta automaticamente se não informado
+  timeout?: number;               // Padrão: 10000 (10 segundos)
+  onSuccess?: () => void;
+  onFallback?: () => void;        // Chamado quando abre em nova aba
+}
+
+interface DownloadState {
+  isDownloading: boolean;
+  progress: number;  // 0-100 (só progresso, sem tentativas visíveis)
+}
+
+const { isDownloading, progress, download, cancel } = useResilientDownload();
+```
+
+**Métodos de fallback (SILENCIOSOS):**
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│              ┌─────────────────────────┐                   │
-│              │                         │                   │
-│              │    📷  (ícone imagem)   │                   │
-│              │                         │                   │
-│              │  Visualização           │                   │
-│              │  indisponível           │                   │
-│              │                         │                   │
-│              │  Sua imagem está pronta │                   │
-│              │                         │                   │
-│              │  ┌─────────────────┐    │                   │
-│              │  │  ⬇ Baixar HD   │    │                   │
-│              │  └─────────────────┘    │                   │
-│              │                         │                   │
-│              └─────────────────────────┘                   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Método 1: Fetch + ReadableStream (progresso real)                         │
+│       ↓ silencioso (timeout 10s)                                           │
+│  Método 2: Fetch + Cache Buster (?_t=timestamp)                            │
+│       ↓ silencioso (timeout 10s)                                           │
+│  Método 3: Anchor tag direta (navegação)                                   │
+│       ↓ silencioso                                                         │
+│  Método 4: Share API (mobile - iOS/Android)                                │
+│       ↓ silencioso                                                         │
+│  Fallback: Abre em nova aba + Toast "Segure para salvar"                   │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Componentes e Arquivos
+## 2. Componente Global: `DownloadProgressOverlay`
 
-### 1. CRIAR: `src/components/upscaler/ResilientImage.tsx`
+**Localização:** `src/components/ai-tools/DownloadProgressOverlay.tsx`
 
-Componente inteligente com fallback customizado:
+Design **LIMPO** - só progresso, SEM tentativas:
 
-```tsx
-interface ResilientImageProps {
-  src: string;                    // URL original (HD)
-  originalSrc?: string;           // URL para download (caso diferente)
-  alt: string;
-  className?: string;
-  style?: React.CSSProperties;
-  timeout?: number;               // ms por tentativa (padrão: 8000)
-  maxRetries?: number;            // tentativas (padrão: 3)
-  compressOnFailure?: boolean;    // comprime para 2000px no método 3
-  showDownloadOnFail?: boolean;   // mostra botão download no fallback
-  downloadFileName?: string;      // nome do arquivo para download
-  onLoadSuccess?: () => void;
-  onDownloadClick?: () => void;   // callback customizado para download
-}
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                    ┌──────────────────────┐                                │
+│                    │                      │                                │
+│                    │         75%          │  ← Progresso circular          │
+│                    │                      │                                │
+│                    └──────────────────────┘                                │
+│                                                                             │
+│                  Baixando imagem HD...                                      │
+│                                                                             │
+│                      [ Cancelar ]                                          │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+SEM "Tentativa X de Y" - usuário não vê nada sobre fallbacks
 ```
 
-**Fallback Component (quando tudo falha):**
+**Props:**
 ```tsx
-const FallbackDisplay = ({ onDownload, downloadFileName }) => (
-  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
-    <div className="text-center p-6 space-y-4">
-      <div className="w-16 h-16 mx-auto rounded-full bg-white/10 flex items-center justify-center">
-        <ImageIcon className="w-8 h-8 text-white/60" />
-      </div>
-      <div className="space-y-1">
-        <p className="text-white font-medium">Visualização indisponível</p>
-        <p className="text-white/60 text-sm">Sua imagem está pronta!</p>
-      </div>
-      <Button
-        onClick={onDownload}
-        className="bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700"
-      >
-        <Download className="w-4 h-4 mr-2" />
-        Baixar em HD
-      </Button>
-    </div>
-  </div>
-);
-```
-
-### 2. MODIFICAR: `src/components/upscaler/BeforeAfterSlider.tsx`
-
-Adicionar props para o fallback com download:
-
-```tsx
-interface BeforeAfterSliderProps {
-  beforeImage: string;
-  afterImage: string;
-  label?: string;
-  size?: "default" | "large";
-  onZoomClick?: () => void;
+interface DownloadProgressOverlayProps {
+  isVisible: boolean;
+  progress: number;
+  onCancel?: () => void;
+  mediaType?: 'image' | 'video';  // Muda texto: "imagem HD" ou "vídeo HD"
   locale?: 'pt' | 'es';
-  aspectRatio?: string;
-  onDownloadClick?: () => void;     // NOVO: callback para download
-  downloadFileName?: string;         // NOVO: nome do arquivo
 }
 ```
 
-Usar `ResilientImage` com a prop de download:
+---
 
-```tsx
-<ResilientImage
-  src={afterImage}
-  alt={locale === 'es' ? "Después" : "Depois"}
-  className="absolute inset-0 w-full h-full object-cover"
-  timeout={8000}
-  compressOnFailure={true}
-  showDownloadOnFail={true}
-  onDownloadClick={onDownloadClick}
-  downloadFileName={downloadFileName}
-/>
-```
+## 3. Atualização do `ResilientImage` (já existe)
 
-### 3. MODIFICAR: `src/components/upscaler/HeroBeforeAfterSlider.tsx`
-
-Mesmo padrão, com suporte ao fallback de download.
-
-### 4. MODIFICAR: `src/pages/UpscalerArcanoTool.tsx`
-
-Passar o `downloadResult` como callback para o slider:
-
-```tsx
-// No slider de resultado (após processamento)
-<BeforeAfterSlider
-  beforeImage={inputPreview}
-  afterImage={outputImage}
-  onDownloadClick={downloadResult}  // Usa a função existente!
-  downloadFileName={`upscaled-${Date.now()}.png`}
-/>
-```
-
-### 5. ATUALIZAR: `src/components/upscaler/index.ts`
-
-Adicionar export do novo componente:
-```tsx
-export { ResilientImage } from './ResilientImage';
-```
+O componente `ResilientImage.tsx` já foi criado para sliders. Apenas garantir que:
+- Funciona com `onDownloadClick` para chamar o hook global
+- Suporta localização (pt/es)
 
 ---
 
-## Especificação Técnica do ResilientImage
+## 4. Modificações por Ferramenta
+
+### 4.1 UpscalerArcanoTool.tsx
 
 ```tsx
-const ResilientImage = ({
-  src,
-  originalSrc,
-  alt,
-  className,
-  style,
-  timeout = 8000,
-  maxRetries = 3,
-  compressOnFailure = true,
-  showDownloadOnFail = false,
-  downloadFileName,
-  onLoadSuccess,
-  onDownloadClick
-}: ResilientImageProps) => {
-  const [attempt, setAttempt] = useState(1);
-  const [currentSrc, setCurrentSrc] = useState(src);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isFailed, setIsFailed] = useState(false);
-  const [isCompressing, setIsCompressing] = useState(false);
-  const objectUrlRef = useRef<string | null>(null);
+// ANTES (linha 556-566):
+const downloadResult = useCallback(() => {
+  const link = document.createElement('a');
+  link.href = outputImage;
+  link.download = `upscaled-${Date.now()}.png`;
+  link.click();
+}, [outputImage]);
 
-  // Limpa ObjectURLs na desmontagem
-  useEffect(() => {
-    return () => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-      }
-    };
-  }, []);
+// DEPOIS:
+import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { DownloadProgressOverlay } from '@/components/ai-tools';
 
-  // Reset quando src muda
-  useEffect(() => {
-    setAttempt(1);
-    setCurrentSrc(src);
-    setIsLoaded(false);
-    setIsFailed(false);
-  }, [src]);
+const { isDownloading, progress, download, cancel } = useResilientDownload();
 
-  // Timeout handler
-  useEffect(() => {
-    if (isLoaded || isFailed) return;
+const downloadResult = useCallback(async () => {
+  if (!outputImage) return;
+  await download({
+    url: outputImage,
+    filename: `upscaled-${Date.now()}.png`,
+    mediaType: 'image',
+    timeout: 10000,
+    onSuccess: () => toast.success(t('upscalerTool.toast.downloaded'))
+  });
+}, [outputImage, download, t]);
 
-    const timer = setTimeout(() => {
-      if (!isLoaded) {
-        console.debug(`[ResilientImage] Timeout na tentativa ${attempt}`);
-        handleRetry();
-      }
-    }, timeout);
+// No JSX:
+<DownloadProgressOverlay
+  isVisible={isDownloading}
+  progress={progress}
+  onCancel={cancel}
+  mediaType="image"
+  locale={locale}
+/>
+```
 
-    return () => clearTimeout(timer);
-  }, [attempt, isLoaded, isFailed, timeout]);
+### 4.2 PoseChangerTool.tsx
 
-  const handleRetry = async () => {
-    if (attempt >= maxRetries) {
-      setIsFailed(true);
-      return; // Não seta fallback image, deixa o FallbackDisplay aparecer
-    }
-
-    const nextAttempt = attempt + 1;
-    setAttempt(nextAttempt);
-
-    if (nextAttempt === 2) {
-      // Cache buster
-      const buster = `${src}${src.includes('?') ? '&' : '?'}_t=${Date.now()}`;
-      setCurrentSrc(buster);
-    } else if (nextAttempt === 3 && compressOnFailure) {
-      // Fetch + compress
-      setIsCompressing(true);
-      try {
-        const response = await fetch(src, { mode: 'cors' });
-        const blob = await response.blob();
-        const file = new File([blob], 'temp.webp', { type: blob.type });
-        const { file: compressed } = await compressToMaxDimension(file, 2000);
-        
-        if (objectUrlRef.current) {
-          URL.revokeObjectURL(objectUrlRef.current);
-        }
-        
-        const compressedUrl = URL.createObjectURL(compressed);
-        objectUrlRef.current = compressedUrl;
-        setCurrentSrc(compressedUrl);
-      } catch (err) {
-        console.error('[ResilientImage] Erro no fetch/compress:', err);
-        setIsFailed(true);
-      } finally {
-        setIsCompressing(false);
-      }
-    }
-  };
-
-  const handleDownload = () => {
-    if (onDownloadClick) {
-      onDownloadClick();
-    } else {
-      // Download padrão se não tiver callback customizado
-      const link = document.createElement('a');
-      link.href = originalSrc || src;
-      link.download = downloadFileName || `image-${Date.now()}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
-
-  // Se falhou e tem opção de download, mostra fallback amigável
-  if (isFailed && showDownloadOnFail) {
-    return (
-      <div className={cn("relative", className)} style={style}>
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg">
-          <div className="text-center p-6 space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-white/10 flex items-center justify-center">
-              <ImageIcon className="w-8 h-8 text-white/60" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-white font-medium">Visualização indisponível</p>
-              <p className="text-white/60 text-sm">Sua imagem está pronta!</p>
-            </div>
-            <Button
-              onClick={handleDownload}
-              size="sm"
-              className="bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Baixar em HD
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={cn("relative", className)} style={style}>
-      {/* Loading indicator durante compressão */}
-      {isCompressing && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10 rounded-lg">
-          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        </div>
-      )}
-      
-      <img
-        src={currentSrc}
-        alt={alt}
-        className="w-full h-full object-cover"
-        style={{
-          opacity: isLoaded ? 1 : 0,
-          transition: 'opacity 0.3s ease-in-out'
-        }}
-        onLoad={() => {
-          setIsLoaded(true);
-          onLoadSuccess?.();
-        }}
-        onError={() => !isLoaded && handleRetry()}
-        draggable={false}
-      />
-    </div>
-  );
+```tsx
+// ANTES (linha 437-446):
+const handleDownload = () => {
+  const link = document.createElement('a');
+  link.href = outputImage;
+  link.download = `pose-changer-${Date.now()}.png`;
+  link.click();
 };
+
+// DEPOIS:
+import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { DownloadProgressOverlay } from '@/components/ai-tools';
+
+const { isDownloading, progress, download, cancel } = useResilientDownload();
+
+const handleDownload = useCallback(async () => {
+  if (!outputImage) return;
+  await download({
+    url: outputImage,
+    filename: `pose-changer-${Date.now()}.png`,
+    mediaType: 'image',
+    timeout: 10000,
+    onSuccess: () => toast.success('Download concluído!')
+  });
+}, [outputImage, download]);
+
+// No JSX:
+<DownloadProgressOverlay
+  isVisible={isDownloading}
+  progress={progress}
+  onCancel={cancel}
+  mediaType="image"
+/>
+```
+
+### 4.3 VesteAITool.tsx
+
+```tsx
+// ANTES (linha 437-446):
+const handleDownload = () => {
+  const link = document.createElement('a');
+  link.href = outputImage;
+  link.download = `veste-ai-${Date.now()}.png`;
+  link.click();
+};
+
+// DEPOIS:
+import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { DownloadProgressOverlay } from '@/components/ai-tools';
+
+const { isDownloading, progress, download, cancel } = useResilientDownload();
+
+const handleDownload = useCallback(async () => {
+  if (!outputImage) return;
+  await download({
+    url: outputImage,
+    filename: `veste-ai-${Date.now()}.png`,
+    mediaType: 'image',
+    timeout: 10000,
+    onSuccess: () => toast.success('Download concluído!')
+  });
+}, [outputImage, download]);
+
+// No JSX:
+<DownloadProgressOverlay
+  isVisible={isDownloading}
+  progress={progress}
+  onCancel={cancel}
+  mediaType="image"
+/>
+```
+
+### 4.4 VideoUpscalerTool.tsx
+
+```tsx
+// ANTES (linha 454-463):
+const handleDownload = () => {
+  const link = document.createElement('a');
+  link.href = outputVideoUrl;
+  link.download = `video-upscaler-${Date.now()}.mp4`;
+  link.click();
+};
+
+// DEPOIS:
+import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { DownloadProgressOverlay } from '@/components/ai-tools';
+
+const { isDownloading, progress, download, cancel } = useResilientDownload();
+
+const handleDownload = useCallback(async () => {
+  if (!outputVideoUrl) return;
+  await download({
+    url: outputVideoUrl,
+    filename: `video-upscaler-${Date.now()}.mp4`,
+    mediaType: 'video',
+    timeout: 10000,  // Vídeos podem precisar mais tempo
+    onSuccess: () => toast.success('Download concluído!')
+  });
+}, [outputVideoUrl, download]);
+
+// No JSX:
+<DownloadProgressOverlay
+  isVisible={isDownloading}
+  progress={progress}
+  onCancel={cancel}
+  mediaType="video"
+/>
 ```
 
 ---
 
-## Resultado Visual do Fallback
+## 5. Exportar no index.ts
 
-Quando todas as tentativas falharem, o usuário verá:
+**Atualizar:** `src/components/ai-tools/index.ts`
 
-| Elemento | Descrição |
-|----------|-----------|
-| Ícone | Imagem estilizada (ImageIcon) |
-| Título | "Visualização indisponível" |
-| Subtítulo | "Sua imagem está pronta!" |
-| Botão | Gradiente fuchsia → purple, ícone de download |
-| Ação | Chama `downloadResult()` existente |
+```tsx
+export { default as ActiveJobBlockModal } from './ActiveJobBlockModal';
+export { default as JobStepIndicator, STEP_LABELS } from './JobStepIndicator';
+export { default as JobDebugModal } from './JobDebugModal';
+export { default as JobDebugPanel } from './JobDebugPanel';
+export { default as ImageCompressionModal } from './ImageCompressionModal';
+export { DownloadProgressOverlay } from './DownloadProgressOverlay';  // NOVO
+```
 
 ---
 
-## Fluxo Completo
+## Resumo de Arquivos
 
-```text
-┌──────────────────────────────────────────────────────────────────────────┐
-│                          CELULAR COM FALHA TOTAL                        │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  1. Tentativa 1: Timeout                                                 │
-│  2. Tentativa 2: Cache buster - Timeout                                  │
-│  3. Tentativa 3: Fetch + Compress - Falha (sem internet?)                │
-│                                                                          │
-│  ┌─────────────────────────────────────────────────────────────────────┐│
-│  │                                                                     ││
-│  │                     📷                                              ││
-│  │                                                                     ││
-│  │              Visualização indisponível                              ││
-│  │              Sua imagem está pronta!                                ││
-│  │                                                                     ││
-│  │              ┌─────────────────────┐                                ││
-│  │              │  ⬇ Baixar em HD    │  ← Clica e baixa outputImage   ││
-│  │              └─────────────────────┘                                ││
-│  │                                                                     ││
-│  └─────────────────────────────────────────────────────────────────────┘│
-│                                                                          │
-│  Usuário baixa a imagem HD normalmente! ✓                               │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
+| Arquivo | Ação | Descrição |
+|---------|------|-----------|
+| `src/hooks/useResilientDownload.ts` | CRIAR | Hook global de download |
+| `src/components/ai-tools/DownloadProgressOverlay.tsx` | CRIAR | Overlay de progresso |
+| `src/components/ai-tools/index.ts` | ATUALIZAR | Export novo componente |
+| `src/pages/UpscalerArcanoTool.tsx` | MODIFICAR | Usar hook global |
+| `src/pages/PoseChangerTool.tsx` | MODIFICAR | Usar hook global |
+| `src/pages/VesteAITool.tsx` | MODIFICAR | Usar hook global |
+| `src/pages/VideoUpscalerTool.tsx` | MODIFICAR | Usar hook global |
+
+---
+
+## Padrão para Ferramentas Futuras
+
+Qualquer nova ferramenta de IA deve seguir este padrão:
+
+```tsx
+// 1. Importar
+import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { DownloadProgressOverlay } from '@/components/ai-tools';
+
+// 2. Usar hook
+const { isDownloading, progress, download, cancel } = useResilientDownload();
+
+// 3. Função de download
+const handleDownload = async () => {
+  await download({
+    url: outputUrl,
+    filename: `nome-ferramenta-${Date.now()}.extensao`,
+    mediaType: 'image' | 'video',
+    timeout: 10000
+  });
+};
+
+// 4. Overlay no JSX
+<DownloadProgressOverlay
+  isVisible={isDownloading}
+  progress={progress}
+  onCancel={cancel}
+  mediaType="image"
+/>
 ```
 
 ---
@@ -386,21 +348,9 @@ Quando todas as tentativas falharem, o usuário verá:
 
 | Item | Status |
 |------|--------|
-| Download HD preservado | Usa `downloadResult()` existente |
 | Edge Functions | Nenhuma alteração |
 | Webhooks | Nenhum alterado |
 | Banco de dados | Nenhuma alteração |
 | Lógica de cobrança | Intocada |
-
----
-
-## Resumo de Alterações
-
-| Arquivo | Ação | Impacto |
-|---------|------|---------|
-| `src/components/upscaler/ResilientImage.tsx` | CRIAR | Novo componente |
-| `src/components/upscaler/BeforeAfterSlider.tsx` | MODIFICAR | Props + ResilientImage |
-| `src/components/upscaler/HeroBeforeAfterSlider.tsx` | MODIFICAR | Props + ResilientImage |
-| `src/pages/UpscalerArcanoTool.tsx` | MODIFICAR | Passa downloadResult |
-| `src/components/upscaler/index.ts` | ATUALIZAR | Export novo componente |
-
+| ResilientImage | Continua funcionando (sliders) |
+| Código reutilizável | Hook + componente globais |
