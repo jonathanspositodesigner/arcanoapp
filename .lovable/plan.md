@@ -1,258 +1,184 @@
 
 
 ## Resumo
-Implementar o motor completo do **Arcano Cloner** usando a API RunningHub (WebApp ID `2019877042115842050`), seguindo exatamente o mesmo padrão das outras ferramentas de IA, incluindo:
-
-- ✅ Modal de compressão quando imagem é muito grande (já existe no `ImageUploadCard`)
-- ✅ Download resiliente que funciona no Safari/iOS (já existe com `useResilientDownload`)
-- ✅ Overlay de progresso de download (já existe com `DownloadProgressOverlay`)
-- ✅ Sincronização tripla (Realtime + Polling + Visibility)
-- ✅ Watchdog para jobs travados
-- ✅ Recuperação via token de notificação
-
----
-
-## Componentes já prontos (não precisam de alteração)
-
-| Componente | Funcionalidade |
-|------------|----------------|
-| `ImageUploadCard` | Detecta imagem grande e mostra modal de compressão |
-| `ImageCompressionModal` | Botão "Comprimir e Usar" para imagens > 2000px |
-| `PhotoLibraryModal` | Comprime automaticamente uploads para max 2048px |
-| `ReferenceImageCard` | Apenas exibe e gerencia referência |
-| `useResilientDownload` | 5 métodos de fallback para download (Safari/iOS) |
-| `DownloadProgressOverlay` | Progresso circular durante download |
+Configurar os painéis de **Custos IA** e **Rentabilidade** para incluir o **Arcano Cloner** e deixar o sistema documentado para facilitar a adição de novas ferramentas de IA no futuro.
 
 ---
 
 ## O que será implementado
 
-### 1. Tabela `arcano_cloner_jobs` no Banco de Dados
+### 1. Migration SQL - Atualizar 4 RPCs do Banco
 
+As funções RPC estão atualmente hardcoded e não incluem `arcano_cloner_jobs`. Vamos atualizar:
+
+| Função RPC | Descrição |
+|------------|-----------|
+| `get_ai_tools_usage` | Lista de jobs com paginação |
+| `get_ai_tools_usage_count` | Contagem total para paginação |
+| `get_ai_tools_usage_summary` | Cards de resumo (totais, médias) |
+| `get_ai_tools_cost_averages` | Médias de custo por ferramenta (rentabilidade) |
+
+### 2. Frontend - AdminAIToolsUsageTab.tsx
+
+**Linha 67-72** - Adicionar Arcano Cloner ao filtro de ferramentas:
+```typescript
+const TOOL_FILTERS = [
+  { value: "all", label: "Todas as ferramentas" },
+  { value: "Upscaler Arcano", label: "Upscaler Arcano" },
+  { value: "Pose Changer", label: "Pose Changer" },
+  { value: "Veste AI", label: "Veste AI" },
+  { value: "Arcano Cloner", label: "Arcano Cloner" },  // NOVO
+];
+```
+
+**Linha 216-224** - Adicionar cor do badge:
+```typescript
+const getToolBadge = (toolName: string) => {
+  const colors: Record<string, string> = {
+    "Upscaler Arcano": "bg-purple-500/20 text-purple-400 border-purple-500/30",
+    "Pose Changer": "bg-orange-500/20 text-orange-400 border-orange-500/30",
+    "Veste AI": "bg-pink-500/20 text-pink-400 border-pink-500/30",
+    "Video Upscaler": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+    "Arcano Cloner": "bg-blue-500/20 text-blue-400 border-blue-500/30",  // NOVO
+  };
+  return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
+};
+```
+
+**Linha 226-234** - Adicionar mapeamento de tabela para cancelamento:
+```typescript
+const getTableName = (toolName: string): string => {
+  switch (toolName) {
+    case "Upscaler Arcano": return "upscaler_jobs";
+    case "Pose Changer": return "pose_changer_jobs";
+    case "Veste AI": return "veste_ai_jobs";
+    case "Video Upscaler": return "video_upscaler_jobs";
+    case "Arcano Cloner": return "arcano_cloner_jobs";  // NOVO
+    default: return "upscaler_jobs";
+  }
+};
+```
+
+### 3. Frontend - AIToolsProfitTable.tsx
+
+**Linha 65-71** - Adicionar custo de créditos padrão:
+```typescript
+const TOOL_CREDIT_COSTS: Record<string, number> = {
+  "Upscaler Arcano": 60,
+  "Upscaler Pro": 80,
+  "Pose Changer": 60,
+  "Veste AI": 60,
+  "Video Upscaler": 150,
+  "Arcano Cloner": 80,  // NOVO
+};
+```
+
+---
+
+## Detalhes da Migration SQL
+
+### get_ai_tools_usage - Adicionar Arcano Cloner
 ```sql
-CREATE TABLE public.arcano_cloner_jobs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_id TEXT NOT NULL,
-  user_id UUID,
-  task_id TEXT,
-  status TEXT NOT NULL DEFAULT 'pending',
-  user_file_name TEXT,
-  reference_file_name TEXT,
-  user_image_url TEXT,
-  reference_image_url TEXT,
-  aspect_ratio TEXT DEFAULT '1:1',
-  output_url TEXT,
-  error_message TEXT,
-  position INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  started_at TIMESTAMPTZ,
-  completed_at TIMESTAMPTZ,
-  rh_cost INTEGER,
-  user_credit_cost INTEGER,
-  waited_in_queue BOOLEAN DEFAULT false,
-  queue_wait_seconds INTEGER,
-  api_account TEXT NOT NULL DEFAULT 'primary',
-  credits_charged BOOLEAN DEFAULT false,
-  credits_refunded BOOLEAN DEFAULT false,
-  job_payload JSONB,
-  current_step TEXT,
-  step_history JSONB,
-  raw_api_response JSONB,
-  raw_webhook_payload JSONB,
-  failed_at_step TEXT,
-  thumbnail_url TEXT
-);
+UNION ALL
 
--- Índices
-CREATE INDEX idx_arcano_cloner_jobs_status ON arcano_cloner_jobs(status);
-CREATE INDEX idx_arcano_cloner_jobs_session ON arcano_cloner_jobs(session_id);
-CREATE INDEX idx_arcano_cloner_jobs_user ON arcano_cloner_jobs(user_id);
-CREATE INDEX idx_arcano_cloner_jobs_task_id ON arcano_cloner_jobs(task_id);
-
--- Realtime
-ALTER PUBLICATION supabase_realtime ADD TABLE arcano_cloner_jobs;
-
--- RLS
-ALTER TABLE arcano_cloner_jobs ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own jobs" ON arcano_cloner_jobs
-  FOR SELECT USING (user_id = auth.uid());
-
-CREATE POLICY "Authenticated users can insert" ON arcano_cloner_jobs
-  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
-
-CREATE POLICY "Service role full access" ON arcano_cloner_jobs
-  FOR ALL USING (true);
+-- Arcano Cloner jobs
+SELECT 
+  acj.id,
+  'Arcano Cloner'::TEXT as tool_name,
+  acj.user_id,
+  acj.status,
+  COALESCE(acj.rh_cost, 0) as rh_cost,
+  COALESCE(acj.user_credit_cost, 0) as user_credit_cost,
+  COALESCE(acj.user_credit_cost, 0) - COALESCE(acj.rh_cost, 0) as profit,
+  COALESCE(acj.waited_in_queue, false) as waited_in_queue,
+  COALESCE(acj.queue_wait_seconds, 0) as queue_wait_seconds,
+  CASE 
+    WHEN acj.started_at IS NOT NULL AND acj.completed_at IS NOT NULL 
+    THEN EXTRACT(EPOCH FROM (acj.completed_at - acj.started_at))::INTEGER
+    ELSE 0
+  END as processing_seconds,
+  acj.created_at,
+  acj.started_at,
+  acj.completed_at
+FROM arcano_cloner_jobs acj
+WHERE acj.user_id IS NOT NULL
 ```
 
-### 2. Edge Function `runninghub-arcano-cloner`
-
-Endpoints:
-- `/upload` - Upload de imagens para RunningHub
-- `/run` - Inicia processamento com o workflow
-- `/queue-status` - Consulta status do job
-
-**Mapeamento de Nodes do Workflow:**
-
-| Node ID | Campo | Valor |
-|---------|-------|-------|
-| 58 | image | Foto do usuário (filename do RunningHub) |
-| 62 | image | Foto de referência (filename do RunningHub) |
-| 69 | text | Prompt fixo |
-| 85 | aspectRatio | Proporção selecionada (1:1, 3:4, 9:16, 16:9) |
-
-**Prompt fixo (Node 69):**
-```
-faça o homem da imagem 1 com a mesma pose, composição de cenário fundo e roupas da imagem 2. SEM RUÍDO NA FOTO
+### get_ai_tools_usage_count - Adicionar
+```sql
+UNION ALL
+SELECT id FROM arcano_cloner_jobs 
+WHERE user_id IS NOT NULL
+  AND (p_start_date IS NULL OR created_at >= p_start_date)
+  AND (p_end_date IS NULL OR created_at <= p_end_date)
 ```
 
-### 3. Atualizações em funções existentes
+### get_ai_tools_usage_summary - Adicionar
+```sql
+UNION ALL
+
+-- Arcano Cloner jobs
+SELECT 
+  acj.status,
+  COALESCE(acj.rh_cost, 0),
+  COALESCE(acj.user_credit_cost, 0),
+  COALESCE(acj.waited_in_queue, false),
+  COALESCE(acj.queue_wait_seconds, 0),
+  CASE 
+    WHEN acj.started_at IS NOT NULL AND acj.completed_at IS NOT NULL 
+    THEN EXTRACT(EPOCH FROM (acj.completed_at - acj.started_at))::INTEGER
+    ELSE 0
+  END
+FROM arcano_cloner_jobs acj
+WHERE acj.user_id IS NOT NULL
+  AND (p_start_date IS NULL OR acj.created_at >= p_start_date)
+  AND (p_end_date IS NULL OR acj.created_at <= p_end_date)
+```
+
+### get_ai_tools_cost_averages - Adicionar
+```sql
+UNION ALL
+
+-- Arcano Cloner
+SELECT 
+  'Arcano Cloner'::TEXT as tool_name,
+  COUNT(*)::BIGINT as total_jobs,
+  COALESCE(ROUND(AVG(rh_cost)::NUMERIC, 2), 0) as avg_rh_cost,
+  COALESCE(ROUND(AVG(user_credit_cost)::NUMERIC, 2), 0) as avg_credit_cost,
+  COALESCE(SUM(rh_cost)::NUMERIC, 0) as total_rh_cost,
+  COALESCE(SUM(user_credit_cost)::NUMERIC, 0) as total_credit_cost
+FROM arcano_cloner_jobs
+WHERE status = 'completed'
+```
+
+---
+
+## Arquivos a Serem Modificados
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `runninghub-webhook/index.ts` | Adicionar `arcano_cloner_jobs` à lista de tabelas |
-| `runninghub-queue-manager/index.ts` | Adicionar WebApp ID e tabela |
-| `src/ai/JobManager.ts` | Adicionar mapeamentos para `arcano_cloner` |
-
-### 4. Atualização do ArcanoClonerTool.tsx
-
-Habilitar os hooks que estão comentados e implementar o fluxo real de processamento:
-
-```typescript
-// Hooks que serão habilitados:
-useJobStatusSync({
-  jobId,
-  toolType: 'arcano_cloner',
-  enabled: status === 'processing' || status === 'waiting' || status === 'uploading',
-  onStatusChange: (update) => { /* handler igual Pose Changer */ },
-  onGlobalStatusChange: updateJobStatus,
-});
-
-useNotificationTokenRecovery({
-  userId: user?.id,
-  toolTable: 'arcano_cloner_jobs',
-  onRecovery: useCallback((result) => { /* handler */ }, []),
-});
-
-useJobPendingWatchdog({
-  jobId,
-  toolType: 'arcano_cloner',
-  enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
-  onJobFailed: useCallback((errorMessage) => { /* handler */ }, [endSubmit]),
-});
-```
-
-**handleProcess atualizado:**
-```typescript
-// Step 1-2: Comprime e faz upload (já implementado)
-
-// Step 3: Criar job no banco
-const { data: job, error: jobError } = await supabase
-  .from('arcano_cloner_jobs')
-  .insert({
-    session_id: sessionIdRef.current,
-    user_id: user.id,
-    status: 'pending',
-    user_file_name: userUrl.split('/').pop(),
-    reference_file_name: referenceUrl.split('/').pop(),
-    aspect_ratio: aspectRatio,
-  })
-  .select()
-  .single();
-
-// Step 4: Chamar edge function
-const { data: runResult, error: runError } = await supabase.functions.invoke(
-  'runninghub-arcano-cloner/run',
-  {
-    body: {
-      jobId: job.id,
-      userImageUrl: userUrl,
-      referenceImageUrl: referenceUrl,
-      aspectRatio: aspectRatio,
-      userId: user.id,
-      creditCost: CREDIT_COST,
-    },
-  }
-);
-```
+| Migration SQL | Recriar as 4 RPCs incluindo `arcano_cloner_jobs` |
+| `src/components/admin/AdminAIToolsUsageTab.tsx` | Adicionar filtro, badge e mapeamento |
+| `src/components/admin/AIToolsProfitTable.tsx` | Adicionar custo de créditos |
 
 ---
 
-## Arquivos a Serem Criados/Modificados
+## Guia para Adicionar Novas Ferramentas no Futuro
 
-| Arquivo | Ação |
-|---------|------|
-| Migration SQL | **Criar** tabela + policies + realtime |
-| `supabase/functions/runninghub-arcano-cloner/index.ts` | **Criar** Edge Function completa |
-| `supabase/functions/runninghub-webhook/index.ts` | Modificar - adicionar tabela |
-| `supabase/functions/runninghub-queue-manager/index.ts` | Modificar - adicionar webapp ID e tabela |
-| `src/ai/JobManager.ts` | Modificar - adicionar mapeamentos |
-| `src/pages/ArcanoClonerTool.tsx` | Modificar - habilitar hooks e fluxo real |
-| RPCs (`user_cancel_ai_job`, `cleanup_all_stale_ai_jobs`) | Modificar - incluir nova tabela |
+Quando criar uma nova ferramenta de IA (ex: `nova_ferramenta_jobs`), siga este checklist:
 
----
+### 1. Backend (SQL)
+Criar nova migration atualizando as 4 RPCs:
+- `get_ai_tools_usage` - Adicionar `UNION ALL` com a nova tabela
+- `get_ai_tools_usage_count` - Adicionar `UNION ALL SELECT id FROM nova_tabela`
+- `get_ai_tools_usage_summary` - Adicionar `UNION ALL` com métricas
+- `get_ai_tools_cost_averages` - Adicionar `UNION ALL` com médias
 
-## Fluxo Completo de Funcionamento
+### 2. Frontend - AdminAIToolsUsageTab.tsx
+- Adicionar ao `TOOL_FILTERS` array
+- Adicionar cor ao `getToolBadge()` colors map
+- Adicionar ao `getTableName()` switch
 
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│  UPLOAD DE IMAGEM (Sua Foto)                                            │
-├─────────────────────────────────────────────────────────────────────────┤
-│  1. Usuário seleciona imagem via ImageUploadCard                        │
-│  2. SE imagem > 2000px → abre ImageCompressionModal                     │
-│     → Usuário clica "Comprimir e Usar"                                  │
-│     → Imagem comprimida para max 1999px                                 │
-│  3. Imagem exibida no card com dimensões (📐 1920 x 1080 px)           │
-└─────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────┐
-│  REFERÊNCIA (Foto de Referência)                                        │
-├─────────────────────────────────────────────────────────────────────────┤
-│  1. Usuário clica no ReferenceImageCard (+)                             │
-│  2. Abre PhotoLibraryModal                                              │
-│     → Pode escolher da biblioteca (já otimizada)                        │
-│     → Ou fazer upload (comprimido automaticamente para 2048px)          │
-│  3. Imagem exibida no card                                              │
-└─────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────┐
-│  PROCESSAMENTO                                                          │
-├─────────────────────────────────────────────────────────────────────────┤
-│  1. Click "Gerar Imagem (80 créditos)"                                  │
-│  2. Validações (login, créditos, job ativo)                             │
-│  3. Comprime ambas imagens com optimizeForAI (1536px, WebP)             │
-│  4. Upload para Supabase Storage                                        │
-│  5. Cria job em arcano_cloner_jobs                                      │
-│  6. Chama edge function /run                                            │
-│  7. Edge function:                                                       │
-│     a. Baixa imagens do Storage                                         │
-│     b. Upload para RunningHub                                           │
-│     c. Consome créditos                                                 │
-│     d. Verifica fila global (max 3 simultâneos)                         │
-│     e. Inicia workflow com webhook                                      │
-│  8. Sincronização tripla monitora status                                │
-│  9. Webhook recebe resultado                                            │
-│  10. Frontend atualiza via Realtime                                     │
-└─────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────┐
-│  DOWNLOAD DO RESULTADO                                                   │
-├─────────────────────────────────────────────────────────────────────────┤
-│  1. Usuário clica no botão Download                                     │
-│  2. useResilientDownload tenta 5 métodos:                               │
-│     → Edge function proxy (ignora CORS no Safari)                       │
-│     → Fetch + Stream (progresso real)                                   │
-│     → Fetch + Cache Buster                                              │
-│     → Anchor tag                                                        │
-│     → Share API (mobile)                                                │
-│  3. DownloadProgressOverlay mostra progresso                            │
-│  4. Toast "Download concluído!"                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Observação sobre Secrets
-
-O projeto já possui `RUNNINGHUB_API_KEY` configurado, então não é necessário adicionar novas secrets.
+### 3. Frontend - AIToolsProfitTable.tsx
+- Adicionar ao `TOOL_CREDIT_COSTS` com o custo padrão em créditos
 
