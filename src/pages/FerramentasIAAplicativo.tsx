@@ -6,7 +6,7 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { usePromoClaimStatus } from "@/hooks/usePromoClaimStatus";
-import { Sparkles, Loader2, Play } from "lucide-react";
+import { Sparkles, Loader2, Play, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -46,6 +46,7 @@ const FerramentasIAAplicativo = () => {
     "forja-selos-3d-ilimitada": t('ferramentas.descriptions.forja3D'),
     "ia-muda-pose": t('ferramentas.descriptions.mudaPose'),
     "ia-muda-roupa": t('ferramentas.descriptions.mudaRoupa'),
+    "arcano-cloner": "Crie ensaios fotográficos ultra realistas com IA",
   };
 
   // Smart back navigation
@@ -60,7 +61,7 @@ const FerramentasIAAplicativo = () => {
   const [loading, setLoading] = useState(true);
 
   // Preferred order for tools
-  const preferredOrder = ["upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "forja-selos-3d-ilimitada"];
+  const preferredOrder = ["upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "arcano-cloner", "forja-selos-3d-ilimitada"];
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -72,8 +73,22 @@ const FerramentasIAAplicativo = () => {
         .order("display_order", { ascending: true });
 
       if (!error && data) {
+        // Add static Arcano Cloner tool (not in database yet)
+        const arcanoClonerTool: ToolData = {
+          id: 'arcano-cloner-static',
+          name: 'Arcano Cloner',
+          slug: 'arcano-cloner',
+          cover_url: null,
+          price_vitalicio: null,
+          checkout_link_vitalicio: null,
+          checkout_link_membro_vitalicio: null,
+        };
+        
+        // Combine database tools with static tool
+        const allTools = [...data, arcanoClonerTool];
+        
         // Sort by preferred order
-        const sorted = [...data].sort((a, b) => {
+        const sorted = allTools.sort((a, b) => {
           const indexA = preferredOrder.indexOf(a.slug);
           const indexB = preferredOrder.indexOf(b.slug);
           return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
@@ -109,6 +124,7 @@ const FerramentasIAAplicativo = () => {
     "upscaller-arcano-video": "Upscaler Arcano V3 (vídeo)",
     "ia-muda-pose": "Pose Changer",
     "ia-muda-roupa": "Veste AI",
+    "arcano-cloner": "Arcano Cloner",
   };
 
   const getPurchaseRoute = (tool: ToolData) => {
@@ -201,7 +217,7 @@ const FerramentasIAAplicativo = () => {
   const renderToolCard = (tool: ToolData) => {
     const hasAccess = checkToolAccess(tool.slug);
     const description = toolDescriptions[tool.slug] || "Ferramenta de IA";
-    const isComingSoon = tool.slug === "forja-selos-3d-ilimitada";
+    const isComingSoon = tool.slug === "forja-selos-3d-ilimitada" || tool.slug === "arcano-cloner";
     const isUpscalerArcano = tool.slug === "upscaller-arcano";
     
     const handleCardClick = (e: React.MouseEvent) => {
@@ -235,7 +251,11 @@ const FerramentasIAAplicativo = () => {
                 ? "bg-gradient-to-br from-gray-500 to-gray-600" 
                 : "bg-gradient-to-br from-purple-500 to-fuchsia-600"
             }`}>
-              <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+              {tool.slug === "arcano-cloner" ? (
+                <Users className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+              ) : (
+                <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+              )}
             </div>
           )}
           
