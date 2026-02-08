@@ -2523,11 +2523,13 @@ export type Database = {
           detail_denoise: number | null
           error_message: string | null
           failed_at_step: string | null
+          fallback_attempted: boolean | null
           framing_mode: string | null
           id: string
           input_file_name: string | null
           input_url: string | null
           job_payload: Json | null
+          original_task_id: string | null
           output_url: string | null
           position: number | null
           prompt: string | null
@@ -2558,11 +2560,13 @@ export type Database = {
           detail_denoise?: number | null
           error_message?: string | null
           failed_at_step?: string | null
+          fallback_attempted?: boolean | null
           framing_mode?: string | null
           id?: string
           input_file_name?: string | null
           input_url?: string | null
           job_payload?: Json | null
+          original_task_id?: string | null
           output_url?: string | null
           position?: number | null
           prompt?: string | null
@@ -2593,11 +2597,13 @@ export type Database = {
           detail_denoise?: number | null
           error_message?: string | null
           failed_at_step?: string | null
+          fallback_attempted?: boolean | null
           framing_mode?: string | null
           id?: string
           input_file_name?: string | null
           input_url?: string | null
           job_payload?: Json | null
+          original_task_id?: string | null
           output_url?: string | null
           position?: number | null
           prompt?: string | null
