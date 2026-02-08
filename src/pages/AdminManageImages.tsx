@@ -53,6 +53,7 @@ interface Prompt {
   bonus_clicks?: number;
   thumbnail_url?: string;
   reference_images?: string[];
+  gender?: string | null;
 }
 
 type SortOption = 'date' | 'downloads';
@@ -74,10 +75,12 @@ const AdminManageImages = () => {
   const [editHasTutorial, setEditHasTutorial] = useState(false);
   const [editTutorialUrl, setEditTutorialUrl] = useState("");
   const [editBonusClicks, setEditBonusClicks] = useState(0);
+  const [editGender, setEditGender] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<PromptType | 'all'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortOption>('date');
   const [clickCounts, setClickCounts] = useState<Record<string, number>>({});
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
@@ -127,7 +130,7 @@ const AdminManageImages = () => {
   const fetchPrompts = async () => {
     try {
       const [adminData, communityData, partnerData] = await Promise.all([
-        supabase.from('admin_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, bonus_clicks, thumbnail_url, reference_images').order('created_at', { ascending: false }),
+        supabase.from('admin_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, bonus_clicks, thumbnail_url, reference_images, gender').order('created_at', { ascending: false }),
         supabase.from('community_prompts').select('id, title, prompt, category, image_url, created_at, bonus_clicks, thumbnail_url').eq('approved', true).order('created_at', { ascending: false }),
         supabase.from('partner_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, partner_id, bonus_clicks, thumbnail_url, reference_images').eq('approved', true).order('created_at', { ascending: false })
       ]);
@@ -168,7 +171,8 @@ const AdminManageImages = () => {
     .filter(p => {
       const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = typeFilter === 'all' || p.type === typeFilter;
-      return matchesSearch && matchesType;
+      const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
+      return matchesSearch && matchesType && matchesCategory;
     })
     .sort((a, b) => {
       if (sortBy === 'downloads') {
@@ -187,6 +191,7 @@ const AdminManageImages = () => {
     setEditHasTutorial(!!prompt.tutorial_url);
     setEditTutorialUrl(prompt.tutorial_url || "");
     setEditBonusClicks(prompt.bonus_clicks || 0);
+    setEditGender(prompt.gender || null);
     setNewMediaFile(null);
     setNewMediaPreview("");
   };
@@ -271,6 +276,11 @@ const AdminManageImages = () => {
       if (editingPrompt.type === 'admin' || editingPrompt.type === 'partner') {
         updateData.is_premium = editIsPremium;
         updateData.tutorial_url = editHasTutorial && editTutorialUrl ? editTutorialUrl : null;
+      }
+
+      // Add gender for admin prompts when category is 'Fotos'
+      if (editingPrompt.type === 'admin') {
+        updateData.gender = editCategory === 'Fotos' ? editGender : null;
       }
 
       const { error } = await supabase
@@ -674,6 +684,22 @@ const AdminManageImages = () => {
             </Button>
           </div>
 
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="text-sm text-muted-foreground self-center mr-2">Categoria:</span>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filtrar por categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Categorias</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Sort Options */}
           <div className="flex flex-wrap gap-2 mb-4">
             <span className="text-sm text-muted-foreground self-center mr-2">Ordenar por:</span>
@@ -1046,6 +1072,25 @@ const AdminManageImages = () => {
                 </SelectContent>
               </Select>
             </div>
+            
+            {/* Gender field - only shows when category is 'Fotos' and type is admin */}
+            {editCategory === 'Fotos' && editingPrompt?.type === 'admin' && (
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">👤</span>
+                  <Label className="font-medium">Gênero da Foto</Label>
+                </div>
+                <Select value={editGender || ''} onValueChange={(value) => setEditGender(value || null)}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Selecionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="masculino">Masculino</SelectItem>
+                    <SelectItem value="feminino">Feminino</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             
             {(editingPrompt?.type === 'admin' || editingPrompt?.type === 'partner') && (
               <>

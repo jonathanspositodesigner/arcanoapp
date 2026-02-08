@@ -55,6 +55,7 @@ interface MediaData {
   hasTutorial: boolean;
   tutorialUrl: string;
   txtFileName?: string;
+  gender: string | null;
 }
 
 const AdminUpload = () => {
@@ -204,7 +205,8 @@ const AdminUpload = () => {
         referenceImages: [],
         hasTutorial: false,
         tutorialUrl: "",
-        txtFileName
+        txtFileName,
+        gender: null
       });
     }
     
@@ -381,6 +383,7 @@ const AdminUpload = () => {
             reference_images: referenceImageUrls.length > 0 ? referenceImageUrls : null,
             tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
             thumbnail_url: thumbnailUrl,
+            gender: media.category === 'Fotos' ? media.gender : null,
           });
 
         if (insertError) throw insertError;
@@ -564,9 +567,31 @@ const AdminUpload = () => {
                     {categories.map(cat => (
                       <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                </SelectContent>
+              </Select>
+            </div>
+
+              {/* Gender field - only shows when category is 'Fotos' */}
+              {currentMedia.category === 'Fotos' && (
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">👤</span>
+                    <Label className="font-medium">Gênero da Foto</Label>
+                  </div>
+                  <Select 
+                    value={currentMedia.gender || ''} 
+                    onValueChange={(value) => updateMediaData('gender', value || null)}
+                  >
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Selecionar..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="masculino">Masculino</SelectItem>
+                      <SelectItem value="feminino">Feminino</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
                 <div className="flex items-center gap-2">

@@ -311,6 +311,7 @@ export type Database = {
           bonus_clicks: number
           category: string
           created_at: string | null
+          gender: string | null
           id: string
           image_url: string
           is_premium: boolean
@@ -325,6 +326,7 @@ export type Database = {
           bonus_clicks?: number
           category: string
           created_at?: string | null
+          gender?: string | null
           id?: string
           image_url: string
           is_premium?: boolean
@@ -339,6 +341,7 @@ export type Database = {
           bonus_clicks?: number
           category?: string
           created_at?: string | null
+          gender?: string | null
           id?: string
           image_url?: string
           is_premium?: boolean
