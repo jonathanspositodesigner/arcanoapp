@@ -13,7 +13,8 @@ import { useAIJob } from '@/contexts/AIJobContext';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
-import ClothingLibraryModal from '@/components/veste-ai/ClothingLibraryModal';
+import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
+import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
@@ -52,7 +53,7 @@ const VesteAITool: React.FC = () => {
   const [outputImage, setOutputImage] = useState<string | null>(null);
 
   // UI states
-  const [showClothingLibrary, setShowClothingLibrary] = useState(false);
+  const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [progress, setProgress] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -229,6 +230,23 @@ const VesteAITool: React.FC = () => {
     } else {
       setClothingFile(file || null);
     }
+  };
+
+  // Seleção da biblioteca de fotos (recebe URL)
+  const handleSelectFromLibrary = (imageUrl: string) => {
+    handleClothingImageChange(imageUrl);
+  };
+
+  // Upload pelo modal (recebe dataUrl + file)
+  const handleUploadFromModal = (dataUrl: string, file: File) => {
+    setClothingImage(dataUrl);
+    setClothingFile(file);
+  };
+
+  // Limpar referência
+  const handleClearClothing = () => {
+    setClothingImage(null);
+    setClothingFile(null);
   };
 
   // Compress image before upload using centralized AI optimizer (1536px limit)
@@ -497,14 +515,11 @@ const VesteAITool: React.FC = () => {
               disabled={isProcessing}
             />
 
-            {/* Clothing Image Upload */}
-            <ImageUploadCard
-              title="Roupa de Referência"
+            {/* Reference Image - Unified Library */}
+            <ReferenceImageCard
               image={clothingImage}
-              onImageChange={handleClothingImageChange}
-              showLibraryButton
-              libraryButtonLabel="Biblioteca de Roupas"
-              onOpenLibrary={() => setShowClothingLibrary(true)}
+              onClearImage={handleClearClothing}
+              onOpenLibrary={() => setShowPhotoLibrary(true)}
               disabled={isProcessing}
             />
 
@@ -683,11 +698,12 @@ const VesteAITool: React.FC = () => {
         </div>
       </div>
 
-      {/* Clothing Library Modal */}
-      <ClothingLibraryModal
-        isOpen={showClothingLibrary}
-        onClose={() => setShowClothingLibrary(false)}
-        onSelectClothing={handleClothingImageChange}
+      {/* Photo Library Modal (unified) */}
+      <PhotoLibraryModal
+        isOpen={showPhotoLibrary}
+        onClose={() => setShowPhotoLibrary(false)}
+        onSelectPhoto={handleSelectFromLibrary}
+        onUploadPhoto={handleUploadFromModal}
       />
 
       {/* No Credits Modal */}

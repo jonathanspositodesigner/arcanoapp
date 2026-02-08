@@ -13,7 +13,8 @@ import { useAIJob } from '@/contexts/AIJobContext';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
-import PoseLibraryModal from '@/components/pose-changer/PoseLibraryModal';
+import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
+import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
@@ -52,7 +53,7 @@ const PoseChangerTool: React.FC = () => {
   const [outputImage, setOutputImage] = useState<string | null>(null);
 
   // UI states
-  const [showPoseLibrary, setShowPoseLibrary] = useState(false);
+  const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [progress, setProgress] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -229,6 +230,23 @@ const PoseChangerTool: React.FC = () => {
     } else {
       setReferenceFile(file || null);
     }
+  };
+
+  // Seleção da biblioteca de fotos (recebe URL)
+  const handleSelectFromLibrary = (imageUrl: string) => {
+    handleReferenceImageChange(imageUrl);
+  };
+
+  // Upload pelo modal (recebe dataUrl + file)
+  const handleUploadFromModal = (dataUrl: string, file: File) => {
+    setReferenceImage(dataUrl);
+    setReferenceFile(file);
+  };
+
+  // Limpar referência
+  const handleClearReference = () => {
+    setReferenceImage(null);
+    setReferenceFile(null);
   };
 
   // Compress image before upload using centralized AI optimizer (1536px limit)
@@ -497,13 +515,11 @@ const PoseChangerTool: React.FC = () => {
               disabled={isProcessing}
             />
 
-            {/* Reference Image Upload */}
-            <ImageUploadCard
-              title="Referência de Pose"
+            {/* Reference Image - Unified Library */}
+            <ReferenceImageCard
               image={referenceImage}
-              onImageChange={handleReferenceImageChange}
-              showLibraryButton
-              onOpenLibrary={() => setShowPoseLibrary(true)}
+              onClearImage={handleClearReference}
+              onOpenLibrary={() => setShowPhotoLibrary(true)}
               disabled={isProcessing}
             />
 
@@ -731,11 +747,12 @@ const PoseChangerTool: React.FC = () => {
         </div>
       </div>
 
-      {/* Pose Library Modal */}
-      <PoseLibraryModal
-        isOpen={showPoseLibrary}
-        onClose={() => setShowPoseLibrary(false)}
-        onSelectPose={(url) => handleReferenceImageChange(url)}
+      {/* Photo Library Modal (unified) */}
+      <PhotoLibraryModal
+        isOpen={showPhotoLibrary}
+        onClose={() => setShowPhotoLibrary(false)}
+        onSelectPhoto={handleSelectFromLibrary}
+        onUploadPhoto={handleUploadFromModal}
       />
 
       {/* No Credits Modal */}
