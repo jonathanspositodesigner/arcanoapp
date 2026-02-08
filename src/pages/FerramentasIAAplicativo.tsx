@@ -7,6 +7,7 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { usePromoClaimStatus } from "@/hooks/usePromoClaimStatus";
 import { Sparkles, Loader2, Play, Users } from "lucide-react";
+import arcanoClonerCover from "@/assets/arcano-cloner-cover.webp";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -78,7 +79,7 @@ const FerramentasIAAplicativo = () => {
           id: 'arcano-cloner-static',
           name: 'Arcano Cloner',
           slug: 'arcano-cloner',
-          cover_url: null,
+          cover_url: arcanoClonerCover,
           price_vitalicio: null,
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
