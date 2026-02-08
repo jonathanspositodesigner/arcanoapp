@@ -157,14 +157,23 @@ const FerramentasIAAplicativo = () => {
   // Handler for claiming promo and accessing app version
   const handleClaimAndAccess = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('claim-upscaler-promo', {
-        body: { email: user?.email }
+      const { data, error } = await supabase.functions.invoke('claim-promo-credits', {
+        body: { 
+          email: user?.email,
+          promo_code: 'UPSCALER_1500'
+        }
       });
       
       if (error) {
         console.error('Error claiming promo:', error);
         toast.error('Erro ao resgatar créditos. Tente novamente.');
         throw error;
+      }
+      
+      // Check if the response indicates ineligibility
+      if (data && !data.eligible) {
+        toast.error(data.message || 'Não foi possível resgatar os créditos.');
+        throw new Error(data.message);
       }
       
       await refetchClaimStatus();
