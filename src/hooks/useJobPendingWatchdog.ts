@@ -26,6 +26,7 @@ const TABLE_NAME_MAP: Record<ToolType, string> = {
   pose_changer: 'pose_changer_jobs',
   veste_ai: 'veste_ai_jobs',
   video_upscaler: 'video_upscaler_jobs',
+  arcano_cloner: 'arcano_cloner_jobs',
 };
 
 interface UseJobPendingWatchdogOptions {

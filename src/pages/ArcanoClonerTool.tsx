@@ -103,29 +103,69 @@ const ArcanoClonerTool: React.FC = () => {
   // Cleanup queued jobs when user leaves
   useQueueSessionCleanup(sessionIdRef.current, status);
 
-  // TODO: Enable useJobStatusSync when arcano_cloner_jobs table is created
-  // useJobStatusSync({
-  //   jobId,
-  //   toolType: 'arcano_cloner',
-  //   enabled: status === 'processing' || status === 'waiting' || status === 'uploading',
-  //   onStatusChange: (update) => { ... },
-  //   onGlobalStatusChange: updateJobStatus,
-  // });
+  // Triple sync: Realtime + Polling + Visibility recovery
+  useJobStatusSync({
+    jobId,
+    toolType: 'arcano_cloner',
+    enabled: status === 'processing' || status === 'waiting' || status === 'uploading',
+    onStatusChange: useCallback((update) => {
+      console.log('[ArcanoCloner] Job status update:', update);
+      
+      if (update.status === 'completed' && update.outputUrl) {
+        setOutputImage(update.outputUrl);
+        setStatus('completed');
+        setProgress(100);
+        endSubmit();
+        playNotificationSound();
+        refetchCredits();
+        toast.success('Imagem gerada com sucesso!');
+      } else if (update.status === 'failed' || update.status === 'cancelled') {
+        setStatus('error');
+        setDebugErrorMessage(update.errorMessage || 'Erro desconhecido');
+        endSubmit();
+        refetchCredits();
+        if (update.errorMessage) {
+          toast.error(update.errorMessage);
+        }
+      } else if (update.status === 'queued') {
+        setStatus('waiting');
+        setQueuePosition(update.position || 0);
+      } else if (update.status === 'running' || update.status === 'starting') {
+        setStatus('processing');
+        setQueuePosition(0);
+      }
+    }, [endSubmit, playNotificationSound, refetchCredits]),
+    onGlobalStatusChange: updateJobStatus,
+  });
 
-  // TODO: Enable useNotificationTokenRecovery when backend is ready
-  // useNotificationTokenRecovery({
-  //   userId: user?.id,
-  //   toolTable: 'arcano_cloner_jobs',
-  //   onRecovery: useCallback((result) => { ... }, []),
-  // });
+  // Notification token recovery (when user clicks push notification)
+  useNotificationTokenRecovery({
+    userId: user?.id,
+    toolTable: 'arcano_cloner_jobs',
+    onRecovery: useCallback((result) => {
+      console.log('[ArcanoCloner] Recovered job from notification:', result);
+      if (result.outputUrl) {
+        setOutputImage(result.outputUrl);
+        setStatus('completed');
+        setProgress(100);
+        toast.success('Resultado recuperado!');
+      }
+    }, []),
+  });
 
-  // TODO: Enable useJobPendingWatchdog when backend is ready
-  // useJobPendingWatchdog({
-  //   jobId,
-  //   toolType: 'arcano_cloner',
-  //   enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
-  //   onJobFailed: useCallback((errorMessage) => { ... }, [endSubmit]),
-  // });
+  // Watchdog for orphan pending jobs (30s timeout)
+  useJobPendingWatchdog({
+    jobId,
+    toolType: 'arcano_cloner',
+    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    onJobFailed: useCallback((errorMessage) => {
+      console.warn('[ArcanoCloner] Job failed via watchdog:', errorMessage);
+      setStatus('error');
+      setDebugErrorMessage(errorMessage);
+      endSubmit();
+      toast.error(errorMessage);
+    }, [endSubmit]),
+  });
 
   // Register job in global context
   useEffect(() => {
@@ -274,10 +314,14 @@ const ArcanoClonerTool: React.FC = () => {
     setStatus('uploading');
     setProgress(0);
     setOutputImage(null);
+    setDebugErrorMessage(null);
+    setCurrentStep(null);
+    setFailedAtStep(null);
 
     try {
       // Step 1: Compress and upload user image
       setProgress(10);
+      setCurrentStep('compressing_user_image');
       console.log('[ArcanoCloner] Compressing user image...');
       const compressedUser = await compressImage(userFile);
       const userUrl = await uploadToStorage(compressedUser, 'user');
@@ -285,6 +329,7 @@ const ArcanoClonerTool: React.FC = () => {
 
       // Step 2: Compress and upload reference image
       setProgress(30);
+      setCurrentStep('compressing_reference_image');
       let referenceUrl: string;
       
       if (referenceFile) {
@@ -296,34 +341,93 @@ const ArcanoClonerTool: React.FC = () => {
       }
       console.log('[ArcanoCloner] Reference image uploaded:', referenceUrl);
 
-      // Step 3: Simulate processing (backend not implemented yet)
+      // Step 3: Create job in database
       setProgress(50);
-      setStatus('processing');
+      setCurrentStep('creating_job');
       
-      // TODO: Replace with actual edge function call when backend is ready
-      // const { data: runResult, error: runError } = await supabase.functions.invoke(
-      //   'runninghub-arcano-cloner/run',
-      //   {
-      //     body: {
-      //       jobId: job.id,
-      //       userImageUrl: userUrl,
-      //       referenceImageUrl: referenceUrl,
-      //       aspectRatio: aspectRatio,
-      //       userId: user.id,
-      //       creditCost: CREDIT_COST,
-      //     },
-      //   }
-      // );
+      const { data: job, error: jobError } = await supabase
+        .from('arcano_cloner_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'pending',
+          user_image_url: userUrl,
+          reference_image_url: referenceUrl,
+          aspect_ratio: aspectRatio,
+        })
+        .select()
+        .single();
 
-      // For now, show a message that backend is not ready
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.info('Backend ainda não implementado. Aguardando documentação da API.');
-      setStatus('idle');
-      endSubmit();
+      if (jobError || !job) {
+        throw new Error(jobError?.message || 'Falha ao criar job');
+      }
+
+      setJobId(job.id);
+      registerJob(job.id, 'Arcano Cloner', 'pending');
+      console.log('[ArcanoCloner] Job created:', job.id);
+
+      // Step 4: Call edge function to start processing
+      setProgress(60);
+      setCurrentStep('starting_processing');
+      setStatus('processing');
+
+      const { data: runResult, error: runError } = await supabase.functions.invoke(
+        'runninghub-arcano-cloner/run',
+        {
+          body: {
+            jobId: job.id,
+            userImageUrl: userUrl,
+            referenceImageUrl: referenceUrl,
+            aspectRatio: aspectRatio,
+            userId: user.id,
+            creditCost: CREDIT_COST,
+          },
+        }
+      );
+
+      if (runError) {
+        console.error('[ArcanoCloner] Edge function error:', runError);
+        throw new Error(runError.message || 'Erro ao iniciar processamento');
+      }
+
+      console.log('[ArcanoCloner] Edge function response:', runResult);
+
+      // Check for known error codes
+      if (runResult.code === 'INSUFFICIENT_CREDITS') {
+        setStatus('idle');
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        endSubmit();
+        return;
+      }
+
+      if (runResult.code === 'RATE_LIMIT_EXCEEDED') {
+        toast.error('Muitas requisições. Aguarde 1 minuto.');
+        setStatus('error');
+        endSubmit();
+        return;
+      }
+
+      if (runResult.error && !runResult.success && !runResult.queued) {
+        throw new Error(runResult.error);
+      }
+
+      // Check if queued
+      if (runResult.queued) {
+        setStatus('waiting');
+        setQueuePosition(runResult.position || 1);
+        toast.info(`Você está na fila (posição ${runResult.position})`);
+      } else {
+        setStatus('processing');
+        setProgress(70);
+      }
+
+      // Now wait for Realtime updates via useJobStatusSync
 
     } catch (error: any) {
       console.error('[ArcanoCloner] Process error:', error);
       setStatus('error');
+      setDebugErrorMessage(error.message || 'Erro ao processar imagem');
       toast.error(error.message || 'Erro ao processar imagem');
       endSubmit();
     }
