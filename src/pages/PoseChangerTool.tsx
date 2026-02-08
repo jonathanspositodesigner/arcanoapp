@@ -726,7 +726,7 @@ const PoseChangerTool: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 h-8 text-xs bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20"
+                    className="flex-1 h-8 text-xs bg-purple-600/80 border-purple-400/50 text-white hover:bg-purple-500/90"
                     onClick={handleReset}
                   >
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
