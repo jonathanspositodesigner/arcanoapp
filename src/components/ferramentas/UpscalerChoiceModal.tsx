@@ -52,7 +52,7 @@ const UpscalerChoiceModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[580px] p-0 bg-gradient-to-b from-[#0D0B1A] to-[#1A0A2E] border border-purple-500/20 overflow-hidden">
+      <DialogContent className="sm:max-w-[580px] w-[calc(100%-32px)] sm:w-full p-0 bg-gradient-to-b from-[#0D0B1A] to-[#1A0A2E] border border-purple-500/40 overflow-hidden rounded-xl">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="text-center text-2xl font-bold text-white flex items-center justify-center gap-2">
