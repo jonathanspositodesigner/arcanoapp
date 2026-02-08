@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Infinity, Zap, Loader2 } from "lucide-react";
+import { Infinity, Zap, Loader2, Sparkles, Crown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface UpscalerChoiceModalProps {
   isOpen: boolean;
@@ -53,65 +52,113 @@ const UpscalerChoiceModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] bg-[#1A0A2E] border-purple-500/30">
-        <DialogHeader>
-          <DialogTitle className="text-center text-xl text-white">
+      <DialogContent className="sm:max-w-[580px] p-0 bg-gradient-to-b from-[#0D0B1A] to-[#1A0A2E] border border-purple-500/20 overflow-hidden">
+        {/* Header */}
+        <DialogHeader className="px-6 pt-6 pb-4">
+          <DialogTitle className="text-center text-2xl font-bold text-white flex items-center justify-center gap-2">
+            <Sparkles className="w-5 h-5 text-purple-400" />
             Escolha sua versão
+            <Sparkles className="w-5 h-5 text-purple-400" />
           </DialogTitle>
+          <p className="text-center text-purple-300/70 text-sm mt-1">
+            Selecione qual versão do Upscaler deseja utilizar
+          </p>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+        {/* Cards Container */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-6 pt-2">
           {/* Card Versão Ilimitada */}
-          <Card className="bg-gradient-to-br from-purple-900/50 to-fuchsia-900/30 border-purple-500/30 hover:border-purple-400/50 transition-all cursor-pointer group">
-            <CardHeader className="text-center pb-2">
-              <div className="mx-auto w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <Infinity className="w-6 h-6 text-purple-300" />
+          <div 
+            onClick={handleUnlimitedClick}
+            className="group relative bg-gradient-to-br from-[#1E1433] to-[#2A1B4D] rounded-xl border-2 border-purple-500/30 hover:border-purple-400 transition-all duration-300 cursor-pointer overflow-hidden hover:shadow-[0_0_30px_rgba(139,92,246,0.3)]"
+          >
+            {/* Badge */}
+            <div className="absolute top-3 right-3 flex items-center gap-1 bg-purple-500/20 px-2 py-1 rounded-full">
+              <Crown className="w-3 h-3 text-yellow-400" />
+              <span className="text-[10px] text-yellow-400 font-medium">VITALÍCIO</span>
+            </div>
+
+            <div className="p-5">
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-600/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-purple-400/30">
+                <Infinity className="w-7 h-7 text-purple-300" />
               </div>
-              <CardTitle className="text-lg text-white">Versão Ilimitada e Vitalícia</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center">
-              <CardDescription className="text-purple-200/80 text-sm mb-4">
-                Esta é a versão que você adquiriu. Sem limite de uso e sem consumo de créditos.
-              </CardDescription>
+
+              {/* Title */}
+              <h3 className="text-lg font-bold text-white text-center mb-2">
+                Versão Ilimitada
+              </h3>
+
+              {/* Description */}
+              <p className="text-purple-200/70 text-sm text-center leading-relaxed mb-5">
+                Esta é a versão que você adquiriu. <span className="text-purple-300 font-medium">Sem limite de uso</span> e sem consumo de créditos.
+              </p>
+
+              {/* Button */}
               <Button
-                onClick={handleUnlimitedClick}
-                className="w-full bg-purple-600 hover:bg-purple-500 text-white"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUnlimitedClick();
+                }}
+                className="w-full h-11 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-purple-500/20"
               >
                 Acessar Versão Ilimitada
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Card Versão App */}
-          <Card className="bg-gradient-to-br from-fuchsia-900/50 to-pink-900/30 border-fuchsia-500/30 hover:border-fuchsia-400/50 transition-all cursor-pointer group">
-            <CardHeader className="text-center pb-2">
-              <div className="mx-auto w-12 h-12 rounded-full bg-fuchsia-500/20 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <Zap className="w-6 h-6 text-fuchsia-300" />
+          <div 
+            onClick={handleAppVersionClick}
+            className={`group relative bg-gradient-to-br from-[#261433] to-[#3D1B4D] rounded-xl border-2 border-fuchsia-500/30 hover:border-fuchsia-400 transition-all duration-300 overflow-hidden hover:shadow-[0_0_30px_rgba(217,70,239,0.3)] ${isCheckingClaim || isClaiming ? 'cursor-wait' : 'cursor-pointer'}`}
+          >
+            {/* Badge */}
+            <div className="absolute top-3 right-3 flex items-center gap-1 bg-fuchsia-500/20 px-2 py-1 rounded-full">
+              <Zap className="w-3 h-3 text-fuchsia-300" />
+              <span className="text-[10px] text-fuchsia-300 font-medium">RÁPIDO</span>
+            </div>
+
+            <div className="p-5">
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-fuchsia-500/30 to-pink-600/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-fuchsia-400/30">
+                <Zap className="w-7 h-7 text-fuchsia-300" />
               </div>
-              <CardTitle className="text-lg text-white">Versão App</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center">
-              <CardDescription className="text-fuchsia-200/80 text-sm mb-4">
-                Nova versão mais rápida e fácil de usar. Consome créditos por uso.
-              </CardDescription>
+
+              {/* Title */}
+              <h3 className="text-lg font-bold text-white text-center mb-2">
+                Versão App
+              </h3>
+
+              {/* Description */}
+              <p className="text-fuchsia-200/70 text-sm text-center leading-relaxed mb-5">
+                Nova versão <span className="text-fuchsia-300 font-medium">mais rápida</span> e fácil de usar. Consome créditos por uso.
+              </p>
+
+              {/* Button */}
               <Button
-                onClick={handleAppVersionClick}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAppVersionClick();
+                }}
                 disabled={isCheckingClaim || isClaiming}
-                className="w-full bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:opacity-90 text-white"
+                className="w-full h-11 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-fuchsia-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isCheckingClaim || isClaiming ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     Carregando...
-                  </>
+                  </span>
                 ) : hasClaimedPromo ? (
                   "Acessar Ferramenta"
                 ) : (
-                  "Resgatar 1.500 créditos e testar"
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Sparkles className="w-4 h-4" />
+                    Resgatar 1.500 créditos
+                  </span>
                 )}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
