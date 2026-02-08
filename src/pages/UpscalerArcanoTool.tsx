@@ -31,6 +31,7 @@ import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
+import { getAIErrorMessage } from '@/utils/errorMessages';
 
 // Max dimension for mobile slider preview optimization
 const SLIDER_PREVIEW_MAX_PX = 1500;
@@ -314,13 +315,14 @@ const UpscalerArcanoTool: React.FC = () => {
       } else if (update.status === 'failed') {
         console.log('[Upscaler] Job failed:', update.errorMessage);
         setStatus('error');
+        const friendlyError = getAIErrorMessage(update.errorMessage);
         setLastError({
-          message: update.errorMessage || 'Processing failed',
+          message: friendlyError.message,
           code: 'TASK_FAILED',
-          solution: 'Tente novamente com uma imagem diferente ou configurações menores.'
+          solution: friendlyError.solution
         });
         setIsWaitingInQueue(false);
-        toast.error('Erro no processamento. Tente novamente.');
+        toast.error(friendlyError.message);
       } else if (update.status === 'running') {
         console.log('[Upscaler] Job running');
         setStatus('processing');

@@ -25,6 +25,7 @@ import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
+import { getAIErrorMessage } from '@/utils/errorMessages';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -121,12 +122,11 @@ const ArcanoClonerTool: React.FC = () => {
         toast.success('Imagem gerada com sucesso!');
       } else if (update.status === 'failed' || update.status === 'cancelled') {
         setStatus('error');
-        setDebugErrorMessage(update.errorMessage || 'Erro desconhecido');
+        const friendlyError = getAIErrorMessage(update.errorMessage);
+        setDebugErrorMessage(update.errorMessage);
         endSubmit();
         refetchCredits();
-        if (update.errorMessage) {
-          toast.error(update.errorMessage);
-        }
+        toast.error(friendlyError.message);
       } else if (update.status === 'queued') {
         setStatus('waiting');
         setQueuePosition(update.position || 0);
