@@ -1,95 +1,97 @@
 
-## Resumo
-Corrigir o erro **"structure of query does not match function result type"** que está quebrando o painel de Custos IA. O problema é incompatibilidade de tipos entre INTEGER e NUMERIC nas RPCs.
+## O que eu encontrei (causa real do “sumiu tudo”)
+
+O painel “Custos IA / Uso Ferramentas” está quebrando porque a RPC **`get_ai_tools_usage` (a versão com paginação)** ainda está com o SQL antigo e **continua retornando `INTEGER`** nas colunas de custo, mas a assinatura da função exige **`NUMERIC`**.
+
+Erro confirmado no backend:
+- `structure of query does not match function result type`
+- `Returned type integer does not match expected type numeric in column 8 (rh_cost)`
+
+Detalhe importante: existem **duas** funções com o mesmo nome `get_ai_tools_usage` (overload):
+1) **Paginação**: `(p_start_date, p_end_date, p_page, p_page_size)`  ← **é essa que o painel usa** e está quebrada  
+2) **Filtros**: `(p_start_date, p_end_date, p_tool_filter, p_status_filter, p_user_email)` ← essa foi a que recebeu cast e está “ok”
+
+Ou seja: a correção anterior caiu na função errada (a de filtros), e a função certa (a de paginação) ficou bugada, então o painel não consegue listar nada.
 
 ---
 
-## Causa Raiz
+## Objetivo da correção
 
-O erro exato é:
-> `Returned type integer does not match expected type numeric in column 8`
+- Recriar a RPC **`public.get_ai_tools_usage(timestamp with time zone, timestamp with time zone, integer, integer)`** com casts explícitos:
+  - `rh_cost` → `::NUMERIC`
+  - `user_credit_cost` → `::NUMERIC`
+  - `profit` → `::NUMERIC`
 
-A RPC `get_ai_tools_usage` declara no retorno:
+Isso faz o SELECT bater exatamente com o `RETURNS TABLE (... rh_cost NUMERIC, user_credit_cost NUMERIC, profit NUMERIC ...)` e o painel volta a carregar.
+
+---
+
+## Mudanças que vou fazer (backend)
+
+### 1) Migration SQL (corrigir a função de paginação)
+Vou criar uma migration que faz `CREATE OR REPLACE FUNCTION public.get_ai_tools_usage(..., p_page, p_page_size)` e, dentro de **cada bloco do UNION ALL** (upscaler, pose, veste, video, cloner), trocar:
+
+- **Antes (quebra):**
 ```sql
-RETURNS TABLE (
-  ...
-  rh_cost NUMERIC,         -- coluna 8
-  user_credit_cost NUMERIC,
-  profit NUMERIC,
-  ...
-)
+COALESCE(t.rh_cost, 0) as rh_cost,
+COALESCE(t.user_credit_cost, 0) as user_credit_cost,
+COALESCE(t.user_credit_cost, 0) - COALESCE(t.rh_cost, 0) as profit,
 ```
 
-Mas dentro da CTE, estou fazendo:
+- **Depois (certo):**
 ```sql
-COALESCE(uj.rh_cost, 0) as rh_cost  -- retorna INTEGER, não NUMERIC
+COALESCE(t.rh_cost, 0)::NUMERIC as rh_cost,
+COALESCE(t.user_credit_cost, 0)::NUMERIC as user_credit_cost,
+(COALESCE(t.user_credit_cost, 0) - COALESCE(t.rh_cost, 0))::NUMERIC as profit,
 ```
 
-O PostgreSQL não faz cast automático de INTEGER para NUMERIC em RETURNS TABLE.
+### 2) (Opcional, mas recomendado) Evitar confusão com overload
+Para evitar isso voltar a acontecer, vou deixar explícito no SQL da migration uma estratégia:
+
+- Opção A (mais segura): **manter as duas** funções `get_ai_tools_usage`, mas garantir que **ambas** estejam coerentes (as duas com casts corretos).
+- Opção B (mais limpa): **remover a função antiga de filtros** se ela não é usada no frontend (hoje o código não chama ela), para não ter risco de “corrigir a errada” no futuro.
+
+Eu recomendo a **Opção A** (não quebra nada escondido que possa existir fora do código atual).
 
 ---
 
-## Solução
+## Como eu vou validar que voltou (teste técnico)
 
-Adicionar cast explícito `::NUMERIC` em todas as colunas que declaram retorno NUMERIC:
+Depois da migration, vou validar no backend com um SELECT simples:
 
+1) Teste direto da RPC (página 1):
 ```sql
--- ANTES (bugado)
-COALESCE(uj.rh_cost, 0) as rh_cost,
-COALESCE(uj.user_credit_cost, 0) as user_credit_cost,
-COALESCE(uj.user_credit_cost, 0) - COALESCE(uj.rh_cost, 0) as profit,
-
--- DEPOIS (corrigido)
-COALESCE(uj.rh_cost, 0)::NUMERIC as rh_cost,
-COALESCE(uj.user_credit_cost, 0)::NUMERIC as user_credit_cost,
-(COALESCE(uj.user_credit_cost, 0) - COALESCE(uj.rh_cost, 0))::NUMERIC as profit,
+select * from public.get_ai_tools_usage(now() - interval '30 days', now(), 1, 20);
 ```
 
----
+2) Confirmar que não dá erro e que retorna linhas.
 
-## Arquivos a Modificar
-
-| Arquivo | Ação |
-|---------|------|
-| Migration SQL | Recriar a RPC `get_ai_tools_usage` com casts explícitos |
+3) Confirmar que `get_ai_tools_usage_count` e `get_ai_tools_usage_summary` continuam ok.
 
 ---
 
-## O que Será Corrigido na Migration
+## Como você valida no app (teste visual)
 
-Na função `get_ai_tools_usage`, para **todas as 5 tabelas** (upscaler, pose_changer, veste_ai, video_upscaler, arcano_cloner):
-
-```sql
-SELECT 
-  uj.id,
-  'Upscaler Arcano'::TEXT as tool_name,
-  uj.user_id,
-  uj.status,
-  uj.error_message,
-  COALESCE(uj.rh_cost, 0)::NUMERIC as rh_cost,              -- CAST ADICIONADO
-  COALESCE(uj.user_credit_cost, 0)::NUMERIC as user_credit_cost,  -- CAST ADICIONADO
-  (COALESCE(uj.user_credit_cost, 0) - COALESCE(uj.rh_cost, 0))::NUMERIC as profit,  -- CAST ADICIONADO
-  COALESCE(uj.waited_in_queue, false) as waited_in_queue,
-  COALESCE(uj.queue_wait_seconds, 0) as queue_wait_seconds,
-  CASE 
-    WHEN uj.started_at IS NOT NULL AND uj.completed_at IS NOT NULL 
-    THEN EXTRACT(EPOCH FROM (uj.completed_at - uj.started_at))::INTEGER
-    ELSE 0
-  END as processing_seconds,
-  uj.created_at,
-  uj.started_at,
-  uj.completed_at
-FROM upscaler_jobs uj
-WHERE uj.user_id IS NOT NULL
-```
-
-Isso será repetido para os outros 4 blocos UNION ALL (pose_changer_jobs, veste_ai_jobs, video_upscaler_jobs, arcano_cloner_jobs).
+1) Abrir o painel **Custos IA / Uso Ferramentas**
+2) Deixar o período em “Últimos 7 dias” ou “Todo período”
+3) Ver se:
+   - aparece “Histórico de Uso (X registros)”
+   - a tabela lista jobs normalmente
+   - paginação funciona
 
 ---
 
-## Resultado Esperado
+## Arquivos/partes que serão alterados
 
-Após a correção:
-- ✅ O painel de Custos IA voltará a funcionar
-- ✅ Todos os jobs aparecerão normalmente
-- ✅ O Arcano Cloner estará integrado corretamente
+- **Novo arquivo**: `supabase/migrations/XXXXXXXXXXXX_fix_get_ai_tools_usage_pagination_numeric_casts.sql`
+- **Sem mudanças de frontend** para esse conserto (o bug aqui é 100% na RPC)
+
+---
+
+## Observação importante (para não “quebrar outra coisa” de novo)
+
+Esse bug é exatamente o tipo de coisa que eu vou prevenir com:
+- casts explícitos nas colunas numéricas (pra Postgres nunca “adivinhar” tipo errado em `COALESCE`/`UNION`)
+- validação com SELECT logo após a migration (smoke test manual)
+- manter as duas versões coerentes (se escolher a opção A)
+
