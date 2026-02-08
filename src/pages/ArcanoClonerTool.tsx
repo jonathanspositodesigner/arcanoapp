@@ -13,6 +13,7 @@ import { useAIJob } from '@/contexts/AIJobContext';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
+import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
 import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
 import AspectRatioSelector, { AspectRatio } from '@/components/arcano-cloner/AspectRatioSelector';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
@@ -164,7 +165,7 @@ const ArcanoClonerTool: React.FC = () => {
     setUserFile(file || null);
   };
 
-  // Handle reference image selection
+  // Handle reference image selection (from library URL or upload file)
   const handleReferenceImageChange = async (imageUrl: string | null, file?: File) => {
     setReferenceImage(imageUrl);
     
@@ -181,6 +182,23 @@ const ArcanoClonerTool: React.FC = () => {
     } else {
       setReferenceFile(file || null);
     }
+  };
+
+  // Handle reference from library (just URL)
+  const handleSelectFromLibrary = (imageUrl: string) => {
+    handleReferenceImageChange(imageUrl);
+  };
+
+  // Handle upload from modal
+  const handleUploadFromModal = (dataUrl: string, file: File) => {
+    setReferenceImage(dataUrl);
+    setReferenceFile(file);
+  };
+
+  // Clear reference image
+  const handleClearReference = () => {
+    setReferenceImage(null);
+    setReferenceFile(null);
   };
 
   // Compress image before upload
@@ -400,14 +418,11 @@ const ArcanoClonerTool: React.FC = () => {
               disabled={isProcessing}
             />
 
-            {/* Reference Image Upload */}
-            <ImageUploadCard
-              title="Foto de Referência"
+            {/* Reference Image - New Component */}
+            <ReferenceImageCard
               image={referenceImage}
-              onImageChange={handleReferenceImageChange}
-              showLibraryButton
+              onClearImage={handleClearReference}
               onOpenLibrary={() => setShowPhotoLibrary(true)}
-              libraryButtonLabel="Biblioteca de Fotos"
               disabled={isProcessing}
             />
 
@@ -647,7 +662,8 @@ const ArcanoClonerTool: React.FC = () => {
       <PhotoLibraryModal
         isOpen={showPhotoLibrary}
         onClose={() => setShowPhotoLibrary(false)}
-        onSelectPhoto={(url) => handleReferenceImageChange(url)}
+        onSelectPhoto={handleSelectFromLibrary}
+        onUploadPhoto={handleUploadFromModal}
       />
 
       {/* No Credits Modal */}

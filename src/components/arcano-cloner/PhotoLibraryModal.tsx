@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { User, Users, Loader2, ImageIcon } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { User, Loader2, ImageIcon, Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import imageCompression from 'browser-image-compression';
 
 interface PhotoLibraryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectPhoto: (imageUrl: string) => void;
+  onUploadPhoto?: (dataUrl: string, file: File) => void;
 }
 
 type GenderFilter = 'masculino' | 'feminino';
@@ -26,12 +28,16 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   isOpen,
   onClose,
   onSelectPhoto,
+  onUploadPhoto,
 }) => {
   const [filter, setFilter] = useState<GenderFilter>('masculino');
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchPhotos = useCallback(async (pageNum: number, reset = false) => {
     setIsLoading(true);
@@ -100,6 +106,45 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
     onClose();
   };
 
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !onUploadPhoto) return;
+
+    setIsUploading(true);
+    
+    try {
+      // Compress image before using
+      const options = {
+        maxSizeMB: 2,
+        maxWidthOrHeight: 2048,
+        useWebWorker: true,
+      };
+      
+      const compressedFile = await imageCompression(file, options);
+      
+      // Convert to data URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        onUploadPhoto(dataUrl, compressedFile as unknown as File);
+        onClose();
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error('[PhotoLibrary] Upload error:', error);
+    } finally {
+      setIsUploading(false);
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl bg-[#1A0A2E] border-purple-500/30 text-white max-h-[85vh] overflow-hidden flex flex-col">
@@ -109,6 +154,43 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
             Biblioteca de Fotos de Referência
           </DialogTitle>
         </DialogHeader>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+
+        {/* Upload Button - Prominent at top */}
+        {onUploadPhoto && (
+          <Button
+            onClick={handleUploadClick}
+            disabled={isUploading}
+            className="w-full mt-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-medium py-3 flex-shrink-0"
+          >
+            {isUploading ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Processando...
+              </>
+            ) : (
+              <>
+                <Upload className="w-5 h-5 mr-2" />
+                Enviar Sua Própria Imagem
+              </>
+            )}
+          </Button>
+        )}
+
+        {/* Separator */}
+        <div className="flex items-center gap-3 mt-4 flex-shrink-0">
+          <div className="flex-1 h-px bg-purple-500/30" />
+          <span className="text-xs text-purple-400">ou escolha da biblioteca</span>
+          <div className="flex-1 h-px bg-purple-500/30" />
+        </div>
 
         {/* Filter Tabs */}
         <div className="flex gap-2 mt-4 flex-shrink-0">
