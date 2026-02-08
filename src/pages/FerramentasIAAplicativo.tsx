@@ -156,10 +156,16 @@ const FerramentasIAAplicativo = () => {
 
   // Handler for claiming promo and accessing app version
   const handleClaimAndAccess = async () => {
+    // Guard: ensure email is available
+    if (!user?.email) {
+      toast.error('Erro: usuário não identificado. Tente recarregar a página.');
+      throw new Error('User email not available');
+    }
+    
     try {
       const { data, error } = await supabase.functions.invoke('claim-promo-credits', {
         body: { 
-          email: user?.email,
+          email: user.email,
           promo_code: 'UPSCALER_1500'
         }
       });

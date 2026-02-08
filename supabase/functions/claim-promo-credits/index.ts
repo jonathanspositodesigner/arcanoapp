@@ -84,23 +84,25 @@ serve(async (req) => {
     const userId = profile.id;
     console.log(`[claim-promo-credits] Found user: ${userId}`);
 
-    // 2. Check if user has the upscaller-arcano pack active
-    const { data: pack, error: packError } = await supabase
+    // 2. Check if user has the upscaller-arcano pack active (use limit(1) to handle multiple records)
+    const { data: packs, error: packError } = await supabase
       .from('user_pack_purchases')
-      .select('id, pack_slug, access_type')
+      .select('id, pack_slug, access_type, purchased_at')
       .eq('user_id', userId)
       .eq('pack_slug', 'upscaller-arcano')
       .eq('is_active', true)
-      .maybeSingle();
+      .order('purchased_at', { ascending: false })
+      .limit(1);
 
     if (packError) {
       console.error('[claim-promo-credits] Error fetching pack:', packError);
       return new Response(
         JSON.stringify({ eligible: false, reason: 'error', message: 'Erro ao verificar compra' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    const pack = packs?.[0];
     if (!pack) {
       console.log(`[claim-promo-credits] No active upscaller-arcano pack for user: ${userId}`);
       return new Response(
