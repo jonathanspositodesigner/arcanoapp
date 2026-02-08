@@ -1,144 +1,95 @@
 
 ## Resumo
-Implementar **mensagem amigável para erros do servidor** (RunningHub) + **investigar por que os jobs do Vinny não aparecem no painel**.
+Corrigir o erro **"structure of query does not match function result type"** que está quebrando o painel de Custos IA. O problema é incompatibilidade de tipos entre INTEGER e NUMERIC nas RPCs.
 
 ---
 
-## Diagnóstico dos Jobs do vinnynunesrio@gmail.com
+## Causa Raiz
 
-| Job ID | Task ID | Status | Error | Créditos |
-|--------|---------|--------|-------|----------|
-| `52cb9d66-3f2b...` | 2020619404211003393 | `failed` | `工作流运行失败` | 60 (refunded: true) |
-| `fa49805e-c52c...` | 2020619972786659330 | `running` | null | 60 (refunded: false) |
+O erro exato é:
+> `Returned type integer does not match expected type numeric in column 8`
 
-**Problema identificado:**
-1. O primeiro job falhou com erro chinês `工作流运行失败` = "Workflow execution failed" - este é um erro da RunningHub quando o workflow do ComfyUI falha
-2. O segundo job está travado em `running` sem webhook - provavelmente será limpo pelo cleanup automático
-
-**Por que não aparecem no painel:** Os jobs DEVEM aparecer, pois têm `user_id` válido. Se não aparecem, pode ser:
-- Filtro de data incorreto (verificar se está olhando "Últimos 7 dias")
-- Cache do frontend
-
----
-
-## O que Será Implementado
-
-### 1. Mensagem Amigável para Erros da RunningHub
-
-Vou criar uma função helper que traduz erros técnicos/chineses em mensagens amigáveis para o usuário:
-
-**Arquivo:** `src/utils/errorMessages.ts`
-
-```typescript
-export function getAIErrorMessage(errorMessage: string | null): {
-  message: string;
-  solution: string;
-} {
-  // Erro chinês da RunningHub = "Workflow execution failed"
-  if (errorMessage?.includes('工作流运行失败') || errorMessage?.includes('workflow')) {
-    return {
-      message: 'Servidor temporariamente indisponível',
-      solution: 'Aguarde 5 minutos e tente novamente. Se persistir, use uma imagem diferente.'
-    };
-  }
-  
-  // Erros de timeout
-  if (errorMessage?.includes('timeout') || errorMessage?.includes('timed out')) {
-    return {
-      message: 'Processamento demorou muito',
-      solution: 'Tente novamente com uma imagem menor ou aguarde alguns minutos.'
-    };
-  }
-  
-  // Erros de VRAM/memória
-  if (errorMessage?.includes('VRAM') || errorMessage?.includes('memory') || errorMessage?.includes('OOM')) {
-    return {
-      message: 'Imagem muito complexa',
-      solution: 'Use uma imagem menor ou reduza a resolução de saída.'
-    };
-  }
-  
-  // Sem output (webhook sem resultado)
-  if (errorMessage?.includes('No output')) {
-    return {
-      message: 'Processamento não retornou resultado',
-      solution: 'Aguarde 5 minutos e tente novamente.'
-    };
-  }
-  
-  // Erro genérico
-  return {
-    message: errorMessage || 'Erro no processamento',
-    solution: 'Tente novamente ou use uma imagem diferente.'
-  };
-}
+A RPC `get_ai_tools_usage` declara no retorno:
+```sql
+RETURNS TABLE (
+  ...
+  rh_cost NUMERIC,         -- coluna 8
+  user_credit_cost NUMERIC,
+  profit NUMERIC,
+  ...
+)
 ```
 
-### 2. Integrar nas Ferramentas
+Mas dentro da CTE, estou fazendo:
+```sql
+COALESCE(uj.rh_cost, 0) as rh_cost  -- retorna INTEGER, não NUMERIC
+```
 
-**Arquivos a modificar:**
-- `src/pages/UpscalerArcanoTool.tsx`
-- `src/pages/PoseChangerTool.tsx`
-- `src/pages/ArcanoClonerTool.tsx`
-- `src/pages/VesteAITool.tsx` (se existir)
+O PostgreSQL não faz cast automático de INTEGER para NUMERIC em RETURNS TABLE.
 
-Em cada ferramenta, no callback `onStatusChange` quando `status === 'failed'`:
+---
 
-```typescript
-// ANTES
-setLastError({
-  message: update.errorMessage || 'Processing failed',
-  code: 'TASK_FAILED',
-  solution: 'Tente novamente com uma imagem diferente.'
-});
+## Solução
 
-// DEPOIS
-import { getAIErrorMessage } from '@/utils/errorMessages';
+Adicionar cast explícito `::NUMERIC` em todas as colunas que declaram retorno NUMERIC:
 
-const friendlyError = getAIErrorMessage(update.errorMessage);
-setLastError({
-  message: friendlyError.message,
-  code: 'TASK_FAILED',
-  solution: friendlyError.solution
-});
+```sql
+-- ANTES (bugado)
+COALESCE(uj.rh_cost, 0) as rh_cost,
+COALESCE(uj.user_credit_cost, 0) as user_credit_cost,
+COALESCE(uj.user_credit_cost, 0) - COALESCE(uj.rh_cost, 0) as profit,
+
+-- DEPOIS (corrigido)
+COALESCE(uj.rh_cost, 0)::NUMERIC as rh_cost,
+COALESCE(uj.user_credit_cost, 0)::NUMERIC as user_credit_cost,
+(COALESCE(uj.user_credit_cost, 0) - COALESCE(uj.rh_cost, 0))::NUMERIC as profit,
 ```
 
 ---
 
-## Arquivos a Serem Criados/Modificados
+## Arquivos a Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/utils/errorMessages.ts` | **Criar** - Função helper de tradução de erros |
-| `src/pages/UpscalerArcanoTool.tsx` | **Modificar** - Usar mensagem amigável |
-| `src/pages/PoseChangerTool.tsx` | **Modificar** - Usar mensagem amigável |
-| `src/pages/ArcanoClonerTool.tsx` | **Modificar** - Usar mensagem amigável |
-| `src/pages/VesteAITool.tsx` | **Modificar** (se existir) |
+| Migration SQL | Recriar a RPC `get_ai_tools_usage` com casts explícitos |
 
 ---
 
-## Sobre os Jobs do Vinny
+## O que Será Corrigido na Migration
 
-Os jobs ESTÃO no banco de dados e DEVEM aparecer na RPC. Recomendo:
+Na função `get_ai_tools_usage`, para **todas as 5 tabelas** (upscaler, pose_changer, veste_ai, video_upscaler, arcano_cloner):
 
-1. **Atualizar a página do painel** (F5)
-2. **Verificar filtro de data** - Colocar "Hoje" ou "Todo período"
-3. **Buscar por email** - Digitar "vinnynunesrio" no campo de busca
+```sql
+SELECT 
+  uj.id,
+  'Upscaler Arcano'::TEXT as tool_name,
+  uj.user_id,
+  uj.status,
+  uj.error_message,
+  COALESCE(uj.rh_cost, 0)::NUMERIC as rh_cost,              -- CAST ADICIONADO
+  COALESCE(uj.user_credit_cost, 0)::NUMERIC as user_credit_cost,  -- CAST ADICIONADO
+  (COALESCE(uj.user_credit_cost, 0) - COALESCE(uj.rh_cost, 0))::NUMERIC as profit,  -- CAST ADICIONADO
+  COALESCE(uj.waited_in_queue, false) as waited_in_queue,
+  COALESCE(uj.queue_wait_seconds, 0) as queue_wait_seconds,
+  CASE 
+    WHEN uj.started_at IS NOT NULL AND uj.completed_at IS NOT NULL 
+    THEN EXTRACT(EPOCH FROM (uj.completed_at - uj.started_at))::INTEGER
+    ELSE 0
+  END as processing_seconds,
+  uj.created_at,
+  uj.started_at,
+  uj.completed_at
+FROM upscaler_jobs uj
+WHERE uj.user_id IS NOT NULL
+```
 
-Se ainda não aparecer, pode ser necessário verificar a RPC `get_ai_tools_usage` para garantir que está consolidando corretamente.
+Isso será repetido para os outros 4 blocos UNION ALL (pose_changer_jobs, veste_ai_jobs, video_upscaler_jobs, arcano_cloner_jobs).
 
 ---
 
-## Preview da Mensagem de Erro no Frontend
+## Resultado Esperado
 
-**ANTES:**
-```
-❌ 工作流运行失败
-💡 Tente novamente com uma imagem diferente ou configurações menores.
-```
-
-**DEPOIS:**
-```
-❌ Servidor temporariamente indisponível
-💡 Aguarde 5 minutos e tente novamente. Se persistir, use uma imagem diferente.
-```
+Após a correção:
+- ✅ O painel de Custos IA voltará a funcionar
+- ✅ Todos os jobs aparecerão normalmente
+- ✅ O Arcano Cloner estará integrado corretamente
