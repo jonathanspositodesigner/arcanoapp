@@ -68,6 +68,7 @@ const TOOL_CREDIT_COSTS: Record<string, number> = {
   "Pose Changer": 60,
   "Veste AI": 60,
   "Video Upscaler": 150,
+  "Arcano Cloner": 80,
 };
 
 const AIToolsProfitTable = () => {
