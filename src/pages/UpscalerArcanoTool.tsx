@@ -323,6 +323,7 @@ const UpscalerArcanoTool: React.FC = () => {
         });
         setIsWaitingInQueue(false);
         toast.error(friendlyError.message);
+        endSubmit(); // Libera o botão para nova tentativa
       } else if (update.status === 'running') {
         console.log('[Upscaler] Job running');
         setStatus('processing');
