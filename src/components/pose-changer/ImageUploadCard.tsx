@@ -189,12 +189,15 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
               </button>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-1 p-2 text-center">
-              <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-dashed border-purple-500/40 flex items-center justify-center">
-                <Upload className="w-4 h-4 text-purple-400" />
+            /* Overlay absoluto para centralização perfeita */
+            <div className="absolute inset-0 grid place-items-center pointer-events-none">
+              <div className="flex flex-col items-center gap-1 text-center">
+                <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-dashed border-purple-500/40 flex items-center justify-center">
+                  <Upload className="w-4 h-4 text-purple-400" />
+                </div>
+                <p className="text-[10px] text-purple-200 font-medium">Arraste ou clique</p>
+                <p className="text-[9px] text-purple-400">Ctrl+V para colar</p>
               </div>
-              <p className="text-[10px] text-purple-200 font-medium">Arraste ou clique</p>
-              <p className="text-[9px] text-purple-400">Ctrl+V para colar</p>
             </div>
           )}
 
