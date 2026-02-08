@@ -1,72 +1,80 @@
 
-
-## Resumo
-Corrigir o bug onde a UI do Upscaler fica travada em "processando" quando um job falha. O problema é que falta chamar `endSubmit()` no handler de falha.
+## Objetivo
+Atualizar o motor da API do modo "Pessoas > De Longe" para usar um novo WebApp ID na RunningHub, pois o atual (`2017343414227963905`) quebrou.
 
 ---
 
-## Problema identificado
+## Análise do Sistema Atual
 
-O código do `UpscalerArcanoTool.tsx` (linhas 315-325) não chama `endSubmit()` quando recebe `status === 'failed'`:
-
+O código **já usa a API v2** corretamente:
 ```typescript
-// CÓDIGO ATUAL (com bug):
-} else if (update.status === 'failed') {
-  console.log('[Upscaler] Job failed:', update.errorMessage);
-  setStatus('error');
-  const friendlyError = getAIErrorMessage(update.errorMessage);
-  setLastError({
-    message: friendlyError.message,
-    code: 'TASK_FAILED',
-    solution: friendlyError.solution
-  });
-  setIsWaitingInQueue(false);
-  toast.error(friendlyError.message);
-  // ❌ FALTA: endSubmit() - botão fica travado!
-}
+// Linha 874 do runninghub-upscaler/index.ts
+const response = await fetchWithRetry(
+  `https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`,
+  { method: 'POST', ... }
+);
 ```
 
-Todas as outras ferramentas (VesteAI, PoseChanger, ArcanoCloner, VideoUpscaler) chamam `endSubmit()` corretamente.
-
----
-
-## Correção
-
-Adicionar `endSubmit()` no bloco de falha do `onStatusChange`:
-
+O problema é que o WebApp ID atual do modo "De Longe" quebrou na RunningHub:
 ```typescript
-// CÓDIGO CORRIGIDO:
-} else if (update.status === 'failed') {
-  console.log('[Upscaler] Job failed:', update.errorMessage);
-  setStatus('error');
-  const friendlyError = getAIErrorMessage(update.errorMessage);
-  setLastError({
-    message: friendlyError.message,
-    code: 'TASK_FAILED',
-    solution: friendlyError.solution
-  });
-  setIsWaitingInQueue(false);
-  toast.error(friendlyError.message);
-  endSubmit(); // ✅ ADICIONAR: libera o botão
-}
+// Linha 18 do runninghub-upscaler/index.ts
+const WEBAPP_ID_LONGE = '2017343414227963905';  // ❌ QUEBRADO
+```
+
+Os nodes usados atualmente para "De Longe":
+```typescript
+// Linhas 826-829
+nodeInfoList = [
+  { nodeId: "1", fieldName: "image", fieldValue: rhFileName },
+  { nodeId: "7", fieldName: "value", fieldValue: String(resolution || 2048) },
+];
 ```
 
 ---
 
-## Arquivo alterado
+## Informação Necessária
+
+Para fazer a correção, preciso que você forneça:
+
+1. **Novo WebApp ID** para o modo "Pessoas > De Longe"
+2. **NodeIds** do novo workflow:
+   - Qual nodeId para a **imagem** de entrada?
+   - Qual nodeId para a **resolução** (se houver)?
+   - Há outros parâmetros necessários?
+
+---
+
+## O Que Será Alterado (após você fornecer os dados)
 
 | Arquivo | Mudança |
 |---------|---------|
-| `src/pages/UpscalerArcanoTool.tsx` | Adicionar `endSubmit()` no bloco `update.status === 'failed'` (linha ~325) |
+| `supabase/functions/runninghub-upscaler/index.ts` | Atualizar `WEBAPP_ID_LONGE` e `nodeInfoList` para "De Longe" |
+| `supabase/functions/runninghub-queue-manager/index.ts` | Atualizar `WEBAPP_IDS.upscaler_jobs.longe` e `nodeInfoList` no processador de fila |
+| `supabase/functions/runninghub-webhook/index.ts` | Atualizar `WEBAPP_ID_LONGE` para o fallback De Longe → Standard |
 
 ---
 
-## Resultado esperado
+## Exemplo do Que Preciso
 
-Quando um job falha (seja por erro do RunningHub, timeout, ou qualquer outra razão):
-1. ✅ Status muda para "error" (já funciona)
-2. ✅ Mensagem de erro aparece (já funciona)
-3. ✅ Toast de erro é mostrado (já funciona)
-4. ✅ **NOVO:** Botão é liberado para nova tentativa
-5. ✅ **NOVO:** Usuário não fica preso em "processando"
+Baseado na documentação que você enviou, algo como:
 
+```json
+{
+  "webappId": "2020634325636616194",  // Novo ID
+  "nodeInfoList": [
+    {
+      "nodeId": "1",
+      "fieldName": "image",
+      "description": "sua foto aqui"
+    },
+    {
+      "nodeId": "2",
+      "fieldName": "value",
+      "fieldValue": "4096",
+      "description": "resolução"
+    }
+  ]
+}
+```
+
+Por favor, forneça o **novo WebApp ID** e os **nodeIds** do workflow "De Longe" na RunningHub para que eu possa fazer a atualização.
