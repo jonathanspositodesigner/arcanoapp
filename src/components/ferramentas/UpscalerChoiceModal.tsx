@@ -114,8 +114,8 @@ const UpscalerChoiceModal = ({
           >
             {/* Badge */}
             <div className="absolute top-3 right-3 flex items-center gap-1 bg-fuchsia-500/20 px-2 py-1 rounded-full">
-              <Zap className="w-3 h-3 text-fuchsia-300" />
-              <span className="text-[10px] text-fuchsia-300 font-medium">RÁPIDO</span>
+              <Sparkles className="w-3 h-3 text-fuchsia-300" />
+              <span className="text-[10px] text-fuchsia-300 font-medium">FÁCIL</span>
             </div>
 
             <div className="p-5">
@@ -131,7 +131,7 @@ const UpscalerChoiceModal = ({
 
               {/* Description */}
               <p className="text-fuchsia-200/70 text-sm text-center leading-relaxed mb-5">
-                Nova versão <span className="text-fuchsia-300 font-medium">mais rápida</span> e fácil de usar. Consome créditos por uso.
+                Nova versão <span className="text-fuchsia-300 font-medium">mais fácil de usar</span>. Consome créditos por uso.
               </p>
 
               {/* Button */}
