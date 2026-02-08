@@ -1,232 +1,159 @@
 
-## Resumo
-Implementar fallback automático para o workflow **"De Longe" (pessoas_longe)**: quando falhar na RunningHub, o sistema vai **automaticamente tentar de novo** usando o workflow **"Perto" (Standard)**, sem intervenção do usuário.
+## Objetivo (bug de estorno)
+Garantir que, quando o provedor retornar erro de **falha ao iniciar** (ex.: `工作流运行失败` / “Failed to start workflow”) — ou seja, quando **não existe `task_id`** porque o processamento nem começou — o usuário seja **reembolsado automaticamente** (sem depender de webhook).
+
+Além disso, vou **reembolsar manualmente** o que já ficou pendente para o usuário `vinnynunesrio@gmail.com` e corrigir inconsistências de flags em jobs cancelados por admin.
 
 ---
 
-## Como vai funcionar
+## O que eu investiguei (evidência no banco)
+### 1) O caso do Vinny (não estornado)
+- Usuário: `vinnynunesrio@gmail.com` (id `858e37be-...`)
+- Existe um job **cancelled** com crédito cobrado e não reembolsado:
+  - Job: `fa49805e-c52c-461e-9c8d-78bf5542c433`
+  - `credits_charged=true`, `credits_refunded=false`, `user_credit_cost=60`
+  - `task_id` existe, mas **não existe webhook salvo** e `rh_cost=0`
+  - Mensagem atual: “Créditos não devolvidos (processamento já iniciado).”
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                     FLUXO DO FALLBACK                           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   1. Usuário escolhe: Pessoas → De Longe                       │
-│              ↓                                                  │
-│   2. Edge Function usa WEBAPP_ID_LONGE (2017343414227963905)   │
-│              ↓                                                  │
-│   3. RunningHub processa...                                    │
-│              ↓                                                  │
-│   4. Webhook recebe resultado                                  │
-│              ↓                                                  │
-│   ┌─────────┴─────────┐                                        │
-│   │                   │                                        │
-│   ▼                   ▼                                        │
-│ SUCESSO            FALHOU                                      │
-│   │                   │                                        │
-│   │                   ▼                                        │
-│   │      É job "De Longe" (categoria = pessoas_longe)?         │
-│   │                   │                                        │
-│   │           ┌───────┴───────┐                                │
-│   │           │               │                                │
-│   │          SIM             NÃO                               │
-│   │           │               │                                │
-│   │           ▼               ▼                                │
-│   │    Já tentou fallback?   Falha normal                      │
-│   │           │               (estorna créditos)               │
-│   │      ┌────┴────┐                                           │
-│   │     NÃO       SIM                                          │
-│   │      │         │                                           │
-│   │      ▼         ▼                                           │
-│   │   RETRY COM  Falha final                                   │
-│   │   WEBAPP     (estorna créditos)                            │
-│   │   STANDARD                                                 │
-│   │      │                                                     │
-│   │      ▼                                                     │
-│   │   Nova chamada RunningHub                                  │
-│   │   com nodes 26, 25, 75, 128                                │
-│   │                                                            │
-│   ▼                                                            │
-│ FIM (resultado pro usuário)                                    │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+Você pediu que, quando o erro for “RunningHub nem iniciou / `工作流运行失败`”, sempre reembolse. Para esse job específico, como não houve retorno do provedor e ficou sem estorno, vou **reembolsar manualmente** e marcar o job como reembolsado para evitar estorno duplicado no futuro.
+
+### 2) Existe bug real de “falhou ao iniciar” sem estorno (afetando outros também)
+Encontrei **3 jobs** em `upscaler_jobs` com:
+- `status='failed'`
+- `task_id IS NULL`
+- `credits_charged=true`
+- `credits_refunded=false`
+
+Eles são do e-mail `breehmartins10@gmail.com` (jobs `9be1f8e0...`, `2291bfdd...`, `403c27b9...`), ou seja: esse bug já está afetando clientes (não é só o Vinny).
+
+### 3) Bug de flag em cancelamento admin (não é falta de estorno, é flag inconsistente)
+Encontrei:
+- Job `6b46e502-727e-4160-950b-7cf912d6201b` (jonathan.lifecazy@gmail.com)
+- Há transação de refund +80 no extrato, mas o job está `credits_refunded=false`.
+Causa provável: a função de backend `admin_cancel_job` estorna, mas **não seta `credits_refunded=true`** na linha do job.
 
 ---
 
-## Mudanças técnicas
+## Causa raiz (por que acontece)
+Nos fluxos que chamam o provedor diretamente pela função de backend (ex.: `runninghub-upscaler/run`), os créditos são consumidos primeiro (`consume_upscaler_credits`) e marcamos `credits_charged=true`.
 
-### 1. Tabela `upscaler_jobs` - Novo campo para controle de fallback
+Quando o provedor responde com erro **antes de gerar `task_id`** (ex.: `工作流运行失败` no start), **não existe webhook depois** e o sistema não passa pelo “finalizador” central (`/finish`), então:
+- o job fica como `failed`
+- os créditos ficam como “consumidos”
+- e **ninguém reembolsa**, porque não houve evento de término.
 
-```sql
-ALTER TABLE upscaler_jobs 
-ADD COLUMN IF NOT EXISTS fallback_attempted BOOLEAN DEFAULT false;
-```
-
-Esse campo marca se já tentamos o fallback, para não ficar em loop infinito.
-
----
-
-### 2. Edge Function `runninghub-webhook/index.ts` - Lógica de fallback
-
-Quando receber `TASK_END` com status `FAILED`:
-
-```typescript
-// Verificar se é candidato a fallback:
-// 1. categoria = 'pessoas_longe' (modo De Longe)
-// 2. fallback_attempted = false (ainda não tentou)
-// 3. status atual = failed
-
-if (
-  jobData.category === 'pessoas_longe' && 
-  !jobData.fallback_attempted &&
-  taskStatus === 'FAILED'
-) {
-  console.log('[Webhook] Fallback triggered for De Longe job');
-  
-  // Marcar que vamos tentar fallback
-  await supabase
-    .from('upscaler_jobs')
-    .update({ 
-      fallback_attempted: true,
-      error_message: 'Fallback: tentando workflow alternativo...'
-    })
-    .eq('id', jobData.id);
-  
-  // Chamar edge function para retry com workflow Standard
-  await triggerFallbackRetry(jobData);
-  
-  return; // Não finaliza o job ainda
-}
-```
+Isso também existe nos outros módulos (`runninghub-pose-changer`, `runninghub-veste-ai`, `runninghub-arcano-cloner`), que têm o mesmo padrão: cobram, tentam iniciar, e se falhar não reembolsam.
 
 ---
 
-### 3. Nova Edge Function `runninghub-upscaler/retry-fallback` 
+## Correção técnica (o que vou mudar)
 
-Ou adicionar um endpoint `/fallback` no `runninghub-upscaler`:
+### A) Hotfix: Reembolso automático em falha ao iniciar (sem `task_id`)
+Vou atualizar as funções de backend para que, se houver erro **antes do `task_id`**, elas:
+1) chamem `refund_upscaler_credits(user_id, amount, description)`
+2) atualizem o job com `credits_refunded=true`
+3) registrem um `error_message` explícito, por ex.:
+   - `START_FAILED_REFUNDED: 工作流运行失败`
+   - ou `START_FAILED_REFUNDED: Failed to start workflow`
 
-```typescript
-async function handleFallback(req: Request) {
-  const { jobId } = await req.json();
-  
-  // Buscar job original
-  const { data: job } = await supabase
-    .from('upscaler_jobs')
-    .select('*')
-    .eq('id', jobId)
-    .single();
-  
-  // Re-executar com WEBAPP_ID_STANDARD
-  const webappId = WEBAPP_ID_STANDARD; // Força usar o de Perto
-  
-  const nodeInfoList = [
-    { nodeId: "26", fieldName: "image", fieldValue: job.input_file_name },
-    { nodeId: "25", fieldName: "value", fieldValue: job.detail_denoise || 0.15 },
-    { nodeId: "75", fieldName: "value", fieldValue: String(job.resolution || 2048) },
-  ];
-  
-  // Adicionar prompt se existir
-  if (job.prompt) {
-    nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: job.prompt });
-  }
-  
-  // Chamar RunningHub com novo workflow
-  const response = await fetch(
-    `https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`,
-    { /* ... */ }
-  );
-  
-  // Atualizar task_id do job
-  const data = await response.json();
-  if (data.taskId) {
-    await supabase
-      .from('upscaler_jobs')
-      .update({ 
-        task_id: data.taskId,
-        status: 'running',
-        error_message: null,
-        current_step: 'fallback_running'
-      })
-      .eq('id', jobId);
-  }
-}
-```
+Arquivos afetados:
+- `supabase/functions/runninghub-upscaler/index.ts` (principal)
+- `supabase/functions/runninghub-pose-changer/index.ts`
+- `supabase/functions/runninghub-veste-ai/index.ts`
+- `supabase/functions/runninghub-arcano-cloner/index.ts`
+
+Detalhes importantes de implementação:
+- Reembolso **idempotente**:
+  - só reembolsar se `credits_charged=true` e `credits_refunded != true` e `user_credit_cost > 0`
+- Tratar estes cenários como “não iniciou”:
+  - resposta do provedor sem `taskId` (ou `data?.data?.taskId`, dependendo do formato)
+  - exceção de rede / HTML / parse / 4xx/5xx no start
+- Ajuste de parsing (evitar falso “sem taskId”):
+  - reconhecer ambos formatos:
+    - `data.taskId`
+    - `data.data?.taskId`
+  - e reconhecer erro via `data.code !== 0` quando esse formato vier assim.
+
+Resultado: sempre que aparecer `工作流运行失败` na **resposta de start**, o usuário será reembolsado na hora.
 
 ---
 
-### 4. Gravar `category` no banco (correção importante)
+### B) Corrigir `admin_cancel_job` para marcar `credits_refunded=true` quando estornar
+Vou atualizar a função do banco `admin_cancel_job` para:
+- manter o estorno como está
+- e também setar `credits_refunded=true` no job correspondente (além de `status='cancelled'`)
 
-Atualmente o frontend não grava `category` no insert inicial. Preciso garantir que esse campo seja persistido para o fallback funcionar:
+Isso evita o problema “estornou, mas no histórico aparece como não estornado”.
 
-**Arquivo:** `src/pages/UpscalerArcanoTool.tsx`
-
-```typescript
-// No insert inicial do job, adicionar:
-.insert({
-  session_id: sessionIdRef.current,
-  status: 'pending',
-  detail_denoise: detailDenoise,
-  prompt: getFinalPrompt(),
-  user_id: user.id,
-  category: isLongeMode ? 'pessoas_longe' : promptCategory, // NOVO
-  version: version,                                          // NOVO
-  resolution: resolutionValue,                               // NOVO
-  framing_mode: framingMode,                                 // NOVO
-})
-```
+Arquivo/entrega:
+- uma migration SQL em `supabase/migrations/...sql` com `CREATE OR REPLACE FUNCTION public.admin_cancel_job(...)`
 
 ---
 
-## Arquivos que serão modificados
+### C) Reparos manuais (backfill) — estornar quem ficou para trás
+Vou incluir uma migration que faz 3 reparos:
 
-| Arquivo | Mudança |
-|---------|---------|
-| `supabase/migrations/xxx.sql` | Adicionar coluna `fallback_attempted` |
-| `supabase/functions/runninghub-webhook/index.ts` | Detectar falha de "De Longe" e chamar fallback |
-| `supabase/functions/runninghub-upscaler/index.ts` | Adicionar handler `/fallback` para retry |
-| `src/pages/UpscalerArcanoTool.tsx` | Gravar `category`, `version`, `resolution`, `framing_mode` no insert |
+1) **Reembolso manual do Vinny** (o que você pediu):
+- Job `fa49805e-c52c-461e-9c8d-78bf5542c433`
+- Se ainda estiver `credits_refunded=false`:
+  - executar `refund_upscaler_credits( user_id, 60, 'Estorno manual: falha RunningHub (sem conclusão)')`
+  - `UPDATE upscaler_jobs SET credits_refunded=true, error_message='... (estornado manualmente)' WHERE id=...;`
 
----
+2) **Reembolso automático retroativo** para todos `upscaler_jobs` que:
+- `status='failed'`
+- `task_id IS NULL`
+- `credits_charged=true`
+- `credits_refunded=false`
+Isso cobre os 3 jobs da `breehmartins10@gmail.com` e qualquer outro caso igual que existir.
 
-## Comportamento para o usuário
-
-1. Usuário escolhe **Pessoas → De Longe** e clica processar
-2. Se o workflow "De Longe" falhar na RunningHub:
-   - O sistema **automaticamente** tenta de novo com o workflow "Perto" (Standard)
-   - O usuário vê o status continuar como "processando" (sem perceber a falha)
-   - Se o fallback funcionar, recebe a imagem normalmente
-3. Se o fallback também falhar:
-   - Aí sim mostra erro e estorna os créditos
-   - Mensagem: "Não foi possível processar esta imagem"
+3) **Correção de flag** para o job do admin que já foi reembolsado:
+- `UPDATE upscaler_jobs SET credits_refunded=true WHERE id='6b46e502-...';`
+(sem criar novo refund, porque já existe transação de +80 no extrato)
 
 ---
 
-## Vantagens desta abordagem
+## Como vou validar (checagens objetivas)
+### 1) Garantir que não sobra “falhou sem taskId e sem estorno”
+Rodar contagem antes/depois:
+- `upscaler_jobs where status='failed' and task_id is null and credits_charged=true and credits_refunded=false` deve virar **0**.
 
-- **Transparente para o usuário**: ele não precisa fazer nada
-- **Sem custo extra**: não cobra créditos duas vezes (já foi cobrado no início)
-- **Idempotente**: o flag `fallback_attempted` evita loops infinitos
-- **Rastreável**: o `step_history` vai registrar que houve fallback
+### 2) Caso `工作流运行失败` (start failure)
+Forçar um start failure (ex.: workflow problemático) e verificar:
+- job termina `failed`
+- `credits_refunded=true`
+- saldo do usuário aumenta de volta
+- `error_message` deixa claro que foi reembolsado
+
+### 3) Conferir o Vinny
+Após a migration:
+- `fa49805e...` deve ficar `credits_refunded=true`
+- extrato deve ter um refund +60 (descrição de estorno manual)
+- saldo do Vinny deve subir +60
 
 ---
 
-## Seção técnica - Detalhes de implementação
+## Riscos / cuidados
+- Evitar estorno duplicado:
+  - todas as rotinas (função e migration) vão checar `credits_refunded` antes de reembolsar
+- Evitar “marcar como reembolsado” sem realmente reembolsar:
+  - nos casos em que vamos mudar só flag (admin), só farei isso quando houver evidência clara no extrato (já conferi no caso do job `6b46e...`).
 
-### Node mapping do fallback
+---
 
-| Workflow Original (De Longe) | Workflow Fallback (Standard) |
-|------------------------------|------------------------------|
-| WebApp: 2017343414227963905  | WebApp: 2017030861371219969  |
-| Node 1 (image)               | Node 26 (image)              |
-| Node 7 (resolution)          | Node 75 (resolution)         |
-| ❌ Sem denoise               | Node 25 (denoise = 0.15)     |
-| ❌ Sem prompt                | Node 128 (prompt)            |
+## Entregáveis (o que será alterado)
+1) Código (funções de backend):
+- `supabase/functions/runninghub-upscaler/index.ts`
+- `supabase/functions/runninghub-pose-changer/index.ts`
+- `supabase/functions/runninghub-veste-ai/index.ts`
+- `supabase/functions/runninghub-arcano-cloner/index.ts`
 
-### Campos necessários no job para fallback funcionar
+2) Banco (migration):
+- Atualizar `public.admin_cancel_job(...)`
+- Rodar backfill/estornos manuais (Vinny + casos `failed` sem `task_id`)
 
-- `input_file_name`: nome do arquivo já enviado à RunningHub (reutilizado)
-- `detail_denoise`: valor original (usa default 0.15 se não tiver)
-- `resolution`: 2048 ou 4096
-- `prompt`: texto do prompt (usa o de pessoas_perto como fallback)
-- `category`: precisa ser 'pessoas_longe' para identificar candidatos
+---
+
+## Resultado esperado
+- Sempre que o provedor responder `工作流运行失败` no início (sem `task_id`), o usuário será reembolsado automaticamente.
+- O Vinny terá os créditos dos fails pendentes reembolsados (incluindo o job citado).
+- O painel/admin e auditoria passam a mostrar `credits_refunded` consistente com o que realmente aconteceu.
