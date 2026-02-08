@@ -14,7 +14,7 @@ interface JobRecoveryResult {
 
 interface UseNotificationTokenRecoveryProps {
   userId: string | null | undefined;
-  toolTable: 'upscaler_jobs' | 'pose_changer_jobs' | 'veste_ai_jobs' | 'video_upscaler_jobs';
+  toolTable: 'upscaler_jobs' | 'pose_changer_jobs' | 'veste_ai_jobs' | 'video_upscaler_jobs' | 'arcano_cloner_jobs';
   onRecovery: (result: JobRecoveryResult) => void;
 }
 
@@ -110,6 +110,13 @@ export function useNotificationTokenRecovery({
             .eq('id', jobId)
             .maybeSingle();
           job = videoJob;
+        } else if (toolTable === 'arcano_cloner_jobs') {
+          const { data: clonerJob } = await supabase
+            .from('arcano_cloner_jobs')
+            .select('id, status, user_image_url, reference_image_url, output_url, user_id')
+            .eq('id', jobId)
+            .maybeSingle();
+          job = clonerJob;
         }
 
         if (!job) {

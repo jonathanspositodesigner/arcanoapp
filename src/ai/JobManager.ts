@@ -21,7 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 // ==================== TYPES ====================
 
-export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler';
+export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler' | 'arcano_cloner';
 export type JobStatus = 'pending' | 'queued' | 'starting' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface JobResult {
@@ -60,6 +60,7 @@ const TABLE_MAP: Record<ToolType, string> = {
   pose_changer: 'pose_changer_jobs',
   veste_ai: 'veste_ai_jobs',
   video_upscaler: 'video_upscaler_jobs',
+  arcano_cloner: 'arcano_cloner_jobs',
 };
 
 // Edge function names mapping
@@ -68,6 +69,7 @@ const EDGE_FUNCTION_MAP: Record<ToolType, string> = {
   pose_changer: 'runninghub-pose-changer/run',
   veste_ai: 'runninghub-veste-ai/run',
   video_upscaler: 'runninghub-video-upscaler/run',
+  arcano_cloner: 'runninghub-arcano-cloner/run',
 };
 
 // Tool names for display
@@ -76,6 +78,7 @@ const TOOL_NAMES: Record<string, ToolType> = {
   'Video Upscaler': 'video_upscaler',
   'Pose Changer': 'pose_changer',
   'Veste AI': 'veste_ai',
+  'Arcano Cloner': 'arcano_cloner',
 };
 
 // ==================== CORE FUNCTIONS ====================

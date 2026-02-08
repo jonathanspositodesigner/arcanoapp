@@ -55,9 +55,10 @@ const WEBAPP_IDS = {
   pose_changer_jobs: '2018451429635133442',
   veste_ai_jobs: '2018755100210106369',
   video_upscaler_jobs: '2018810750139109378',
+  arcano_cloner_jobs: '2019877042115842050',
 };
 
-const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs'] as const;
+const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs'] as const;
 type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -69,6 +70,7 @@ const TOOL_CONFIG: Record<JobTable, { name: string; url: string; emoji: string }
   pose_changer_jobs: { name: 'Pose Changer', url: '/pose-changer-tool', emoji: '🎨' },
   veste_ai_jobs: { name: 'Veste AI', url: '/veste-ai-tool', emoji: '👕' },
   video_upscaler_jobs: { name: 'Video Upscaler', url: '/video-upscaler-tool', emoji: '🎬' },
+  arcano_cloner_jobs: { name: 'Arcano Cloner', url: '/arcano-cloner-tool', emoji: '👤' },
 };
 
 /**
@@ -551,6 +553,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
       'video_upscaler_jobs': 'Video Upscaler',
       'pose_changer_jobs': 'Pose Changer',
       'veste_ai_jobs': 'Veste AI',
+      'arcano_cloner_jobs': 'Arcano Cloner',
     };
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
