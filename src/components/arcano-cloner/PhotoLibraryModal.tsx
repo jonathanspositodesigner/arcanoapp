@@ -1,0 +1,227 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { User, Users, Loader2, ImageIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+
+interface PhotoLibraryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectPhoto: (imageUrl: string) => void;
+}
+
+type GenderFilter = 'masculino' | 'feminino';
+
+interface PhotoItem {
+  id: string;
+  title: string;
+  image_url: string;
+  thumbnail_url?: string | null;
+}
+
+const ITEMS_PER_PAGE = 20;
+
+const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
+  isOpen,
+  onClose,
+  onSelectPhoto,
+}) => {
+  const [filter, setFilter] = useState<GenderFilter>('masculino');
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+
+  const fetchPhotos = useCallback(async (pageNum: number, reset = false) => {
+    setIsLoading(true);
+    
+    try {
+      // Query photos from admin_prompts where category = 'Fotos'
+      // Filter by gender based on title containing keywords
+      const genderKeywords = filter === 'masculino' 
+        ? ['homem', 'masculino', 'male', 'man', 'boy', 'garoto', 'menino']
+        : ['mulher', 'feminino', 'female', 'woman', 'girl', 'garota', 'menina'];
+      
+      // Build OR filter for title matching
+      let query = supabase
+        .from('admin_prompts')
+        .select('id, title, image_url, thumbnail_url')
+        .eq('category', 'Fotos')
+        .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1)
+        .order('created_at', { ascending: false });
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('[PhotoLibrary] Error fetching photos:', error);
+        return;
+      }
+
+      // Client-side filter by gender keywords in title
+      const filteredData = (data || []).filter(photo => {
+        const titleLower = photo.title.toLowerCase();
+        return genderKeywords.some(keyword => titleLower.includes(keyword));
+      });
+
+      if (reset) {
+        setPhotos(filteredData);
+      } else {
+        setPhotos(prev => [...prev, ...filteredData]);
+      }
+
+      // If we got less than expected or no filtered results, might be end
+      setHasMore(data && data.length === ITEMS_PER_PAGE);
+    } catch (error) {
+      console.error('[PhotoLibrary] Fetch error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filter]);
+
+  // Reset and fetch when modal opens or filter changes
+  useEffect(() => {
+    if (isOpen) {
+      setPage(0);
+      setPhotos([]);
+      setHasMore(true);
+      fetchPhotos(0, true);
+    }
+  }, [isOpen, filter, fetchPhotos]);
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchPhotos(nextPage);
+  };
+
+  const handleSelectPhoto = (photo: PhotoItem) => {
+    onSelectPhoto(photo.image_url);
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl bg-[#1A0A2E] border-purple-500/30 text-white max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
+            <ImageIcon className="w-5 h-5 text-fuchsia-400" />
+            Biblioteca de Fotos de Referência
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* Filter Tabs */}
+        <div className="flex gap-2 mt-4 flex-shrink-0">
+          <Button
+            variant={filter === 'masculino' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('masculino')}
+            className={cn(
+              "flex-1",
+              filter === 'masculino'
+                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0"
+                : "bg-transparent border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+            )}
+          >
+            <User className="w-4 h-4 mr-2" />
+            Masculino
+          </Button>
+          <Button
+            variant={filter === 'feminino' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('feminino')}
+            className={cn(
+              "flex-1",
+              filter === 'feminino'
+                ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-0"
+                : "bg-transparent border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+            )}
+          >
+            <User className="w-4 h-4 mr-2" />
+            Feminino
+          </Button>
+        </div>
+
+        {/* Photos Grid */}
+        <div className="mt-4 overflow-y-auto flex-1 pr-2">
+          {isLoading && photos.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+            </div>
+          ) : photos.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-purple-400">
+              <ImageIcon className="w-12 h-12 mb-3 opacity-50" />
+              <p className="text-sm">Nenhuma foto encontrada nesta categoria</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {photos.map((photo) => (
+                  <button
+                    key={photo.id}
+                    onClick={() => handleSelectPhoto(photo)}
+                    className="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-purple-500/30 hover:border-fuchsia-400 transition-all hover:scale-105"
+                  >
+                    {/* Photo Image */}
+                    <img
+                      src={photo.thumbnail_url || photo.image_url}
+                      alt={photo.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    
+                    {/* Gradient overlay for readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    {/* Title on hover */}
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-[10px] text-white font-medium text-center line-clamp-2">
+                        {photo.title}
+                      </p>
+                    </div>
+
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-fuchsia-500/0 group-hover:bg-fuchsia-500/10 transition-colors flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-fuchsia-600 px-3 py-1 rounded-full transition-opacity">
+                        Selecionar
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Load More */}
+              {hasMore && (
+                <div className="flex justify-center mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleLoadMore}
+                    disabled={isLoading}
+                    className="bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Carregando...
+                      </>
+                    ) : (
+                      'Carregar mais'
+                    )}
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Info text */}
+          <p className="text-xs text-purple-400 text-center mt-4 pb-2">
+            💡 Clique em uma foto para usá-la como referência
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default PhotoLibraryModal;
