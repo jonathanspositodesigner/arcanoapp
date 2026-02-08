@@ -5,12 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
+import { usePromoClaimStatus } from "@/hooks/usePromoClaimStatus";
 import { Sparkles, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
 
 import ToolsHeader from "@/components/ToolsHeader";
 import PromoToolsBanner from "@/components/PromoToolsBanner";
+import UpscalerChoiceModal from "@/components/ferramentas/UpscalerChoiceModal";
 
 interface ToolData {
   id: string;
@@ -30,6 +33,13 @@ const FerramentasIAAplicativo = () => {
   
   const { user, hasAccessToPack, isPremium, isLoading: isPremiumLoading } = usePremiumArtesStatus();
   const { planType: promptsPlanType, isLoading: isPromptsLoading } = usePremiumStatus();
+  
+  // State for Upscaler choice modal
+  const [showUpscalerModal, setShowUpscalerModal] = useState(false);
+  const hasUpscalerPack = hasAccessToPack('upscaller-arcano');
+  
+  // Check promo claim status
+  const { hasClaimed, isLoading: isCheckingClaim, refetch: refetchClaimStatus } = usePromoClaimStatus(user?.id);
 
   const toolDescriptions: Record<string, string> = {
     "upscaller-arcano": t('ferramentas.descriptions.upscaler'),
@@ -134,8 +144,35 @@ const FerramentasIAAplicativo = () => {
   };
 
   const handleToolClick = (tool: ToolData) => {
-    // Always navigate to the tool
+    // If it's Upscaler Arcano and user has the pack, show choice modal
+    if (tool.slug === "upscaller-arcano" && hasUpscalerPack) {
+      setShowUpscalerModal(true);
+      return;
+    }
+    
+    // Otherwise, navigate normally
     navigate(getAccessRoute(tool.slug));
+  };
+
+  // Handler for claiming promo and accessing app version
+  const handleClaimAndAccess = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('claim-upscaler-promo', {
+        body: { email: user?.email }
+      });
+      
+      if (error) {
+        console.error('Error claiming promo:', error);
+        toast.error('Erro ao resgatar créditos. Tente novamente.');
+        throw error;
+      }
+      
+      await refetchClaimStatus();
+      toast.success('1.500 créditos resgatados com sucesso!');
+    } catch (error) {
+      console.error('Error in handleClaimAndAccess:', error);
+      throw error;
+    }
   };
 
   if (loading || isPremiumLoading || isPromptsLoading) {
@@ -151,7 +188,6 @@ const FerramentasIAAplicativo = () => {
     const description = toolDescriptions[tool.slug] || "Ferramenta de IA";
     const isComingSoon = tool.slug === "forja-selos-3d-ilimitada";
     const isUpscalerArcano = tool.slug === "upscaller-arcano";
-    const hasUpscalerPack = hasAccessToPack('upscaller-arcano');
     
     const handleCardClick = (e: React.MouseEvent) => {
       // Don't trigger card click if clicking on buttons
@@ -206,7 +242,7 @@ const FerramentasIAAplicativo = () => {
               </Button>
             ) : (
               <div className="flex flex-col gap-1 sm:gap-2 mt-2 sm:mt-3">
-                {/* Main button - Versão Aplicativo */}
+                {/* Main button */}
                 <Button
                   size="sm"
                   className={`w-full text-[11px] sm:text-sm h-8 sm:h-9 font-medium ${
@@ -222,8 +258,8 @@ const FerramentasIAAplicativo = () => {
                   <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5" />
                   {isUpscalerArcano ? (
                     <>
-                      <span className="hidden sm:inline">Upscaler Arcano - Versão Aplicativo</span>
-                      <span className="sm:hidden">Versão Aplicativo</span>
+                      <span className="hidden sm:inline">Acessar Ferramenta</span>
+                      <span className="sm:hidden">Acessar</span>
                     </>
                   ) : (
                     <>
@@ -232,20 +268,6 @@ const FerramentasIAAplicativo = () => {
                     </>
                   )}
                 </Button>
-                
-                {/* Link - Versão Ilimitada (only for Upscaler Arcano pack owners) */}
-                {isUpscalerArcano && hasUpscalerPack && (
-                  <button
-                    className="w-full text-[11px] sm:text-sm text-purple-300 hover:text-fuchsia-400 underline underline-offset-2 transition-colors py-1"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate("/ferramenta-ia-artes/upscaller-arcano/v2");
-                    }}
-                  >
-                    <span className="hidden sm:inline">Upscaler Arcano - Versão Ilimitada</span>
-                    <span className="sm:hidden">Versão Ilimitada</span>
-                  </button>
-                )}
               </div>
             )}
           </div>
@@ -285,6 +307,15 @@ const FerramentasIAAplicativo = () => {
           </div>
         )}
       </main>
+
+      {/* Upscaler Choice Modal */}
+      <UpscalerChoiceModal
+        isOpen={showUpscalerModal}
+        onClose={() => setShowUpscalerModal(false)}
+        hasClaimedPromo={hasClaimed}
+        isCheckingClaim={isCheckingClaim}
+        onClaimAndAccess={handleClaimAndAccess}
+      />
     </div>
   );
 };
