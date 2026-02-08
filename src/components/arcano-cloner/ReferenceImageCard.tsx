@@ -1,7 +1,6 @@
 import React from 'react';
-import { Plus, RefreshCw, X, ImageIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Plus, X, ImageIcon } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 interface ReferenceImageCardProps {
@@ -18,84 +17,74 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
   disabled = false,
 }) => {
   return (
-    <Card className="bg-purple-900/20 border-purple-500/30">
-      <CardHeader className="py-2 px-3">
-        <CardTitle className="text-sm font-medium text-white flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-fuchsia-400" />
+    <Card className={cn(
+      "relative overflow-hidden bg-purple-900/20 border-purple-500/30",
+      disabled && "opacity-50 cursor-not-allowed"
+    )}>
+      {/* Header - same as ImageUploadCard */}
+      <div className="px-2 py-1 border-b border-purple-500/20">
+        <h3 className="text-[10px] font-semibold text-white flex items-center gap-1">
+          <ImageIcon className="w-3 h-3 text-purple-400" />
           Foto de Referência
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-3 pt-0">
-        {!image ? (
-          // Empty state - large "+" square that opens library
-          <button
-            onClick={onOpenLibrary}
-            disabled={disabled}
-            className={cn(
-              "w-full aspect-[3/4] rounded-xl border-2 border-dashed border-purple-500/50 bg-purple-900/30",
-              "flex flex-col items-center justify-center gap-3 transition-all duration-200",
-              "hover:border-fuchsia-400 hover:bg-purple-900/40 hover:shadow-lg hover:shadow-fuchsia-500/20",
-              "focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-offset-2 focus:ring-offset-[#1A0A2E]",
-              "group cursor-pointer",
-              disabled && "opacity-50 cursor-not-allowed hover:border-purple-500/50 hover:bg-purple-900/30 hover:shadow-none"
-            )}
-          >
-            <div className={cn(
-              "w-14 h-14 rounded-full bg-purple-500/20 flex items-center justify-center",
-              "group-hover:bg-fuchsia-500/30 group-hover:scale-110 transition-all duration-200",
-              disabled && "group-hover:bg-purple-500/20 group-hover:scale-100"
-            )}>
-              <Plus className={cn(
-                "w-7 h-7 text-purple-300 group-hover:text-fuchsia-300 transition-colors",
-                disabled && "group-hover:text-purple-300"
-              )} />
-            </div>
-            <span className={cn(
-              "text-xs text-purple-300 group-hover:text-fuchsia-300 transition-colors font-medium",
-              disabled && "group-hover:text-purple-300"
-            )}>
-              Escolha da biblioteca
-            </span>
-          </button>
-        ) : (
-          // Image selected state
-          <div className="relative">
-            {/* Clear button */}
-            <button
-              onClick={onClearImage}
-              disabled={disabled}
-              className={cn(
-                "absolute top-2 right-2 z-10 p-1.5 rounded-full bg-black/60 text-white",
-                "hover:bg-red-500/80 transition-colors",
-                disabled && "opacity-50 cursor-not-allowed hover:bg-black/60"
-              )}
-            >
-              <X className="w-4 h-4" />
-            </button>
+        </h3>
+      </div>
 
-            {/* Image preview */}
-            <div className="aspect-[3/4] rounded-xl overflow-hidden border-2 border-purple-500/30">
+      {/* Content Area - matches ImageUploadCard sizing */}
+      <div
+        className={cn(
+          "relative h-20 lg:h-auto lg:aspect-[3/4] flex flex-col items-center justify-center transition-all",
+          !image && "cursor-pointer hover:bg-purple-500/10",
+          disabled && "cursor-not-allowed"
+        )}
+        onClick={!image && !disabled ? onOpenLibrary : undefined}
+      >
+        {image ? (
+          <>
+            <div className="w-full h-full flex items-center justify-center p-2">
               <img
                 src={image}
                 alt="Foto de referência"
-                className="w-full h-full object-cover"
+                className="max-w-full max-h-full object-contain"
               />
             </div>
-
-            {/* Change button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onOpenLibrary}
+            {/* Remove button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClearImage();
+              }}
               disabled={disabled}
-              className="w-full mt-2 text-xs bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-fuchsia-200"
+              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center transition-colors"
             >
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-              Trocar Imagem
-            </Button>
+              <X className="w-3 h-3 text-white" />
+            </button>
+          </>
+        ) : (
+          <div className="flex items-center gap-2 p-2">
+            <div className="w-8 h-8 rounded-lg bg-fuchsia-500/20 border border-dashed border-fuchsia-500/40 flex items-center justify-center">
+              <Plus className="w-4 h-4 text-fuchsia-400" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] text-purple-200 font-medium">Escolher da biblioteca</p>
+              <p className="text-[9px] text-purple-400">Ou envie sua foto</p>
+            </div>
           </div>
         )}
-      </CardContent>
+      </div>
+
+      {/* Change button when image selected - same style as library button */}
+      {image && (
+        <div className="px-2 py-1 border-t border-purple-500/20">
+          <button
+            onClick={onOpenLibrary}
+            disabled={disabled}
+            className="w-full h-6 text-[10px] rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white transition-colors flex items-center justify-center gap-1"
+          >
+            <ImageIcon className="w-3 h-3" />
+            Trocar Imagem
+          </button>
+        </div>
+      )}
     </Card>
   );
 };
