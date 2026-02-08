@@ -1,28 +1,38 @@
 
 ## Resumo
-Adicionar funcionalidade para categorizar fotos por gênero (Masculino/Feminino) na página de gerenciamento de imagens e no upload de arquivos, permitindo que o Arcano Cloner filtre as fotos diretamente pelo campo de gênero ao invés de procurar palavras-chave no título.
+Adicionar busca por palavras-chave na Biblioteca de Fotos (Arcano Cloner) e sistema de tags nos arquivos da categoria "Fotos" para facilitar a pesquisa.
 
 ---
 
 ## O que será implementado
 
-### 1. Filtro por Categoria na página de Gerenciamento (`/admin-manage-images`)
-- Adicionar um seletor de categoria ao lado dos filtros existentes (Todos, Envios de Administradores, etc.)
-- Opções: Todos, Fotos, Movies para Telão, Selos 3D, Cenários, Logos, Controles de Câmera
+### 1. Nova coluna `tags` na tabela `admin_prompts`
+- Tipo: `TEXT[]` (array de strings)
+- Permite até 10 tags por item
+- Será usado para busca no modal da biblioteca
 
-### 2. Campo de Gênero para itens da categoria "Fotos"
-- Adicionar coluna `gender` na tabela `admin_prompts` (valores: 'masculino', 'feminino', ou null)
-- No modal de edição:
-  - Quando a categoria selecionada for "Fotos", exibir um seletor de gênero (Masculino/Feminino)
-  - O campo só aparece quando categoria = "Fotos"
+### 2. Campo de busca no PhotoLibraryModal
+- Adicionar um input com ícone de lupa 🔍
+- Busca em tempo real pelo título E pelas tags
+- Debounce de 300ms para evitar muitas consultas
+- A busca funciona junto com o filtro de gênero
 
-### 3. Campo de Gênero no Upload (`/admin-upload`)
-- Quando a categoria selecionada for "Fotos", exibir opção de gênero
-- O campo só aparece quando categoria = "Fotos"
+### 3. Campo de Tags no AdminUpload (quando categoria = "Fotos")
+- Input que permite adicionar até 10 tags
+- Tags aparecem como chips removíveis
+- Validação: máximo 10 tags, cada tag max 30 caracteres
 
-### 4. Atualização do Arcano Cloner (PhotoLibraryModal)
-- Alterar a busca para usar o novo campo `gender` ao invés de palavras-chave no título
-- Consulta mais simples e precisa: `WHERE category = 'Fotos' AND gender = 'masculino'`
+### 4. Campo de Tags no AdminManageImages (edição)
+- Mesmo comportamento do upload
+- Permite editar tags de itens existentes
+
+---
+
+## Sobre identificar imagens automaticamente
+
+⚠️ **Não é possível** eu analisar automaticamente as imagens do banco de dados. Eu não tenho acesso para "ver" as imagens que estão hospedadas. Você precisará:
+1. Adicionar as tags manualmente na hora de editar cada item, OU
+2. Usar uma ferramenta externa de IA (como GPT Vision) para classificar as imagens
 
 ---
 
@@ -30,7 +40,7 @@ Adicionar funcionalidade para categorizar fotos por gênero (Masculino/Feminino)
 
 ```sql
 ALTER TABLE admin_prompts 
-ADD COLUMN gender TEXT DEFAULT NULL;
+ADD COLUMN tags TEXT[] DEFAULT NULL;
 ```
 
 ---
@@ -39,129 +49,179 @@ ADD COLUMN gender TEXT DEFAULT NULL;
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/pages/AdminManageImages.tsx` | Adicionar filtro por categoria + campo gênero no modal de edição |
-| `src/pages/AdminUpload.tsx` | Adicionar campo gênero quando categoria = "Fotos" |
-| `src/components/arcano-cloner/PhotoLibraryModal.tsx` | Usar campo `gender` ao invés de keywords no título |
+| `src/components/arcano-cloner/PhotoLibraryModal.tsx` | Adicionar campo de busca + consulta por tags |
+| `src/pages/AdminUpload.tsx` | Adicionar campo de tags quando categoria = "Fotos" |
+| `src/pages/AdminManageImages.tsx` | Adicionar campo de tags na edição |
 
 ---
 
 ## Detalhes Técnicos
 
-### AdminManageImages.tsx
+### 1. PhotoLibraryModal.tsx
 
-1. **Novo estado para filtro de categoria**:
+**Novo estado para busca:**
 ```tsx
-const [categoryFilter, setCategoryFilter] = useState<string>('all');
+const [searchTerm, setSearchTerm] = useState('');
+const [debouncedSearch, setDebouncedSearch] = useState('');
 ```
 
-2. **Novo estado para edição de gênero**:
+**Debounce effect:**
 ```tsx
-const [editGender, setEditGender] = useState<string | null>(null);
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(searchTerm);
+  }, 300);
+  return () => clearTimeout(timer);
+}, [searchTerm]);
 ```
 
-3. **Interface Prompt atualizada**:
+**Query atualizada com busca:**
 ```tsx
-interface Prompt {
-  // ... campos existentes
-  gender?: string | null;
+let query = supabase
+  .from('admin_prompts')
+  .select('id, title, image_url, thumbnail_url, gender, tags')
+  .eq('category', 'Fotos')
+  .eq('gender', filter);
+
+// Adicionar filtro de busca
+if (debouncedSearch.trim()) {
+  // Busca no título OU nas tags
+  query = query.or(`title.ilike.%${debouncedSearch}%,tags.cs.{${debouncedSearch}}`);
 }
 ```
 
-4. **Filtro no grid de arquivos** - adicionar filtro por categoria:
+**UI - Input de busca (após filtros de gênero):**
 ```tsx
-const filteredAndSortedPrompts = prompts
-  .filter(p => {
-    const matchesSearch = ...;
-    const matchesType = ...;
-    const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
-    return matchesSearch && matchesType && matchesCategory;
-  })
+<div className="relative mt-3">
+  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400/60" />
+  <Input
+    type="text"
+    placeholder="Buscar por palavra-chave..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="pl-10 bg-purple-500/10 border-purple-500/30 text-white placeholder:text-purple-400/50"
+  />
+</div>
 ```
 
-5. **UI de filtro por categoria** - botões na área de filtros existente
+### 2. AdminUpload.tsx
 
-6. **No modal de edição** - quando categoria = "Fotos", exibir seletor de gênero:
+**Atualizar interface MediaData:**
 ```tsx
-{editCategory === 'Fotos' && (
-  <div className="flex items-center justify-between p-4 rounded-lg border ...">
-    <Label>Gênero da Foto</Label>
-    <Select value={editGender || ''} onValueChange={setEditGender}>
-      <SelectItem value="masculino">Masculino</SelectItem>
-      <SelectItem value="feminino">Feminino</SelectItem>
-    </Select>
+interface MediaData {
+  // ... campos existentes
+  tags: string[];
+}
+```
+
+**Inicializar tags vazias:**
+```tsx
+tags: []
+```
+
+**Componente de tags (quando categoria = "Fotos"):**
+```tsx
+{currentMedia.category === 'Fotos' && (
+  <div className="space-y-2">
+    <Label>Tags de Busca (até 10)</Label>
+    <div className="flex flex-wrap gap-2 mb-2">
+      {currentMedia.tags.map((tag, idx) => (
+        <Badge key={idx} variant="secondary" className="flex items-center gap-1">
+          {tag}
+          <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(idx)} />
+        </Badge>
+      ))}
+    </div>
+    {currentMedia.tags.length < 10 && (
+      <Input
+        placeholder="Digite uma tag e pressione Enter"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+            addTag(e.currentTarget.value.trim());
+            e.currentTarget.value = '';
+          }
+        }}
+      />
+    )}
+    <p className="text-xs text-muted-foreground">
+      {currentMedia.tags.length}/10 tags
+    </p>
   </div>
 )}
 ```
 
-### AdminUpload.tsx
-
-1. **Atualizar interface MediaData**:
-```tsx
-interface MediaData {
-  // ... campos existentes
-  gender: string | null;
-}
-```
-
-2. **Adicionar campo gênero no modal de upload quando categoria = "Fotos"**
-
-3. **Incluir `gender` no INSERT**:
+**Incluir tags no INSERT:**
 ```tsx
 .insert({
   // ... outros campos
-  gender: media.category === 'Fotos' ? media.gender : null,
+  tags: media.category === 'Fotos' && media.tags.length > 0 ? media.tags : null,
 })
 ```
 
-### PhotoLibraryModal.tsx
+### 3. AdminManageImages.tsx
 
-1. **Simplificar a query** - usar campo `gender` diretamente:
+**Novo estado para edição de tags:**
 ```tsx
-let query = supabase
-  .from('admin_prompts')
-  .select('id, title, image_url, thumbnail_url')
-  .eq('category', 'Fotos')
-  .eq('gender', filter) // 'masculino' ou 'feminino'
-  .range(...)
-  .order('created_at', { ascending: false });
+const [editTags, setEditTags] = useState<string[]>([]);
 ```
 
-2. **Remover filtragem client-side por keywords no título**
+**Inicializar no handleEdit:**
+```tsx
+setEditTags(prompt.tags || []);
+```
+
+**UI no modal de edição (quando categoria = "Fotos"):**
+Mesmo componente de tags do AdminUpload
+
+**Incluir tags no UPDATE:**
+```tsx
+if (editingPrompt.type === 'admin') {
+  updateData.gender = editCategory === 'Fotos' ? editGender : null;
+  updateData.tags = editCategory === 'Fotos' && editTags.length > 0 ? editTags : null;
+}
+```
 
 ---
 
 ## Fluxo Visual
 
 ```text
+Biblioteca de Fotos (PhotoLibraryModal)
 ┌─────────────────────────────────────────────────────────────┐
-│            Gerenciar Arquivos Enviados                      │
+│  📷 Biblioteca de Fotos                              [X]    │
 ├─────────────────────────────────────────────────────────────┤
-│ [Todos] [Admins] [Comunidade] [Parceiros]                   │
+│  [       Enviar Sua Própria Imagem       ]                  │
 │                                                              │
-│ Categoria: [Todos ▼] [Fotos] [Telão] [Cenários] ...        │  ← NOVO
-├─────────────────────────────────────────────────────────────┤
+│             ou escolha da biblioteca                         │
 │                                                              │
-│   ┌────────────┐  ┌────────────┐  ┌────────────┐           │
-│   │  Ensaio    │  │  Carna     │  │  Bloquinho │           │
-│   │  Formal    │  │  Dany      │  │  Vinicius  │           │
-│   │            │  │            │  │            │           │
-│   │  [Editar]  │  │  [Editar]  │  │  [Editar]  │           │
-│   └────────────┘  └────────────┘  └────────────┘           │
+│  [👤 Masculino]  [👤 Feminino]                              │
+│                                                              │
+│  🔍 [ Buscar por palavra-chave...        ]  ← NOVO          │
+│                                                              │
+│   ┌────────┐  ┌────────┐  ┌────────┐                        │
+│   │  Foto  │  │  Foto  │  │  Foto  │                        │
+│   │   1    │  │   2    │  │   3    │                        │
+│   └────────┘  └────────┘  └────────┘                        │
 └─────────────────────────────────────────────────────────────┘
 
-Modal de Edição (quando categoria = Fotos):
+Admin Upload / Edição (quando categoria = Fotos)
 ┌─────────────────────────────────────────────────────────────┐
-│  Editar Arquivo                                              │
-├─────────────────────────────────────────────────────────────┤
-│  Título: [Ensaio Formal Autoridade           ]              │
-│  Categoria: [Fotos ▼]                                        │
+│  Gênero: [Masculino ▼]                                      │
 │                                                              │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │ 👤 Gênero da Foto                                       ││  ← NOVO
-│  │                         [Masculino ▼]                    ││
-│  └─────────────────────────────────────────────────────────┘│
-│                                                              │
-│  [★ Conteúdo Premium/Gratuito]                              │
-│  [Salvar Alterações]                                         │
+│  Tags de Busca (até 10):                              ← NOVO│
+│  [formal] [cantor] [estúdio] [+]                            │
+│  [Digite uma tag e pressione Enter...]                      │
+│  3/10 tags                                                   │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Exemplos de Tags Sugeridas
+
+Para a categoria "Fotos", você pode usar tags como:
+- **Estilo**: formal, casual, esportivo, elegante
+- **Profissão**: cantor, cantora, dj, empresário, médico
+- **Ambiente**: estúdio, externo, natureza, urbano
+- **Pose**: sentado, em pé, close, corpo inteiro
+- **Cores**: escuro, claro, colorido, preto e branco
