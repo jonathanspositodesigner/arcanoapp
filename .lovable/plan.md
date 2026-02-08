@@ -1,243 +1,76 @@
 
-# Plano: Modal de Escolha Upscaler Arcano para Compradores Vitalícios
+## Diagnóstico (por que está falhando)
+- O erro não está no modal nem no botão em si; está na função de backend **`claim-promo-credits`**.
+- Nos logs do backend aparece:
+  - `Error fetching pack: PGRST116 ... Results contain 3 rows ... requires 1 row`
+- Isso acontece porque a função está fazendo:
+  - `user_pack_purchases ... .maybeSingle()`
+- Só que o seu usuário (`jonathan.lifecazy@gmail.com`) tem **3 registros ativos** para o pack `upscaller-arcano` (todos vitalício).  
+  Resultado: o `.maybeSingle()` quebra e a função responde **500**, e o `supabase.functions.invoke` no frontend transforma isso em `FunctionsHttpError`.
 
-## Resumo
+## Objetivo
+1. Fazer o resgate funcionar mesmo se existirem **várias compras ativas** do mesmo pack (caso comum em integrações/webhooks/imports).
+2. Manter a regra: só resgata quem tem o pack `upscaller-arcano` ativo (e idealmente vitalício).
+3. Evitar erros 500 em casos esperados e deixar o fluxo igual/mais robusto que o da página `/resgatar-creditos`.
 
-Implementar um modal de escolha que aparece quando usuários que compraram o Upscaler Arcano Vitalício clicam em "Acessar Ferramenta". O modal oferece duas opções: a versão ilimitada original (sem créditos) e a nova versão App (com créditos).
+## Mudanças planejadas
 
----
+### 1) Corrigir a consulta do pack na função `claim-promo-credits`
+Arquivo: `supabase/functions/claim-promo-credits/index.ts`
 
-## Fluxo de Decisão
+**Hoje (problema):**
+- Busca o pack com `.maybeSingle()` → explode se vier mais de 1 linha.
 
-```text
-Usuário clica no card Upscaler Arcano
-         │
-         ▼
-┌─────────────────────────────┐
-│ Tem pack 'upscaller-arcano'?│
-└─────────────────────────────┘
-         │
-    Sim  │  Não
-         │    └──► Fluxo normal (ir para /upscaler-selection)
-         ▼
-┌─────────────────────────────┐
-│   Abre Modal de Escolha     │
-│  ┌─────────┐  ┌───────────┐ │
-│  │Ilimitada│  │ Versão App│ │
-│  │Vitalícia│  │           │ │
-│  └─────────┘  └───────────┘ │
-└─────────────────────────────┘
-         │
-   Escolha │
-         ├──────────────────────────────────────┐
-         ▼                                      ▼
-┌─────────────────────┐              ┌─────────────────────┐
-│ Versão Ilimitada    │              │ Versão App          │
-│                     │              │                     │
-│ Vai para:           │              │ Já resgatou 1500?   │
-│ /ferramenta-ia-artes│              │                     │
-│ /upscaller-arcano   │              └─────────────────────┘
-└─────────────────────┘                        │
-                                     Sim       │      Não
-                                       ┌───────┴───────┐
-                                       ▼               ▼
-                              ┌────────────┐   ┌────────────────┐
-                              │"Acessar    │   │"Resgatar 1.500 │
-                              │Ferramenta" │   │créditos e      │
-                              │            │   │testar"         │
-                              │Vai para:   │   │                │
-                              │/upscaler-  │   │Chama API →     │
-                              │selection   │   │Vai para:       │
-                              └────────────┘   │/upscaler-      │
-                                               │selection       │
-                                               └────────────────┘
-```
+**Ajuste:**
+- Buscar como lista e escolher 1 registro (ex.: o mais recente), assim:
+  - `.select(...)`
+  - filtros: `user_id`, `pack_slug`, `is_active`
+  - (recomendado) também filtrar `access_type = 'vitalicio'` para garantir elegibilidade correta
+  - `.order('purchased_at', { ascending: false })`
+  - `.limit(1)`
+- Em vez de `pack` objeto direto, usar:
+  - `const pack = packs?.[0]`
+- Se houverem múltiplos registros, **não é erro**: loga a quantidade (para diagnóstico) e segue.
 
----
+**Resultado esperado:**
+- Para o Jonathan, a função deixa de retornar 500 e passa a seguir o fluxo normal (checar `promo_claims`, adicionar créditos via RPC, inserir em `promo_claims`, retornar 200 com `eligible: true`).
 
-## Arquivos a Criar/Modificar
+### 2) (Opcional, mas recomendado) Padronizar respostas “esperadas” para não virar non-2xx
+Motivo: o `supabase.functions.invoke()` trata qualquer non-2xx como erro, o que piora a UX.
 
-| Arquivo | Ação | Descrição |
-|---------|------|-----------|
-| `src/components/ferramentas/UpscalerChoiceModal.tsx` | CRIAR | Componente do modal de escolha |
-| `src/pages/FerramentasIAAplicativo.tsx` | MODIFICAR | Integrar modal no card Upscaler Arcano |
-| `src/hooks/usePromoClaimStatus.ts` | CRIAR | Hook para verificar status de resgate |
+Ajuste sugerido:
+- Para casos de negócio/validação (ex.: `not_found`, `no_pack`, `already_claimed`, `invalid promo`), retornar **status 200** com `eligible:false` e `reason` apropriado.
+- Reservar 500 apenas para falha realmente inesperada (ex.: exceção sem tratamento).
 
----
+Observação: isso já acontece em parte (not_found/no_pack/already_claimed já são 200), então aqui é só “fechar as brechas” para evitar 400/500 desnecessário em cenários esperados.
 
-## Componente: UpscalerChoiceModal.tsx
+### 3) Pequena melhoria no frontend (robustez e mensagens)
+Arquivo: `src/pages/FerramentasIAAplicativo.tsx`
 
-```tsx
-interface UpscalerChoiceModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  hasClaimedPromo: boolean;
-  isCheckingClaim: boolean;
-  onClaimAndAccess: () => Promise<void>;
-}
-```
+- Manter o `invoke('claim-promo-credits'...)` (está correto).
+- Adicionar um guard simples:
+  - se `user?.email` estiver vazio por algum motivo (carregamento), mostrar toast e não chamar a função.
+- Melhorar o handling quando `invoke` retorna erro:
+  - hoje o toast é sempre genérico.
+  - depois que o backend parar de responder 500 nesse caso, isso já resolve o principal.
+  - se ainda existir algum erro “real”, continuamos com a mensagem genérica (ok).
 
-### Design do Modal
+## Como vou validar (checklist)
+1. Logar como `jonathan.lifecazy@gmail.com`.
+2. Ir em `/ferramentas-ia-aplicativo`.
+3. Abrir o modal do Upscaler Arcano → clicar “Resgatar 1.500 créditos”.
+4. Esperado:
+   - não dar erro,
+   - fechar modal,
+   - navegar para `/upscaler-selection`,
+   - `promo_claims` passar a ter o registro `UPSCALER_1500`,
+   - o botão virar “Acessar Ferramenta” nas próximas vezes.
+5. Testar também com:
+   - usuário que já resgatou → deve ir direto “Acessar Ferramenta”
+   - email sem compra → deve retornar “Compra não encontrada” (sem 500)
 
-```text
-┌────────────────────────────────────────────────────┐
-│                 Escolha sua versão                 │
-│                                                    │
-│  ┌──────────────────────┐  ┌──────────────────────┐│
-│  │   ♾️ ILIMITADA       │  │   ⚡ VERSÃO APP      ││
-│  │   E VITALÍCIA        │  │                      ││
-│  │                      │  │                      ││
-│  │ Esta é a versão que  │  │ Nova versão mais     ││
-│  │ você adquiriu. Sem   │  │ rápida e fácil de    ││
-│  │ limite de uso e sem  │  │ usar. Consome        ││
-│  │ consumo de créditos. │  │ créditos por uso.    ││
-│  │                      │  │                      ││
-│  │ [Acessar Versão     ]│  │ [Resgatar 1.500     ]││
-│  │  Ilimitada           │  │  créditos e testar  ]││
-│  └──────────────────────┘  └──────────────────────┘│
-└────────────────────────────────────────────────────┘
-```
-
----
-
-## Hook: usePromoClaimStatus.ts
-
-```tsx
-export const usePromoClaimStatus = (userId: string | undefined) => {
-  // Verifica na tabela promo_claims se o código UPSCALER_1500 foi resgatado
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['promo-claim-status', userId, 'UPSCALER_1500'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('promo_claims')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('promo_code', 'UPSCALER_1500')
-        .maybeSingle();
-      
-      return { hasClaimed: !!data };
-    },
-    enabled: !!userId,
-  });
-  
-  return {
-    hasClaimed: data?.hasClaimed ?? false,
-    isLoading,
-    refetch,
-  };
-};
-```
-
----
-
-## Modificação: FerramentasIAAplicativo.tsx
-
-### Lógica do Card Upscaler Arcano
-
-```tsx
-// Estados
-const [showUpscalerModal, setShowUpscalerModal] = useState(false);
-const hasUpscalerPack = hasAccessToPack('upscaller-arcano');
-
-// Verificar status de resgate
-const { hasClaimed, isLoading: isCheckingClaim, refetch } = usePromoClaimStatus(user?.id);
-
-// Handler do clique no card
-const handleUpscalerClick = () => {
-  if (hasUpscalerPack) {
-    // Comprador vitalício → abre modal de escolha
-    setShowUpscalerModal(true);
-  } else {
-    // Usuário normal → fluxo padrão
-    navigate('/upscaler-selection');
-  }
-};
-
-// Handler para resgatar e acessar
-const handleClaimAndAccess = async () => {
-  // Chama a Edge Function de resgate (mesma usada em /resgatar-creditos)
-  await supabase.functions.invoke('claim-upscaler-promo', {
-    body: { email: user?.email }
-  });
-  
-  await refetch();
-  navigate('/upscaler-selection');
-};
-```
-
----
-
-## Detalhes Técnicos
-
-### Verificação de Pack
-
-Usa o hook existente `usePremiumArtesStatus`:
-```tsx
-const { hasAccessToPack, user } = usePremiumArtesStatus();
-const hasUpscalerPack = hasAccessToPack('upscaller-arcano');
-```
-
-### Tabela promo_claims
-
-Já existe e é usada pela página `/resgatar-creditos`. Campos relevantes:
-- `user_id`: UUID do usuário
-- `promo_code`: String do código (ex: 'UPSCALER_1500')
-- `claimed_at`: Timestamp do resgate
-
-### Edge Function de Resgate
-
-A Edge Function `claim-upscaler-promo` já existe e faz:
-1. Verifica elegibilidade (tem pack vitalício)
-2. Verifica se já resgatou
-3. Adiciona 1500 créditos vitalícios
-4. Registra na tabela `promo_claims`
-
----
-
-## Rotas de Navegação
-
-| Ação | Destino |
-|------|---------|
-| Versão Ilimitada e Vitalícia | `/ferramenta-ia-artes/upscaller-arcano` |
-| Versão App (já resgatou) | `/upscaler-selection` |
-| Versão App (não resgatou) | Resgata créditos → `/upscaler-selection` |
-| Usuário sem pack | `/upscaler-selection` (fluxo normal) |
-
----
-
-## Texto dos Cards
-
-### Card Versão Ilimitada e Vitalícia
-- **Título:** Versão Ilimitada e Vitalícia
-- **Ícone:** ♾️ (infinito)
-- **Descrição:** "Esta é a versão que você adquiriu. Sem limite de uso e sem consumo de créditos."
-- **Botão:** "Acessar Versão Ilimitada"
-
-### Card Versão App
-- **Título:** Versão App
-- **Ícone:** ⚡ (raio)
-- **Descrição:** "Nova versão mais rápida e fácil de usar. Consome créditos por uso."
-- **Botão (não resgatou):** "Resgatar 1.500 créditos e testar"
-- **Botão (já resgatou):** "Acessar Ferramenta"
-
----
-
-## Garantias de Segurança
-
-1. **Não quebra fluxo existente:** Usuários sem o pack continuam com o comportamento atual
-2. **Validação dupla:** O resgate é validado tanto no frontend quanto na Edge Function
-3. **Componente isolado:** O modal é um componente separado, fácil de testar
-4. **Usa hooks existentes:** Reutiliza `usePremiumArtesStatus` e padrões já estabelecidos
-5. **Tabela existente:** Usa a mesma tabela `promo_claims` já em uso
-
----
-
-## Resumo de Implementação
-
-1. **Criar** `src/hooks/usePromoClaimStatus.ts` - hook para verificar resgate
-2. **Criar** `src/components/ferramentas/UpscalerChoiceModal.tsx` - modal de escolha
-3. **Modificar** `src/pages/FerramentasIAAplicativo.tsx`:
-   - Adicionar estado do modal
-   - Verificar se usuário tem pack
-   - Renderizar modal condicionalmente
-   - Ajustar handler do card Upscaler Arcano
+## Impacto / risco de quebrar algo
+- Mudança é localizada e segura:
+  - só altera a forma de ler `user_pack_purchases` dentro da função de resgate.
+  - não mexe no sistema de créditos, nem em rotas principais.
+- Benefício extra: mesmo se houver duplicidade de registros (como já existe), o resgate passa a funcionar normalmente.
