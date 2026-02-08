@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { User, Loader2, ImageIcon, Upload } from 'lucide-react';
+import { User, Loader2, ImageIcon, Upload, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -37,8 +38,18 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const fetchPhotos = useCallback(async (pageNum: number, reset = false) => {
     setIsLoading(true);
@@ -47,9 +58,17 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
       // Query photos from admin_prompts where category = 'Fotos' and gender matches filter
       let query = supabase
         .from('admin_prompts')
-        .select('id, title, image_url, thumbnail_url, gender')
+        .select('id, title, image_url, thumbnail_url, gender, tags')
         .eq('category', 'Fotos')
-        .eq('gender', filter)
+        .eq('gender', filter);
+
+      // Add search filter if there's a search term
+      if (debouncedSearch.trim()) {
+        const searchLower = debouncedSearch.toLowerCase().trim();
+        query = query.or(`title.ilike.%${searchLower}%,tags.cs.{${searchLower}}`);
+      }
+
+      query = query
         .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1)
         .order('created_at', { ascending: false });
 
@@ -75,7 +94,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
     }
   }, [filter]);
 
-  // Reset and fetch when modal opens or filter changes
+  // Reset and fetch when modal opens, filter changes, or search changes
   useEffect(() => {
     if (isOpen) {
       setPage(0);
@@ -83,7 +102,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
       setHasMore(true);
       fetchPhotos(0, true);
     }
-  }, [isOpen, filter, fetchPhotos]);
+  }, [isOpen, filter, debouncedSearch, fetchPhotos]);
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
@@ -212,6 +231,18 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
             <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
             Feminino
           </Button>
+        </div>
+
+        {/* Search Input */}
+        <div className="relative mt-3 flex-shrink-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400/60" />
+          <Input
+            type="text"
+            placeholder="Buscar por palavra-chave..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-9 text-sm bg-purple-500/10 border-purple-500/30 text-white placeholder:text-purple-400/50 focus:border-fuchsia-400"
+          />
         </div>
 
         {/* Photos Grid */}

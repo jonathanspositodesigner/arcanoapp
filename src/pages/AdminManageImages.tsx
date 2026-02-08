@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Copy, CalendarDays, ImageIcon, Play, Loader2, StopCircle, AlertTriangle, Zap, Wrench } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Star, Search, Video, Upload, Copy, CalendarDays, ImageIcon, Play, Loader2, StopCircle, AlertTriangle, Zap, Wrench, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage } from "@/components/SecureMedia";
@@ -54,6 +54,7 @@ interface Prompt {
   thumbnail_url?: string;
   reference_images?: string[];
   gender?: string | null;
+  tags?: string[] | null;
 }
 
 type SortOption = 'date' | 'downloads';
@@ -76,6 +77,7 @@ const AdminManageImages = () => {
   const [editTutorialUrl, setEditTutorialUrl] = useState("");
   const [editBonusClicks, setEditBonusClicks] = useState(0);
   const [editGender, setEditGender] = useState<string | null>(null);
+  const [editTags, setEditTags] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
@@ -130,7 +132,7 @@ const AdminManageImages = () => {
   const fetchPrompts = async () => {
     try {
       const [adminData, communityData, partnerData] = await Promise.all([
-        supabase.from('admin_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, bonus_clicks, thumbnail_url, reference_images, gender').order('created_at', { ascending: false }),
+        supabase.from('admin_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, bonus_clicks, thumbnail_url, reference_images, gender, tags').order('created_at', { ascending: false }),
         supabase.from('community_prompts').select('id, title, prompt, category, image_url, created_at, bonus_clicks, thumbnail_url').eq('approved', true).order('created_at', { ascending: false }),
         supabase.from('partner_prompts').select('id, title, prompt, category, image_url, is_premium, created_at, tutorial_url, partner_id, bonus_clicks, thumbnail_url, reference_images').eq('approved', true).order('created_at', { ascending: false })
       ]);
@@ -192,6 +194,7 @@ const AdminManageImages = () => {
     setEditTutorialUrl(prompt.tutorial_url || "");
     setEditBonusClicks(prompt.bonus_clicks || 0);
     setEditGender(prompt.gender || null);
+    setEditTags(prompt.tags || []);
     setNewMediaFile(null);
     setNewMediaPreview("");
   };
@@ -278,9 +281,10 @@ const AdminManageImages = () => {
         updateData.tutorial_url = editHasTutorial && editTutorialUrl ? editTutorialUrl : null;
       }
 
-      // Add gender for admin prompts when category is 'Fotos'
+      // Add gender and tags for admin prompts when category is 'Fotos'
       if (editingPrompt.type === 'admin') {
         updateData.gender = editCategory === 'Fotos' ? editGender : null;
+        updateData.tags = editCategory === 'Fotos' && editTags.length > 0 ? editTags : null;
       }
 
       const { error } = await supabase
@@ -1075,21 +1079,63 @@ const AdminManageImages = () => {
             
             {/* Gender field - only shows when category is 'Fotos' and type is admin */}
             {editCategory === 'Fotos' && editingPrompt?.type === 'admin' && (
-              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">👤</span>
-                  <Label className="font-medium">Gênero da Foto</Label>
+              <>
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">👤</span>
+                    <Label className="font-medium">Gênero da Foto</Label>
+                  </div>
+                  <Select value={editGender || ''} onValueChange={(value) => setEditGender(value || null)}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Selecionar..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="masculino">Masculino</SelectItem>
+                      <SelectItem value="feminino">Feminino</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Select value={editGender || ''} onValueChange={(value) => setEditGender(value || null)}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Selecionar..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="masculino">Masculino</SelectItem>
-                    <SelectItem value="feminino">Feminino</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
+                {/* Tags field for editing 'Fotos' category */}
+                <div className="space-y-2">
+                  <Label className="font-medium">Tags de Busca (até 10)</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {editTags.map((tag, idx) => (
+                      <span 
+                        key={idx} 
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => setEditTags(editTags.filter((_, tagIdx) => tagIdx !== idx))}
+                          className="ml-1 text-muted-foreground hover:text-foreground"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  {editTags.length < 10 && (
+                    <Input
+                      placeholder="Digite uma tag e pressione Enter"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const value = e.currentTarget.value.trim().substring(0, 30);
+                          if (value && !editTags.includes(value)) {
+                            setEditTags([...editTags, value]);
+                            e.currentTarget.value = '';
+                          }
+                        }
+                      }}
+                    />
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {editTags.length}/10 tags • Use palavras como: formal, cantor, estúdio, etc.
+                  </p>
+                </div>
+              </>
             )}
             
             {(editingPrompt?.type === 'admin' || editingPrompt?.type === 'partner') && (

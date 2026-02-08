@@ -56,6 +56,7 @@ interface MediaData {
   tutorialUrl: string;
   txtFileName?: string;
   gender: string | null;
+  tags: string[];
 }
 
 const AdminUpload = () => {
@@ -206,7 +207,8 @@ const AdminUpload = () => {
         hasTutorial: false,
         tutorialUrl: "",
         txtFileName,
-        gender: null
+        gender: null,
+        tags: []
       });
     }
     
@@ -384,6 +386,7 @@ const AdminUpload = () => {
             tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
             thumbnail_url: thumbnailUrl,
             gender: media.category === 'Fotos' ? media.gender : null,
+            tags: media.category === 'Fotos' && media.tags.length > 0 ? media.tags : null,
           });
 
         if (insertError) throw insertError;
@@ -573,24 +576,76 @@ const AdminUpload = () => {
 
               {/* Gender field - only shows when category is 'Fotos' */}
               {currentMedia.category === 'Fotos' && (
-                <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">👤</span>
-                    <Label className="font-medium">Gênero da Foto</Label>
+                <>
+                  <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">👤</span>
+                      <Label className="font-medium">Gênero da Foto</Label>
+                    </div>
+                    <Select 
+                      value={currentMedia.gender || ''} 
+                      onValueChange={(value) => updateMediaData('gender', value || null)}
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Selecionar..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="masculino">Masculino</SelectItem>
+                        <SelectItem value="feminino">Feminino</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Select 
-                    value={currentMedia.gender || ''} 
-                    onValueChange={(value) => updateMediaData('gender', value || null)}
-                  >
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="Selecionar..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="masculino">Masculino</SelectItem>
-                      <SelectItem value="feminino">Feminino</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+
+                  {/* Tags field for 'Fotos' category */}
+                  <div className="space-y-2">
+                    <Label className="font-medium">Tags de Busca (até 10)</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {currentMedia.tags.map((tag, idx) => (
+                        <span 
+                          key={idx} 
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
+                        >
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMediaFiles(prev => prev.map((media, i) => 
+                                i === currentIndex 
+                                  ? { ...media, tags: media.tags.filter((_, tagIdx) => tagIdx !== idx) }
+                                  : media
+                              ));
+                            }}
+                            className="ml-1 text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    {currentMedia.tags.length < 10 && (
+                      <Input
+                        placeholder="Digite uma tag e pressione Enter"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const value = e.currentTarget.value.trim().substring(0, 30);
+                            if (value && !currentMedia.tags.includes(value)) {
+                              setMediaFiles(prev => prev.map((media, i) => 
+                                i === currentIndex 
+                                  ? { ...media, tags: [...media.tags, value] }
+                                  : media
+                              ));
+                              e.currentTarget.value = '';
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {currentMedia.tags.length}/10 tags • Use palavras como: formal, cantor, estúdio, etc.
+                    </p>
+                  </div>
+                </>
               )}
 
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
