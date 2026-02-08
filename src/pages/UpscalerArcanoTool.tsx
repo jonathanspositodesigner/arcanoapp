@@ -963,6 +963,11 @@ const UpscalerArcanoTool: React.FC = () => {
                   <span>Menos</span>
                   <span>Mais</span>
                 </div>
+                {promptCategory === 'pessoas_perto' && (
+                  <p className="text-[10px] text-purple-400/80 text-center mt-2">
+                    💡 Recomendado: entre 0.05 e 0.20
+                  </p>
+                )}
               </Card>
             )}
 
