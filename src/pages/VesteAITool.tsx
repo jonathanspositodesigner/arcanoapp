@@ -24,6 +24,7 @@ import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
+import { getAIErrorMessage } from '@/utils/errorMessages';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -123,8 +124,10 @@ const VesteAITool: React.FC = () => {
         toast.success('Look aplicado com sucesso!');
       } else if (update.status === 'failed') {
         setStatus('error');
+        const friendlyError = getAIErrorMessage(update.errorMessage);
+        setDebugErrorMessage(update.errorMessage);
         endSubmit();
-        toast.error(update.errorMessage || 'Erro no processamento');
+        toast.error(friendlyError.message);
       } else if (update.status === 'running') {
         setStatus('processing');
         setQueuePosition(0);
