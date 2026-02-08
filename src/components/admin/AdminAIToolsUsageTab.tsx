@@ -69,6 +69,8 @@ const TOOL_FILTERS = [
   { value: "Upscaler Arcano", label: "Upscaler Arcano" },
   { value: "Pose Changer", label: "Pose Changer" },
   { value: "Veste AI", label: "Veste AI" },
+  { value: "Video Upscaler", label: "Video Upscaler" },
+  { value: "Arcano Cloner", label: "Arcano Cloner" },
 ];
 
 const AdminAIToolsUsageTab = () => {
@@ -219,6 +221,7 @@ const AdminAIToolsUsageTab = () => {
       "Pose Changer": "bg-orange-500/20 text-orange-400 border-orange-500/30",
       "Veste AI": "bg-pink-500/20 text-pink-400 border-pink-500/30",
       "Video Upscaler": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+      "Arcano Cloner": "bg-blue-500/20 text-blue-400 border-blue-500/30",
     };
     return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
   };
@@ -229,6 +232,7 @@ const AdminAIToolsUsageTab = () => {
       case "Pose Changer": return "pose_changer_jobs";
       case "Veste AI": return "veste_ai_jobs";
       case "Video Upscaler": return "video_upscaler_jobs";
+      case "Arcano Cloner": return "arcano_cloner_jobs";
       default: return "upscaler_jobs";
     }
   };
