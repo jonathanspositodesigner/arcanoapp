@@ -317,6 +317,7 @@ export type Database = {
           is_premium: boolean
           prompt: string
           reference_images: string[] | null
+          tags: string[] | null
           thumbnail_url: string | null
           title: string
           tutorial_url: string | null
@@ -332,6 +333,7 @@ export type Database = {
           is_premium?: boolean
           prompt: string
           reference_images?: string[] | null
+          tags?: string[] | null
           thumbnail_url?: string | null
           title: string
           tutorial_url?: string | null
@@ -347,6 +349,7 @@ export type Database = {
           is_premium?: boolean
           prompt?: string
           reference_images?: string[] | null
+          tags?: string[] | null
           thumbnail_url?: string | null
           title?: string
           tutorial_url?: string | null
