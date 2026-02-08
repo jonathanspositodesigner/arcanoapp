@@ -15,7 +15,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // WebApp IDs for the upscaler workflows
 const WEBAPP_ID_PRO = '2015865378030755841';
 const WEBAPP_ID_STANDARD = '2017030861371219969';
-const WEBAPP_ID_LONGE = '2017343414227963905';
+const WEBAPP_ID_LONGE = '2020634325636616194';
  const WEBAPP_ID_FOTO_ANTIGA = '2018913880214343681';
  const WEBAPP_ID_COMIDA = '2015855359243587585';
  const WEBAPP_ID_LOGO = '2019239272464785409';
@@ -822,12 +822,12 @@ async function handleRun(req: Request) {
       
       console.log(`[RunningHub] Using RENDER3D workflow - version: ${version}, detail: ${detailDenoise}`);
      } else if (isLongeMode) {
-       // === DE LONGE ===
+       // === DE LONGE (Novo WebApp 2020634325636616194) ===
       nodeInfoList = [
         { nodeId: "1", fieldName: "image", fieldValue: rhFileName },
-        { nodeId: "7", fieldName: "value", fieldValue: String(resolution || 2048) },
+        { nodeId: "2", fieldName: "value", fieldValue: String(resolution || 4096) },
       ];
-      console.log(`[RunningHub] Using "De Longe" WebApp with simplified nodeInfoList`);
+      console.log(`[RunningHub] Using "De Longe" WebApp 2020634325636616194 with nodeIds 1 (image) and 2 (resolution)`);
     } else {
        // === PADRÃO (Pessoas Perto, Logo, 3D) ===
       const resolutionNodeId = version === 'pro' ? "73" : "75";
