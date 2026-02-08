@@ -1,47 +1,15 @@
 
 ## Resumo
-Adicionar busca por palavras-chave na Biblioteca de Fotos (Arcano Cloner) e sistema de tags nos arquivos da categoria "Fotos" para facilitar a pesquisa.
+Replicar o sistema de foto de referência do Arcano Cloner (ReferenceImageCard + PhotoLibraryModal) para as ferramentas **Pose Changer** e **Veste AI**, substituindo os modais atuais (`PoseLibraryModal` e `ClothingLibraryModal`) pelo novo sistema unificado que permite escolher fotos da biblioteca da categoria "Fotos" OU enviar sua própria imagem.
 
 ---
 
 ## O que será implementado
 
-### 1. Nova coluna `tags` na tabela `admin_prompts`
-- Tipo: `TEXT[]` (array de strings)
-- Permite até 10 tags por item
-- Será usado para busca no modal da biblioteca
-
-### 2. Campo de busca no PhotoLibraryModal
-- Adicionar um input com ícone de lupa 🔍
-- Busca em tempo real pelo título E pelas tags
-- Debounce de 300ms para evitar muitas consultas
-- A busca funciona junto com o filtro de gênero
-
-### 3. Campo de Tags no AdminUpload (quando categoria = "Fotos")
-- Input que permite adicionar até 10 tags
-- Tags aparecem como chips removíveis
-- Validação: máximo 10 tags, cada tag max 30 caracteres
-
-### 4. Campo de Tags no AdminManageImages (edição)
-- Mesmo comportamento do upload
-- Permite editar tags de itens existentes
-
----
-
-## Sobre identificar imagens automaticamente
-
-⚠️ **Não é possível** eu analisar automaticamente as imagens do banco de dados. Eu não tenho acesso para "ver" as imagens que estão hospedadas. Você precisará:
-1. Adicionar as tags manualmente na hora de editar cada item, OU
-2. Usar uma ferramenta externa de IA (como GPT Vision) para classificar as imagens
-
----
-
-## Alterações no Banco de Dados
-
-```sql
-ALTER TABLE admin_prompts 
-ADD COLUMN tags TEXT[] DEFAULT NULL;
-```
+### Para ambas as ferramentas (Pose Changer e Veste AI):
+1. **Substituir o segundo ImageUploadCard** pelo componente `ReferenceImageCard`
+2. **Substituir os modais antigos** (`PoseLibraryModal` / `ClothingLibraryModal`) pelo `PhotoLibraryModal`
+3. **Adicionar funções** para tratar upload via modal e seleção da biblioteca
 
 ---
 
@@ -49,144 +17,198 @@ ADD COLUMN tags TEXT[] DEFAULT NULL;
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/components/arcano-cloner/PhotoLibraryModal.tsx` | Adicionar campo de busca + consulta por tags |
-| `src/pages/AdminUpload.tsx` | Adicionar campo de tags quando categoria = "Fotos" |
-| `src/pages/AdminManageImages.tsx` | Adicionar campo de tags na edição |
+| `src/pages/PoseChangerTool.tsx` | Usar ReferenceImageCard + PhotoLibraryModal |
+| `src/pages/VesteAITool.tsx` | Usar ReferenceImageCard + PhotoLibraryModal |
 
 ---
 
-## Detalhes Técnicos
+## Alterações no PoseChangerTool.tsx
 
-### 1. PhotoLibraryModal.tsx
-
-**Novo estado para busca:**
+### 1. Imports
 ```tsx
-const [searchTerm, setSearchTerm] = useState('');
-const [debouncedSearch, setDebouncedSearch] = useState('');
+// Remover:
+import PoseLibraryModal from '@/components/pose-changer/PoseLibraryModal';
+
+// Adicionar:
+import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
+import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
 ```
 
-**Debounce effect:**
+### 2. Estado - renomear para consistência
+- `showPoseLibrary` → `showPhotoLibrary`
+
+### 3. Funções de handling
 ```tsx
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setDebouncedSearch(searchTerm);
-  }, 300);
-  return () => clearTimeout(timer);
-}, [searchTerm]);
+// Seleção da biblioteca (recebe URL)
+const handleSelectFromLibrary = (imageUrl: string) => {
+  handleReferenceImageChange(imageUrl);
+};
+
+// Upload pelo modal (recebe dataUrl + file)
+const handleUploadFromModal = (dataUrl: string, file: File) => {
+  setReferenceImage(dataUrl);
+  setReferenceFile(file);
+};
+
+// Limpar referência
+const handleClearReference = () => {
+  setReferenceImage(null);
+  setReferenceFile(null);
+};
 ```
 
-**Query atualizada com busca:**
+### 4. JSX - Substituir segundo ImageUploadCard
 ```tsx
-let query = supabase
-  .from('admin_prompts')
-  .select('id, title, image_url, thumbnail_url, gender, tags')
-  .eq('category', 'Fotos')
-  .eq('gender', filter);
+// DE:
+<ImageUploadCard
+  title="Referência de Pose"
+  image={referenceImage}
+  onImageChange={handleReferenceImageChange}
+  showLibraryButton
+  onOpenLibrary={() => setShowPoseLibrary(true)}
+  disabled={isProcessing}
+/>
 
-// Adicionar filtro de busca
-if (debouncedSearch.trim()) {
-  // Busca no título OU nas tags
-  query = query.or(`title.ilike.%${debouncedSearch}%,tags.cs.{${debouncedSearch}}`);
-}
+// PARA:
+<ReferenceImageCard
+  image={referenceImage}
+  onClearImage={handleClearReference}
+  onOpenLibrary={() => setShowPhotoLibrary(true)}
+  disabled={isProcessing}
+/>
 ```
 
-**UI - Input de busca (após filtros de gênero):**
+### 5. JSX - Substituir modal
 ```tsx
-<div className="relative mt-3">
-  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400/60" />
-  <Input
-    type="text"
-    placeholder="Buscar por palavra-chave..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="pl-10 bg-purple-500/10 border-purple-500/30 text-white placeholder:text-purple-400/50"
-  />
-</div>
-```
+// DE:
+<PoseLibraryModal
+  isOpen={showPoseLibrary}
+  onClose={() => setShowPoseLibrary(false)}
+  onSelectPose={(url) => handleReferenceImageChange(url)}
+/>
 
-### 2. AdminUpload.tsx
-
-**Atualizar interface MediaData:**
-```tsx
-interface MediaData {
-  // ... campos existentes
-  tags: string[];
-}
-```
-
-**Inicializar tags vazias:**
-```tsx
-tags: []
-```
-
-**Componente de tags (quando categoria = "Fotos"):**
-```tsx
-{currentMedia.category === 'Fotos' && (
-  <div className="space-y-2">
-    <Label>Tags de Busca (até 10)</Label>
-    <div className="flex flex-wrap gap-2 mb-2">
-      {currentMedia.tags.map((tag, idx) => (
-        <Badge key={idx} variant="secondary" className="flex items-center gap-1">
-          {tag}
-          <X className="h-3 w-3 cursor-pointer" onClick={() => removeTag(idx)} />
-        </Badge>
-      ))}
-    </div>
-    {currentMedia.tags.length < 10 && (
-      <Input
-        placeholder="Digite uma tag e pressione Enter"
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-            addTag(e.currentTarget.value.trim());
-            e.currentTarget.value = '';
-          }
-        }}
-      />
-    )}
-    <p className="text-xs text-muted-foreground">
-      {currentMedia.tags.length}/10 tags
-    </p>
-  </div>
-)}
-```
-
-**Incluir tags no INSERT:**
-```tsx
-.insert({
-  // ... outros campos
-  tags: media.category === 'Fotos' && media.tags.length > 0 ? media.tags : null,
-})
-```
-
-### 3. AdminManageImages.tsx
-
-**Novo estado para edição de tags:**
-```tsx
-const [editTags, setEditTags] = useState<string[]>([]);
-```
-
-**Inicializar no handleEdit:**
-```tsx
-setEditTags(prompt.tags || []);
-```
-
-**UI no modal de edição (quando categoria = "Fotos"):**
-Mesmo componente de tags do AdminUpload
-
-**Incluir tags no UPDATE:**
-```tsx
-if (editingPrompt.type === 'admin') {
-  updateData.gender = editCategory === 'Fotos' ? editGender : null;
-  updateData.tags = editCategory === 'Fotos' && editTags.length > 0 ? editTags : null;
-}
+// PARA:
+<PhotoLibraryModal
+  isOpen={showPhotoLibrary}
+  onClose={() => setShowPhotoLibrary(false)}
+  onSelectPhoto={handleSelectFromLibrary}
+  onUploadPhoto={handleUploadFromModal}
+/>
 ```
 
 ---
 
-## Fluxo Visual
+## Alterações no VesteAITool.tsx
+
+### 1. Imports
+```tsx
+// Remover:
+import ClothingLibraryModal from '@/components/veste-ai/ClothingLibraryModal';
+
+// Adicionar:
+import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
+import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
+```
+
+### 2. Estado - renomear para consistência
+- `showClothingLibrary` → `showPhotoLibrary`
+- `clothingImage` → `referenceImage` (opcional, para consistência)
+- `clothingFile` → `referenceFile` (opcional, para consistência)
+
+### 3. Funções de handling (mesmo padrão do Pose Changer)
+```tsx
+const handleSelectFromLibrary = (imageUrl: string) => {
+  handleClothingImageChange(imageUrl);
+};
+
+const handleUploadFromModal = (dataUrl: string, file: File) => {
+  setClothingImage(dataUrl);
+  setClothingFile(file);
+};
+
+const handleClearClothing = () => {
+  setClothingImage(null);
+  setClothingFile(null);
+};
+```
+
+### 4. JSX - Substituir segundo ImageUploadCard
+```tsx
+// DE:
+<ImageUploadCard
+  title="Roupa de Referência"
+  image={clothingImage}
+  onImageChange={handleClothingImageChange}
+  showLibraryButton
+  libraryButtonLabel="Biblioteca de Roupas"
+  onOpenLibrary={() => setShowClothingLibrary(true)}
+  disabled={isProcessing}
+/>
+
+// PARA:
+<ReferenceImageCard
+  image={clothingImage}
+  onClearImage={handleClearClothing}
+  onOpenLibrary={() => setShowPhotoLibrary(true)}
+  disabled={isProcessing}
+/>
+```
+
+### 5. JSX - Substituir modal
+```tsx
+// DE:
+<ClothingLibraryModal
+  isOpen={showClothingLibrary}
+  onClose={() => setShowClothingLibrary(false)}
+  onSelectClothing={handleClothingImageChange}
+/>
+
+// PARA:
+<PhotoLibraryModal
+  isOpen={showPhotoLibrary}
+  onClose={() => setShowPhotoLibrary(false)}
+  onSelectPhoto={handleSelectFromLibrary}
+  onUploadPhoto={handleUploadFromModal}
+/>
+```
+
+---
+
+## Resultado Final
+
+As três ferramentas (Arcano Cloner, Pose Changer, Veste AI) terão:
+
+1. **O mesmo componente de foto de referência** (`ReferenceImageCard`)
+   - Card com "+" para abrir biblioteca
+   - Botão de trocar quando já tem imagem
+   - Botão X para remover
+
+2. **O mesmo modal de biblioteca** (`PhotoLibraryModal`)
+   - Botão destacado "Enviar Sua Própria Imagem"
+   - Filtros Masculino/Feminino
+   - Busca por palavras-chave/tags
+   - Grade de fotos da categoria "Fotos"
+   - Paginação com "Carregar mais"
+
+---
+
+## Fluxo Visual Unificado
 
 ```text
-Biblioteca de Fotos (PhotoLibraryModal)
+┌─────────────────────────────────────────────────────────────┐
+│  [Pose Changer / Veste AI / Arcano Cloner]                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐                         │
+│  │  Sua Foto    │  │ Foto de Ref. │                         │
+│  │  [upload]    │  │     [+]      │  ← Clica abre modal    │
+│  └──────────────┘  └──────────────┘                         │
+│                                                              │
+│  [   Gerar Imagem (XX créditos)   ]                         │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+
+Modal (igual para todas):
 ┌─────────────────────────────────────────────────────────────┐
 │  📷 Biblioteca de Fotos                              [X]    │
 ├─────────────────────────────────────────────────────────────┤
@@ -195,33 +217,17 @@ Biblioteca de Fotos (PhotoLibraryModal)
 │             ou escolha da biblioteca                         │
 │                                                              │
 │  [👤 Masculino]  [👤 Feminino]                              │
-│                                                              │
-│  🔍 [ Buscar por palavra-chave...        ]  ← NOVO          │
+│  🔍 [ Buscar por palavra-chave...        ]                  │
 │                                                              │
 │   ┌────────┐  ┌────────┐  ┌────────┐                        │
 │   │  Foto  │  │  Foto  │  │  Foto  │                        │
 │   │   1    │  │   2    │  │   3    │                        │
 │   └────────┘  └────────┘  └────────┘                        │
 └─────────────────────────────────────────────────────────────┘
-
-Admin Upload / Edição (quando categoria = Fotos)
-┌─────────────────────────────────────────────────────────────┐
-│  Gênero: [Masculino ▼]                                      │
-│                                                              │
-│  Tags de Busca (até 10):                              ← NOVO│
-│  [formal] [cantor] [estúdio] [+]                            │
-│  [Digite uma tag e pressione Enter...]                      │
-│  3/10 tags                                                   │
-└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Exemplos de Tags Sugeridas
+## Observação
 
-Para a categoria "Fotos", você pode usar tags como:
-- **Estilo**: formal, casual, esportivo, elegante
-- **Profissão**: cantor, cantora, dj, empresário, médico
-- **Ambiente**: estúdio, externo, natureza, urbano
-- **Pose**: sentado, em pé, close, corpo inteiro
-- **Cores**: escuro, claro, colorido, preto e branco
+Os arquivos `PoseLibraryModal.tsx` e `ClothingLibraryModal.tsx` não serão deletados, apenas não serão mais usados. Se quiser, posso removê-los posteriormente.
