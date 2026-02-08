@@ -44,17 +44,29 @@ export function useMyCreations(options: UseMyCreationsOptions = {}) {
         throw new Error(rpcError.message);
       }
       
-      const newCreations = (data || []) as Creation[];
+      // Filtrar itens expirados no client-side (para casos de race condition)
+      const now = new Date();
+      const validCreations = ((data || []) as Creation[]).filter(c => {
+        const expiresAt = new Date(c.expires_at);
+        return expiresAt.getTime() > now.getTime();
+      });
       
       if (reset) {
-        setCreations(newCreations);
+        setCreations(validCreations);
         setOffset(pageSize);
       } else {
-        setCreations(prev => [...prev, ...newCreations]);
+        // Também filtrar itens existentes que podem ter expirado
+        setCreations(prev => {
+          const filteredPrev = prev.filter(c => {
+            const expiresAt = new Date(c.expires_at);
+            return expiresAt.getTime() > now.getTime();
+          });
+          return [...filteredPrev, ...validCreations];
+        });
         setOffset(prev => prev + pageSize);
       }
       
-      setHasMore(newCreations.length === pageSize);
+      setHasMore(validCreations.length === pageSize);
     } catch (err) {
       console.error('[useMyCreations] Error:', err);
       setError(err instanceof Error ? err.message : 'Erro ao carregar criações');

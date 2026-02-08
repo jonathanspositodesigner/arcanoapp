@@ -3038,6 +3038,15 @@ export type Database = {
           table_name: string
         }[]
       }
+      cleanup_expired_ai_jobs: {
+        Args: never
+        Returns: {
+          pose_changer_deleted: number
+          upscaler_deleted: number
+          veste_ai_deleted: number
+          video_upscaler_deleted: number
+        }[]
+      }
       cleanup_monthly_logs: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: undefined }
       cleanup_rate_limits: { Args: never; Returns: undefined }
