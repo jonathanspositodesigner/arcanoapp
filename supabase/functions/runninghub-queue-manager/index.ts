@@ -46,7 +46,7 @@ const WEBAPP_IDS = {
   upscaler_jobs: {
     pro: '2015865378030755841',
     standard: '2017030861371219969',
-    longe: '2017343414227963905',
+    longe: '2020634325636616194',
     fotoAntiga: '2018913880214343681',
     comida: '2015855359243587585',
     logo: '2019239272464785409',
@@ -1070,13 +1070,14 @@ async function startJobOnRunningHub(
           nodeInfoList.push({ nodeId: "300", fieldName: "value", fieldValue: job.detail_denoise });
         }
       } else if (framingMode === 'longe') {
+        // Novo WebApp "De Longe" 2020634325636616194 com nodeIds 1 (image) e 2 (resolution)
         webappId = WEBAPP_IDS.upscaler_jobs.longe;
         nodeInfoList = [
-          { nodeId: "26", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+          { nodeId: "1", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
         ];
         if (job.resolution) {
           const resValue = job.resolution === '4k' ? 4096 : 2048;
-          nodeInfoList.push({ nodeId: "75", fieldName: "value", fieldValue: resValue });
+          nodeInfoList.push({ nodeId: "2", fieldName: "value", fieldValue: resValue });
         }
       } else {
         webappId = version === 'pro' ? WEBAPP_IDS.upscaler_jobs.pro : WEBAPP_IDS.upscaler_jobs.standard;

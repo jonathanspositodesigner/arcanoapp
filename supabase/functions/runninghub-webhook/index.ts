@@ -30,7 +30,7 @@ const IMAGE_JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs',
 
 // De Longe → Standard fallback configuration
 const WEBAPP_ID_STANDARD = '2017030861371219969';
-const WEBAPP_ID_LONGE = '2017343414227963905';
+const WEBAPP_ID_LONGE = '2020634325636616194';
 
 /**
  * logStep - Registra etapa do job para observabilidade
