@@ -3177,32 +3177,59 @@ export type Database = {
           total_rh_cost: number
         }[]
       }
-      get_ai_tools_usage: {
-        Args: {
-          p_end_date?: string
-          p_page?: number
-          p_page_size?: number
-          p_start_date?: string
-        }
-        Returns: {
-          completed_at: string
-          created_at: string
-          error_message: string
-          id: string
-          processing_seconds: number
-          profit: number
-          queue_wait_seconds: number
-          rh_cost: number
-          started_at: string
-          status: string
-          tool_name: string
-          user_credit_cost: number
-          user_email: string
-          user_id: string
-          user_name: string
-          waited_in_queue: boolean
-        }[]
-      }
+      get_ai_tools_usage:
+        | {
+            Args: {
+              p_end_date?: string
+              p_page?: number
+              p_page_size?: number
+              p_start_date?: string
+            }
+            Returns: {
+              completed_at: string
+              created_at: string
+              error_message: string
+              id: string
+              processing_seconds: number
+              profit: number
+              queue_wait_seconds: number
+              rh_cost: number
+              started_at: string
+              status: string
+              tool_name: string
+              user_credit_cost: number
+              user_email: string
+              user_id: string
+              user_name: string
+              waited_in_queue: boolean
+            }[]
+          }
+        | {
+            Args: {
+              p_end_date?: string
+              p_start_date?: string
+              p_status_filter?: string
+              p_tool_filter?: string
+              p_user_email?: string
+            }
+            Returns: {
+              completed_at: string
+              created_at: string
+              error_message: string
+              id: string
+              processing_seconds: number
+              profit: number
+              queue_wait_seconds: number
+              rh_cost: number
+              started_at: string
+              status: string
+              tool_name: string
+              user_credit_cost: number
+              user_email: string
+              user_id: string
+              waited_in_queue: boolean
+            }[]
+          }
       get_ai_tools_usage_count: {
         Args: { p_end_date?: string; p_start_date?: string }
         Returns: number
