@@ -1,141 +1,144 @@
 
-
 ## Resumo
-1. **Estornar 320 créditos** para o usuário Douglas (4 jobs falhos × 80 créditos)
-2. **Corrigir o bug** na função `cleanup_all_stale_ai_jobs` para usar a RPC `refund_upscaler_credits` corretamente
+Implementar **mensagem amigável para erros do servidor** (RunningHub) + **investigar por que os jobs do Vinny não aparecem no painel**.
 
 ---
 
-## O que aconteceu com o Douglas
+## Diagnóstico dos Jobs do vinnynunesrio@gmail.com
 
-O usuário usou o Upscaler 5 vezes:
-1. ✅ **Upscaler Standard** (60 créditos) - **Sucesso**
-2. ❌ **Upscaler Pro** (80 créditos) - Timeout após 10 min
-3. ❌ **Upscaler Pro** (80 créditos) - Timeout após 10 min  
-4. ❌ **Upscaler Pro** (80 créditos) - Timeout após 10 min
-5. ❌ **Upscaler Pro** (80 créditos) - Timeout após 10 min
+| Job ID | Task ID | Status | Error | Créditos |
+|--------|---------|--------|-------|----------|
+| `52cb9d66-3f2b...` | 2020619404211003393 | `failed` | `工作流运行失败` | 60 (refunded: true) |
+| `fa49805e-c52c...` | 2020619972786659330 | `running` | null | 60 (refunded: false) |
 
-**Todos os 4 jobs falhados mostram `credits_refunded: true` no banco, mas NÃO houve transação de estorno criada!**
+**Problema identificado:**
+1. O primeiro job falhou com erro chinês `工作流运行失败` = "Workflow execution failed" - este é um erro da RunningHub quando o workflow do ComfyUI falha
+2. O segundo job está travado em `running` sem webhook - provavelmente será limpo pelo cleanup automático
+
+**Por que não aparecem no painel:** Os jobs DEVEM aparecer, pois têm `user_id` válido. Se não aparecem, pode ser:
+- Filtro de data incorreto (verificar se está olhando "Últimos 7 dias")
+- Cache do frontend
 
 ---
 
-## Bug Identificado
+## O que Será Implementado
 
-A função `cleanup_all_stale_ai_jobs` faz UPDATE direto na tabela `upscaler_credits` sem:
-- Criar registro de transação em `upscaler_credit_transactions`
-- Atualizar o `monthly_balance` ou `lifetime_balance` (sistema dual)
-- Usar a RPC `refund_upscaler_credits` que faz tudo isso corretamente
+### 1. Mensagem Amigável para Erros da RunningHub
 
-```text
-ATUAL (bugado):
-┌─────────────────────────────────────┐
-│  UPDATE upscaler_credits            │
-│  SET balance = balance + X          │  ← Só atualiza 'balance'
-│  ...                                │  ← NÃO cria transação
-│  UPDATE jobs SET refunded = true    │  ← Marca como feito mas não foi
-└─────────────────────────────────────┘
+Vou criar uma função helper que traduz erros técnicos/chineses em mensagens amigáveis para o usuário:
 
-CORRETO:
-┌─────────────────────────────────────┐
-│  PERFORM refund_upscaler_credits()  │  ← Atualiza balance + lifetime
-│                                     │  ← Cria transação
-│                                     │  ← Retorna sucesso/erro
-│  IF success THEN                    │
-│    UPDATE jobs SET refunded = true  │  ← Só marca se funcionou
-│  END IF                             │
-└─────────────────────────────────────┘
+**Arquivo:** `src/utils/errorMessages.ts`
+
+```typescript
+export function getAIErrorMessage(errorMessage: string | null): {
+  message: string;
+  solution: string;
+} {
+  // Erro chinês da RunningHub = "Workflow execution failed"
+  if (errorMessage?.includes('工作流运行失败') || errorMessage?.includes('workflow')) {
+    return {
+      message: 'Servidor temporariamente indisponível',
+      solution: 'Aguarde 5 minutos e tente novamente. Se persistir, use uma imagem diferente.'
+    };
+  }
+  
+  // Erros de timeout
+  if (errorMessage?.includes('timeout') || errorMessage?.includes('timed out')) {
+    return {
+      message: 'Processamento demorou muito',
+      solution: 'Tente novamente com uma imagem menor ou aguarde alguns minutos.'
+    };
+  }
+  
+  // Erros de VRAM/memória
+  if (errorMessage?.includes('VRAM') || errorMessage?.includes('memory') || errorMessage?.includes('OOM')) {
+    return {
+      message: 'Imagem muito complexa',
+      solution: 'Use uma imagem menor ou reduza a resolução de saída.'
+    };
+  }
+  
+  // Sem output (webhook sem resultado)
+  if (errorMessage?.includes('No output')) {
+    return {
+      message: 'Processamento não retornou resultado',
+      solution: 'Aguarde 5 minutos e tente novamente.'
+    };
+  }
+  
+  // Erro genérico
+  return {
+    message: errorMessage || 'Erro no processamento',
+    solution: 'Tente novamente ou use uma imagem diferente.'
+  };
+}
+```
+
+### 2. Integrar nas Ferramentas
+
+**Arquivos a modificar:**
+- `src/pages/UpscalerArcanoTool.tsx`
+- `src/pages/PoseChangerTool.tsx`
+- `src/pages/ArcanoClonerTool.tsx`
+- `src/pages/VesteAITool.tsx` (se existir)
+
+Em cada ferramenta, no callback `onStatusChange` quando `status === 'failed'`:
+
+```typescript
+// ANTES
+setLastError({
+  message: update.errorMessage || 'Processing failed',
+  code: 'TASK_FAILED',
+  solution: 'Tente novamente com uma imagem diferente.'
+});
+
+// DEPOIS
+import { getAIErrorMessage } from '@/utils/errorMessages';
+
+const friendlyError = getAIErrorMessage(update.errorMessage);
+setLastError({
+  message: friendlyError.message,
+  code: 'TASK_FAILED',
+  solution: friendlyError.solution
+});
 ```
 
 ---
 
-## Arquivos a Modificar
+## Arquivos a Serem Criados/Modificados
 
 | Arquivo | Ação |
 |---------|------|
-| **Migration SQL** | Corrigir `cleanup_all_stale_ai_jobs` para usar RPC |
-| **Insert SQL** | Estornar 320 créditos para Douglas |
+| `src/utils/errorMessages.ts` | **Criar** - Função helper de tradução de erros |
+| `src/pages/UpscalerArcanoTool.tsx` | **Modificar** - Usar mensagem amigável |
+| `src/pages/PoseChangerTool.tsx` | **Modificar** - Usar mensagem amigável |
+| `src/pages/ArcanoClonerTool.tsx` | **Modificar** - Usar mensagem amigável |
+| `src/pages/VesteAITool.tsx` | **Modificar** (se existir) |
 
 ---
 
-## 1. Estorno Manual para Douglas
+## Sobre os Jobs do Vinny
 
-Usando a RPC correta para criar transação e atualizar os saldos:
+Os jobs ESTÃO no banco de dados e DEVEM aparecer na RPC. Recomendo:
 
-```sql
--- Estornar 320 créditos (4 x 80) 
-SELECT refund_upscaler_credits(
-  '235c97ff-f3f1-4d59-961a-76cad3693672'::UUID,
-  320,
-  'Estorno manual: 4 jobs de Upscaler Pro falharam por timeout sem webhook'
-);
-```
+1. **Atualizar a página do painel** (F5)
+2. **Verificar filtro de data** - Colocar "Hoje" ou "Todo período"
+3. **Buscar por email** - Digitar "vinnynunesrio" no campo de busca
+
+Se ainda não aparecer, pode ser necessário verificar a RPC `get_ai_tools_usage` para garantir que está consolidando corretamente.
 
 ---
 
-## 2. Correção da Função cleanup_all_stale_ai_jobs
+## Preview da Mensagem de Erro no Frontend
 
-A correção substituirá os UPDATEs diretos por chamadas à RPC:
-
-```sql
-CREATE OR REPLACE FUNCTION public.cleanup_all_stale_ai_jobs()
-RETURNS TABLE(table_name text, cancelled_count integer, refunded_credits integer)
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  job RECORD;
-  refund_result RECORD;
-  upscaler_cancelled INTEGER := 0;
-  upscaler_refunded INTEGER := 0;
-  -- ... outras variáveis ...
-  stale_threshold INTERVAL := INTERVAL '10 minutes';
-BEGIN
-  -- Clean up stale upscaler jobs
-  FOR job IN 
-    SELECT id, user_id, user_credit_cost, credits_charged, credits_refunded 
-    FROM upscaler_jobs 
-    WHERE status IN ('running', 'queued', 'starting', 'pending')
-    AND created_at < NOW() - stale_threshold
-  LOOP
-    -- Mark as failed
-    UPDATE upscaler_jobs SET 
-      status = 'failed',
-      error_message = 'Job timed out - cancelled automatically after 10 minutes',
-      completed_at = NOW()
-    WHERE id = job.id;
-    
-    upscaler_cancelled := upscaler_cancelled + 1;
-    
-    -- Refund credits usando a RPC correta
-    IF job.credits_charged = TRUE 
-       AND job.credits_refunded IS NOT TRUE 
-       AND job.user_id IS NOT NULL 
-       AND job.user_credit_cost > 0 THEN
-      
-      -- Usar RPC que cria transação corretamente
-      SELECT * INTO refund_result 
-      FROM refund_upscaler_credits(
-        job.user_id, 
-        job.user_credit_cost, 
-        'Estorno automático: timeout após 10 minutos'
-      );
-      
-      -- Só marca como reembolsado se a RPC retornou sucesso
-      IF refund_result.success THEN
-        UPDATE upscaler_jobs SET credits_refunded = TRUE WHERE id = job.id;
-        upscaler_refunded := upscaler_refunded + job.user_credit_cost;
-      END IF;
-    END IF;
-  END LOOP;
-
-  -- Repetir para pose_changer_jobs, veste_ai_jobs, video_upscaler_jobs, 
-  -- e arcano_cloner_jobs (que foi adicionado recentemente)
-  
-  -- ... resto da função ...
-END;
-$$;
+**ANTES:**
+```
+❌ 工作流运行失败
+💡 Tente novamente com uma imagem diferente ou configurações menores.
 ```
 
-A migração também incluirá o `arcano_cloner_jobs` que foi adicionado recentemente.
-
+**DEPOIS:**
+```
+❌ Servidor temporariamente indisponível
+💡 Aguarde 5 minutos e tente novamente. Se persistir, use uma imagem diferente.
+```
