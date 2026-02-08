@@ -1,233 +1,258 @@
 
+
 ## Resumo
-Replicar o sistema de foto de referência do Arcano Cloner (ReferenceImageCard + PhotoLibraryModal) para as ferramentas **Pose Changer** e **Veste AI**, substituindo os modais atuais (`PoseLibraryModal` e `ClothingLibraryModal`) pelo novo sistema unificado que permite escolher fotos da biblioteca da categoria "Fotos" OU enviar sua própria imagem.
+Implementar o motor completo do **Arcano Cloner** usando a API RunningHub (WebApp ID `2019877042115842050`), seguindo exatamente o mesmo padrão das outras ferramentas de IA, incluindo:
+
+- ✅ Modal de compressão quando imagem é muito grande (já existe no `ImageUploadCard`)
+- ✅ Download resiliente que funciona no Safari/iOS (já existe com `useResilientDownload`)
+- ✅ Overlay de progresso de download (já existe com `DownloadProgressOverlay`)
+- ✅ Sincronização tripla (Realtime + Polling + Visibility)
+- ✅ Watchdog para jobs travados
+- ✅ Recuperação via token de notificação
+
+---
+
+## Componentes já prontos (não precisam de alteração)
+
+| Componente | Funcionalidade |
+|------------|----------------|
+| `ImageUploadCard` | Detecta imagem grande e mostra modal de compressão |
+| `ImageCompressionModal` | Botão "Comprimir e Usar" para imagens > 2000px |
+| `PhotoLibraryModal` | Comprime automaticamente uploads para max 2048px |
+| `ReferenceImageCard` | Apenas exibe e gerencia referência |
+| `useResilientDownload` | 5 métodos de fallback para download (Safari/iOS) |
+| `DownloadProgressOverlay` | Progresso circular durante download |
 
 ---
 
 ## O que será implementado
 
-### Para ambas as ferramentas (Pose Changer e Veste AI):
-1. **Substituir o segundo ImageUploadCard** pelo componente `ReferenceImageCard`
-2. **Substituir os modais antigos** (`PoseLibraryModal` / `ClothingLibraryModal`) pelo `PhotoLibraryModal`
-3. **Adicionar funções** para tratar upload via modal e seleção da biblioteca
+### 1. Tabela `arcano_cloner_jobs` no Banco de Dados
 
----
+```sql
+CREATE TABLE public.arcano_cloner_jobs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id TEXT NOT NULL,
+  user_id UUID,
+  task_id TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  user_file_name TEXT,
+  reference_file_name TEXT,
+  user_image_url TEXT,
+  reference_image_url TEXT,
+  aspect_ratio TEXT DEFAULT '1:1',
+  output_url TEXT,
+  error_message TEXT,
+  position INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  started_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  rh_cost INTEGER,
+  user_credit_cost INTEGER,
+  waited_in_queue BOOLEAN DEFAULT false,
+  queue_wait_seconds INTEGER,
+  api_account TEXT NOT NULL DEFAULT 'primary',
+  credits_charged BOOLEAN DEFAULT false,
+  credits_refunded BOOLEAN DEFAULT false,
+  job_payload JSONB,
+  current_step TEXT,
+  step_history JSONB,
+  raw_api_response JSONB,
+  raw_webhook_payload JSONB,
+  failed_at_step TEXT,
+  thumbnail_url TEXT
+);
 
-## Arquivos que serão modificados
+-- Índices
+CREATE INDEX idx_arcano_cloner_jobs_status ON arcano_cloner_jobs(status);
+CREATE INDEX idx_arcano_cloner_jobs_session ON arcano_cloner_jobs(session_id);
+CREATE INDEX idx_arcano_cloner_jobs_user ON arcano_cloner_jobs(user_id);
+CREATE INDEX idx_arcano_cloner_jobs_task_id ON arcano_cloner_jobs(task_id);
+
+-- Realtime
+ALTER PUBLICATION supabase_realtime ADD TABLE arcano_cloner_jobs;
+
+-- RLS
+ALTER TABLE arcano_cloner_jobs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own jobs" ON arcano_cloner_jobs
+  FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "Authenticated users can insert" ON arcano_cloner_jobs
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Service role full access" ON arcano_cloner_jobs
+  FOR ALL USING (true);
+```
+
+### 2. Edge Function `runninghub-arcano-cloner`
+
+Endpoints:
+- `/upload` - Upload de imagens para RunningHub
+- `/run` - Inicia processamento com o workflow
+- `/queue-status` - Consulta status do job
+
+**Mapeamento de Nodes do Workflow:**
+
+| Node ID | Campo | Valor |
+|---------|-------|-------|
+| 58 | image | Foto do usuário (filename do RunningHub) |
+| 62 | image | Foto de referência (filename do RunningHub) |
+| 69 | text | Prompt fixo |
+| 85 | aspectRatio | Proporção selecionada (1:1, 3:4, 9:16, 16:9) |
+
+**Prompt fixo (Node 69):**
+```
+faça o homem da imagem 1 com a mesma pose, composição de cenário fundo e roupas da imagem 2. SEM RUÍDO NA FOTO
+```
+
+### 3. Atualizações em funções existentes
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/pages/PoseChangerTool.tsx` | Usar ReferenceImageCard + PhotoLibraryModal |
-| `src/pages/VesteAITool.tsx` | Usar ReferenceImageCard + PhotoLibraryModal |
+| `runninghub-webhook/index.ts` | Adicionar `arcano_cloner_jobs` à lista de tabelas |
+| `runninghub-queue-manager/index.ts` | Adicionar WebApp ID e tabela |
+| `src/ai/JobManager.ts` | Adicionar mapeamentos para `arcano_cloner` |
 
----
+### 4. Atualização do ArcanoClonerTool.tsx
 
-## Alterações no PoseChangerTool.tsx
+Habilitar os hooks que estão comentados e implementar o fluxo real de processamento:
 
-### 1. Imports
-```tsx
-// Remover:
-import PoseLibraryModal from '@/components/pose-changer/PoseLibraryModal';
+```typescript
+// Hooks que serão habilitados:
+useJobStatusSync({
+  jobId,
+  toolType: 'arcano_cloner',
+  enabled: status === 'processing' || status === 'waiting' || status === 'uploading',
+  onStatusChange: (update) => { /* handler igual Pose Changer */ },
+  onGlobalStatusChange: updateJobStatus,
+});
 
-// Adicionar:
-import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
-import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
+useNotificationTokenRecovery({
+  userId: user?.id,
+  toolTable: 'arcano_cloner_jobs',
+  onRecovery: useCallback((result) => { /* handler */ }, []),
+});
+
+useJobPendingWatchdog({
+  jobId,
+  toolType: 'arcano_cloner',
+  enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+  onJobFailed: useCallback((errorMessage) => { /* handler */ }, [endSubmit]),
+});
 ```
 
-### 2. Estado - renomear para consistência
-- `showPoseLibrary` → `showPhotoLibrary`
+**handleProcess atualizado:**
+```typescript
+// Step 1-2: Comprime e faz upload (já implementado)
 
-### 3. Funções de handling
-```tsx
-// Seleção da biblioteca (recebe URL)
-const handleSelectFromLibrary = (imageUrl: string) => {
-  handleReferenceImageChange(imageUrl);
-};
+// Step 3: Criar job no banco
+const { data: job, error: jobError } = await supabase
+  .from('arcano_cloner_jobs')
+  .insert({
+    session_id: sessionIdRef.current,
+    user_id: user.id,
+    status: 'pending',
+    user_file_name: userUrl.split('/').pop(),
+    reference_file_name: referenceUrl.split('/').pop(),
+    aspect_ratio: aspectRatio,
+  })
+  .select()
+  .single();
 
-// Upload pelo modal (recebe dataUrl + file)
-const handleUploadFromModal = (dataUrl: string, file: File) => {
-  setReferenceImage(dataUrl);
-  setReferenceFile(file);
-};
-
-// Limpar referência
-const handleClearReference = () => {
-  setReferenceImage(null);
-  setReferenceFile(null);
-};
-```
-
-### 4. JSX - Substituir segundo ImageUploadCard
-```tsx
-// DE:
-<ImageUploadCard
-  title="Referência de Pose"
-  image={referenceImage}
-  onImageChange={handleReferenceImageChange}
-  showLibraryButton
-  onOpenLibrary={() => setShowPoseLibrary(true)}
-  disabled={isProcessing}
-/>
-
-// PARA:
-<ReferenceImageCard
-  image={referenceImage}
-  onClearImage={handleClearReference}
-  onOpenLibrary={() => setShowPhotoLibrary(true)}
-  disabled={isProcessing}
-/>
-```
-
-### 5. JSX - Substituir modal
-```tsx
-// DE:
-<PoseLibraryModal
-  isOpen={showPoseLibrary}
-  onClose={() => setShowPoseLibrary(false)}
-  onSelectPose={(url) => handleReferenceImageChange(url)}
-/>
-
-// PARA:
-<PhotoLibraryModal
-  isOpen={showPhotoLibrary}
-  onClose={() => setShowPhotoLibrary(false)}
-  onSelectPhoto={handleSelectFromLibrary}
-  onUploadPhoto={handleUploadFromModal}
-/>
+// Step 4: Chamar edge function
+const { data: runResult, error: runError } = await supabase.functions.invoke(
+  'runninghub-arcano-cloner/run',
+  {
+    body: {
+      jobId: job.id,
+      userImageUrl: userUrl,
+      referenceImageUrl: referenceUrl,
+      aspectRatio: aspectRatio,
+      userId: user.id,
+      creditCost: CREDIT_COST,
+    },
+  }
+);
 ```
 
 ---
 
-## Alterações no VesteAITool.tsx
+## Arquivos a Serem Criados/Modificados
 
-### 1. Imports
-```tsx
-// Remover:
-import ClothingLibraryModal from '@/components/veste-ai/ClothingLibraryModal';
-
-// Adicionar:
-import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
-import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
-```
-
-### 2. Estado - renomear para consistência
-- `showClothingLibrary` → `showPhotoLibrary`
-- `clothingImage` → `referenceImage` (opcional, para consistência)
-- `clothingFile` → `referenceFile` (opcional, para consistência)
-
-### 3. Funções de handling (mesmo padrão do Pose Changer)
-```tsx
-const handleSelectFromLibrary = (imageUrl: string) => {
-  handleClothingImageChange(imageUrl);
-};
-
-const handleUploadFromModal = (dataUrl: string, file: File) => {
-  setClothingImage(dataUrl);
-  setClothingFile(file);
-};
-
-const handleClearClothing = () => {
-  setClothingImage(null);
-  setClothingFile(null);
-};
-```
-
-### 4. JSX - Substituir segundo ImageUploadCard
-```tsx
-// DE:
-<ImageUploadCard
-  title="Roupa de Referência"
-  image={clothingImage}
-  onImageChange={handleClothingImageChange}
-  showLibraryButton
-  libraryButtonLabel="Biblioteca de Roupas"
-  onOpenLibrary={() => setShowClothingLibrary(true)}
-  disabled={isProcessing}
-/>
-
-// PARA:
-<ReferenceImageCard
-  image={clothingImage}
-  onClearImage={handleClearClothing}
-  onOpenLibrary={() => setShowPhotoLibrary(true)}
-  disabled={isProcessing}
-/>
-```
-
-### 5. JSX - Substituir modal
-```tsx
-// DE:
-<ClothingLibraryModal
-  isOpen={showClothingLibrary}
-  onClose={() => setShowClothingLibrary(false)}
-  onSelectClothing={handleClothingImageChange}
-/>
-
-// PARA:
-<PhotoLibraryModal
-  isOpen={showPhotoLibrary}
-  onClose={() => setShowPhotoLibrary(false)}
-  onSelectPhoto={handleSelectFromLibrary}
-  onUploadPhoto={handleUploadFromModal}
-/>
-```
+| Arquivo | Ação |
+|---------|------|
+| Migration SQL | **Criar** tabela + policies + realtime |
+| `supabase/functions/runninghub-arcano-cloner/index.ts` | **Criar** Edge Function completa |
+| `supabase/functions/runninghub-webhook/index.ts` | Modificar - adicionar tabela |
+| `supabase/functions/runninghub-queue-manager/index.ts` | Modificar - adicionar webapp ID e tabela |
+| `src/ai/JobManager.ts` | Modificar - adicionar mapeamentos |
+| `src/pages/ArcanoClonerTool.tsx` | Modificar - habilitar hooks e fluxo real |
+| RPCs (`user_cancel_ai_job`, `cleanup_all_stale_ai_jobs`) | Modificar - incluir nova tabela |
 
 ---
 
-## Resultado Final
-
-As três ferramentas (Arcano Cloner, Pose Changer, Veste AI) terão:
-
-1. **O mesmo componente de foto de referência** (`ReferenceImageCard`)
-   - Card com "+" para abrir biblioteca
-   - Botão de trocar quando já tem imagem
-   - Botão X para remover
-
-2. **O mesmo modal de biblioteca** (`PhotoLibraryModal`)
-   - Botão destacado "Enviar Sua Própria Imagem"
-   - Filtros Masculino/Feminino
-   - Busca por palavras-chave/tags
-   - Grade de fotos da categoria "Fotos"
-   - Paginação com "Carregar mais"
-
----
-
-## Fluxo Visual Unificado
+## Fluxo Completo de Funcionamento
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  [Pose Changer / Veste AI / Arcano Cloner]                  │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────────┐  ┌──────────────┐                         │
-│  │  Sua Foto    │  │ Foto de Ref. │                         │
-│  │  [upload]    │  │     [+]      │  ← Clica abre modal    │
-│  └──────────────┘  └──────────────┘                         │
-│                                                              │
-│  [   Gerar Imagem (XX créditos)   ]                         │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│  UPLOAD DE IMAGEM (Sua Foto)                                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│  1. Usuário seleciona imagem via ImageUploadCard                        │
+│  2. SE imagem > 2000px → abre ImageCompressionModal                     │
+│     → Usuário clica "Comprimir e Usar"                                  │
+│     → Imagem comprimida para max 1999px                                 │
+│  3. Imagem exibida no card com dimensões (📐 1920 x 1080 px)           │
+└─────────────────────────────────────────────────────────────────────────┘
 
-Modal (igual para todas):
-┌─────────────────────────────────────────────────────────────┐
-│  📷 Biblioteca de Fotos                              [X]    │
-├─────────────────────────────────────────────────────────────┤
-│  [       Enviar Sua Própria Imagem       ]                  │
-│                                                              │
-│             ou escolha da biblioteca                         │
-│                                                              │
-│  [👤 Masculino]  [👤 Feminino]                              │
-│  🔍 [ Buscar por palavra-chave...        ]                  │
-│                                                              │
-│   ┌────────┐  ┌────────┐  ┌────────┐                        │
-│   │  Foto  │  │  Foto  │  │  Foto  │                        │
-│   │   1    │  │   2    │  │   3    │                        │
-│   └────────┘  └────────┘  └────────┘                        │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│  REFERÊNCIA (Foto de Referência)                                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│  1. Usuário clica no ReferenceImageCard (+)                             │
+│  2. Abre PhotoLibraryModal                                              │
+│     → Pode escolher da biblioteca (já otimizada)                        │
+│     → Ou fazer upload (comprimido automaticamente para 2048px)          │
+│  3. Imagem exibida no card                                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PROCESSAMENTO                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  1. Click "Gerar Imagem (80 créditos)"                                  │
+│  2. Validações (login, créditos, job ativo)                             │
+│  3. Comprime ambas imagens com optimizeForAI (1536px, WebP)             │
+│  4. Upload para Supabase Storage                                        │
+│  5. Cria job em arcano_cloner_jobs                                      │
+│  6. Chama edge function /run                                            │
+│  7. Edge function:                                                       │
+│     a. Baixa imagens do Storage                                         │
+│     b. Upload para RunningHub                                           │
+│     c. Consome créditos                                                 │
+│     d. Verifica fila global (max 3 simultâneos)                         │
+│     e. Inicia workflow com webhook                                      │
+│  8. Sincronização tripla monitora status                                │
+│  9. Webhook recebe resultado                                            │
+│  10. Frontend atualiza via Realtime                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  DOWNLOAD DO RESULTADO                                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│  1. Usuário clica no botão Download                                     │
+│  2. useResilientDownload tenta 5 métodos:                               │
+│     → Edge function proxy (ignora CORS no Safari)                       │
+│     → Fetch + Stream (progresso real)                                   │
+│     → Fetch + Cache Buster                                              │
+│     → Anchor tag                                                        │
+│     → Share API (mobile)                                                │
+│  3. DownloadProgressOverlay mostra progresso                            │
+│  4. Toast "Download concluído!"                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Observação
+## Observação sobre Secrets
 
-Os arquivos `PoseLibraryModal.tsx` e `ClothingLibraryModal.tsx` não serão deletados, apenas não serão mais usados. Se quiser, posso removê-los posteriormente.
+O projeto já possui `RUNNINGHUB_API_KEY` configurado, então não é necessário adicionar novas secrets.
+
