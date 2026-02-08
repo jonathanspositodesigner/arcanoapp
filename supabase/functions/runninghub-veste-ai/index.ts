@@ -735,41 +735,93 @@ async function handleRun(req: Request) {
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-    } else {
-      const errorMsg = runData.message || runData.error || 'Failed to start job';
+    }
+    
+    // ========== START FAILED - NO TASK_ID - REFUND IMMEDIATELY ==========
+    const startErrorMsg = runData.message || runData.error || runData.msg || 'Failed to start job';
+    console.error(`[VesteAI] START FAILED (no taskId) - Refunding credits for job ${jobId}`);
+    
+    try {
+      await supabase.rpc('refund_upscaler_credits', {
+        _user_id: userId,
+        _amount: creditCost,
+        _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}`
+      });
       
       await supabase
         .from('veste_ai_jobs')
         .update({ 
           status: 'failed', 
-          error_message: errorMsg,
+          error_message: `START_FAILED_REFUNDED: ${startErrorMsg}`,
+          credits_refunded: true,
           completed_at: new Date().toISOString()
         })
         .eq('id', jobId);
       
-      return new Response(JSON.stringify({ 
-        error: errorMsg, 
-        code: 'RUN_FAILED' 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      console.log(`[VesteAI] Job ${jobId} refunded ${creditCost} credits (start failed)`);
+    } catch (refundError) {
+      console.error(`[VesteAI] Refund failed for job ${jobId}:`, refundError);
+      await supabase
+        .from('veste_ai_jobs')
+        .update({ 
+          status: 'failed', 
+          error_message: `START_FAILED (refund error): ${startErrorMsg}`,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
     }
+    
+    return new Response(JSON.stringify({ 
+      error: startErrorMsg, 
+      code: 'RUN_FAILED',
+      refunded: true
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('[VesteAI] Run error:', error);
     
-    await supabase
-      .from('veste_ai_jobs')
-      .update({ 
-        status: 'failed', 
-        error_message: errorMessage,
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
+    // ========== EXCEPTION DURING START - REFUND IMMEDIATELY ==========
+    console.error(`[VesteAI] EXCEPTION during start - Refunding credits for job ${jobId}`);
     
-    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION' }), {
+    try {
+      await supabase.rpc('refund_upscaler_credits', {
+        _user_id: userId,
+        _amount: creditCost,
+        _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}`
+      });
+      
+      await supabase
+        .from('veste_ai_jobs')
+        .update({ 
+          status: 'failed', 
+          error_message: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`,
+          credits_refunded: true,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+      
+      console.log(`[VesteAI] Job ${jobId} refunded ${creditCost} credits (exception)`);
+    } catch (refundError) {
+      console.error(`[VesteAI] Refund failed for job ${jobId}:`, refundError);
+      await supabase
+        .from('veste_ai_jobs')
+        .update({ 
+          status: 'failed', 
+          error_message: `START_EXCEPTION (refund error): ${errorMessage.slice(0, 200)}`,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+    }
+    
+    return new Response(JSON.stringify({ 
+      error: errorMessage, 
+      code: 'RUN_EXCEPTION',
+      refunded: true
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

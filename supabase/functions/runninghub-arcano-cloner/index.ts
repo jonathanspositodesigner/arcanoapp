@@ -756,23 +756,49 @@ async function handleRun(req: Request) {
       });
     }
 
-    // Failed to start
-    await logStepFailure(jobId, 'run_workflow', data.msg || 'Failed to start workflow', data);
+    // ========== START FAILED - NO TASK_ID - REFUND IMMEDIATELY ==========
+    const startErrorMsg = data.msg || data.message || 'Failed to start workflow';
+    console.error(`[ArcanoCloner] START FAILED (no taskId) - Refunding credits for job ${jobId}`);
     
-    await supabase
-      .from('arcano_cloner_jobs')
-      .update({ 
-        status: 'failed', 
-        error_message: data.msg || 'Failed to start workflow',
-        completed_at: new Date().toISOString(),
-        raw_api_response: data
-      })
-      .eq('id', jobId);
+    await logStepFailure(jobId, 'run_workflow', `START_FAILED_REFUNDED: ${startErrorMsg}`, data);
+    
+    try {
+      await supabase.rpc('refund_upscaler_credits', {
+        _user_id: userId,
+        _amount: creditCost,
+        _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}`
+      });
+      
+      await supabase
+        .from('arcano_cloner_jobs')
+        .update({ 
+          status: 'failed', 
+          error_message: `START_FAILED_REFUNDED: ${startErrorMsg}`,
+          credits_refunded: true,
+          completed_at: new Date().toISOString(),
+          raw_api_response: data
+        })
+        .eq('id', jobId);
+      
+      console.log(`[ArcanoCloner] Job ${jobId} refunded ${creditCost} credits (start failed)`);
+    } catch (refundError) {
+      console.error(`[ArcanoCloner] Refund failed for job ${jobId}:`, refundError);
+      await supabase
+        .from('arcano_cloner_jobs')
+        .update({ 
+          status: 'failed', 
+          error_message: `START_FAILED (refund error): ${startErrorMsg}`,
+          completed_at: new Date().toISOString(),
+          raw_api_response: data
+        })
+        .eq('id', jobId);
+    }
 
     return new Response(JSON.stringify({
-      error: data.msg || 'Failed to start workflow',
+      error: startErrorMsg,
       code: data.code || 'RUN_FAILED',
-      details: data
+      details: data,
+      refunded: true
     }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -782,20 +808,45 @@ async function handleRun(req: Request) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('[ArcanoCloner] Run error:', error);
     
-    await logStepFailure(jobId, 'run_exception', errorMessage);
-
-    await supabase
-      .from('arcano_cloner_jobs')
-      .update({ 
-        status: 'failed', 
-        error_message: errorMessage.slice(0, 300),
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
+    // ========== EXCEPTION DURING START - REFUND IMMEDIATELY ==========
+    console.error(`[ArcanoCloner] EXCEPTION during start - Refunding credits for job ${jobId}`);
+    
+    await logStepFailure(jobId, 'run_exception', `START_EXCEPTION_REFUNDED: ${errorMessage}`);
+    
+    try {
+      await supabase.rpc('refund_upscaler_credits', {
+        _user_id: userId,
+        _amount: creditCost,
+        _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}`
+      });
+      
+      await supabase
+        .from('arcano_cloner_jobs')
+        .update({ 
+          status: 'failed', 
+          error_message: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`,
+          credits_refunded: true,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+      
+      console.log(`[ArcanoCloner] Job ${jobId} refunded ${creditCost} credits (exception)`);
+    } catch (refundError) {
+      console.error(`[ArcanoCloner] Refund failed for job ${jobId}:`, refundError);
+      await supabase
+        .from('arcano_cloner_jobs')
+        .update({ 
+          status: 'failed', 
+          error_message: `START_EXCEPTION (refund error): ${errorMessage.slice(0, 200)}`,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+    }
 
     return new Response(JSON.stringify({ 
       error: errorMessage, 
-      code: 'RUN_EXCEPTION' 
+      code: 'RUN_EXCEPTION',
+      refunded: true
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
