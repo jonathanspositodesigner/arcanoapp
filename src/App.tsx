@@ -122,6 +122,7 @@ const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
 const PoseChangerTool = lazy(() => import("./pages/PoseChangerTool"));
 const VesteAITool = lazy(() => import("./pages/VesteAITool"));
 const VideoUpscalerTool = lazy(() => import("./pages/VideoUpscalerTool"));
+const ArcanoClonerTool = lazy(() => import("./pages/ArcanoClonerTool"));
 const UpscalerSelectionPage = lazy(() => import("./pages/UpscalerSelectionPage"));
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
 const PackAgendas = lazy(() => import("./pages/PackAgendas"));
@@ -130,7 +131,6 @@ const PlanosCreditos = lazy(() => import("./pages/PlanosCreditos"));
 const FerramentasIAAplicativo = lazy(() => import("./pages/FerramentasIAAplicativo"));
 const ForceUpdate = lazy(() => import("./pages/ForceUpdate"));
 const ResgatarCreditos = lazy(() => import("./pages/ResgatarCreditos"));
-
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 
@@ -286,6 +286,7 @@ const AppContent = () => {
           <Route path="/pose-changer-tool" element={<PoseChangerTool />} />
           <Route path="/veste-ai-tool" element={<VesteAITool />} />
           <Route path="/video-upscaler-tool" element={<VideoUpscalerTool />} />
+          <Route path="/arcano-cloner-tool" element={<ArcanoClonerTool />} />
           <Route path="/upscaler-selection" element={<UpscalerSelectionPage />} />
           <Route path="/pack-agendas" element={<PackAgendas />} />
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
