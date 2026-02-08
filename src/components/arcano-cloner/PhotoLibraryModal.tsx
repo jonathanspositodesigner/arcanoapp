@@ -20,6 +20,7 @@ interface PhotoItem {
   title: string;
   image_url: string;
   thumbnail_url?: string | null;
+  gender?: string | null;
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -43,17 +44,12 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
     setIsLoading(true);
     
     try {
-      // Query photos from admin_prompts where category = 'Fotos'
-      // Filter by gender based on title containing keywords
-      const genderKeywords = filter === 'masculino' 
-        ? ['homem', 'masculino', 'male', 'man', 'boy', 'garoto', 'menino']
-        : ['mulher', 'feminino', 'female', 'woman', 'girl', 'garota', 'menina'];
-      
-      // Build OR filter for title matching
+      // Query photos from admin_prompts where category = 'Fotos' and gender matches filter
       let query = supabase
         .from('admin_prompts')
-        .select('id, title, image_url, thumbnail_url')
+        .select('id, title, image_url, thumbnail_url, gender')
         .eq('category', 'Fotos')
+        .eq('gender', filter)
         .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1)
         .order('created_at', { ascending: false });
 
@@ -64,19 +60,13 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
         return;
       }
 
-      // Client-side filter by gender keywords in title
-      const filteredData = (data || []).filter(photo => {
-        const titleLower = photo.title.toLowerCase();
-        return genderKeywords.some(keyword => titleLower.includes(keyword));
-      });
-
       if (reset) {
-        setPhotos(filteredData);
+        setPhotos(data || []);
       } else {
-        setPhotos(prev => [...prev, ...filteredData]);
+        setPhotos(prev => [...prev, ...(data || [])]);
       }
 
-      // If we got less than expected or no filtered results, might be end
+      // If we got less than expected, we've reached the end
       setHasMore(data && data.length === ITEMS_PER_PAGE);
     } catch (error) {
       console.error('[PhotoLibrary] Fetch error:', error);
