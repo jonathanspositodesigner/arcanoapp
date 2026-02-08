@@ -28,6 +28,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const IMAGE_JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'arcano_cloner_jobs'] as const;
 
+// De Longe → Standard fallback configuration
+const WEBAPP_ID_STANDARD = '2017030861371219969';
+const WEBAPP_ID_LONGE = '2017343414227963905';
+
 /**
  * logStep - Registra etapa do job para observabilidade
  */
@@ -119,7 +123,7 @@ serve(async (req) => {
     for (const table of IMAGE_JOB_TABLES) {
       const { data: job } = await supabase
         .from(table)
-        .select('id, started_at, user_credit_cost')
+        .select('id, started_at, user_credit_cost, category, fallback_attempted, input_file_name, detail_denoise, resolution, prompt, version')
         .eq('task_id', taskId)
         .maybeSingle();
 
@@ -163,6 +167,82 @@ serve(async (req) => {
 
     const newStatus = errorMessage ? 'failed' : (outputUrl ? 'completed' : 'failed');
     const finalError = errorMessage || (newStatus === 'failed' ? 'No output received' : null);
+
+    // ========================================
+    // FALLBACK LOGIC: De Longe → Standard
+    // Se job "pessoas_longe" falhou e ainda não tentou fallback, tenta automaticamente
+    // ========================================
+    if (
+      jobTable === 'upscaler_jobs' &&
+      newStatus === 'failed' &&
+      jobData.category === 'pessoas_longe' &&
+      !jobData.fallback_attempted &&
+      jobData.input_file_name
+    ) {
+      console.log(`[Webhook] FALLBACK TRIGGERED for De Longe job ${jobData.id}`);
+      
+      // Marcar que vamos tentar fallback
+      await supabase
+        .from('upscaler_jobs')
+        .update({ 
+          fallback_attempted: true,
+          original_task_id: taskId,
+          current_step: 'fallback_starting',
+          error_message: null, // Limpar erro anterior
+        })
+        .eq('id', jobData.id);
+      
+      await logStep('upscaler_jobs', jobData.id, 'fallback_starting', { 
+        originalError: finalError,
+        originalTaskId: taskId 
+      });
+      
+      // Chamar edge function /fallback para retry com workflow Standard
+      try {
+        const fallbackUrl = `${SUPABASE_URL}/functions/v1/runninghub-upscaler/fallback`;
+        
+        const fallbackResponse = await fetch(fallbackUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({
+            jobId: jobData.id,
+            inputFileName: jobData.input_file_name,
+            detailDenoise: jobData.detail_denoise || 0.15,
+            resolution: jobData.resolution || 2048,
+            prompt: jobData.prompt,
+          }),
+        });
+        
+        const fallbackResult = await fallbackResponse.json();
+        console.log('[Webhook] Fallback response:', JSON.stringify(fallbackResult));
+        
+        if (fallbackResult.success) {
+          // Fallback iniciado com sucesso - não finaliza o job ainda
+          return new Response(JSON.stringify({ 
+            success: true, 
+            fallback: true,
+            message: 'Fallback triggered, retrying with Standard workflow' 
+          }), {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        } else {
+          // Fallback falhou ao iniciar - continua com a falha normal
+          console.error('[Webhook] Fallback failed to start:', fallbackResult.error);
+          await logStep('upscaler_jobs', jobData.id, 'fallback_failed', { 
+            error: fallbackResult.error 
+          });
+        }
+      } catch (fallbackError) {
+        console.error('[Webhook] Fallback call failed:', fallbackError);
+        await logStep('upscaler_jobs', jobData.id, 'fallback_error', { 
+          error: String(fallbackError) 
+        });
+      }
+    }
 
     // Delegar para Queue Manager /finish (com payload do webhook)
     try {

@@ -544,6 +544,11 @@ const UpscalerArcanoTool: React.FC = () => {
 
       // Step 2: Create job in database ONLY AFTER successful upload
       // This prevents orphaned jobs if user closes page during upload
+      // IMPORTANTE: Gravar category, version, resolution para o fallback funcionar
+      const resolutionValue = resolution === '4k' ? 4096 : 2048;
+      const framingMode = isLongeMode ? 'longe' : 'perto';
+      const effectiveCategory = isLongeMode ? 'pessoas_longe' : promptCategory;
+      
       const { data: job, error: jobError } = await supabase
         .from('upscaler_jobs')
         .insert({
@@ -553,6 +558,11 @@ const UpscalerArcanoTool: React.FC = () => {
           prompt: getFinalPrompt(),
           user_id: user.id,
           input_file_name: storagePath.split('/').pop() || `${tempId}.webp`,
+          // Campos necessários para o fallback De Longe → Standard
+          category: effectiveCategory,
+          version: version,
+          resolution: resolutionValue,
+          framing_mode: framingMode,
         })
         .select()
         .single();
@@ -567,8 +577,6 @@ const UpscalerArcanoTool: React.FC = () => {
 
       // Step 3: Call edge function with URL (not base64)
       const creditCost = version === 'pro' ? 80 : 60;
-      const resolutionValue = resolution === '4k' ? 4096 : 2048;
-      const framingMode = isLongeMode ? 'longe' : 'perto';
 
       const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {

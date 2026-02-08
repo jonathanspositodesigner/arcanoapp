@@ -269,6 +269,8 @@ serve(async (req) => {
       return await handleRun(req);
     } else if (path === 'queue-status') {
       return await handleQueueStatus(req);
+    } else if (path === 'fallback') {
+      return await handleFallback(req);
     } else {
       return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
         status: 400,
@@ -978,6 +980,188 @@ async function handleQueueStatus(req: Request) {
   } catch (error) {
     console.error('[RunningHub] Queue status error:', error);
     return new Response(JSON.stringify({ error: 'Failed to get queue status' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// ========================================
+// FALLBACK HANDLER: De Longe → Standard
+// Called by webhook when De Longe workflow fails
+// Re-runs the job with Standard workflow nodes
+// ========================================
+async function handleFallback(req: Request) {
+  console.log('[RunningHub] Fallback handler called');
+  
+  const { jobId, inputFileName, detailDenoise, resolution, prompt } = await req.json();
+  
+  if (!jobId || !inputFileName) {
+    return new Response(JSON.stringify({ 
+      error: 'jobId and inputFileName are required',
+      success: false 
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  console.log(`[RunningHub] Fallback for job ${jobId} - fileName: ${inputFileName}, resolution: ${resolution}`);
+  
+  try {
+    // Update job status to indicate fallback is in progress
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        status: 'running',
+        current_step: 'fallback_running',
+        started_at: new Date().toISOString(),
+      })
+      .eq('id', jobId);
+    
+    await logStep(jobId, 'fallback_running', { 
+      workflow: 'standard',
+      webappId: WEBAPP_ID_STANDARD 
+    });
+    
+    // Build nodeInfoList for Standard workflow
+    // Node 26: image, Node 25: denoise, Node 75: resolution, Node 128: prompt
+    const nodeInfoList: any[] = [
+      { nodeId: "26", fieldName: "image", fieldValue: inputFileName },
+      { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
+      { nodeId: "75", fieldName: "value", fieldValue: String(resolution || 2048) },
+    ];
+    
+    // Add prompt if available
+    if (prompt) {
+      nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
+    }
+    
+    console.log(`[RunningHub] Fallback nodeInfoList:`, JSON.stringify(nodeInfoList));
+    
+    // Build request body
+    const requestBody = {
+      apiKey: RUNNINGHUB_API_KEY,
+      webappId: WEBAPP_ID_STANDARD,
+      nodeInfoList,
+      callbackUrl: `${SUPABASE_URL}/functions/v1/runninghub-webhook`,
+    };
+    
+    // Call RunningHub API v2 with Standard workflow
+    const response = await fetchWithRetry(
+      `https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_STANDARD}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      },
+      'Fallback RunningHub v2 call'
+    );
+    
+    const data = await safeParseResponse(response, 'Fallback RunningHub response');
+    console.log('[RunningHub] Fallback API response:', JSON.stringify(data));
+    
+    // Check for success
+    if (data.code !== 0) {
+      const errorMsg = data.msg || 'Fallback workflow failed to start';
+      console.error('[RunningHub] Fallback failed:', errorMsg);
+      
+      await supabase
+        .from('upscaler_jobs')
+        .update({ 
+          status: 'failed',
+          current_step: 'failed',
+          error_message: `FALLBACK_FAILED: ${errorMsg}`,
+          failed_at_step: 'fallback_start',
+        })
+        .eq('id', jobId);
+      
+      await logStep(jobId, 'fallback_failed', { error: errorMsg });
+      
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: errorMsg 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Extract taskId from response
+    const taskId = data.data?.taskId;
+    
+    if (!taskId) {
+      const errorMsg = 'No taskId returned from fallback workflow';
+      console.error('[RunningHub] Fallback missing taskId');
+      
+      await supabase
+        .from('upscaler_jobs')
+        .update({ 
+          status: 'failed',
+          current_step: 'failed',
+          error_message: `FALLBACK_NO_TASKID: ${errorMsg}`,
+          failed_at_step: 'fallback_start',
+        })
+        .eq('id', jobId);
+      
+      await logStep(jobId, 'fallback_failed', { error: errorMsg });
+      
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: errorMsg 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Success! Update job with new taskId
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        task_id: taskId,
+        current_step: 'fallback_processing',
+        raw_api_response: data,
+      })
+      .eq('id', jobId);
+    
+    await logStep(jobId, 'fallback_processing', { 
+      newTaskId: taskId,
+      workflow: 'standard' 
+    });
+    
+    console.log(`[RunningHub] Fallback successful - new taskId: ${taskId}`);
+    
+    return new Response(JSON.stringify({ 
+      success: true, 
+      taskId,
+      message: 'Fallback started with Standard workflow'
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown fallback error';
+    console.error('[RunningHub] Fallback exception:', error);
+    
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        status: 'failed',
+        current_step: 'failed',
+        error_message: `FALLBACK_EXCEPTION: ${errorMessage}`,
+        failed_at_step: 'fallback_start',
+      })
+      .eq('id', jobId);
+    
+    await logStep(jobId, 'fallback_exception', { error: errorMessage });
+    
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: errorMessage 
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
