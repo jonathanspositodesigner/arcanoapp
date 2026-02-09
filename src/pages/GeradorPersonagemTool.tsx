@@ -395,7 +395,7 @@ const GeradorPersonagemTool: React.FC = () => {
             {/* Instructions */}
             <div className="bg-purple-900/30 border border-purple-500/20 rounded-lg p-3 mb-1">
               <p className="text-xs text-purple-100 font-medium mb-0.5">📸 Envie 4 fotos do mesmo rosto</p>
-              <p className="text-[10px] text-purple-300/80 leading-relaxed">Cada ângulo diferente ajuda a IA a criar seu personagem com alta fidelidade, pronto para usar em todos os nossos aplicativos!</p>
+              <p className="text-[10px] text-purple-300/80 leading-relaxed">Para gerar um personagem com alta fidelidade.</p>
               <button
                 type="button"
                 className="text-[10px] text-fuchsia-400 hover:text-fuchsia-300 underline mt-1 font-medium"
