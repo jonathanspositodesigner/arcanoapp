@@ -204,15 +204,18 @@ const ToolVersionLessons = () => {
     setVideoLoading(true);
   }, [selectedLesson]);
 
-  // Check if tool is unlocked (first 4 lessons watched)
-  const isToolUnlocked = useMemo(() => {
-    return [1, 2, 3, 4].every(num => watchedLessons.includes(num));
-  }, [watchedLessons]);
+  // Dynamic total lessons count
+  const totalLessons = lessons.length;
 
-  // Progress count (max 4)
+  // Check if tool is unlocked (all lessons watched)
+  const isToolUnlocked = useMemo(() => {
+    return totalLessons > 0 && Array.from({ length: totalLessons }, (_, i) => i + 1).every(num => watchedLessons.includes(num));
+  }, [watchedLessons, totalLessons]);
+
+  // Progress count (dynamic)
   const progressCount = useMemo(() => {
-    return Math.min(watchedLessons.filter(n => n <= 4).length, 4);
-  }, [watchedLessons]);
+    return Math.min(watchedLessons.filter(n => n <= totalLessons).length, totalLessons);
+  }, [watchedLessons, totalLessons]);
 
   // Tooltip message based on progress
   const tooltipMessage = useMemo(() => {
@@ -414,7 +417,7 @@ const ToolVersionLessons = () => {
         )}
 
         {/* Master's Journey Progress Bar - Only for upscaler tools */}
-        {toolSlug === 'upscaller-arcano' && lessons.length >= 4 && (
+        {toolSlug === 'upscaller-arcano' && lessons.length >= 1 && (
           <div className="mb-6 p-4 bg-[#1A0A2E]/50 border border-purple-500/20 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-white flex items-center gap-2">
@@ -431,15 +434,15 @@ const ToolVersionLessons = () => {
               <div 
                 className="h-full bg-gradient-to-r from-purple-600 via-violet-500 to-purple-400 
                            transition-all duration-700 ease-out rounded-full"
-                style={{ width: `${(progressCount / 4) * 100}%` }}
+                style={{ width: `${totalLessons > 0 ? (progressCount / totalLessons) * 100 : 0}%` }}
               />
             </div>
             
             {/* Lesson Indicators - Clickable */}
             <div className="flex justify-between mt-3">
-              {[1, 2, 3, 4].map((num) => {
+              {Array.from({ length: totalLessons }, (_, i) => i + 1).map((num) => {
                 const isWatched = watchedLessons.includes(num);
-                const nextLesson = [1, 2, 3, 4].find(n => !watchedLessons.includes(n)) || 5;
+                const nextLesson = Array.from({ length: totalLessons }, (_, i) => i + 1).find(n => !watchedLessons.includes(n)) || totalLessons + 1;
                 const isNext = num === nextLesson;
                 
                 return (
@@ -478,26 +481,12 @@ const ToolVersionLessons = () => {
                 <TooltipTrigger asChild>
                   <div>
                     <Button
-                      disabled={!isToolUnlocked}
                       onClick={() => window.open(toolLink, '_blank')}
-                      className={`w-full h-12 text-base font-semibold transition-all duration-500 ${
-                        isToolUnlocked 
-                          ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white shadow-lg shadow-orange-500/30' 
-                          : 'bg-zinc-700 text-zinc-300 border border-zinc-600 cursor-not-allowed'
-                      }`}
+                      className="w-full h-12 text-base font-semibold transition-all duration-500 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white shadow-lg shadow-orange-500/30"
                     >
-                      {isToolUnlocked ? (
-                        <>
-                          <Unlock className="h-5 w-5 mr-2" />
-                          {t('toolLessons.accessTool')}
-                          <ExternalLink className="h-4 w-4 ml-2" />
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="h-5 w-5 mr-2" />
-                          {t('toolLessons.toolLinkLocked')}
-                        </>
-                      )}
+                      <Unlock className="h-5 w-5 mr-2" />
+                      {t('toolLessons.accessTool')}
+                      <ExternalLink className="h-4 w-4 ml-2" />
                     </Button>
                   </div>
                 </TooltipTrigger>
@@ -507,12 +496,10 @@ const ToolVersionLessons = () => {
               </Tooltip>
             </TooltipProvider>
 
-            {/* Unlock message below button */}
-            {!isToolUnlocked && (
-              <p className="text-xs text-center text-purple-300/70 mt-2">
-                {t('toolLessons.watchToUnlock')}
-              </p>
-            )}
+            {/* Warning: watch lessons notice */}
+            <p className="text-xs text-center text-yellow-400/80 mt-2">
+              ⚠️ Atenção: é muito importante que você assista às videoaulas para saber como usar a ferramenta
+            </p>
           </div>
         )}
 
@@ -656,7 +643,7 @@ const ToolVersionLessons = () => {
             ))}
             
             {/* Light Version Notice - Below lessons, above WhatsApp */}
-            {toolSlug === 'upscaller-arcano' && lessons.length >= 4 && (
+            {toolSlug === 'upscaller-arcano' && lessons.length >= 1 && (
               <div 
                 onClick={() => handleLessonClick(lessons.length - 1)}
                 className="mt-4 px-3 py-1.5 bg-purple-500/20 border border-purple-400/30 
@@ -669,19 +656,23 @@ const ToolVersionLessons = () => {
               </div>
             )}
             
-            {/* WhatsApp Support Button - MOBILE: dentro da lista, último elemento */}
-            <div className="lg:hidden mt-6">
-              <WhatsAppSupportButton />
-            </div>
+            {/* WhatsApp Support Button - MOBILE: só aparece após assistir todas as aulas */}
+            {(toolSlug !== 'upscaller-arcano' || isToolUnlocked) && (
+              <div className="lg:hidden mt-6">
+                <WhatsAppSupportButton />
+              </div>
+            )}
           </div>
         </div>
 
       </div>
 
-      {/* WhatsApp Support Button - DESKTOP: fora do grid, full width no final */}
-      <div className="hidden lg:block container mx-auto px-4 pb-8 max-w-6xl">
-        <WhatsAppSupportButton />
-      </div>
+      {/* WhatsApp Support Button - DESKTOP: só aparece após assistir todas as aulas */}
+      {(toolSlug !== 'upscaller-arcano' || isToolUnlocked) && (
+        <div className="hidden lg:block container mx-auto px-4 pb-8 max-w-6xl">
+          <WhatsAppSupportButton />
+        </div>
+      )}
 
       {/* Warning Modal - Tool Access */}
         <AlertDialog open={showWarningModal} onOpenChange={setShowWarningModal}>
