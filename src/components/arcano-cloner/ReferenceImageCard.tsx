@@ -32,7 +32,7 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
       {/* Content Area - matches ImageUploadCard sizing */}
       <div
         className={cn(
-          "relative aspect-square flex items-center justify-center transition-all",
+          "relative aspect-square max-h-[140px] lg:max-h-none flex items-center justify-center transition-all",
           !image && "cursor-pointer hover:bg-purple-500/10",
           disabled && "cursor-not-allowed"
         )}
