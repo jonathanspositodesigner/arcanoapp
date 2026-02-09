@@ -1,110 +1,56 @@
 
-## Tornar desbloqueio dinamico baseado no numero real de aulas (3, nao 4)
 
-### Problema atual
+## Atualizar pagina /planos-upscaler-arcano-69-es
 
-O codigo tem `[1, 2, 3, 4]` hardcoded em varios lugares. Como agora sao 3 aulas, o sistema NUNCA desbloqueia porque exige aula 4 que nao existe.
+### 1. Trocar link do checkout (linha 159)
 
-### Mudancas no arquivo `src/pages/ToolVersionLessons.tsx`
+Substituir o link atual do Hotmart pelo novo:
+- **Antes:** `https://pay.hotmart.com/R103906553W?off=k7k3jv6j`
+- **Depois:** `https://pay.hotmart.com/R103906553W?off=9o6c47no`
 
-**1. `isToolUnlocked` - usar `lessons.length` em vez de hardcoded `[1,2,3,4]` (linhas 207-210)**
+### 2. Atualizar preco para $7.90 (linhas 168-170)
 
-```typescript
-// ANTES:
-const isToolUnlocked = useMemo(() => {
-  return [1, 2, 3, 4].every(num => watchedLessons.includes(num));
-}, [watchedLessons]);
+- `price`: de `990` para `790` (centavos)
+- `originalPrice`: de `1297` para `990` ($9.90 riscado)
+- `installmentPrice`: calculado automaticamente (790/3 = ~$2.64)
+- Atualizar o valor no evento do Meta Pixel (linha 154): de `9.90` para `7.90`
 
-// DEPOIS:
-const isToolUnlocked = useMemo(() => {
-  const totalLessons = lessons.length;
-  return totalLessons > 0 && Array.from({ length: totalLessons }, (_, i) => i + 1).every(num => watchedLessons.includes(num));
-}, [watchedLessons, lessons.length]);
+### 3. Atualizar badge de desconto (linha 466)
+
+Recalcular: $7.90 de $9.90 = ~20% OFF
+- **Antes:** `24% OFF`
+- **Depois:** `20% OFF`
+
+### 4. Conversao de moeda local em tempo real
+
+Criar um hook `useCurrencyConversion` que:
+- Usa a API gratuita do ExchangeRate (exchangerate-api.com ou similar) para buscar o cambio USD para a moeda local do visitante
+- Detecta o pais do visitante via `navigator.language` ou API de geolocalizacao gratuita (ex: `ipapi.co/json/`)
+- Mapeia pais para moeda (ex: Argentina = ARS, Colombia = COP, Mexico = MXN, Chile = CLP, Peru = PEN, Brasil = BRL)
+- Faz cache do resultado no sessionStorage por 1 hora
+
+Na pagina, abaixo do preco em USD, exibir uma linha com o preco convertido:
+> Aprox. ARS 7,120.50 en tu moneda
+
+Se a API falhar, simplesmente nao mostra a linha de conversao (graceful fallback).
+
+### Detalhes tecnicos
+
+**Arquivo modificado:** `src/pages/PlanosUpscalerArcano69ES.tsx`
+**Arquivo novo:** `src/hooks/useCurrencyConversion.ts`
+
+O hook `useCurrencyConversion`:
+- Primeiro busca o pais via `fetch('https://ipapi.co/json/')` (gratuito, sem chave)
+- Depois busca o cambio via `fetch('https://open.er-api.com/v6/latest/USD')` (gratuito, sem chave)
+- Retorna `{ localCurrency, localPrice, loading }` ou `null` se falhar
+- Cache em sessionStorage para evitar chamadas repetidas
+
+Na UI, adiciona abaixo do preco principal:
 ```
-
-**2. `progressCount` - usar `lessons.length` em vez de hardcoded 4 (linhas 212-215)**
-
-```typescript
-// ANTES:
-const progressCount = useMemo(() => {
-  return Math.min(watchedLessons.filter(n => n <= 4).length, 4);
-}, [watchedLessons]);
-
-// DEPOIS:
-const totalLessons = lessons.length;
-const progressCount = useMemo(() => {
-  return Math.min(watchedLessons.filter(n => n <= totalLessons).length, totalLessons);
-}, [watchedLessons, totalLessons]);
-```
-
-**3. Progress bar condicional - mudar `>= 4` para `>= 1` (linha 417)**
-
-```typescript
-// ANTES:
-{toolSlug === 'upscaller-arcano' && lessons.length >= 4 && (
-
-// DEPOIS:
-{toolSlug === 'upscaller-arcano' && lessons.length >= 1 && (
-```
-
-**4. Progress bar width - usar `totalLessons` em vez de 4 (linha 434)**
-
-```typescript
-// ANTES:
-style={{ width: `${(progressCount / 4) * 100}%` }}
-
-// DEPOIS:
-style={{ width: `${(progressCount / totalLessons) * 100}%` }}
-```
-
-**5. Indicadores de aula - gerar dinamicamente (linha 440-442)**
-
-```typescript
-// ANTES:
-{[1, 2, 3, 4].map((num) => {
-  const nextLesson = [1, 2, 3, 4].find(n => !watchedLessons.includes(n)) || 5;
-
-// DEPOIS:
-{Array.from({ length: totalLessons }, (_, i) => i + 1).map((num) => {
-  const nextLesson = Array.from({ length: totalLessons }, (_, i) => i + 1).find(n => !watchedLessons.includes(n)) || totalLessons + 1;
-```
-
-**6. Botao da ferramenta - aplicar mudancas do plano anterior (linhas 480-515)**
-
-- Remover `disabled={!isToolUnlocked}` - botao sempre ativo
-- Sempre usar estilo dourado
-- Substituir mensagem "assista para desbloquear" por aviso fixo: "Atencao: e muito importante que voce assista as videoaulas para saber como usar a ferramenta"
-
-**7. WhatsApp condicional - so aparece apos assistir TODAS as aulas (linhas 673-684)**
-
-```typescript
-// Mobile:
-{(toolSlug !== 'upscaller-arcano' || isToolUnlocked) && (
-  <div className="lg:hidden mt-6">
-    <WhatsAppSupportButton />
-  </div>
-)}
-
-// Desktop:
-{(toolSlug !== 'upscaller-arcano' || isToolUnlocked) && (
-  <div className="hidden lg:block container mx-auto px-4 pb-8 max-w-6xl">
-    <WhatsAppSupportButton />
-  </div>
+{localPrice && (
+  <p className="text-white/50 text-sm mt-1">
+    Aprox. {localCurrency} {formattedLocalPrice} en tu moneda
+  </p>
 )}
 ```
 
-**8. Light Version Notice - mudar `>= 4` para `>= 1` (linha 659)**
-
-Mesmo ajuste para consistencia: `lessons.length >= 4` -> `lessons.length >= 1`
-
-### Resumo
-
-| Item | Antes | Depois |
-|------|-------|--------|
-| Aulas necessarias | Hardcoded 4 | Dinamico (baseado em `lessons.length`) |
-| Botao ferramenta | Bloqueado ate assistir 4 | Sempre liberado |
-| Aviso abaixo do botao | "Assista para desbloquear" | "Atencao: assista as videoaulas" |
-| Suporte WhatsApp | Sempre visivel | So aparece apos todas as aulas assistidas |
-| Progress bar | /4 fixo | /totalLessons dinamico |
-
-Arquivo unico modificado: `src/pages/ToolVersionLessons.tsx`
