@@ -69,7 +69,12 @@ const TOOL_CREDIT_COSTS: Record<string, number> = {
   "Veste AI": 60,
   "Video Upscaler": 150,
   "Arcano Cloner": 80,
-  "Gerador Avatar": 100,
+  "Gerador Avatar": 75,
+};
+
+const TOOL_API_COSTS: Record<string, number> = {
+  "Arcano Cloner": 0.12,
+  "Gerador Avatar": 0.12,
 };
 
 const AIToolsProfitTable = () => {
@@ -201,7 +206,8 @@ const AIToolsProfitTable = () => {
   const tableData = useMemo(() => {
     const fromDb = toolsData.map(tool => {
       const credits = TOOL_CREDIT_COSTS[tool.tool_name] || tool.avg_credit_cost;
-      const calc = calculateProfit(credits, tool.avg_rh_cost);
+      const apiCost = TOOL_API_COSTS[tool.tool_name] || 0;
+      const calc = calculateProfit(credits, tool.avg_rh_cost, apiCost);
       
       // Accumulated totals
       const totalRevenue = calc.revenue * tool.total_jobs;
@@ -213,7 +219,7 @@ const AIToolsProfitTable = () => {
         credits,
         avgRhCost: tool.avg_rh_cost,
         totalJobs: tool.total_jobs,
-        apiCost: 0,
+        apiCost: TOOL_API_COSTS[tool.tool_name] || 0,
         isCustom: false,
         totalRevenue,
         totalCostAccum,

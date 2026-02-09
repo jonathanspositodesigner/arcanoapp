@@ -30,7 +30,7 @@ import { getAIErrorMessage } from '@/utils/errorMessages';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
-const CREDIT_COST = 100;
+const CREDIT_COST = 75;
 
 const queueMessages = [
   { emoji: '🎨', text: 'Criando seu avatar...' },
