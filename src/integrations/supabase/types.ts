@@ -983,6 +983,114 @@ export type Database = {
         }
         Relationships: []
       }
+      character_generator_jobs: {
+        Row: {
+          api_account: string
+          completed_at: string | null
+          created_at: string | null
+          credits_charged: boolean | null
+          credits_refunded: boolean | null
+          current_step: string | null
+          error_message: string | null
+          failed_at_step: string | null
+          front_file_name: string | null
+          front_image_url: string | null
+          id: string
+          job_payload: Json | null
+          low_angle_file_name: string | null
+          low_angle_image_url: string | null
+          output_url: string | null
+          position: number | null
+          profile_file_name: string | null
+          profile_image_url: string | null
+          queue_wait_seconds: number | null
+          raw_api_response: Json | null
+          raw_webhook_payload: Json | null
+          rh_cost: number | null
+          semi_profile_file_name: string | null
+          semi_profile_image_url: string | null
+          session_id: string
+          started_at: string | null
+          status: string
+          step_history: Json | null
+          task_id: string | null
+          thumbnail_url: string | null
+          user_credit_cost: number | null
+          user_id: string | null
+          waited_in_queue: boolean | null
+        }
+        Insert: {
+          api_account?: string
+          completed_at?: string | null
+          created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
+          current_step?: string | null
+          error_message?: string | null
+          failed_at_step?: string | null
+          front_file_name?: string | null
+          front_image_url?: string | null
+          id?: string
+          job_payload?: Json | null
+          low_angle_file_name?: string | null
+          low_angle_image_url?: string | null
+          output_url?: string | null
+          position?: number | null
+          profile_file_name?: string | null
+          profile_image_url?: string | null
+          queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
+          rh_cost?: number | null
+          semi_profile_file_name?: string | null
+          semi_profile_image_url?: string | null
+          session_id: string
+          started_at?: string | null
+          status?: string
+          step_history?: Json | null
+          task_id?: string | null
+          thumbnail_url?: string | null
+          user_credit_cost?: number | null
+          user_id?: string | null
+          waited_in_queue?: boolean | null
+        }
+        Update: {
+          api_account?: string
+          completed_at?: string | null
+          created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
+          current_step?: string | null
+          error_message?: string | null
+          failed_at_step?: string | null
+          front_file_name?: string | null
+          front_image_url?: string | null
+          id?: string
+          job_payload?: Json | null
+          low_angle_file_name?: string | null
+          low_angle_image_url?: string | null
+          output_url?: string | null
+          position?: number | null
+          profile_file_name?: string | null
+          profile_image_url?: string | null
+          queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
+          rh_cost?: number | null
+          semi_profile_file_name?: string | null
+          semi_profile_image_url?: string | null
+          session_id?: string
+          started_at?: string | null
+          status?: string
+          step_history?: Json | null
+          task_id?: string | null
+          thumbnail_url?: string | null
+          user_credit_cost?: number | null
+          user_id?: string | null
+          waited_in_queue?: boolean | null
+        }
+        Relationships: []
+      }
       collection_views: {
         Row: {
           collection_id: string
@@ -2418,6 +2526,33 @@ export type Database = {
           request_count?: number
           updated_at?: string
           window_start?: string
+        }
+        Relationships: []
+      }
+      saved_characters: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          job_id: string | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          job_id?: string | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          job_id?: string | null
+          name?: string
+          user_id?: string
         }
         Relationships: []
       }

@@ -56,9 +56,10 @@ const WEBAPP_IDS = {
   veste_ai_jobs: '2018755100210106369',
   video_upscaler_jobs: '2018810750139109378',
   arcano_cloner_jobs: '2019877042115842050',
+  character_generator_jobs: 'PLACEHOLDER_WEBAPP_ID',
 };
 
-const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs'] as const;
+const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs'] as const;
 type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -71,6 +72,7 @@ const TOOL_CONFIG: Record<JobTable, { name: string; url: string; emoji: string }
   veste_ai_jobs: { name: 'Veste AI', url: '/veste-ai-tool', emoji: '👕' },
   video_upscaler_jobs: { name: 'Video Upscaler', url: '/video-upscaler-tool', emoji: '🎬' },
   arcano_cloner_jobs: { name: 'Arcano Cloner', url: '/arcano-cloner-tool', emoji: '👤' },
+  character_generator_jobs: { name: 'Gerador Personagem', url: '/gerador-personagem', emoji: '🧑‍🎨' },
 };
 
 /**
@@ -554,6 +556,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
       'pose_changer_jobs': 'Pose Changer',
       'veste_ai_jobs': 'Veste AI',
       'arcano_cloner_jobs': 'Arcano Cloner',
+      'character_generator_jobs': 'Gerador Personagem',
     };
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
@@ -1131,6 +1134,16 @@ async function startJobOnRunningHub(
         { nodeId: "62", fieldName: "image", fieldValue: job.reference_image_url || job.reference_file_name },
         { nodeId: "69", fieldName: "text", fieldValue: job.prompt || 'faça o homem da imagem 1 com a mesma pose, composição de cenário fundo e roupas da imagem 2. SEM RUÍDO NA FOTO' },
         { nodeId: "85", fieldName: "aspectRatio", fieldValue: job.aspect_ratio || '1:1' },
+      ];
+      break;
+
+    case 'character_generator_jobs':
+      webappId = WEBAPP_IDS.character_generator_jobs;
+      nodeInfoList = [
+        { nodeId: "PLACEHOLDER_NODE_FRONT", fieldName: "image", fieldValue: job.front_image_url || job.front_file_name },
+        { nodeId: "PLACEHOLDER_NODE_PROFILE", fieldName: "image", fieldValue: job.profile_image_url || job.profile_file_name },
+        { nodeId: "PLACEHOLDER_NODE_SEMI_PROFILE", fieldName: "image", fieldValue: job.semi_profile_image_url || job.semi_profile_file_name },
+        { nodeId: "PLACEHOLDER_NODE_LOW_ANGLE", fieldName: "image", fieldValue: job.low_angle_image_url || job.low_angle_file_name },
       ];
       break;
       
