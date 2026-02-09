@@ -1,37 +1,30 @@
 
-## Adicionar Gerador de Avatar nos dashboards de Custos IA e Rentabilidade
 
-### Problema
-A tabela `character_generator_jobs` nao esta incluida nas 4 RPCs do banco de dados que alimentam as paginas de Custos IA e Rentabilidade. Tambem falta o mapeamento no frontend.
+## Corrigir bug de imagem errada ao selecionar Avatar no Arcano Cloner
+
+### Problema identificado
+Existe uma **condicao de corrida** (race condition) no componente `PersonInputSwitch`. Quando o usuario clica em um avatar, o sistema:
+
+1. Atualiza o ID selecionado imediatamente (visual)
+2. Faz um `fetch` assincrono da imagem do avatar
+3. Converte o blob em File + dataURL
+4. Chama `onImageChange` com o resultado
+
+Se o usuario clicar em "Herica Nagila" e antes o fetch de "Jonathan" (clicado anteriormente) ainda estiver em andamento, o resultado atrasado de "Jonathan" pode sobrescrever a imagem de "Herica Nagila". Nao existe nenhuma verificacao para descartar resultados de selecoes anteriores.
 
 ### Solucao
 
-#### 1. Atualizar 4 RPCs no banco de dados (migration SQL)
+**Arquivo: `src/components/ai-tools/PersonInputSwitch.tsx`**
 
-Recriar as seguintes funcoes adicionando um bloco `UNION ALL` para `character_generator_jobs` com `tool_name = 'Gerador Avatar'`:
-
-- **`get_ai_tools_usage`** -- lista paginada de jobs (Custos IA)
-- **`get_ai_tools_usage_count`** -- contagem total para paginacao
-- **`get_ai_tools_usage_summary`** -- cards de resumo (totais, medias)
-- **`get_ai_tools_cost_averages`** -- medias de custo (Rentabilidade)
-
-A tabela `character_generator_jobs` possui todas as colunas necessarias: `rh_cost`, `user_credit_cost`, `waited_in_queue`, `queue_wait_seconds`, `started_at`, `completed_at`, `status`, `error_message`, `user_id`, `created_at`.
-
-#### 2. Atualizar frontend - AdminAIToolsUsageTab.tsx
-
-- Adicionar `{ value: "Gerador Avatar", label: "Gerador Avatar" }` no array `TOOL_FILTERS`
-- Adicionar cor no `getToolBadge`: `"Gerador Avatar": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"`
-- Adicionar mapeamento no `getTableName`: `case "Gerador Avatar": return "character_generator_jobs";`
-
-#### 3. Atualizar frontend - AIToolsProfitTable.tsx
-
-- Adicionar `"Gerador Avatar": 100` no objeto `TOOL_CREDIT_COSTS` (100 creditos conforme definido na ferramenta)
+Adicionar um `useRef` que armazena o ID do ultimo avatar selecionado. Antes de chamar `onImageChange` no callback assincrono, verificar se o ID ainda corresponde a selecao atual. Se nao corresponder, descartar o resultado.
 
 ### Detalhes Tecnicos
 
-Cada RPC sera recriada com `CREATE OR REPLACE FUNCTION` adicionando o bloco UNION ALL para a tabela `character_generator_jobs`. As colunas numericas usarao cast `::NUMERIC` para evitar erros de type mismatch no UNION ALL, seguindo o padrao ja estabelecido.
+1. Criar um `const latestSelectionRef = useRef<string | null>(null)`
+2. No inicio de `handleSelectCharacter`, gravar `latestSelectionRef.current = char.id`
+3. Antes de chamar `onImageChange` (tanto no `reader.onload` quanto no fallback), verificar: `if (latestSelectionRef.current !== char.id) return` -- descarta resultado obsoleto
+4. Ao trocar de modo (`handleModeChange`), limpar o ref: `latestSelectionRef.current = null`
 
-Arquivos modificados:
-- 1 migration SQL (4 RPCs)
-- `src/components/admin/AdminAIToolsUsageTab.tsx` (3 pontos)
-- `src/components/admin/AIToolsProfitTable.tsx` (1 ponto)
+Isso garante que somente a ultima selecao do usuario seja aplicada, independente da ordem em que os fetches completam.
+
+Nenhum outro arquivo precisa ser alterado.
