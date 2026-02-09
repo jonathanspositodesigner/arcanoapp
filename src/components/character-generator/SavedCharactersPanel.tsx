@@ -69,10 +69,10 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
 
       if (error) throw error;
       setCharacters(prev => prev.filter(c => c.id !== id));
-      toast.success('Personagem removido');
+      toast.success('Avatar removido');
     } catch (error) {
       console.error('[SavedCharactersPanel] Delete error:', error);
-      toast.error('Erro ao remover personagem');
+      toast.error('Erro ao remover avatar');
     } finally {
       setDeletingId(null);
     }
@@ -88,7 +88,7 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
       >
         <span className="flex items-center gap-1.5">
           <Users className="w-3.5 h-3.5" />
-          Personagens Salvos {characters.length > 0 && `(${characters.length})`}
+          Avatares Salvos {characters.length > 0 && `(${characters.length})`}
         </span>
         {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
       </Button>
@@ -101,7 +101,7 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
             </div>
           ) : characters.length === 0 ? (
             <p className="text-center text-purple-400 text-xs py-4">
-              Nenhum personagem salvo ainda
+              Nenhum avatar salvo ainda
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-2">
@@ -127,7 +127,7 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
                       </AlertDialogTrigger>
                       <AlertDialogContent className="bg-[#1A0A2E] border-purple-500/30 text-white">
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Remover personagem?</AlertDialogTitle>
+                          <AlertDialogTitle>Remover avatar?</AlertDialogTitle>
                           <AlertDialogDescription className="text-purple-300">
                             Tem certeza que deseja remover "{char.name}"? Esta ação não pode ser desfeita.
                           </AlertDialogDescription>

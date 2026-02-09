@@ -81,7 +81,7 @@ const TOOL_NAMES: Record<string, ToolType> = {
   'Pose Changer': 'pose_changer',
   'Veste AI': 'veste_ai',
   'Arcano Cloner': 'arcano_cloner',
-  'Gerador Personagem': 'character_generator',
+  'Gerador Avatar': 'character_generator',
 };
 
 // ==================== CORE FUNCTIONS ====================

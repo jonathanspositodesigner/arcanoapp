@@ -288,7 +288,8 @@ const AppContent = () => {
           <Route path="/veste-ai-tool" element={<VesteAITool />} />
           <Route path="/video-upscaler-tool" element={<VideoUpscalerTool />} />
           <Route path="/arcano-cloner-tool" element={<ArcanoClonerTool />} />
-          <Route path="/gerador-personagem" element={<GeradorPersonagemTool />} />
+          <Route path="/gerador-avatar" element={<GeradorPersonagemTool />} />
+          <Route path="/gerador-personagem" element={<Navigate to="/gerador-avatar" replace />} />
           <Route path="/upscaler-selection" element={<UpscalerSelectionPage />} />
           <Route path="/pack-agendas" element={<PackAgendas />} />
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />

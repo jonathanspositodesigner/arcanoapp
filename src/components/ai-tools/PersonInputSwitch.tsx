@@ -103,7 +103,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
           disabled={disabled}
         >
           <Users className="w-3 h-3" />
-          Personagem
+          Avatar
         </button>
         <button
           type="button"
@@ -131,15 +131,15 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
           ) : characters.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-4">
               <p className="text-[10px] text-purple-400 text-center">
-                Nenhum personagem salvo
+                Nenhum avatar salvo
               </p>
               <Button
                 size="sm"
                 className="h-7 text-[10px] bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-semibold border-0"
-                onClick={() => navigate('/gerador-personagem')}
+                onClick={() => navigate('/gerador-avatar')}
               >
                 <Plus className="w-3 h-3 mr-1" />
-                Criar Personagem
+                Criar Avatar
               </Button>
             </div>
           ) : (
@@ -172,10 +172,10 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
               <Button
                 size="sm"
                 className="w-full h-6 mt-1.5 text-[10px] bg-fuchsia-600/80 hover:bg-fuchsia-500 text-white font-semibold border-0"
-                onClick={() => navigate('/gerador-personagem')}
+                onClick={() => navigate('/gerador-avatar')}
               >
                 <Plus className="w-3 h-3 mr-1" />
-                Gerar Novo Personagem
+                Gerar Novo Avatar
               </Button>
             </>
           )}
