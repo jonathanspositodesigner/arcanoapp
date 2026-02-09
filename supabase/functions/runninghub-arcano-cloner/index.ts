@@ -268,6 +268,8 @@ serve(async (req) => {
       return await handleRun(req);
     } else if (path === 'queue-status') {
       return await handleQueueStatus(req);
+    } else if (path === 'reconcile') {
+      return await handleReconcile(req);
     } else {
       return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
         status: 400,
@@ -848,6 +850,161 @@ async function handleRun(req: Request) {
       code: 'RUN_EXCEPTION',
       refunded: true
     }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// Reconcile a stuck job by querying RunningHub directly
+async function handleReconcile(req: Request) {
+  const { jobId } = await req.json();
+
+  if (!jobId) {
+    return new Response(JSON.stringify({ error: 'jobId is required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  try {
+    const { data: job, error } = await supabase
+      .from('arcano_cloner_jobs')
+      .select('id, task_id, status, api_account, output_url, raw_webhook_payload, user_id, user_credit_cost')
+      .eq('id', jobId)
+      .maybeSingle();
+
+    if (error || !job) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Already terminal
+    if (['completed', 'failed', 'cancelled'].includes(job.status)) {
+      return new Response(JSON.stringify({ 
+        success: true, 
+        alreadyFinalized: true, 
+        status: job.status,
+        outputUrl: job.output_url 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!job.task_id) {
+      return new Response(JSON.stringify({ error: 'Job has no task_id yet' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Get the correct API key for the account used
+    let apiKey = RUNNINGHUB_API_KEY;
+    if (job.api_account && job.api_account !== 'primary') {
+      const suffix = job.api_account.replace('primary', '').replace('account_', '_');
+      const envKey = Deno.env.get(`RUNNINGHUB_API_KEY${suffix}`) || Deno.env.get(`RUNNINGHUB_APIKEY${suffix}`);
+      if (envKey) apiKey = envKey.trim();
+    }
+
+    // Query RunningHub for current status
+    console.log(`[ArcanoCloner] Reconcile: querying RunningHub for task ${job.task_id}`);
+    const queryResponse = await fetch('https://www.runninghub.ai/openapi/v2/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ taskId: job.task_id }),
+    });
+
+    const queryData = await queryResponse.json();
+    console.log(`[ArcanoCloner] Reconcile query result:`, JSON.stringify(queryData));
+
+    const rhStatus = queryData.status;
+
+    if (rhStatus === 'SUCCESS' && queryData.results?.length > 0) {
+      const imageResult = queryData.results.find((r: any) =>
+        ['png', 'jpg', 'jpeg', 'webp'].includes(r.outputType)
+      );
+      const outputUrl = imageResult?.url || queryData.results[0]?.url;
+
+      // Finalize via queue manager
+      const finishUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`;
+      await fetch(finishUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+        body: JSON.stringify({
+          table: 'arcano_cloner_jobs',
+          jobId: job.id,
+          status: 'completed',
+          outputUrl,
+          taskId: job.task_id,
+          rhCost: 0,
+          webhookPayload: { reconciled: true, rhQuery: queryData },
+        }),
+      });
+
+      await logStep(jobId, 'reconciled_completed', { outputUrl });
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        reconciled: true, 
+        status: 'completed', 
+        outputUrl 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (rhStatus === 'FAILED') {
+      const finishUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`;
+      await fetch(finishUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+        body: JSON.stringify({
+          table: 'arcano_cloner_jobs',
+          jobId: job.id,
+          status: 'failed',
+          errorMessage: queryData.errorMessage || 'Failed on RunningHub',
+          taskId: job.task_id,
+          rhCost: 0,
+          webhookPayload: { reconciled: true, rhQuery: queryData },
+        }),
+      });
+
+      await logStep(jobId, 'reconciled_failed', { error: queryData.errorMessage });
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        reconciled: true, 
+        status: 'failed' 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Still running
+    return new Response(JSON.stringify({ 
+      success: true, 
+      reconciled: false, 
+      currentStatus: rhStatus,
+      message: 'Job still processing on RunningHub' 
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[ArcanoCloner] Reconcile error:', error);
+    return new Response(JSON.stringify({ error: msg }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

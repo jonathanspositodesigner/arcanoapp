@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins } from 'lucide-react';
+import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw } from 'lucide-react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -84,6 +84,11 @@ const ArcanoClonerTool: React.FC = () => {
   
   // Ref for zoom/pan control
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
+
+  // Reconcile state
+  const [isReconciling, setIsReconciling] = useState(false);
+  const [processingStartTime, setProcessingStartTime] = useState<number | null>(null);
+  const [showReconcileButton, setShowReconcileButton] = useState(false);
 
   // Modals
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
@@ -173,6 +178,23 @@ const ArcanoClonerTool: React.FC = () => {
       registerJob(jobId, 'Arcano Cloner', 'pending');
     }
   }, [jobId, registerJob]);
+
+  // Track processing start time & show reconcile button after 60s
+  useEffect(() => {
+    if (isProcessing && !processingStartTime) {
+      setProcessingStartTime(Date.now());
+      setShowReconcileButton(false);
+    } else if (!isProcessing) {
+      setProcessingStartTime(null);
+      setShowReconcileButton(false);
+    }
+  }, [isProcessing, processingStartTime]);
+
+  useEffect(() => {
+    if (!isProcessing || !processingStartTime) return;
+    const timer = setTimeout(() => setShowReconcileButton(true), 60000);
+    return () => clearTimeout(timer);
+  }, [isProcessing, processingStartTime]);
 
   // Rotate queue messages
   useEffect(() => {
@@ -586,6 +608,47 @@ const ArcanoClonerTool: React.FC = () => {
               >
                 <XCircle className="w-3.5 h-3.5 mr-1.5" />
                 Sair da Fila
+              </Button>
+            )}
+
+            {/* Reconcile button - appears after 60s of processing */}
+            {isProcessing && showReconcileButton && jobId && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
+                disabled={isReconciling}
+                onClick={async () => {
+                  setIsReconciling(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke(
+                      'runninghub-arcano-cloner/reconcile',
+                      { body: { jobId } }
+                    );
+                    if (error) throw error;
+                    if (data?.reconciled && data?.status === 'completed') {
+                      toast.success('Status atualizado! Imagem pronta.');
+                    } else if (data?.reconciled && data?.status === 'failed') {
+                      toast.error('O processamento falhou na RunningHub.');
+                    } else if (data?.alreadyFinalized) {
+                      toast.info('Job já finalizado, aguarde a atualização.');
+                    } else {
+                      toast.info('Ainda processando. Tente novamente em alguns segundos.');
+                    }
+                  } catch (err) {
+                    console.error('[ArcanoCloner] Reconcile error:', err);
+                    toast.error('Erro ao atualizar status');
+                  } finally {
+                    setIsReconciling(false);
+                  }
+                }}
+              >
+                {isReconciling ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                )}
+                Atualizar status
               </Button>
             )}
 

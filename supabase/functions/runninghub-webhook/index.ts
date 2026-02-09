@@ -116,21 +116,38 @@ serve(async (req) => {
       errorMessage = eventData.errorMessage || eventData.errorCode || 'Processing failed';
     }
 
-    // Encontrar job
+    // Encontrar job - minimal select that works for ALL tables
     let jobTable: string | null = null;
     let jobData: any = null;
 
     for (const table of IMAGE_JOB_TABLES) {
-      const { data: job } = await supabase
+      const { data: job, error: lookupError } = await supabase
         .from(table)
-        .select('id, started_at, user_credit_cost, category, fallback_attempted, input_file_name, detail_denoise, resolution, prompt, version')
+        .select('id, started_at, user_credit_cost')
         .eq('task_id', taskId)
         .maybeSingle();
+
+      if (lookupError) {
+        console.error(`[Webhook] Error querying ${table}:`, lookupError.message);
+        continue;
+      }
 
       if (job) {
         jobTable = table;
         jobData = job;
         console.log(`[Webhook] Found job in ${table}: ${job.id}`);
+        
+        // Enrich with upscaler-specific columns only for upscaler_jobs (fallback logic)
+        if (table === 'upscaler_jobs') {
+          const { data: enriched } = await supabase
+            .from('upscaler_jobs')
+            .select('category, fallback_attempted, input_file_name, detail_denoise, resolution, prompt, version')
+            .eq('id', job.id)
+            .maybeSingle();
+          if (enriched) {
+            jobData = { ...jobData, ...enriched };
+          }
+        }
         break;
       }
     }
