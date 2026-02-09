@@ -27,6 +27,7 @@ const TABLE_NAME_MAP: Record<ToolType, string> = {
   veste_ai: 'veste_ai_jobs',
   video_upscaler: 'video_upscaler_jobs',
   arcano_cloner: 'arcano_cloner_jobs',
+  character_generator: 'character_generator_jobs',
 };
 
 interface UseJobPendingWatchdogOptions {
