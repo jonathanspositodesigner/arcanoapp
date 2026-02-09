@@ -1,45 +1,42 @@
 
-## Botão "Nova" - Manter fotos e gerar novamente
 
-### Problema
-Atualmente, o botão "Nova" reseta **tudo**, incluindo as 4 fotos que o usuário já enviou. O comportamento correto é manter as fotos e apenas limpar o resultado para permitir uma nova tentativa com as mesmas imagens.
+## Modal "Criar Personagem" ao acessar o Arcano Cloner
 
-### Solução
-Alterar a função `handleReset` no arquivo `src/pages/GeradorPersonagemTool.tsx` para **não** limpar os estados das fotos (`frontImage`, `profileImage`, `semiProfileImage`, `lowAngleImage` e seus respectivos `File`).
+### O que muda
+Quando o usuário clicar para usar o Arcano Cloner, o sistema verifica se ele já tem um personagem salvo na galeria (`saved_characters`). Se **não tiver**, exibe um modal informativo antes de prosseguir.
+
+### Modal
+- **Titulo**: "Crie seu Personagem"
+- **Texto**: Explica que criar um personagem garante maior fidelidade e qualidade nas gerações do Arcano Cloner.
+- **Botão 1**: "Criar Personagem" -- redireciona para `/gerador-personagem`
+- **Botão 2**: "Seguir sem criar" -- continua normalmente para `/arcano-cloner-tool`
 
 ### Detalhes técnicos
 
-**Arquivo:** `src/pages/GeradorPersonagemTool.tsx` (linhas 341-356)
+**Arquivo:** `src/pages/FerramentasIAAplicativo.tsx`
 
-Antes:
+1. Adicionar estados para controlar o modal:
+   - `showCharacterModal` (boolean)
+   - `hasCharacter` (boolean | null, para loading)
+
+2. No `useEffect` (ou em um novo), ao ter `user`, consultar `saved_characters` para verificar se existe ao menos 1 registro para aquele `user_id`.
+
+3. Interceptar o clique no card do Arcano Cloner:
+   - Se `hasCharacter === false`, abrir o modal em vez de navegar.
+   - Se `hasCharacter === true`, navegar normalmente.
+
+4. Criar o modal usando os componentes `Dialog`/`DialogContent` já existentes no projeto, com:
+   - Icone ilustrativo (ex: `Users` do lucide)
+   - Texto explicativo
+   - Dois botões: "Criar Personagem" (navigate para `/gerador-personagem`) e "Seguir sem criar" (navigate para `/arcano-cloner-tool`)
+
+**Consulta ao banco:**
 ```typescript
-const handleReset = () => {
-  endSubmit();
-  setFrontImage(null); setFrontFile(null);
-  setProfileImage(null); setProfileFile(null);
-  setSemiProfileImage(null); setSemiProfileFile(null);
-  setLowAngleImage(null); setLowAngleFile(null);
-  setOutputImage(null);
-  setStatus('idle');
-  // ...
-};
+const { count } = await supabase
+  .from('saved_characters')
+  .select('id', { count: 'exact', head: true })
+  .eq('user_id', user.id);
+const hasChar = (count ?? 0) > 0;
 ```
 
-Depois:
-```typescript
-const handleReset = () => {
-  endSubmit();
-  // Mantém as fotos para permitir nova tentativa
-  setOutputImage(null);
-  setStatus('idle');
-  setProgress(0);
-  setZoomLevel(1);
-  setJobId(null);
-  setQueuePosition(0);
-  setCurrentStep(null);
-  setDebugErrorMessage(null);
-  clearGlobalJob();
-};
-```
-
-Apenas remove as 4 linhas que limpam as imagens e arquivos. O usuário ainda pode trocar fotos individualmente se quiser, mas ao clicar "Nova", as fotos permanecem prontas para uma nova geração.
+Nenhuma migração de banco necessária. Apenas lógica de UI na página de listagem de ferramentas.
