@@ -340,10 +340,7 @@ const GeradorPersonagemTool: React.FC = () => {
 
   const handleReset = () => {
     endSubmit();
-    setFrontImage(null); setFrontFile(null);
-    setProfileImage(null); setProfileFile(null);
-    setSemiProfileImage(null); setSemiProfileFile(null);
-    setLowAngleImage(null); setLowAngleFile(null);
+    // Mantém as fotos para permitir nova tentativa
     setOutputImage(null);
     setStatus('idle');
     setProgress(0);
