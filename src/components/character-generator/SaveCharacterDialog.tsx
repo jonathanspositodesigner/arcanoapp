@@ -36,7 +36,7 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      toast.error('Digite um nome para o personagem');
+      toast.error('Digite um nome para o avatar');
       return;
     }
 
@@ -53,13 +53,13 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
 
       if (error) throw error;
 
-      toast.success('Personagem salvo com sucesso!');
+      toast.success('Avatar salvo com sucesso!');
       setName('');
       onSaved();
       onClose();
     } catch (error) {
       console.error('[SaveCharacterDialog] Error:', error);
-      toast.error('Erro ao salvar personagem');
+      toast.error('Erro ao salvar avatar');
     } finally {
       setIsSaving(false);
     }
@@ -69,19 +69,19 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-[#1A0A2E] border-purple-500/30 text-white sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-white">Salvar Personagem</DialogTitle>
+          <DialogTitle className="text-white">Salvar Avatar</DialogTitle>
           <DialogDescription className="text-purple-300">
-            Dê um nome para salvar este personagem na sua galeria.
+            Dê um nome para salvar este avatar na sua galeria.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
           <div className="mx-auto w-32 h-32 rounded-lg overflow-hidden border border-purple-500/30">
-            <img src={imageUrl} alt="Personagem" className="w-full h-full object-cover" />
+            <img src={imageUrl} alt="Avatar" className="w-full h-full object-cover" />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="character-name" className="text-purple-200 text-sm">Nome do Personagem</Label>
+            <Label htmlFor="character-name" className="text-purple-200 text-sm">Nome do Avatar</Label>
             <Input
               id="character-name"
               value={name}

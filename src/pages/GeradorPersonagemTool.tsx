@@ -33,10 +33,10 @@ type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'compl
 const CREDIT_COST = 100;
 
 const queueMessages = [
-  { emoji: '🎨', text: 'Criando seu personagem...' },
+  { emoji: '🎨', text: 'Criando seu avatar...' },
   { emoji: '✨', text: 'Analisando suas fotos...' },
   { emoji: '🚀', text: 'Quase lá, continue esperando!' },
-  { emoji: '🌟', text: 'Gerando personagem único...' },
+  { emoji: '🌟', text: 'Gerando avatar único...' },
 ];
 
 const GeradorPersonagemTool: React.FC = () => {
@@ -106,7 +106,7 @@ const GeradorPersonagemTool: React.FC = () => {
         endSubmit();
         playNotificationSound();
         refetchCredits();
-        toast.success('Personagem gerado com sucesso!');
+        toast.success('Avatar gerado com sucesso!');
       } else if (update.status === 'failed' || update.status === 'cancelled') {
         setStatus('error');
         const friendlyError = getAIErrorMessage(update.errorMessage);
@@ -150,7 +150,7 @@ const GeradorPersonagemTool: React.FC = () => {
     }, [endSubmit]),
   });
 
-  useEffect(() => { if (jobId) registerJob(jobId, 'Gerador Personagem', 'pending'); }, [jobId, registerJob]);
+  useEffect(() => { if (jobId) registerJob(jobId, 'Gerador Avatar', 'pending'); }, [jobId, registerJob]);
 
   useEffect(() => {
     if (isProcessing && !processingStartTime) { setProcessingStartTime(Date.now()); setShowReconcileButton(false); }
@@ -264,7 +264,7 @@ const GeradorPersonagemTool: React.FC = () => {
 
       const jobRecord = job as any;
       setJobId(jobRecord.id);
-      registerJob(jobRecord.id, 'Gerador Personagem', 'pending');
+      registerJob(jobRecord.id, 'Gerador Avatar', 'pending');
 
       setProgress(55);
       setCurrentStep('starting_processing');
@@ -358,7 +358,7 @@ const GeradorPersonagemTool: React.FC = () => {
     if (!outputImage) return;
     await download({
       url: outputImage,
-      filename: `personagem-${Date.now()}.png`,
+      filename: `avatar-${Date.now()}.png`,
       mediaType: 'image',
       timeout: 10000,
       onSuccess: () => toast.success('Download concluído!'),
@@ -377,7 +377,7 @@ const GeradorPersonagemTool: React.FC = () => {
 
   return (
     <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
-      <ToolsHeader title="Gerador de Personagem" onBack={goBack} />
+      <ToolsHeader title="Gerador de Avatar" onBack={goBack} />
 
       {isProcessing && (
         <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
@@ -394,7 +394,7 @@ const GeradorPersonagemTool: React.FC = () => {
             {/* Instructions */}
             <div className="bg-purple-900/30 border border-purple-500/20 rounded-lg p-3 mb-1">
               <p className="text-xs text-purple-100 font-medium mb-0.5">📸 Envie 4 fotos do mesmo rosto</p>
-              <p className="text-[10px] text-purple-300/80 leading-relaxed">Para gerar um personagem com alta fidelidade.</p>
+              <p className="text-[10px] text-purple-300/80 leading-relaxed">Para gerar um avatar com alta fidelidade.</p>
             </div>
             <button
               type="button"
@@ -430,7 +430,7 @@ const GeradorPersonagemTool: React.FC = () => {
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                  Gerar Personagem
+                  Gerar Avatar
                   <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
                     <Coins className="w-3.5 h-3.5" />{CREDIT_COST}
                   </span>
@@ -455,7 +455,7 @@ const GeradorPersonagemTool: React.FC = () => {
                   try {
                     const { data, error } = await supabase.functions.invoke('runninghub-character-generator/reconcile', { body: { jobId } });
                     if (error) throw error;
-                    if (data?.reconciled && data?.status === 'completed') toast.success('Status atualizado! Personagem pronto.');
+                    if (data?.reconciled && data?.status === 'completed') toast.success('Status atualizado! Avatar pronto.');
                     else if (data?.reconciled && data?.status === 'failed') toast.error('O processamento falhou.');
                     else if (data?.alreadyFinalized) toast.info('Job já finalizado, aguarde a atualização.');
                     else toast.info('Ainda processando. Tente novamente em alguns segundos.');
@@ -484,7 +484,7 @@ const GeradorPersonagemTool: React.FC = () => {
                 <Sparkles className="w-4 h-4 text-fuchsia-400 flex-shrink-0" />
                 <div className="text-left min-w-0">
                   <p className="text-xs font-semibold text-white">Arcano Cloner</p>
-                  <p className="text-[10px] text-purple-300/80 leading-tight">Use seu personagem para gerar imagens</p>
+                  <p className="text-[10px] text-purple-300/80 leading-tight">Use seu avatar para gerar imagens</p>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-fuchsia-400 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
@@ -553,7 +553,7 @@ const GeradorPersonagemTool: React.FC = () => {
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-purple-300">O resultado aparecerá aqui</p>
-                      <p className="text-xs text-purple-400 mt-0.5">Envie as 4 fotos e clique em "Gerar Personagem"</p>
+                      <p className="text-xs text-purple-400 mt-0.5">Envie as 4 fotos e clique em "Gerar Avatar"</p>
                     </div>
                   </div>
                 )}

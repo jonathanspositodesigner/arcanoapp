@@ -393,9 +393,9 @@ const FerramentasIAAplicativo = () => {
             <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mb-2">
               <UserPlus className="w-8 h-8 text-purple-400" />
             </div>
-            <DialogTitle className="text-xl text-white">Crie seu Personagem</DialogTitle>
+            <DialogTitle className="text-xl text-white">Crie seu Avatar</DialogTitle>
             <DialogDescription className="text-purple-200/80 text-sm leading-relaxed">
-              Criar um personagem garante <strong className="text-purple-300">maior fidelidade e qualidade</strong> nas suas gerações com o Arcano Cloner. Com um personagem salvo, a IA consegue reproduzir seus traços com muito mais precisão em qualquer cenário.
+              Criar um avatar garante <strong className="text-purple-300">maior fidelidade e qualidade</strong> nas suas gerações com o Arcano Cloner. Com um avatar salvo, a IA consegue reproduzir seus traços com muito mais precisão em qualquer cenário.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 mt-2">
@@ -403,11 +403,11 @@ const FerramentasIAAplicativo = () => {
               className="w-full bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90 text-white font-medium"
               onClick={() => {
                 setShowCharacterModal(false);
-                navigate('/gerador-personagem');
+                navigate('/gerador-avatar');
               }}
             >
               <UserPlus className="w-4 h-4 mr-2" />
-              Criar Personagem
+              Criar Avatar
             </Button>
             <Button
               variant="ghost"
