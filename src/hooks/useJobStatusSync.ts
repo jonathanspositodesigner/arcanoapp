@@ -272,10 +272,34 @@ export function useJobStatusSync({
       
       if (isCompletedRef.current) return;
       
-      // Job ainda ativo após 10 min = forçar falha
-      console.log('[JobSync] ❌ Job still active after 10 min, forcing FAILED');
+      // Job ainda ativo após 10 min = forçar falha NO SERVIDOR + estorno
+      console.log('[JobSync] ❌ Job still active after 10 min, forcing server-side cancellation');
       isCompletedRef.current = true;
       
+      // 1. CANCELAR NO BANCO via Queue Manager /finish (garante estorno idempotente)
+      try {
+        const finishResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({
+              table: tableName,
+              jobId,
+              status: 'failed',
+              errorMessage: 'Timeout: job excedeu 10 minutos sem resposta do provedor',
+            }),
+          }
+        );
+        console.log(`[JobSync] Server-side cancellation response: ${finishResponse.status}`);
+      } catch (e) {
+        console.error('[JobSync] Failed to cancel job server-side (cleanup_all_stale_ai_jobs will catch it):', e);
+      }
+      
+      // 2. DEPOIS notificar a UI
       if (onGlobalStatusChange) {
         onGlobalStatusChange('failed');
       }
