@@ -24,14 +24,14 @@ const RUNNINGHUB_API_KEY = (
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// WebApp ID for Character Generator - PLACEHOLDER
-const WEBAPP_ID_CHARACTER_GENERATOR = 'PLACEHOLDER_WEBAPP_ID';
+// WebApp ID for Character Generator
+const WEBAPP_ID_CHARACTER_GENERATOR = '2020943778751713282';
 
-// Node IDs - PLACEHOLDER (will be provided later)
-const NODE_ID_FRONT = 'PLACEHOLDER_NODE_FRONT';
-const NODE_ID_PROFILE = 'PLACEHOLDER_NODE_PROFILE';
-const NODE_ID_SEMI_PROFILE = 'PLACEHOLDER_NODE_SEMI_PROFILE';
-const NODE_ID_LOW_ANGLE = 'PLACEHOLDER_NODE_LOW_ANGLE';
+// Node IDs for the 4 input images
+const NODE_ID_FRONT = '41';
+const NODE_ID_PROFILE = '39';
+const NODE_ID_SEMI_PROFILE = '40';
+const NODE_ID_LOW_ANGLE = '42';
 
 const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 };
 const RATE_LIMIT_RUN = { maxRequests: 5, windowSeconds: 60 };
