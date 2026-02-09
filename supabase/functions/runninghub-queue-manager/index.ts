@@ -56,7 +56,7 @@ const WEBAPP_IDS = {
   veste_ai_jobs: '2018755100210106369',
   video_upscaler_jobs: '2018810750139109378',
   arcano_cloner_jobs: '2019877042115842050',
-  character_generator_jobs: 'PLACEHOLDER_WEBAPP_ID',
+  character_generator_jobs: '2020943778751713282',
 };
 
 const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs'] as const;
@@ -1140,10 +1140,10 @@ async function startJobOnRunningHub(
     case 'character_generator_jobs':
       webappId = WEBAPP_IDS.character_generator_jobs;
       nodeInfoList = [
-        { nodeId: "PLACEHOLDER_NODE_FRONT", fieldName: "image", fieldValue: job.front_image_url || job.front_file_name },
-        { nodeId: "PLACEHOLDER_NODE_PROFILE", fieldName: "image", fieldValue: job.profile_image_url || job.profile_file_name },
-        { nodeId: "PLACEHOLDER_NODE_SEMI_PROFILE", fieldName: "image", fieldValue: job.semi_profile_image_url || job.semi_profile_file_name },
-        { nodeId: "PLACEHOLDER_NODE_LOW_ANGLE", fieldName: "image", fieldValue: job.low_angle_image_url || job.low_angle_file_name },
+        { nodeId: "41", fieldName: "image", fieldValue: job.front_image_url || job.front_file_name },
+        { nodeId: "39", fieldName: "image", fieldValue: job.profile_image_url || job.profile_file_name },
+        { nodeId: "40", fieldName: "image", fieldValue: job.semi_profile_image_url || job.semi_profile_file_name },
+        { nodeId: "42", fieldName: "image", fieldValue: job.low_angle_image_url || job.low_angle_file_name },
       ];
       break;
       
