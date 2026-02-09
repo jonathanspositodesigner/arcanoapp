@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
+import { useCurrencyConversion } from "@/hooks/useCurrencyConversion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
@@ -151,12 +152,12 @@ const PlanosUpscalerArcano69ES = () => {
       (window as any).fbq('trackSingle', ES_PIXEL_ID, 'InitiateCheckout', {
         content_name: 'Upscaler Arcano ES',
         content_category: 'Ferramentas IA',
-        value: 9.90,
+        value: 7.90,
         currency: 'USD'
       });
     }
     
-    window.open(appendUtmToUrl("https://pay.hotmart.com/R103906553W?off=k7k3jv6j"), "_blank");
+    window.open(appendUtmToUrl("https://pay.hotmart.com/R103906553W?off=9o6c47no"), "_blank");
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
@@ -164,10 +165,13 @@ const PlanosUpscalerArcano69ES = () => {
   // Loading state removido do Hero para otimizar LCP
   // O loading agora é usado apenas nas seções que dependem dos dados (preço)
 
-  // Preço em centavos de dólar para LATAM: $9.90 (990 centavos)
-  const price = 990;
-  const originalPrice = 1297; // $12.97 riscado
-  const installmentPrice = Math.ceil(price / 3); // $3.30
+  // Preço em centavos de dólar para LATAM: $7.90 (790 centavos)
+  const price = 790;
+  const originalPrice = 990; // $9.90 riscado
+  const installmentPrice = Math.ceil(price / 3); // ~$2.64
+
+  // Currency conversion
+  const conversion = useCurrencyConversion(price / 100);
 
   const features = [
     { icon: Sparkles, text: t('tools:upscaler.benefits.improveImages') },
@@ -463,7 +467,7 @@ const PlanosUpscalerArcano69ES = () => {
                 <CardContent className="p-5 md:p-8 text-center">
                   {/* Badge de desconto - 24% OFF para LATAM */}
                   <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
-                    🔥 24% OFF
+                    🔥 20% OFF
                   </Badge>
 
                   {isPremium && (
@@ -487,6 +491,11 @@ const PlanosUpscalerArcano69ES = () => {
                       {t('tools:upscaler.finalCTA.or')} <span className="text-fuchsia-400 font-semibold">3x {formatPrice(installmentPrice)}</span>
                     </p>
                     <p className="text-white/40 text-xs md:text-sm mt-2">{t('tools:upscaler.finalCTA.oneTimePayment')}</p>
+                    {conversion && (
+                      <p className="text-white/50 text-sm mt-2">
+                        ≈ {conversion.localCurrency} {conversion.formattedLocalPrice} en tu moneda
+                      </p>
+                    )}
                   </div>
 
                   {/* Features checklist */}
