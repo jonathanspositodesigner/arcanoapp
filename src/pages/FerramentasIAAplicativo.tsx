@@ -116,6 +116,9 @@ const FerramentasIAAplicativo = () => {
     if (slug === "ia-muda-roupa") {
       return "/veste-ai-tool";
     }
+    if (slug === "arcano-cloner") {
+      return "/arcano-cloner-tool";
+    }
     return `/ferramenta-ia-artes/${slug}`;
   };
 
@@ -218,7 +221,7 @@ const FerramentasIAAplicativo = () => {
   const renderToolCard = (tool: ToolData) => {
     const hasAccess = checkToolAccess(tool.slug);
     const description = toolDescriptions[tool.slug] || "Ferramenta de IA";
-    const isComingSoon = tool.slug === "forja-selos-3d-ilimitada" || tool.slug === "arcano-cloner";
+    const isComingSoon = tool.slug === "forja-selos-3d-ilimitada";
     const isUpscalerArcano = tool.slug === "upscaller-arcano";
     
     const handleCardClick = (e: React.MouseEvent) => {
