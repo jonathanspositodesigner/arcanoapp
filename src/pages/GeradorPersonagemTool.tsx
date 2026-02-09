@@ -401,7 +401,7 @@ const GeradorPersonagemTool: React.FC = () => {
               <AngleUploadCard label="De Frente" angleType="front" image={frontImage} onImageChange={handleImageChange(setFrontImage, setFrontFile)} disabled={isProcessing} />
               <AngleUploadCard label="Perfil" angleType="profile" image={profileImage} onImageChange={handleImageChange(setProfileImage, setProfileFile)} disabled={isProcessing} />
               <AngleUploadCard label="Semi Perfil" angleType="semi_profile" image={semiProfileImage} onImageChange={handleImageChange(setSemiProfileImage, setSemiProfileFile)} disabled={isProcessing} />
-              <AngleUploadCard label="Low Angle" angleType="low_angle" image={lowAngleImage} onImageChange={handleImageChange(setLowAngleImage, setLowAngleFile)} disabled={isProcessing} />
+              <AngleUploadCard label="Debaixo p/ Cima" angleType="low_angle" image={lowAngleImage} onImageChange={handleImageChange(setLowAngleImage, setLowAngleFile)} disabled={isProcessing} />
             </div>
 
             {/* Action Button */}
