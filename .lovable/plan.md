@@ -1,42 +1,36 @@
 
 
-## Modal "Criar Personagem" ao acessar o Arcano Cloner
+## Corrigir botão do Arcano Cloner e adicionar tag "Nova Ferramenta"
 
-### O que muda
-Quando o usuário clicar para usar o Arcano Cloner, o sistema verifica se ele já tem um personagem salvo na galeria (`saved_characters`). Se **não tiver**, exibe um modal informativo antes de prosseguir.
+### Problema
+O botão "Acessar Ferramenta" do Arcano Cloner está com a cor roxa (gradiente purple/fuchsia) ao invés de verde como as outras ferramentas. Isso acontece porque a função `checkToolAccess` retorna `false` para o slug `arcano-cloner`, já que ele não está vinculado a nenhum pack no banco de dados.
 
-### Modal
-- **Titulo**: "Crie seu Personagem"
-- **Texto**: Explica que criar um personagem garante maior fidelidade e qualidade nas gerações do Arcano Cloner.
-- **Botão 1**: "Criar Personagem" -- redireciona para `/gerador-personagem`
-- **Botão 2**: "Seguir sem criar" -- continua normalmente para `/arcano-cloner-tool`
+### Solução
 
-### Detalhes técnicos
+**Arquivo: `src/pages/FerramentasIAAplicativo.tsx`**
 
-**Arquivo:** `src/pages/FerramentasIAAplicativo.tsx`
+1. **Corrigir a cor do botão**: Adicionar `arcano-cloner` na função `checkToolAccess` para que retorne `true` (acesso livre), fazendo o botão ficar verde (`bg-green-500`) como os demais.
 
-1. Adicionar estados para controlar o modal:
-   - `showCharacterModal` (boolean)
-   - `hasCharacter` (boolean | null, para loading)
+2. **Adicionar tag "Nova Ferramenta"**: No `renderToolCard`, adicionar um badge/tag posicionado no canto superior direito do card quando o slug for `arcano-cloner`. O badge terá:
+   - Texto: "NOVO"
+   - Icone: `Sparkles` do lucide-react
+   - Estilo: fundo verde vibrante (`bg-green-500`), texto branco, com leve animação pulse para chamar atenção
+   - Posição: `absolute top-2 right-2 z-10`
 
-2. No `useEffect` (ou em um novo), ao ter `user`, consultar `saved_characters` para verificar se existe ao menos 1 registro para aquele `user_id`.
+### Detalhes Técnicos
 
-3. Interceptar o clique no card do Arcano Cloner:
-   - Se `hasCharacter === false`, abrir o modal em vez de navegar.
-   - Se `hasCharacter === true`, navegar normalmente.
-
-4. Criar o modal usando os componentes `Dialog`/`DialogContent` já existentes no projeto, com:
-   - Icone ilustrativo (ex: `Users` do lucide)
-   - Texto explicativo
-   - Dois botões: "Criar Personagem" (navigate para `/gerador-personagem`) e "Seguir sem criar" (navigate para `/arcano-cloner-tool`)
-
-**Consulta ao banco:**
-```typescript
-const { count } = await supabase
-  .from('saved_characters')
-  .select('id', { count: 'exact', head: true })
-  .eq('user_id', user.id);
-const hasChar = (count ?? 0) > 0;
+```text
+checkToolAccess("arcano-cloner")
+  Antes:  false (cai no hasAccessToPack que retorna false)
+  Depois: true  (retorno direto antes de chegar no hasAccessToPack)
 ```
 
-Nenhuma migração de banco necessária. Apenas lógica de UI na página de listagem de ferramentas.
+Mudança na função `checkToolAccess`:
+- Adicionar condição: `if (slug === "arcano-cloner") return true;`
+
+Badge "NOVO" no card:
+- Inserido dentro do `div.aspect-[16/9]`, antes da imagem
+- Classes: `absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse`
+
+Nenhuma outra ferramenta ou arquivo precisa ser alterado.
+
