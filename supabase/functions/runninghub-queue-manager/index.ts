@@ -1124,6 +1124,16 @@ async function startJobOnRunningHub(
       ];
       return await callRunningHubApi(webappId, nodeInfoList, videoWebhookUrl, table, job.id, account);
       
+    case 'arcano_cloner_jobs':
+      webappId = WEBAPP_IDS.arcano_cloner_jobs;
+      nodeInfoList = [
+        { nodeId: "58", fieldName: "image", fieldValue: job.user_image_url || job.user_file_name },
+        { nodeId: "62", fieldName: "image", fieldValue: job.reference_image_url || job.reference_file_name },
+        { nodeId: "69", fieldName: "text", fieldValue: job.prompt || 'faça o homem da imagem 1 com a mesma pose, composição de cenário fundo e roupas da imagem 2. SEM RUÍDO NA FOTO' },
+        { nodeId: "85", fieldName: "aspectRatio", fieldValue: job.aspect_ratio || '1:1' },
+      ];
+      break;
+      
     default:
       console.error(`[QueueManager] Unknown table: ${table}`);
       return { taskId: null };
