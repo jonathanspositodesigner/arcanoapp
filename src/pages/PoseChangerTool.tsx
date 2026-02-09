@@ -12,7 +12,7 @@ import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useAIJob } from '@/contexts/AIJobContext';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
-import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
+import PersonInputSwitch from '@/components/ai-tools/PersonInputSwitch';
 import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
 import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
@@ -510,11 +510,11 @@ const PoseChangerTool: React.FC = () => {
           
           {/* Left Side - Inputs (2/7 on desktop ~28%) */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
-            {/* Person Image Upload */}
-            <ImageUploadCard
-              title="Sua Foto"
+            {/* Person Image - Character/Photo Switch */}
+            <PersonInputSwitch
               image={personImage}
               onImageChange={handlePersonImageChange}
+              userId={user?.id}
               disabled={isProcessing}
             />
 
