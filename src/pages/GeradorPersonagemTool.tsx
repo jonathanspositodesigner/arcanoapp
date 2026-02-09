@@ -13,6 +13,7 @@ import { useAIJob } from '@/contexts/AIJobContext';
 import { supabase } from '@/integrations/supabase/client';
 import ToolsHeader from '@/components/ToolsHeader';
 import AngleUploadCard from '@/components/character-generator/AngleUploadCard';
+import AngleExamplesModal from '@/components/character-generator/AngleExamplesModal';
 import SaveCharacterDialog from '@/components/character-generator/SaveCharacterDialog';
 import SavedCharactersPanel from '@/components/character-generator/SavedCharactersPanel';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
@@ -66,6 +67,7 @@ const GeradorPersonagemTool: React.FC = () => {
   // Save character
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [savedRefreshTrigger, setSavedRefreshTrigger] = useState(0);
+  const [showExamplesModal, setShowExamplesModal] = useState(false);
 
   const sessionIdRef = useRef<string>('');
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
@@ -394,6 +396,13 @@ const GeradorPersonagemTool: React.FC = () => {
             <div className="bg-purple-900/30 border border-purple-500/20 rounded-lg p-3 mb-1">
               <p className="text-xs text-purple-100 font-medium mb-0.5">📸 Envie 4 fotos do mesmo rosto</p>
               <p className="text-[10px] text-purple-300/80 leading-relaxed">Cada ângulo diferente ajuda a IA a criar seu personagem com alta fidelidade, pronto para usar em todos os nossos aplicativos!</p>
+              <button
+                type="button"
+                className="text-[10px] text-fuchsia-400 hover:text-fuchsia-300 underline mt-1 font-medium"
+                onClick={() => setShowExamplesModal(true)}
+              >
+                Ver exemplo →
+              </button>
             </div>
 
             {/* 4 Upload Cards in 2x2 grid */}
@@ -565,6 +574,7 @@ const GeradorPersonagemTool: React.FC = () => {
         />
       )}
 
+      <AngleExamplesModal open={showExamplesModal} onOpenChange={setShowExamplesModal} />
       <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
       <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeJobId={activeJobId} activeStatus={activeStatus} onCancelJob={centralCancelJob} />
       <DownloadProgressOverlay isVisible={isDownloading} progress={downloadProgress} onCancel={cancelDownload} mediaType="image" locale="pt" />
