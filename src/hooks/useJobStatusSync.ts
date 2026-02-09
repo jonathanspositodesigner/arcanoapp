@@ -28,10 +28,13 @@ import { ToolType, JobStatus, JobUpdate, TABLE_MAP, queryJobStatus } from '@/ai/
 
 // Configurações do polling de backup
 const POLLING_CONFIG = {
-  INITIAL_DELAY_MS: 15000,  // 15s - tempo para Realtime funcionar
+  INITIAL_DELAY_MS: 5000,   // 5s - verificar mais cedo
   INTERVAL_MS: 5000,        // 5s entre polls
-  MAX_DURATION_MS: 180000,  // 3 min - timeout máximo
+  MAX_DURATION_MS: 600000,  // 10 min - acompanha o timer absoluto
 } as const;
+
+// Timer absoluto de segurança - NENHUM job fica ativo por mais de 10 minutos
+const ABSOLUTE_TIMEOUT_MS = 600000; // 10 minutos
 
 interface UseJobStatusSyncOptions {
   /** ID do job ativo (null quando não há job) */
@@ -64,6 +67,7 @@ export function useJobStatusSync({
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
+  const absoluteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastKnownStatusRef = useRef<JobStatus | null>(null);
   const isCompletedRef = useRef(false);
   
@@ -96,6 +100,11 @@ export function useJobStatusSync({
     // Marcar como completo para parar polling
     if (['completed', 'failed', 'cancelled'].includes(status)) {
       isCompletedRef.current = true;
+      // Limpar timer absoluto - job terminou normalmente
+      if (absoluteTimeoutRef.current) {
+        clearTimeout(absoluteTimeoutRef.current);
+        absoluteTimeoutRef.current = null;
+      }
     }
     
     // Notificar componente
@@ -158,6 +167,12 @@ export function useJobStatusSync({
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
+    }
+    
+    // Parar timer absoluto
+    if (absoluteTimeoutRef.current) {
+      clearTimeout(absoluteTimeoutRef.current);
+      absoluteTimeoutRef.current = null;
     }
     
     // Remover listener de visibilidade
@@ -228,6 +243,50 @@ export function useJobStatusSync({
     
     // 3. VISIBILITY RECOVERY
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // 4. TIMER ABSOLUTO DE 10 MINUTOS - garante que NENHUM job fica órfão
+    absoluteTimeoutRef.current = setTimeout(async () => {
+      if (isCompletedRef.current) return;
+      
+      console.log('[JobSync] ⚠️ ABSOLUTE TIMEOUT (10 min) reached! Forcing final check...');
+      
+      // Última tentativa de buscar status real do banco
+      try {
+        const update = await queryJobStatus(toolType, jobId);
+        if (update && ['completed', 'failed', 'cancelled'].includes(update.status)) {
+          console.log(`[JobSync] Final check found terminal status: ${update.status}`);
+          processUpdate({
+            status: update.status,
+            output_url: update.outputUrl,
+            error_message: update.errorMessage,
+            position: update.position,
+          }, 'polling');
+          return;
+        }
+      } catch (error) {
+        console.error('[JobSync] Final check error:', error);
+      }
+      
+      // Esperar 2s para dar chance ao Realtime
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      if (isCompletedRef.current) return;
+      
+      // Job ainda ativo após 10 min = forçar falha
+      console.log('[JobSync] ❌ Job still active after 10 min, forcing FAILED');
+      isCompletedRef.current = true;
+      
+      if (onGlobalStatusChange) {
+        onGlobalStatusChange('failed');
+      }
+      
+      onStatusChange({
+        status: 'failed',
+        errorMessage: 'Tempo limite de processamento excedido (10 min). Seus créditos serão estornados automaticamente.',
+      });
+      
+      cleanup();
+    }, ABSOLUTE_TIMEOUT_MS);
     
     // Cleanup
     return () => {
