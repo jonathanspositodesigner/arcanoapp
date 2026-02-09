@@ -123,7 +123,7 @@ const GeradorPersonagemTool: React.FC = () => {
 
   useNotificationTokenRecovery({
     userId: user?.id,
-    toolTable: 'character_generator_jobs',
+    toolTable: 'character_generator_jobs' as any,
     onRecovery: useCallback((result) => {
       if (result.outputUrl) {
         setOutputImage(result.outputUrl);
