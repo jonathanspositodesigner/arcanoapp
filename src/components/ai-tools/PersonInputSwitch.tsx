@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Users, Upload, Plus, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
   const [characters, setCharacters] = useState<SavedCharacter[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
+  const latestSelectionRef = useRef<string | null>(null);
 
   const fetchCharacters = useCallback(async () => {
     if (!userId) return;
@@ -59,22 +60,24 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
   }, [userId, mode, fetchCharacters]);
 
   const handleSelectCharacter = async (char: SavedCharacter) => {
+    latestSelectionRef.current = char.id;
     setSelectedCharacterId(char.id);
     try {
-      // Fetch image as file so the processing pipeline works
       const response = await fetch(char.image_url);
+      if (latestSelectionRef.current !== char.id) return;
       const blob = await response.blob();
+      if (latestSelectionRef.current !== char.id) return;
       const file = new File([blob], `character-${char.id}.png`, { type: blob.type });
 
-      // Convert to dataUrl for preview
       const reader = new FileReader();
       reader.onload = (e) => {
+        if (latestSelectionRef.current !== char.id) return;
         onImageChange(e.target?.result as string, file);
       };
       reader.readAsDataURL(blob);
     } catch (error) {
       console.error('[PersonInputSwitch] Error fetching character image:', error);
-      // Fallback: just use the URL
+      if (latestSelectionRef.current !== char.id) return;
       onImageChange(char.image_url);
     }
   };
@@ -82,9 +85,9 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
   const handleModeChange = (newMode: 'character' | 'photo') => {
     if (newMode === mode) return;
     setMode(newMode);
-    // Clear selection when switching modes
     onImageChange(null);
     setSelectedCharacterId(null);
+    latestSelectionRef.current = null;
   };
 
   return (
