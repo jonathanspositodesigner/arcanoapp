@@ -414,6 +414,33 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_tool_settings: {
+        Row: {
+          api_cost: number
+          credit_cost: number
+          has_api_cost: boolean
+          id: string
+          tool_name: string
+          updated_at: string
+        }
+        Insert: {
+          api_cost?: number
+          credit_cost?: number
+          has_api_cost?: boolean
+          id?: string
+          tool_name: string
+          updated_at?: string
+        }
+        Update: {
+          api_cost?: number
+          credit_cost?: number
+          has_api_cost?: boolean
+          id?: string
+          tool_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_installations: {
         Row: {
           device_type: string

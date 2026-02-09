@@ -20,10 +20,9 @@ import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
+import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
-
-const CREDIT_COST = 150;
 
 // Queue messages for better UX
 const queueMessages = [
@@ -43,6 +42,8 @@ const VideoUpscalerTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  const { getCreditCost } = useAIToolSettings();
+  const creditCost = getCreditCost('Video Upscaler', 150);
   
   // Contexto global de jobs - para notificação sonora e trava de navegação
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
@@ -267,7 +268,7 @@ const VideoUpscalerTool: React.FC = () => {
       return;
     }
 
-    if (credits < CREDIT_COST) {
+    if (credits < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
       endSubmit();
@@ -321,7 +322,7 @@ const VideoUpscalerTool: React.FC = () => {
             jobId: job.id,
             videoUrl: videoStorageUrl,
             userId: user.id,
-            creditCost: CREDIT_COST,
+            creditCost: creditCost,
           },
         }
       );
@@ -498,7 +499,7 @@ const VideoUpscalerTool: React.FC = () => {
                   Upscale
                   <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
                     <Coins className="w-3.5 h-3.5" />
-                    {CREDIT_COST}
+                    {creditCost}
                   </span>
                 </>
               )}

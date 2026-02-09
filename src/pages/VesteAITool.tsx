@@ -25,10 +25,9 @@ import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { getAIErrorMessage } from '@/utils/errorMessages';
+import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
-
-const CREDIT_COST = 60;
 
 // Queue messages for better UX
 const queueMessages = [
@@ -42,6 +41,8 @@ const VesteAITool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  const { getCreditCost } = useAIToolSettings();
+  const creditCost = getCreditCost('Veste AI', 60);
   
   // Contexto global de jobs - para notificação sonora e trava de navegação
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
@@ -315,7 +316,7 @@ const VesteAITool: React.FC = () => {
       return;
     }
 
-    if (credits < CREDIT_COST) {
+    if (credits < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
       endSubmit();
@@ -382,7 +383,7 @@ const VesteAITool: React.FC = () => {
             personImageUrl: personUrl,
             clothingImageUrl: clothingUrl,
             userId: user.id,
-            creditCost: CREDIT_COST,
+            creditCost: creditCost,
           },
         }
       );
@@ -556,7 +557,7 @@ const VesteAITool: React.FC = () => {
               ) : (
                 <>
                   <Shirt className="w-3.5 h-3.5 mr-1.5" />
-                  Vestir ({CREDIT_COST} <Coins className="w-3 h-3 inline ml-0.5" />)
+                  Vestir ({creditCost} <Coins className="w-3 h-3 inline ml-0.5" />)
                 </>
               )}
             </Button>
