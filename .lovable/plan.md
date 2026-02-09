@@ -1,20 +1,45 @@
 
-
-## Correção do erro "new row violates row-level security policy"
+## Botão "Nova" - Manter fotos e gerar novamente
 
 ### Problema
-A tabela `character_generator_jobs` tem a coluna `user_id` como **nullable** (permite valor nulo), mas a política RLS de INSERT exige `auth.uid() = user_id`. Quando a coluna permite nulo, o Postgres pode rejeitar a inserção por incompatibilidade na verificação de segurança.
+Atualmente, o botão "Nova" reseta **tudo**, incluindo as 4 fotos que o usuário já enviou. O comportamento correto é manter as fotos e apenas limpar o resultado para permitir uma nova tentativa com as mesmas imagens.
 
 ### Solução
-Alterar a coluna `user_id` para **NOT NULL**, igual ao padrão correto das outras ferramentas de IA do sistema.
+Alterar a função `handleReset` no arquivo `src/pages/GeradorPersonagemTool.tsx` para **não** limpar os estados das fotos (`frontImage`, `profileImage`, `semiProfileImage`, `lowAngleImage` e seus respectivos `File`).
 
 ### Detalhes técnicos
 
-**Migração SQL:**
-```sql
-ALTER TABLE public.character_generator_jobs 
-  ALTER COLUMN user_id SET NOT NULL;
+**Arquivo:** `src/pages/GeradorPersonagemTool.tsx` (linhas 341-356)
+
+Antes:
+```typescript
+const handleReset = () => {
+  endSubmit();
+  setFrontImage(null); setFrontFile(null);
+  setProfileImage(null); setProfileFile(null);
+  setSemiProfileImage(null); setSemiProfileFile(null);
+  setLowAngleImage(null); setLowAngleFile(null);
+  setOutputImage(null);
+  setStatus('idle');
+  // ...
+};
 ```
 
-Essa é uma alteração simples e segura. Todos os registros existentes já possuem `user_id` preenchido (o código sempre envia `user_id: user.id`), então não haverá conflito.
+Depois:
+```typescript
+const handleReset = () => {
+  endSubmit();
+  // Mantém as fotos para permitir nova tentativa
+  setOutputImage(null);
+  setStatus('idle');
+  setProgress(0);
+  setZoomLevel(1);
+  setJobId(null);
+  setQueuePosition(0);
+  setCurrentStep(null);
+  setDebugErrorMessage(null);
+  clearGlobalJob();
+};
+```
 
+Apenas remove as 4 linhas que limpam as imagens e arquivos. O usuário ainda pode trocar fotos individualmente se quiser, mas ao clicar "Nova", as fotos permanecem prontas para uma nova geração.
