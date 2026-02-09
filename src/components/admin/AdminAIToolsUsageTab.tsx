@@ -71,6 +71,7 @@ const TOOL_FILTERS = [
   { value: "Veste AI", label: "Veste AI" },
   { value: "Video Upscaler", label: "Video Upscaler" },
   { value: "Arcano Cloner", label: "Arcano Cloner" },
+  { value: "Gerador Avatar", label: "Gerador Avatar" },
 ];
 
 const AdminAIToolsUsageTab = () => {
@@ -222,6 +223,7 @@ const AdminAIToolsUsageTab = () => {
       "Veste AI": "bg-pink-500/20 text-pink-400 border-pink-500/30",
       "Video Upscaler": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
       "Arcano Cloner": "bg-blue-500/20 text-blue-400 border-blue-500/30",
+      "Gerador Avatar": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
     };
     return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
   };
@@ -233,6 +235,7 @@ const AdminAIToolsUsageTab = () => {
       case "Veste AI": return "veste_ai_jobs";
       case "Video Upscaler": return "video_upscaler_jobs";
       case "Arcano Cloner": return "arcano_cloner_jobs";
+      case "Gerador Avatar": return "character_generator_jobs";
       default: return "upscaler_jobs";
     }
   };
