@@ -244,7 +244,7 @@ const PlanosUpscalerArcano69v2 = () => {
   };
 
   const handlePurchase = () => {
-    // Link fixo para o checkout de R$69,90
+    // Link fixo para o checkout de R$39,90
     window.open(appendUtmToUrl("https://payfast.greenn.com.br/redirect/257117"), "_blank");
   };
 
@@ -253,9 +253,9 @@ const PlanosUpscalerArcano69v2 = () => {
   // Loading state removido do Hero para otimizar LCP
   // O loading agora é usado apenas nas seções que dependem dos dados (preço)
 
-  // Preço fixo para esta página: R$49,90 (4990 centavos)
-  const price = 4990;
-  const originalPrice = 6990; // R$69,90 riscado
+  // Preço fixo para esta página: R$39,90 (3990 centavos)
+  const price = 3990;
+  const originalPrice = 4990; // R$49,90 riscado
   const installmentPrice = Math.ceil(price / 3);
 
   // beforeAfterExamples and userResults are now handled by lazy-loaded components
