@@ -501,6 +501,20 @@ const ArcanoClonerTool: React.FC = () => {
     clearGlobalJob();
   };
 
+  const handleNewImage = () => {
+    endSubmit();
+    setOutputImage(null);
+    setStatus('idle');
+    setProgress(0);
+    setZoomLevel(1);
+    setJobId(null);
+    setQueuePosition(0);
+    setCurrentStep(null);
+    setFailedAtStep(null);
+    setDebugErrorMessage(null);
+    clearGlobalJob();
+  };
+
   // Download result
   const handleDownload = useCallback(async () => {
     if (!outputImage) return;
@@ -806,7 +820,7 @@ const ArcanoClonerTool: React.FC = () => {
                     variant="outline"
                     size="sm"
                     className="flex-1 h-8 text-xs bg-purple-600/80 border-purple-400/50 text-white hover:bg-purple-500/90"
-                    onClick={handleReset}
+                    onClick={handleNewImage}
                   >
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
                     Nova
