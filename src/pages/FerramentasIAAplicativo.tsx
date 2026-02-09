@@ -6,11 +6,18 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { usePromoClaimStatus } from "@/hooks/usePromoClaimStatus";
-import { Sparkles, Loader2, Play, Users } from "lucide-react";
+import { Sparkles, Loader2, Play, Users, UserPlus } from "lucide-react";
 import arcanoClonerCover from "@/assets/arcano-cloner-cover.webp";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 import ToolsHeader from "@/components/ToolsHeader";
 import PromoToolsBanner from "@/components/PromoToolsBanner";
@@ -39,8 +46,25 @@ const FerramentasIAAplicativo = () => {
   const [showUpscalerModal, setShowUpscalerModal] = useState(false);
   const hasUpscalerPack = hasAccessToPack('upscaller-arcano');
   
+  // State for character creation modal (Arcano Cloner)
+  const [showCharacterModal, setShowCharacterModal] = useState(false);
+  const [hasCharacter, setHasCharacter] = useState<boolean | null>(null);
+  
   // Check promo claim status
   const { hasClaimed, isLoading: isCheckingClaim, refetch: refetchClaimStatus } = usePromoClaimStatus(user?.id);
+
+  // Check if user has a saved character
+  useEffect(() => {
+    const checkCharacter = async () => {
+      if (!user?.id) return;
+      const { count } = await supabase
+        .from('saved_characters')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      setHasCharacter((count ?? 0) > 0);
+    };
+    checkCharacter();
+  }, [user?.id]);
 
   const toolDescriptions: Record<string, string> = {
     "upscaller-arcano": t('ferramentas.descriptions.upscaler'),
@@ -167,6 +191,12 @@ const FerramentasIAAplicativo = () => {
     // If it's Upscaler Arcano and user has the pack, show choice modal
     if (tool.slug === "upscaller-arcano" && hasUpscalerPack) {
       setShowUpscalerModal(true);
+      return;
+    }
+    
+    // If it's Arcano Cloner and user has no character, show suggestion modal
+    if (tool.slug === "arcano-cloner" && hasCharacter === false) {
+      setShowCharacterModal(true);
       return;
     }
     
@@ -355,6 +385,43 @@ const FerramentasIAAplicativo = () => {
         isCheckingClaim={isCheckingClaim}
         onClaimAndAccess={handleClaimAndAccess}
       />
+
+      {/* Character Creation Suggestion Modal */}
+      <Dialog open={showCharacterModal} onOpenChange={setShowCharacterModal}>
+        <DialogContent className="bg-[#1A0A2E] border-purple-500/30 max-w-md">
+          <DialogHeader className="text-center items-center">
+            <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mb-2">
+              <UserPlus className="w-8 h-8 text-purple-400" />
+            </div>
+            <DialogTitle className="text-xl text-white">Crie seu Personagem</DialogTitle>
+            <DialogDescription className="text-purple-200/80 text-sm leading-relaxed">
+              Criar um personagem garante <strong className="text-purple-300">maior fidelidade e qualidade</strong> nas suas gerações com o Arcano Cloner. Com um personagem salvo, a IA consegue reproduzir seus traços com muito mais precisão em qualquer cenário.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-2">
+            <Button
+              className="w-full bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90 text-white font-medium"
+              onClick={() => {
+                setShowCharacterModal(false);
+                navigate('/gerador-personagem');
+              }}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Criar Personagem
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full text-purple-300 hover:text-white hover:bg-purple-500/20"
+              onClick={() => {
+                setShowCharacterModal(false);
+                navigate('/arcano-cloner-tool');
+              }}
+            >
+              Seguir sem criar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
