@@ -396,14 +396,14 @@ const GeradorPersonagemTool: React.FC = () => {
             <div className="bg-purple-900/30 border border-purple-500/20 rounded-lg p-3 mb-1">
               <p className="text-xs text-purple-100 font-medium mb-0.5">📸 Envie 4 fotos do mesmo rosto</p>
               <p className="text-[10px] text-purple-300/80 leading-relaxed">Para gerar um personagem com alta fidelidade.</p>
-              <button
-                type="button"
-                className="text-[10px] text-fuchsia-400 hover:text-fuchsia-300 underline mt-1 font-medium"
-                onClick={() => setShowExamplesModal(true)}
-              >
-                Ver exemplo →
-              </button>
             </div>
+            <button
+              type="button"
+              className="text-[10px] text-fuchsia-400 hover:text-fuchsia-300 underline font-medium mb-1 self-start"
+              onClick={() => setShowExamplesModal(true)}
+            >
+              Ver exemplo de fotos →
+            </button>
 
             {/* 4 Upload Cards in 2x2 grid */}
             <div className="grid grid-cols-2 gap-2">
