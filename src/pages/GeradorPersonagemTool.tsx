@@ -390,6 +390,12 @@ const GeradorPersonagemTool: React.FC = () => {
           
           {/* Left Side - Inputs */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
+            {/* Instructions */}
+            <div className="bg-purple-900/30 border border-purple-500/20 rounded-lg p-3 mb-1">
+              <p className="text-xs text-purple-100 font-medium mb-0.5">📸 Envie 4 fotos do mesmo rosto</p>
+              <p className="text-[10px] text-purple-300/80 leading-relaxed">Cada ângulo diferente ajuda a IA a criar seu personagem com alta fidelidade, pronto para usar em todos os nossos aplicativos!</p>
+            </div>
+
             {/* 4 Upload Cards in 2x2 grid */}
             <div className="grid grid-cols-2 gap-2">
               <AngleUploadCard label="De Frente" angleType="front" image={frontImage} onImageChange={handleImageChange(setFrontImage, setFrontFile)} disabled={isProcessing} />
