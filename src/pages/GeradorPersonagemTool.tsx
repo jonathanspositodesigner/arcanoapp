@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Save } from 'lucide-react';
+import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Save, ArrowRight } from 'lucide-react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
+import { useNavigate } from 'react-router-dom';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
@@ -40,6 +41,7 @@ const queueMessages = [
 
 const GeradorPersonagemTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
+  const navigate = useNavigate();
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
@@ -471,6 +473,22 @@ const GeradorPersonagemTool: React.FC = () => {
 
             {/* Saved Characters Panel */}
             <SavedCharactersPanel userId={user?.id} refreshTrigger={savedRefreshTrigger} />
+
+            {/* Arcano Cloner Shortcut */}
+            <button
+              type="button"
+              onClick={() => navigate('/arcano-cloner-tool')}
+              className="w-full flex items-center justify-between gap-2 bg-gradient-to-r from-fuchsia-600/20 to-purple-600/20 border border-fuchsia-500/30 rounded-lg p-3 hover:from-fuchsia-600/30 hover:to-purple-600/30 transition-all group"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Sparkles className="w-4 h-4 text-fuchsia-400 flex-shrink-0" />
+                <div className="text-left min-w-0">
+                  <p className="text-xs font-semibold text-white">Arcano Cloner</p>
+                  <p className="text-[10px] text-purple-300/80 leading-tight">Use seu personagem para gerar imagens</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-fuchsia-400 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+            </button>
           </div>
 
           {/* Right Side - Result Viewer */}
