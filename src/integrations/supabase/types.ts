@@ -1016,7 +1016,7 @@ export type Database = {
           task_id: string | null
           thumbnail_url: string | null
           user_credit_cost: number | null
-          user_id: string | null
+          user_id: string
           waited_in_queue: boolean | null
         }
         Insert: {
@@ -1051,7 +1051,7 @@ export type Database = {
           task_id?: string | null
           thumbnail_url?: string | null
           user_credit_cost?: number | null
-          user_id?: string | null
+          user_id: string
           waited_in_queue?: boolean | null
         }
         Update: {
@@ -1086,7 +1086,7 @@ export type Database = {
           task_id?: string | null
           thumbnail_url?: string | null
           user_credit_cost?: number | null
-          user_id?: string | null
+          user_id?: string
           waited_in_queue?: boolean | null
         }
         Relationships: []
