@@ -27,10 +27,9 @@ import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { getAIErrorMessage } from '@/utils/errorMessages';
+import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
-
-const CREDIT_COST = 75;
 
 const queueMessages = [
   { emoji: '🎨', text: 'Criando seu avatar...' },
@@ -44,6 +43,8 @@ const GeradorPersonagemTool: React.FC = () => {
   const navigate = useNavigate();
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  const { getCreditCost } = useAIToolSettings();
+  const creditCost = getCreditCost('Gerador Avatar', 75);
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
 
   // 4 image states
@@ -212,7 +213,7 @@ const GeradorPersonagemTool: React.FC = () => {
       return;
     }
 
-    if (credits < CREDIT_COST) {
+    if (credits < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
       endSubmit();
@@ -280,7 +281,7 @@ const GeradorPersonagemTool: React.FC = () => {
             semiProfileImageUrl: semiProfileUrl,
             lowAngleImageUrl: lowAngleUrl,
             userId: user.id,
-            creditCost: CREDIT_COST,
+            creditCost: creditCost,
           },
         }
       );
@@ -432,7 +433,7 @@ const GeradorPersonagemTool: React.FC = () => {
                   <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                   Gerar Avatar
                   <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                    <Coins className="w-3.5 h-3.5" />{CREDIT_COST}
+                    <Coins className="w-3.5 h-3.5" />{creditCost}
                   </span>
                 </>
               )}

@@ -32,6 +32,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { getAIErrorMessage } from '@/utils/errorMessages';
+import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 
 // Max dimension for mobile slider preview optimization
 const SLIDER_PREVIEW_MAX_PX = 1500;
@@ -64,6 +65,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
   const isMobile = useIsMobile();
+  const { getCreditCost } = useAIToolSettings();
   
   // Contexto global de jobs - para notificação sonora e trava de navegação
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
@@ -481,10 +483,10 @@ const UpscalerArcanoTool: React.FC = () => {
       return;
     }
 
-    const creditCost = version === 'pro' ? 80 : 60;
+    const upscalerCreditCost = version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60);
     
     // Optimistic check - backend will validate for real
-    if (credits < creditCost) {
+    if (credits < upscalerCreditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
       endSubmit();
@@ -577,7 +579,7 @@ const UpscalerArcanoTool: React.FC = () => {
       setProgress(45);
 
       // Step 3: Call edge function with URL (not base64)
-      const creditCost = version === 'pro' ? 80 : 60;
+      const edgeCreditCost = version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60);
 
       const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {
@@ -585,7 +587,7 @@ const UpscalerArcanoTool: React.FC = () => {
           imageUrl: imageUrl,
           version: version,
           userId: user.id,
-           creditCost: creditCost,
+           creditCost: edgeCreditCost,
            category: promptCategory,
            // Conditional parameters based on workflow type
            detailDenoise: isComidaMode 
@@ -1167,7 +1169,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     {t('upscalerTool.buttons.increaseQuality')}
                     <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
                       <Coins className="w-3.5 h-3.5" />
-                      {version === 'pro' ? '80' : '60'}
+                      {version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60)}
                     </span>
                   </>
                 )}

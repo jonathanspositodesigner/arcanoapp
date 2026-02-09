@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import { 
   RefreshCw, Settings, Plus, TrendingUp, Coins, 
-  Calculator, Trash2, Info, Sparkles
+  Calculator, Trash2, Info, Sparkles, Pencil
 } from "lucide-react";
 import {
   Tooltip,
@@ -25,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAIToolSettings } from "@/hooks/useAIToolSettings";
 
 interface ToolCostData {
   tool_name: string;
@@ -61,31 +62,19 @@ const DEFAULT_CONFIG: GlobalConfig = {
 const STORAGE_KEY_CONFIG = "ai_tools_profit_config";
 const STORAGE_KEY_CUSTOM_TOOLS = "ai_tools_profit_custom_tools";
 
-// Default credit costs for each tool (from the system)
-const TOOL_CREDIT_COSTS: Record<string, number> = {
-  "Upscaler Arcano": 60,
-  "Upscaler Pro": 80,
-  "Pose Changer": 60,
-  "Veste AI": 60,
-  "Video Upscaler": 150,
-  "Arcano Cloner": 80,
-  "Gerador Avatar": 75,
-};
-
-const TOOL_API_COSTS: Record<string, number> = {
-  "Arcano Cloner": 0.12,
-  "Gerador Avatar": 0.12,
-};
-
 const AIToolsProfitTable = () => {
   const [toolsData, setToolsData] = useState<ToolCostData[]>([]);
   const [customTools, setCustomTools] = useState<CustomTool[]>([]);
   const [config, setConfig] = useState<GlobalConfig>(DEFAULT_CONFIG);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Hook for dynamic settings from DB
+  const { settingsMap, getCreditCost, getApiCost, updateToolSettings, isLoading: settingsLoading } = useAIToolSettings();
+  
   // Modals
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showAddToolModal, setShowAddToolModal] = useState(false);
+  const [showEditToolModal, setShowEditToolModal] = useState(false);
   
   // Form states
   const [editConfig, setEditConfig] = useState<GlobalConfig>(DEFAULT_CONFIG);
@@ -96,6 +85,13 @@ const AIToolsProfitTable = () => {
     hasApiCost: false,
     apiCost: 0,
   });
+
+  // Edit tool state
+  const [editingToolName, setEditingToolName] = useState("");
+  const [editCredits, setEditCredits] = useState(60);
+  const [editHasApiCost, setEditHasApiCost] = useState(false);
+  const [editApiCost, setEditApiCost] = useState(0);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -143,7 +139,6 @@ const AIToolsProfitTable = () => {
 
   // Save config
   const handleSaveConfig = () => {
-    // Recalculate revenue per credit based on plan
     const calculatedRevenue = editConfig.planPrice / editConfig.planCredits;
     const newConfig = {
       ...editConfig,
@@ -191,6 +186,30 @@ const AIToolsProfitTable = () => {
     toast.success("Ferramenta removida");
   };
 
+  // Open edit modal for a DB tool
+  const handleOpenEditTool = (toolName: string) => {
+    const s = settingsMap[toolName];
+    setEditingToolName(toolName);
+    setEditCredits(s?.credit_cost ?? 60);
+    setEditHasApiCost(s?.has_api_cost ?? false);
+    setEditApiCost(s?.api_cost ?? 0);
+    setShowEditToolModal(true);
+  };
+
+  // Save edited tool settings to DB
+  const handleSaveEditTool = async () => {
+    setIsSavingEdit(true);
+    const success = await updateToolSettings(editingToolName, {
+      credit_cost: editCredits,
+      has_api_cost: editHasApiCost,
+      api_cost: editHasApiCost ? editApiCost : 0,
+    });
+    setIsSavingEdit(false);
+    if (success) {
+      setShowEditToolModal(false);
+    }
+  };
+
   // Calculate profitability for a tool
   const calculateProfit = (credits: number, rhCost: number, apiCost: number = 0) => {
     const revenue = credits * config.revenuePerCredit;
@@ -202,14 +221,13 @@ const AIToolsProfitTable = () => {
     return { revenue, rhCostBRL, totalCost, profit, margin };
   };
 
-  // Combined table data
+  // Combined table data - uses DB settings instead of hardcoded constants
   const tableData = useMemo(() => {
     const fromDb = toolsData.map(tool => {
-      const credits = TOOL_CREDIT_COSTS[tool.tool_name] || tool.avg_credit_cost;
-      const apiCost = TOOL_API_COSTS[tool.tool_name] || 0;
-      const calc = calculateProfit(credits, tool.avg_rh_cost, apiCost);
+      const credits = getCreditCost(tool.tool_name, tool.avg_credit_cost);
+      const { apiCost: toolApiCost } = getApiCost(tool.tool_name);
+      const calc = calculateProfit(credits, tool.avg_rh_cost, toolApiCost);
       
-      // Accumulated totals
       const totalRevenue = calc.revenue * tool.total_jobs;
       const totalCostAccum = calc.totalCost * tool.total_jobs;
       const totalProfitAccum = calc.profit * tool.total_jobs;
@@ -219,7 +237,7 @@ const AIToolsProfitTable = () => {
         credits,
         avgRhCost: tool.avg_rh_cost,
         totalJobs: tool.total_jobs,
-        apiCost: TOOL_API_COSTS[tool.tool_name] || 0,
+        apiCost: toolApiCost,
         isCustom: false,
         totalRevenue,
         totalCostAccum,
@@ -247,7 +265,7 @@ const AIToolsProfitTable = () => {
     });
     
     return [...fromDb, ...fromCustom];
-  }, [toolsData, customTools, config]);
+  }, [toolsData, customTools, config, settingsMap]);
 
   // Totals
   const totals = useMemo(() => {
@@ -367,7 +385,7 @@ const AIToolsProfitTable = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {(isLoading || settingsLoading) ? (
                 <TableRow>
                     <TableCell colSpan={13} className="text-center py-8">
                       <RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
@@ -388,6 +406,17 @@ const AIToolsProfitTable = () => {
                           {row.name}
                           {row.isCustom && (
                             <Badge variant="outline" className="text-[10px]">Estimado</Badge>
+                          )}
+                          {!row.isCustom && settingsMap[row.name] && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-muted-foreground hover:text-primary"
+                              onClick={() => handleOpenEditTool(row.name)}
+                              title="Editar configuração"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
                           )}
                         </div>
                       </TableCell>
@@ -607,6 +636,66 @@ const AIToolsProfitTable = () => {
             <Button onClick={handleAddTool}>
               <Plus className="h-4 w-4 mr-2" />
               Adicionar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Tool Settings Modal */}
+      <Dialog open={showEditToolModal} onOpenChange={setShowEditToolModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar "{editingToolName}"</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Custo em Créditos</Label>
+              <Input
+                type="number"
+                value={editCredits}
+                onChange={(e) => setEditCredits(parseInt(e.target.value) || 0)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Quantidade de créditos cobrados do usuário por execução
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="editHasApiCost"
+                checked={editHasApiCost}
+                onCheckedChange={(checked) => setEditHasApiCost(!!checked)}
+              />
+              <Label htmlFor="editHasApiCost" className="cursor-pointer">
+                Tem custo extra de API
+              </Label>
+            </div>
+            {editHasApiCost && (
+              <div className="space-y-2">
+                <Label>Valor Extra API (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editApiCost}
+                  onChange={(e) => setEditApiCost(parseFloat(e.target.value) || 0)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Custo fixo adicional por execução (ex: API do Replicate)
+                </p>
+              </div>
+            )}
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <p className="text-xs text-amber-700">
+                ⚠️ Alterações valem apenas para novos jobs. Jobs anteriores não serão recalculados.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditToolModal(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveEditTool} disabled={isSavingEdit}>
+              {isSavingEdit ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Pencil className="h-4 w-4 mr-2" />}
+              Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
