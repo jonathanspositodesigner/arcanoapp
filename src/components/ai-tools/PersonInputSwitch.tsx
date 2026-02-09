@@ -135,8 +135,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
               </p>
               <Button
                 size="sm"
-                variant="outline"
-                className="h-7 text-[10px] border-purple-500/30 text-purple-200 hover:bg-purple-500/20"
+                className="h-7 text-[10px] bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-semibold border-0"
                 onClick={() => navigate('/gerador-personagem')}
               >
                 <Plus className="w-3 h-3 mr-1" />
@@ -172,8 +171,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
               </div>
               <Button
                 size="sm"
-                variant="ghost"
-                className="w-full h-6 mt-1.5 text-[10px] text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-500/10"
+                className="w-full h-6 mt-1.5 text-[10px] bg-fuchsia-600/80 hover:bg-fuchsia-500 text-white font-semibold border-0"
                 onClick={() => navigate('/gerador-personagem')}
               >
                 <Plus className="w-3 h-3 mr-1" />
