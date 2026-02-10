@@ -7,11 +7,12 @@ const corsHeaders = {
 };
 
 interface ManageAdminPayload {
-  action: "create" | "update_password" | "delete";
+  action: "create" | "update_password" | "delete" | "update_recovery_email";
   email?: string;
   name?: string;
   password?: string;
   user_id?: string;
+  recovery_email?: string;
 }
 
 serve(async (req) => {
@@ -73,7 +74,7 @@ serve(async (req) => {
     console.log(`Processing admin action: ${action}`);
 
     if (action === "create") {
-      const { email, name, password } = payload;
+      const { email, name, password, recovery_email } = payload;
 
       if (!email || !password) {
         return new Response(JSON.stringify({ error: "Email and password required" }), {
@@ -157,6 +158,7 @@ serve(async (req) => {
         email: normalizedEmail,
         name: name || null,
         password_changed: false,
+        recovery_email: recovery_email?.trim() || null,
       });
 
       if (profileError) {
@@ -290,6 +292,52 @@ serve(async (req) => {
       }
 
       console.log(`Admin deleted: ${user_id}`);
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "update_recovery_email") {
+      const { user_id, recovery_email } = payload;
+
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "User ID required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Verify target is an admin
+      const { data: targetRole } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user_id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!targetRole) {
+        return new Response(JSON.stringify({ error: "Target user is not an admin" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { error: updateError } = await supabaseAdmin
+        .from("profiles")
+        .update({ recovery_email: recovery_email?.trim() || null })
+        .eq("id", user_id);
+
+      if (updateError) {
+        console.error("Error updating recovery email:", updateError);
+        return new Response(JSON.stringify({ error: updateError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      console.log(`Recovery email updated for admin: ${user_id}`);
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,

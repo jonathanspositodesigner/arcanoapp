@@ -50,32 +50,53 @@ serve(async (req) => {
       );
     }
 
-    // Mapeamento de emails alternativos para 2FA (admin-only allowed emails)
-    const alternateEmails: Record<string, string> = {
-      "jonathan@admin.com": "jonathan.lifecazy@gmail.com",
-      "david@admin.com": "davidsposito64@gmail.com",
-    };
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
 
-    // Validate this is an admin email
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
     const normalizedEmail = email.toLowerCase().trim();
-    const isKnownAdminEmail = Object.keys(alternateEmails).includes(normalizedEmail);
-    
-    if (!isKnownAdminEmail) {
-      console.warn(`[2FA] Attempt from unknown admin email: ${normalizedEmail}`);
+
+    // Verify user is an admin via user_roles table
+    const { data: roleData, error: roleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user_id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (roleError || !roleData) {
+      console.warn(`[2FA] Attempt from non-admin user_id: ${user_id}, email: ${normalizedEmail}`);
       return new Response(
         JSON.stringify({ error: "Email não autorizado para 2FA" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Usa email alternativo se existir, senão usa o email original
-    const targetEmail = alternateEmails[normalizedEmail] || email;
+    // Look up recovery_email from profiles
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("recovery_email")
+      .eq("id", user_id)
+      .maybeSingle();
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
+    // Fallback hardcoded map (legacy, will be phased out as DB is populated)
+    const legacyAlternateEmails: Record<string, string> = {
+      "jonathan@admin.com": "jonathan.lifecazy@gmail.com",
+      "david@admin.com": "davidsposito64@gmail.com",
+      "herica@admin.com": "hericanagila53@gmail.com",
+    };
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Priority: DB recovery_email > hardcoded map > original email
+    let targetEmail: string;
+    if (profileData?.recovery_email) {
+      targetEmail = profileData.recovery_email;
+    } else if (legacyAlternateEmails[normalizedEmail]) {
+      targetEmail = legacyAlternateEmails[normalizedEmail];
+    } else {
+      targetEmail = normalizedEmail;
+    }
 
     // Gera código de 6 dígitos
     const code = Math.floor(100000 + Math.random() * 900000).toString();
