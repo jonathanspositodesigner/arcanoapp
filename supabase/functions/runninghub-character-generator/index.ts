@@ -6,11 +6,11 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * CHARACTER GENERATOR - EDGE FUNCTION
  * 
  * Ferramenta de IA que gera personagens a partir de 4 fotos.
- * WebApp ID placeholder - será fornecido pelo usuário.
  * 
  * Endpoints:
  * - /upload - Upload de imagem para RunningHub
  * - /run - Inicia processamento
+ * - /refine - Refinamento com troca de imagens selecionadas
  * - /queue-status - Consulta status do job
  * - /reconcile - Reconcilia job travado
  */
@@ -24,14 +24,23 @@ const RUNNINGHUB_API_KEY = (
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// WebApp ID for Character Generator
+// WebApp IDs
 const WEBAPP_ID_CHARACTER_GENERATOR = '2020943778751713282';
+const WEBAPP_ID_REFINE = '2021009449481150465';
 
-// Node IDs for the 4 input images
+// Node IDs for the 4 input images (original generation)
 const NODE_ID_FRONT = '41';
 const NODE_ID_PROFILE = '39';
 const NODE_ID_SEMI_PROFILE = '40';
 const NODE_ID_LOW_ANGLE = '42';
+
+// Node IDs for refine workflow
+const REFINE_NODE_FRONT = '39';
+const REFINE_NODE_SEMI_PROFILE = '40';
+const REFINE_NODE_PROFILE = '41';
+const REFINE_NODE_LOW_ANGLE = '42';
+const REFINE_NODE_RESULT = '45';
+const REFINE_NODE_TEXT = '47';
 
 const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 };
 const RATE_LIMIT_RUN = { maxRequests: 5, windowSeconds: 60 };
@@ -44,7 +53,7 @@ if (!RUNNINGHUB_API_KEY) {
   console.error('[CharacterGenerator] CRITICAL: Missing RUNNINGHUB_API_KEY secret');
 }
 
-console.log('[CharacterGenerator] Config loaded - WebApp ID:', WEBAPP_ID_CHARACTER_GENERATOR);
+console.log('[CharacterGenerator] Config loaded - WebApp ID:', WEBAPP_ID_CHARACTER_GENERATOR, 'Refine:', WEBAPP_ID_REFINE);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -200,6 +209,35 @@ async function checkRateLimit(
   }
 }
 
+// ========== HELPER: Download image and upload to RunningHub ==========
+
+async function downloadAndUploadToRH(imageUrl: string, label: string, jobId: string, apiKey: string): Promise<string> {
+  await logStep(jobId, `downloading_${label}_image`);
+  const imgResponse = await fetch(imageUrl);
+  if (!imgResponse.ok) throw new Error(`Failed to download ${label} image (${imgResponse.status})`);
+  
+  const imgBlob = await imgResponse.blob();
+  const imgName = imageUrl.split('/').pop() || `${label}.png`;
+  
+  const imgFormData = new FormData();
+  imgFormData.append('apiKey', apiKey);
+  imgFormData.append('fileType', 'image');
+  imgFormData.append('file', imgBlob, imgName);
+  
+  await logStep(jobId, `uploading_${label}_image`);
+  
+  const uploadResponse = await fetchWithRetry(
+    'https://www.runninghub.ai/task/openapi/upload',
+    { method: 'POST', body: imgFormData },
+    `${label} image upload`
+  );
+  
+  const uploadData = await safeParseResponse(uploadResponse, `${label} upload`);
+  if (uploadData.code !== 0) throw new Error(`${label} image upload failed: ${uploadData.msg || 'Unknown'}`);
+  console.log(`[CharacterGenerator] ${label} image uploaded:`, uploadData.data.fileName);
+  return uploadData.data.fileName;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -212,7 +250,7 @@ serve(async (req) => {
     
     console.log(`[CharacterGenerator] Endpoint called: ${path}, IP: ${clientIP}`);
 
-    if (path === 'upload' || path === 'run') {
+    if (path === 'upload' || path === 'run' || path === 'refine') {
       const rateConfig = path === 'upload' ? RATE_LIMIT_UPLOAD : RATE_LIMIT_RUN;
       const rateLimitResult = await checkRateLimit(clientIP, `runninghub-character-generator/${path}`, rateConfig.maxRequests, rateConfig.windowSeconds);
       
@@ -226,6 +264,7 @@ serve(async (req) => {
 
     if (path === 'upload') return await handleUpload(req);
     else if (path === 'run') return await handleRun(req);
+    else if (path === 'refine') return await handleRefine(req);
     else if (path === 'queue-status') return await handleQueueStatus(req);
     else if (path === 'reconcile') return await handleReconcile(req);
     else {
@@ -366,30 +405,8 @@ async function handleRun(req: Request) {
     const fileNames: string[] = [];
 
     for (const config of imageConfigs) {
-      await logStep(jobId, `downloading_${config.label}_image`);
-      const imgResponse = await fetch(config.url);
-      if (!imgResponse.ok) throw new Error(`Failed to download ${config.label} image (${imgResponse.status})`);
-      
-      const imgBlob = await imgResponse.blob();
-      const imgName = config.url.split('/').pop() || `${config.label}.png`;
-      
-      const imgFormData = new FormData();
-      imgFormData.append('apiKey', RUNNINGHUB_API_KEY);
-      imgFormData.append('fileType', 'image');
-      imgFormData.append('file', imgBlob, imgName);
-      
-      await logStep(jobId, `uploading_${config.label}_image`);
-      
-      const uploadResponse = await fetchWithRetry(
-        'https://www.runninghub.ai/task/openapi/upload',
-        { method: 'POST', body: imgFormData },
-        `${config.label} image upload`
-      );
-      
-      const uploadData = await safeParseResponse(uploadResponse, `${config.label} upload`);
-      if (uploadData.code !== 0) throw new Error(`${config.label} image upload failed: ${uploadData.msg || 'Unknown'}`);
-      fileNames.push(uploadData.data.fileName);
-      console.log(`[CharacterGenerator] ${config.label} image uploaded:`, uploadData.data.fileName);
+      const fileName = await downloadAndUploadToRH(config.url, config.label, jobId, RUNNINGHUB_API_KEY);
+      fileNames.push(fileName);
     }
 
     frontFileName = fileNames[0];
@@ -571,6 +588,241 @@ async function handleRun(req: Request) {
       await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
     } catch (refundError) {
       await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `START_EXCEPTION (refund error): ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
+    }
+
+    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// ========== REFINE HANDLER ==========
+
+async function handleRefine(req: Request) {
+  if (!RUNNINGHUB_API_KEY) {
+    return new Response(JSON.stringify({ error: 'API key not configured', code: 'MISSING_API_KEY' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { jobId, frontImageUrl, profileImageUrl, semiProfileImageUrl, lowAngleImageUrl, resultImageUrl, selectedNumbers, userId, creditCost } = await req.json();
+
+  // Validate inputs
+  if (!jobId || typeof jobId !== 'string') {
+    return new Response(JSON.stringify({ error: 'Valid jobId is required', code: 'INVALID_JOB_ID' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!frontImageUrl || !profileImageUrl || !semiProfileImageUrl || !lowAngleImageUrl || !resultImageUrl) {
+    return new Response(JSON.stringify({ error: 'All 5 image URLs are required (4 originals + result)', code: 'MISSING_PARAMS' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!selectedNumbers || typeof selectedNumbers !== 'string') {
+    return new Response(JSON.stringify({ error: 'selectedNumbers is required', code: 'MISSING_SELECTED_NUMBERS' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+    return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
+    return new Response(JSON.stringify({ error: 'Valid userId is required', code: 'INVALID_USER_ID' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  await logStep(jobId, 'refine_starting', { selectedNumbers });
+
+  // Download and upload all 5 images to RunningHub
+  let frontFileName: string;
+  let profileFileName: string;
+  let semiProfileFileName: string;
+  let lowAngleFileName: string;
+  let resultFileName: string;
+
+  try {
+    frontFileName = await downloadAndUploadToRH(frontImageUrl, 'refine_front', jobId, RUNNINGHUB_API_KEY);
+    profileFileName = await downloadAndUploadToRH(profileImageUrl, 'refine_profile', jobId, RUNNINGHUB_API_KEY);
+    semiProfileFileName = await downloadAndUploadToRH(semiProfileImageUrl, 'refine_semi_profile', jobId, RUNNINGHUB_API_KEY);
+    lowAngleFileName = await downloadAndUploadToRH(lowAngleImageUrl, 'refine_low_angle', jobId, RUNNINGHUB_API_KEY);
+    resultFileName = await downloadAndUploadToRH(resultImageUrl, 'refine_result', jobId, RUNNINGHUB_API_KEY);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
+    await logStepFailure(jobId, 'refine_image_transfer', errorMsg);
+    
+    await supabase
+      .from(TABLE_NAME)
+      .update({ status: 'failed', error_message: `REFINE_IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, completed_at: new Date().toISOString() })
+      .eq('id', jobId);
+    
+    return new Response(JSON.stringify({ error: errorMsg, code: 'IMAGE_TRANSFER_ERROR' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Consume credits
+  await logStep(jobId, 'refine_consuming_credits', { amount: creditCost });
+  
+  const { data: creditResult, error: creditError } = await supabase.rpc('consume_upscaler_credits', {
+    _user_id: userId, _amount: creditCost, _description: 'Refinar Avatar'
+  });
+
+  if (creditError) {
+    await logStepFailure(jobId, 'refine_consume_credits', creditError.message);
+    return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
+    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+    await logStepFailure(jobId, 'refine_consume_credits', errorMsg);
+    return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Mark credits as charged
+  await supabase
+    .from(TABLE_NAME)
+    .update({ credits_charged: true, user_credit_cost: creditCost })
+    .eq('id', jobId);
+
+  try {
+    // Check queue
+    await logStep(jobId, 'refine_checking_queue');
+    
+    let slotsAvailable = 0;
+    let accountName: string | null = null;
+    let accountApiKey: string | null = null;
+    
+    try {
+      const queueCheckUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`;
+      const queueResponse = await fetch(queueCheckUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+      });
+      const queueData = await queueResponse.json();
+      slotsAvailable = queueData.slotsAvailable || 0;
+      accountName = queueData.accountName || 'primary';
+      accountApiKey = queueData.accountApiKey || RUNNINGHUB_API_KEY;
+    } catch (queueError) {
+      accountName = 'primary';
+      accountApiKey = RUNNINGHUB_API_KEY;
+    }
+
+    if (slotsAvailable <= 0) {
+      await logStep(jobId, 'refine_queuing');
+      
+      try {
+        const enqueueUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/enqueue`;
+        const enqueueResponse = await fetch(enqueueUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+          body: JSON.stringify({ table: TABLE_NAME, jobId, creditCost }),
+        });
+        const enqueueData = await enqueueResponse.json();
+        
+        return new Response(JSON.stringify({ success: true, queued: true, position: enqueueData.position }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (enqueueError) {
+        await supabase.from(TABLE_NAME).update({ status: 'queued', position: 999, user_credit_cost: creditCost, waited_in_queue: true }).eq('id', jobId);
+        return new Response(JSON.stringify({ success: true, queued: true, position: 999 }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // Slot available
+    await logStep(jobId, 'refine_running', { account: accountName });
+    
+    const apiKeyToUse = accountApiKey || RUNNINGHUB_API_KEY;
+    const accountToUse = accountName || 'primary';
+    
+    await supabase.from(TABLE_NAME).update({
+      user_credit_cost: creditCost,
+      waited_in_queue: false,
+      status: 'running',
+      started_at: new Date().toISOString(),
+      position: 0,
+      api_account: accountToUse
+    }).eq('id', jobId);
+
+    // Build node info list for Refine workflow
+    const nodeInfoList = [
+      { nodeId: REFINE_NODE_FRONT, fieldName: "image", fieldValue: frontFileName },
+      { nodeId: REFINE_NODE_SEMI_PROFILE, fieldName: "image", fieldValue: semiProfileFileName },
+      { nodeId: REFINE_NODE_PROFILE, fieldName: "image", fieldValue: profileFileName },
+      { nodeId: REFINE_NODE_LOW_ANGLE, fieldName: "image", fieldValue: lowAngleFileName },
+      { nodeId: REFINE_NODE_RESULT, fieldName: "image", fieldValue: resultFileName },
+      { nodeId: REFINE_NODE_TEXT, fieldName: "text", fieldValue: selectedNumbers },
+    ];
+
+    const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
+
+    const requestBody = {
+      nodeInfoList,
+      instanceType: "default",
+      usePersonalQueue: false,
+      webhookUrl,
+    };
+
+    console.log('[CharacterGenerator] Refine AI App request:', JSON.stringify(requestBody));
+    
+    const response = await fetchWithRetry(
+      `https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_REFINE}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKeyToUse}` },
+        body: JSON.stringify(requestBody),
+      },
+      'Run Refine AI App'
+    );
+
+    const data = await safeParseResponse(response, 'Refine AI App response');
+
+    if (data.taskId) {
+      await supabase.from(TABLE_NAME).update({ task_id: data.taskId, raw_api_response: data }).eq('id', jobId);
+      await logStep(jobId, 'refine_task_started', { taskId: data.taskId });
+
+      return new Response(JSON.stringify({ success: true, taskId: data.taskId }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Start failed - refund
+    const startErrorMsg = data.msg || data.message || 'Failed to start refine workflow';
+    await logStepFailure(jobId, 'refine_run_workflow', `START_FAILED_REFUNDED: ${startErrorMsg}`, data);
+    
+    try {
+      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `REFINE_START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}` });
+      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `REFINE_START_FAILED_REFUNDED: ${startErrorMsg}`, credits_refunded: true, completed_at: new Date().toISOString(), raw_api_response: data }).eq('id', jobId);
+    } catch (refundError) {
+      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `REFINE_START_FAILED (refund error): ${startErrorMsg}`, completed_at: new Date().toISOString(), raw_api_response: data }).eq('id', jobId);
+    }
+
+    return new Response(JSON.stringify({ error: startErrorMsg, code: data.code || 'RUN_FAILED', refunded: true }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    await logStepFailure(jobId, 'refine_run_exception', `REFINE_EXCEPTION_REFUNDED: ${errorMessage}`);
+    
+    try {
+      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `REFINE_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
+      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `REFINE_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+    } catch (refundError) {
+      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `REFINE_EXCEPTION (refund error): ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
     }
 
     return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), {
