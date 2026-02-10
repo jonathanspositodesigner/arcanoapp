@@ -14,6 +14,7 @@ interface Admin {
   user_id: string;
   email: string;
   name: string | null;
+  recovery_email: string | null;
 }
 
 const AdminManageAdmins = () => {
@@ -27,9 +28,16 @@ const AdminManageAdmins = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
+  const [newRecoveryEmail, setNewRecoveryEmail] = useState("");
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [addingAdmin, setAddingAdmin] = useState(false);
   const [showSuccessInfo, setShowSuccessInfo] = useState(false);
+  
+  // Recovery email edit state
+  const [editRecoveryDialogOpen, setEditRecoveryDialogOpen] = useState(false);
+  const [editingRecoveryAdmin, setEditingRecoveryAdmin] = useState<Admin | null>(null);
+  const [editRecoveryEmail, setEditRecoveryEmail] = useState("");
+  const [updatingRecoveryEmail, setUpdatingRecoveryEmail] = useState(false);
   
   // Edit password dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -97,7 +105,7 @@ const AdminManageAdmins = () => {
       const adminUserIds = adminRoles.map(r => r.user_id);
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email, name")
+        .select("id, email, name, recovery_email")
         .in("id", adminUserIds);
 
       if (profilesError) throw profilesError;
@@ -108,7 +116,8 @@ const AdminManageAdmins = () => {
           id: role.user_id,
           user_id: role.user_id,
           email: profile?.email || "Email não encontrado",
-          name: profile?.name || null
+          name: profile?.name || null,
+          recovery_email: profile?.recovery_email || null,
         };
       });
 
@@ -144,7 +153,8 @@ const AdminManageAdmins = () => {
           action: "create",
           email: newEmail.toLowerCase().trim(),
           name: newName.trim() || null,
-          password
+          password,
+          recovery_email: newRecoveryEmail.trim() || null,
         }
       });
 
@@ -241,9 +251,40 @@ const AdminManageAdmins = () => {
   const resetAddDialog = () => {
     setNewEmail("");
     setNewName("");
+    setNewRecoveryEmail("");
     setGeneratedPassword("");
     setShowSuccessInfo(false);
     setAddDialogOpen(false);
+  };
+
+  const handleUpdateRecoveryEmail = async () => {
+    if (!editingRecoveryAdmin) return;
+
+    setUpdatingRecoveryEmail(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-admin", {
+        body: { 
+          action: "update_recovery_email",
+          user_id: editingRecoveryAdmin.user_id,
+          recovery_email: editRecoveryEmail.trim() || null,
+        }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      toast.success("Email de resgate atualizado!");
+      setEditRecoveryDialogOpen(false);
+      setEditingRecoveryAdmin(null);
+      setEditRecoveryEmail("");
+      await fetchAdmins();
+    } catch (error: any) {
+      console.error("Error updating recovery email:", error);
+      toast.error(error.message || "Erro ao atualizar email de resgate");
+    } finally {
+      setUpdatingRecoveryEmail(false);
+    }
   };
 
   if (loading) {
@@ -302,6 +343,19 @@ const AdminManageAdmins = () => {
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="recoveryEmail">Email de Resgate 2FA (opcional)</Label>
+                    <Input
+                      id="recoveryEmail"
+                      type="email"
+                      placeholder="email.real@gmail.com"
+                      value={newRecoveryEmail}
+                      onChange={(e) => setNewRecoveryEmail(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Email onde o admin receberá o código de verificação 2FA
+                    </p>
                   </div>
                   <DialogFooter>
                     <Button variant="outline" onClick={resetAddDialog}>Cancelar</Button>
@@ -366,6 +420,11 @@ const AdminManageAdmins = () => {
                         )}
                       </p>
                       <p className="text-sm text-muted-foreground">{admin.email}</p>
+                      {admin.recovery_email && (
+                        <p className="text-xs text-muted-foreground/70 flex items-center gap-1">
+                          <Mail className="h-3 w-3" /> 2FA: {admin.recovery_email}
+                        </p>
+                      )}
                     </div>
                   </div>
                   
@@ -425,6 +484,61 @@ const AdminManageAdmins = () => {
                             </Button>
                             <Button onClick={handleUpdatePassword} disabled={updatingPassword}>
                               {updatingPassword ? "Atualizando..." : "Atualizar Senha"}
+                            </Button>
+                          </DialogFooter>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    {/* Edit Recovery Email Button */}
+                    <Dialog open={editRecoveryDialogOpen && editingRecoveryAdmin?.id === admin.id} onOpenChange={(open) => {
+                      if (!open) {
+                        setEditRecoveryDialogOpen(false);
+                        setEditingRecoveryAdmin(null);
+                        setEditRecoveryEmail("");
+                      }
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setEditingRecoveryAdmin(admin);
+                            setEditRecoveryEmail(admin.recovery_email || "");
+                            setEditRecoveryDialogOpen(true);
+                          }}
+                        >
+                          <Mail className="h-4 w-4 mr-1" />
+                          Email 2FA
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Email de Resgate 2FA</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <p className="text-sm text-muted-foreground">
+                            Definir email de resgate para: <strong>{admin.email}</strong>
+                          </p>
+                          <div className="space-y-2">
+                            <Label htmlFor="editRecoveryEmail">Email de Resgate</Label>
+                            <Input
+                              id="editRecoveryEmail"
+                              type="email"
+                              placeholder="email.real@gmail.com"
+                              value={editRecoveryEmail}
+                              onChange={(e) => setEditRecoveryEmail(e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              O código 2FA será enviado para este email. Deixe vazio para enviar ao email de login.
+                            </p>
+                          </div>
+                          <DialogFooter>
+                            <Button variant="outline" onClick={() => setEditRecoveryDialogOpen(false)}>
+                              Cancelar
+                            </Button>
+                            <Button onClick={handleUpdateRecoveryEmail} disabled={updatingRecoveryEmail}>
+                              {updatingRecoveryEmail ? "Salvando..." : "Salvar"}
                             </Button>
                           </DialogFooter>
                         </div>

@@ -2234,6 +2234,7 @@ export type Database = {
           name: string | null
           password_changed: boolean | null
           phone: string | null
+          recovery_email: string | null
           runninghub_bonus_claimed: boolean | null
           updated_at: string | null
         }
@@ -2247,6 +2248,7 @@ export type Database = {
           name?: string | null
           password_changed?: boolean | null
           phone?: string | null
+          recovery_email?: string | null
           runninghub_bonus_claimed?: boolean | null
           updated_at?: string | null
         }
@@ -2260,6 +2262,7 @@ export type Database = {
           name?: string | null
           password_changed?: boolean | null
           phone?: string | null
+          recovery_email?: string | null
           runninghub_bonus_claimed?: boolean | null
           updated_at?: string | null
         }
