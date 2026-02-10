@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Save, ArrowRight } from 'lucide-react';
+import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Save, ArrowRight, Wand2 } from 'lucide-react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -17,6 +17,7 @@ import AngleUploadCard from '@/components/character-generator/AngleUploadCard';
 import AngleExamplesModal from '@/components/character-generator/AngleExamplesModal';
 import SaveCharacterDialog from '@/components/character-generator/SaveCharacterDialog';
 import SavedCharactersPanel from '@/components/character-generator/SavedCharactersPanel';
+import RefineSelector from '@/components/character-generator/RefineSelector';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
@@ -45,6 +46,7 @@ const GeradorPersonagemTool: React.FC = () => {
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Gerador Avatar', 75);
+  const refineCreditCost = getCreditCost('Refinar Avatar', 75);
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
 
   // 4 image states
@@ -56,6 +58,12 @@ const GeradorPersonagemTool: React.FC = () => {
   const [semiProfileFile, setSemiProfileFile] = useState<File | null>(null);
   const [lowAngleImage, setLowAngleImage] = useState<string | null>(null);
   const [lowAngleFile, setLowAngleFile] = useState<File | null>(null);
+
+  // Storage URLs (saved after first upload for refine reuse)
+  const [frontStorageUrl, setFrontStorageUrl] = useState<string | null>(null);
+  const [profileStorageUrl, setProfileStorageUrl] = useState<string | null>(null);
+  const [semiProfileStorageUrl, setSemiProfileStorageUrl] = useState<string | null>(null);
+  const [lowAngleStorageUrl, setLowAngleStorageUrl] = useState<string | null>(null);
 
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [status, setStatus] = useState<ProcessingStatus>('idle');
@@ -71,6 +79,10 @@ const GeradorPersonagemTool: React.FC = () => {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [savedRefreshTrigger, setSavedRefreshTrigger] = useState(0);
   const [showExamplesModal, setShowExamplesModal] = useState(false);
+
+  // Refine
+  const [showRefinePanel, setShowRefinePanel] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
 
   const sessionIdRef = useRef<string>('');
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
@@ -104,6 +116,8 @@ const GeradorPersonagemTool: React.FC = () => {
         setOutputImage(update.outputUrl);
         setStatus('completed');
         setProgress(100);
+        setIsRefining(false);
+        setShowRefinePanel(false);
         endSubmit();
         playNotificationSound();
         refetchCredits();
@@ -112,6 +126,7 @@ const GeradorPersonagemTool: React.FC = () => {
         setStatus('error');
         const friendlyError = getAIErrorMessage(update.errorMessage);
         setDebugErrorMessage(update.errorMessage);
+        setIsRefining(false);
         endSubmit();
         refetchCredits();
         toast.error(friendlyError.message);
@@ -146,6 +161,7 @@ const GeradorPersonagemTool: React.FC = () => {
     onJobFailed: useCallback((errorMessage) => {
       setStatus('error');
       setDebugErrorMessage(errorMessage);
+      setIsRefining(false);
       endSubmit();
       toast.error(errorMessage);
     }, [endSubmit]),
@@ -244,6 +260,12 @@ const GeradorPersonagemTool: React.FC = () => {
         uploadToStorage(compLow.file, 'low-angle'),
       ]);
 
+      // Save storage URLs for refine reuse
+      setFrontStorageUrl(frontUrl);
+      setProfileStorageUrl(profileUrl);
+      setSemiProfileStorageUrl(semiProfileUrl);
+      setLowAngleStorageUrl(lowAngleUrl);
+
       setProgress(45);
       setCurrentStep('creating_job');
 
@@ -321,6 +343,121 @@ const GeradorPersonagemTool: React.FC = () => {
     }
   };
 
+  const handleRefine = async (selectedNumbers: string) => {
+    if (!user?.id) {
+      setNoCreditsReason('not_logged');
+      setShowNoCreditsModal(true);
+      return;
+    }
+
+    if (!outputImage || !frontStorageUrl || !profileStorageUrl || !semiProfileStorageUrl || !lowAngleStorageUrl) {
+      toast.error('Dados insuficientes para refinar. Gere um avatar primeiro.');
+      return;
+    }
+
+    const activeCheck = await checkActiveJob(user.id);
+    if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+      setActiveToolName(activeCheck.activeTool);
+      setActiveJobId(activeCheck.activeJobId);
+      setActiveStatus(activeCheck.activeStatus);
+      setShowActiveJobModal(true);
+      return;
+    }
+
+    if (credits < refineCreditCost) {
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
+      return;
+    }
+
+    setIsRefining(true);
+    setShowRefinePanel(false);
+    setStatus('uploading');
+    setProgress(0);
+    setDebugErrorMessage(null);
+
+    try {
+      setProgress(10);
+      setCurrentStep('creating_refine_job');
+
+      // Create new job for refinement
+      const { data: job, error: jobError } = await supabase
+        .from('character_generator_jobs' as any)
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'pending',
+          front_image_url: frontStorageUrl,
+          profile_image_url: profileStorageUrl,
+          semi_profile_image_url: semiProfileStorageUrl,
+          low_angle_image_url: lowAngleStorageUrl,
+        })
+        .select()
+        .single();
+
+      if (jobError || !job) throw new Error(jobError?.message || 'Falha ao criar job de refinamento');
+
+      const jobRecord = job as any;
+      setJobId(jobRecord.id);
+      registerJob(jobRecord.id, 'Gerador Avatar', 'pending');
+
+      setProgress(30);
+      setCurrentStep('starting_refine');
+      setStatus('processing');
+
+      const { data: runResult, error: runError } = await supabase.functions.invoke(
+        'runninghub-character-generator/refine',
+        {
+          body: {
+            jobId: jobRecord.id,
+            frontImageUrl: frontStorageUrl,
+            profileImageUrl: profileStorageUrl,
+            semiProfileImageUrl: semiProfileStorageUrl,
+            lowAngleImageUrl: lowAngleStorageUrl,
+            resultImageUrl: outputImage,
+            selectedNumbers,
+            userId: user.id,
+            creditCost: refineCreditCost,
+          },
+        }
+      );
+
+      if (runError) throw new Error(runError.message || 'Erro ao iniciar refinamento');
+
+      if (runResult.code === 'INSUFFICIENT_CREDITS') {
+        setStatus('idle');
+        setIsRefining(false);
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        return;
+      }
+
+      if (runResult.code === 'RATE_LIMIT_EXCEEDED') {
+        toast.error('Muitas requisições. Aguarde 1 minuto.');
+        setStatus('error');
+        setIsRefining(false);
+        return;
+      }
+
+      if (runResult.error && !runResult.success && !runResult.queued) throw new Error(runResult.error);
+
+      if (runResult.queued) {
+        setStatus('waiting');
+        setQueuePosition(runResult.position || 1);
+        toast.info(`Você está na fila (posição ${runResult.position})`);
+      } else {
+        setStatus('processing');
+        setProgress(50);
+      }
+    } catch (error: any) {
+      setStatus('error');
+      setIsRefining(false);
+      setDebugErrorMessage(error.message);
+      toast.error(error.message || 'Erro ao refinar');
+      endSubmit();
+    }
+  };
+
   const handleCancelQueue = async () => {
     if (!jobId) return;
     try {
@@ -329,6 +466,7 @@ const GeradorPersonagemTool: React.FC = () => {
         setStatus('idle');
         setJobId(null);
         setQueuePosition(0);
+        setIsRefining(false);
         endSubmit();
         if (result.refundedAmount > 0) toast.success(`Cancelado! ${result.refundedAmount} créditos devolvidos.`);
         else toast.info('Processamento cancelado');
@@ -343,7 +481,6 @@ const GeradorPersonagemTool: React.FC = () => {
 
   const handleReset = () => {
     endSubmit();
-    // Mantém as fotos para permitir nova tentativa
     setOutputImage(null);
     setStatus('idle');
     setProgress(0);
@@ -352,6 +489,8 @@ const GeradorPersonagemTool: React.FC = () => {
     setQueuePosition(0);
     setCurrentStep(null);
     setDebugErrorMessage(null);
+    setShowRefinePanel(false);
+    setIsRefining(false);
     clearGlobalJob();
   };
 
@@ -472,6 +611,17 @@ const GeradorPersonagemTool: React.FC = () => {
               </Button>
             )}
 
+            {/* Refine Panel */}
+            {showRefinePanel && status === 'completed' && (
+              <RefineSelector
+                onSubmit={handleRefine}
+                onCancel={() => setShowRefinePanel(false)}
+                creditCost={refineCreditCost}
+                isProcessing={isRefining}
+                disabled={isProcessing}
+              />
+            )}
+
             {/* Saved Characters Panel */}
             <SavedCharactersPanel userId={user?.id} refreshTrigger={savedRefreshTrigger} />
 
@@ -564,6 +714,9 @@ const GeradorPersonagemTool: React.FC = () => {
                 <div className="absolute bottom-3 left-3 right-3 flex gap-2">
                   <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-purple-600/80 border-purple-400/50 text-white hover:bg-purple-500/90" onClick={handleReset}>
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova
+                  </Button>
+                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white" onClick={() => setShowRefinePanel(true)}>
+                    <Wand2 className="w-3.5 h-3.5 mr-1.5" />Refinar
                   </Button>
                   <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white" onClick={() => setShowSaveDialog(true)}>
                     <Save className="w-3.5 h-3.5 mr-1.5" />Salvar
