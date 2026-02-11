@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart, Bell, UserCheck, Loader2, ArrowLeftRight } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart, Bell, UserCheck, Loader2, ArrowLeftRight, Home } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -606,6 +606,10 @@ const BibliotecaArtes = () => {
             Trocar Biblioteca
            </Button> */}
           <div className="flex items-center gap-3">
+            <Button onClick={() => navigate("/")} variant="ghost" size="sm">
+              <Home className="h-4 w-4 mr-2" />
+              Home
+            </Button>
             {!user && <>
                 <Button onClick={() => navigate('/login-artes?redirect=/biblioteca-artes')} className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white animate-pulse" size="sm">
                   <UserCheck className="h-4 w-4 mr-2" />
@@ -647,6 +651,9 @@ const BibliotecaArtes = () => {
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
+            <button onClick={() => navigate("/")} className="text-white hover:text-white/80 p-1">
+              <Home className="h-5 w-5" />
+            </button>
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
             {/* Botão "Trocar Biblioteca" temporariamente oculto - reativar junto com /biblioteca-artes-hub */}
             {/* <Button 
@@ -694,6 +701,9 @@ const BibliotecaArtes = () => {
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
+            <button onClick={() => navigate("/")} className="text-white hover:text-white/80 p-1">
+              <Home className="h-5 w-5" />
+            </button>
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-8" />
             {/* Botão "Trocar Biblioteca" temporariamente oculto - reativar junto com /biblioteca-artes-hub */}
             {/* <Button 

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, LogOut, Settings, User, Phone, Coins, PlusCircle } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, LogOut, Settings, User, Phone, Coins, PlusCircle, Home } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
@@ -487,6 +487,10 @@ const BibliotecaPrompts = () => {
           <img alt="PromptClub" onClick={() => navigate('/')} src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-7 cursor-pointer hover:opacity-80 transition-opacity" />
         </div>
         <div className="flex items-center gap-3">
+          <Button onClick={() => navigate("/")} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
+            <Home className="h-4 w-4 mr-2" />
+            Home
+          </Button>
           <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
             <Users className="h-4 w-4 mr-2" />
             {t('header.partnerArea')}
@@ -554,7 +558,12 @@ const BibliotecaPrompts = () => {
 
       {/* Top Bar - Mobile */}
       <header className="lg:hidden bg-[#0D0221]/95 backdrop-blur-lg px-4 py-3 flex items-center justify-between shadow-lg border-b border-purple-500/20 sticky top-0 z-50">
-        <img alt="ArcanoApp" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" />
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate("/")} className="text-purple-300 hover:text-white p-1">
+            <Home className="h-5 w-5" />
+          </button>
+          <img alt="ArcanoApp" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" />
+        </div>
         {!user && (
           <div className="flex items-center gap-2">
             <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-purple-300 hover:bg-purple-500/20 text-xs">
