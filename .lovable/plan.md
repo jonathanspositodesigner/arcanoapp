@@ -1,105 +1,57 @@
 
 
-## Confirmacao de Email Obrigatoria via SendPulse no Cadastro
+## Pagina de Resgate de Teste Gratis (240 creditos)
 
-### Problema
+### O que sera feito
 
-Hoje, o `auto_confirm` esta ativo no Supabase (necessario para usuarios criados por webhooks de pagamento). Quando alguem se cadastra pelo formulario, a conta fica ativa imediatamente e a pessoa ja pode logar e pegar creditos gratuitos com qualquer email falso.
+Uma nova pagina `/teste-gratis` com fluxo completo de verificacao, cadastro e resgate de 240 creditos.
 
-### Solucao
-
-Adicionar verificacao de email manual controlada pela tabela `profiles` (campo `email_verified`), com envio do email de confirmacao via SendPulse. O `auto_confirm` do Supabase continua ativo (para webhooks), mas o login so e permitido apos confirmacao do email.
-
-### Fluxo novo do cadastro
+### Fluxo do usuario
 
 ```text
-1. Usuario preenche formulario de signup
-2. Conta e criada no Supabase (auto-confirm ON)
-3. Profile e criado com email_verified = false
-4. Edge Function "send-confirmation-email" gera um token unico, salva no banco, envia email via SendPulse
-5. Tela de sucesso: "Verifique seu email para confirmar sua conta"
-6. Usuario clica no link do email
-7. Edge Function "confirm-email" valida o token, marca email_verified = true no profile
-8. Usuario redirecionado para pagina de login
-9. No login, o hook verifica email_verified antes de permitir acesso
+1. Usuario acessa /teste-gratis
+2. Digita o email
+3. Sistema verifica:
+   a) Ja resgatou na tabela promo_claims (1500 creditos)? -> Bloqueia
+   b) Ja resgatou na tabela arcano_cloner_free_trials (240 creditos)? -> Bloqueia
+   c) Se nao resgatou nada:
+      - TEM cadastro (check_profile_exists) -> Pede senha, faz login, resgata 240 creditos, redireciona para /ferramentas-ia-aplicativo
+      - NAO tem cadastro -> Abre formulario de cadastro (nome, email, senha), cria conta, envia email de confirmacao via SendPulse (mesmo fluxo atual), ao confirmar email vai pra home
 ```
+
+### Cenarios de bloqueio
+
+- "Voce ja resgatou uma promocao anteriormente" com botao "Ir para as Ferramentas de IA"
 
 ### Mudancas
 
 | Tipo | Arquivo | Detalhe |
 |------|---------|---------|
-| Migracao | Nova tabela `email_confirmation_tokens` + campo `email_verified` em profiles | Armazena tokens de confirmacao com expiracao |
-| Nova Edge Function | `supabase/functions/send-confirmation-email/index.ts` | Gera token, salva no banco, envia email bonito via SendPulse com link de confirmacao |
-| Nova Edge Function | `supabase/functions/confirm-email/index.ts` | Recebe token via query param, valida, marca `email_verified = true` no profile, redireciona para login |
-| Modificar | `src/hooks/useUnifiedAuth.ts` | No `signup`: chamar `send-confirmation-email` apos criar conta. No `loginWithPassword`: bloquear login se `email_verified = false` |
-| Modificar | `src/components/HomeAuthModal.tsx` | Ja tem tela de sucesso pos-signup (signupSuccess), nenhuma mudanca necessaria |
-| Modificar | Webhooks existentes (webhook-greenn, create-premium-user, etc.) | Garantir que usuarios criados por webhook tenham `email_verified = true` automaticamente |
+| Nova pagina | `src/pages/TesteGratis.tsx` | Pagina com 4 estados: email, login, signup, bloqueado |
+| Nova Edge Function | `supabase/functions/check-free-trial-eligibility/index.ts` | Verifica email nas duas tabelas de promo (promo_claims + arcano_cloner_free_trials) e se tem cadastro |
+| Nova Edge Function | `supabase/functions/claim-free-trial/index.ts` | Resgata 240 creditos via RPC, requer usuario autenticado + email_verified |
+| Modificar | `src/App.tsx` | Adicionar rota /teste-gratis e lazy import |
 
 ### Detalhes tecnicos
 
-**Nova tabela `email_confirmation_tokens`:**
-```text
-- id: uuid (PK)
-- user_id: uuid (FK profiles)
-- email: text
-- token: text (unique, gerado com crypto.randomUUID)
-- expires_at: timestamptz (24 horas apos criacao)
-- used_at: timestamptz (null ate ser usado)
-- created_at: timestamptz
-```
+**Edge Function `check-free-trial-eligibility`:**
+- Recebe `{ email }` via POST (sem auth necessario)
+- Verifica na tabela `promo_claims` se o email ja resgatou (qualquer promo_code)
+- Verifica na tabela `arcano_cloner_free_trials` se o email ja resgatou
+- Verifica via RPC `check_profile_exists` se tem cadastro
+- Retorna `{ eligible: bool, has_account: bool, reason?: string }`
 
-**Campo novo em `profiles`:**
-```text
-- email_verified: boolean (default false)
-```
+**Edge Function `claim-free-trial`:**
+- Requer autenticacao (Authorization header)
+- Verifica `email_verified = true` no profile
+- Verifica novamente nas tabelas de promo se ja resgatou (seguranca server-side)
+- Chama RPC `claim_arcano_free_trial_atomic` para dar os 240 creditos
+- Retorna `{ success: bool, credits_granted: number }`
 
-**Edge Function `send-confirmation-email`:**
-```text
-1. Recebe { email, user_id }
-2. Gera token com crypto.randomUUID()
-3. Salva na tabela email_confirmation_tokens
-4. Monta link: {SUPABASE_URL}/functions/v1/confirm-email?token={token}
-5. Monta HTML bonito (mesmo estilo da plataforma)
-6. Envia via SendPulse (mesma logica do send-recovery-email)
-```
-
-**Edge Function `confirm-email`:**
-```text
-1. Recebe token via query param (GET request)
-2. Busca token na tabela, verifica se nao expirou e nao foi usado
-3. Marca used_at = now()
-4. Atualiza profiles SET email_verified = true WHERE id = user_id
-5. Retorna HTML bonito com mensagem "Email confirmado!" e botao para login
-6. Ou redireciona para a pagina de login da plataforma
-```
-
-**Alteracao no `useUnifiedAuth.ts` - signup (linhas 317-386):**
-```text
-Apos criar o usuario e o profile:
-1. Chamar send-confirmation-email com email e user_id
-2. Fazer signOut() imediatamente (usuario NAO pode ficar logado)
-3. Chamar onSignupSuccess() para mostrar tela de "verifique seu email"
-```
-
-**Alteracao no `useUnifiedAuth.ts` - loginWithPassword (linhas 235-312):**
-```text
-Apos login bem-sucedido, antes de redirecionar:
-1. Verificar profile.email_verified
-2. Se false: signOut(), mostrar toast "Confirme seu email antes de entrar"
-3. Se true: continuar fluxo normal
-```
-
-**Webhooks (webhook-greenn, create-premium-user, etc.):**
-```text
-Todos os webhooks que criam profiles devem setar email_verified = true
-pois esses usuarios foram verificados pelo processo de pagamento
-```
-
-### Impacto
-
-- Usuarios que se cadastram pelo formulario precisam confirmar email antes de logar
-- Usuarios criados por webhooks de pagamento continuam funcionando normalmente (email_verified = true)
-- Usuarios existentes: migracao seta email_verified = true para todos os profiles existentes
-- Nenhum email e enviado pelo Supabase nativo, tudo via SendPulse
-- Impossivel criar contas com emails falsos para pegar creditos
+**Pagina `TesteGratis.tsx`:**
+- Estado `email`: campo de email + botao "Verificar"
+- Estado `blocked`: mensagem de que ja resgatou + botao para ferramentas
+- Estado `login`: campo de senha (email ja preenchido), faz login via supabase.auth.signInWithPassword, verifica email_verified, chama claim-free-trial, redireciona para /ferramentas-ia-aplicativo
+- Estado `signup`: formulario com nome, email (readonly), senha. Cria conta, cria profile com email_verified=false, chama send-confirmation-email (SendPulse), faz signOut, mostra mensagem "verifique seu email". Ao confirmar email, usuario vai pra home (fluxo existente do confirm-email)
+- Visual: mesmo estilo da pagina ResgatarCreditos (dark purple gradient, cards com borda roxa)
 
