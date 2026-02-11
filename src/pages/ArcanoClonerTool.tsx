@@ -19,6 +19,7 @@ import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
 import AspectRatioSelector, { AspectRatio } from '@/components/arcano-cloner/AspectRatioSelector';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
+import ArcanoClonerAuthModal from '@/components/arcano-cloner/ArcanoClonerAuthModal';
 import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
@@ -99,6 +100,7 @@ const ArcanoClonerTool: React.FC = () => {
   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
   const [activeToolName, setActiveToolName] = useState<string>('');
   const [activeJobId, setActiveJobId] = useState<string | undefined>();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [activeStatus, setActiveStatus] = useState<string | undefined>();
 
   const canProcess = userImage && referenceImage && status === 'idle';
@@ -110,6 +112,8 @@ const ArcanoClonerTool: React.FC = () => {
   }, []);
 
   // Pre-fill reference image from navigation state (e.g. from Biblioteca de Prompts)
+  const cameFromLibrary = !!(location.state as any)?.referenceImageUrl;
+  
   useEffect(() => {
     const refUrl = (location.state as any)?.referenceImageUrl;
     if (refUrl && !referenceImage) {
@@ -117,6 +121,41 @@ const ArcanoClonerTool: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
+
+  // Show auth modal after 2s if user came from library and is not logged in
+  useEffect(() => {
+    if (cameFromLibrary && !user && !creditsLoading) {
+      const timer = setTimeout(() => setShowAuthModal(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [cameFromLibrary, user, creditsLoading]);
+
+  // Handle auth success from modal - claim free trial
+  const handleAuthSuccess = useCallback(async () => {
+    setShowAuthModal(false);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('claim-arcano-free-trial');
+      
+      if (error) {
+        console.error('[ArcanoCloner] Claim error:', error);
+        return;
+      }
+      
+      if (data?.success) {
+        toast.success(`🎉 ${data.credits_granted} créditos gratuitos adicionados!`);
+        refetchCredits();
+      } else if (data?.already_claimed) {
+        toast.info('Você já resgatou suas gerações gratuitas anteriormente.');
+      } else if (data?.is_premium) {
+        toast.info('Você já é premium! Não precisa do bônus.');
+      } else if (data?.has_purchased) {
+        toast.info('Você já possui créditos. Bom uso!');
+      }
+    } catch (err) {
+      console.error('[ArcanoCloner] Claim error:', err);
+    }
+  }, [refetchCredits]);
 
   // Cleanup queued jobs when user leaves
   useQueueSessionCleanup(sessionIdRef.current, status);
@@ -887,6 +926,13 @@ const ArcanoClonerTool: React.FC = () => {
 
       {/* Notification prompt toast */}
       <NotificationPromptToast toolName="cloner" />
+
+      {/* Free Trial Auth Modal */}
+      <ArcanoClonerAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
   );
 };

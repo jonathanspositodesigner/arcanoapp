@@ -483,6 +483,30 @@ export type Database = {
         }
         Relationships: []
       }
+      arcano_cloner_free_trials: {
+        Row: {
+          created_at: string
+          credits_granted: number
+          email: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_granted?: number
+          email: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_granted?: number
+          email?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       arcano_cloner_jobs: {
         Row: {
           api_account: string
