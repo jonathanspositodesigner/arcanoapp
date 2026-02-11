@@ -323,13 +323,13 @@ const ArcanoClonerTool: React.FC = () => {
     }
     
     const timestamp = Date.now();
-    const fileName = `${prefix}-${timestamp}.webp`;
+    const fileName = `${prefix}-${timestamp}.jpg`;
     const filePath = `arcano-cloner/${user.id}/${fileName}`;
 
     const { data, error } = await supabase.storage
       .from('artes-cloudinary')
       .upload(filePath, file, {
-        contentType: 'image/webp',
+        contentType: 'image/jpeg',
         upsert: true,
       });
 

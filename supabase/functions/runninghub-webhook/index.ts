@@ -182,6 +182,33 @@ serve(async (req) => {
       rhCost = Math.round(processingSeconds * 0.2);
     }
 
+    // If COMPLETED but no output, try auto-reconciliation before failing
+    if (!errorMessage && !outputUrl && taskStatus !== 'FAILED') {
+      console.log(`[Webhook] COMPLETED without output for task ${taskId}, attempting auto-reconciliation...`);
+      try {
+        const statusResponse = await fetch('https://www.runninghub.ai/task/openapi/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey: Deno.env.get('RUNNINGHUB_API_KEY')?.trim() || '', taskId }),
+        });
+        const statusData = await statusResponse.json();
+        console.log(`[Webhook] Auto-reconcile status for ${taskId}:`, JSON.stringify(statusData));
+        
+        if (statusData.code === 0 && statusData.data) {
+          const reconResults = statusData.data.outputFileList || statusData.data.results || [];
+          if (Array.isArray(reconResults) && reconResults.length > 0) {
+            const reconImage = reconResults.find((r: any) => 
+              ['png', 'jpg', 'jpeg', 'webp'].includes(r.outputType || r.fileType)
+            );
+            outputUrl = reconImage?.fileUrl || reconImage?.url || reconResults[0]?.fileUrl || reconResults[0]?.url || null;
+            console.log(`[Webhook] Auto-reconcile found output: ${outputUrl}`);
+          }
+        }
+      } catch (reconError) {
+        console.error(`[Webhook] Auto-reconcile failed:`, reconError);
+      }
+    }
+
     const newStatus = errorMessage ? 'failed' : (outputUrl ? 'completed' : 'failed');
     const finalError = errorMessage || (newStatus === 'failed' ? 'No output received' : null);
 
