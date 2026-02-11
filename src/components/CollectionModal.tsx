@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Play, ArrowRight, Copy, Download, X, Youtube } from "lucide-react";
+import { Star, Play, ArrowRight, Copy, Download, X, Youtube, Sparkles, Lock, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
@@ -311,6 +311,18 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                     {t("collectionModal.downloadRef")}
                   </Button>
                 </div>
+                {!isVideoUrl(selectedItem.imageUrl) && (
+                  <Button 
+                    onClick={() => {
+                      onClose();
+                      navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedItem.imageUrl } });
+                    }}
+                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Gerar sua foto
+                  </Button>
+                )}
                 {selectedItem.tutorialUrl && (
                   <Button 
                     onClick={() => openTutorial(selectedItem.tutorialUrl!)}
@@ -323,13 +335,24 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                 )}
               </div>
             ) : (
-              <Button 
-                onClick={() => navigate('/planos')}
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90"
-              >
-                <Star className="h-4 w-4 mr-2" fill="currentColor" />
-                {t("collectionModal.becomePremium")}
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button 
+                  onClick={() => navigate('/planos')}
+                  className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90"
+                >
+                  <Star className="h-4 w-4 mr-2" fill="currentColor" />
+                  {t("collectionModal.becomePremium")}
+                </Button>
+                {!isVideoUrl(selectedItem.imageUrl) && (
+                  <Button 
+                    onClick={() => navigate('/planos')}
+                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
+                  >
+                    <Lock className="h-4 w-4 mr-2" />
+                    Exclusivo Premium
+                  </Button>
+                )}
+              </div>
             )}
 
             {/* Back button */}
@@ -358,11 +381,10 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
             {items.map(item => (
               <div 
                 key={item.id}
-                className="relative rounded-lg overflow-hidden border border-border cursor-pointer hover:border-primary transition-colors"
-                onClick={() => setSelectedItem(item)}
+                className="group relative rounded-lg overflow-hidden border border-border cursor-pointer hover:border-primary transition-colors"
               >
                 {isVideoUrl(item.imageUrl) ? (
-                  <div className="relative aspect-square">
+                  <div className="relative aspect-square" onClick={() => setSelectedItem(item)}>
                     <SecureVideo
                       src={item.imageUrl}
                       isPremium={item.isPremium}
@@ -377,17 +399,19 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                     </div>
                   </div>
                 ) : (
-                  <SecureImage
-                    src={getThumbnailUrl(item.imageUrl)}
-                    alt={item.title}
-                    isPremium={item.isPremium}
-                    className="w-full aspect-square object-cover"
-                    loading="lazy"
-                  />
+                  <div className="relative aspect-square" onClick={() => setSelectedItem(item)}>
+                    <SecureImage
+                      src={getThumbnailUrl(item.imageUrl)}
+                      alt={item.title}
+                      isPremium={item.isPremium}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
                 )}
                 
                 {/* Badges */}
-                <div className="absolute top-2 left-2 flex gap-1">
+                <div className="absolute top-2 left-2 flex gap-1 z-10">
                   {item.isPremium ? (
                     <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px]">
                       <Star className="h-2.5 w-2.5 mr-0.5" fill="currentColor" />
@@ -397,6 +421,44 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                     <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] bg-background/80">
                       {t("badges.free")}
                     </Badge>
+                  )}
+                </div>
+
+                {/* Hover overlay with action buttons */}
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20 p-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="w-full max-w-[140px] text-xs"
+                    onClick={(e) => { e.stopPropagation(); setSelectedItem(item); }}
+                  >
+                    <Eye className="h-3.5 w-3.5 mr-1.5" />
+                    Ver Prompt
+                  </Button>
+                  {!isVideoUrl(item.imageUrl) && (
+                    item.isPremium && !isPremium ? (
+                      <Button
+                        size="sm"
+                        className="w-full max-w-[140px] text-xs bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
+                        onClick={(e) => { e.stopPropagation(); navigate('/planos'); }}
+                      >
+                        <Lock className="h-3.5 w-3.5 mr-1.5" />
+                        Exclusivo Premium
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="w-full max-w-[140px] text-xs bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          onClose();
+                          navigate('/arcano-cloner-tool', { state: { referenceImageUrl: item.imageUrl } });
+                        }}
+                      >
+                        <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                        Gerar sua foto
+                      </Button>
+                    )
                   )}
                 </div>
 
