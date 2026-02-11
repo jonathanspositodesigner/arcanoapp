@@ -1,30 +1,36 @@
 
 
-## Correcao: Carrossel de Refinamento Nao Aparece
+## Remover Restricoes do Bonus Arcano Cloner
 
-### Problema
+### Problema Atual
 
-Na linha 163 de `GeradorPersonagemTool.tsx`, o `useCallback` do `onStatusChange` nao inclui `isRefining` nas dependencias:
+A edge function `claim-arcano-free-trial` bloqueia o bonus para:
+1. Usuarios premium ("Voce ja e premium! Nao precisa do bonus.")
+2. Usuarios que ja compraram creditos ("Voce ja possui creditos.")
+3. Usuarios que ja resgataram (unica restricao que deve permanecer)
 
-```text
-}, [endSubmit, playNotificationSound, refetchCredits]),
-```
+### Nova Regra
 
-O callback sempre ve `isRefining = false`, entao todo resultado e tratado como "Original", resetando o historico. O carrossel nunca aparece porque o historico nunca passa de 1 item.
+Dar o bonus de 3 geracoes gratuitas para QUALQUER usuario autenticado, desde que seja a primeira vez. A unica verificacao que permanece e: "ja resgatou antes?"
 
-### Correcao
+### Mudancas
 
-Uma unica linha -- adicionar `isRefining` ao array de dependencias:
+#### 1. Edge Function: `supabase/functions/claim-arcano-free-trial/index.ts`
 
-```text
-}, [endSubmit, playNotificationSound, refetchCredits, isRefining]),
-```
+Remover os blocos de verificacao #2 (premium) e #3 (lifetime_balance). Manter apenas o bloco #1 (already_claimed).
 
-### Arquivo
+Linhas a remover:
+- Linhas 63-76: check de premium (`premium_users`)
+- Linhas 78-90: check de creditos comprados (`lifetime_balance > 0`)
+
+#### 2. Frontend: `src/pages/ArcanoClonerTool.tsx`
+
+Remover os tratamentos de `is_premium` e `has_purchased` na resposta do claim (linhas 150-153), mantendo apenas `already_claimed` e `success`.
+
+### Arquivos
 
 | Arquivo | Mudanca |
 |---------|---------|
-| `src/pages/GeradorPersonagemTool.tsx` | Linha 163: adicionar `isRefining` ao array de dependencias do useCallback |
-
-Mudanca de 1 linha. Nenhum arquivo novo.
+| `supabase/functions/claim-arcano-free-trial/index.ts` | Remover checks de premium e lifetime_balance (linhas 63-90) |
+| `src/pages/ArcanoClonerTool.tsx` | Remover tratamento de `is_premium` e `has_purchased` (linhas 150-153) |
 
