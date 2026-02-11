@@ -1,39 +1,41 @@
 
+## Atualizar textos de 240 para 300 creditos + aviso de validade mensal
 
-## Restringir "Gerar sua foto" para fotos premium
-
-### O que sera feito
-
-Atualmente, o botao "Gerar sua foto" aparece em TODAS as fotos da categoria "Fotos", independentemente de serem premium ou nao. A mudanca fara com que:
-
-- **Foto gratis**: botao funciona normalmente para todos
-- **Foto premium + usuario premium**: botao funciona normalmente
-- **Foto premium + usuario NAO premium (ou deslogado)**: botao aparece com visual de bloqueio (icone de cadeado) e ao clicar, abre o modal de "conteudo exclusivo premium" que ja existe na pagina
+### Situacao atual
+- O `ai_tool_settings` ja tem `credit_cost = 100`, entao a RPC ja calcula `3 * 100 = 300` creditos
+- O backend ja esta correto - so precisa atualizar os textos no frontend e os fallbacks nas Edge Functions
 
 ### Mudancas
 
-Apenas **1 arquivo** sera modificado: `src/pages/BibliotecaPrompts.tsx`
+#### 1. `src/components/arcano-cloner/ArcanoClonerAuthModal.tsx`
+- Linha 256: "Ganhe 3 gerações gratuitas!" -> "Ganhe 300 créditos grátis!"
+- Linha 314: "Cadastre-se e ganhe 3 gerações gratuitas" -> "Cadastre-se e ganhe 300 créditos grátis"
+- Linha 342: "...suas 3 gerações gratuitas" -> "...seus 300 créditos grátis"
+- Adicionar aviso "Créditos válidos por 1 mês" abaixo do titulo principal
 
-**Dois pontos de alteracao:**
+#### 2. `src/pages/TesteGratis.tsx`
+- Linha 112: toast "240 créditos adicionados!" -> "300 créditos adicionados!"
+- Linha 222: "Ganhe 240 créditos" -> "Ganhe 300 créditos"
+- Linha 259: "resgatar seus 240 créditos" -> "resgatar seus 300 créditos"
+- Linha 317: "ganhar 240 créditos" -> "ganhar 300 créditos"
+- Linha 415: "240 créditos adicionados!" -> "300 créditos adicionados!"
+- Linha 433: "resgatar seus 240 créditos" -> "resgatar seus 300 créditos"
+- Adicionar aviso "Créditos válidos por 1 mês" nos estados relevantes (email, login, signup)
 
-1. **Card na grid (linha ~887-896)**: Adicionar verificacao `item.isPremium && !isPremium` no onClick do botao. Se nao tiver acesso, abre o modal premium em vez de navegar pro Arcano Cloner. Visual do botao muda para mostrar cadeado quando bloqueado.
+#### 3. `supabase/functions/claim-arcano-free-trial/index.ts`
+- Linha 89: fallback `|| 240` -> `|| 300`
 
-2. **Modal de detalhes (linha ~1089-1097)**: Mesma logica - se a foto selecionada for premium e o usuario nao for premium, o botao abre o modal premium em vez de redirecionar.
+#### 4. `supabase/functions/claim-free-trial/index.ts`
+- Linha 112: fallback `|| 240` -> `|| 300`
 
-### Logica do botao
+#### 5. RPC `claim_arcano_free_trial_atomic` (migracao SQL)
+- Atualizar a descricao da transacao de "3 gerações gratuitas" para "300 créditos grátis"
 
-```text
-Se (foto.isPremium E NAO isPremium):
-  -> Mostra botao com icone de cadeado + texto "Exclusivo Premium"
-  -> Ao clicar, abre modal premium existente (setPremiumModalItem + setShowPremiumModal)
-Senao:
-  -> Mostra botao normal "Gerar sua foto"
-  -> Ao clicar, navega para /arcano-cloner-tool com a imagem
-```
-
-### Detalhes tecnicos
-
-- Reutiliza o modal premium ja existente (`showPremiumModal` + `premiumModalItem`) - nenhum componente novo necessario
-- A variavel `canAccess` ja existe no escopo do map (`!item.isPremium || isPremium`) e sera reutilizada
-- No modal de detalhes, a verificacao usa `selectedPrompt.isPremium && !isPremium`
-- Visual do botao bloqueado: fundo cinza/roxo escuro com icone Lock, mantendo o gradiente rosa/roxo para quem tem acesso
+### Resumo
+| Arquivo | Tipo |
+|---------|------|
+| `src/components/arcano-cloner/ArcanoClonerAuthModal.tsx` | Textos + aviso validade |
+| `src/pages/TesteGratis.tsx` | Textos + aviso validade |
+| `supabase/functions/claim-arcano-free-trial/index.ts` | Fallback 240->300 |
+| `supabase/functions/claim-free-trial/index.ts` | Fallback 240->300 |
+| Nova migracao SQL | Descricao na RPC |
