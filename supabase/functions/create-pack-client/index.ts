@@ -195,6 +195,7 @@ serve(async (req) => {
         phone: cleanPhone,
         email: normalizedEmail,
         password_changed: false,
+        email_verified: true,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' })
       .select()

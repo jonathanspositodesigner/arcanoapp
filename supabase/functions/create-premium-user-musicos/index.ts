@@ -117,6 +117,7 @@ serve(async (req) => {
         name: name || null,
         phone: phone || null,
         password_changed: false,
+        email_verified: true,
       }, {
         onConflict: 'id'
       });

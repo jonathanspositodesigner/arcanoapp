@@ -613,7 +613,8 @@ async function processCreditsWebhook(
       phone: clientPhone, 
       email, 
       locale: userLocale, 
-      password_changed: false, 
+      password_changed: false,
+      email_verified: true,
       updated_at: new Date().toISOString()
     }, { onConflict: 'id' })
     console.log(`   ├─ ✅ Profile atualizado`)
@@ -851,7 +852,7 @@ async function processGreennArtesWebhook(supabase: any, payload: any, logId: str
 
       // Upsert profile
       await supabase.from('profiles').upsert({
-        id: userId, name: clientName, phone: clientPhone, email, locale: userLocale, password_changed: false, updated_at: new Date().toISOString()
+        id: userId, name: clientName, phone: clientPhone, email, locale: userLocale, password_changed: false, email_verified: true, updated_at: new Date().toISOString()
       }, { onConflict: 'id' })
 
       // Process packs

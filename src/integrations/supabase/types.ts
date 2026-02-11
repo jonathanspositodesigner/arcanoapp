@@ -1501,6 +1501,44 @@ export type Database = {
         }
         Relationships: []
       }
+      email_confirmation_tokens: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          token: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          token: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_confirmation_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_templates: {
         Row: {
           content: string
@@ -2253,6 +2291,7 @@ export type Database = {
           bio: string | null
           created_at: string | null
           email: string | null
+          email_verified: boolean
           id: string
           locale: string | null
           name: string | null
@@ -2267,6 +2306,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           email?: string | null
+          email_verified?: boolean
           id: string
           locale?: string | null
           name?: string | null
@@ -2281,6 +2321,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           email?: string | null
+          email_verified?: boolean
           id?: string
           locale?: string | null
           name?: string | null

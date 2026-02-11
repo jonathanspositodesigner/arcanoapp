@@ -102,3 +102,9 @@ verify_jwt = false
 
 [functions.send-recovery-email]
 verify_jwt = false
+
+[functions.send-confirmation-email]
+verify_jwt = false
+
+[functions.confirm-email]
+verify_jwt = false

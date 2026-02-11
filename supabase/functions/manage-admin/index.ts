@@ -158,6 +158,7 @@ serve(async (req) => {
         email: normalizedEmail,
         name: name || null,
         password_changed: false,
+        email_verified: true,
         recovery_email: recovery_email?.trim() || null,
       });
 
