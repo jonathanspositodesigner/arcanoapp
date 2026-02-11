@@ -31,11 +31,12 @@ const DEFAULT_OPTIONS: OptimizationOptions = {
 };
 
 // AI Tools optimization config - safe limit for RunningHub VRAM
+// Uses JPEG instead of WebP because RunningHub's PIL/ComfyUI fails to read certain WebP files
 const AI_OPTIMIZATION_CONFIG = {
   maxSizeMB: 2,
   maxWidthOrHeight: 1536, // Prevents VRAM overflow on RunningHub
   useWebWorker: true,
-  fileType: 'image/webp' as const,
+  fileType: 'image/jpeg' as const,
   initialQuality: 0.9,
 };
 
@@ -110,10 +111,10 @@ export const optimizeForAI = async (file: File): Promise<OptimizationResult> => 
   try {
     const compressedFile = await imageCompression(file, AI_OPTIMIZATION_CONFIG);
 
-    // Create a new file with .webp extension
-    const webpFileName = file.name.replace(/\.[^/.]+$/, '.webp');
-    const optimizedFile = new File([compressedFile], webpFileName, {
-      type: 'image/webp',
+    // Create a new file with .jpg extension (JPEG for RunningHub compatibility)
+    const jpegFileName = file.name.replace(/\.[^/.]+$/, '.jpg');
+    const optimizedFile = new File([compressedFile], jpegFileName, {
+      type: 'image/jpeg',
     });
 
     const optimizedSize = optimizedFile.size;
@@ -121,7 +122,7 @@ export const optimizeForAI = async (file: File): Promise<OptimizationResult> => 
     const savingsPercent = Math.round((savings / originalSize) * 100);
 
     console.log(
-      `[AI Optimize] ${file.name} (${formatBytes(originalSize)}) → ${webpFileName} (${formatBytes(optimizedSize)}) - ${savingsPercent}% saved`
+      `[AI Optimize] ${file.name} (${formatBytes(originalSize)}) → ${jpegFileName} (${formatBytes(optimizedSize)}) - ${savingsPercent}% saved`
     );
 
     return {

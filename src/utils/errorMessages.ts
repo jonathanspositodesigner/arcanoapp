@@ -17,6 +17,22 @@ export function getAIErrorMessage(errorMessage: string | null): {
       solution: 'Aguarde 5 minutos e tente novamente. Se persistir, use uma imagem diferente.'
     };
   }
+
+  // Content safety filter - IA bloqueou por conteúdo inapropriado
+  if (error.includes('content safety') || error.includes('image generation blocked') || error.includes('safety filter') || error.includes('nsfw')) {
+    return {
+      message: 'Imagem bloqueada pelo filtro de segurança',
+      solution: 'A IA considerou o conteúdo inapropriado. Tente usar outra imagem de referência ou de pessoa.'
+    };
+  }
+
+  // PIL/ComfyUI não consegue ler a imagem (formato incompatível)
+  if (error.includes('unidentifiedimageerror') || error.includes('cannot identify image') || error.includes('pil')) {
+    return {
+      message: 'Formato de imagem incompatível',
+      solution: 'Tente salvar a imagem como JPEG antes de enviar, ou use outra imagem.'
+    };
+  }
   
   // Erros de timeout
   if (error.includes('timeout') || error.includes('timed out') || error.includes('cancelled automatically')) {
