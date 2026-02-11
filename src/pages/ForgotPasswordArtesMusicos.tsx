@@ -19,10 +19,10 @@ const ForgotPasswordArtesMusicos = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/reset-password-artes-musicos`,
+      const { data, error } = await supabase.functions.invoke('send-recovery-email', {
+        body: { email: email.trim().toLowerCase(), redirect_url: `${window.location.origin}/reset-password-artes-musicos` }
       });
-      if (error) { toast.error(t('errors.sendRecoveryEmailError')); return; }
+      if (error || (data && !data.success)) { toast.error(t('errors.sendRecoveryEmailError')); return; }
       setEmailSent(true);
       toast.success(t('success.recoveryEmailSent'));
     } catch (error) { toast.error(t('errors.sendRecoveryEmailError')); } finally { setIsLoading(false); }

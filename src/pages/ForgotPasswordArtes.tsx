@@ -20,11 +20,11 @@ const ForgotPasswordArtes = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/reset-password-artes`,
+      const { data, error } = await supabase.functions.invoke('send-recovery-email', {
+        body: { email: email.trim().toLowerCase(), redirect_url: `${window.location.origin}/reset-password-artes` }
       });
 
-      if (error) {
+      if (error || (data && !data.success)) {
         toast.error(t('errors.sendRecoveryEmailError'));
         return;
       }

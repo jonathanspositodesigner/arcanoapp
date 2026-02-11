@@ -79,7 +79,7 @@ export function usePushNotifications() {
         console.log('[Push] Service worker ready');
 
         // Check for existing subscription
-        const subscription = await registration.pushManager.getSubscription();
+        const subscription = await (registration as any).pushManager.getSubscription();
         
         if (subscription) {
           const endpoint = subscription.endpoint;
@@ -168,7 +168,7 @@ export function usePushNotifications() {
       const registration = await navigator.serviceWorker.ready;
 
       // Clean up any existing subscription
-      const existingSubscription = await registration.pushManager.getSubscription();
+      const existingSubscription = await (registration as any).pushManager.getSubscription();
       if (existingSubscription) {
         console.log('[Push] Removing existing subscription');
         await supabase
@@ -181,7 +181,7 @@ export function usePushNotifications() {
       // Create new subscription
       console.log('[Push] Creating new subscription with VAPID key:', VAPID_PUBLIC_KEY.substring(0, 20) + '...');
       const vapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: vapidKey.buffer as ArrayBuffer
       });
@@ -230,7 +230,7 @@ export function usePushNotifications() {
       setIsLoading(true);
 
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
+      const subscription = await (registration as any).pushManager.getSubscription();
 
       if (subscription) {
         // Remove from database

@@ -99,3 +99,6 @@ verify_jwt = false
 
 [functions.generate-thumbnail]
 verify_jwt = false
+
+[functions.send-recovery-email]
+verify_jwt = false

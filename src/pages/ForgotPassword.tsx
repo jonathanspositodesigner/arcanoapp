@@ -21,11 +21,11 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      const { data, error } = await supabase.functions.invoke('send-recovery-email', {
+        body: { email: email.trim().toLowerCase(), redirect_url: `${window.location.origin}/reset-password` }
       });
 
-      if (error) throw error;
+      if (error || (data && !data.success)) throw new Error(data?.error || 'Erro ao enviar email');
 
       setEmailSent(true);
       toast.success(t('success.recoveryEmailSent'));
