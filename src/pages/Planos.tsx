@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Coins } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Coins, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +23,17 @@ const Planos = () => {
   const { locale } = useLocale();
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
+  const [expandedAiTools, setExpandedAiTools] = useState<Record<string, boolean>>({});
+
+  const aiToolsList = [
+    "Arcano Cloner",
+    "IA que muda a roupa",
+    "IA que muda pose",
+    "Upscale Arcano v2.0",
+    "Forja de Selos 3D",
+    "Gerador de Personagens",
+    "E muito mais..."
+  ];
   
   const plans = {
     mensal: [{
@@ -37,10 +48,7 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.changeClothesAI'), included: false },
-        { text: t('planos.features.changePoseAI'), included: false },
-        { text: t('planos.features.upscaleArcano'), included: false },
-        { text: t('planos.features.forja3D'), included: false }
+        { text: 'Acesso às Ferramentas de IA', included: false, isAiTools: true }
       ],
       popular: false,
       promo: false
@@ -56,10 +64,7 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.changeClothesAI'), included: true },
-        { text: t('planos.features.changePoseAI'), included: true },
-        { text: t('planos.features.upscaleArcano'), included: false },
-        { text: t('planos.features.forja3D'), included: false }
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true }
       ],
       popular: false,
       promo: false,
@@ -76,10 +81,7 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.changeClothesAI'), included: true },
-        { text: t('planos.features.changePoseAI'), included: true },
-        { text: t('planos.features.upscaleArcano'), included: true },
-        { text: t('planos.features.forja3D'), included: true }
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true }
       ],
       popular: false,
       promo: false,
@@ -98,10 +100,7 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.changeClothesAI'), included: false },
-        { text: t('planos.features.changePoseAI'), included: false },
-        { text: t('planos.features.upscaleArcano'), included: false },
-        { text: t('planos.features.forja3D'), included: false }
+        { text: 'Acesso às Ferramentas de IA', included: false, isAiTools: true }
       ],
       popular: false,
       promo: false
@@ -118,10 +117,7 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.changeClothesAI'), included: true },
-        { text: t('planos.features.changePoseAI'), included: true },
-        { text: t('planos.features.upscaleArcano'), included: false },
-        { text: t('planos.features.forja3D'), included: false }
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true }
       ],
       popular: false,
       promo: false,
@@ -139,10 +135,7 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.changeClothesAI'), included: true },
-        { text: t('planos.features.changePoseAI'), included: true },
-        { text: t('planos.features.upscaleArcano'), included: true },
-        { text: t('planos.features.forja3D'), included: true }
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true }
       ],
       popular: false,
       promo: true,
@@ -251,15 +244,36 @@ const Planos = () => {
 
               <ul className="space-y-3 flex-1">
                 {plan.features.map((feature, fIndex) => (
-                  <li key={fIndex} className="flex items-start gap-2 text-sm">
-                    {feature.included ? (
-                      <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                    ) : (
-                      <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                  <li key={fIndex}>
+                    <div 
+                      className={`flex items-start gap-2 text-sm ${(feature as any).isAiTools ? 'cursor-pointer select-none' : ''}`}
+                      onClick={() => {
+                        if ((feature as any).isAiTools) {
+                          setExpandedAiTools(prev => ({ ...prev, [plan.name]: !prev[plan.name] }));
+                        }
+                      }}
+                    >
+                      {feature.included ? (
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                      ) : (
+                        <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                      )}
+                      <span className={feature.included ? "text-purple-200" : "text-orange-500"}>
+                        {feature.text}
+                      </span>
+                      {(feature as any).isAiTools && (
+                        <ChevronDown className={`w-3.5 h-3.5 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-purple-400' : 'text-orange-500'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
+                      )}
+                    </div>
+                    {(feature as any).isAiTools && expandedAiTools[plan.name] && (
+                      <ul className="ml-6 mt-1.5 space-y-1">
+                        {aiToolsList.map((tool, tIndex) => (
+                          <li key={tIndex} className={`text-xs ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
+                            • {tool}
+                          </li>
+                        ))}
+                      </ul>
                     )}
-                    <span className={feature.included ? "text-purple-200" : "text-orange-500"}>
-                      {feature.text}
-                    </span>
                   </li>
                 ))}
               </ul>
