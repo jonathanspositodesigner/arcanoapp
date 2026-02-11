@@ -483,7 +483,7 @@ const UpscalerArcanoTool: React.FC = () => {
       return;
     }
 
-    const upscalerCreditCost = version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60);
+    const upscalerCreditCost = isLogoMode ? 50 : (version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60));
     
     const freshCredits = await checkBalance();
     if (freshCredits < upscalerCreditCost) {
@@ -579,7 +579,7 @@ const UpscalerArcanoTool: React.FC = () => {
       setProgress(45);
 
       // Step 3: Call edge function with URL (not base64)
-      const edgeCreditCost = version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60);
+      const edgeCreditCost = isLogoMode ? 50 : (version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60));
 
       const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {
@@ -1169,7 +1169,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     {t('upscalerTool.buttons.increaseQuality')}
                     <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
                       <Coins className="w-3.5 h-3.5" />
-                      {version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60)}
+                      {isLogoMode ? 50 : (version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60))}
                     </span>
                   </>
                 )}
