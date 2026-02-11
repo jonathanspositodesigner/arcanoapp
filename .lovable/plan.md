@@ -1,55 +1,47 @@
 
 
-## Diagnostico dos Erros do Arcano Cloner
+## Migrar creditos do resgate de 1500 de Mensal para Vitalicio
 
-### Resumo dos erros encontrados
+### Situacao atual
 
-Total de jobs: 57 (49 sucesso, 8 falhas = **14% de falha**)
+- A Edge Function `claim-promo-credits` usa a RPC `add_upscaler_credits`, que adiciona ao `monthly_balance`
+- Todos os ~50 usuarios que ja resgataram tem os creditos (ou o que sobrou deles) no `monthly_balance`
+- Nenhum deles tem `lifetime_balance` vindo dessa promo (alguns tem 60 de outras fontes)
 
-| Erro | Qtd | Causa Real | Contornavel? |
-|------|-----|-----------|--------------|
-| WebP nao reconhecido pelo PIL | 4 | RunningHub nao consegue ler o arquivo .webp enviado (PIL.UnidentifiedImageError no node 62) | Sim - converter para JPEG/PNG antes de enviar |
-| Content safety filter | 1 | IA bloqueou geracao por considerar conteudo inapropriado | Parcial - retry automatico com prompt ajustado |
-| No output received | 1 | Webhook veio sem URL de resultado | Sim - retry automatico |
-| Upload 502 | 1 | RunningHub retornou 502 ao receber a imagem de referencia | Ja tem retry (3x), erro transiente |
-| Timeout 10min | 1 | Job ficou preso sem resposta | Ja tem tratamento, erro transiente |
+### O que sera feito
 
-### Causa principal (75% dos erros): WebP incompativel
+#### 1. Migracao SQL - Transferir saldo restante de monthly para lifetime
 
-O problema mais grave e sistematico: **a referencia e enviada em formato WebP**, mas o ComfyUI/PIL no servidor da RunningHub nao consegue identificar certos arquivos WebP. Isso afeta especialmente a imagem de referencia (node 62).
+Para cada usuario que resgatou a promo UPSCALER_1500:
+- Pegar o `monthly_balance` atual (que pode ser menor que 1500 se ja gastou)
+- Mover esse valor para `lifetime_balance`
+- Zerar o `monthly_balance` (somente a parte da promo)
+- Registrar a transacao em `upscaler_credit_transactions` para auditoria
 
-### Plano de correcao
+**Logica**: Como o monthly_balance pode conter SOMENTE creditos da promo (nenhum outro sistema adiciona monthly), transferimos o monthly_balance inteiro para lifetime.
 
-#### 1. Converter imagens para JPEG antes do upload (corrige 4 de 8 erros)
+```text
+Para cada usuario com promo UPSCALER_1500:
+  lifetime_balance += monthly_balance
+  monthly_balance = 0
+  Registrar transacao de debito monthly e credito lifetime
+```
 
-Na Edge Function `runninghub-arcano-cloner/index.ts`, na etapa de upload de imagem para a RunningHub, converter WebP para JPEG usando Canvas no client-side antes de enviar, OU converter server-side antes de fazer upload para a RunningHub.
+#### 2. Alterar Edge Function `claim-promo-credits`
 
-**Abordagem escolhida**: Client-side - ja existe compressao via `browser-image-compression`. Vamos forcar output em JPEG em vez de WebP no componente do Arcano Cloner ao comprimir a imagem antes do upload ao storage.
-
-#### 2. Adicionar retry automatico para "No output received" (corrige 1 de 8)
-
-Quando o webhook volta com status COMPLETED mas sem output URL, o sistema deve tentar reconciliar automaticamente (chamar a API de status) antes de declarar falha.
-
-#### 3. Adicionar mapeamento de erro "content safety filter" (melhora UX)
-
-Adicionar no `errorMessages.ts` uma mensagem clara quando a IA bloqueia por filtro de seguranca, orientando o usuario a usar outra imagem.
+Mudar a chamada de `add_upscaler_credits` (monthly) para `add_lifetime_credits` (vitalicio), e atualizar o `credit_type` no registro da `promo_claims` para `'lifetime'`.
 
 ### Mudancas tecnicas
 
-| Arquivo | Mudanca |
-|---------|---------|
-| `src/components/arcano-cloner/useArcanoCloner.ts` (ou arquivo de upload) | Forcar formato JPEG na compressao de imagem antes do upload, em vez de WebP |
-| `src/utils/errorMessages.ts` | Adicionar mapeamento para "content safety filter" e "UnidentifiedImageError" |
-| `supabase/functions/runninghub-arcano-cloner/index.ts` | Na funcao de upload para RunningHub, adicionar fallback: se upload de WebP falhar, re-baixar a imagem e converter para JPEG server-side antes de re-tentar |
-| `supabase/functions/runninghub-webhook/index.ts` | No caso de COMPLETED sem output, tentar reconciliacao automatica antes de marcar como falha |
+| Tipo | Arquivo | Detalhe |
+|------|---------|---------|
+| Migracao SQL | Nova migracao | Transfere monthly_balance para lifetime_balance para todos que resgataram UPSCALER_1500, com registro em upscaler_credit_transactions |
+| Modificar | `supabase/functions/claim-promo-credits/index.ts` | Trocar RPC de `add_upscaler_credits` para `add_lifetime_credits`, e credit_type de `monthly` para `lifetime` |
 
-### O que NAO precisa mudar
+### Seguranca
 
-- Timeout de 10min: ja funciona e estorna creditos corretamente
-- Retry de upload 502: ja tem 3 tentativas implementadas
-- Estorno de creditos: todos os 8 jobs falhados tiveram creditos estornados corretamente
-
-### Impacto esperado
-
-Essas mudancas devem reduzir a taxa de falha de ~14% para menos de 3%, eliminando o problema sistematico de WebP e adicionando resiliencia aos erros transientes.
+- A migracao usa UPDATE direto com JOIN na promo_claims, afetando SOMENTE os usuarios que resgataram
+- Usuarios que ja gastaram tudo (monthly_balance = 0) nao serao afetados negativamente
+- Transacoes de auditoria serao registradas para rastreabilidade
+- Nenhum credito duplicado sera criado - apenas transferencia do que ja existe
 
