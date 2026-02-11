@@ -62,7 +62,7 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
         ) : (
           /* Overlay absoluto para centralização perfeita */
           <div className="absolute inset-0 grid place-items-center pointer-events-none">
-            <div className="flex flex-col items-center gap-1 text-center -translate-y-1">
+            <div className="flex flex-col items-center gap-1 text-center">
               <div className="w-8 h-8 rounded-lg bg-fuchsia-500/20 border border-dashed border-fuchsia-500/40 flex items-center justify-center">
                 <Plus className="w-4 h-4 text-fuchsia-400" />
               </div>
