@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw } from 'lucide-react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ const queueMessages = [
 ];
 
 const ArcanoClonerTool: React.FC = () => {
+  const location = useLocation();
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
@@ -106,6 +108,15 @@ const ArcanoClonerTool: React.FC = () => {
   useEffect(() => {
     sessionIdRef.current = crypto.randomUUID();
   }, []);
+
+  // Pre-fill reference image from navigation state (e.g. from Biblioteca de Prompts)
+  useEffect(() => {
+    const refUrl = (location.state as any)?.referenceImageUrl;
+    if (refUrl && !referenceImage) {
+      handleReferenceImageChange(refUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
 
   // Cleanup queued jobs when user leaves
   useQueueSessionCleanup(sessionIdRef.current, status);
