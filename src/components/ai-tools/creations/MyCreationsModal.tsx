@@ -31,7 +31,8 @@ const MyCreationsModal: React.FC<MyCreationsModalProps> = ({ open, onClose }) =>
     error, 
     hasMore, 
     loadMore, 
-    refresh 
+    refresh,
+    deleteCreation
   } = useMyCreations({ mediaType });
 
   return (
@@ -58,7 +59,7 @@ const MyCreationsModal: React.FC<MyCreationsModalProps> = ({ open, onClose }) =>
           <div className="flex items-center gap-2 mt-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
             <AlertTriangle className="w-4 h-4 text-yellow-400 shrink-0" />
             <p className="text-sm text-yellow-200/80">
-              Os arquivos expiram em <strong>5 dias</strong> após a geração e somem automaticamente. Faça download para guardar.
+              Os arquivos expiram em <strong>24 horas</strong> após a geração e somem automaticamente. Faça download para guardar.
             </p>
           </div>
           
@@ -93,6 +94,7 @@ const MyCreationsModal: React.FC<MyCreationsModalProps> = ({ open, onClose }) =>
             hasMore={hasMore}
             onLoadMore={loadMore}
             onRetry={refresh}
+            onDelete={deleteCreation}
           />
         </div>
       </DialogContent>

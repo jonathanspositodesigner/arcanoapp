@@ -3417,6 +3417,10 @@ export type Database = {
           success: boolean
         }[]
       }
+      delete_user_ai_creation: {
+        Args: { p_creation_id: string }
+        Returns: boolean
+      }
       get_ai_tools_cost_averages: {
         Args: never
         Returns: {

@@ -13,6 +13,7 @@ interface MyCreationsGridProps {
   hasMore: boolean;
   onLoadMore: () => void;
   onRetry: () => void;
+  onDelete?: (id: string) => void;
 }
 
 const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
@@ -21,7 +22,8 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
   error,
   hasMore,
   onLoadMore,
-  onRetry
+  onRetry,
+  onDelete
 }) => {
   const navigate = useNavigate();
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -118,7 +120,7 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
       {/* Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {creations.map((creation) => (
-          <CreationCard key={creation.id} creation={creation} />
+          <CreationCard key={creation.id} creation={creation} onDelete={onDelete} />
         ))}
       </div>
 

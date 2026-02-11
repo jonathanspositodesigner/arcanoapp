@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export type MediaType = 'all' | 'image' | 'video';
 
@@ -96,12 +97,35 @@ export function useMyCreations(options: UseMyCreationsOptions = {}) {
     fetchCreations(true);
   }, [fetchCreations]);
 
+  const deleteCreation = useCallback(async (creationId: string) => {
+    try {
+      const { data, error: rpcError } = await supabase.rpc('delete_user_ai_creation', {
+        p_creation_id: creationId
+      });
+      
+      if (rpcError) throw new Error(rpcError.message);
+      
+      if (data) {
+        setCreations(prev => prev.filter(c => c.id !== creationId));
+        toast.success('Criação excluída com sucesso');
+      } else {
+        toast.error('Não foi possível excluir esta criação');
+      }
+      return !!data;
+    } catch (err) {
+      console.error('[useMyCreations] Delete error:', err);
+      toast.error('Erro ao excluir criação');
+      return false;
+    }
+  }, []);
+
   return {
     creations,
     isLoading,
     error,
     hasMore,
     loadMore,
-    refresh
+    refresh,
+    deleteCreation
   };
 }
