@@ -1,70 +1,81 @@
 
 
-## Remover créditos automaticamente em reembolso/chargeback
+## Adicionar Criatividade da IA + Instrucoes Personalizadas ao Arcano Cloner
 
-### Problema atual
+### Resumo
 
-Quando um cliente pede reembolso de uma compra de creditos (Upscaler/Arcano), os webhooks recebem o evento de `refunded` ou `chargeback`, mas NAO removem os creditos do usuario. O codigo atual simplesmente loga "creditos lifetime nao podem ser revertidos" e segue em frente. Isso significa que o cliente fica com os creditos mesmo apos o reembolso.
+Adicionar dois novos controles ao Arcano Cloner:
+1. **Slider "Criatividade da IA"** (1 a 6, sem decimais) - abaixo da Proporcao
+2. **Switch "Instrucoes Personalizadas"** - ao ligar, revela um textarea para o usuario digitar instrucoes livres
 
-### Solucao
+Alem disso, otimizar o layout para que o botao "Gerar Imagem" fique visivel sem scroll, tanto no desktop quanto no mobile.
 
-Criar uma nova RPC no banco para revogar creditos lifetime em contexto de reembolso (sem exigir admin) e atualizar os dois webhooks para chamar essa RPC quando receberem um reembolso de produto de creditos.
+### Mudancas
 
-### O que sera feito
+#### 1. Migracao SQL - novas colunas na tabela `arcano_cloner_jobs`
+- `creativity` (integer, default 4) - valor de 1 a 6
+- `custom_prompt` (text, nullable) - instrucoes personalizadas do usuario
 
-1. **Nova RPC `revoke_credits_on_refund`** - Uma funcao de banco SECURITY DEFINER que:
-   - Recebe user_id e amount
-   - Remove do saldo lifetime (ate zerar, sem ficar negativo)
-   - Registra a transacao como `refund` na tabela de auditoria
-   - NAO exige role de admin (sera chamada pelo service_role via Edge Function)
+#### 2. `src/pages/ArcanoClonerTool.tsx`
+- Adicionar estados: `creativity` (default 4), `customPromptEnabled` (default false), `customPrompt` (default '')
+- Inserir os novos controles no painel esquerdo, abaixo do AspectRatioSelector
+- Passar `creativity` e `customPrompt` no insert do job e na chamada da edge function
+- Reduzir gaps e paddings para compactar o layout no mobile e desktop
 
-2. **`webhook-greenn-creditos/index.ts`** - No bloco de refunded/chargeback (linhas 300-318):
-   - Buscar o usuario pelo email
-   - Identificar quantos creditos foram concedidos pelo produto (via `PRODUCT_CREDITS`)
-   - Chamar a RPC `revoke_credits_on_refund` para remover os creditos
-   - Registrar o resultado no webhook_logs
+#### 3. Novo componente `src/components/arcano-cloner/CreativitySlider.tsx`
+- Slider de 1 a 6 (inteiros apenas)
+- Labels: "Mais fiel" no lado esquerdo, "Muito criativo" no lado direito
+- Estilo consistente com o AspectRatioSelector (bg-purple-900/20, border-purple-500/30)
 
-3. **`webhook-greenn-artes/index.ts`** - No bloco de refunded/chargeback (linhas 686-727):
-   - Alem de desativar o acesso a packs (que ja faz), verificar se o produto reembolsado esta no `CREDITS_PRODUCT_MAPPING`
-   - Se for produto de creditos, buscar o usuario e chamar `revoke_credits_on_refund`
-   - Registrar o resultado
+#### 4. Novo componente `src/components/arcano-cloner/CustomPromptToggle.tsx`
+- Switch com label "Instrucoes Personalizadas"
+- Ao ligar, revela um textarea compacto para digitar
+- Placeholder: "Ex: Use roupas vermelhas, cenario na praia..."
+- Estilo consistente com os outros controles
+
+#### 5. `supabase/functions/runninghub-arcano-cloner/index.ts`
+- Receber `creativity` e `customPrompt` do body
+- Adicionar Node 133 (creativity) e Node 135 (custom prompt/instrucoes) ao `nodeInfoList`
+- Se `customPrompt` estiver vazio, enviar string vazia no Node 135
+- Remover o `FIXED_PROMPT` do Node 69 e mover a logica: se o usuario enviou `customPrompt`, usar ele no Node 135; senao, enviar vazio
+
+#### 6. `supabase/functions/runninghub-queue-manager/index.ts`
+- No case `arcano_cloner_jobs`, adicionar Node 133 e Node 135 ao nodeInfoList, lendo `job.creativity` e `job.custom_prompt`
+
+#### 7. Otimizacao de layout (compactacao)
+- Reduzir paddings/gaps dos componentes PersonInputSwitch e ReferenceImageCard no contexto do Arcano Cloner
+- No mobile: reduzir alturas dos containers de upload para ~120px
+- No desktop: os dois cards de imagem ficam menores para tudo caber sem scroll
 
 ### Detalhes tecnicos
 
-**Nova RPC (migracao SQL):**
+**Novos nodes na API (conforme documentacao):**
 
 ```text
-revoke_credits_on_refund(_user_id UUID, _amount INT, _description TEXT)
-  -> Busca saldo lifetime atual
-  -> Remove min(_amount, saldo_atual) do lifetime_balance
-  -> Insere transacao tipo 'refund' com credit_type 'lifetime'
-  -> Retorna success, new_balance, amount_revoked
+Node 133 - fieldName: "value", fieldValue: "4" (string do numero 1-6)
+Node 135 - fieldName: "text", fieldValue: "" (instrucoes livres ou vazio)
 ```
 
-**Logica no webhook de creditos (refund):**
+**Edge function - nodeInfoList atualizado:**
 
 ```text
-1. Identificar email do payload
-2. Buscar usuario na tabela profiles pelo email
-3. Mapear productId -> quantidade de creditos (PRODUCT_CREDITS)
-4. Chamar revoke_credits_on_refund(userId, creditAmount, "Reembolso: {produto}")
-5. Se chargeback, adicionar a blacklist (ja faz)
-6. Atualizar webhook_logs com resultado
+[
+  { nodeId: "58", fieldName: "image", fieldValue: userFileName },
+  { nodeId: "62", fieldName: "image", fieldValue: referenceFileName },
+  { nodeId: "69", fieldName: "text", fieldValue: FIXED_PROMPT },
+  { nodeId: "85", fieldName: "aspectRatio", fieldValue: aspectRatio },
+  { nodeId: "133", fieldName: "value", fieldValue: String(creativity) },
+  { nodeId: "135", fieldName: "text", fieldValue: customPrompt || "" }
+]
 ```
 
-**Logica no webhook de artes (refund de creditos):**
+### Arquivos
 
-```text
-1. Verificar se productId esta no CREDITS_PRODUCT_MAPPING
-2. Se sim, buscar usuario e revogar creditos (mesma logica)
-3. Continuar com a desativacao de packs normalmente
-```
-
-### Arquivos modificados
-
-| Arquivo | Alteracao |
-|---------|-----------|
-| Nova migracao SQL | Criar RPC `revoke_credits_on_refund` |
-| `supabase/functions/webhook-greenn-creditos/index.ts` | Revogar creditos no bloco refunded/chargeback |
-| `supabase/functions/webhook-greenn-artes/index.ts` | Revogar creditos quando produto de creditos for reembolsado |
-
+| Arquivo | Tipo |
+|---------|------|
+| Nova migracao SQL | Colunas `creativity` e `custom_prompt` |
+| `src/components/arcano-cloner/CreativitySlider.tsx` | Novo componente |
+| `src/components/arcano-cloner/CustomPromptToggle.tsx` | Novo componente |
+| `src/pages/ArcanoClonerTool.tsx` | Integrar novos controles + compactar layout |
+| `supabase/functions/runninghub-arcano-cloner/index.ts` | Nodes 133 e 135 |
+| `supabase/functions/runninghub-queue-manager/index.ts` | Nodes 133 e 135 |
