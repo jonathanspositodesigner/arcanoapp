@@ -297,7 +297,7 @@ async function processGreennMusicosWebhook(supabase: any, payload: any, logId: s
 
       // Upsert profile
       await supabase.from('profiles').upsert({
-        id: userId, name: clientName, phone: clientPhone, email, password_changed: false, updated_at: new Date().toISOString()
+        id: userId, name: clientName, phone: clientPhone, email, password_changed: false, email_verified: true, updated_at: new Date().toISOString()
       }, { onConflict: 'id' })
 
       // Calculate expiration

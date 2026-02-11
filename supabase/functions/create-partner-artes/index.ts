@@ -165,6 +165,7 @@ serve(async (req) => {
         phone: phone,
         email: email,
         password_changed: false,
+        email_verified: true,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'id'

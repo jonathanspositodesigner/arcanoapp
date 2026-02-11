@@ -410,6 +410,7 @@ async function processGreennCreditosWebhook(
       phone: clientPhone || undefined,
       email,
       password_changed: isNewUser ? false : undefined,
+      email_verified: true,
       updated_at: new Date().toISOString()
     }, { onConflict: 'id', ignoreDuplicates: false })
 

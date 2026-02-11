@@ -126,6 +126,7 @@ serve(async (req: Request) => {
         phone: cleanPhone,
         email: normalizedEmail,
         password_changed: false,
+        email_verified: true,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' });
 

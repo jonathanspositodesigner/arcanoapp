@@ -225,7 +225,8 @@ serve(async (req) => {
               id: userId,
               email: normalizedEmail,
               name: name || null,
-              password_changed: false
+              password_changed: false,
+              email_verified: true,
             });
 
           console.log('New user created:', userId);

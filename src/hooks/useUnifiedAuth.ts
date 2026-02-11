@@ -275,12 +275,21 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         }
       }
       
-      // Check if user needs to change password
+      // Check if user needs to change password AND if email is verified
       const { data: profile } = await supabase
         .from('profiles')
-        .select('password_changed')
+        .select('password_changed, email_verified')
         .eq('id', data.user.id)
         .maybeSingle();
+      
+      // Block login if email not verified
+      if (profile && profile.email_verified === false) {
+        console.log('[UnifiedAuth] Email not verified, blocking login');
+        await supabase.auth.signOut();
+        toast.error('Confirme seu email antes de entrar. Verifique sua caixa de entrada.');
+        setState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
       
       if (!profile || !profile.password_changed) {
         // Create profile if doesn't exist
@@ -350,31 +359,37 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       }
       
       if (authData.user) {
-        // Create profile
+        // Create profile with email_verified = false
         await supabase.from('profiles').upsert({
           id: authData.user.id,
           email: normalizedEmail,
           name: name?.trim() || null,
           phone: phone?.trim() || null,
           password_changed: true,
+          email_verified: false,
         }, { onConflict: 'id' });
         
-         // Try to auto-login (if email confirmations are disabled in backend)
-         const { data: { session } } = await supabase.auth.getSession();
-
-         // If there is no session, the platform is requiring email confirmation.
-         // In this case we must show the "check your email" success screen instead of redirecting.
-         if (!session) {
-           toast.success(t('success.accountCreatedSuccess'));
-           config.onSignupSuccess?.();
-           setState(prev => ({ ...prev, isLoading: false }));
-           return;
-         }
-
-         toast.success(t('success.accountCreatedSuccess'));
-         config.onSignupSuccess?.();
-         navigate(config.defaultRedirect);
-       }
+        // Send confirmation email via SendPulse
+        try {
+          const { data: confirmData, error: confirmError } = await supabase.functions.invoke('send-confirmation-email', {
+            body: { email: normalizedEmail, user_id: authData.user.id }
+          });
+          
+          if (confirmError || (confirmData && !confirmData.success)) {
+            console.error('[UnifiedAuth] Error sending confirmation email:', confirmError || confirmData?.error);
+          } else {
+            console.log('[UnifiedAuth] Confirmation email sent successfully');
+          }
+        } catch (e) {
+          console.error('[UnifiedAuth] Failed to send confirmation email:', e);
+        }
+        
+        // Sign out immediately - user must confirm email before logging in
+        await supabase.auth.signOut();
+        
+        toast.success(t('success.accountCreatedSuccess'));
+        config.onSignupSuccess?.();
+      }
       
       setState(prev => ({ ...prev, isLoading: false }));
       
