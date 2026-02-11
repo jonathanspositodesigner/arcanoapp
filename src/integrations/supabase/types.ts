@@ -3395,6 +3395,8 @@ export type Database = {
       cleanup_expired_ai_jobs: {
         Args: never
         Returns: {
+          arcano_cloner_deleted: number
+          character_generator_deleted: number
           pose_changer_deleted: number
           upscaler_deleted: number
           veste_ai_deleted: number
