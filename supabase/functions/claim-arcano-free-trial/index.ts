@@ -46,6 +46,21 @@ Deno.serve(async (req) => {
 
     console.log(`[claim-arcano-free-trial] Checking eligibility for ${email} (${user.id})`)
 
+    // Check if email is verified before granting credits
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('email_verified')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (profileError || !profile || profile.email_verified === false) {
+      console.log(`[claim-arcano-free-trial] Email not verified for ${email}, blocking claim`)
+      return new Response(JSON.stringify({ error: 'Email not verified' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // ATOMIC: Try to insert the claim first using a unique constraint on email
     // This prevents race conditions where two concurrent requests both pass the check
     const { data: claimResult, error: claimError } = await supabase

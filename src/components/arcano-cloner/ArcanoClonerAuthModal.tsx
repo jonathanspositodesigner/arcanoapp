@@ -35,11 +35,25 @@ export default function ArcanoClonerAuthModal({
   }, [isOpen]);
 
   // Listen for auth state changes (user logs in from verify email link)
+  // But only trigger if email is verified to prevent bypassing verification
   useEffect(() => {
     if (!isOpen) return;
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
+        // Check email_verified before granting access
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email_verified')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (profile && profile.email_verified === false) {
+          console.log('[ArcanoClonerAuth] onAuthStateChange: email not verified, signing out');
+          await supabase.auth.signOut();
+          return;
+        }
+
         onAuthSuccess();
       }
     });
@@ -126,6 +140,20 @@ export default function ArcanoClonerAuthModal({
       }
 
       if (data.user) {
+        // Check email_verified before allowing access
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email_verified')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (profile && profile.email_verified === false) {
+          console.log('[ArcanoClonerAuth] Email not verified, blocking login');
+          await supabase.auth.signOut();
+          toast.error('Confirme seu email antes de entrar. Verifique sua caixa de entrada.');
+          return;
+        }
+
         toast.success('Login realizado com sucesso!');
         onAuthSuccess();
       }
@@ -165,26 +193,32 @@ export default function ArcanoClonerAuthModal({
       }
 
       if (authData.user) {
-        // Create profile
+        // Create profile with email_verified = false
         await supabase.from('profiles').upsert({
           id: authData.user.id,
           email: normalizedEmail,
           name: signupData.name?.trim() || null,
           phone: signupData.phone?.trim() || null,
           password_changed: true,
+          email_verified: false,
         }, { onConflict: 'id' });
 
-        // Check if auto-confirmed (session exists)
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session) {
-          toast.success('Conta criada com sucesso!');
-          onAuthSuccess();
-        } else {
-          // Email confirmation required
-          toast.success('Conta criada! Verifique seu email.');
-          setStep('verify-email');
+        // Send confirmation email via SendPulse
+        try {
+          await supabase.functions.invoke('send-confirmation-email', {
+            body: { email: normalizedEmail, user_id: authData.user.id }
+          });
+          console.log('[ArcanoClonerAuth] Confirmation email sent');
+        } catch (e) {
+          console.error('[ArcanoClonerAuth] Failed to send confirmation email:', e);
         }
+
+        // Sign out immediately - user must confirm email first
+        await supabase.auth.signOut();
+
+        toast.success('Conta criada! Verifique seu email para confirmar.');
+        setVerifiedEmail(normalizedEmail);
+        setStep('verify-email');
       }
     } catch (error) {
       console.error('[ArcanoClonerAuth] Signup error:', error);
@@ -192,7 +226,7 @@ export default function ArcanoClonerAuthModal({
     } finally {
       setIsLoading(false);
     }
-  }, [onAuthSuccess]);
+  }, []);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
