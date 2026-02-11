@@ -18,6 +18,7 @@ import AngleExamplesModal from '@/components/character-generator/AngleExamplesMo
 import SaveCharacterDialog from '@/components/character-generator/SaveCharacterDialog';
 import SavedCharactersPanel from '@/components/character-generator/SavedCharactersPanel';
 import RefineSelector from '@/components/character-generator/RefineSelector';
+import RefinementCarousel, { type RefinementHistoryItem } from '@/components/character-generator/RefinementCarousel';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
@@ -84,6 +85,11 @@ const GeradorPersonagemTool: React.FC = () => {
   const [showRefinePanel, setShowRefinePanel] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
 
+  // Refinement history
+  const [refinementHistory, setRefinementHistory] = useState<RefinementHistoryItem[]>([]);
+  const [selectedHistoryIndex, setSelectedHistoryIndex] = useState(0);
+  const refinementCountRef = useRef(0);
+
   const sessionIdRef = useRef<string>('');
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   const { isDownloading, progress: downloadProgress, download, cancel: cancelDownload } = useResilientDownload();
@@ -116,12 +122,29 @@ const GeradorPersonagemTool: React.FC = () => {
         setOutputImage(update.outputUrl);
         setStatus('completed');
         setProgress(100);
-        setIsRefining(false);
         setShowRefinePanel(false);
         endSubmit();
         playNotificationSound();
         refetchCredits();
-        toast.success('Avatar gerado com sucesso!');
+
+        // Add to refinement history
+        if (isRefining) {
+          refinementCountRef.current += 1;
+          setRefinementHistory(prev => {
+            const newHistory = [...prev, { url: update.outputUrl!, label: `Ref. #${refinementCountRef.current}`, timestamp: Date.now() }];
+            setSelectedHistoryIndex(newHistory.length - 1);
+            return newHistory;
+          });
+          setIsRefining(false);
+          toast.success('Refinamento concluído!');
+        } else {
+          refinementCountRef.current = 0;
+          const newHistory = [{ url: update.outputUrl!, label: 'Original', timestamp: Date.now() }];
+          setRefinementHistory(newHistory);
+          setSelectedHistoryIndex(0);
+          setIsRefining(false);
+          toast.success('Avatar gerado com sucesso!');
+        }
       } else if (update.status === 'failed' || update.status === 'cancelled') {
         setStatus('error');
         const friendlyError = getAIErrorMessage(update.errorMessage);
@@ -350,7 +373,7 @@ const GeradorPersonagemTool: React.FC = () => {
       return;
     }
 
-    if (!outputImage || !frontStorageUrl || !profileStorageUrl || !semiProfileStorageUrl || !lowAngleStorageUrl) {
+    if (!latestResultImage || !frontStorageUrl || !profileStorageUrl || !semiProfileStorageUrl || !lowAngleStorageUrl) {
       toast.error('Dados insuficientes para refinar. Gere um avatar primeiro.');
       return;
     }
@@ -414,7 +437,7 @@ const GeradorPersonagemTool: React.FC = () => {
             profileImageUrl: profileStorageUrl,
             semiProfileImageUrl: semiProfileStorageUrl,
             lowAngleImageUrl: lowAngleStorageUrl,
-            resultImageUrl: outputImage,
+            resultImageUrl: latestResultImage,
             selectedNumbers,
             userId: user.id,
             creditCost: refineCreditCost,
@@ -491,20 +514,34 @@ const GeradorPersonagemTool: React.FC = () => {
     setDebugErrorMessage(null);
     setShowRefinePanel(false);
     setIsRefining(false);
+    setRefinementHistory([]);
+    setSelectedHistoryIndex(0);
+    refinementCountRef.current = 0;
     clearGlobalJob();
   };
 
+  // The currently viewed image (from history or outputImage)
+  const viewedImage = refinementHistory.length > 0
+    ? refinementHistory[selectedHistoryIndex]?.url || outputImage
+    : outputImage;
+
+  // For refining, always use the latest result
+  const latestResultImage = refinementHistory.length > 0
+    ? refinementHistory[refinementHistory.length - 1].url
+    : outputImage;
+
   const handleDownload = useCallback(async () => {
-    if (!outputImage) return;
+    const imgToDownload = viewedImage;
+    if (!imgToDownload) return;
     await download({
-      url: outputImage,
+      url: imgToDownload,
       filename: `avatar-${Date.now()}.png`,
       mediaType: 'image',
       timeout: 10000,
       onSuccess: () => toast.success('Download concluído!'),
       locale: 'pt'
     });
-  }, [outputImage, download]);
+  }, [viewedImage, download]);
 
   const currentQueueMessage = queueMessages[queueMessageIndex];
 
@@ -649,7 +686,7 @@ const GeradorPersonagemTool: React.FC = () => {
                 <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-fuchsia-400" />Resultado
                 </h3>
-                {outputImage && (
+                {viewedImage && (
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20" onClick={() => transformRef.current?.zoomOut(0.5)}>
                       <ZoomOut className="w-3.5 h-3.5" />
@@ -663,10 +700,10 @@ const GeradorPersonagemTool: React.FC = () => {
               </div>
 
               <div className="relative flex-1 min-h-0 flex items-center justify-center">
-                {outputImage ? (
-                  <TransformWrapper ref={transformRef} key={outputImage} initialScale={1} minScale={0.5} maxScale={4} wheel={{ step: 0.4 }} onTransformed={(_, state) => setZoomLevel(state.scale)}>
+                {viewedImage ? (
+                  <TransformWrapper ref={transformRef} key={viewedImage} initialScale={1} minScale={0.5} maxScale={4} wheel={{ step: 0.4 }} onTransformed={(_, state) => setZoomLevel(state.scale)}>
                     <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }} contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <img src={outputImage} alt="Resultado" className="w-full h-full object-contain" draggable={false} />
+                      <img src={viewedImage} alt="Resultado" className="w-full h-full object-contain" draggable={false} />
                     </TransformComponent>
                   </TransformWrapper>
                 ) : isProcessing ? (
@@ -710,8 +747,20 @@ const GeradorPersonagemTool: React.FC = () => {
                 )}
               </div>
 
-              {outputImage && status === 'completed' && (
-                <div className="absolute bottom-3 left-3 right-3 flex gap-2">
+              {/* Refinement History Carousel */}
+              {refinementHistory.length > 1 && status === 'completed' && (
+                <div className="border-t border-purple-500/20 flex-shrink-0">
+                  <RefinementCarousel
+                    history={refinementHistory}
+                    selectedIndex={selectedHistoryIndex}
+                    onSelect={setSelectedHistoryIndex}
+                  />
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              {viewedImage && status === 'completed' && (
+                <div className="border-t border-purple-500/20 px-3 py-2 flex gap-2 flex-shrink-0">
                   <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-purple-600/80 border-purple-400/50 text-white hover:bg-purple-500/90" onClick={handleReset}>
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova
                   </Button>
@@ -732,11 +781,11 @@ const GeradorPersonagemTool: React.FC = () => {
       </div>
 
       {/* Save Character Dialog */}
-      {outputImage && user?.id && (
+      {viewedImage && user?.id && (
         <SaveCharacterDialog
           isOpen={showSaveDialog}
           onClose={() => setShowSaveDialog(false)}
-          imageUrl={outputImage}
+          imageUrl={viewedImage}
           jobId={jobId}
           userId={user.id}
           onSaved={() => setSavedRefreshTrigger(prev => prev + 1)}
