@@ -3609,6 +3609,14 @@ export type Database = {
           success: boolean
         }[]
       }
+      revoke_credits_on_refund: {
+        Args: { _amount: number; _description?: string; _user_id: string }
+        Returns: {
+          amount_revoked: number
+          new_balance: number
+          success: boolean
+        }[]
+      }
       update_pose_changer_queue_positions: { Args: never; Returns: undefined }
       update_queue_positions: { Args: never; Returns: undefined }
       update_veste_ai_queue_positions: { Args: never; Returns: undefined }

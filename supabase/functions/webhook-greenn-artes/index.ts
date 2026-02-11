@@ -690,6 +690,36 @@ async function processGreennArtesWebhook(supabase: any, payload: any, logId: str
         await addToBlacklist(supabase, email, 'chargeback', requestId)
       }
 
+      // Verificar se é produto de créditos - revogar créditos
+      const creditsProduct = productId ? CREDITS_PRODUCT_MAPPING[productId] : null
+      if (creditsProduct && email) {
+        console.log(`   ├─ 🎫 Produto de créditos detectado: ${creditsProduct.amount} créditos`)
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .ilike('email', email)
+          .maybeSingle()
+        
+        if (profile?.id) {
+          const { data: revokeResult, error: revokeError } = await supabase.rpc('revoke_credits_on_refund', {
+            _user_id: profile.id,
+            _amount: creditsProduct.amount,
+            _description: `Reembolso (${status}): ${creditsProduct.name}`
+          })
+          
+          if (revokeError) {
+            console.log(`   ├─ ❌ Erro ao revogar créditos: ${revokeError.message}`)
+          } else {
+            const revoked = revokeResult?.[0]?.amount_revoked || 0
+            console.log(`   ├─ ✅ ${revoked} créditos revogados`)
+          }
+        } else {
+          console.log(`   ├─ ⚠️ Usuário não encontrado para revogar créditos`)
+        }
+      }
+
+      // Desativar acesso a packs (lógica existente)
       // Tentar desativar por greenn_contract_id primeiro (indexado)
       if (contractId) {
         const { data: purchases } = await supabase
@@ -706,17 +736,17 @@ async function processGreennArtesWebhook(supabase: any, payload: any, logId: str
       }
 
       // Fallback por email
-      const { data: profile } = await supabase
+      const { data: profileFallback } = await supabase
         .from('profiles')
         .select('id')
         .ilike('email', email)
         .maybeSingle()
       
-      if (profile) {
+      if (profileFallback) {
         await supabase
           .from('user_pack_purchases')
           .update({ is_active: false, updated_at: new Date().toISOString() })
-          .eq('user_id', profile.id)
+          .eq('user_id', profileFallback.id)
           .eq('is_active', true)
         
         console.log(`   └─ ✅ Acesso desativado via email`)
