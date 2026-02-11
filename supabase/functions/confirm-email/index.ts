@@ -144,9 +144,10 @@ serve(async (req) => {
 
     console.log(`[confirm-email] Email confirmed for user: ${tokenData.user_id}`);
 
-    return new Response(buildSuccessHtml(), {
-      status: 200,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
+    // Redirect directly to the app homepage
+    return new Response(null, {
+      status: 302,
+      headers: { "Location": "https://arcanoapp.lovable.app/" },
     });
   } catch (error: any) {
     console.error("[confirm-email] Error:", error);
