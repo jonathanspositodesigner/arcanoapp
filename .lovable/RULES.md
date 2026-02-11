@@ -78,6 +78,52 @@ Se a IA identificar código com essas APIs:
 
 ---
 
+## 🚨 OBRIGATÓRIO: Padrão de Storage para Ferramentas de IA
+
+### Regra universal
+
+Toda ferramenta de IA que fizer upload para o bucket `artes-cloudinary` **DEVE** seguir o padrão:
+
+```
+nome-da-ferramenta/{user_id}/arquivo.extensao
+```
+
+Exemplos:
+- `upscaler/{user_id}/foto-123.webp`
+- `arcano-cloner/{user_id}/clone-456.webp`
+- `nova-ferramenta-futura/{user_id}/resultado.webp`
+
+### Por quê?
+
+Existe UMA ÚNICA política universal de Storage RLS que cobre **todas** as ferramentas de IA:
+
+```sql
+CREATE POLICY "Authenticated users can upload to own AI tool folders"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'artes-cloudinary'
+  AND (storage.foldername(name))[2] = (auth.uid())::text
+  AND auth.uid() IS NOT NULL
+);
+```
+
+Isso significa que:
+- ✅ Qualquer pasta no formato `{nome}/{user_id}/` funciona automaticamente
+- ✅ NÃO precisa criar política individual por ferramenta
+- ❌ NUNCA fazer upload direto na raiz do bucket
+- ❌ NUNCA fazer upload sem o `{user_id}` como segundo nível da pasta
+
+### Ao criar nova ferramenta de IA:
+1. Escolher um nome de pasta (ex: `minha-nova-ia`)
+2. Fazer upload para `minha-nova-ia/{user_id}/arquivo.ext`
+3. **Pronto** - nenhuma configuração de banco necessária
+
+### Histórico
+- Data da regra: 11/02/2026
+- Motivo: Arcano Cloner quebrou porque faltava política individual. Solução: política universal.
+
+---
+
 ## 📜 Histórico de Incidentes Críticos
 
 ### Incidente 06/02/2026 - Crash Total de Edge Functions
