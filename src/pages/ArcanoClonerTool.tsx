@@ -17,6 +17,8 @@ import PersonInputSwitch from '@/components/ai-tools/PersonInputSwitch';
 import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
 import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
 import AspectRatioSelector, { AspectRatio } from '@/components/arcano-cloner/AspectRatioSelector';
+import CreativitySlider from '@/components/arcano-cloner/CreativitySlider';
+import CustomPromptToggle from '@/components/arcano-cloner/CustomPromptToggle';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import ArcanoClonerAuthModal from '@/components/arcano-cloner/ArcanoClonerAuthModal';
@@ -60,6 +62,11 @@ const ArcanoClonerTool: React.FC = () => {
 
   // Aspect ratio state
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
+
+  // Creativity & custom prompt states
+  const [creativity, setCreativity] = useState(4);
+  const [customPromptEnabled, setCustomPromptEnabled] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState('');
 
   // UI states
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
@@ -424,7 +431,9 @@ const ArcanoClonerTool: React.FC = () => {
           user_image_url: userUrl,
           reference_image_url: referenceUrl,
           aspect_ratio: aspectRatio,
-        })
+          creativity: creativity,
+          custom_prompt: customPromptEnabled ? customPrompt : null,
+        } as any)
         .select()
         .single();
 
@@ -451,6 +460,8 @@ const ArcanoClonerTool: React.FC = () => {
             aspectRatio: aspectRatio,
             userId: user.id,
             creditCost: creditCost,
+            creativity: creativity,
+            customPrompt: customPromptEnabled ? customPrompt : '',
           },
         }
       );
@@ -618,6 +629,22 @@ const ArcanoClonerTool: React.FC = () => {
             <AspectRatioSelector
               value={aspectRatio}
               onChange={setAspectRatio}
+              disabled={isProcessing}
+            />
+
+            {/* Creativity Slider */}
+            <CreativitySlider
+              value={creativity}
+              onChange={setCreativity}
+              disabled={isProcessing}
+            />
+
+            {/* Custom Prompt Toggle */}
+            <CustomPromptToggle
+              enabled={customPromptEnabled}
+              onEnabledChange={setCustomPromptEnabled}
+              prompt={customPrompt}
+              onPromptChange={setCustomPrompt}
               disabled={isProcessing}
             />
 
