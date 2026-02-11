@@ -147,10 +147,6 @@ const ArcanoClonerTool: React.FC = () => {
         refetchCredits();
       } else if (data?.already_claimed) {
         toast.info('Você já resgatou suas gerações gratuitas anteriormente.');
-      } else if (data?.is_premium) {
-        toast.info('Você já é premium! Não precisa do bônus.');
-      } else if (data?.has_purchased) {
-        toast.info('Você já possui créditos. Bom uso!');
       }
     } catch (err) {
       console.error('[ArcanoCloner] Claim error:', err);
