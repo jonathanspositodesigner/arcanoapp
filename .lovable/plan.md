@@ -1,53 +1,70 @@
 
 
-## Correção: Bônus gratuito do Arcano Cloner não adiciona créditos
+## Correção: Email de "Primeiro Acesso" não chega ao usuário
 
-### Problema identificado
+### Problema
 
-A Edge Function `claim-arcano-free-trial` tem **dois bugs críticos**:
-
-1. **Campo obrigatório faltando**: A tabela `upscaler_credit_transactions` exige a coluna `balance_after` (NOT NULL, sem default). A Edge Function nao envia esse campo, fazendo o INSERT da transacao falhar silenciosamente.
-
-2. **Sem verificacao de erro**: Nenhuma das operacoes de banco (update de creditos, insert de transacao) verifica se deu erro. Se o update de creditos falha, o codigo continua e registra o claim em `arcano_cloner_free_trials`, bloqueando qualquer nova tentativa.
-
-### Resultado para o usuario
-
-- O modal mostra "240 creditos adicionados!"
-- Mas os creditos **nunca entram** no saldo
-- O claim e registrado, entao o usuario nao pode tentar novamente
-- Na tabela `upscaler_credit_transactions`, nao existe nenhum registro do tipo `arcano_free_trial`
+O fluxo de "Primeiro Acesso" (password_changed = false) chama `supabase.auth.resetPasswordForEmail()` que envia email pelo sistema nativo do Supabase. Esse sistema tem limite de 2-3 emails por hora e entrega muito baixa. Toda a plataforma ja usa SendPulse via a Edge Function `send-single-email`, mas esse fluxo especifico ficou usando o Supabase nativo.
 
 ### Solucao
 
-Reescrever a Edge Function `claim-arcano-free-trial/index.ts` com:
+Criar uma nova Edge Function `send-recovery-email` que:
+1. Recebe o email do usuario
+2. Usa `supabase.auth.admin.generateLink()` para gerar um link de recovery valido
+3. Envia o email via SendPulse (mesma logica do `send-single-email`)
+4. Retorna sucesso/erro
 
-1. **Verificacao de erro** em todas as operacoes de banco (update, insert)
-2. **Calcular e enviar `balance_after`** no insert da transacao
-3. **Enviar `credit_type`** (campo obrigatorio, default 'monthly')
-4. **Ordem atomica**: registrar o claim SOMENTE apos confirmar que creditos e transacao foram salvos com sucesso
-5. **Correcao retroativa**: rodar SQL para creditar os usuarios que ja fizeram claim mas nao receberam os creditos
+Depois, alterar o `useUnifiedAuth.ts` e as paginas de `ChangePassword` para chamar essa Edge Function em vez de `supabase.auth.resetPasswordForEmail()`.
 
 ### Mudancas
 
-| Tipo | Detalhe |
-|------|---------|
-| Edge Function | Reescrever `claim-arcano-free-trial/index.ts` com verificacao de erros e campo `balance_after` |
-| Migration SQL | Creditar retroativamente os usuarios afetados (jonathan.lifecazy e jonathandesigner1993) |
+| Tipo | Arquivo | Detalhe |
+|------|---------|---------|
+| Nova Edge Function | `supabase/functions/send-recovery-email/index.ts` | Gera link de recovery via admin API + envia via SendPulse |
+| Modificar | `src/hooks/useUnifiedAuth.ts` | Substituir `resetPasswordForEmail` por chamada a `send-recovery-email` |
+| Modificar | `src/pages/ChangePassword.tsx` | Substituir `resendPasswordLink` por chamada a `send-recovery-email` |
+| Modificar | `src/pages/ChangePasswordArtes.tsx` | Mesma substituicao |
+| Modificar | `src/pages/ChangePasswordArtesMusicos.tsx` | Mesma substituicao |
 
-### Detalhes tecnicos da Edge Function corrigida
+### Detalhes tecnicos
 
-- Buscar saldo atual antes do update
-- Calcular `new_balance = current_balance + totalCredits`
-- Fazer update em `upscaler_credits` e verificar erro
-- Inserir transacao com `balance_after = new_balance` e `credit_type = 'monthly'`
-- Verificar erro do insert da transacao
-- So entao registrar o claim em `arcano_cloner_free_trials`
-- Se qualquer etapa falhar, retornar erro sem registrar o claim
+**Edge Function `send-recovery-email`:**
 
-### Correcao retroativa (SQL)
+```text
+1. Recebe: { email, redirect_url }
+2. Usa supabase admin para gerar link:
+   supabase.auth.admin.generateLink({
+     type: 'recovery',
+     email,
+     options: { redirectTo: redirect_url }
+   })
+3. Extrai o link gerado (action_link)
+4. Monta HTML bonito com o link (template estilo da plataforma)
+5. Envia via SendPulse (mesma logica do send-single-email: OAuth token, SMTP API)
+6. Retorna { success: true }
+```
 
-Creditar os 2 usuarios que ja foram afetados:
-- jonathan.lifecazy@gmail.com (user_id: 8f5fb835...) - 240 creditos
-- jonathandesigner1993@gmail.com (user_id: d5f2c429...) - 240 creditos
+**Alteracao no useUnifiedAuth.ts (linhas 187-220):**
 
-Usando update direto no `upscaler_credits` + insert na tabela de transacoes com `balance_after` correto.
+Onde hoje faz:
+```text
+const { error: resetError } = await supabase.auth.resetPasswordForEmail(...)
+```
+
+Vai fazer:
+```text
+const { data, error } = await supabase.functions.invoke('send-recovery-email', {
+  body: { email: normalizedEmail, redirect_url: redirectUrl }
+})
+```
+
+**Alteracao nas paginas ChangePassword:**
+
+A funcao `resendPasswordLink` vai chamar a Edge Function em vez de `supabase.auth.resetPasswordForEmail`.
+
+### Impacto
+
+- Todos os emails de "Primeiro Acesso" e "Reenviar link" passam a usar SendPulse
+- Entrega confiavel e sem limite de rate do Supabase
+- Mesmo template visual dos outros emails da plataforma
+- Nenhuma mudanca na experiencia do usuario (mesma tela, mesmo fluxo)
