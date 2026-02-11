@@ -108,3 +108,9 @@ verify_jwt = false
 
 [functions.confirm-email]
 verify_jwt = false
+
+[functions.check-free-trial-eligibility]
+verify_jwt = false
+
+[functions.claim-free-trial]
+verify_jwt = false

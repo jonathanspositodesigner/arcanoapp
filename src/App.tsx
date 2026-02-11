@@ -132,6 +132,7 @@ const PlanosCreditos = lazy(() => import("./pages/PlanosCreditos"));
 const FerramentasIAAplicativo = lazy(() => import("./pages/FerramentasIAAplicativo"));
 const ForceUpdate = lazy(() => import("./pages/ForceUpdate"));
 const ResgatarCreditos = lazy(() => import("./pages/ResgatarCreditos"));
+const TesteGratis = lazy(() => import("./pages/TesteGratis"));
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 
@@ -297,6 +298,7 @@ const AppContent = () => {
           <Route path="/ferramentas-ia-aplicativo" element={<FerramentasIAAplicativo />} />
            <Route path="/force-update" element={<ForceUpdate />} />
            <Route path="/resgatar-creditos" element={<ResgatarCreditos />} />
+           <Route path="/teste-gratis" element={<TesteGratis />} />
           
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
            <Route path="*" element={<NotFound />} />
