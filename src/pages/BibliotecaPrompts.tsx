@@ -886,12 +886,22 @@ const BibliotecaPrompts = () => {
                       </div>
                       {item.category === 'Fotos' && !isVideoUrl(item.imageUrl) && (
                         <Button
-                          onClick={() => navigate('/arcano-cloner-tool', { state: { referenceImageUrl: item.imageUrl } })}
+                          onClick={() => {
+                            if (item.isPremium && !isPremium) {
+                              setPremiumModalItem(item);
+                              setShowPremiumModal(true);
+                            } else {
+                              navigate('/arcano-cloner-tool', { state: { referenceImageUrl: item.imageUrl } });
+                            }
+                          }}
                           size="sm"
-                          className="w-full text-xs bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white"
+                          className={`w-full text-xs ${item.isPremium && !isPremium ? 'bg-purple-900/60 hover:bg-purple-900/80 text-purple-300' : 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white'}`}
                         >
-                          <Sparkles className="h-3 w-3 mr-1" />
-                          Gerar sua foto
+                          {item.isPremium && !isPremium ? (
+                            <><Lock className="h-3 w-3 mr-1" />Exclusivo Premium</>
+                          ) : (
+                            <><Sparkles className="h-3 w-3 mr-1" />Gerar sua foto</>
+                          )}
                         </Button>
                       )}
                     </div>
@@ -1088,11 +1098,21 @@ const BibliotecaPrompts = () => {
                 )}
                 {selectedPrompt.category === 'Fotos' && !isVideoUrl(selectedPrompt.imageUrl) && (
                   <Button 
-                    onClick={() => navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } })}
-                    className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white"
+                    onClick={() => {
+                      if (selectedPrompt.isPremium && !isPremium) {
+                        setPremiumModalItem(selectedPrompt);
+                        setShowPremiumModal(true);
+                      } else {
+                        navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
+                      }
+                    }}
+                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-purple-900/60 hover:bg-purple-900/80 text-purple-300' : 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white'}`}
                   >
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Gerar sua foto
+                    {selectedPrompt.isPremium && !isPremium ? (
+                      <><Lock className="h-4 w-4 mr-2" />Exclusivo Premium</>
+                    ) : (
+                      <><Sparkles className="h-4 w-4 mr-2" />Gerar sua foto</>
+                    )}
                   </Button>
                 )}
               </div>
