@@ -3330,6 +3330,13 @@ export type Database = {
           reset_at: string
         }[]
       }
+      claim_arcano_free_trial_atomic: {
+        Args: { p_email: string; p_user_id: string }
+        Returns: {
+          already_claimed: boolean
+          credits_granted: number
+        }[]
+      }
       cleanup_all_stale_ai_jobs: {
         Args: never
         Returns: {
