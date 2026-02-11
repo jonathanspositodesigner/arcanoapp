@@ -184,24 +184,17 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
           return;
         }
         
-        // Auto-login failed → send password creation link
-        console.log('[UnifiedAuth] Auto-login failed, sending link');
+        // Auto-login failed → send password creation link via SendPulse
+        console.log('[UnifiedAuth] Auto-login failed, sending link via send-recovery-email');
         const redirectUrl = `${window.location.origin}${config.changePasswordRoute}?redirect=${encodeURIComponent(config.defaultRedirect)}`;
         
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-          normalizedEmail,
-          { redirectTo: redirectUrl }
-        );
+        const { data: recoveryData, error: recoveryError } = await supabase.functions.invoke('send-recovery-email', {
+          body: { email: normalizedEmail, redirect_url: redirectUrl }
+        });
         
-        if (resetError) {
-          console.error('[UnifiedAuth] Reset error:', resetError);
-          // If link fails (rate limit or other), fallback to password step
-          const isRateLimit = resetError.message?.includes('429') || (resetError as any).status === 429;
-          if (isRateLimit) {
-            toast.info('Link bloqueado temporariamente. Digite sua senha.');
-          } else {
-            toast.info('Problema ao enviar link. Tente com sua senha.');
-          }
+        if (recoveryError || (recoveryData && !recoveryData.success)) {
+          console.error('[UnifiedAuth] Recovery email error:', recoveryError || recoveryData?.error);
+          toast.info('Problema ao enviar link. Tente com sua senha.');
           // Go to password step instead of blocking user
           setState(prev => ({
             ...prev,
@@ -404,12 +397,11 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
     try {
       const redirectUrl = `${window.location.origin}${config.changePasswordRoute}?redirect=${encodeURIComponent(config.defaultRedirect)}`;
       
-      const { error } = await supabase.auth.resetPasswordForEmail(
-        email.trim().toLowerCase(),
-        { redirectTo: redirectUrl }
-      );
+      const { data: recoveryData, error } = await supabase.functions.invoke('send-recovery-email', {
+        body: { email: email.trim().toLowerCase(), redirect_url: redirectUrl }
+      });
       
-      if (error) {
+      if (error || (recoveryData && !recoveryData.success)) {
         toast.error(t('errors.errorSendingLink'));
       } else {
         toast.success(t('success.linkSent'));

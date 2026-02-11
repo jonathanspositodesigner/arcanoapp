@@ -8,18 +8,17 @@ import { Lock, Eye, EyeOff, Loader2, Mail, RefreshCw, ArrowLeft } from "lucide-r
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
-// Inline resend function
+// Inline resend function via SendPulse edge function
 const resendPasswordLink = async (
   email: string,
   changePasswordRoute: string,
   redirectAfterPassword: string = '/'
 ): Promise<{ success: boolean; error?: string }> => {
   const redirectUrl = `${window.location.origin}${changePasswordRoute}?redirect=${encodeURIComponent(redirectAfterPassword)}`;
-  const { error } = await supabase.auth.resetPasswordForEmail(
-    email.trim().toLowerCase(),
-    { redirectTo: redirectUrl }
-  );
-  if (error) return { success: false, error: 'Erro ao reenviar link' };
+  const { data, error } = await supabase.functions.invoke('send-recovery-email', {
+    body: { email: email.trim().toLowerCase(), redirect_url: redirectUrl }
+  });
+  if (error || (data && !data.success)) return { success: false, error: 'Erro ao reenviar link' };
   return { success: true };
 };
 
