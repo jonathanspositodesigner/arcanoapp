@@ -1,81 +1,62 @@
 
 
-## Adicionar Criatividade da IA + Instrucoes Personalizadas ao Arcano Cloner
+## Centralizar "Minhas Criações" para TODAS as ferramentas de IA (presente e futuras)
 
-### Resumo
+### Problema
 
-Adicionar dois novos controles ao Arcano Cloner:
-1. **Slider "Criatividade da IA"** (1 a 6, sem decimais) - abaixo da Proporcao
-2. **Switch "Instrucoes Personalizadas"** - ao ligar, revela um textarea para o usuario digitar instrucoes livres
+A RPC `get_user_ai_creations` não inclui `arcano_cloner_jobs`, então resultados do Arcano Cloner não aparecem em "Minhas Criações". Além disso, a função `cleanup_expired_ai_jobs` está faltando `arcano_cloner_jobs` e `character_generator_jobs`.
 
-Alem disso, otimizar o layout para que o botao "Gerar Imagem" fique visivel sem scroll, tanto no desktop quanto no mobile.
+### Solução
 
-### Mudancas
+Uma única migração SQL que atualiza as duas funções para incluir TODAS as 6 tabelas de jobs existentes, com comentários claros indicando onde adicionar futuras ferramentas.
 
-#### 1. Migracao SQL - novas colunas na tabela `arcano_cloner_jobs`
-- `creativity` (integer, default 4) - valor de 1 a 6
-- `custom_prompt` (text, nullable) - instrucoes personalizadas do usuario
+### O que será feito
 
-#### 2. `src/pages/ArcanoClonerTool.tsx`
-- Adicionar estados: `creativity` (default 4), `customPromptEnabled` (default false), `customPrompt` (default '')
-- Inserir os novos controles no painel esquerdo, abaixo do AspectRatioSelector
-- Passar `creativity` e `customPrompt` no insert do job e na chamada da edge function
-- Reduzir gaps e paddings para compactar o layout no mobile e desktop
+**Migração SQL única** que recria as duas funções:
 
-#### 3. Novo componente `src/components/arcano-cloner/CreativitySlider.tsx`
-- Slider de 1 a 6 (inteiros apenas)
-- Labels: "Mais fiel" no lado esquerdo, "Muito criativo" no lado direito
-- Estilo consistente com o AspectRatioSelector (bg-purple-900/20, border-purple-500/30)
+**1. `get_user_ai_creations`** - Adicionar UNION ALL para:
+- `arcano_cloner_jobs` (tool_name: 'Arcano Cloner', media_type: 'image')
 
-#### 4. Novo componente `src/components/arcano-cloner/CustomPromptToggle.tsx`
-- Switch com label "Instrucoes Personalizadas"
-- Ao ligar, revela um textarea compacto para digitar
-- Placeholder: "Ex: Use roupas vermelhas, cenario na praia..."
-- Estilo consistente com os outros controles
+Tabelas já incluídas que permanecem:
+- `upscaler_jobs` (Upscaler Arcano)
+- `pose_changer_jobs` (Pose Changer)
+- `veste_ai_jobs` (Veste AI)
+- `video_upscaler_jobs` (Video Upscaler)
+- `character_generator_jobs` (Gerador Avatar)
 
-#### 5. `supabase/functions/runninghub-arcano-cloner/index.ts`
-- Receber `creativity` e `customPrompt` do body
-- Adicionar Node 133 (creativity) e Node 135 (custom prompt/instrucoes) ao `nodeInfoList`
-- Se `customPrompt` estiver vazio, enviar string vazia no Node 135
-- Remover o `FIXED_PROMPT` do Node 69 e mover a logica: se o usuario enviou `customPrompt`, usar ele no Node 135; senao, enviar vazio
+**2. `cleanup_expired_ai_jobs`** - Adicionar DELETE para:
+- `arcano_cloner_jobs`
+- `character_generator_jobs`
 
-#### 6. `supabase/functions/runninghub-queue-manager/index.ts`
-- No case `arcano_cloner_jobs`, adicionar Node 133 e Node 135 ao nodeInfoList, lendo `job.creativity` e `job.custom_prompt`
+O retorno será atualizado para incluir as contagens das novas tabelas.
 
-#### 7. Otimizacao de layout (compactacao)
-- Reduzir paddings/gaps dos componentes PersonInputSwitch e ReferenceImageCard no contexto do Arcano Cloner
-- No mobile: reduzir alturas dos containers de upload para ~120px
-- No desktop: os dois cards de imagem ficam menores para tudo caber sem scroll
+### Detalhes técnicos
 
-### Detalhes tecnicos
-
-**Novos nodes na API (conforme documentacao):**
+Ambas as funções seguem o mesmo padrão: verificam `status = 'completed'`, `output_url IS NOT NULL`, e `completed_at + interval '5 days'`.
 
 ```text
-Node 133 - fieldName: "value", fieldValue: "4" (string do numero 1-6)
-Node 135 - fieldName: "text", fieldValue: "" (instrucoes livres ou vazio)
-```
+-- Padrão para cada tabela em get_user_ai_creations:
+SELECT id, output_url, thumbnail_url, 
+       'Nome da Ferramenta'::TEXT, 'image'::TEXT, 
+       created_at, (completed_at + interval '5 days')
+FROM tabela_jobs 
+WHERE user_id = auth.uid() 
+  AND status = 'completed' 
+  AND output_url IS NOT NULL 
+  AND (completed_at + interval '5 days') > now()
 
-**Edge function - nodeInfoList atualizado:**
-
-```text
-[
-  { nodeId: "58", fieldName: "image", fieldValue: userFileName },
-  { nodeId: "62", fieldName: "image", fieldValue: referenceFileName },
-  { nodeId: "69", fieldName: "text", fieldValue: FIXED_PROMPT },
-  { nodeId: "85", fieldName: "aspectRatio", fieldValue: aspectRatio },
-  { nodeId: "133", fieldName: "value", fieldValue: String(creativity) },
-  { nodeId: "135", fieldName: "text", fieldValue: customPrompt || "" }
-]
+-- Padrão para cada tabela em cleanup_expired_ai_jobs:
+DELETE FROM tabela_jobs
+WHERE status = 'completed'
+  AND completed_at IS NOT NULL
+  AND (completed_at + interval '5 days') < now()
 ```
 
 ### Arquivos
 
-| Arquivo | Tipo |
-|---------|------|
-| Nova migracao SQL | Colunas `creativity` e `custom_prompt` |
-| `src/components/arcano-cloner/CreativitySlider.tsx` | Novo componente |
-| `src/components/arcano-cloner/CustomPromptToggle.tsx` | Novo componente |
-| `src/pages/ArcanoClonerTool.tsx` | Integrar novos controles + compactar layout |
-| `supabase/functions/runninghub-arcano-cloner/index.ts` | Nodes 133 e 135 |
-| `supabase/functions/runninghub-queue-manager/index.ts` | Nodes 133 e 135 |
+| Arquivo | Alteração |
+|---------|-----------|
+| Nova migração SQL | Recriar `get_user_ai_creations` e `cleanup_expired_ai_jobs` com todas as 6 tabelas |
+
+Nenhum arquivo frontend precisa mudar -- o hook `useMyCreations` já chama a RPC e renderiza o resultado automaticamente.
+
