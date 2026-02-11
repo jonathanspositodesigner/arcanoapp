@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Clock, Image as ImageIcon, Video, AlertCircle } from 'lucide-react';
+import { Download, Clock, Image as ImageIcon, Video, AlertCircle, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import type { Creation } from './useMyCreations';
 
 interface CreationCardProps {
   creation: Creation;
+  onDelete?: (id: string) => void;
 }
 
 function formatTimeRemaining(expiresAt: string): { text: string; urgency: 'safe' | 'warning' | 'danger' } {
@@ -35,9 +36,9 @@ function formatTimeRemaining(expiresAt: string): { text: string; urgency: 'safe'
   }
   
   let urgency: 'safe' | 'warning' | 'danger';
-  if (days >= 3) {
+  if (hours >= 12) {
     urgency = 'safe';
-  } else if (days >= 1) {
+  } else if (hours >= 4) {
     urgency = 'warning';
   } else {
     urgency = 'danger';
@@ -57,8 +58,9 @@ function formatDate(dateString: string): string {
   });
 }
 
-const CreationCard: React.FC<CreationCardProps> = ({ creation }) => {
+const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
   const [imageError, setImageError] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { download, isDownloading } = useResilientDownload();
   
   const { text: timeText, urgency } = formatTimeRemaining(creation.expires_at);
@@ -95,6 +97,13 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation }) => {
       timeout: 15000,
       locale: 'pt'
     });
+  };
+
+  const handleDelete = async () => {
+    if (!onDelete || isDeleting) return;
+    setIsDeleting(true);
+    await onDelete(creation.id);
+    setIsDeleting(false);
   };
 
   const urgencyColors = {
@@ -141,8 +150,8 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation }) => {
       
       {/* Info Section */}
       <div className="p-3 space-y-2">
-        {/* Expiration & Download */}
-        <div className="flex items-center justify-between gap-2">
+        {/* Expiration & Actions */}
+        <div className="flex items-center justify-between gap-1">
           <Badge 
             variant="outline" 
             className={cn("text-[10px] gap-1", urgencyColors[urgency])}
@@ -151,16 +160,28 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation }) => {
             {timeText}
           </Badge>
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDownload}
-            disabled={isDownloading || imageError}
-            className="h-7 text-xs bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20"
-          >
-            <Download className="w-3 h-3 mr-1" />
-            {isDownloading ? '...' : 'Baixar'}
-          </Button>
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="h-7 w-7 p-0 bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+              title="Excluir"
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownload}
+              disabled={isDownloading || imageError}
+              className="h-7 text-xs bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20"
+            >
+              <Download className="w-3 h-3 mr-1" />
+              {isDownloading ? '...' : 'Baixar'}
+            </Button>
+          </div>
         </div>
         
         {/* Tool name & date */}
