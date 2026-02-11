@@ -1,70 +1,105 @@
 
 
-## Correção: Email de "Primeiro Acesso" não chega ao usuário
+## Confirmacao de Email Obrigatoria via SendPulse no Cadastro
 
 ### Problema
 
-O fluxo de "Primeiro Acesso" (password_changed = false) chama `supabase.auth.resetPasswordForEmail()` que envia email pelo sistema nativo do Supabase. Esse sistema tem limite de 2-3 emails por hora e entrega muito baixa. Toda a plataforma ja usa SendPulse via a Edge Function `send-single-email`, mas esse fluxo especifico ficou usando o Supabase nativo.
+Hoje, o `auto_confirm` esta ativo no Supabase (necessario para usuarios criados por webhooks de pagamento). Quando alguem se cadastra pelo formulario, a conta fica ativa imediatamente e a pessoa ja pode logar e pegar creditos gratuitos com qualquer email falso.
 
 ### Solucao
 
-Criar uma nova Edge Function `send-recovery-email` que:
-1. Recebe o email do usuario
-2. Usa `supabase.auth.admin.generateLink()` para gerar um link de recovery valido
-3. Envia o email via SendPulse (mesma logica do `send-single-email`)
-4. Retorna sucesso/erro
+Adicionar verificacao de email manual controlada pela tabela `profiles` (campo `email_verified`), com envio do email de confirmacao via SendPulse. O `auto_confirm` do Supabase continua ativo (para webhooks), mas o login so e permitido apos confirmacao do email.
 
-Depois, alterar o `useUnifiedAuth.ts` e as paginas de `ChangePassword` para chamar essa Edge Function em vez de `supabase.auth.resetPasswordForEmail()`.
+### Fluxo novo do cadastro
+
+```text
+1. Usuario preenche formulario de signup
+2. Conta e criada no Supabase (auto-confirm ON)
+3. Profile e criado com email_verified = false
+4. Edge Function "send-confirmation-email" gera um token unico, salva no banco, envia email via SendPulse
+5. Tela de sucesso: "Verifique seu email para confirmar sua conta"
+6. Usuario clica no link do email
+7. Edge Function "confirm-email" valida o token, marca email_verified = true no profile
+8. Usuario redirecionado para pagina de login
+9. No login, o hook verifica email_verified antes de permitir acesso
+```
 
 ### Mudancas
 
 | Tipo | Arquivo | Detalhe |
 |------|---------|---------|
-| Nova Edge Function | `supabase/functions/send-recovery-email/index.ts` | Gera link de recovery via admin API + envia via SendPulse |
-| Modificar | `src/hooks/useUnifiedAuth.ts` | Substituir `resetPasswordForEmail` por chamada a `send-recovery-email` |
-| Modificar | `src/pages/ChangePassword.tsx` | Substituir `resendPasswordLink` por chamada a `send-recovery-email` |
-| Modificar | `src/pages/ChangePasswordArtes.tsx` | Mesma substituicao |
-| Modificar | `src/pages/ChangePasswordArtesMusicos.tsx` | Mesma substituicao |
+| Migracao | Nova tabela `email_confirmation_tokens` + campo `email_verified` em profiles | Armazena tokens de confirmacao com expiracao |
+| Nova Edge Function | `supabase/functions/send-confirmation-email/index.ts` | Gera token, salva no banco, envia email bonito via SendPulse com link de confirmacao |
+| Nova Edge Function | `supabase/functions/confirm-email/index.ts` | Recebe token via query param, valida, marca `email_verified = true` no profile, redireciona para login |
+| Modificar | `src/hooks/useUnifiedAuth.ts` | No `signup`: chamar `send-confirmation-email` apos criar conta. No `loginWithPassword`: bloquear login se `email_verified = false` |
+| Modificar | `src/components/HomeAuthModal.tsx` | Ja tem tela de sucesso pos-signup (signupSuccess), nenhuma mudanca necessaria |
+| Modificar | Webhooks existentes (webhook-greenn, create-premium-user, etc.) | Garantir que usuarios criados por webhook tenham `email_verified = true` automaticamente |
 
 ### Detalhes tecnicos
 
-**Edge Function `send-recovery-email`:**
-
+**Nova tabela `email_confirmation_tokens`:**
 ```text
-1. Recebe: { email, redirect_url }
-2. Usa supabase admin para gerar link:
-   supabase.auth.admin.generateLink({
-     type: 'recovery',
-     email,
-     options: { redirectTo: redirect_url }
-   })
-3. Extrai o link gerado (action_link)
-4. Monta HTML bonito com o link (template estilo da plataforma)
-5. Envia via SendPulse (mesma logica do send-single-email: OAuth token, SMTP API)
-6. Retorna { success: true }
+- id: uuid (PK)
+- user_id: uuid (FK profiles)
+- email: text
+- token: text (unique, gerado com crypto.randomUUID)
+- expires_at: timestamptz (24 horas apos criacao)
+- used_at: timestamptz (null ate ser usado)
+- created_at: timestamptz
 ```
 
-**Alteracao no useUnifiedAuth.ts (linhas 187-220):**
-
-Onde hoje faz:
+**Campo novo em `profiles`:**
 ```text
-const { error: resetError } = await supabase.auth.resetPasswordForEmail(...)
+- email_verified: boolean (default false)
 ```
 
-Vai fazer:
+**Edge Function `send-confirmation-email`:**
 ```text
-const { data, error } = await supabase.functions.invoke('send-recovery-email', {
-  body: { email: normalizedEmail, redirect_url: redirectUrl }
-})
+1. Recebe { email, user_id }
+2. Gera token com crypto.randomUUID()
+3. Salva na tabela email_confirmation_tokens
+4. Monta link: {SUPABASE_URL}/functions/v1/confirm-email?token={token}
+5. Monta HTML bonito (mesmo estilo da plataforma)
+6. Envia via SendPulse (mesma logica do send-recovery-email)
 ```
 
-**Alteracao nas paginas ChangePassword:**
+**Edge Function `confirm-email`:**
+```text
+1. Recebe token via query param (GET request)
+2. Busca token na tabela, verifica se nao expirou e nao foi usado
+3. Marca used_at = now()
+4. Atualiza profiles SET email_verified = true WHERE id = user_id
+5. Retorna HTML bonito com mensagem "Email confirmado!" e botao para login
+6. Ou redireciona para a pagina de login da plataforma
+```
 
-A funcao `resendPasswordLink` vai chamar a Edge Function em vez de `supabase.auth.resetPasswordForEmail`.
+**Alteracao no `useUnifiedAuth.ts` - signup (linhas 317-386):**
+```text
+Apos criar o usuario e o profile:
+1. Chamar send-confirmation-email com email e user_id
+2. Fazer signOut() imediatamente (usuario NAO pode ficar logado)
+3. Chamar onSignupSuccess() para mostrar tela de "verifique seu email"
+```
+
+**Alteracao no `useUnifiedAuth.ts` - loginWithPassword (linhas 235-312):**
+```text
+Apos login bem-sucedido, antes de redirecionar:
+1. Verificar profile.email_verified
+2. Se false: signOut(), mostrar toast "Confirme seu email antes de entrar"
+3. Se true: continuar fluxo normal
+```
+
+**Webhooks (webhook-greenn, create-premium-user, etc.):**
+```text
+Todos os webhooks que criam profiles devem setar email_verified = true
+pois esses usuarios foram verificados pelo processo de pagamento
+```
 
 ### Impacto
 
-- Todos os emails de "Primeiro Acesso" e "Reenviar link" passam a usar SendPulse
-- Entrega confiavel e sem limite de rate do Supabase
-- Mesmo template visual dos outros emails da plataforma
-- Nenhuma mudanca na experiencia do usuario (mesma tela, mesmo fluxo)
+- Usuarios que se cadastram pelo formulario precisam confirmar email antes de logar
+- Usuarios criados por webhooks de pagamento continuam funcionando normalmente (email_verified = true)
+- Usuarios existentes: migracao seta email_verified = true para todos os profiles existentes
+- Nenhum email e enviado pelo Supabase nativo, tudo via SendPulse
+- Impossivel criar contas com emails falsos para pegar creditos
+
