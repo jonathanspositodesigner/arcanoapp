@@ -1,57 +1,55 @@
 
 
-## Pagina de Resgate de Teste Gratis (240 creditos)
+## Diagnostico dos Erros do Arcano Cloner
 
-### O que sera feito
+### Resumo dos erros encontrados
 
-Uma nova pagina `/teste-gratis` com fluxo completo de verificacao, cadastro e resgate de 240 creditos.
+Total de jobs: 57 (49 sucesso, 8 falhas = **14% de falha**)
 
-### Fluxo do usuario
+| Erro | Qtd | Causa Real | Contornavel? |
+|------|-----|-----------|--------------|
+| WebP nao reconhecido pelo PIL | 4 | RunningHub nao consegue ler o arquivo .webp enviado (PIL.UnidentifiedImageError no node 62) | Sim - converter para JPEG/PNG antes de enviar |
+| Content safety filter | 1 | IA bloqueou geracao por considerar conteudo inapropriado | Parcial - retry automatico com prompt ajustado |
+| No output received | 1 | Webhook veio sem URL de resultado | Sim - retry automatico |
+| Upload 502 | 1 | RunningHub retornou 502 ao receber a imagem de referencia | Ja tem retry (3x), erro transiente |
+| Timeout 10min | 1 | Job ficou preso sem resposta | Ja tem tratamento, erro transiente |
 
-```text
-1. Usuario acessa /teste-gratis
-2. Digita o email
-3. Sistema verifica:
-   a) Ja resgatou na tabela promo_claims (1500 creditos)? -> Bloqueia
-   b) Ja resgatou na tabela arcano_cloner_free_trials (240 creditos)? -> Bloqueia
-   c) Se nao resgatou nada:
-      - TEM cadastro (check_profile_exists) -> Pede senha, faz login, resgata 240 creditos, redireciona para /ferramentas-ia-aplicativo
-      - NAO tem cadastro -> Abre formulario de cadastro (nome, email, senha), cria conta, envia email de confirmacao via SendPulse (mesmo fluxo atual), ao confirmar email vai pra home
-```
+### Causa principal (75% dos erros): WebP incompativel
 
-### Cenarios de bloqueio
+O problema mais grave e sistematico: **a referencia e enviada em formato WebP**, mas o ComfyUI/PIL no servidor da RunningHub nao consegue identificar certos arquivos WebP. Isso afeta especialmente a imagem de referencia (node 62).
 
-- "Voce ja resgatou uma promocao anteriormente" com botao "Ir para as Ferramentas de IA"
+### Plano de correcao
 
-### Mudancas
+#### 1. Converter imagens para JPEG antes do upload (corrige 4 de 8 erros)
 
-| Tipo | Arquivo | Detalhe |
-|------|---------|---------|
-| Nova pagina | `src/pages/TesteGratis.tsx` | Pagina com 4 estados: email, login, signup, bloqueado |
-| Nova Edge Function | `supabase/functions/check-free-trial-eligibility/index.ts` | Verifica email nas duas tabelas de promo (promo_claims + arcano_cloner_free_trials) e se tem cadastro |
-| Nova Edge Function | `supabase/functions/claim-free-trial/index.ts` | Resgata 240 creditos via RPC, requer usuario autenticado + email_verified |
-| Modificar | `src/App.tsx` | Adicionar rota /teste-gratis e lazy import |
+Na Edge Function `runninghub-arcano-cloner/index.ts`, na etapa de upload de imagem para a RunningHub, converter WebP para JPEG usando Canvas no client-side antes de enviar, OU converter server-side antes de fazer upload para a RunningHub.
 
-### Detalhes tecnicos
+**Abordagem escolhida**: Client-side - ja existe compressao via `browser-image-compression`. Vamos forcar output em JPEG em vez de WebP no componente do Arcano Cloner ao comprimir a imagem antes do upload ao storage.
 
-**Edge Function `check-free-trial-eligibility`:**
-- Recebe `{ email }` via POST (sem auth necessario)
-- Verifica na tabela `promo_claims` se o email ja resgatou (qualquer promo_code)
-- Verifica na tabela `arcano_cloner_free_trials` se o email ja resgatou
-- Verifica via RPC `check_profile_exists` se tem cadastro
-- Retorna `{ eligible: bool, has_account: bool, reason?: string }`
+#### 2. Adicionar retry automatico para "No output received" (corrige 1 de 8)
 
-**Edge Function `claim-free-trial`:**
-- Requer autenticacao (Authorization header)
-- Verifica `email_verified = true` no profile
-- Verifica novamente nas tabelas de promo se ja resgatou (seguranca server-side)
-- Chama RPC `claim_arcano_free_trial_atomic` para dar os 240 creditos
-- Retorna `{ success: bool, credits_granted: number }`
+Quando o webhook volta com status COMPLETED mas sem output URL, o sistema deve tentar reconciliar automaticamente (chamar a API de status) antes de declarar falha.
 
-**Pagina `TesteGratis.tsx`:**
-- Estado `email`: campo de email + botao "Verificar"
-- Estado `blocked`: mensagem de que ja resgatou + botao para ferramentas
-- Estado `login`: campo de senha (email ja preenchido), faz login via supabase.auth.signInWithPassword, verifica email_verified, chama claim-free-trial, redireciona para /ferramentas-ia-aplicativo
-- Estado `signup`: formulario com nome, email (readonly), senha. Cria conta, cria profile com email_verified=false, chama send-confirmation-email (SendPulse), faz signOut, mostra mensagem "verifique seu email". Ao confirmar email, usuario vai pra home (fluxo existente do confirm-email)
-- Visual: mesmo estilo da pagina ResgatarCreditos (dark purple gradient, cards com borda roxa)
+#### 3. Adicionar mapeamento de erro "content safety filter" (melhora UX)
+
+Adicionar no `errorMessages.ts` uma mensagem clara quando a IA bloqueia por filtro de seguranca, orientando o usuario a usar outra imagem.
+
+### Mudancas tecnicas
+
+| Arquivo | Mudanca |
+|---------|---------|
+| `src/components/arcano-cloner/useArcanoCloner.ts` (ou arquivo de upload) | Forcar formato JPEG na compressao de imagem antes do upload, em vez de WebP |
+| `src/utils/errorMessages.ts` | Adicionar mapeamento para "content safety filter" e "UnidentifiedImageError" |
+| `supabase/functions/runninghub-arcano-cloner/index.ts` | Na funcao de upload para RunningHub, adicionar fallback: se upload de WebP falhar, re-baixar a imagem e converter para JPEG server-side antes de re-tentar |
+| `supabase/functions/runninghub-webhook/index.ts` | No caso de COMPLETED sem output, tentar reconciliacao automatica antes de marcar como falha |
+
+### O que NAO precisa mudar
+
+- Timeout de 10min: ja funciona e estorna creditos corretamente
+- Retry de upload 502: ja tem 3 tentativas implementadas
+- Estorno de creditos: todos os 8 jobs falhados tiveram creditos estornados corretamente
+
+### Impacto esperado
+
+Essas mudancas devem reduzir a taxa de falha de ~14% para menos de 3%, eliminando o problema sistematico de WebP e adicionando resiliencia aos erros transientes.
 
