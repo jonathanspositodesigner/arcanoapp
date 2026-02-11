@@ -92,8 +92,24 @@ export default function ArcanoClonerAuthModal({
         });
 
         if (!autoLoginError) {
-          // Auto-login worked - need password change, but let's just trigger success
-          // The main flow will handle password change redirect if needed
+          // Check email_verified before granting access
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('email_verified')
+              .eq('id', user.id)
+              .maybeSingle();
+
+            if (profile && profile.email_verified === false) {
+              console.log('[ArcanoClonerAuth] Auto-login: email not verified, blocking');
+              await supabase.auth.signOut();
+              toast.error('Confirme seu email antes de entrar. Verifique sua caixa de entrada.');
+              setIsLoading(false);
+              return;
+            }
+          }
+          
           toast.success('Primeiro acesso! Cadastre sua senha.');
           onAuthSuccess();
         } else {
