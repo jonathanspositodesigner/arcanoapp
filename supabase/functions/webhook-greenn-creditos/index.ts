@@ -307,13 +307,49 @@ async function processGreennCreditosWebhook(
         await addToBlacklist(supabase, email, 'chargeback_creditos', requestId)
       }
       
-      // Créditos lifetime não são removidos (impossível rastrear)
-      console.log(`   ├─ [${requestId}] ⚠️ Créditos lifetime não podem ser revertidos`)
-      
-      await supabase.from('webhook_logs').update({ 
-        result: 'logged',
-        notes: `${status} - créditos não revertidos`
-      }).eq('id', logId)
+      // Revogar créditos lifetime do usuário
+      const creditAmount = PRODUCT_CREDITS[productId]
+      if (creditAmount && email) {
+        // Buscar usuário pelo email
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .ilike('email', email)
+          .maybeSingle()
+        
+        if (profile?.id) {
+          const { data: revokeResult, error: revokeError } = await supabase.rpc('revoke_credits_on_refund', {
+            _user_id: profile.id,
+            _amount: creditAmount,
+            _description: `Reembolso (${status}): ${productName}`
+          })
+          
+          if (revokeError) {
+            console.log(`   ├─ [${requestId}] ❌ Erro ao revogar créditos: ${revokeError.message}`)
+          } else {
+            const revoked = revokeResult?.[0]?.amount_revoked || 0
+            const newBal = revokeResult?.[0]?.new_balance || 0
+            console.log(`   ├─ [${requestId}] ✅ ${revoked} créditos revogados (novo saldo lifetime: ${newBal})`)
+          }
+          
+          await supabase.from('webhook_logs').update({ 
+            result: 'success',
+            notes: `${status} - ${revokeResult?.[0]?.amount_revoked || 0} créditos revogados`
+          }).eq('id', logId)
+        } else {
+          console.log(`   ├─ [${requestId}] ⚠️ Usuário não encontrado para revogar créditos`)
+          await supabase.from('webhook_logs').update({ 
+            result: 'logged',
+            notes: `${status} - usuário não encontrado para revogar`
+          }).eq('id', logId)
+        }
+      } else {
+        console.log(`   ├─ [${requestId}] ⚠️ Produto não mapeado ou email ausente`)
+        await supabase.from('webhook_logs').update({ 
+          result: 'logged',
+          notes: `${status} - produto sem mapeamento de créditos`
+        }).eq('id', logId)
+      }
       
       return
     }
