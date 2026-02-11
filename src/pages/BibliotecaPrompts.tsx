@@ -865,23 +865,35 @@ const BibliotecaPrompts = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => canAccess ? copyToClipboard(item) : handleItemClick(item)}
-                        size="sm"
-                        className={`flex-1 text-xs ${canAccess ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-purple-900/50 text-purple-300'}`}
-                      >
-                        <Copy className="h-3 w-3 mr-1" />
-                        {t('card.copyPrompt')}
-                      </Button>
-                      <Button
-                        onClick={() => handleItemClick(item)}
-                        variant="outline"
-                        size="sm"
-                        className="text-xs bg-purple-900/40 border-purple-400/50 text-purple-100 hover:bg-purple-500/20 hover:text-white"
-                      >
-                        {t('card.details')}
-                      </Button>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => canAccess ? copyToClipboard(item) : handleItemClick(item)}
+                          size="sm"
+                          className={`flex-1 text-xs ${canAccess ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-purple-900/50 text-purple-300'}`}
+                        >
+                          <Copy className="h-3 w-3 mr-1" />
+                          {t('card.copyPrompt')}
+                        </Button>
+                        <Button
+                          onClick={() => handleItemClick(item)}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs bg-purple-900/40 border-purple-400/50 text-purple-100 hover:bg-purple-500/20 hover:text-white"
+                        >
+                          {t('card.details')}
+                        </Button>
+                      </div>
+                      {item.category === 'Fotos' && !isVideoUrl(item.imageUrl) && (
+                        <Button
+                          onClick={() => navigate('/arcano-cloner-tool', { state: { referenceImageUrl: item.imageUrl } })}
+                          size="sm"
+                          className="w-full text-xs bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white"
+                        >
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          Gerar sua foto
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>;
@@ -1072,6 +1084,15 @@ const BibliotecaPrompts = () => {
                   >
                     <Play className="h-4 w-4 mr-2" />
                     {t('modal.watchTutorial')}
+                  </Button>
+                )}
+                {selectedPrompt.category === 'Fotos' && !isVideoUrl(selectedPrompt.imageUrl) && (
+                  <Button 
+                    onClick={() => navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } })}
+                    className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Gerar sua foto
                   </Button>
                 )}
               </div>
