@@ -1,41 +1,70 @@
 
-## Atualizar textos de 240 para 300 creditos + aviso de validade mensal
 
-### Situacao atual
-- O `ai_tool_settings` ja tem `credit_cost = 100`, entao a RPC ja calcula `3 * 100 = 300` creditos
-- O backend ja esta correto - so precisa atualizar os textos no frontend e os fallbacks nas Edge Functions
+## Remover créditos automaticamente em reembolso/chargeback
 
-### Mudancas
+### Problema atual
 
-#### 1. `src/components/arcano-cloner/ArcanoClonerAuthModal.tsx`
-- Linha 256: "Ganhe 3 gerações gratuitas!" -> "Ganhe 300 créditos grátis!"
-- Linha 314: "Cadastre-se e ganhe 3 gerações gratuitas" -> "Cadastre-se e ganhe 300 créditos grátis"
-- Linha 342: "...suas 3 gerações gratuitas" -> "...seus 300 créditos grátis"
-- Adicionar aviso "Créditos válidos por 1 mês" abaixo do titulo principal
+Quando um cliente pede reembolso de uma compra de creditos (Upscaler/Arcano), os webhooks recebem o evento de `refunded` ou `chargeback`, mas NAO removem os creditos do usuario. O codigo atual simplesmente loga "creditos lifetime nao podem ser revertidos" e segue em frente. Isso significa que o cliente fica com os creditos mesmo apos o reembolso.
 
-#### 2. `src/pages/TesteGratis.tsx`
-- Linha 112: toast "240 créditos adicionados!" -> "300 créditos adicionados!"
-- Linha 222: "Ganhe 240 créditos" -> "Ganhe 300 créditos"
-- Linha 259: "resgatar seus 240 créditos" -> "resgatar seus 300 créditos"
-- Linha 317: "ganhar 240 créditos" -> "ganhar 300 créditos"
-- Linha 415: "240 créditos adicionados!" -> "300 créditos adicionados!"
-- Linha 433: "resgatar seus 240 créditos" -> "resgatar seus 300 créditos"
-- Adicionar aviso "Créditos válidos por 1 mês" nos estados relevantes (email, login, signup)
+### Solucao
 
-#### 3. `supabase/functions/claim-arcano-free-trial/index.ts`
-- Linha 89: fallback `|| 240` -> `|| 300`
+Criar uma nova RPC no banco para revogar creditos lifetime em contexto de reembolso (sem exigir admin) e atualizar os dois webhooks para chamar essa RPC quando receberem um reembolso de produto de creditos.
 
-#### 4. `supabase/functions/claim-free-trial/index.ts`
-- Linha 112: fallback `|| 240` -> `|| 300`
+### O que sera feito
 
-#### 5. RPC `claim_arcano_free_trial_atomic` (migracao SQL)
-- Atualizar a descricao da transacao de "3 gerações gratuitas" para "300 créditos grátis"
+1. **Nova RPC `revoke_credits_on_refund`** - Uma funcao de banco SECURITY DEFINER que:
+   - Recebe user_id e amount
+   - Remove do saldo lifetime (ate zerar, sem ficar negativo)
+   - Registra a transacao como `refund` na tabela de auditoria
+   - NAO exige role de admin (sera chamada pelo service_role via Edge Function)
 
-### Resumo
-| Arquivo | Tipo |
-|---------|------|
-| `src/components/arcano-cloner/ArcanoClonerAuthModal.tsx` | Textos + aviso validade |
-| `src/pages/TesteGratis.tsx` | Textos + aviso validade |
-| `supabase/functions/claim-arcano-free-trial/index.ts` | Fallback 240->300 |
-| `supabase/functions/claim-free-trial/index.ts` | Fallback 240->300 |
-| Nova migracao SQL | Descricao na RPC |
+2. **`webhook-greenn-creditos/index.ts`** - No bloco de refunded/chargeback (linhas 300-318):
+   - Buscar o usuario pelo email
+   - Identificar quantos creditos foram concedidos pelo produto (via `PRODUCT_CREDITS`)
+   - Chamar a RPC `revoke_credits_on_refund` para remover os creditos
+   - Registrar o resultado no webhook_logs
+
+3. **`webhook-greenn-artes/index.ts`** - No bloco de refunded/chargeback (linhas 686-727):
+   - Alem de desativar o acesso a packs (que ja faz), verificar se o produto reembolsado esta no `CREDITS_PRODUCT_MAPPING`
+   - Se for produto de creditos, buscar o usuario e chamar `revoke_credits_on_refund`
+   - Registrar o resultado
+
+### Detalhes tecnicos
+
+**Nova RPC (migracao SQL):**
+
+```text
+revoke_credits_on_refund(_user_id UUID, _amount INT, _description TEXT)
+  -> Busca saldo lifetime atual
+  -> Remove min(_amount, saldo_atual) do lifetime_balance
+  -> Insere transacao tipo 'refund' com credit_type 'lifetime'
+  -> Retorna success, new_balance, amount_revoked
+```
+
+**Logica no webhook de creditos (refund):**
+
+```text
+1. Identificar email do payload
+2. Buscar usuario na tabela profiles pelo email
+3. Mapear productId -> quantidade de creditos (PRODUCT_CREDITS)
+4. Chamar revoke_credits_on_refund(userId, creditAmount, "Reembolso: {produto}")
+5. Se chargeback, adicionar a blacklist (ja faz)
+6. Atualizar webhook_logs com resultado
+```
+
+**Logica no webhook de artes (refund de creditos):**
+
+```text
+1. Verificar se productId esta no CREDITS_PRODUCT_MAPPING
+2. Se sim, buscar usuario e revogar creditos (mesma logica)
+3. Continuar com a desativacao de packs normalmente
+```
+
+### Arquivos modificados
+
+| Arquivo | Alteracao |
+|---------|-----------|
+| Nova migracao SQL | Criar RPC `revoke_credits_on_refund` |
+| `supabase/functions/webhook-greenn-creditos/index.ts` | Revogar creditos no bloco refunded/chargeback |
+| `supabase/functions/webhook-greenn-artes/index.ts` | Revogar creditos quando produto de creditos for reembolsado |
+
