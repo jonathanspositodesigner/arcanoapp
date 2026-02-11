@@ -48,7 +48,8 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: false, isAiTools: true }
+        { text: 'Acesso às Ferramentas de IA', included: false, isAiTools: true },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
       promo: false
@@ -64,7 +65,8 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true }
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
       promo: false,
@@ -81,7 +83,8 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true }
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
       promo: false,
@@ -100,7 +103,8 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: false, isAiTools: true }
+        { text: 'Acesso às Ferramentas de IA', included: false, isAiTools: true },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
       promo: false
@@ -117,7 +121,8 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true }
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
       promo: false,
@@ -135,7 +140,8 @@ const Planos = () => {
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true }
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
       promo: true,
