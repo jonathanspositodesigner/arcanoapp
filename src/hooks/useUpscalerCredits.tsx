@@ -131,11 +131,20 @@ export const useUpscalerCredits = (userId: string | undefined) => {
     }
   };
 
+  const checkBalance = useCallback(async (): Promise<number> => {
+    if (!userId) return 0;
+    const { data } = await supabase.rpc('get_upscaler_credits', { _user_id: userId });
+    const fresh = data ?? 0;
+    setBalance(fresh);
+    return fresh;
+  }, [userId]);
+
   return { 
     balance, 
     breakdown,
     isLoading, 
     refetch: fetchBalance, 
-    consumeCredits 
+    consumeCredits,
+    checkBalance
   };
 };

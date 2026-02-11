@@ -41,7 +41,7 @@ interface VideoMetadata {
 const VideoUpscalerTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Video Upscaler', 150);
   
@@ -268,7 +268,8 @@ const VideoUpscalerTool: React.FC = () => {
       return;
     }
 
-    if (credits < creditCost) {
+    const freshCredits = await checkBalance();
+    if (freshCredits < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
       endSubmit();
