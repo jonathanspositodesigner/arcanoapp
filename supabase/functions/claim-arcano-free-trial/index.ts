@@ -72,45 +72,92 @@ Deno.serve(async (req) => {
 
     console.log(`[claim-arcano-free-trial] Granting ${totalCredits} credits (3 x ${creditCost})`)
 
-    // 5. Upsert credits (add to monthly_balance)
+    // 3. Get current credits
     const { data: existingCredits } = await supabase
       .from('upscaler_credits')
       .select('id, monthly_balance, lifetime_balance, balance')
       .eq('user_id', user.id)
       .maybeSingle()
 
+    let newBalance: number
+
+    // 4. Update/insert credits with error checking
     if (existingCredits) {
-      await supabase
+      newBalance = existingCredits.balance + totalCredits
+      const { error: updateError } = await supabase
         .from('upscaler_credits')
         .update({
           monthly_balance: existingCredits.monthly_balance + totalCredits,
-          balance: existingCredits.balance + totalCredits,
+          balance: newBalance,
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', user.id)
+
+      if (updateError) {
+        console.error(`[claim-arcano-free-trial] Failed to update credits:`, updateError)
+        return new Response(JSON.stringify({ error: 'Failed to update credits' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
     } else {
-      await supabase
+      newBalance = totalCredits
+      const { error: insertError } = await supabase
         .from('upscaler_credits')
         .insert({
           user_id: user.id,
           monthly_balance: totalCredits,
           lifetime_balance: 0,
-          balance: totalCredits,
+          balance: newBalance,
         })
+
+      if (insertError) {
+        console.error(`[claim-arcano-free-trial] Failed to insert credits:`, insertError)
+        return new Response(JSON.stringify({ error: 'Failed to create credits' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
     }
 
-    // 6. Record transaction
-    await supabase
+    // 5. Record transaction WITH balance_after and credit_type
+    const { error: txError } = await supabase
       .from('upscaler_credit_transactions')
       .insert({
         user_id: user.id,
         amount: totalCredits,
         transaction_type: 'arcano_free_trial',
         description: `Bônus: 3 gerações gratuitas no Arcano Cloner (${totalCredits} créditos)`,
+        balance_after: newBalance,
+        credit_type: 'monthly',
       })
 
-    // 7. Record claim
-    await supabase
+    if (txError) {
+      console.error(`[claim-arcano-free-trial] Failed to record transaction:`, txError)
+      // Rollback credits
+      if (existingCredits) {
+        await supabase
+          .from('upscaler_credits')
+          .update({
+            monthly_balance: existingCredits.monthly_balance,
+            balance: existingCredits.balance,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id)
+      } else {
+        await supabase
+          .from('upscaler_credits')
+          .delete()
+          .eq('user_id', user.id)
+      }
+      return new Response(JSON.stringify({ error: 'Failed to record transaction' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // 6. Record claim ONLY after credits and transaction succeeded
+    const { error: claimError } = await supabase
       .from('arcano_cloner_free_trials')
       .insert({
         user_id: user.id,
@@ -118,7 +165,13 @@ Deno.serve(async (req) => {
         credits_granted: totalCredits,
       })
 
-    console.log(`[claim-arcano-free-trial] Successfully granted ${totalCredits} credits to ${email}`)
+    if (claimError) {
+      console.error(`[claim-arcano-free-trial] Failed to record claim:`, claimError)
+      // Credits were added successfully, so don't rollback - just log the error
+      // User got the credits but claim wasn't recorded, they might be able to claim again (better than losing credits)
+    }
+
+    console.log(`[claim-arcano-free-trial] Successfully granted ${totalCredits} credits to ${email} (new balance: ${newBalance})`)
 
     return new Response(JSON.stringify({ success: true, credits_granted: totalCredits }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
