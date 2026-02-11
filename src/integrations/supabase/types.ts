@@ -513,9 +513,11 @@ export type Database = {
           aspect_ratio: string | null
           completed_at: string | null
           created_at: string | null
+          creativity: number
           credits_charged: boolean | null
           credits_refunded: boolean | null
           current_step: string | null
+          custom_prompt: string | null
           error_message: string | null
           failed_at_step: string | null
           id: string
@@ -545,9 +547,11 @@ export type Database = {
           aspect_ratio?: string | null
           completed_at?: string | null
           created_at?: string | null
+          creativity?: number
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
           current_step?: string | null
+          custom_prompt?: string | null
           error_message?: string | null
           failed_at_step?: string | null
           id?: string
@@ -577,9 +581,11 @@ export type Database = {
           aspect_ratio?: string | null
           completed_at?: string | null
           created_at?: string | null
+          creativity?: number
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
           current_step?: string | null
+          custom_prompt?: string | null
           error_message?: string | null
           failed_at_step?: string | null
           id?: string

@@ -379,7 +379,9 @@ async function handleRun(req: Request) {
     referenceImageUrl,
     aspectRatio,
     userId,
-    creditCost
+    creditCost,
+    creativity,
+    customPrompt
   } = await req.json();
   
   // ========== INPUT VALIDATION ==========
@@ -703,11 +705,16 @@ async function handleRun(req: Request) {
 
     // Build node info list for Arcano Cloner API
     // Node 58 = User photo, Node 62 = Reference photo, Node 69 = Prompt, Node 85 = Aspect Ratio
+    const finalCreativity = String(Math.min(6, Math.max(1, Number(creativity) || 4)));
+    const finalCustomPrompt = customPrompt || '';
+
     const nodeInfoList = [
       { nodeId: "58", fieldName: "image", fieldValue: userFileName },
       { nodeId: "62", fieldName: "image", fieldValue: referenceFileName },
       { nodeId: "69", fieldName: "text", fieldValue: FIXED_PROMPT },
-      { nodeId: "85", fieldName: "aspectRatio", fieldValue: finalAspectRatio }
+      { nodeId: "85", fieldName: "aspectRatio", fieldValue: finalAspectRatio },
+      { nodeId: "133", fieldName: "value", fieldValue: finalCreativity },
+      { nodeId: "135", fieldName: "text", fieldValue: finalCustomPrompt }
     ];
 
     const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
