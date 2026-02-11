@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    const creditsGranted = claimResult?.[0]?.credits_granted || 240
+    const creditsGranted = claimResult?.[0]?.credits_granted || 300
 
     if (claimResult?.[0]?.already_claimed) {
       console.log(`[claim-arcano-free-trial] Already claimed by ${email}`)
