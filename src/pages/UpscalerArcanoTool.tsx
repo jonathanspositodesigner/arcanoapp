@@ -63,7 +63,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const { t } = useTranslation('tools');
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
   const isMobile = useIsMobile();
   const { getCreditCost } = useAIToolSettings();
   
@@ -485,8 +485,8 @@ const UpscalerArcanoTool: React.FC = () => {
 
     const upscalerCreditCost = version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60);
     
-    // Optimistic check - backend will validate for real
-    if (credits < upscalerCreditCost) {
+    const freshCredits = await checkBalance();
+    if (freshCredits < upscalerCreditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
       endSubmit();

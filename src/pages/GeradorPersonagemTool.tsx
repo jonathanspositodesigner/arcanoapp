@@ -44,7 +44,7 @@ const GeradorPersonagemTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const navigate = useNavigate();
   const { user } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Gerador Avatar', 75);
   const refineCreditCost = getCreditCost('Refinar Avatar', 75);
@@ -252,7 +252,8 @@ const GeradorPersonagemTool: React.FC = () => {
       return;
     }
 
-    if (credits < creditCost) {
+    const freshCredits = await checkBalance();
+    if (freshCredits < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
       endSubmit();
@@ -387,7 +388,8 @@ const GeradorPersonagemTool: React.FC = () => {
       return;
     }
 
-    if (credits < refineCreditCost) {
+    const freshCredits = await checkBalance();
+    if (freshCredits < refineCreditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
       return;
