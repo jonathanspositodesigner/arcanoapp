@@ -145,9 +145,9 @@ serve(async (req) => {
       );
     }
 
-    // 4. Add 1500 monthly credits using the RPC
+    // 4. Add 1500 lifetime credits using the RPC
     const creditsToAdd = 1500;
-    const { data: creditResult, error: creditError } = await supabase.rpc('add_upscaler_credits', {
+    const { data: creditResult, error: creditError } = await supabase.rpc('add_lifetime_credits', {
       _user_id: userId,
       _amount: creditsToAdd,
       _description: `Resgate promoção ${promo_code}`
@@ -173,7 +173,7 @@ serve(async (req) => {
         user_id: userId,
         promo_code: promo_code,
         credits_granted: creditsToAdd,
-        credit_type: 'monthly',
+        credit_type: 'lifetime',
         ip_address: ipAddress.substring(0, 45), // Limit IP length
         user_agent: userAgent.substring(0, 255) // Limit user agent length
       });
