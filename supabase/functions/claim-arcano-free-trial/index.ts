@@ -46,134 +46,43 @@ Deno.serve(async (req) => {
 
     console.log(`[claim-arcano-free-trial] Checking eligibility for ${email} (${user.id})`)
 
-    // 1. Check if already claimed
-    const { data: existingClaim } = await supabase
-      .from('arcano_cloner_free_trials')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle()
+    // ATOMIC: Try to insert the claim first using a unique constraint on email
+    // This prevents race conditions where two concurrent requests both pass the check
+    const { data: claimResult, error: claimError } = await supabase
+      .rpc('claim_arcano_free_trial_atomic', { 
+        p_user_id: user.id, 
+        p_email: email 
+      })
 
-    if (existingClaim) {
+    if (claimError) {
+      console.error(`[claim-arcano-free-trial] RPC error:`, claimError)
+      
+      // Check if it's a duplicate claim error
+      if (claimError.message?.includes('already_claimed')) {
+        console.log(`[claim-arcano-free-trial] Already claimed by ${email}`)
+        return new Response(JSON.stringify({ already_claimed: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      
+      return new Response(JSON.stringify({ error: 'Failed to claim' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const creditsGranted = claimResult?.[0]?.credits_granted || 240
+
+    if (claimResult?.[0]?.already_claimed) {
       console.log(`[claim-arcano-free-trial] Already claimed by ${email}`)
       return new Response(JSON.stringify({ already_claimed: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // 2. Get credit cost from ai_tool_settings
-    const { data: toolSettings } = await supabase
-      .from('ai_tool_settings')
-      .select('credit_cost')
-      .eq('tool_name', 'Arcano Cloner')
-      .maybeSingle()
+    console.log(`[claim-arcano-free-trial] Successfully granted ${creditsGranted} credits to ${email}`)
 
-    const creditCost = toolSettings?.credit_cost || 80
-    const totalCredits = 3 * creditCost
-
-    console.log(`[claim-arcano-free-trial] Granting ${totalCredits} credits (3 x ${creditCost})`)
-
-    // 3. Get current credits
-    const { data: existingCredits } = await supabase
-      .from('upscaler_credits')
-      .select('id, monthly_balance, lifetime_balance, balance')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    let newBalance: number
-
-    // 4. Update/insert credits with error checking
-    if (existingCredits) {
-      newBalance = existingCredits.balance + totalCredits
-      const { error: updateError } = await supabase
-        .from('upscaler_credits')
-        .update({
-          monthly_balance: existingCredits.monthly_balance + totalCredits,
-          balance: newBalance,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id)
-
-      if (updateError) {
-        console.error(`[claim-arcano-free-trial] Failed to update credits:`, updateError)
-        return new Response(JSON.stringify({ error: 'Failed to update credits' }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-    } else {
-      newBalance = totalCredits
-      const { error: insertError } = await supabase
-        .from('upscaler_credits')
-        .insert({
-          user_id: user.id,
-          monthly_balance: totalCredits,
-          lifetime_balance: 0,
-          balance: newBalance,
-        })
-
-      if (insertError) {
-        console.error(`[claim-arcano-free-trial] Failed to insert credits:`, insertError)
-        return new Response(JSON.stringify({ error: 'Failed to create credits' }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-    }
-
-    // 5. Record transaction WITH balance_after and credit_type
-    const { error: txError } = await supabase
-      .from('upscaler_credit_transactions')
-      .insert({
-        user_id: user.id,
-        amount: totalCredits,
-        transaction_type: 'arcano_free_trial',
-        description: `Bônus: 3 gerações gratuitas no Arcano Cloner (${totalCredits} créditos)`,
-        balance_after: newBalance,
-        credit_type: 'monthly',
-      })
-
-    if (txError) {
-      console.error(`[claim-arcano-free-trial] Failed to record transaction:`, txError)
-      // Rollback credits
-      if (existingCredits) {
-        await supabase
-          .from('upscaler_credits')
-          .update({
-            monthly_balance: existingCredits.monthly_balance,
-            balance: existingCredits.balance,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('user_id', user.id)
-      } else {
-        await supabase
-          .from('upscaler_credits')
-          .delete()
-          .eq('user_id', user.id)
-      }
-      return new Response(JSON.stringify({ error: 'Failed to record transaction' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // 6. Record claim ONLY after credits and transaction succeeded
-    const { error: claimError } = await supabase
-      .from('arcano_cloner_free_trials')
-      .insert({
-        user_id: user.id,
-        email: email,
-        credits_granted: totalCredits,
-      })
-
-    if (claimError) {
-      console.error(`[claim-arcano-free-trial] Failed to record claim:`, claimError)
-      // Credits were added successfully, so don't rollback - just log the error
-      // User got the credits but claim wasn't recorded, they might be able to claim again (better than losing credits)
-    }
-
-    console.log(`[claim-arcano-free-trial] Successfully granted ${totalCredits} credits to ${email} (new balance: ${newBalance})`)
-
-    return new Response(JSON.stringify({ success: true, credits_granted: totalCredits }), {
+    return new Response(JSON.stringify({ success: true, credits_granted: creditsGranted }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
 
