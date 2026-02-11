@@ -60,36 +60,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    // 2. Check if premium
-    const { data: premiumCheck } = await supabase
-      .from('premium_users')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-      .maybeSingle()
-
-    if (premiumCheck) {
-      console.log(`[claim-arcano-free-trial] User is premium: ${email}`)
-      return new Response(JSON.stringify({ is_premium: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // 3. Check if has purchased credits (lifetime_balance > 0)
-    const { data: creditCheck } = await supabase
-      .from('upscaler_credits')
-      .select('lifetime_balance')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (creditCheck && creditCheck.lifetime_balance > 0) {
-      console.log(`[claim-arcano-free-trial] User has purchased credits: ${email}`)
-      return new Response(JSON.stringify({ has_purchased: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // 4. Get credit cost from ai_tool_settings
+    // 2. Get credit cost from ai_tool_settings
     const { data: toolSettings } = await supabase
       .from('ai_tool_settings')
       .select('credit_cost')
