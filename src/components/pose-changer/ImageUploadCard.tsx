@@ -163,7 +163,7 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
         {/* Upload Area - Responsive with aspect ratio on desktop */}
         <div
           className={cn(
-            "relative aspect-square max-h-[140px] lg:max-h-none cursor-pointer transition-all",
+            "relative h-[140px] lg:h-auto lg:aspect-square cursor-pointer transition-all",
             !image && "hover:bg-purple-500/10",
             disabled && "cursor-not-allowed"
           )}
