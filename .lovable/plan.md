@@ -1,62 +1,55 @@
 
 
-## Centralizar "Minhas Criações" para TODAS as ferramentas de IA (presente e futuras)
+## Adicionar botao "Gerar sua foto" no modal de Colecoes
 
-### Problema
+### Resumo
 
-A RPC `get_user_ai_creations` não inclui `arcano_cloner_jobs`, então resultados do Arcano Cloner não aparecem em "Minhas Criações". Além disso, a função `cleanup_expired_ai_jobs` está faltando `arcano_cloner_jobs` e `character_generator_jobs`.
+Adicionar o botao "Gerar sua foto" (que leva ao Arcano Cloner) em dois locais do `CollectionModal.tsx`:
 
-### Solução
+1. **Na grid de preview (hover sobre cada item)**: Dois botoes aparecem ao passar o mouse -- "Ver Prompt" (abre o detalhe do item) e "Gerar sua foto" (navega pro Arcano Cloner com a imagem como referencia)
+2. **Na view de detalhe do item (selectedItem)**: Botao "Gerar sua foto" junto aos botoes de Copiar Prompt e Baixar Ref.
 
-Uma única migração SQL que atualiza as duas funções para incluir TODAS as 6 tabelas de jobs existentes, com comentários claros indicando onde adicionar futuras ferramentas.
+O botao so aparece para itens que NAO sao video (mesma logica da Biblioteca de Prompts). A logica de premium gating tambem se aplica: se o item for premium e o usuario nao for premium, mostra "Exclusivo Premium" com cadeado e redireciona para /planos.
 
-### O que será feito
+### Mudancas
 
-**Migração SQL única** que recria as duas funções:
+#### Arquivo: `src/components/CollectionModal.tsx`
 
-**1. `get_user_ai_creations`** - Adicionar UNION ALL para:
-- `arcano_cloner_jobs` (tool_name: 'Arcano Cloner', media_type: 'image')
+**1. Importar icones faltantes:**
+- Adicionar `Sparkles`, `Lock` e `Eye` aos imports do lucide-react
 
-Tabelas já incluídas que permanecem:
-- `upscaler_jobs` (Upscaler Arcano)
-- `pose_changer_jobs` (Pose Changer)
-- `veste_ai_jobs` (Veste AI)
-- `video_upscaler_jobs` (Video Upscaler)
-- `character_generator_jobs` (Gerador Avatar)
+**2. Grid de items (linhas ~358-408) - overlay de hover:**
+- Adicionar um overlay que aparece no hover com dois botoes:
+  - "Ver Prompt" (chama `setSelectedItem(item)`)
+  - "Gerar sua foto" (navega para `/arcano-cloner-tool` com `state: { referenceImageUrl: item.imageUrl }`)
+- Para itens de video, mostrar apenas "Ver Prompt"
+- Para itens premium sem acesso, o botao "Gerar sua foto" mostra "Exclusivo Premium" com icone de cadeado e navega para `/planos`
 
-**2. `cleanup_expired_ai_jobs`** - Adicionar DELETE para:
-- `arcano_cloner_jobs`
-- `character_generator_jobs`
+**3. View de detalhe (linhas ~295-323) - botao extra:**
+- Adicionar botao "Gerar sua foto" abaixo dos botoes Copiar/Baixar (apenas para imagens, nao videos)
+- Mesmo estilo gradiente rosa-roxo da Biblioteca de Prompts
+- Mesma logica premium gating
 
-O retorno será atualizado para incluir as contagens das novas tabelas.
-
-### Detalhes técnicos
-
-Ambas as funções seguem o mesmo padrão: verificam `status = 'completed'`, `output_url IS NOT NULL`, e `completed_at + interval '5 days'`.
+### Detalhes tecnicos
 
 ```text
--- Padrão para cada tabela em get_user_ai_creations:
-SELECT id, output_url, thumbnail_url, 
-       'Nome da Ferramenta'::TEXT, 'image'::TEXT, 
-       created_at, (completed_at + interval '5 days')
-FROM tabela_jobs 
-WHERE user_id = auth.uid() 
-  AND status = 'completed' 
-  AND output_url IS NOT NULL 
-  AND (completed_at + interval '5 days') > now()
+Logica do botao (identica a BibliotecaPrompts):
 
--- Padrão para cada tabela em cleanup_expired_ai_jobs:
-DELETE FROM tabela_jobs
-WHERE status = 'completed'
-  AND completed_at IS NOT NULL
-  AND (completed_at + interval '5 days') < now()
+Se item.isPremium && !isPremium:
+  -> Mostra "Exclusivo Premium" com Lock icon
+  -> onClick navega para /planos
+
+Senao:
+  -> Mostra "Gerar sua foto" com Sparkles icon  
+  -> onClick navega para /arcano-cloner-tool com state: { referenceImageUrl: item.imageUrl }
+
+Condicao de exibicao:
+  -> Apenas quando !isVideoUrl(item.imageUrl)
 ```
 
 ### Arquivos
 
-| Arquivo | Alteração |
+| Arquivo | Alteracao |
 |---------|-----------|
-| Nova migração SQL | Recriar `get_user_ai_creations` e `cleanup_expired_ai_jobs` com todas as 6 tabelas |
-
-Nenhum arquivo frontend precisa mudar -- o hook `useMyCreations` já chama a RPC e renderiza o resultado automaticamente.
+| `src/components/CollectionModal.tsx` | Adicionar overlay de hover na grid + botao na view de detalhe |
 
