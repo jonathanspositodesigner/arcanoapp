@@ -160,7 +160,7 @@ const GeradorPersonagemTool: React.FC = () => {
         setStatus('processing');
         setQueuePosition(0);
       }
-    }, [endSubmit, playNotificationSound, refetchCredits]),
+    }, [endSubmit, playNotificationSound, refetchCredits, isRefining]),
     onGlobalStatusChange: updateJobStatus,
   });
 
