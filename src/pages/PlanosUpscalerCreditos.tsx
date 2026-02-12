@@ -383,17 +383,11 @@ const PlanosUpscalerCreditos = () => {
               <FadeIn delay={100} duration={600}>
                 <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-5 py-2.5 mb-8 md:mb-10">
                   <div className="flex -space-x-2">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-fuchsia-400 to-purple-500 border-2 border-[#0f0a15] flex items-center justify-center">
-                      <User className="h-3.5 w-3.5 text-white" />
-                    </div>
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-fuchsia-500 border-2 border-[#0f0a15] flex items-center justify-center">
-                      <User className="h-3.5 w-3.5 text-white" />
-                    </div>
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 border-2 border-[#0f0a15] flex items-center justify-center">
-                      <User className="h-3.5 w-3.5 text-white" />
-                    </div>
+                    <img src="/images/social-proof-1.png" alt="" className="w-7 h-7 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-2.png" alt="" className="w-7 h-7 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-3.png" alt="" className="w-7 h-7 rounded-full border-2 border-[#0f0a15] object-cover" />
                   </div>
-                  <span className="text-white/80 text-sm font-medium">+5.000 profissionais já estão usando</span>
+                  <span className="text-white/80 text-sm font-medium">+100.000 profissionais já estão usando</span>
                 </div>
               </FadeIn>
 
