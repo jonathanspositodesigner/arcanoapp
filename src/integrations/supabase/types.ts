@@ -1584,16 +1584,19 @@ export type Database = {
       google_api_config: {
         Row: {
           id: string
+          key_changed_at: string
           total_budget: number
           updated_at: string
         }
         Insert: {
           id?: string
+          key_changed_at?: string
           total_budget?: number
           updated_at?: string
         }
         Update: {
           id?: string
+          key_changed_at?: string
           total_budget?: number
           updated_at?: string
         }

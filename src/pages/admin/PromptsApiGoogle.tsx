@@ -39,20 +39,23 @@ const PromptsApiGoogle = () => {
     },
   });
 
-  // Fetch image jobs stats
+  const keyChangedAt = budgetConfig?.key_changed_at as string | undefined;
+
+  // Fetch image jobs stats (only after key_changed_at)
   const { data: imageStats } = useQuery({
-    queryKey: ["google-image-stats"],
+    queryKey: ["google-image-stats", keyChangedAt],
+    enabled: !!budgetConfig,
     queryFn: async () => {
-      // Fetch all completed image jobs with pagination
       let allJobs: { model: string }[] = [];
       let from = 0;
       const batchSize = 1000;
       while (true) {
-        const { data, error } = await supabase
+        let query = supabase
           .from("image_generator_jobs")
           .select("model")
-          .eq("status", "completed")
-          .range(from, from + batchSize - 1);
+          .eq("status", "completed");
+        if (keyChangedAt) query = query.gte("created_at", keyChangedAt);
+        const { data, error } = await query.range(from, from + batchSize - 1);
         if (error) throw error;
         if (!data || data.length === 0) break;
         allJobs = [...allJobs, ...data];
@@ -71,19 +74,21 @@ const PromptsApiGoogle = () => {
     },
   });
 
-  // Fetch video jobs stats
+  // Fetch video jobs stats (only after key_changed_at)
   const { data: videoStats } = useQuery({
-    queryKey: ["google-video-stats"],
+    queryKey: ["google-video-stats", keyChangedAt],
+    enabled: !!budgetConfig,
     queryFn: async () => {
       let allJobs: { duration_seconds: number | null }[] = [];
       let from = 0;
       const batchSize = 1000;
       while (true) {
-        const { data, error } = await supabase
+        let query = supabase
           .from("video_generator_jobs")
           .select("duration_seconds")
-          .eq("status", "completed")
-          .range(from, from + batchSize - 1);
+          .eq("status", "completed");
+        if (keyChangedAt) query = query.gte("created_at", keyChangedAt);
+        const { data, error } = await query.range(from, from + batchSize - 1);
         if (error) throw error;
         if (!data || data.length === 0) break;
         allJobs = [...allJobs, ...data];
@@ -115,8 +120,11 @@ const PromptsApiGoogle = () => {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Chave API atualizada com sucesso!");
+      toast.success("Chave API atualizada com sucesso! Budget resetado para R$ 1.900,00");
       setNewApiKey("");
+      queryClient.invalidateQueries({ queryKey: ["google-api-config"] });
+      queryClient.invalidateQueries({ queryKey: ["google-image-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["google-video-stats"] });
     },
     onError: (err: Error) => {
       toast.error(`Erro ao atualizar chave: ${err.message}`);
