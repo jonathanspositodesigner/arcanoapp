@@ -208,11 +208,11 @@ export default function AIToolsAuthModal({
         }, { onConflict: 'id' });
 
         try {
-          await supabase.functions.invoke('send-confirmation-email', {
+          await supabase.functions.invoke('send-free-trial-confirmation-email', {
             body: { email: normalizedEmail, user_id: authData.user.id }
           });
         } catch (e) {
-          console.error('[AIToolsAuth] Failed to send confirmation email:', e);
+          console.error('[AIToolsAuth] Failed to send free trial confirmation email:', e);
         }
 
         await supabase.auth.signOut();
@@ -331,7 +331,7 @@ export default function AIToolsAuthModal({
                   Enviamos um link de confirmação para <strong className="text-white">{verifiedEmail || email}</strong>
                 </p>
                 <p className="text-xs text-purple-400 mt-2">
-                  Após confirmar, volte aqui e faça login para receber seus 300 créditos grátis.
+                  Clique no link do email para confirmar e receber seus 300 créditos automaticamente.
                 </p>
               </div>
               <Button

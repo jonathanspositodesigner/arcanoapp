@@ -129,3 +129,9 @@ verify_jwt = false
 
 [functions.pwa-version]
 verify_jwt = false
+
+[functions.send-free-trial-confirmation-email]
+verify_jwt = false
+
+[functions.confirm-email-free-trial]
+verify_jwt = false
