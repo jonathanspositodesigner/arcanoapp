@@ -311,7 +311,7 @@ const GerarImagemTool = () => {
             </div>
 
             {/* Controls row */}
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1.5 overflow-hidden">
               {/* Model dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -360,14 +360,14 @@ const GerarImagemTool = () => {
               </DropdownMenu>
 
               {/* Spacer */}
-              <div className="flex-1 min-w-0" />
+              <div className="flex-1 min-w-[4px]" />
 
               {/* Generate button */}
               <Button
                 onClick={handleGenerate}
                 disabled={isGenerating || !prompt.trim()}
                 size="sm"
-                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-8 min-w-0"
+                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-2 h-8 min-w-0 shrink-0"
               >
                 {isGenerating ? (
                   <>
