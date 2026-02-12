@@ -156,10 +156,10 @@ async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
   context: string,
-  maxRetries: number = 3
+  maxRetries: number = 4
 ): Promise<Response> {
   const retryableStatuses = [429, 502, 503, 504];
-  const delays = [500, 1000, 2000];
+  const delays = [2000, 5000, 10000, 15000];
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const response = await fetch(url, options);
