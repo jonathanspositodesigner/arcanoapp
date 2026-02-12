@@ -1,100 +1,138 @@
 
-# Modal de Free Trial Global para Ferramentas de IA
+# Gerar Imagem e Gerar Video - Google Gemini API
 
 ## Resumo
-Transformar o modal de free trial (atualmente exclusivo do Arcano Cloner) em um componente global que aparece em todas as ferramentas de IA, com um novo passo inicial pedindo criacao de conta na RunningHub antes do login/cadastro.
+Adicionar duas novas ferramentas de IA no menu lateral (dentro de "Ferramentas de IA"):
+- **Gerar Imagem** - com escolha entre NanoBanana Normal (40 creditos) e NanoBanana Pro (60 creditos), suportando ate 5 imagens de referencia (image-to-image)
+- **Gerar Video** - usando Veo 3.1 Fast (150 creditos), suportando start frame e end frame (image-to-video)
 
-## Novo Fluxo do Modal
+## Modelos Google utilizados
+- **NanoBanana Normal**: `gemini-2.5-flash-image` (geracao de imagem mais rapida/barata)
+- **NanoBanana Pro**: `gemini-3-pro-image-preview` (geracao de imagem premium)
+- **Veo 3.1 Fast**: `veo-3.1-generate-preview` (geracao de video)
 
+## Funcionalidades
+
+### Gerar Imagem
+- Campo de prompt de texto
+- Seletor de modelo: NanoBanana Normal (40 cr) ou NanoBanana Pro (60 cr)
+- Seletor de aspect ratio (1:1, 16:9, 9:16, 4:3, 3:4)
+- Botao de attachment para ate 5 imagens de referencia (image-to-image)
+- Exibicao da imagem gerada com zoom e download
+- Integracao com creditos, modal auth e modal sem creditos
+
+### Gerar Video
+- Campo de prompt de texto
+- Seletor de aspect ratio (16:9, 9:16)
+- Seletor de duracao (5s, 8s)
+- Upload de Start Frame (imagem inicial do video)
+- Upload de End Frame (imagem final do video) - opcional
+- Polling assincrono ate video ficar pronto
+- Player de video com download
+- 150 creditos por geracao
+
+## Mudancas Tecnicas
+
+### 1. Secret
+- Adicionar `GOOGLE_GEMINI_API_KEY` via ferramenta de secrets
+
+### 2. Database (Migrations)
+
+**Tabela `image_generator_jobs`:**
+- id (uuid), user_id, prompt, model (text), aspect_ratio, status, output_url, error_message
+- reference_images (jsonb - array de URLs), user_credit_cost, credits_charged, credits_refunded
+- created_at, completed_at
+
+**Tabela `video_generator_jobs`:**
+- id (uuid), user_id, prompt, aspect_ratio, duration_seconds, status, output_url, error_message
+- start_frame_url, end_frame_url, operation_name (para polling Google)
+- user_credit_cost, credits_charged, credits_refunded
+- created_at, started_at, completed_at
+
+**Entradas em `ai_tool_settings`:**
+- `gerar_imagem` com credit_cost = 40
+- `gerar_imagem_pro` com credit_cost = 60
+- `gerar_video` com credit_cost = 150
+
+**RLS policies** para ambas as tabelas (usuario so ve seus proprios jobs)
+
+### 3. Edge Functions
+
+**`generate-image/index.ts`:**
+- Recebe: prompt, model (normal/pro), aspect_ratio, reference_images (array base64 opcional)
+- Valida autenticacao e consome creditos via RPC
+- Chama API Google Gemini com o modelo selecionado
+- Envia imagens de referencia como partes inline (image-to-image)
+- Retorna imagem gerada (faz upload para Storage, retorna URL)
+- Em caso de erro, estorna creditos
+- Salva registro na tabela
+
+**`generate-video/index.ts`:**
+- Recebe: prompt, aspect_ratio, duration_seconds, start_frame_url, end_frame_url
+- Valida autenticacao e consome creditos via RPC
+- Chama API Google Veo 3.1 (predictLongRunning)
+- Cria job na tabela com operation_name
+- Retorna job_id para polling
+
+**`poll-video-status/index.ts`:**
+- Recebe: job_id
+- Busca operation_name do job
+- Checa status na API Google
+- Atualiza tabela (completed com URL ou failed com erro)
+- Estorna creditos se falhou
+
+### 4. Frontend - Novas Paginas
+
+**`src/pages/GerarImagemTool.tsx`:**
+- Layout seguindo o padrao das outras ferramentas (AppLayout, goBack, creditos)
+- Toggle NanoBanana Normal / Pro
+- Textarea para prompt
+- Botao de attachment (ate 5 imagens) com preview em miniatura
+- Seletor de aspect ratio
+- Botao "Gerar Imagem" com loading
+- Area de resultado com zoom (TransformWrapper) e download
+- Modal AIToolsAuthModal + NoCreditsModal
+
+**`src/pages/GerarVideoTool.tsx`:**
+- Layout padrao
+- Textarea para prompt
+- Upload de Start Frame e End Frame (cards de upload similares ao Pose Changer)
+- Seletor aspect ratio e duracao
+- Botao "Gerar Video" com status de processamento
+- Polling a cada 10s enquanto processa
+- Player de video quando completo
+- Download + modais de auth e creditos
+
+### 5. Menu Lateral (AppSidebar.tsx)
+
+Adicionar ao array `aiToolLinks`:
 ```text
-+----------------------------------+
-| Passo 1: RunningHub (NOVO)       |
-| "Ganhe 300 creditos gratis!"     |
-| [Criar conta no RunningHub]      |
-|          |                       |
-|    (countdown 15s)               |
-|          |                       |
-| [Ja criei minha conta]           |
-+----------------------------------+
-            |
-            v
-+----------------------------------+
-| Passo 2: Email (existente)       |
-| "Faca login ou crie sua conta"   |
-| [Campo de email + Continuar]     |
-+----------------------------------+
-            |
-            v
-+----------------------------------+
-| Passo 3: Senha/Cadastro/Verify   |
-| (fluxo atual do AuthModal)       |
-+----------------------------------+
+{ name: "Gerar Imagem", path: "/gerar-imagem", badge: "Novo", badgeColor: "bg-green-500" }
+{ name: "Gerar Video", path: "/gerar-video", badge: "Novo", badgeColor: "bg-green-500" }
 ```
 
-## Mudancas
+### 6. Rotas (App.tsx)
+- `/gerar-imagem` -> GerarImagemTool (lazy loaded)
+- `/gerar-video` -> GerarVideoTool (lazy loaded)
 
-### 1. Renomear e Generalizar o ArcanoClonerAuthModal
-- Renomear para `AIToolsAuthModal` (ou manter o arquivo e criar um wrapper)
-- Adicionar novo step `'runninghub'` como passo inicial (antes de `'email'`)
-- O step `'runninghub'` tera:
-  - Icone animado + titulo "Ganhe 300 creditos gratis!"
-  - Beneficios listados (conta gratuita, creditos, etc.)
-  - Botao "Criar conta no RunningHub" que abre o link de referral
-  - Countdown de 15 segundos apos clicar
-  - Botao "Ja criei minha conta" apos countdown (avanca para step `'email'`)
-  - Botao "Agora nao" para fechar
-- Tipo de step atualizado: `'runninghub' | 'email' | 'password' | 'signup' | 'verify-email'`
+### 7. Config (supabase/config.toml)
+- Adicionar generate-image, generate-video, poll-video-status com verify_jwt = false
 
-### 2. Controle de Visibilidade (sessionStorage)
-- Usar uma chave `ai_tools_free_trial_modal_shown` no sessionStorage para nao mostrar repetidamente na mesma sessao
-- O modal aparece automaticamente apos ~2 segundos se:
-  - Usuario NAO esta logado (`!user`)
-  - Modal ainda nao foi exibido na sessao atual
+## Arquivos
 
-### 3. Integrar em Todas as Ferramentas de IA
-Adicionar o modal nas seguintes paginas (mesmo padrao do Arcano Cloner):
-- `UpscalerArcanoTool.tsx`
-- `VideoUpscalerTool.tsx`
-- `VesteAITool.tsx`
-- `PoseChangerTool.tsx`
-- `GeradorPersonagemTool.tsx`
-- `ForjaSelos3D.tsx`
+### Novos:
+1. `src/pages/GerarImagemTool.tsx`
+2. `src/pages/GerarVideoTool.tsx`
+3. `supabase/functions/generate-image/index.ts`
+4. `supabase/functions/generate-video/index.ts`
+5. `supabase/functions/poll-video-status/index.ts`
 
-Em cada pagina:
-- Importar `AIToolsAuthModal`
-- Adicionar state `showAuthModal`
-- Adicionar useEffect para mostrar modal apos 2s se `!user`
-- Adicionar handler `handleAuthSuccess` que fecha o modal e chama `claim-arcano-free-trial`
-- Renderizar `<AIToolsAuthModal />` no JSX
+### Modificados:
+1. `src/components/layout/AppSidebar.tsx` - novos links no menu
+2. `src/App.tsx` - novas rotas lazy
+3. `supabase/config.toml` - novas functions
 
-### 4. Atualizar o ArcanoClonerTool.tsx
-- Trocar o import do `ArcanoClonerAuthModal` pelo novo `AIToolsAuthModal`
-- Remover a condicao `cameFromLibrary` - agora aparece sempre que `!user`
-- Manter o handler `handleAuthSuccess` existente
-
-## Detalhes Tecnicos
-
-### Novo componente: `src/components/ai-tools/AIToolsAuthModal.tsx`
-- Baseado no `ArcanoClonerAuthModal` existente
-- Step inicial `'runninghub'` reutiliza a logica visual do `RunningHubBonusModal` (countdown, link referral, etc.)
-- Props: `isOpen`, `onClose`, `onAuthSuccess`
-- Constantes: `RUNNINGHUB_REFERRAL_URL`, `COUNTDOWN_SECONDS = 15`
-
-### Logica de exibicao por pagina (hook ou inline)
-Cada pagina de ferramenta adicionara:
-```text
-const [showAuthModal, setShowAuthModal] = useState(false);
-
-useEffect - se !user e !sessionStorage tem chave, mostra apos 2s
-handleAuthSuccess - fecha modal + chama claim-arcano-free-trial + refetchCredits
-```
-
-### Arquivos modificados
-1. **Novo**: `src/components/ai-tools/AIToolsAuthModal.tsx`
-2. **Modificado**: `src/pages/ArcanoClonerTool.tsx` - trocar para novo modal
-3. **Modificado**: `src/pages/UpscalerArcanoTool.tsx` - adicionar modal
-4. **Modificado**: `src/pages/VideoUpscalerTool.tsx` - adicionar modal
-5. **Modificado**: `src/pages/VesteAITool.tsx` - adicionar modal
-6. **Modificado**: `src/pages/PoseChangerTool.tsx` - adicionar modal
-7. **Modificado**: `src/pages/GeradorPersonagemTool.tsx` - adicionar modal
-8. **Modificado**: `src/pages/ForjaSelos3D.tsx` - adicionar modal
+### Database Migrations:
+1. Criar tabelas image_generator_jobs e video_generator_jobs
+2. Inserir entradas em ai_tool_settings
+3. RLS policies para ambas as tabelas
