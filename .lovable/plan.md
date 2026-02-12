@@ -1,114 +1,133 @@
 
 
-## Adicionar Veo 3 e NanoBanana Pro nos planos + desconto 50% para IA Unlimited
+## Implementar sistema robusto de Force Update para PWA (iOS-safe)
 
-### Resumo
+### Problema atual
 
-Adicionar dois novos itens na lista de features da pagina `/planos-2`:
-- "Geracao de Video com Veo 3"
-- "Geracao de Imagem com NanoBanana Pro"
+O PWA no iPhone fica preso no cache antigo. O sistema atual usa `registerType: "autoUpdate"` que tenta atualizar o SW automaticamente em background, mas no iOS isso nao funciona de forma confiavel. Alem disso, o `skipWaiting: false` esta correto (nao queremos ativar SW novo automaticamente), mas falta o mecanismo correto de controle manual pelo usuario.
 
-Com as seguintes regras:
-- **Starter**: indisponivel (X vermelho)
-- **Pro, Ultimate**: disponivel (check roxo)
-- **IA Unlimited**: disponivel (check roxo) + badge "50% OFF"
+### Arquitetura da solucao
 
-E ajustar os custos de creditos:
-- **IA Unlimited**: mantem os custos atuais do banco (40 NanoBanana Normal, 60 NanoBanana Pro, 700 Veo 3)
-- **Todos os outros planos**: NanoBanana Normal = 80, NanoBanana Pro = 100, Veo 3 = 1500
+O sistema tera 3 camadas independentes que se complementam:
 
-### Mudancas tecnicas
+```text
+CAMADA 1: Botao "Atualizar App" (usuario)
+  forcePwaUpdate() -> reg.update() -> SKIP_WAITING -> controllerchange -> reload
 
-#### 1. `src/pages/Planos2.tsx` - Adicionar features na lista de planos
+CAMADA 2: Update Global (admin)
+  Admin clica botao -> edge function pwa-version -> app detecta versao diferente -> banner
 
-Adicionar dois novos itens de feature em **todos os 8 arrays de features** (4 mensal + 4 anual), logo depois do item "Acesso as Ferramentas de IA":
-
-Para **Starter** (mensal e anual):
-```
-{ text: 'Geração de Imagem com NanoBanana Pro', included: false }
-{ text: 'Geração de Vídeo com Veo 3', included: false }
+CAMADA 3: Headers corretos (iOS cache)
+  index.html e sw.js = no-cache | assets com hash = immutable
 ```
 
-Para **Pro** e **Ultimate** (mensal e anual):
-```
-{ text: 'Geração de Imagem com NanoBanana Pro', included: true }
-{ text: 'Geração de Vídeo com Veo 3', included: true }
-```
+### Mudancas detalhadas
 
-Para **IA Unlimited** (mensal e anual):
-```
-{ text: 'Geração de Imagem com NanoBanana Pro', included: true, hasDiscount: true }
-{ text: 'Geração de Vídeo com Veo 3', included: true, hasDiscount: true }
-```
+#### 1. Headers - `public/_headers`
 
-Na renderizacao da feature list (linhas ~411-444), adicionar logica para mostrar uma badge "50% OFF" ao lado do texto quando `hasDiscount === true`. Badge pequena com estilo gradiente roxo/rosa.
+Adicionar regras para `index.html` e `sw.js` nunca ficarem em cache agressivo:
 
-#### 2. Edge function `supabase/functions/generate-image/index.ts` - Custo diferenciado
+```text
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
 
-Apos obter o `userId`, buscar o `plan_type` do usuario na tabela `premium_users`:
+/sw.js
+  Cache-Control: no-cache, must-revalidate
 
-```typescript
-const { data: premiumData } = await serviceClient
-  .from("premium_users")
-  .select("plan_type")
-  .eq("user_id", userId)
-  .eq("is_active", true)
-  .maybeSingle();
-
-const isUnlimited = premiumData?.plan_type === "arcano_unlimited";
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
 ```
 
-Para o custo:
-- Se `isUnlimited`: usar o valor do `ai_tool_settings` (codigo atual, sem mudanca)
-- Se NAO `isUnlimited`: usar custos fixos (Normal = 80, Pro = 100)
+Isso resolve o problema raiz no iOS: o browser sempre revalida `index.html` e `sw.js`.
 
-```typescript
-let creditCost: number;
-if (isUnlimited) {
-  creditCost = settingsData?.credit_cost ?? (isProModel ? 60 : 40);
-} else {
-  creditCost = isProModel ? 100 : 80;
-}
+#### 2. Vite config - `vite.config.ts`
+
+- Manter `skipWaiting: false` (controle manual, como pedido)
+- Manter `clientsClaim: true`
+- Manter `registerType: "autoUpdate"` (apenas detecta SW novo, nao forca)
+
+Nenhuma mudanca necessaria aqui - a config atual ja esta correta para o fluxo desejado.
+
+#### 3. Funcao `forcePwaUpdate()` - novo arquivo `src/utils/forcePwaUpdate.ts`
+
+Criar funcao reutilizavel que faz exatamente o que foi pedido:
+
+```text
+a) navigator.serviceWorker.getRegistration() + reg.update()
+b) Se existir reg.waiting -> postMessage({type: "SKIP_WAITING"})
+c) Escutar controllerchange -> reload com cache-buster ?v=timestamp
+d) Se nao tiver SW -> reload simples com cache-buster
 ```
 
-#### 3. Edge function `supabase/functions/generate-video/index.ts` - Custo diferenciado
+Retorna callbacks para UX: `onStatus('checking' | 'updating' | 'reloading' | 'no-update')`.
 
-Mesma logica: buscar `plan_type` do usuario.
+#### 4. Service Worker - `public/push-handler.js`
 
-- Se `isUnlimited`: usar o valor do `ai_tool_settings` (700 atualmente)
-- Se NAO `isUnlimited`: custo fixo de 1500
+Ja tem o listener `SKIP_WAITING` (linha 5-9) e o SW do Workbox ja faz `clients.claim()` no activate. Nenhuma mudanca necessaria.
 
-```typescript
-let creditCost: number;
-if (isUnlimited) {
-  creditCost = settingsData?.credit_cost ?? 700;
-} else {
-  creditCost = 1500;
-}
+#### 5. Edge Function - `supabase/functions/pwa-version/index.ts`
+
+Nova edge function publica (sem JWT) que:
+- Busca `pwa_version` da tabela `app_settings`
+- Retorna `{ version: "valor" }` com `Cache-Control: no-store`
+
+Usar a tabela `app_settings` existente com uma nova row `id = 'pwa_version'`.
+
+#### 6. Adicionar row no banco
+
+Inserir na tabela `app_settings`:
+```text
+id: 'pwa_version'
+value: { version: '2026-02-12-001' }
 ```
 
-#### 4. Frontend `GerarImagemTool.tsx` e `GerarVideoTool.tsx` - Mostrar custo correto
+#### 7. Atualizar `ForceUpdateModal.tsx`
 
-Nesses componentes, o custo exibido ao usuario vem do `useAIToolSettings`. Precisamos ajustar para considerar o plano:
+Reescrever para usar a edge function `pwa-version` ao inves de buscar direto do Supabase:
+- No boot, chamar a edge function (fetch simples, sem SDK)
+- Comparar resposta com `localStorage.getItem('pwa_version')`
+- Se diferente: mostrar banner "Atualizacao disponivel" com botao que chama `forcePwaUpdate()`
+- Quando usuario clica: salvar versao no localStorage, chamar `forcePwaUpdate()`
 
-- Importar `usePremiumStatus` para obter `planType`
-- Se `planType === "arcano_unlimited"`: manter o custo do `getCreditCost()` (valores do banco)
-- Se nao: usar os custos fixos (80, 100, 1500)
+#### 8. Atualizar `UpdateAvailableModal.tsx`
 
-Isso garante que o usuario veja o preco correto ANTES de gerar.
+- Receber a funcao `forcePwaUpdate()` como handler ao inves de fazer a logica pesada internamente
+- O `performUpdate` vai:
+  1. Salvar `pwa_version` no localStorage
+  2. Chamar `forcePwaUpdate()`
+- Remover a logica de limpar TODO o localStorage/caches (isso causa logout desnecessario)
+
+#### 9. AdminHub - botao "Publicar Update Global"
+
+Atualizar `handleForceUpdate` no `AdminHub.tsx`:
+- Em vez de alterar `app_version`, alterar `pwa_version` com um novo valor incrementado
+- Formato: `YYYY-MM-DD-NNN` (ex: `2026-02-12-002`)
+
+#### 10. Config.toml
+
+Adicionar entrada para a nova edge function:
+```toml
+[functions.pwa-version]
+verify_jwt = false
+```
 
 ### Arquivos alterados
 
-1. **`src/pages/Planos2.tsx`** - Features + badge 50% OFF
-2. **`supabase/functions/generate-image/index.ts`** - Custo por plano
-3. **`supabase/functions/generate-video/index.ts`** - Custo por plano
-4. **`src/pages/GerarImagemTool.tsx`** - Exibir custo correto
-5. **`src/pages/GerarVideoTool.tsx`** - Exibir custo correto
+1. **`public/_headers`** - Headers para index.html e sw.js (no-cache)
+2. **`src/utils/forcePwaUpdate.ts`** - Novo: funcao JS reutilizavel
+3. **`supabase/functions/pwa-version/index.ts`** - Novo: edge function publica
+4. **`supabase/config.toml`** - Adicionar pwa-version
+5. **`src/components/ForceUpdateModal.tsx`** - Reescrever com nova logica
+6. **`src/components/UpdateAvailableModal.tsx`** - Simplificar, usar forcePwaUpdate()
+7. **`src/pages/AdminHub.tsx`** - Botao atualiza pwa_version
+8. **Banco (insert)** - Row pwa_version na app_settings
 
 ### O que NAO muda
 
-- Tabela `ai_tool_settings` (os valores do banco continuam sendo o custo do IA Unlimited)
-- Outras ferramentas de IA (Arcano Cloner, Pose, Veste AI, etc.)
-- Nenhuma tabela nova, nenhuma migration
-- Nenhuma rota nova
+- `vite.config.ts` (config ja esta correta)
+- `public/push-handler.js` (ja tem SKIP_WAITING listener)
+- `src/pages/ForceUpdate.tsx` (pagina de fallback, continua existindo)
+- `src/main.tsx` (sem controllerchange global - so no clique do usuario)
+- Nenhuma outra edge function
+- Nenhuma migration de schema
 
