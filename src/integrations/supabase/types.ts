@@ -3508,9 +3508,11 @@ export type Database = {
         Returns: {
           arcano_cloner_deleted: number
           character_generator_deleted: number
+          image_generator_deleted: number
           pose_changer_deleted: number
           upscaler_deleted: number
           veste_ai_deleted: number
+          video_generator_deleted: number
           video_upscaler_deleted: number
         }[]
       }
