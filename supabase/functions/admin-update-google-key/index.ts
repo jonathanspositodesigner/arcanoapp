@@ -60,6 +60,12 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Update key_changed_at in google_api_config to reset budget tracking
+    await supabase
+      .from("google_api_config")
+      .update({ key_changed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("id", "default");
+
     const mgmtResponse = await fetch(
       `https://api.supabase.com/v1/projects/${projectId}/secrets`,
       {
