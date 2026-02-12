@@ -49,6 +49,13 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       handle: "@wrproducoes",
       testimonial: "Muito top o Upscaler do Jonathan, o melhor do mercado sem dúvidas! Tá salvando aqui nos trampos kkkkk já foi a fase de sofrer com foto ruim de cliente hoje jogo no upscaler e entrego as artes com muito mais qualidade!",
       avatar: "/images/wellington-wrproducoes.png"
+    },
+    {
+      before: "/images/rodrigo-antes.webp",
+      after: "/images/rodrigo-depois.webp",
+      name: "Rodrigo Mélius",
+      handle: "@melius.arquitetura",
+      testimonial: "Já usei topaz, magnific, nano banana e nenhuma outra ferramenta que testei até hoje conseguiu reproduzir meus projetos com a fidelidade que essa ferramenta faz! Alem do render sair em 4k ainda valoriza texturas e materiais e entrega um resultado impecável! Ta sendo muito útil por aqui"
     }
   ];
 
