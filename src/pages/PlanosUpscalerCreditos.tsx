@@ -766,7 +766,7 @@ const PlanosUpscalerCreditos = () => {
                       <p className="text-[11px] text-purple-400 mt-0.5">Dobro de créditos por + R$10</p>
                     </div>
                     <div className="text-center mb-3 h-[75px] flex flex-col justify-center">
-                      <p className="text-purple-400 line-through text-xs">R$59,90</p>
+                      <p className="text-purple-400 line-through text-xs">R$69,90</p>
                       <div className="flex items-baseline justify-center gap-1">
                         <span className="text-purple-400 text-base">R$</span>
                         <span className="text-4xl font-bold text-white">39,90</span>
@@ -844,6 +844,7 @@ const PlanosUpscalerCreditos = () => {
                       <p className="text-[11px] text-purple-400 mt-0.5">Para profissionais que usam muito no dia a dia</p>
                     </div>
                     <div className="text-center mb-3 h-[75px] flex flex-col justify-center">
+                      <p className="text-purple-400 line-through text-xs">R$249,90</p>
                       <div className="flex items-baseline justify-center gap-1">
                         <span className="text-purple-400 text-base">R$</span>
                         <span className="text-4xl font-bold text-white">99,90</span>
