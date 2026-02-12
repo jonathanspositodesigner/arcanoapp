@@ -649,7 +649,7 @@ const PlanosUpscalerCreditos = () => {
                   Melhore agora mesmo suas <span className="text-fuchsia-400">imagens!</span>
                 </h2>
                 <p className="text-white/60 text-sm md:text-base font-space-grotesk">
-                  Escolha o plano que melhor te atende — sem mensalidade, pague apenas uma vez!
+                  Escolha o plano que melhor te atende — <span className="text-white font-bold">sem mensalidade, pague apenas uma vez!</span>
                 </p>
               </div>
 
