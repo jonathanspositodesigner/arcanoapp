@@ -157,27 +157,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
             Biblioteca de Prompts
           </button>
 
-          {/* Sites de IA - Collapsible */}
-          <button
-            onClick={() => setAiSitesOpen(!aiSitesOpen)}
-            className="w-full flex items-center justify-between text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
-          >
-            <span>Sites de IA</span>
-            <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${aiSitesOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          {aiSitesOpen && (
-            <div className="space-y-1 pl-2">
-              {externalLinks.map(link => (
-                <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
-                  <button className="w-full text-left text-[11px] text-purple-200 hover:text-white py-1.5 px-2.5 rounded-md hover:bg-purple-500/20 transition-colors flex items-center justify-between">
-                    <span>{link.name}</span>
-                    <link.icon className="h-3 w-3 text-purple-400" />
-                  </button>
-                </a>
-              ))}
-            </div>
-          )}
+          {/* Sites de IA - Hidden for now, links preserved in externalLinks array above */}
 
           <div className="my-3 border-t border-purple-400/30" />
 
