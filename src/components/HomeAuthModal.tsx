@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, MousePointerClick, UserPlus } from "lucide-react";
@@ -16,6 +16,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
   const { t } = useTranslation('index');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupSuccessEmail, setSignupSuccessEmail] = useState("");
+  const signupInProgressRef = useRef(false);
 
   const auth = useUnifiedAuth({
     changePasswordRoute: '/change-password',
@@ -26,8 +27,13 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
     onSignupSuccess: () => {
       setSignupSuccessEmail(auth.state.email);
       setSignupSuccess(true);
+      signupInProgressRef.current = false;
     },
-    onClose,
+    onClose: () => {
+      if (!signupInProgressRef.current && !signupSuccess) {
+        onClose();
+      }
+    },
     t: (key: string) => t(`auth.${key}`) || t(key),
   });
 
@@ -74,7 +80,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
             <>
               <SignupForm
                 defaultEmail={auth.state.email}
-                onSubmit={auth.signup}
+                onSubmit={async (data) => {
+                  signupInProgressRef.current = true;
+                  await auth.signup(data);
+                }}
                 onBackToLogin={auth.goToLogin}
                 isLoading={auth.state.isLoading}
                 showPhoneField={true}

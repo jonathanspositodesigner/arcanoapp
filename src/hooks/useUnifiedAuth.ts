@@ -384,11 +384,12 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
           console.error('[UnifiedAuth] Failed to send confirmation email:', e);
         }
         
+        // Notify success BEFORE sign out to prevent auth state change from closing UI
+        toast.success('Conta criada com sucesso! Verifique seu email.');
+        config.onSignupSuccess?.();
+        
         // Sign out immediately - user must confirm email before logging in
         await supabase.auth.signOut();
-        
-        toast.success(t('success.accountCreatedSuccess'));
-        config.onSignupSuccess?.();
       }
       
       setState(prev => ({ ...prev, isLoading: false }));
