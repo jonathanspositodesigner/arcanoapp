@@ -609,10 +609,10 @@ const PlanosUpscalerArcano = () => {
                   </div>
 
                   {/* Alerta de urgência */}
-                  <div className="bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
-                    <div className="flex items-center justify-center gap-2 text-fuchsia-300 text-xs md:text-sm">
-                      <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                      <span className="font-medium">{t('tools:upscaler.finalCTA.limitedOffer')}</span>
+                  <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
+                    <div className="flex items-center justify-center gap-2 text-red-400 text-xs md:text-sm">
+                      <span>🔥</span>
+                      <span className="font-bold">Últimos dias de venda do Upscaler na versão vitalícia</span>
                     </div>
                   </div>
 
