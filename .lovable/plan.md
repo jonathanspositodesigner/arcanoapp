@@ -1,72 +1,114 @@
 
-## Corrigir o loop infinito do modal de atualizacao
 
-### Problema
+## Adicionar Veo 3 e NanoBanana Pro nos planos + desconto 50% para IA Unlimited
 
-O botao "Forcar Update" incrementou a versao no banco para `5.3.1`, mas o `APP_VERSION` no codigo continua `5.3.0`. Como a comparacao e `dbVersion !== APP_VERSION`, o modal aparece sempre, mesmo depois de atualizar. E um loop sem saida.
+### Resumo
 
-### Solucao
+Adicionar dois novos itens na lista de features da pagina `/planos-2`:
+- "Geracao de Video com Veo 3"
+- "Geracao de Imagem com NanoBanana Pro"
 
-Trocar a logica de comparacao de versao por comparacao de **timestamp**. Funciona assim:
+Com as seguintes regras:
+- **Starter**: indisponivel (X vermelho)
+- **Pro, Ultimate**: disponivel (check roxo)
+- **IA Unlimited**: disponivel (check roxo) + badge "50% OFF"
 
-1. O botao "Forcar Update" salva um `force_update_at` no banco (ja faz isso)
-2. O app compara esse timestamp com um valor salvo no `localStorage`
-3. Se o timestamp do banco for mais recente que o do localStorage (ou se nao houver nada no localStorage), mostra o modal
-4. Quando o usuario clica "Atualizar Agora", salva o timestamp no localStorage ANTES de recarregar
-5. No proximo reload, o timestamp ja bate e o modal nao aparece mais
+E ajustar os custos de creditos:
+- **IA Unlimited**: mantem os custos atuais do banco (40 NanoBanana Normal, 60 NanoBanana Pro, 700 Veo 3)
+- **Todos os outros planos**: NanoBanana Normal = 80, NanoBanana Pro = 100, Veo 3 = 1500
 
-### Mudancas
+### Mudancas tecnicas
 
-#### 1. Corrigir valor no banco
-- Resetar `app_settings.app_version` para `latest_version: "5.3.0"` (para parar o loop imediatamente)
+#### 1. `src/pages/Planos2.tsx` - Adicionar features na lista de planos
 
-#### 2. Reescrever `ForceUpdateModal.tsx`
-- Remover comparacao de versao (`APP_VERSION !== dbVersion`)
-- Usar comparacao de timestamp: buscar `force_update_at` do banco, comparar com `localStorage.getItem('last_force_update')`
-- Se `force_update_at` for mais recente, mostrar modal
-- Manter export do `APP_VERSION` para outros usos
+Adicionar dois novos itens de feature em **todos os 8 arrays de features** (4 mensal + 4 anual), logo depois do item "Acesso as Ferramentas de IA":
 
-#### 3. Atualizar `UpdateAvailableModal.tsx`
-- No `performUpdate()`, antes de limpar tudo, salvar o timestamp no localStorage: `localStorage.setItem('last_force_update', forceUpdateAt)`
-- Isso garante que depois do reload o modal nao aparece de novo
-
-#### 4. Atualizar `AdminHub.tsx` - botao "Forcar Update"
-- Simplificar: nao precisa mais incrementar versao
-- Apenas atualizar o `force_update_at` com timestamp atual no banco
-- Manter o `latest_version` como informativo
-
-### Fluxo corrigido
-
-```text
-Admin clica "Forcar Update"
-        |
-        v
-Salva force_update_at = agora no banco
-        |
-        v
-Usuario abre o app
-        |
-        v
-ForceUpdateModal busca force_update_at do banco
-        |
-        v
-Compara com localStorage.last_force_update
-        |
-        v
-Banco mais recente? -> Mostra modal
-        |
-        v
-Usuario clica "Atualizar"
-        |
-        v
-Salva timestamp no localStorage -> Limpa cache -> Reload
-        |
-        v
-Proximo load: timestamps batem -> Modal NAO aparece
+Para **Starter** (mensal e anual):
+```
+{ text: 'Geração de Imagem com NanoBanana Pro', included: false }
+{ text: 'Geração de Vídeo com Veo 3', included: false }
 ```
 
+Para **Pro** e **Ultimate** (mensal e anual):
+```
+{ text: 'Geração de Imagem com NanoBanana Pro', included: true }
+{ text: 'Geração de Vídeo com Veo 3', included: true }
+```
+
+Para **IA Unlimited** (mensal e anual):
+```
+{ text: 'Geração de Imagem com NanoBanana Pro', included: true, hasDiscount: true }
+{ text: 'Geração de Vídeo com Veo 3', included: true, hasDiscount: true }
+```
+
+Na renderizacao da feature list (linhas ~411-444), adicionar logica para mostrar uma badge "50% OFF" ao lado do texto quando `hasDiscount === true`. Badge pequena com estilo gradiente roxo/rosa.
+
+#### 2. Edge function `supabase/functions/generate-image/index.ts` - Custo diferenciado
+
+Apos obter o `userId`, buscar o `plan_type` do usuario na tabela `premium_users`:
+
+```typescript
+const { data: premiumData } = await serviceClient
+  .from("premium_users")
+  .select("plan_type")
+  .eq("user_id", userId)
+  .eq("is_active", true)
+  .maybeSingle();
+
+const isUnlimited = premiumData?.plan_type === "arcano_unlimited";
+```
+
+Para o custo:
+- Se `isUnlimited`: usar o valor do `ai_tool_settings` (codigo atual, sem mudanca)
+- Se NAO `isUnlimited`: usar custos fixos (Normal = 80, Pro = 100)
+
+```typescript
+let creditCost: number;
+if (isUnlimited) {
+  creditCost = settingsData?.credit_cost ?? (isProModel ? 60 : 40);
+} else {
+  creditCost = isProModel ? 100 : 80;
+}
+```
+
+#### 3. Edge function `supabase/functions/generate-video/index.ts` - Custo diferenciado
+
+Mesma logica: buscar `plan_type` do usuario.
+
+- Se `isUnlimited`: usar o valor do `ai_tool_settings` (700 atualmente)
+- Se NAO `isUnlimited`: custo fixo de 1500
+
+```typescript
+let creditCost: number;
+if (isUnlimited) {
+  creditCost = settingsData?.credit_cost ?? 700;
+} else {
+  creditCost = 1500;
+}
+```
+
+#### 4. Frontend `GerarImagemTool.tsx` e `GerarVideoTool.tsx` - Mostrar custo correto
+
+Nesses componentes, o custo exibido ao usuario vem do `useAIToolSettings`. Precisamos ajustar para considerar o plano:
+
+- Importar `usePremiumStatus` para obter `planType`
+- Se `planType === "arcano_unlimited"`: manter o custo do `getCreditCost()` (valores do banco)
+- Se nao: usar os custos fixos (80, 100, 1500)
+
+Isso garante que o usuario veja o preco correto ANTES de gerar.
+
+### Arquivos alterados
+
+1. **`src/pages/Planos2.tsx`** - Features + badge 50% OFF
+2. **`supabase/functions/generate-image/index.ts`** - Custo por plano
+3. **`supabase/functions/generate-video/index.ts`** - Custo por plano
+4. **`src/pages/GerarImagemTool.tsx`** - Exibir custo correto
+5. **`src/pages/GerarVideoTool.tsx`** - Exibir custo correto
+
 ### O que NAO muda
-- Componente UpdateAvailableModal visual continua igual
-- Service Worker config (skipWaiting, controllerchange) continua igual
-- Nenhuma edge function alterada
-- Nenhuma rota alterada
+
+- Tabela `ai_tool_settings` (os valores do banco continuam sendo o custo do IA Unlimited)
+- Outras ferramentas de IA (Arcano Cloner, Pose, Veste AI, etc.)
+- Nenhuma tabela nova, nenhuma migration
+- Nenhuma rota nova
+
