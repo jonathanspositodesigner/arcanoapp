@@ -15,12 +15,7 @@ async function callVeoApi(geminiKey: string, payload: any): Promise<{ ok: boolea
       mimeType: payload.start_frame.mimeType,
     };
   }
-  if (payload.end_frame?.base64 && payload.end_frame?.mimeType) {
-    instance.endImage = {
-      bytesBase64Encoded: payload.end_frame.base64,
-      mimeType: payload.end_frame.mimeType,
-    };
-  }
+  // Note: endImage is NOT supported by veo-3.1-generate-preview model
 
   const parameters: any = {
     aspectRatio: payload.aspect_ratio || "16:9",
