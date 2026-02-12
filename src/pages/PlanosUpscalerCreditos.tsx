@@ -779,9 +779,9 @@ const PlanosUpscalerCreditos = () => {
                     <div className="flex flex-col items-center mb-5 h-[44px]">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
                         <Sparkles className="w-3.5 h-3.5" />
-                        5.000 créditos
+                        4.200 créditos
                       </span>
-                      <span className="text-[11px] text-purple-400 mt-1">~83 upscalers</span>
+                      <span className="text-[11px] text-purple-400 mt-1">~70 upscalers</span>
                     </div>
                     <ul className="space-y-2.5 flex-1">
                       <li className="flex items-start gap-2 text-sm">
