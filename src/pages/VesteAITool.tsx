@@ -506,9 +506,15 @@ const VesteAITool: React.FC = () => {
         </div>
       )}
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
+        {/* Tool intro - full width centered */}
+        <div className="text-center py-3">
+          <h1 className="text-2xl lg:text-3xl font-bold text-white">Veste AI</h1>
+          <p className="text-sm text-purple-300 mt-1 max-w-lg mx-auto">Troque a roupa da sua foto usando qualquer imagem como referência. A IA veste a peça na sua pessoa de forma realista.</p>
+        </div>
+
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 lg:h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 flex-1 lg:min-h-0">
           
           {/* Left Side - Inputs (2/7 on desktop ~28%) */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">

@@ -733,8 +733,14 @@ const UpscalerArcanoTool: React.FC = () => {
     <AppLayout fullScreen>
 
       {/* Main Content - Two Column Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 lg:h-full">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
+        {/* Tool intro - full width centered */}
+        <div className="text-center py-3">
+          <h1 className="text-2xl lg:text-3xl font-bold text-white">Upscaler Arcano V3</h1>
+          <p className="text-sm text-purple-300 mt-1 max-w-lg mx-auto">Aumente a qualidade das suas imagens com inteligência artificial. Transforme fotos em alta resolução sem perder detalhes.</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 flex-1 lg:min-h-0">
           
           {/* Left Side - Controls Panel (~28%) */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
