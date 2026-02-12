@@ -607,7 +607,7 @@ const BibliotecaPrompts = () => {
 
       <ExpiredSubscriptionModal isOpen={showExpiredModal} onClose={() => setShowExpiredModal(false)} planType={expiredPlanType} />
       <ExpiringSubscriptionModal isOpen={showExpiringModal} onClose={() => setShowExpiringModal(false)} expiringStatus={expiringStatus} planType={planType} />
-      {user && <RunningHubBonusModal userId={user.id} onCreditsAdded={refetchCredits} />}
+      
     </AppLayout>
   );
 };
