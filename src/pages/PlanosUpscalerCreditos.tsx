@@ -375,54 +375,93 @@ const PlanosUpscalerCreditos = () => {
         </div>
       ) : (
         <>
-          {/* HERO SECTION - Renderiza imediatamente para LCP */}
-          <section className="px-3 md:px-4 py-10 md:py-20 w-full">
-            <div className="flex flex-col items-center text-center">
-              {/* H1 sem FadeIn para ser visível imediatamente (LCP) */}
-              <div className="w-full max-w-[95vw] md:max-w-[60vw]">
-                <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
-                  {t('tools:upscaler.hero.title1')}{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
-                    {t('tools:upscaler.hero.title2')}
-                  </span>
-                </h1>
-              </div>
-
-              {/* Hero Image sem FadeIn para LCP */}
-              <div className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
-                {isMobile && !heroRevealed ? (
-                  <HeroPlaceholder
-                    onReveal={() => setHeroRevealed(true)}
-                    buttonText={t('tools:upscaler.hero.seeToolPower')}
-                    locale="pt"
-                  />
-                ) : (
-                  <HeroBeforeAfterSlider
-                    beforeImage={isMobile ? upscalerHeroAntesMobile : upscalerHeroAntesDesktop}
-                    afterImage={isMobile ? upscalerHeroDepoisMobile : upscalerHeroDepoisDesktop}
-                    label={t('tools:upscaler.hero.dragToCompare')}
-                    locale="pt"
-                  />
-                )}
-              </div>
+          {/* HERO SECTION - Layout com respiro */}
+          <section className="px-4 md:px-6 pt-16 md:pt-28 pb-12 md:pb-20 w-full">
+            <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
               
-              <FadeIn delay={400} duration={700}>
-                <p className="text-base md:text-lg lg:text-xl text-white/70 mb-4 md:mb-6 max-w-2xl">
+              {/* Social proof badge */}
+              <FadeIn delay={100} duration={600}>
+                <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-5 py-2.5 mb-8 md:mb-10">
+                  <div className="flex -space-x-2">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-fuchsia-400 to-purple-500 border-2 border-[#0f0a15] flex items-center justify-center">
+                      <User className="h-3.5 w-3.5 text-white" />
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-fuchsia-500 border-2 border-[#0f0a15] flex items-center justify-center">
+                      <User className="h-3.5 w-3.5 text-white" />
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 border-2 border-[#0f0a15] flex items-center justify-center">
+                      <User className="h-3.5 w-3.5 text-white" />
+                    </div>
+                  </div>
+                  <span className="text-white/80 text-sm font-medium">+5.000 criadores já estão usando</span>
+                </div>
+              </FadeIn>
+
+              {/* Título principal com mais respiro */}
+              <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-6 md:mb-8 leading-[1.1] tracking-wide">
+                {t('tools:upscaler.hero.title1')}{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+                  {t('tools:upscaler.hero.title2')}
+                </span>
+              </h1>
+
+              {/* Subtítulo com mais espaço */}
+              <FadeIn delay={300} duration={700}>
+                <p className="text-base md:text-lg lg:text-xl text-white/60 mb-8 md:mb-10 max-w-2xl leading-relaxed">
                   {t('tools:upscaler.hero.subtitle')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
               </FadeIn>
 
+              {/* Before/After Slider com tamanho contido */}
+              <FadeIn delay={400} duration={700}>
+                <div className="w-full max-w-[90vw] md:max-w-2xl mb-8 md:mb-10">
+                  {isMobile && !heroRevealed ? (
+                    <HeroPlaceholder
+                      onReveal={() => setHeroRevealed(true)}
+                      buttonText={t('tools:upscaler.hero.seeToolPower')}
+                      locale="pt"
+                    />
+                  ) : (
+                    <HeroBeforeAfterSlider
+                      beforeImage={isMobile ? upscalerHeroAntesMobile : upscalerHeroAntesDesktop}
+                      afterImage={isMobile ? upscalerHeroDepoisMobile : upscalerHeroDepoisDesktop}
+                      label={t('tools:upscaler.hero.dragToCompare')}
+                      locale="pt"
+                    />
+                  )}
+                </div>
+              </FadeIn>
+
+              {/* Urgência */}
               <FadeIn delay={500} duration={700}>
-                <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-2xl px-6 py-3 mb-6 md:mb-8 max-w-xl">
+                <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-2xl px-6 py-3 mb-8 md:mb-10 max-w-xl">
                   <p className="text-red-400 font-bold text-sm md:text-base flex items-center justify-center gap-2">
                     🔥 Últimos dias de venda do Upscaler na versão vitalícia
                   </p>
                 </div>
               </FadeIn>
 
+              {/* Feature badges - inspirado na referência */}
+              <FadeIn delay={600} duration={700}>
+                <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
+                  <div className="flex items-center gap-2 text-white/60 text-sm px-4 py-1">
+                    <Clock className="h-4 w-4 text-fuchsia-400" />
+                    <span>Resultados em segundos</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/60 text-sm px-4 py-1">
+                    <CreditCard className="h-4 w-4 text-fuchsia-400" />
+                    <span>Sem assinatura</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white/60 text-sm px-4 py-1">
+                    <Star className="h-4 w-4 text-fuchsia-400" />
+                    <span>+10.000 imagens melhoradas</span>
+                  </div>
+                </div>
+              </FadeIn>
+
               {/* Scroll Indicator */}
               <FadeIn delay={800} duration={700}>
-                <ScrollIndicator className="mt-12 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
+                <ScrollIndicator className="mt-16 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
               </FadeIn>
             </div>
           </section>
