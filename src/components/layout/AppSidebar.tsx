@@ -161,7 +161,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
             className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
           >
             <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-            Biblioteca de Prompts
+            PromptClub
           </button>
 
           {/* Sites de IA - Hidden for now, links preserved in externalLinks array above */}
