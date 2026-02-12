@@ -11,7 +11,7 @@ import AIToolsAuthModal from '@/components/ai-tools/AIToolsAuthModal';
 import { useAIToolsAuthModal } from '@/hooks/useAIToolsAuthModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
-import { AnimatedCreditsDisplay } from '@/components/upscaler/AnimatedCreditsDisplay';
+
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import {
   DropdownMenu,
@@ -32,7 +32,7 @@ interface ReferenceImage {
 const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
+  const { balance: credits, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
   const { showAuthModal, setShowAuthModal, handleAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
   const { getCreditCost } = useAIToolSettings();
 
@@ -198,9 +198,9 @@ const GerarImagemTool = () => {
                 <p className="text-[10px] text-purple-400">NanoBanana • Google Gemini</p>
               </div>
             </div>
-            <AnimatedCreditsDisplay credits={credits} isLoading={creditsLoading} size="sm" />
           </div>
         </div>
+
 
         {/* Main content area - image result centered */}
         <div className="flex-1 flex items-center justify-center p-4">
