@@ -1,76 +1,57 @@
 
+# Corrigir erro `balance_after` NOT NULL na RPC de Free Trial
 
-# Corrigir créditos NOT NULL - Free Trial
+## Problema
 
-## Causa raiz
+O erro agora e diferente do anterior. A RPC `claim_arcano_free_trial_atomic` faz um INSERT em `upscaler_credit_transactions` **sem incluir a coluna `balance_after`**, que e NOT NULL:
 
-A RPC `claim_arcano_free_trial_atomic` faz:
-```sql
-SELECT COALESCE(ats.credit_cost, 100) INTO v_credit_cost
-FROM ai_tool_settings WHERE tool_name = 'arcano_cloner'
+```
+null value in column "balance_after" of relation "upscaler_credit_transactions" violates not-null constraint
 ```
 
-Quando nao existe nenhuma linha na tabela `ai_tool_settings` com `tool_name = 'arcano_cloner'`, o SELECT retorna **zero linhas** -- o COALESCE nem e avaliado porque nao ha linha nenhuma. Resultado: `v_credit_cost = NULL`, e `v_credits = NULL * 3 = NULL`.
-
-Isso causa:
-```
-null value in column "credits_granted" violates not-null constraint
-```
+O credito e inserido em `upscaler_credits` com sucesso, mas a transacao de auditoria falha, e como tudo esta dentro de uma transacao, o Postgres faz rollback de tudo -- nenhum credito e salvo.
 
 ## Correcao
 
-Atualizar a RPC para usar um fallback seguro quando nao ha registro em `ai_tool_settings`:
+Atualizar a RPC para calcular o `balance_after` apos o upsert em `upscaler_credits` e incluir esse valor no INSERT da transacao:
 
 ```sql
-CREATE OR REPLACE FUNCTION claim_arcano_free_trial_atomic(p_user_id uuid, p_email text)
-RETURNS TABLE(already_claimed boolean, credits_granted integer)
-LANGUAGE plpgsql SECURITY DEFINER AS $$
+CREATE OR REPLACE FUNCTION claim_arcano_free_trial_atomic(...)
+-- apos o upsert em upscaler_credits:
 DECLARE
-  v_credit_cost integer;
-  v_credits integer;
+  v_balance_after integer;
 BEGIN
-  PERFORM pg_advisory_xact_lock(hashtext(p_email));
+  ...
+  -- upsert upscaler_credits (ja existente)
+  ...
 
-  IF EXISTS (SELECT 1 FROM arcano_cloner_free_trials WHERE email = p_email) THEN
-    RETURN QUERY SELECT true::boolean, 0::integer;
-    RETURN;
-  END IF;
+  -- Buscar o saldo atualizado
+  SELECT balance INTO v_balance_after
+  FROM upscaler_credits WHERE user_id = p_user_id;
 
-  -- Fix: use separate variable assignment with fallback
-  SELECT ats.credit_cost INTO v_credit_cost
-  FROM ai_tool_settings ats
-  WHERE ats.tool_name = 'arcano_cloner'
-  LIMIT 1;
-
-  -- When no row found, v_credit_cost is NULL, so default to 100
-  v_credit_cost := COALESCE(v_credit_cost, 100);
-  v_credits := v_credit_cost * 3;  -- = 300
-
-  INSERT INTO arcano_cloner_free_trials (user_id, email, credits_granted)
-  VALUES (p_user_id, p_email, v_credits);
-
-  INSERT INTO upscaler_credits (user_id, monthly_balance, lifetime_balance, balance)
-  VALUES (p_user_id, v_credits, 0, v_credits)
-  ON CONFLICT (user_id) DO UPDATE
-  SET monthly_balance = upscaler_credits.monthly_balance + v_credits,
-      balance = upscaler_credits.balance + v_credits,
-      updated_at = now();
-
-  INSERT INTO upscaler_credit_transactions (user_id, amount, transaction_type, credit_type, description)
-  VALUES (p_user_id, v_credits, 'bonus', 'monthly', '300 créditos grátis - Teste Grátis');
-
-  RETURN QUERY SELECT false::boolean, v_credits::integer;
+  -- INSERT com balance_after
+  INSERT INTO upscaler_credit_transactions
+    (user_id, amount, balance_after, transaction_type, credit_type, description)
+  VALUES
+    (p_user_id, v_credits, v_balance_after, 'bonus', 'monthly', '300 creditos gratis - Teste Gratis');
+  ...
 END;
-$$;
 ```
 
-A unica mudanca e separar o SELECT do COALESCE -- aplicar o COALESCE **depois** do SELECT para cobrir o caso de zero linhas retornadas.
+## Limpeza pos-correcao
 
-## Apos corrigir
+Deletar novamente todos os registros de `lancadelivery@gmail.com` (user_id `88628b6a-e6ae-48d9-8c6d-57ac3e0695f9`) das tabelas:
+- `arcano_cloner_free_trials`
+- `upscaler_credits`
+- `upscaler_credit_transactions`
+- `email_confirmation_tokens`
+- `profiles`
+- `auth.users`
 
-Limpar os registros do `lancadelivery@gmail.com` novamente (auth + profile + tokens + claims) para permitir um novo teste limpo.
+Para permitir um teste 100% limpo do zero.
 
-## Arquivos modificados
+## Detalhes tecnicos
 
-- Migration SQL apenas (corrigir a RPC no banco)
-- Nenhum arquivo de codigo frontend alterado
+- Apenas 1 migration SQL (recriar a RPC com a coluna `balance_after`)
+- Nenhum arquivo frontend alterado
+- A variavel `v_balance_after` e lida **apos** o upsert, garantindo que reflete o saldo correto
