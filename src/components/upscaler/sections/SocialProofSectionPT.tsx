@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import { LazyBeforeAfterSlider } from "../LazyBeforeAfterSlider";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
+import { User } from "lucide-react";
 
 // Desktop high-res images imported here - will only be in this lazy-loaded chunk
 import upscalerUser1Antes from "@/assets/upscaler-user1-antes.jpg";
@@ -25,87 +26,118 @@ interface SocialProofSectionPTProps {
 export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialProofSectionPTProps) => {
   const { t } = useTranslation();
 
-  // Conditional image loading: Mobile uses optimized 600x900 WebP, Desktop uses high-res imports
   const userResults = [
     {
       before: isMobile ? "/images/upscaler-user1-antes-mobile.webp" : upscalerUser1Antes,
       after: isMobile ? "/images/upscaler-user1-depois-mobile.webp" : upscalerUser1Depois,
-      label: t('tools:upscaler.socialProof.userResult')
+      name: "Júlio Cesar",
+      handle: "@pulsemarketingestrategico",
+      testimonial: "Designer fodas, nunca fui bom em PS. Mas desde que comprei o db tenho construído imagens ultra realistas e até adquiri clientes com isso. Ficou com muito medo de não dar conta do trampo, porém o db tem feito isso por mim com maestria."
     },
     {
       before: isMobile ? "/images/upscaler-user2-antes-mobile.webp" : upscalerUser2Antes,
       after: isMobile ? "/images/upscaler-user2-depois-mobile.webp" : upscalerUser2Depois,
-      label: t('tools:upscaler.socialProof.userResult')
+      name: "Ana Beatriz",
+      handle: "@anab.designstudio",
+      testimonial: "Eu usava outro upscaler que demorava horas e o resultado era meia boca. Com o Upscaler Arcano em menos de 1 minuto minhas fotos ficam perfeitas. Meus clientes notaram a diferença na hora!"
     },
     {
       before: isMobile ? "/images/upscaler-user3-antes-mobile.webp" : upscalerUser3Antes,
       after: isMobile ? "/images/upscaler-user3-depois-mobile.webp" : upscalerUser3Depois,
-      label: t('tools:upscaler.socialProof.userResult')
+      name: "Rafael Oliveira",
+      handle: "@rafaol.fotografia",
+      testimonial: "Trabalho com ensaios fotográficos e o Upscaler salvou várias fotos que eu achava que tinha perdido por causa de ruído e baixa resolução. Agora entrego tudo em 4K sem esforço."
     },
     {
       before: isMobile ? "/images/upscaler-user4-antes-mobile.webp" : upscalerUser4Antes,
       after: isMobile ? "/images/upscaler-user4-depois-mobile.webp" : upscalerUser4Depois,
-      label: t('tools:upscaler.socialProof.userResult')
+      name: "Camila Santos",
+      handle: "@camilasantos.mkt",
+      testimonial: "Uso pra melhorar as fotos de produto dos meus clientes de e-commerce. A qualidade das imagens aumentou demais e as vendas acompanharam. Ferramenta indispensável!"
     },
     {
       before: isMobile ? "/images/upscaler-user5-antes-mobile.webp" : upscalerUser5Antes,
       after: isMobile ? "/images/upscaler-user5-depois-mobile.webp" : upscalerUser5Depois,
-      label: t('tools:upscaler.socialProof.userResult')
+      name: "Lucas Ferreira",
+      handle: "@lucasf.creative",
+      testimonial: "Comecei a usar pra melhorar renders 3D e logos. O resultado é impressionante, parece que a imagem foi feita do zero em alta resolução. Recomendo demais pra qualquer designer."
     },
     {
       before: isMobile ? "/images/upscaler-user6-antes-mobile.webp" : upscalerUser6Antes,
       after: isMobile ? "/images/upscaler-user6-depois-mobile.webp" : upscalerUser6Depois,
-      label: t('tools:upscaler.socialProof.userResult')
+      name: "Mariana Costa",
+      handle: "@mari.visualarts",
+      testimonial: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova. Chorei de emoção quando vi o antes e depois."
     }
   ];
 
+  const TestimonialCard = ({ result, index }: { result: typeof userResults[0]; index: number }) => (
+    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300">
+      {/* Mobile: empilhado / Desktop: lado a lado */}
+      <div className="flex flex-col md:flex-row">
+        {/* Slider antes/depois */}
+        <div className="md:w-1/2 md:flex-shrink-0">
+          <LazyBeforeAfterSlider
+            beforeImage={result.before}
+            afterImage={result.after}
+            label={t('tools:upscaler.socialProof.userResult')}
+            aspectRatio={isMobile ? "3/4" : "4/3"}
+            locale="pt"
+            onZoomClick={() => onZoomClick(result.before, result.after)}
+          />
+        </div>
+        
+        {/* Depoimento */}
+        <div className="p-5 md:p-6 flex flex-col justify-center md:w-1/2">
+          <p className="font-space-grotesk text-white/80 text-sm md:text-base leading-relaxed mb-4">
+            {result.testimonial}
+          </p>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-fuchsia-400" />
+            </div>
+            <div>
+              <p className="font-space-grotesk font-semibold text-white text-sm">{result.name}</p>
+              <p className="text-fuchsia-400/70 text-xs">{result.handle}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <AnimatedSection className="px-4 py-20 bg-black/30">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <AnimatedSection as="div" delay={100}>
-          <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-2 tracking-wide leading-tight px-2">
+          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2 tracking-tight leading-tight px-2">
             {t('tools:upscaler.socialProof.title')} <span className="text-fuchsia-400">{t('tools:upscaler.socialProof.result')}</span>
             <span className="block sm:inline"> {t('tools:upscaler.socialProof.subtitle')}</span>
           </h2>
-          <p className="text-white/60 text-center text-base sm:text-lg mb-8 md:mb-12 px-4">
+          <p className="text-white/60 text-center text-sm md:text-base mb-8 md:mb-12 px-4 font-space-grotesk">
             {t('tools:upscaler.socialProof.description')}
           </p>
         </AnimatedSection>
         
         {/* Versão MOBILE - Carrossel */}
-        <div className="md:hidden px-6">
-          <Carousel opts={{ watchDrag: false }} className="w-full max-w-xs mx-auto">
+        <div className="md:hidden px-2">
+          <Carousel opts={{ watchDrag: false }} className="w-full max-w-sm mx-auto">
             <CarouselContent>
               {userResults.map((result, index) => (
                 <CarouselItem key={index}>
-                  <LazyBeforeAfterSlider
-                    beforeImage={result.before}
-                    afterImage={result.after}
-                    label={result.label}
-                    aspectRatio="2/3"
-                    locale="pt"
-                    onZoomClick={() => onZoomClick(result.before, result.after)}
-                  />
+                  <TestimonialCard result={result} index={index} />
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="-left-4 h-10 w-10 bg-fuchsia-500 hover:bg-fuchsia-600 border-none text-white shadow-lg shadow-fuchsia-500/30" />
-            <CarouselNext className="-right-4 h-10 w-10 bg-fuchsia-500 hover:bg-fuchsia-600 border-none text-white shadow-lg shadow-fuchsia-500/30" />
+            <CarouselPrevious className="-left-2 h-10 w-10 bg-fuchsia-500 hover:bg-fuchsia-600 border-none text-white shadow-lg shadow-fuchsia-500/30" />
+            <CarouselNext className="-right-2 h-10 w-10 bg-fuchsia-500 hover:bg-fuchsia-600 border-none text-white shadow-lg shadow-fuchsia-500/30" />
           </Carousel>
         </div>
 
-        {/* Versão DESKTOP - Grid */}
-        <StaggeredAnimation className="hidden md:grid md:grid-cols-3 gap-6" staggerDelay={150}>
+        {/* Versão DESKTOP - Stack vertical */}
+        <StaggeredAnimation className="hidden md:flex flex-col gap-8" staggerDelay={150}>
           {userResults.map((result, index) => (
-            <LazyBeforeAfterSlider
-              key={index}
-              beforeImage={result.before}
-              afterImage={result.after}
-              label={result.label}
-              aspectRatio="2/3"
-              locale="pt"
-              onZoomClick={() => onZoomClick(result.before, result.after)}
-            />
+            <TestimonialCard key={index} result={result} index={index} />
           ))}
         </StaggeredAnimation>
       </div>
