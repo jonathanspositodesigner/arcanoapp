@@ -297,14 +297,14 @@ const GerarImagemTool = () => {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Descreva a imagem que você quer gerar..."
-                  rows={1}
-                  className="w-full bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors"
-                  style={{ minHeight: '36px', maxHeight: '80px' }}
+                  rows={2}
+                  className="w-full bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                  style={{ minHeight: '60px', maxHeight: '100px', overflow: 'auto' }}
                   disabled={isGenerating}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
-                    target.style.height = '36px';
-                    target.style.height = Math.min(target.scrollHeight, 80) + 'px';
+                    target.style.height = '60px';
+                    target.style.height = Math.min(target.scrollHeight, 100) + 'px';
                   }}
                 />
               </div>
