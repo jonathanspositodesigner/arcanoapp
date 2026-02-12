@@ -386,6 +386,10 @@ const PlanosUpscalerCreditos = () => {
       answer: t('tools:upscaler.faq.a1')
     },
     {
+      question: t('tools:upscaler.faq.q6'),
+      answer: t('tools:upscaler.faq.a6')
+    },
+    {
       question: t('tools:upscaler.faq.q2'),
       answer: t('tools:upscaler.faq.a2')
     },
@@ -400,10 +404,6 @@ const PlanosUpscalerCreditos = () => {
     {
       question: t('tools:upscaler.faq.q5'),
       answer: t('tools:upscaler.faq.a5')
-    },
-    {
-      question: t('tools:upscaler.faq.q6'),
-      answer: t('tools:upscaler.faq.a6')
     }
   ];
 
