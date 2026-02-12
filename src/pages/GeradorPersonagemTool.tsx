@@ -12,7 +12,7 @@ import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useAIJob } from '@/contexts/AIJobContext';
 import { supabase } from '@/integrations/supabase/client';
-import ToolsHeader from '@/components/ToolsHeader';
+import AppLayout from '@/components/layout/AppLayout';
 import AngleUploadCard from '@/components/character-generator/AngleUploadCard';
 import AngleExamplesModal from '@/components/character-generator/AngleExamplesModal';
 import SaveCharacterDialog from '@/components/character-generator/SaveCharacterDialog';
@@ -555,8 +555,8 @@ const GeradorPersonagemTool: React.FC = () => {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
-      <ToolsHeader title="Gerador de Avatar" onBack={goBack} />
+    <AppLayout fullScreen>
+      <div className="h-full overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
 
       {isProcessing && (
         <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
@@ -800,6 +800,7 @@ const GeradorPersonagemTool: React.FC = () => {
       <DownloadProgressOverlay isVisible={isDownloading} progress={downloadProgress} onCancel={cancelDownload} mediaType="image" locale="pt" />
       <NotificationPromptToast toolName="character-generator" />
     </div>
+    </AppLayout>
   );
 };
 

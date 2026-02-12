@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Image, Video, Sparkles, Zap } from "lucide-react";
-import ToolsHeader from "@/components/ToolsHeader";
+import AppLayout from "@/components/layout/AppLayout";
 
 const UpscalerSelectionPage = () => {
   const navigate = useNavigate();
@@ -14,12 +14,7 @@ const UpscalerSelectionPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
-      <ToolsHeader 
-        title="Upscaler Arcano V3"
-        onBack={() => navigate("/ferramentas-ia-aplicativo")}
-        showLogo={true}
-      />
+    <AppLayout>
 
       <main className="container mx-auto px-4 py-4 sm:py-8 md:py-16">
         {/* Hero Section */}
@@ -147,7 +142,7 @@ const UpscalerSelectionPage = () => {
           Ambos os upscalers utilizam tecnologia de IA avançada para melhorar seus arquivos sem perda de qualidade
         </p>
       </main>
-    </div>
+    </AppLayout>
   );
 };
 

@@ -10,6 +10,7 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
+import AppLayout from "@/components/layout/AppLayout";
 
 interface Transaction {
   amount: number;
@@ -72,7 +73,8 @@ const CreditHistory = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0221] p-4">
+    <AppLayout>
+      <div className="p-4">
       <div className="max-w-2xl mx-auto space-y-6">
         <Button
           variant="ghost"
@@ -157,7 +159,8 @@ const CreditHistory = () => {
           )}
         </Card>
       </div>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

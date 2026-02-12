@@ -21,7 +21,7 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
-import ToolsHeader from "@/components/ToolsHeader";
+import AppLayout from "@/components/layout/AppLayout";
 
 interface TutorialLesson {
   title: string;
@@ -400,12 +400,7 @@ const ToolVersionLessons = () => {
   const currentLesson = lessons[selectedLesson];
 
   return (
-    <div className="min-h-screen bg-[#0D0221] flex flex-col">
-      <ToolsHeader 
-        title={`${toolName} - ${versionName}`}
-        subtitle={t('toolLessons.lessonsAvailable', { count: lessons.length })}
-        onBack={locale === 'es' ? () => navigate(toolSelectPath) : goBack}
-      />
+    <AppLayout>
       <div className="container mx-auto px-4 py-8 max-w-6xl flex-1">
         {/* Confetti Animation */}
         {showConfetti && (
@@ -706,7 +701,7 @@ const ToolVersionLessons = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AppLayout>
   );
 };
 

@@ -7,7 +7,7 @@ import { ExternalLink, Play } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
-import ToolsHeader from "@/components/ToolsHeader";
+import AppLayout from "@/components/layout/AppLayout";
 
 interface VideoLesson {
   titleKey: string;
@@ -65,12 +65,7 @@ const MudarPose = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
-      <ToolsHeader 
-        title={t('mudarPose.title')}
-        subtitle={t('mudarPose.description')}
-        onBack={goBack}
-      />
+    <AppLayout>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
 
         {/* Video Lessons */}
@@ -115,7 +110,7 @@ const MudarPose = () => {
         {/* WhatsApp Support Button */}
         <WhatsAppSupportButton />
       </div>
-    </div>
+    </AppLayout>
   );
 };
 
