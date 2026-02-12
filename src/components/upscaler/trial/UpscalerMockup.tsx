@@ -1,7 +1,12 @@
-import { Upload, Wand2, Image, Type, Camera, Palette, Lock } from "lucide-react";
+import { Upload, Wand2, Lock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
+
+type PromptCategory = 'pessoas_perto' | 'pessoas_longe' | 'comida' | 'fotoAntiga' | 'logo' | 'render3d';
+type PessoasFraming = 'perto' | 'longe';
 
 interface UpscalerMockupProps {
   isActive?: boolean;
@@ -11,14 +16,16 @@ interface UpscalerMockupProps {
   resultUrl?: string | null;
   uploadedFile?: File | null;
   onFileSelect?: (file: File) => void;
+  // Category controls
+  selectedCategory?: PromptCategory;
+  pessoasFraming?: PessoasFraming;
+  comidaDetailLevel?: number;
+  onCategoryChange?: (category: PromptCategory) => void;
+  onFramingChange?: (framing: PessoasFraming) => void;
+  onDetailLevelChange?: (level: number) => void;
+  // Status
+  statusText?: string;
 }
-
-const categories = [
-  { icon: Camera, label: "Foto" },
-  { icon: Type, label: "Logo" },
-  { icon: Image, label: "Ilustração" },
-  { icon: Palette, label: "Arte Digital" },
-];
 
 export default function UpscalerMockup({
   isActive = false,
@@ -28,9 +35,35 @@ export default function UpscalerMockup({
   resultUrl,
   uploadedFile,
   onFileSelect,
+  selectedCategory = 'pessoas_perto',
+  pessoasFraming = 'perto',
+  comidaDetailLevel = 0.85,
+  onCategoryChange,
+  onFramingChange,
+  onDetailLevelChange,
+  statusText,
 }: UpscalerMockupProps) {
   const previewUrl = uploadedFile ? URL.createObjectURL(uploadedFile) : null;
   const [showProMessage, setShowProMessage] = useState(false);
+
+  const displayCategory = selectedCategory.startsWith('pessoas') ? 'pessoas' : selectedCategory;
+  const isPessoas = selectedCategory.startsWith('pessoas');
+  const isComida = selectedCategory === 'comida';
+
+  const handleCategorySelect = (value: string) => {
+    if (!value || !onCategoryChange) return;
+    if (value === 'pessoas') {
+      onCategoryChange(`pessoas_${pessoasFraming}` as PromptCategory);
+    } else {
+      onCategoryChange(value as PromptCategory);
+    }
+  };
+
+  const handleFramingSelect = (value: string) => {
+    if (!value || !onFramingChange || !onCategoryChange) return;
+    onFramingChange(value as PessoasFraming);
+    onCategoryChange(`pessoas_${value}` as PromptCategory);
+  };
 
   return (
     <TooltipProvider>
@@ -73,25 +106,121 @@ export default function UpscalerMockup({
         </div>
       )}
 
-      {/* Categories */}
-      <div className="px-6 py-3 border-b border-white/10 flex gap-3">
-        {categories.map((cat, i) => {
-          const Icon = cat.icon;
-          return (
-            <button
-              key={i}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                i === 0
-                  ? "bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30"
-                  : "bg-white/5 text-white/50 border border-white/10 hover:bg-white/10"
-              }`}
-              disabled={!isActive}
+      {/* Category Selector - Exactly like UpscalerArcanoTool.tsx */}
+      <div className="px-6 py-3 border-b border-white/10">
+        <ToggleGroup 
+          type="single" 
+          value={displayCategory} 
+          onValueChange={handleCategorySelect}
+          className="flex flex-col gap-1"
+        >
+          {/* Top row: 3 buttons */}
+          <div className="flex gap-1">
+            {(['pessoas', 'comida', 'fotoAntiga'] as const).map((cat) => (
+              <ToggleGroupItem 
+                key={cat}
+                value={cat} 
+                disabled={!isActive}
+                className={`flex-1 px-2 py-1.5 text-[10px] rounded-md transition-all ${
+                  displayCategory === cat
+                    ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' 
+                    : 'border border-white/10 text-white/50 hover:bg-white/10'
+                }`}
+              >
+                {cat === 'pessoas' ? 'Pessoas' : cat === 'comida' ? 'Comida/Objeto' : 'Foto Antiga'}
+              </ToggleGroupItem>
+            ))}
+          </div>
+          {/* Bottom row: 2 buttons */}
+          <div className="flex gap-1">
+            {(['render3d', 'logo'] as const).map((cat) => (
+              <ToggleGroupItem 
+                key={cat}
+                value={cat} 
+                disabled={!isActive}
+                className={`flex-1 px-2 py-1.5 text-[10px] rounded-md transition-all ${
+                  displayCategory === cat
+                    ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' 
+                    : 'border border-white/10 text-white/50 hover:bg-white/10'
+                }`}
+              >
+                {cat === 'render3d' ? 'Selo 3D' : 'Logo/Arte'}
+              </ToggleGroupItem>
+            ))}
+          </div>
+        </ToggleGroup>
+
+        {/* Pessoas Framing Selector - De Perto / De Longe */}
+        {isPessoas && isActive && (
+          <div className="mt-3 pt-3 border-t border-white/10">
+            <ToggleGroup 
+              type="single" 
+              value={pessoasFraming} 
+              onValueChange={handleFramingSelect}
+              className="grid w-full grid-cols-2 gap-2"
             >
-              <Icon className="w-3.5 h-3.5" />
-              {cat.label}
-            </button>
-          );
-        })}
+              <ToggleGroupItem 
+                value="perto" 
+                className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
+                  pessoasFraming === 'perto'
+                    ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' 
+                    : 'border border-white/10 text-white/50 hover:bg-white/10'
+                }`}
+              >
+                <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
+                  <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
+                    <circle cx="24" cy="20" r="14" fill="currentColor" opacity="0.85" />
+                    <ellipse cx="24" cy="48" rx="18" ry="14" fill="currentColor" opacity="0.55" />
+                  </svg>
+                </div>
+                <span className="text-[10px] font-medium">De Perto</span>
+              </ToggleGroupItem>
+              <ToggleGroupItem 
+                value="longe" 
+                className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
+                  pessoasFraming === 'longe'
+                    ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' 
+                    : 'border border-white/10 text-white/50 hover:bg-white/10'
+                }`}
+              >
+                <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
+                  <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
+                    <circle cx="24" cy="14" r="5" fill="currentColor" opacity="0.85" />
+                    <rect x="20" y="19" width="8" height="12" rx="3" fill="currentColor" opacity="0.75" />
+                    <rect x="20" y="30" width="3.5" height="13" rx="1.5" fill="currentColor" opacity="0.55" />
+                    <rect x="24.5" y="30" width="3.5" height="13" rx="1.5" fill="currentColor" opacity="0.55" />
+                  </svg>
+                </div>
+                <span className="text-[10px] font-medium">De Longe</span>
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        )}
+
+        {/* Comida/Objeto Detail Level Slider (0.70 to 1.00) */}
+        {isComida && isActive && (
+          <div className="mt-3 pt-3 border-t border-white/10">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-fuchsia-400" />
+                <span className="text-xs font-medium text-white">Nível de Detalhes</span>
+              </div>
+              <span className="text-xs text-purple-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
+            </div>
+            <Slider
+              value={[comidaDetailLevel]}
+              onValueChange={([value]) => onDetailLevelChange?.(value)}
+              min={0.70}
+              max={1.00}
+              step={0.01}
+              className="w-full"
+            />
+            <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+              <span>Mais Fiel</span>
+              <span>Mais Criativo</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Upload area */}
@@ -128,6 +257,8 @@ export default function UpscalerMockup({
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) onFileSelect(file);
+                  // Reset input so same file can be selected again
+                  e.target.value = '';
                 }}
               />
             )}
@@ -145,7 +276,7 @@ export default function UpscalerMockup({
           {isProcessing ? (
             <span className="flex items-center gap-2">
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Processando...
+              {statusText || 'Processando...'}
             </span>
           ) : (
             <span className="flex items-center gap-2">

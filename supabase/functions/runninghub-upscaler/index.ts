@@ -388,8 +388,14 @@ async function handleRun(req: Request) {
     userId,
      creditCost,
      category,
-     editingLevel
+     editingLevel,
+     trial_mode
   } = await req.json();
+
+  // Trial mode: use a fixed UUID for trial users, skip credit checks
+  const TRIAL_USER_ID = '00000000-0000-0000-0000-000000000000';
+  const isTrialMode = trial_mode === true;
+  const effectiveUserId = isTrialMode ? TRIAL_USER_ID : userId;
   
   // ========== INPUT VALIDATION ==========
   if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
@@ -445,8 +451,8 @@ async function handleRun(req: Request) {
     }
   }
 
-  // Validate creditCost
-  if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+  // Validate creditCost (skip for trial mode)
+  if (!isTrialMode && (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500)) {
     return new Response(JSON.stringify({ 
       error: 'Invalid credit cost (must be 1-500)', 
       code: 'INVALID_CREDIT_COST'
@@ -456,16 +462,18 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Validate userId
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
-    return new Response(JSON.stringify({ 
-      error: 'Valid userId is required', 
-      code: 'INVALID_USER_ID'
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  // Validate userId (skip for trial mode - uses fixed TRIAL_USER_ID)
+  if (!isTrialMode) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
+      return new Response(JSON.stringify({ 
+        error: 'Valid userId is required', 
+        code: 'INVALID_USER_ID'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
   }
 
   // Validate resolution
@@ -595,53 +603,65 @@ async function handleRun(req: Request) {
     }
   }
 
-  // Consume credits
-  console.log(`[RunningHub] Consuming ${creditCost} credits for user ${userId}`);
-  const { data: creditResult, error: creditError } = await supabase.rpc(
-    'consume_upscaler_credits', 
-    {
-      _user_id: userId,
-      _amount: creditCost,
-      _description: `Upscaler ${version} - ${resolution}`
+  // Consume credits (skip for trial mode)
+  if (isTrialMode) {
+    console.log(`[RunningHub] Trial mode - skipping credit consumption for job ${jobId}`);
+    // Mark job with 0 cost for trial
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        credits_charged: false,
+        user_credit_cost: 0
+      })
+      .eq('id', jobId);
+  } else {
+    console.log(`[RunningHub] Consuming ${creditCost} credits for user ${userId}`);
+    const { data: creditResult, error: creditError } = await supabase.rpc(
+      'consume_upscaler_credits', 
+      {
+        _user_id: effectiveUserId,
+        _amount: creditCost,
+        _description: `Upscaler ${version} - ${resolution}`
+      }
+    );
+
+    if (creditError) {
+      console.error('[RunningHub] Credit consumption error:', creditError);
+      return new Response(JSON.stringify({ 
+        error: 'Erro ao processar créditos',
+        code: 'CREDIT_ERROR',
+        details: creditError.message
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-  );
 
-  if (creditError) {
-    console.error('[RunningHub] Credit consumption error:', creditError);
-    return new Response(JSON.stringify({ 
-      error: 'Erro ao processar créditos',
-      code: 'CREDIT_ERROR',
-      details: creditError.message
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
+      const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+      console.log('[RunningHub] Insufficient credits:', errorMsg);
+      return new Response(JSON.stringify({ 
+        error: errorMsg,
+        code: 'INSUFFICIENT_CREDITS',
+        currentBalance: creditResult?.[0]?.new_balance
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`[RunningHub] Credits consumed successfully. New balance: ${creditResult[0].new_balance}`);
+
+    // CRITICAL: Mark credits as charged for idempotent refund on failure
+    await supabase
+      .from('upscaler_jobs')
+      .update({ 
+        credits_charged: true,
+        user_credit_cost: creditCost
+      })
+      .eq('id', jobId);
+    console.log(`[RunningHub] Job ${jobId} marked as credits_charged=true`);
   }
-
-  if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
-    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
-    console.log('[RunningHub] Insufficient credits:', errorMsg);
-    return new Response(JSON.stringify({ 
-      error: errorMsg,
-      code: 'INSUFFICIENT_CREDITS',
-      currentBalance: creditResult?.[0]?.new_balance
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  console.log(`[RunningHub] Credits consumed successfully. New balance: ${creditResult[0].new_balance}`);
-
-  // CRITICAL: Mark credits as charged for idempotent refund on failure
-  await supabase
-    .from('upscaler_jobs')
-    .update({ 
-      credits_charged: true,
-      user_credit_cost: creditCost
-    })
-    .eq('id', jobId);
-  console.log(`[RunningHub] Job ${jobId} marked as credits_charged=true`);
 
    // Select WebApp ID based on category, version and framing mode
    const isLongeMode = framingMode === 'longe' && category?.startsWith('pessoas');
