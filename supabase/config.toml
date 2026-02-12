@@ -123,3 +123,6 @@ verify_jwt = false
 
 [functions.poll-video-status]
 verify_jwt = false
+
+[functions.admin-update-google-key]
+verify_jwt = false

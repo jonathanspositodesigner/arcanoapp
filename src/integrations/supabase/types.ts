@@ -1581,6 +1581,24 @@ export type Database = {
         }
         Relationships: []
       }
+      google_api_config: {
+        Row: {
+          id: string
+          total_budget: number
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          total_budget?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          total_budget?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       image_generator_jobs: {
         Row: {
           aspect_ratio: string

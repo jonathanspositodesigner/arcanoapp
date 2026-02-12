@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Wrench, BarChart3, Megaphone, LogOut, Home, ArrowLeft, Sparkles, Music, FileText, Cpu, Bug, TrendingUp } from "lucide-react";
+import { Wrench, BarChart3, Megaphone, LogOut, Home, ArrowLeft, Sparkles, Music, FileText, Cpu, Key, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -68,10 +68,10 @@ const AdminSidebarPlatform = ({ platform, onLogout }: AdminSidebarPlatformProps)
       description: "Uso das ferramentas de IA"
     },
     {
-      label: "DEBUG IA",
-      path: `${config.basePath}/debug-ia`,
-      icon: Bug,
-      description: "Simulação e diagnóstico"
+      label: "API GOOGLE",
+      path: `${config.basePath}/api-google`,
+      icon: Key,
+      description: "Chave API e consumo"
     },
     {
       label: "RENTABILIDADE",
