@@ -239,6 +239,10 @@ const GerarImagemTool = () => {
             <div className="flex flex-col items-center gap-3 text-purple-500/60">
               <Sparkles className="h-12 w-12" />
               <p className="text-sm text-center">Digite um prompt e clique em Gerar</p>
+              <div className="mt-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-500/10 to-purple-600/10 border border-fuchsia-500/20 max-w-sm">
+                <p className="text-[11px] text-fuchsia-300 text-center font-medium">🔥 Preço Promocional de Lançamento!</p>
+                <p className="text-[10px] text-purple-400 text-center mt-1">Aproveite os preços especiais por tempo limitado.</p>
+              </div>
             </div>
           )}
         </div>
