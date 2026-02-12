@@ -195,6 +195,44 @@ const PlanosUpscalerCreditos = () => {
   const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
   const [heroRevealed, setHeroRevealed] = useState(false);
 
+  // Countdown timer - 30 minutes with localStorage persistence
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('planos-upscaler-countdown');
+    if (saved) {
+      const remaining = parseInt(saved, 10) - Date.now();
+      if (remaining > 0) return remaining;
+    }
+    const initial = 30 * 60 * 1000;
+    localStorage.setItem('planos-upscaler-countdown', String(Date.now() + initial));
+    return initial;
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1000) {
+          const newTime = 30 * 60 * 1000;
+          localStorage.setItem('planos-upscaler-countdown', String(Date.now() + newTime));
+          return newTime;
+        }
+        return prev - 1000;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatCountdown = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return {
+      minutes: String(minutes).padStart(2, '0'),
+      seconds: String(seconds).padStart(2, '0')
+    };
+  };
+
+  const countdown = formatCountdown(timeLeft);
+
   // Preload: Mobile loads preview + antes/depois mobile, Desktop loads high-res versions
   useImagesPreload(
     ["/images/upscaler-hero-preview.webp", "/images/upscaler-hero-antes-mobile.webp", "/images/upscaler-hero-depois-mobile.webp"],
@@ -588,86 +626,180 @@ const PlanosUpscalerCreditos = () => {
           {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
           <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
 
-          {/* SEÇÃO DE PREÇO E CTA - Com Card */}
+          {/* SEÇÃO DE PREÇO E CTA - Grid de 3 Planos */}
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
-            <div className="max-w-2xl mx-auto">
-              <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2 tracking-tight leading-tight">
-                Melhore agora mesmo suas <span className="text-fuchsia-400">imagens!</span>
-              </h2>
-              <p className="text-white/60 text-center text-sm md:text-base mb-8 md:mb-10 font-space-grotesk">
-                Escolha o plano que melhor te atende
-              </p>
-              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
-                <CardContent className="p-5 md:p-8 text-center">
-                  {/* Badge de desconto */}
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
-                    🔥 69% OFF
-                  </Badge>
+            <div className="max-w-5xl mx-auto">
+              <div className="max-w-2xl mx-auto text-center mb-6">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2 tracking-tight leading-tight">
+                  Melhore agora mesmo suas <span className="text-fuchsia-400">imagens!</span>
+                </h2>
+                <p className="text-white/60 text-sm md:text-base font-space-grotesk">
+                  Escolha o plano que melhor te atende
+                </p>
+              </div>
 
-                  {isPremium && (
-                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6">
-                      <Crown className="h-3 w-3 md:h-4 md:w-4" />
-                      {t('tools:upscaler.finalCTA.memberDiscount')}
+              {/* Countdown Timer */}
+              <div className="flex items-center justify-center gap-2 mb-8 md:mb-10">
+                <span className="text-purple-300 text-sm">Essa oferta expira em</span>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-red-500" />
+                  <div className="flex items-center gap-0.5">
+                    <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
+                      <span className="text-red-400 font-mono font-bold text-xs">{countdown.minutes}</span>
                     </div>
-                  )}
-
-                  <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6">
-                    {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
-                  </h2>
-
-                  {/* Preços */}
-                  <div className="mb-5 md:mb-6">
-                    <span className="text-white/40 text-lg md:text-xl line-through block mb-1">{formatPrice(originalPrice)}</span>
-                    <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">
-                      {formatPrice(price)}
+                    <span className="text-red-400 font-bold text-xs">:</span>
+                    <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
+                      <span className="text-red-400 font-mono font-bold text-xs">{countdown.seconds}</span>
                     </div>
-                    <p className="text-white/60 text-base md:text-lg">
-                      {t('tools:upscaler.finalCTA.or')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.finalCTA.installments')} {formatPrice(installmentPrice)}</span>
-                    </p>
-                    <p className="text-white/40 text-xs md:text-sm mt-2">{t('tools:upscaler.finalCTA.oneTimePayment')}</p>
                   </div>
+                </div>
+              </div>
 
-                  {/* Features checklist */}
-                  <div className="grid gap-2 md:gap-3 mb-5 md:mb-6 text-left">
-                    {features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2 md:gap-3 text-white/80">
-                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3 md:h-4 md:w-4 text-green-400" />
-                        </div>
-                        <span className="text-xs md:text-sm">{feature.text}</span>
+              {/* Plans Grid */}
+              <StaggeredAnimation 
+                className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-4xl mx-auto"
+                itemClassName="w-full"
+                staggerDelay={150}
+                animation="fade-up"
+              >
+                {/* Starter */}
+                <div className="flex flex-col h-full w-full">
+                  <Card className="relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] border border-purple-500/20 w-full h-full">
+                    <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
+                      <h3 className="text-base font-bold text-white">Starter</h3>
+                    </div>
+                    <div className="text-center mb-2 h-[60px] flex flex-col justify-center">
+                      <div className="flex items-baseline justify-center gap-0.5">
+                        <span className="text-purple-400 text-sm">R$</span>
+                        <span className="text-3xl font-bold text-white">29,90</span>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Alerta de urgência */}
-                  <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
-                    <div className="flex items-center justify-center gap-2 text-red-400 text-xs md:text-sm">
-                      <span>🔥</span>
-                      <span className="font-bold">Últimos dias de venda do Upscaler na versão vitalícia</span>
+                      <p className="text-purple-400 text-xs mt-1">Pagamento único</p>
                     </div>
-                  </div>
+                    <Button 
+                      onClick={handlePurchase}
+                      className="w-full mb-3 text-sm h-9 bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"
+                    >
+                      Comprar
+                    </Button>
+                    <div className="flex flex-col items-center mb-4 h-[36px]">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
+                        <Sparkles className="w-2.5 h-2.5" />
+                        1.800 créditos
+                      </span>
+                      <span className="text-[9px] text-purple-400 mt-0.5">~30 upscalers</span>
+                    </div>
+                    <ul className="space-y-2 flex-1">
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Atualizações constantes na ferramenta</span>
+                      </li>
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Liberação imediata</span>
+                      </li>
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
+                      </li>
+                    </ul>
+                  </Card>
+                </div>
 
-                  <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
-                  </div>
+                {/* Pro - MAIS VENDIDO */}
+                <div className="flex flex-col h-full w-full">
+                  <Card className="relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] border-2 border-lime-400 shadow-lg shadow-lime-400/30 w-full h-full">
+                    <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-3 py-0.5">
+                      MAIS VENDIDO
+                    </Badge>
+                    <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
+                      <h3 className="text-base font-bold text-white">Pro</h3>
+                    </div>
+                    <div className="text-center mb-2 h-[60px] flex flex-col justify-center">
+                      <div className="flex items-baseline justify-center gap-0.5">
+                        <span className="text-purple-400 text-sm">R$</span>
+                        <span className="text-3xl font-bold text-white">39,90</span>
+                      </div>
+                      <p className="text-purple-400 text-xs mt-1">Pagamento único</p>
+                    </div>
+                    <Button 
+                      onClick={handlePurchase}
+                      className="w-full mb-3 text-sm h-9 bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold"
+                    >
+                      Comprar
+                    </Button>
+                    <div className="flex flex-col items-center mb-4 h-[36px]">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
+                        <Sparkles className="w-2.5 h-2.5" />
+                        5.000 créditos
+                      </span>
+                      <span className="text-[9px] text-purple-400 mt-0.5">~83 upscalers</span>
+                    </div>
+                    <ul className="space-y-2 flex-1">
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Atualizações constantes na ferramenta</span>
+                      </li>
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Liberação imediata</span>
+                      </li>
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
+                      </li>
+                    </ul>
+                  </Card>
+                </div>
 
-                  {/* Badges de pagamento */}
-                  <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-5 md:mt-6 text-white/50 text-xs">
-                    <span className="flex items-center gap-1">
-                      <CreditCard className="h-3 w-3" />
-                      {t('tools:upscaler.finalCTA.card')}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="text-sm">💵</span>
-                      {t('tools:upscaler.finalCTA.pix')}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Shield className="h-3 w-3" />
-                      {t('tools:upscaler.finalCTA.secure')}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+                {/* Studio - MELHOR CUSTO/BENEFÍCIO */}
+                <div className="flex flex-col h-full w-full">
+                  <Card className="relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] border-2 border-purple-500 shadow-lg shadow-purple-500/30 w-full h-full">
+                    <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-purple-600 to-blue-500 text-white px-3 py-0.5">
+                      MELHOR CUSTO/BENEFÍCIO
+                    </Badge>
+                    <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
+                      <h3 className="text-base font-bold text-white">Studio</h3>
+                    </div>
+                    <div className="text-center mb-2 h-[60px] flex flex-col justify-center">
+                      <div className="flex items-baseline justify-center gap-0.5">
+                        <span className="text-purple-400 text-sm">R$</span>
+                        <span className="text-3xl font-bold text-white">99,90</span>
+                      </div>
+                      <p className="text-purple-400 text-xs mt-1">Pagamento único</p>
+                    </div>
+                    <Button 
+                      onClick={handlePurchase}
+                      className="w-full mb-3 text-sm h-9 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold"
+                    >
+                      Comprar
+                    </Button>
+                    <div className="flex flex-col items-center mb-4 h-[36px]">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
+                        <Sparkles className="w-2.5 h-2.5" />
+                        10.800 créditos
+                      </span>
+                      <span className="text-[9px] text-purple-400 mt-0.5">~160 upscalers</span>
+                    </div>
+                    <ul className="space-y-2 flex-1">
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Atualizações constantes na ferramenta</span>
+                      </li>
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Liberação imediata</span>
+                      </li>
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
+                      </li>
+                    </ul>
+                  </Card>
+                </div>
+              </StaggeredAnimation>
+
+              {/* Trust badges */}
+              <TrustBadges t={t} />
             </div>
           </AnimatedSection>
 
