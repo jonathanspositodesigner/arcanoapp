@@ -30,9 +30,10 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
     {
       before: isMobile ? "/images/upscaler-user1-antes-mobile.webp" : upscalerUser1Antes,
       after: isMobile ? "/images/upscaler-user1-depois-mobile.webp" : upscalerUser1Depois,
-      name: "Júlio Cesar",
-      handle: "@pulsemarketingestrategico",
-      testimonial: "Designer fodas, nunca fui bom em PS. Mas desde que comprei o db tenho construído imagens ultra realistas e até adquiri clientes com isso. Ficou com muito medo de não dar conta do trampo, porém o db tem feito isso por mim com maestria."
+      name: "Wellington",
+      handle: "@wrproducoes",
+      testimonial: "Muito top o Upscaler do Jonathan, o melhor do mercado sem dúvidas! Tá salvando aqui nos trampos kkkkk já foi a fase de sofrer com foto ruim de cliente hoje jogo no upscaler e entrego as artes com muito mais qualidade!",
+      avatar: "/images/wellington-wrproducoes.png"
     },
     {
       before: isMobile ? "/images/upscaler-user2-antes-mobile.webp" : upscalerUser2Antes,
@@ -81,9 +82,13 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
         {/* Nome, @ e Depoimento */}
         <div className="px-5 py-4 md:p-6 flex flex-col justify-center md:w-1/2">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center flex-shrink-0">
-              <User className="w-5 h-5 text-fuchsia-400" />
-            </div>
+            {result.avatar ? (
+              <img src={result.avatar} alt={result.name} className="w-10 h-10 rounded-full border border-white/10 object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center flex-shrink-0">
+                <User className="w-5 h-5 text-fuchsia-400" />
+              </div>
+            )}
             <div>
               <p className="font-space-grotesk font-semibold text-white text-sm">{result.name}</p>
               <p className="text-fuchsia-400/70 text-xs">{result.handle}</p>
