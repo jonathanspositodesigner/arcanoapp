@@ -36,8 +36,6 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
     { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null, badgeColor: null, disabled: false },
     { name: "Gerar Imagem", path: "/gerar-imagem", badge: "Oferta Limitada", badgeColor: "bg-amber-500", disabled: false },
     { name: "Gerar Vídeo", path: "/gerar-video", badge: "Oferta Limitada", badgeColor: "bg-amber-500", disabled: false },
-    
-    { name: "Forja Selos 3D", path: "", badge: "Em breve", badgeColor: "bg-amber-500", disabled: true },
   ];
 
   const handleLogout = async () => {
@@ -154,6 +152,12 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
                   )}
                 </button>
               ))}
+              <button
+                onClick={() => handleNavAndClose("/ferramentas-ia-aplicativo")}
+                className="w-full flex items-center justify-center text-[11px] py-1.5 px-2.5 rounded-md text-fuchsia-300 hover:text-white hover:bg-purple-500/20 transition-colors font-medium mt-1"
+              >
+                Ver todas →
+              </button>
             </div>
           )}
 
