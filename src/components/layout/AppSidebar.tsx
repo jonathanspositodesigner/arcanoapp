@@ -34,8 +34,8 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null, badgeColor: null, disabled: false },
-    { name: "Gerar Imagem", path: "/gerar-imagem", badge: "Oferta Limitada", badgeColor: "bg-amber-500", disabled: false },
-    { name: "Gerar Vídeo", path: "/gerar-video", badge: "Oferta Limitada", badgeColor: "bg-amber-500", disabled: false },
+    { name: "Gerar Imagem", path: "/gerar-imagem", badge: "Oferta Limitada", badgeColor: "bg-gradient-to-r from-red-500 to-pink-500", disabled: false },
+    { name: "Gerar Vídeo", path: "/gerar-video", badge: "Oferta Limitada", badgeColor: "bg-gradient-to-r from-red-500 to-pink-500", disabled: false },
   ];
 
   const handleLogout = async () => {
