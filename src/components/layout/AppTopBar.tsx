@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Home, Users, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Phone, Coins } from "lucide-react";
+import { Home, ImageIcon, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Phone, Coins } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { MyCreationsModal } from "@/components/ai-tools/creations";
 import CreditsPreviewPopover from "@/components/CreditsPreviewPopover";
 import {
   DropdownMenu,
@@ -26,6 +28,7 @@ interface AppTopBarProps {
 const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userProfile, onLogout }: AppTopBarProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
+  const [showCreationsModal, setShowCreationsModal] = useState(false);
 
   const ProfileDropdown = ({ isMobile = false }: { isMobile?: boolean }) => (
     <DropdownMenu>
@@ -124,10 +127,12 @@ const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userPro
             <Home className="h-4 w-4 mr-2" />
             Home
           </Button>
-          <Button onClick={() => navigate("/parceiro-login")} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
-            <Users className="h-4 w-4 mr-2" />
-            {t('header.partnerArea')}
-          </Button>
+          {user && (
+            <Button onClick={() => setShowCreationsModal(true)} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Minhas Criações
+            </Button>
+          )}
           {!user && (
             <>
               <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
@@ -260,6 +265,7 @@ const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userPro
           </div>
         )}
       </header>
+      <MyCreationsModal open={showCreationsModal} onClose={() => setShowCreationsModal(false)} />
     </>
   );
 };

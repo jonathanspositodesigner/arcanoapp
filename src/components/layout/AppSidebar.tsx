@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X } from "lucide-react";
+import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -14,12 +15,14 @@ interface AppSidebarProps {
 const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebarProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
+  const [aiSitesOpen, setAiSitesOpen] = useState(false);
 
   const externalLinks = [
     { name: t('sidebar.generateInChatGPT'), url: "https://chatgpt.com/", icon: Sparkles },
     { name: t('sidebar.generateInNanoBanana'), url: "https://labs.google/fx/pt/tools/flow", icon: Sparkles },
     { name: t('sidebar.generateInWhisk'), url: "https://labs.google/fx/pt/tools/whisk", icon: Sparkles },
     { name: t('sidebar.generateInFlux2'), url: "https://www.runninghub.ai/workflow/1995538803421020162", icon: Sparkles },
+    { name: t('sidebar.generateVideoVEO3'), url: "https://labs.google/fx/pt/tools/flow", icon: Video },
   ];
 
   return (
@@ -103,23 +106,27 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
           <Zap className="h-3.5 w-3.5 ml-1.5 flex-shrink-0" />
         </Button>
 
-        <div className="space-y-1.5">
-          {externalLinks.map(link => (
-            <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
-              <Button variant="outline" className="w-full h-auto py-2.5 px-2.5 flex items-center justify-between text-left bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30 hover:scale-105 transition-all duration-300 text-xs">
-                <span className="font-medium">{link.name}</span>
-                <ExternalLink className="h-3.5 w-3.5 ml-1.5 flex-shrink-0 text-purple-300" />
-              </Button>
-            </a>
-          ))}
-        </div>
+        {/* Sites de IA - Collapsible */}
+        <button
+          onClick={() => setAiSitesOpen(!aiSitesOpen)}
+          className="w-full flex items-center justify-between text-left text-sm font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+        >
+          <span>Sites de IA</span>
+          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${aiSitesOpen ? 'rotate-180' : ''}`} />
+        </button>
 
-        <a href="https://labs.google/fx/pt/tools/flow" target="_blank" rel="noopener noreferrer" className="block mt-1.5">
-          <Button variant="outline" className="w-full h-auto py-2.5 px-2.5 flex items-center justify-between text-left bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30 hover:scale-105 transition-all duration-300 text-xs">
-            <span className="font-medium">{t('sidebar.generateVideoVEO3')}</span>
-            <Video className="h-3.5 w-3.5 ml-1.5 flex-shrink-0 text-purple-300" />
-          </Button>
-        </a>
+        {aiSitesOpen && (
+          <div className="space-y-1.5">
+            {externalLinks.map(link => (
+              <a key={link.name} href={link.url} target="_blank" rel="noopener noreferrer" className="block">
+                <Button variant="outline" className="w-full h-auto py-2.5 px-2.5 flex items-center justify-between text-left bg-purple-900/40 border-purple-400/50 text-white hover:bg-purple-500/30 hover:scale-105 transition-all duration-300 text-xs">
+                  <span className="font-medium">{link.name}</span>
+                  <link.icon className="h-3.5 w-3.5 ml-1.5 flex-shrink-0 text-purple-300" />
+                </Button>
+              </a>
+            ))}
+          </div>
+        )}
 
         {/* Separador */}
         <div className="my-4 border-t border-purple-400/30" />
