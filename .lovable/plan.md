@@ -1,84 +1,72 @@
 
+## Corrigir o loop infinito do modal de atualizacao
 
-## Forçar Update via botão admin + detecção automática no app
+### Problema
 
-### Como vai funcionar
+O botao "Forcar Update" incrementou a versao no banco para `5.3.1`, mas o `APP_VERSION` no codigo continua `5.3.0`. Como a comparacao e `dbVersion !== APP_VERSION`, o modal aparece sempre, mesmo depois de atualizar. E um loop sem saida.
 
-1. Voce clica em **"Forçar Update"** no AdminHub
-2. O botao incrementa a versao no banco de dados (tabela `app_settings`, registro `app_version`) e salva um timestamp `force_update_at`
-3. Quando qualquer usuario abrir o app (pagina inicial), o `ForceUpdateModal` compara a versao do banco com o `APP_VERSION` do codigo
-4. Se forem diferentes, aparece um modal bonito dizendo "Nova versao disponivel!"
-5. O usuario clica em "Atualizar" e o app limpa cache, remove Service Workers e recarrega
+### Solucao
 
-### Mudancas tecnicas
+Trocar a logica de comparacao de versao por comparacao de **timestamp**. Funciona assim:
 
-#### 1. Atualizar o registro `app_version` no `app_settings`
-O registro ja existe no banco. Vamos padronizar o formato do `value` para incluir `latest_version` e `force_update_at`:
+1. O botao "Forcar Update" salva um `force_update_at` no banco (ja faz isso)
+2. O app compara esse timestamp com um valor salvo no `localStorage`
+3. Se o timestamp do banco for mais recente que o do localStorage (ou se nao houver nada no localStorage), mostra o modal
+4. Quando o usuario clica "Atualizar Agora", salva o timestamp no localStorage ANTES de recarregar
+5. No proximo reload, o timestamp ja bate e o modal nao aparece mais
 
-```text
-{
-  "latest_version": "5.3.0",
-  "force_update_at": "2026-02-12T..."
-}
-```
+### Mudancas
 
-Isso sera feito via data update (INSERT tool), nao migration.
+#### 1. Corrigir valor no banco
+- Resetar `app_settings.app_version` para `latest_version: "5.3.0"` (para parar o loop imediatamente)
 
-#### 2. Atualizar `AdminHub.tsx` - botao "Forçar Update"
-O botao deixa de enviar push notification e passa a:
-- Buscar a versao atual do `app_settings`
-- Incrementar o patch version (ex: 5.3.0 -> 5.3.1)
-- Salvar nova versao + timestamp no banco
-- Mostrar toast de confirmacao com a nova versao
+#### 2. Reescrever `ForceUpdateModal.tsx`
+- Remover comparacao de versao (`APP_VERSION !== dbVersion`)
+- Usar comparacao de timestamp: buscar `force_update_at` do banco, comparar com `localStorage.getItem('last_force_update')`
+- Se `force_update_at` for mais recente, mostrar modal
+- Manter export do `APP_VERSION` para outros usos
 
-#### 3. Reativar `ForceUpdateModal.tsx`
-- Criar hook inline que consulta `app_settings` onde `id = 'app_version'`
-- Comparar `latest_version` do banco com `APP_VERSION` hardcoded no codigo
-- Se forem diferentes, renderizar o modal de atualizacao
-- O modal tera botao "Atualizar Agora" e botao "Depois"
+#### 3. Atualizar `UpdateAvailableModal.tsx`
+- No `performUpdate()`, antes de limpar tudo, salvar o timestamp no localStorage: `localStorage.setItem('last_force_update', forceUpdateAt)`
+- Isso garante que depois do reload o modal nao aparece de novo
 
-#### 4. Criar `UpdateAvailableModal.tsx`
-- Modal com design escuro (estilo do app)
-- Icone de refresh, titulo "Nova versao disponivel!"
-- Texto explicando que ha uma atualizacao
-- Botao "Atualizar Agora" que executa a limpeza de cache e hard reload (mesma logica do `ForceUpdate.tsx`)
-- Botao "Depois" que fecha o modal (volta a aparecer no proximo reload)
+#### 4. Atualizar `AdminHub.tsx` - botao "Forcar Update"
+- Simplificar: nao precisa mais incrementar versao
+- Apenas atualizar o `force_update_at` com timestamp atual no banco
+- Manter o `latest_version` como informativo
 
-#### 5. Logica de atualizacao (performUpdate)
-Reutiliza a logica ja existente no `ForceUpdate.tsx`:
-- Limpa localStorage e sessionStorage
-- Deleta todos os caches do browser
-- Desregistra todos os Service Workers
-- Hard reload com cache-busting
-
-#### 6. Integrar no App
-O `ForceUpdateModal` ja esta importado no `App.tsx` (precisa confirmar). Se nao, adicionar no layout principal para rodar em todas as paginas.
-
-### Fluxo completo
+### Fluxo corrigido
 
 ```text
-Admin clica "Forçar Update"
+Admin clica "Forcar Update"
         |
         v
-Incrementa versao no banco (5.3.0 -> 5.3.1)
+Salva force_update_at = agora no banco
         |
         v
 Usuario abre o app
         |
         v
-ForceUpdateModal consulta banco
+ForceUpdateModal busca force_update_at do banco
         |
         v
-5.3.0 (codigo) != 5.3.1 (banco) -> mostra modal
+Compara com localStorage.last_force_update
+        |
+        v
+Banco mais recente? -> Mostra modal
         |
         v
 Usuario clica "Atualizar"
         |
         v
-Limpa cache + SW + hard reload
+Salva timestamp no localStorage -> Limpa cache -> Reload
+        |
+        v
+Proximo load: timestamps batem -> Modal NAO aparece
 ```
 
-### Importante
-- O `APP_VERSION` no codigo NAO precisa ser atualizado manualmente. A comparacao e feita contra o banco. Quando voce publicar uma nova versao do codigo, voce pode clicar "Forçar Update" de novo para que os usuarios que ainda estao na versao antiga recebam o aviso.
-- O botao de push notification sera substituido por essa logica mais simples e confiavel.
-
+### O que NAO muda
+- Componente UpdateAvailableModal visual continua igual
+- Service Worker config (skipWaiting, controllerchange) continua igual
+- Nenhuma edge function alterada
+- Nenhuma rota alterada
