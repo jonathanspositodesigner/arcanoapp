@@ -376,23 +376,23 @@ const PlanosUpscalerCreditos = () => {
       ) : (
         <>
           {/* HERO SECTION - Layout com respiro */}
-           <section className="px-4 md:px-6 pt-16 md:pt-24 pb-8 md:pb-14 w-full">
+           <section className="px-4 md:px-6 pt-12 md:pt-20 pb-6 md:pb-10 w-full">
             <div className="flex flex-col items-center text-center max-w-7xl mx-auto">
               
               {/* Social proof badge */}
               <FadeIn delay={100} duration={600}>
-                <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-5 py-2.5 mb-8 md:mb-10">
+                <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6">
                   <div className="flex -space-x-2">
-                    <img src="/images/social-proof-1.png" alt="" className="w-7 h-7 rounded-full border-2 border-[#0f0a15] object-cover" />
-                    <img src="/images/social-proof-2.png" alt="" className="w-7 h-7 rounded-full border-2 border-[#0f0a15] object-cover" />
-                    <img src="/images/social-proof-3.png" alt="" className="w-7 h-7 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-1.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-2.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-3.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                   </div>
-                  <span className="text-white/80 text-sm font-medium">+5.000 profissionais já estão usando</span>
+                  <span className="text-white/80 text-xs font-medium">+5.000 profissionais já estão usando</span>
                 </div>
               </FadeIn>
 
-              {/* Título principal - Space Grotesk bold, menor */}
-              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 leading-[1.2]">
+              {/* Título principal */}
+              <h1 className="font-space-grotesk font-bold text-xl md:text-2xl lg:text-3xl text-white mb-3 md:mb-4 leading-[1.2]">
                 {t('tools:upscaler.hero.title1')}
                 <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
@@ -400,16 +400,16 @@ const PlanosUpscalerCreditos = () => {
                 </span>
               </h1>
 
-              {/* Subtítulo menor */}
+              {/* Subtítulo */}
               <FadeIn delay={300} duration={700}>
-                <p className="text-sm md:text-base text-white/60 mb-6 md:mb-8 max-w-xl leading-relaxed">
+                <p className="text-xs md:text-sm text-white/60 mb-4 md:mb-6 max-w-lg leading-relaxed">
                   {t('tools:upscaler.hero.subtitle')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
               </FadeIn>
 
-              {/* Before/After Slider - ocupa quase toda a largura */}
+              {/* Before/After Slider - menos largo */}
               <FadeIn delay={400} duration={700}>
-                <div className="w-[95vw] md:w-[80vw] lg:w-[70vw] [&_.space-y-3>div:first-child]:!aspect-auto [&_.space-y-3>div:first-child]:md:!h-[420px] [&_.space-y-3>div:first-child]:lg:!h-[480px] mb-6 md:mb-8">
+                <div className="w-[90vw] md:w-[60vw] lg:w-[55vw] [&_.space-y-3>div:first-child]:!aspect-auto [&_.space-y-3>div:first-child]:md:!h-[340px] [&_.space-y-3>div:first-child]:lg:!h-[380px] mb-5 md:mb-6">
                   {isMobile && !heroRevealed ? (
                     <HeroPlaceholder
                       onReveal={() => setHeroRevealed(true)}
@@ -427,19 +427,19 @@ const PlanosUpscalerCreditos = () => {
                 </div>
               </FadeIn>
 
-              {/* Feature badges - inspirado na referência */}
+              {/* Feature badges */}
               <FadeIn delay={600} duration={700}>
                 <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
-                  <div className="flex items-center gap-2 text-white/60 text-sm px-4 py-1">
-                    <Clock className="h-4 w-4 text-fuchsia-400" />
+                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
+                    <Clock className="h-3.5 w-3.5 text-fuchsia-400" />
                     <span>Resultados em segundos</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/60 text-sm px-4 py-1">
-                    <CreditCard className="h-4 w-4 text-fuchsia-400" />
+                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
+                    <CreditCard className="h-3.5 w-3.5 text-fuchsia-400" />
                     <span>Sem assinatura</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/60 text-sm px-4 py-1">
-                    <Star className="h-4 w-4 text-fuchsia-400" />
+                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
+                    <Star className="h-3.5 w-3.5 text-fuchsia-400" />
                     <span>+10.000 imagens melhoradas</span>
                   </div>
                 </div>
@@ -447,7 +447,7 @@ const PlanosUpscalerCreditos = () => {
 
               {/* Scroll Indicator */}
               <FadeIn delay={800} duration={700}>
-                <ScrollIndicator className="mt-16 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
+                <ScrollIndicator className="mt-10 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
               </FadeIn>
             </div>
           </section>
