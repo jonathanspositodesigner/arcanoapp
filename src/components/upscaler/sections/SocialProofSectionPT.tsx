@@ -72,15 +72,14 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
   ];
 
   const TestimonialCard = ({ result, index }: { result: typeof userResults[0]; index: number }) => (
-    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300">
-      {/* Mobile: empilhado / Desktop: lado a lado */}
-      <div className="flex flex-col md:flex-row">
-        {/* Slider antes/depois */}
-        <div className="md:w-1/2 md:flex-shrink-0">
+    <div className="overflow-hidden">
+      {/* Mobile: empilhado / Desktop: lado a lado com borda */}
+      <div className="flex flex-col md:flex-row md:bg-white/5 md:border md:border-white/10 md:rounded-2xl md:overflow-hidden md:hover:border-fuchsia-500/30 md:transition-all md:duration-300">
+        {/* Slider antes/depois - sem wrapper extra no mobile */}
+        <div className="md:w-1/2 md:flex-shrink-0 [&>div>.absolute]:hidden [&>div>div>.relative]:!rounded-xl md:[&>div>div>.relative]:!rounded-none">
           <LazyBeforeAfterSlider
             beforeImage={result.before}
             afterImage={result.after}
-            label={t('tools:upscaler.socialProof.userResult')}
             aspectRatio={isMobile ? "3/4" : "4/3"}
             locale="pt"
             onZoomClick={() => onZoomClick(result.before, result.after)}
@@ -88,11 +87,9 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
         </div>
         
         {/* Depoimento */}
-        <div className="p-5 md:p-6 flex flex-col justify-center md:w-1/2">
-          <p className="font-space-grotesk text-white/80 text-sm md:text-base leading-relaxed mb-4">
-            {result.testimonial}
-          </p>
-          <div className="flex items-center gap-3">
+        <div className="px-1 py-4 md:p-6 flex flex-col justify-center md:w-1/2">
+          {/* Nome e @ - vem ANTES do depoimento */}
+          <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center flex-shrink-0">
               <User className="w-5 h-5 text-fuchsia-400" />
             </div>
@@ -101,6 +98,9 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
               <p className="text-fuchsia-400/70 text-xs">{result.handle}</p>
             </div>
           </div>
+          <p className="font-space-grotesk text-white/80 text-sm md:text-base leading-relaxed">
+            {result.testimonial}
+          </p>
         </div>
       </div>
     </div>
