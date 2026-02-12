@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { RefreshCw, X } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+
+const LAST_FORCE_UPDATE_KEY = 'last_force_update';
 
 interface UpdateAvailableModalProps {
-  latestVersion: string;
+  forceUpdateAt: string;
 }
 
-const UpdateAvailableModal = ({ latestVersion }: UpdateAvailableModalProps) => {
+const UpdateAvailableModal = ({ forceUpdateAt }: UpdateAvailableModalProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -15,12 +17,31 @@ const UpdateAvailableModal = ({ latestVersion }: UpdateAvailableModalProps) => {
     setIsUpdating(true);
 
     try {
-      // Clear all storage
+      // Save timestamp BEFORE clearing storage so the modal won't loop
+      // We need to set it in a way that survives the reload
+      const ackValue = forceUpdateAt;
+
+      // Clear storage except our acknowledgment key
       try {
+        const keysToKeep = [LAST_FORCE_UPDATE_KEY];
+        const savedValues: Record<string, string> = {};
+        keysToKeep.forEach(key => {
+          const val = localStorage.getItem(key);
+          if (val) savedValues[key] = val;
+        });
+
         localStorage.clear();
         sessionStorage.clear();
+
+        // Restore our key + set the new acknowledgment
+        localStorage.setItem(LAST_FORCE_UPDATE_KEY, ackValue);
+        Object.entries(savedValues).forEach(([k, v]) => {
+          if (k !== LAST_FORCE_UPDATE_KEY) localStorage.setItem(k, v);
+        });
       } catch (e) {
         console.warn('[Update] Storage clear warning:', e);
+        // Even if clear fails, try to set our key
+        try { localStorage.setItem(LAST_FORCE_UPDATE_KEY, ackValue); } catch (_) {}
       }
 
       // Delete all caches
@@ -40,14 +61,13 @@ const UpdateAvailableModal = ({ latestVersion }: UpdateAvailableModalProps) => {
         }
       }
 
-      // Wait briefly for cleanup
       await new Promise(r => setTimeout(r, 500));
 
-      // Hard reload with cache-busting
       const bustParams = `?_force=${Date.now()}&_v=${Math.random().toString(36).substring(7)}`;
       window.location.replace('/' + bustParams);
     } catch (error) {
       console.error('[Update] Error:', error);
+      try { localStorage.setItem(LAST_FORCE_UPDATE_KEY, forceUpdateAt); } catch (_) {}
       window.location.href = '/?_recovery=' + Date.now();
     }
   };
@@ -65,7 +85,7 @@ const UpdateAvailableModal = ({ latestVersion }: UpdateAvailableModalProps) => {
               Nova versão disponível!
             </h2>
             <p className="text-sm text-gray-400">
-              Versão {latestVersion} está disponível. Atualize para ter acesso às últimas melhorias.
+              Uma atualização está disponível. Atualize para ter acesso às últimas melhorias.
             </p>
           </div>
 

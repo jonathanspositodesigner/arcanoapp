@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Music, FileText, Menu, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { APP_VERSION } from "@/components/ForceUpdateModal";
 import { toast } from "sonner";
 import AdminGoalsCard from "@/components/AdminGoalsCard";
 import WelcomeEmailsMonitor from "@/components/WelcomeEmailsMonitor";
@@ -62,44 +63,28 @@ const AdminHub = () => {
   };
 
   const handleForceUpdate = async () => {
-    if (!confirm("Forçar atualização para TODOS os usuários? Isso vai incrementar a versão do app.")) {
+    if (!confirm("Forçar atualização para TODOS os usuários?")) {
       return;
     }
 
     setIsForcingUpdate(true);
     try {
-      // Fetch current version from app_settings
-      const { data: setting, error: fetchError } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('id', 'app_version')
-        .single();
+      const forceTimestamp = new Date().toISOString();
 
-      if (fetchError) throw fetchError;
-
-      const currentValue = setting?.value as { latest_version?: string; force_update_at?: string } | null;
-      const currentVersion = currentValue?.latest_version || '5.3.0';
-
-      // Increment patch version (e.g., 5.3.0 -> 5.3.1)
-      const parts = currentVersion.split('.').map(Number);
-      parts[2] = (parts[2] || 0) + 1;
-      const newVersion = parts.join('.');
-
-      // Save new version + timestamp
       const { error: updateError } = await supabase
         .from('app_settings')
         .update({
           value: {
-            latest_version: newVersion,
-            force_update_at: new Date().toISOString()
+            latest_version: APP_VERSION,
+            force_update_at: forceTimestamp
           },
-          updated_at: new Date().toISOString()
+          updated_at: forceTimestamp
         })
         .eq('id', 'app_version');
 
       if (updateError) throw updateError;
 
-      toast.success(`Versão atualizada para ${newVersion}! Usuários receberão aviso de atualização.`);
+      toast.success('Force update enviado! Usuários verão o aviso de atualização.');
     } catch (error) {
       console.error('Error forcing update:', error);
       toast.error("Erro ao forçar atualização");
