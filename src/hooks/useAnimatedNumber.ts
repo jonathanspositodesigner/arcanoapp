@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface AnimatedNumberResult {
   displayValue: number;
@@ -20,59 +20,67 @@ export const useAnimatedNumber = (
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
   
   const animationRef = useRef<number | null>(null);
-  const startValueRef = useRef(targetValue);
-  const startTimeRef = useRef<number | null>(null);
+  const currentValueRef = useRef(targetValue);
   const previousTargetRef = useRef(targetValue);
+  const directionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // Skip animation on initial mount
+    // Skip if target hasn't changed
     if (previousTargetRef.current === targetValue) {
       return;
     }
 
-    const startValue = displayValue;
+    // Use ref for current value to avoid stale closures
+    const startValue = currentValueRef.current;
     const difference = targetValue - startValue;
     
     if (difference === 0) {
+      previousTargetRef.current = targetValue;
       return;
     }
 
     // Set direction for visual feedback
-    setDirection(difference > 0 ? 'up' : 'down');
+    const newDirection = difference > 0 ? 'up' : 'down';
+    setDirection(newDirection);
     setIsAnimating(true);
     
-    startValueRef.current = startValue;
-    startTimeRef.current = null;
+    // Clear any pending direction reset
+    if (directionTimeoutRef.current) {
+      clearTimeout(directionTimeoutRef.current);
+      directionTimeoutRef.current = null;
+    }
 
     // Cancel any existing animation
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
     }
 
+    let startTime: number | null = null;
+
     const animate = (timestamp: number) => {
-      if (!startTimeRef.current) {
-        startTimeRef.current = timestamp;
+      if (!startTime) {
+        startTime = timestamp;
       }
 
-      const elapsed = timestamp - startTimeRef.current;
+      const elapsed = timestamp - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const easedProgress = easeOutCubic(progress);
       
-      const currentValue = Math.round(
-        startValueRef.current + difference * easedProgress
-      );
+      const currentValue = Math.round(startValue + difference * easedProgress);
       
+      currentValueRef.current = currentValue;
       setDisplayValue(currentValue);
 
       if (progress < 1) {
         animationRef.current = requestAnimationFrame(animate);
       } else {
+        currentValueRef.current = targetValue;
         setDisplayValue(targetValue);
         setIsAnimating(false);
-        // Keep direction visible briefly after animation ends
-        setTimeout(() => {
+        // Keep direction color visible briefly after animation ends
+        directionTimeoutRef.current = setTimeout(() => {
           setDirection(null);
-        }, 300);
+        }, 600);
       }
     };
 
@@ -92,9 +100,11 @@ export const useAnimatedNumber = (
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      if (directionTimeoutRef.current) {
+        clearTimeout(directionTimeoutRef.current);
+      }
     };
   }, []);
 
   return { displayValue, isAnimating, direction };
 };
-
