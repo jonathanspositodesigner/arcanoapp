@@ -1,138 +1,60 @@
 
-# Gerar Imagem e Gerar Video - Google Gemini API
 
-## Resumo
-Adicionar duas novas ferramentas de IA no menu lateral (dentro de "Ferramentas de IA"):
-- **Gerar Imagem** - com escolha entre NanoBanana Normal (40 creditos) e NanoBanana Pro (60 creditos), suportando ate 5 imagens de referencia (image-to-image)
-- **Gerar Video** - usando Veo 3.1 Fast (150 creditos), suportando start frame e end frame (image-to-video)
+# Corrigir "Minhas Criações" para incluir Gerar Imagem e Gerar Vídeo
 
-## Modelos Google utilizados
-- **NanoBanana Normal**: `gemini-2.5-flash-image` (geracao de imagem mais rapida/barata)
-- **NanoBanana Pro**: `gemini-3-pro-image-preview` (geracao de imagem premium)
-- **Veo 3.1 Fast**: `veo-3.1-generate-preview` (geracao de video)
+## Problema encontrado
 
-## Funcionalidades
+A RPC `get_user_ai_creations` **nao inclui** as tabelas `image_generator_jobs` e `video_generator_jobs`. A migração anterior não aplicou corretamente as alterações na função. Por isso, as criações dessas ferramentas nunca aparecem.
 
-### Gerar Imagem
-- Campo de prompt de texto
-- Seletor de modelo: NanoBanana Normal (40 cr) ou NanoBanana Pro (60 cr)
-- Seletor de aspect ratio (1:1, 16:9, 9:16, 4:3, 3:4)
-- Botao de attachment para ate 5 imagens de referencia (image-to-image)
-- Exibicao da imagem gerada com zoom e download
-- Integracao com creditos, modal auth e modal sem creditos
+O job gerado (`783fe65b`) existe no banco com `status: completed` e `output_url` preenchida, mas a função simplesmente não consulta essa tabela.
 
-### Gerar Video
-- Campo de prompt de texto
-- Seletor de aspect ratio (16:9, 9:16)
-- Seletor de duracao (5s, 8s)
-- Upload de Start Frame (imagem inicial do video)
-- Upload de End Frame (imagem final do video) - opcional
-- Polling assincrono ate video ficar pronto
-- Player de video com download
-- 150 creditos por geracao
+## Solução
 
-## Mudancas Tecnicas
+Criar uma nova migração SQL que faz `CREATE OR REPLACE FUNCTION get_user_ai_creations` adicionando dois blocos `UNION ALL` ao final (antes do fechamento do CTE):
 
-### 1. Secret
-- Adicionar `GOOGLE_GEMINI_API_KEY` via ferramenta de secrets
+1. **image_generator_jobs** - ferramenta "Gerar Imagem", media_type = 'image', expiração de 24h
+2. **video_generator_jobs** - ferramenta "Gerar Vídeo", media_type = 'video', expiração de 24h
 
-### 2. Database (Migrations)
+Tambem atualizar a RPC `delete_user_ai_creation` para permitir exclusão dessas tabelas.
 
-**Tabela `image_generator_jobs`:**
-- id (uuid), user_id, prompt, model (text), aspect_ratio, status, output_url, error_message
-- reference_images (jsonb - array de URLs), user_credit_cost, credits_charged, credits_refunded
-- created_at, completed_at
+## Detalhes Tecnicos
 
-**Tabela `video_generator_jobs`:**
-- id (uuid), user_id, prompt, aspect_ratio, duration_seconds, status, output_url, error_message
-- start_frame_url, end_frame_url, operation_name (para polling Google)
-- user_credit_cost, credits_charged, credits_refunded
-- created_at, started_at, completed_at
+### Migração SQL
 
-**Entradas em `ai_tool_settings`:**
-- `gerar_imagem` com credit_cost = 40
-- `gerar_imagem_pro` com credit_cost = 60
-- `gerar_video` com credit_cost = 150
+Recriar a função `get_user_ai_creations` com os blocos adicionais:
 
-**RLS policies** para ambas as tabelas (usuario so ve seus proprios jobs)
+```sql
+UNION ALL
+-- Gerar Imagem (Google Gemini)
+SELECT igj.id, igj.output_url, NULL::TEXT as thumbnail_url,
+  'Gerar Imagem'::TEXT as tool_name, 'image'::TEXT as media_type, igj.created_at,
+  (igj.completed_at + interval '24 hours') as expires_at
+FROM image_generator_jobs igj
+WHERE igj.user_id = auth.uid() AND igj.status = 'completed' AND igj.output_url IS NOT NULL
+  AND (igj.completed_at + interval '24 hours') > now()
 
-### 3. Edge Functions
-
-**`generate-image/index.ts`:**
-- Recebe: prompt, model (normal/pro), aspect_ratio, reference_images (array base64 opcional)
-- Valida autenticacao e consome creditos via RPC
-- Chama API Google Gemini com o modelo selecionado
-- Envia imagens de referencia como partes inline (image-to-image)
-- Retorna imagem gerada (faz upload para Storage, retorna URL)
-- Em caso de erro, estorna creditos
-- Salva registro na tabela
-
-**`generate-video/index.ts`:**
-- Recebe: prompt, aspect_ratio, duration_seconds, start_frame_url, end_frame_url
-- Valida autenticacao e consome creditos via RPC
-- Chama API Google Veo 3.1 (predictLongRunning)
-- Cria job na tabela com operation_name
-- Retorna job_id para polling
-
-**`poll-video-status/index.ts`:**
-- Recebe: job_id
-- Busca operation_name do job
-- Checa status na API Google
-- Atualiza tabela (completed com URL ou failed com erro)
-- Estorna creditos se falhou
-
-### 4. Frontend - Novas Paginas
-
-**`src/pages/GerarImagemTool.tsx`:**
-- Layout seguindo o padrao das outras ferramentas (AppLayout, goBack, creditos)
-- Toggle NanoBanana Normal / Pro
-- Textarea para prompt
-- Botao de attachment (ate 5 imagens) com preview em miniatura
-- Seletor de aspect ratio
-- Botao "Gerar Imagem" com loading
-- Area de resultado com zoom (TransformWrapper) e download
-- Modal AIToolsAuthModal + NoCreditsModal
-
-**`src/pages/GerarVideoTool.tsx`:**
-- Layout padrao
-- Textarea para prompt
-- Upload de Start Frame e End Frame (cards de upload similares ao Pose Changer)
-- Seletor aspect ratio e duracao
-- Botao "Gerar Video" com status de processamento
-- Polling a cada 10s enquanto processa
-- Player de video quando completo
-- Download + modais de auth e creditos
-
-### 5. Menu Lateral (AppSidebar.tsx)
-
-Adicionar ao array `aiToolLinks`:
-```text
-{ name: "Gerar Imagem", path: "/gerar-imagem", badge: "Novo", badgeColor: "bg-green-500" }
-{ name: "Gerar Video", path: "/gerar-video", badge: "Novo", badgeColor: "bg-green-500" }
+UNION ALL
+-- Gerar Vídeo (Google Veo)
+SELECT vgj.id, vgj.output_url, NULL::TEXT as thumbnail_url,
+  'Gerar Vídeo'::TEXT as tool_name, 'video'::TEXT as media_type, vgj.created_at,
+  (vgj.completed_at + interval '24 hours') as expires_at
+FROM video_generator_jobs vgj
+WHERE vgj.user_id = auth.uid() AND vgj.status = 'completed' AND vgj.output_url IS NOT NULL
+  AND (vgj.completed_at + interval '24 hours') > now()
 ```
 
-### 6. Rotas (App.tsx)
-- `/gerar-imagem` -> GerarImagemTool (lazy loaded)
-- `/gerar-video` -> GerarVideoTool (lazy loaded)
+Tambem atualizar `delete_user_ai_creation` adicionando:
 
-### 7. Config (supabase/config.toml)
-- Adicionar generate-image, generate-video, poll-video-status com verify_jwt = false
+```sql
+ELSIF EXISTS (SELECT 1 FROM image_generator_jobs WHERE id = p_creation_id AND user_id = auth.uid()) THEN
+  DELETE FROM image_generator_jobs WHERE id = p_creation_id AND user_id = auth.uid();
+  RETURN true;
+ELSIF EXISTS (SELECT 1 FROM video_generator_jobs WHERE id = p_creation_id AND user_id = auth.uid()) THEN
+  DELETE FROM video_generator_jobs WHERE id = p_creation_id AND user_id = auth.uid();
+  RETURN true;
+```
 
-## Arquivos
+### Nenhuma alteração no frontend
 
-### Novos:
-1. `src/pages/GerarImagemTool.tsx`
-2. `src/pages/GerarVideoTool.tsx`
-3. `supabase/functions/generate-image/index.ts`
-4. `supabase/functions/generate-video/index.ts`
-5. `supabase/functions/poll-video-status/index.ts`
+O frontend (`useMyCreations.ts`, `MyCreationsModal.tsx`) já está preparado para receber os dados -- o problema é puramente no banco de dados.
 
-### Modificados:
-1. `src/components/layout/AppSidebar.tsx` - novos links no menu
-2. `src/App.tsx` - novas rotas lazy
-3. `supabase/config.toml` - novas functions
-
-### Database Migrations:
-1. Criar tabelas image_generator_jobs e video_generator_jobs
-2. Inserir entradas em ai_tool_settings
-3. RLS policies para ambas as tabelas
