@@ -74,8 +74,10 @@
     "upscaleArcano": "Upscale Arcano v2.0",
     "forja3D": "Forja de Selos 3D",
     "unlimitedPremiumPrompts": "Prompts premium ilimitados",
-    "bonusCredits900": "+900 créditos de IA/mês",
-    "bonusCredits1800": "+1800 créditos de IA/mês"
+    "bonusCredits900": "+1.500 créditos de IA/mês",
+    "bonusCredits1800": "+2.400 créditos de IA/mês",
+    "bonusCredits900Annual": "+18.000 créditos de IA/ano",
+    "bonusCredits1800Annual": "+28.800 créditos de IA/ano"
   },
   "guarantee": "Garantia de 7 dias",
   "guaranteeDescription": "Se não gostar, devolvemos seu dinheiro",

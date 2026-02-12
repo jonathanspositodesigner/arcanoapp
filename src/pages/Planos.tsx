@@ -308,7 +308,12 @@ const Planos = () => {
                   </p>
                   <div className="flex items-center gap-2 text-sm">
                     <Coins className="w-4 h-4 text-yellow-400" />
-                    <span className="text-purple-200">{t('features.bonusCredits900', { ns: 'plans' })}</span>
+                    <span className="text-purple-200">
+                      {billingPeriod === "anual" 
+                        ? t('features.bonusCredits900Annual', { ns: 'plans' })
+                        : t('features.bonusCredits900', { ns: 'plans' })
+                      }
+                    </span>
                   </div>
                 </div>
               )}
@@ -324,7 +329,12 @@ const Planos = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Coins className="w-4 h-4 text-yellow-400" />
-                    <span className="text-purple-200">{t('features.bonusCredits1800', { ns: 'plans' })}</span>
+                    <span className="text-purple-200">
+                      {billingPeriod === "anual" 
+                        ? t('features.bonusCredits1800Annual', { ns: 'plans' })
+                        : t('features.bonusCredits1800', { ns: 'plans' })
+                      }
+                    </span>
                   </div>
                 </div>
               )}
