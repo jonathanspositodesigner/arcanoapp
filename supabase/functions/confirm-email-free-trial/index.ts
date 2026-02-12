@@ -145,7 +145,8 @@ serve(async (req) => {
 
     console.log(`[confirm-email-free-trial] Email confirmed for user: ${tokenData.user_id}`);
 
-    // === CLAIM FREE TRIAL CREDITS ===
+    // === CLAIM FREE TRIAL CREDITS (with fallback) ===
+    let creditsClaimed = false;
     try {
       const { data: claimResult, error: claimError } = await supabaseAdmin
         .rpc('claim_arcano_free_trial_atomic', {
@@ -154,14 +155,64 @@ serve(async (req) => {
         });
 
       if (claimError) {
-        console.error("[confirm-email-free-trial] Claim error:", claimError);
-        // Don't fail the whole flow - email is already confirmed
+        console.error("[confirm-email-free-trial] RPC error, using fallback:", claimError);
+      } else if (claimResult?.[0]?.already_claimed) {
+        console.log(`[confirm-email-free-trial] Already claimed for ${tokenData.email}`);
+        creditsClaimed = true;
       } else {
-        console.log(`[confirm-email-free-trial] Claim result:`, claimResult);
+        console.log(`[confirm-email-free-trial] RPC claim result:`, claimResult);
+        creditsClaimed = true;
       }
     } catch (claimErr) {
-      console.error("[confirm-email-free-trial] Claim exception:", claimErr);
-      // Don't fail - email is confirmed, credits can be claimed later
+      console.error("[confirm-email-free-trial] RPC exception:", claimErr);
+    }
+
+    // Fallback: direct insert with service_role if RPC failed
+    if (!creditsClaimed) {
+      try {
+        console.log(`[confirm-email-free-trial] Fallback: direct insert for ${tokenData.user_id}`);
+
+        // Insert into arcano_cloner_free_trials
+        await supabaseAdmin
+          .from("arcano_cloner_free_trials")
+          .insert({
+            user_id: tokenData.user_id,
+            email: tokenData.email,
+            credits_granted: 300,
+          });
+
+        // UPSERT into upscaler_credits
+        const { error: creditError } = await supabaseAdmin
+          .from("upscaler_credits")
+          .upsert(
+            {
+              user_id: tokenData.user_id,
+              monthly_balance: 300,
+              lifetime_balance: 0,
+              balance: 300,
+            },
+            { onConflict: "user_id" }
+          );
+
+        if (creditError) {
+          console.error("[confirm-email-free-trial] Fallback credit upsert error:", creditError);
+        } else {
+          // Record transaction
+          await supabaseAdmin
+            .from("upscaler_credit_transactions")
+            .insert({
+              user_id: tokenData.user_id,
+              amount: 300,
+              balance_type: "monthly",
+              type: "grant",
+              description: "300 créditos grátis (fallback via confirm-email)",
+            });
+          creditsClaimed = true;
+          console.log(`[confirm-email-free-trial] Fallback succeeded for ${tokenData.user_id}`);
+        }
+      } catch (fallbackErr) {
+        console.error("[confirm-email-free-trial] Fallback exception:", fallbackErr);
+      }
     }
 
     // === GENERATE MAGIC LINK FOR AUTO-LOGIN ===
