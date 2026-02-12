@@ -26,6 +26,13 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
 
   const userResults = [
     {
+      before: "/images/mauricio-antes.webp",
+      after: "/images/mauricio-depois.webp",
+      name: "Maurício",
+      handle: "@ventus.studio",
+      testimonial: "Como fotógrafo já perdi inumeras fotos por saírem desfocadas na hora da correria dos ensaios, e essa ferramenta literalmente me salvou! Ela recupera os detalhes do rosto precisão e não deixa com aspecto de borracha como as outras ferramentas que ja usei, o resultado fica como se eu tivesse acertado o clique de primeira! O Upscaler tá servindo muito aqui na agência, uso diariamente, recomendo!"
+    },
+    {
       before: isMobile ? "/images/upscaler-user2-antes-mobile.webp" : upscalerUser2Antes,
       after: isMobile ? "/images/upscaler-user2-depois-mobile.webp" : upscalerUser2Depois,
       name: "Ana Beatriz",
