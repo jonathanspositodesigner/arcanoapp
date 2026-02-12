@@ -11,7 +11,7 @@ import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useAIJob } from '@/contexts/AIJobContext';
 import { supabase } from '@/integrations/supabase/client';
-import ToolsHeader from '@/components/ToolsHeader';
+import AppLayout from '@/components/layout/AppLayout';
 import PersonInputSwitch from '@/components/ai-tools/PersonInputSwitch';
 import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
 import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
@@ -493,8 +493,8 @@ const PoseChangerTool: React.FC = () => {
   const currentQueueMessage = queueMessages[queueMessageIndex];
 
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
-      <ToolsHeader title="Pose Changer" onBack={goBack} />
+    <AppLayout fullScreen>
+      <div className="h-full overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
 
       {/* Warning banner during processing */}
       {isProcessing && (
@@ -789,6 +789,7 @@ const PoseChangerTool: React.FC = () => {
       {/* Notification prompt toast */}
       <NotificationPromptToast toolName="pose" />
     </div>
+    </AppLayout>
   );
 };
 

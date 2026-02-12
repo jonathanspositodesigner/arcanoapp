@@ -7,7 +7,7 @@ import { ExternalLink, Play } from "lucide-react";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
-import ToolsHeader from "@/components/ToolsHeader";
+import AppLayout from "@/components/layout/AppLayout";
 
 interface VideoLesson {
   titleKey: string;
@@ -73,12 +73,7 @@ const ForjaSelos3D = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
-      <ToolsHeader 
-        title={t('forja3DLessons.title')}
-        subtitle={t('forja3DLessons.description')}
-        onBack={goBack}
-      />
+    <AppLayout>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
 
         {/* Video Lessons */}
@@ -123,7 +118,7 @@ const ForjaSelos3D = () => {
         {/* WhatsApp Support Button */}
         <WhatsAppSupportButton />
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

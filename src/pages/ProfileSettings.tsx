@@ -14,6 +14,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
 import { useTranslation } from "react-i18next";
 import { CreditsCard } from "@/components/upscaler/CreditsCard";
+import AppLayout from "@/components/layout/AppLayout";
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
@@ -191,7 +192,8 @@ const ProfileSettings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0221] p-4">
+    <AppLayout>
+      <div className="p-4">
       <div className="max-w-2xl mx-auto space-y-6">
         <Button
           variant="ghost"
@@ -492,7 +494,8 @@ const ProfileSettings = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

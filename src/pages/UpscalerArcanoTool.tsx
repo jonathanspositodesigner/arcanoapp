@@ -20,7 +20,7 @@ import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useAIJob } from '@/contexts/AIJobContext';
 import { optimizeForAI, validateImageDimensions, getImageDimensions, compressToMaxDimension, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
-import ToolsHeader from '@/components/ToolsHeader';
+import AppLayout from '@/components/layout/AppLayout';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { JobDebugPanel, ImageCompressionModal, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
@@ -730,12 +730,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const isProcessing = status === 'processing' || status === 'uploading' || isWaitingInQueue;
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] text-white">
-      {/* Header */}
-      <ToolsHeader 
-        title={t('upscalerTool.title')}
-        onBack={goBack}
-      />
+    <AppLayout fullScreen>
 
       {/* Main Content - Two Column Layout */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden">
@@ -1541,7 +1536,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
       {/* Notification Prompt Toast */}
       <NotificationPromptToast toolName="upscale" />
-    </div>
+    </AppLayout>
   );
 };
 

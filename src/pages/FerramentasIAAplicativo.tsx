@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
-import ToolsHeader from "@/components/ToolsHeader";
+import AppLayout from "@/components/layout/AppLayout";
 import PromoToolsBanner from "@/components/PromoToolsBanner";
 import UpscalerChoiceModal from "@/components/ferramentas/UpscalerChoiceModal";
 
@@ -324,13 +324,7 @@ const FerramentasIAAplicativo = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
-      {/* Header with profile and credits */}
-      <ToolsHeader 
-        title={t('ferramentas.title')}
-        onBack={goBack}
-        showLogo={true}
-      />
+    <AppLayout>
       
       {/* Promo Banner */}
       <PromoToolsBanner />
@@ -364,7 +358,7 @@ const FerramentasIAAplicativo = () => {
         onClaimAndAccess={handleClaimAndAccess}
       />
 
-    </div>
+    </AppLayout>
   );
 };
 

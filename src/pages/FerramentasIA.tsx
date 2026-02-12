@@ -10,7 +10,7 @@ import { Sparkles, CheckCircle, Loader2, Play, ShoppingCart, UserCheck, Smartpho
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import ToolsHeader from "@/components/ToolsHeader";
+import AppLayout from "@/components/layout/AppLayout";
 
 interface ToolData {
   id: string;
@@ -262,13 +262,7 @@ const FerramentasIA = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
-      {/* Header */}
-      <ToolsHeader 
-        title={t('ferramentas.title')}
-        onBack={goBack}
-        showLogo={true}
-      />
+    <AppLayout>
 
       {/* Primeiro Acesso Button - Below Header - Only for logged out users */}
       {!user && (
@@ -342,7 +336,7 @@ const FerramentasIA = () => {
         )}
       </main>
 
-    </div>
+    </AppLayout>
   );
 };
 

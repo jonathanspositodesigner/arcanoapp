@@ -4,7 +4,7 @@ import { Coins, Sparkles, Star, Zap, Wand2, Box, Shirt, PersonStanding, Clock, V
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import ToolsHeader from "@/components/ToolsHeader";
+import AppLayout from "@/components/layout/AppLayout";
 
 const availableTools = [
   {
@@ -131,12 +131,7 @@ const PlanosCreditos = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#0D0221]">
-      <ToolsHeader
-        title="Comprar Créditos"
-        onBack={handleBack}
-        showBackButton={true}
-      />
+    <AppLayout>
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8 space-y-12">
@@ -314,7 +309,7 @@ const PlanosCreditos = () => {
           </div>
         </section>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

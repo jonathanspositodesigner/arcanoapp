@@ -9,7 +9,7 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
-import ToolsHeader from "@/components/ToolsHeader";
+import AppLayout from "@/components/layout/AppLayout";
 // Fallback images for backwards compatibility
 import upscalerV1Image from "@/assets/upscaler-v1-card.png";
 import upscalerV2Image from "@/assets/upscaler-v1-5-card.png";
@@ -212,12 +212,7 @@ const UpscalerArcanoVersionSelect = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
-      <ToolsHeader 
-        title={t('upscaler.title')}
-        subtitle={t('versionSelect.chooseVersion')}
-        onBack={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
-      />
+    <AppLayout>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
 
         {/* Version Cards */}
@@ -306,7 +301,7 @@ const UpscalerArcanoVersionSelect = () => {
           })}
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 
