@@ -605,9 +605,9 @@ const ArcanoClonerTool: React.FC = () => {
 
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
         {/* Tool intro - full width centered */}
-        <div className="text-center py-2">
-          <h1 className="text-base font-bold text-white">Arcano Cloner</h1>
-          <p className="text-[11px] text-purple-300 mt-0.5">Transforme sua foto usando qualquer imagem como referência. A IA clona o estilo, pose e cenário na sua pessoa.</p>
+        <div className="text-center py-3">
+          <h1 className="text-2xl lg:text-3xl font-bold text-white">Arcano Cloner</h1>
+          <p className="text-sm text-purple-300 mt-1 max-w-lg mx-auto">Transforme sua foto usando qualquer imagem como referência. A IA clona o estilo, pose e cenário na sua pessoa.</p>
         </div>
 
         {/* Main Grid Layout */}
