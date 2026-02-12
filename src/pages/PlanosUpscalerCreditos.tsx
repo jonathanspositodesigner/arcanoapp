@@ -684,8 +684,9 @@ const PlanosUpscalerCreditos = () => {
                 {/* Starter */}
                 <div className="flex flex-col h-full w-full">
                   <Card className="relative p-6 flex flex-col rounded-xl bg-[#1A0A2E] border border-purple-500/20 w-full h-full">
-                    <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
+                    <div className="text-center mb-4 min-h-[52px] flex flex-col items-center justify-center">
                       <h3 className="text-lg font-bold text-white">Starter</h3>
+                      <p className="text-[11px] text-purple-400 mt-0.5">Pra quem quer testar</p>
                     </div>
                     <div className="text-center mb-3 h-[75px] flex flex-col justify-center">
                       <div className="flex items-baseline justify-center gap-1">
@@ -760,8 +761,9 @@ const PlanosUpscalerCreditos = () => {
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-4 py-1">
                       MAIS VENDIDO
                     </Badge>
-                    <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
+                    <div className="text-center mb-4 min-h-[52px] flex flex-col items-center justify-center">
                       <h3 className="text-lg font-bold text-white">Pro</h3>
+                      <p className="text-[11px] text-purple-400 mt-0.5">Dobro de créditos por + R$10</p>
                     </div>
                     <div className="text-center mb-3 h-[75px] flex flex-col justify-center">
                       <div className="flex items-baseline justify-center gap-1">
@@ -836,8 +838,9 @@ const PlanosUpscalerCreditos = () => {
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-purple-600 to-blue-500 text-white px-4 py-1">
                       MELHOR CUSTO/BENEFÍCIO
                     </Badge>
-                    <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
+                    <div className="text-center mb-4 min-h-[52px] flex flex-col items-center justify-center">
                       <h3 className="text-lg font-bold text-white">Studio</h3>
+                      <p className="text-[11px] text-purple-400 mt-0.5">Para profissionais que usam muito no dia a dia</p>
                     </div>
                     <div className="text-center mb-3 h-[75px] flex flex-col justify-center">
                       <div className="flex items-baseline justify-center gap-1">
