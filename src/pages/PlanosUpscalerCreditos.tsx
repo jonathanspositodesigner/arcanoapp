@@ -13,6 +13,7 @@ import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
+import UpscalerTrialSection from "@/components/upscaler/trial/UpscalerTrialSection";
 
 // Hero images - Desktop uses high-res, Mobile uses optimized 600x900 versions
 const upscalerHeroAntesDesktop = "/images/upscaler-hero-antes.webp";
@@ -642,6 +643,7 @@ const PlanosUpscalerCreditos = () => {
           <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
 
           {/* SEÇÃO DE PREÇO E CTA - Grid de 3 Planos */}
+          <div id="pricing-section">
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
             <div className="max-w-5xl mx-auto">
               <div className="max-w-2xl mx-auto text-center mb-6">
@@ -916,34 +918,10 @@ const PlanosUpscalerCreditos = () => {
               <TrustBadges t={t} />
             </div>
           </AnimatedSection>
+          </div>
 
-          {/* BENEFÍCIOS (O QUE FAZ) */}
-          <AnimatedSection className="px-4 py-20 bg-black/30">
-            <div className="max-w-4xl mx-auto">
-              <AnimatedSection as="div" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
-                  {t('tools:upscaler.benefits.title')} <span className="text-fuchsia-400">{t('tools:upscaler.benefits.subtitle')}</span>?
-                </h2>
-              </AnimatedSection>
-              
-              <StaggeredAnimation className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto" staggerDelay={100}>
-                {features.map((feature, index) => {
-                  const IconComponent = feature.icon;
-                  return (
-                    <div 
-                      key={index}
-                      className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-fuchsia-500/30 transition-all duration-300"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="h-6 w-6 text-fuchsia-400" />
-                      </div>
-                      <span className="text-white/90 text-lg">{feature.text}</span>
-                    </div>
-                  );
-                })}
-              </StaggeredAnimation>
-            </div>
-          </AnimatedSection>
+          {/* TESTE GRATUITO */}
+          <UpscalerTrialSection />
 
           {/* FAQ SECTION - Depois do preço */}
           <AnimatedSection className="px-4 py-20">

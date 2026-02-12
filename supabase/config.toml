@@ -135,3 +135,6 @@ verify_jwt = false
 
 [functions.confirm-email-free-trial]
 verify_jwt = false
+
+[functions.landing-trial-code]
+verify_jwt = false
