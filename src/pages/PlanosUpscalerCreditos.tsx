@@ -381,7 +381,7 @@ const PlanosUpscalerCreditos = () => {
               
               {/* Social proof badge */}
               <FadeIn delay={100} duration={600}>
-                <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6 scale-[0.7] md:scale-100 origin-center">
+                <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6 scale-[0.84] md:scale-100 origin-center">
                   <div className="flex -space-x-2">
                     <img src="/images/social-proof-1.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                     <img src="/images/social-proof-2.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
