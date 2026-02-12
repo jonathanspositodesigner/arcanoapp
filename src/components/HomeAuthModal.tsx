@@ -77,17 +77,23 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                 onSubmit={auth.signup}
                 onBackToLogin={auth.goToLogin}
                 isLoading={auth.state.isLoading}
+                showPhoneField={true}
                 variant="default"
                 labels={{
-                  title: t('auth.createAccountTitle') || 'Criar Conta',
-                  email: t('auth.email'),
-                  emailPlaceholder: t('auth.emailPlaceholder'),
-                  password: t('auth.password'),
-                  passwordPlaceholder: t('auth.passwordPlaceholder'),
-                  confirmPassword: t('auth.confirmPassword') || 'Confirmar Senha',
-                  createAccount: t('auth.createAccountButton') || 'Criar Conta',
-                  creatingAccount: t('auth.loading'),
-                  backToLogin: t('auth.backToLogin') || 'Voltar ao Login',
+                  title: 'Criar Conta',
+                  email: 'E-mail',
+                  emailPlaceholder: 'seu@email.com',
+                  name: 'Nome (opcional)',
+                  namePlaceholder: 'Seu nome',
+                  phone: 'WhatsApp (opcional)',
+                  phonePlaceholder: '(00) 00000-0000',
+                  password: 'Senha',
+                  passwordPlaceholder: 'Mínimo 6 caracteres',
+                  confirmPassword: 'Confirmar Senha',
+                  confirmPasswordPlaceholder: 'Confirme sua senha',
+                  createAccount: 'Criar Conta',
+                  creatingAccount: 'Criando conta...',
+                  backToLogin: 'Voltar ao Login',
                 }}
               />
             </>
