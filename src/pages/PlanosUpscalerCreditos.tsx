@@ -676,78 +676,78 @@ const PlanosUpscalerCreditos = () => {
 
               {/* Plans Grid */}
               <StaggeredAnimation 
-                className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-4xl mx-auto"
+                className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-5xl mx-auto"
                 itemClassName="w-full"
                 staggerDelay={150}
                 animation="fade-up"
               >
                 {/* Starter */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] border border-purple-500/20 w-full h-full">
-                    <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
-                      <h3 className="text-base font-bold text-white">Starter</h3>
+                  <Card className="relative p-6 flex flex-col rounded-xl bg-[#1A0A2E] border border-purple-500/20 w-full h-full">
+                    <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
+                      <h3 className="text-lg font-bold text-white">Starter</h3>
                     </div>
-                    <div className="text-center mb-2 h-[60px] flex flex-col justify-center">
-                      <div className="flex items-baseline justify-center gap-0.5">
-                        <span className="text-purple-400 text-sm">R$</span>
-                        <span className="text-3xl font-bold text-white">29,90</span>
+                    <div className="text-center mb-3 h-[75px] flex flex-col justify-center">
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-purple-400 text-base">R$</span>
+                        <span className="text-4xl font-bold text-white">29,90</span>
                       </div>
-                      <p className="text-purple-400 text-xs mt-1">Pagamento único</p>
+                      <p className="text-purple-400 text-sm mt-1">Pagamento único</p>
                     </div>
                     <Button 
                       onClick={handlePurchase}
-                      className="w-full mb-3 text-sm h-9 bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"
+                      className="w-full mb-4 text-base h-11 bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"
                     >
                       Comprar
                     </Button>
-                    <div className="flex flex-col items-center mb-4 h-[36px]">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
-                        <Sparkles className="w-2.5 h-2.5" />
+                    <div className="flex flex-col items-center mb-5 h-[44px]">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
+                        <Sparkles className="w-3.5 h-3.5" />
                         1.800 créditos
                       </span>
-                      <span className="text-[9px] text-purple-400 mt-0.5">~30 upscalers</span>
+                      <span className="text-[11px] text-purple-400 mt-1">~30 upscalers</span>
                     </div>
-                    <ul className="space-y-2 flex-1">
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                    <ul className="space-y-2.5 flex-1">
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Atualizações constantes na ferramenta</span>
                       </li>
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Liberação imediata</span>
                       </li>
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
                       </li>
 
                       {/* Bonus section */}
-                      <li className="pt-2 border-t border-purple-500/20 mt-2">
-                        <p className="text-[10px] text-purple-400 uppercase tracking-wide mb-1.5">Bônus</p>
+                      <li className="pt-3 border-t border-purple-500/20 mt-3">
+                        <p className="text-[11px] text-purple-400 uppercase tracking-wide mb-2">Bônus</p>
                       </li>
                       <li>
                         <div 
-                          className="flex items-start gap-1.5 text-xs cursor-pointer select-none"
+                          className="flex items-start gap-2 text-sm cursor-pointer select-none"
                           onClick={() => setExpandedAiTools(prev => ({ ...prev, starter: !prev.starter }))}
                         >
-                          <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                          <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                           <span className="text-purple-200 flex items-center gap-1.5">
                             Acesso à todas Ferramentas de IA
                           </span>
-                          <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.starter ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-4 h-4 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.starter ? 'rotate-180' : ''}`} />
                         </div>
                         {expandedAiTools.starter && (
-                          <ul className="ml-5 mt-1 space-y-0.5">
+                          <ul className="ml-6 mt-1.5 space-y-0.5">
                             {aiToolsList.map((tool, tIndex) => (
-                              <li key={tIndex} className={`text-[10px] ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
+                              <li key={tIndex} className={`text-[11px] ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
                                 • {tool}
                               </li>
                             ))}
                           </ul>
                         )}
                       </li>
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <X className="w-3 h-3 text-orange-500 shrink-0 mt-0.5" />
+                      <li className="flex items-start gap-2 text-sm">
+                        <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                         <span className="text-orange-500">Fila prioritária nos upscalers</span>
                       </li>
                     </ul>
@@ -756,74 +756,74 @@ const PlanosUpscalerCreditos = () => {
 
                 {/* Pro - MAIS VENDIDO */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] border-2 border-lime-400 shadow-lg shadow-lime-400/30 w-full h-full">
-                    <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-3 py-0.5">
+                  <Card className="relative p-6 flex flex-col rounded-xl bg-[#1A0A2E] border-2 border-lime-400 shadow-lg shadow-lime-400/30 w-full h-full">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-4 py-1">
                       MAIS VENDIDO
                     </Badge>
-                    <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
-                      <h3 className="text-base font-bold text-white">Pro</h3>
+                    <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
+                      <h3 className="text-lg font-bold text-white">Pro</h3>
                     </div>
-                    <div className="text-center mb-2 h-[60px] flex flex-col justify-center">
-                      <div className="flex items-baseline justify-center gap-0.5">
-                        <span className="text-purple-400 text-sm">R$</span>
-                        <span className="text-3xl font-bold text-white">39,90</span>
+                    <div className="text-center mb-3 h-[75px] flex flex-col justify-center">
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-purple-400 text-base">R$</span>
+                        <span className="text-4xl font-bold text-white">39,90</span>
                       </div>
-                      <p className="text-purple-400 text-xs mt-1">Pagamento único</p>
+                      <p className="text-purple-400 text-sm mt-1">Pagamento único</p>
                     </div>
                     <Button 
                       onClick={handlePurchase}
-                      className="w-full mb-3 text-sm h-9 bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold"
+                      className="w-full mb-4 text-base h-11 bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold"
                     >
                       Comprar
                     </Button>
-                    <div className="flex flex-col items-center mb-4 h-[36px]">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
-                        <Sparkles className="w-2.5 h-2.5" />
+                    <div className="flex flex-col items-center mb-5 h-[44px]">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
+                        <Sparkles className="w-3.5 h-3.5" />
                         5.000 créditos
                       </span>
-                      <span className="text-[9px] text-purple-400 mt-0.5">~83 upscalers</span>
+                      <span className="text-[11px] text-purple-400 mt-1">~83 upscalers</span>
                     </div>
-                    <ul className="space-y-2 flex-1">
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                    <ul className="space-y-2.5 flex-1">
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Atualizações constantes na ferramenta</span>
                       </li>
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Liberação imediata</span>
                       </li>
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
                       </li>
 
                       {/* Bonus section */}
-                      <li className="pt-2 border-t border-purple-500/20 mt-2">
-                        <p className="text-[10px] text-purple-400 uppercase tracking-wide mb-1.5">Bônus</p>
+                      <li className="pt-3 border-t border-purple-500/20 mt-3">
+                        <p className="text-[11px] text-purple-400 uppercase tracking-wide mb-2">Bônus</p>
                       </li>
                       <li>
                         <div 
-                          className="flex items-start gap-1.5 text-xs cursor-pointer select-none"
+                          className="flex items-start gap-2 text-sm cursor-pointer select-none"
                           onClick={() => setExpandedAiTools(prev => ({ ...prev, pro: !prev.pro }))}
                         >
-                          <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                          <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                           <span className="text-purple-200 flex items-center gap-1.5">
                             Acesso à todas Ferramentas de IA
                           </span>
-                          <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.pro ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-4 h-4 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.pro ? 'rotate-180' : ''}`} />
                         </div>
                         {expandedAiTools.pro && (
-                          <ul className="ml-5 mt-1 space-y-0.5">
+                          <ul className="ml-6 mt-1.5 space-y-0.5">
                             {aiToolsList.map((tool, tIndex) => (
-                              <li key={tIndex} className={`text-[10px] ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
+                              <li key={tIndex} className={`text-[11px] ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
                                 • {tool}
                               </li>
                             ))}
                           </ul>
                         )}
                       </li>
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Fila prioritária nos upscalers</span>
                       </li>
                     </ul>
@@ -832,74 +832,74 @@ const PlanosUpscalerCreditos = () => {
 
                 {/* Studio - MELHOR CUSTO/BENEFÍCIO */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] border-2 border-purple-500 shadow-lg shadow-purple-500/30 w-full h-full">
-                    <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-purple-600 to-blue-500 text-white px-3 py-0.5">
+                  <Card className="relative p-6 flex flex-col rounded-xl bg-[#1A0A2E] border-2 border-purple-500 shadow-lg shadow-purple-500/30 w-full h-full">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-purple-600 to-blue-500 text-white px-4 py-1">
                       MELHOR CUSTO/BENEFÍCIO
                     </Badge>
-                    <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
-                      <h3 className="text-base font-bold text-white">Studio</h3>
+                    <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
+                      <h3 className="text-lg font-bold text-white">Studio</h3>
                     </div>
-                    <div className="text-center mb-2 h-[60px] flex flex-col justify-center">
-                      <div className="flex items-baseline justify-center gap-0.5">
-                        <span className="text-purple-400 text-sm">R$</span>
-                        <span className="text-3xl font-bold text-white">99,90</span>
+                    <div className="text-center mb-3 h-[75px] flex flex-col justify-center">
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-purple-400 text-base">R$</span>
+                        <span className="text-4xl font-bold text-white">99,90</span>
                       </div>
-                      <p className="text-purple-400 text-xs mt-1">Pagamento único</p>
+                      <p className="text-purple-400 text-sm mt-1">Pagamento único</p>
                     </div>
                     <Button 
                       onClick={handlePurchase}
-                      className="w-full mb-3 text-sm h-9 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold"
+                      className="w-full mb-4 text-base h-11 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold"
                     >
                       Comprar
                     </Button>
-                    <div className="flex flex-col items-center mb-4 h-[36px]">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
-                        <Sparkles className="w-2.5 h-2.5" />
+                    <div className="flex flex-col items-center mb-5 h-[44px]">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
+                        <Sparkles className="w-3.5 h-3.5" />
                         10.800 créditos
                       </span>
-                      <span className="text-[9px] text-purple-400 mt-0.5">~160 upscalers</span>
+                      <span className="text-[11px] text-purple-400 mt-1">~160 upscalers</span>
                     </div>
-                    <ul className="space-y-2 flex-1">
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                    <ul className="space-y-2.5 flex-1">
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Atualizações constantes na ferramenta</span>
                       </li>
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Liberação imediata</span>
                       </li>
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
                       </li>
 
                       {/* Bonus section */}
-                      <li className="pt-2 border-t border-purple-500/20 mt-2">
-                        <p className="text-[10px] text-purple-400 uppercase tracking-wide mb-1.5">Bônus</p>
+                      <li className="pt-3 border-t border-purple-500/20 mt-3">
+                        <p className="text-[11px] text-purple-400 uppercase tracking-wide mb-2">Bônus</p>
                       </li>
                       <li>
                         <div 
-                          className="flex items-start gap-1.5 text-xs cursor-pointer select-none"
+                          className="flex items-start gap-2 text-sm cursor-pointer select-none"
                           onClick={() => setExpandedAiTools(prev => ({ ...prev, studio: !prev.studio }))}
                         >
-                          <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                          <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                           <span className="text-purple-200 flex items-center gap-1.5">
                             Acesso à todas Ferramentas de IA
                           </span>
-                          <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.studio ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-4 h-4 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.studio ? 'rotate-180' : ''}`} />
                         </div>
                         {expandedAiTools.studio && (
-                          <ul className="ml-5 mt-1 space-y-0.5">
+                          <ul className="ml-6 mt-1.5 space-y-0.5">
                             {aiToolsList.map((tool, tIndex) => (
-                              <li key={tIndex} className={`text-[10px] ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
+                              <li key={tIndex} className={`text-[11px] ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
                                 • {tool}
                               </li>
                             ))}
                           </ul>
                         )}
                       </li>
-                      <li className="flex items-start gap-1.5 text-xs">
-                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                      <li className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Fila prioritária nos upscalers</span>
                       </li>
                     </ul>
