@@ -1,14 +1,31 @@
 
 
-## Remover o modal "Nova versao disponivel"
-
-O modal de update esta com bug de click-through (cliques passam para elementos atras dele, como o botao "Criar Conta"). A solucao mais simples e direta: remover o modal completamente.
+## Atualizar ferramentas na pagina de Recarga de Creditos
 
 ### Mudancas
 
-1. **`src/components/ForceUpdateModal.tsx`** - Fazer o componente retornar `null` sempre (ou remover o conteudo). Manter o arquivo para nao quebrar imports.
+**Arquivo:** `src/pages/PlanosCreditos.tsx`
 
-2. **`src/components/UpdateAvailableModal.tsx`** - Mesmo tratamento: esvaziar o componente, retornando `null`.
+1. **Mover "Upscaler de Video" de "Em Breve" para ferramentas ativas** - Remover da lista `comingSoonTools` e adicionar em `availableTools` com icone Video e cores adequadas.
 
-O sistema de push notification para forcar update (que ja funciona) continua sendo o mecanismo principal. O modal nao e mais necessario.
+2. **Mover "Forja de Selos 3D" de ferramentas ativas para "Em Breve"** - Remover da lista `availableTools` e adicionar na lista `comingSoonTools` com icone Box.
+
+3. **Adicionar "Arcano Cloner" nas ferramentas ativas** - Novo item em `availableTools` com descricao e icone apropriados.
+
+### Resultado final
+
+**Ferramentas ativas (cards grandes):**
+- Upscaler Arcano
+- Mudar Roupa
+- Mudar Pose
+- Upscaler de Video (novo)
+- Arcano Cloner (novo)
+
+**Em Breve (badges):**
+- Forja de Selos 3D (movido pra ca)
+- Remocao de Fundo
+- Edicao Automatica
+- Remover Objeto
+- Teloes de LED
+- Narracao e Musica
 
