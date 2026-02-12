@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
-import { LazyBeforeAfterSlider } from "../LazyBeforeAfterSlider";
+import { HeroBeforeAfterSlider } from "../HeroBeforeAfterSlider";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { User } from "lucide-react";
 
@@ -11,8 +11,6 @@ import upscalerUser2Antes from "@/assets/upscaler-user2-antes.jpg";
 import upscalerUser2Depois from "@/assets/upscaler-user2-depois.jpg";
 import upscalerUser3Antes from "@/assets/upscaler-user3-antes.jpg";
 import upscalerUser3Depois from "@/assets/upscaler-user3-depois.jpg";
-import upscalerUser4Antes from "@/assets/upscaler-user4-antes.webp";
-import upscalerUser4Depois from "@/assets/upscaler-user4-depois.webp";
 import upscalerUser5Antes from "@/assets/upscaler-user5-antes.webp";
 import upscalerUser5Depois from "@/assets/upscaler-user5-depois.webp";
 import upscalerUser6Antes from "@/assets/upscaler-user6-antes.webp";
@@ -27,13 +25,6 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
   const { t } = useTranslation();
 
   const userResults = [
-    {
-      before: isMobile ? "/images/upscaler-user4-antes-mobile.webp" : upscalerUser4Antes,
-      after: isMobile ? "/images/upscaler-user4-depois-mobile.webp" : upscalerUser4Depois,
-      name: "Camila Santos",
-      handle: "@camilasantos.mkt",
-      testimonial: "Uso pra melhorar as fotos de produto dos meus clientes de e-commerce. A qualidade das imagens aumentou demais e as vendas acompanharam. Ferramenta indispensável!"
-    },
     {
       before: isMobile ? "/images/upscaler-user2-antes-mobile.webp" : upscalerUser2Antes,
       after: isMobile ? "/images/upscaler-user2-depois-mobile.webp" : upscalerUser2Depois,
@@ -70,13 +61,10 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       <div className="flex flex-col md:flex-row">
         {/* Slider antes/depois - sem borda/container próprio */}
         <div className="p-3 md:p-6 md:w-1/2 md:flex-shrink-0">
-          <LazyBeforeAfterSlider
+          <HeroBeforeAfterSlider
             beforeImage={result.before}
             afterImage={result.after}
-            aspectRatio={isMobile ? "3/4" : "4/3"}
             locale="pt"
-            onZoomClick={() => onZoomClick(result.before, result.after)}
-            bare
           />
         </div>
         
