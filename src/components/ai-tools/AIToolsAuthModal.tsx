@@ -1,15 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Gift, ArrowLeft, Mail, ExternalLink, Check } from 'lucide-react';
+import { Gift, ArrowLeft, Mail } from 'lucide-react';
 import { LoginEmailStep, LoginPasswordStep, SignupForm } from '@/components/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const RUNNINGHUB_REFERRAL_URL = 'https://www.runninghub.ai/?inviteCode=p93i9z36';
-const COUNTDOWN_SECONDS = 15;
-
-type ModalStep = 'runninghub' | 'email' | 'password' | 'signup' | 'verify-email';
+type ModalStep = 'email' | 'password' | 'signup' | 'verify-email';
 
 interface AIToolsAuthModalProps {
   isOpen: boolean;
@@ -22,41 +19,20 @@ export default function AIToolsAuthModal({
   onClose,
   onAuthSuccess,
 }: AIToolsAuthModalProps) {
-  const [step, setStep] = useState<ModalStep>('runninghub');
+  const [step, setStep] = useState<ModalStep>('email');
   const [email, setEmail] = useState('');
   const [verifiedEmail, setVerifiedEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
-  const [countdownActive, setCountdownActive] = useState(false);
 
   // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
-      setStep('runninghub');
+      setStep('email');
       setEmail('');
       setVerifiedEmail('');
       setIsLoading(false);
-      setCountdown(COUNTDOWN_SECONDS);
-      setCountdownActive(false);
     }
   }, [isOpen]);
-
-  // Countdown timer
-  useEffect(() => {
-    if (!countdownActive || countdown <= 0) return;
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          setCountdownActive(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [countdownActive, countdown]);
 
   // Listen for auth state changes
   useEffect(() => {
@@ -81,12 +57,6 @@ export default function AIToolsAuthModal({
 
     return () => subscription.unsubscribe();
   }, [isOpen, onAuthSuccess]);
-
-  const handleOpenRunningHub = () => {
-    window.open(RUNNINGHUB_REFERRAL_URL, '_blank');
-    setCountdownActive(true);
-    setCountdown(COUNTDOWN_SECONDS);
-  };
 
   const handleCheckEmail = useCallback(async () => {
     const emailToCheck = email.trim().toLowerCase();
@@ -268,12 +238,10 @@ export default function AIToolsAuthModal({
             <Gift className="w-8 h-8 text-purple-400" />
           </div>
           <h2 className="text-xl font-bold text-white">
-            {step === 'runninghub' ? 'Ganhe 300 créditos grátis!' : 'Ganhe 300 créditos grátis!'}
+            Ganhe 300 créditos grátis!
           </h2>
           <p className="text-sm text-purple-300 mt-1">
-            {step === 'runninghub'
-              ? 'Crie uma conta gratuita no RunningHub para começar'
-              : 'Faça login ou crie sua conta para começar'}
+            Faça login ou crie sua conta para começar
           </p>
           <p className="text-xs text-purple-400/80 mt-1">
             ⏳ Créditos válidos por 1 mês
@@ -282,91 +250,7 @@ export default function AIToolsAuthModal({
 
         {/* Content */}
         <div className="p-6">
-          {/* Step 1: RunningHub */}
-          {step === 'runninghub' && (
-            <div className="space-y-4">
-              {/* Benefits */}
-              <div className="w-full space-y-2 text-left">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-4 h-4 text-purple-400" />
-                  </div>
-                  <span className="text-sm text-purple-200">Conta gratuita no RunningHub</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-4 h-4 text-purple-400" />
-                  </div>
-                  <span className="text-sm text-purple-200">300 créditos para usar nas ferramentas de IA</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-4 h-4 text-purple-400" />
-                  </div>
-                  <span className="text-sm text-purple-200">Processamento de imagens em alta qualidade</span>
-                </div>
-              </div>
-
-              {!countdownActive && countdown === COUNTDOWN_SECONDS && (
-                <Button
-                  onClick={handleOpenRunningHub}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-6 text-lg shadow-lg shadow-purple-500/30"
-                >
-                  <ExternalLink className="w-5 h-5 mr-2" />
-                  Criar conta no RunningHub
-                </Button>
-              )}
-
-              {countdownActive && countdown > 0 && (
-                <>
-                  {/* Countdown Circle */}
-                  <div className="flex justify-center">
-                    <div className="relative w-20 h-20 flex items-center justify-center">
-                      <svg className="w-20 h-20 transform -rotate-90">
-                        <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="3" fill="none" className="text-purple-900/40" />
-                        <circle
-                          cx="40" cy="40" r="36"
-                          stroke="currentColor" strokeWidth="3" fill="none"
-                          className="text-purple-500"
-                          strokeDasharray={226.19}
-                          strokeDashoffset={226.19 * (1 - countdown / COUNTDOWN_SECONDS)}
-                          strokeLinecap="round"
-                          style={{ transition: 'stroke-dashoffset 1s linear' }}
-                        />
-                      </svg>
-                      <span className="absolute text-2xl font-bold text-purple-400">{countdown}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-purple-300 text-center">Crie sua conta no RunningHub...</p>
-                  <Button
-                    disabled
-                    className="w-full bg-purple-900/50 text-purple-400 font-semibold py-6 text-lg cursor-not-allowed border border-purple-500/20"
-                  >
-                    Aguarde {countdown}s...
-                  </Button>
-                </>
-              )}
-
-              {countdown === 0 && (
-                <Button
-                  onClick={() => setStep('email')}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-6 text-lg shadow-lg shadow-purple-500/30"
-                >
-                  <Check className="w-5 h-5 mr-2" />
-                  Já criei minha conta
-                </Button>
-              )}
-
-              <button
-                onClick={onClose}
-                className="w-full text-sm text-purple-400 hover:text-purple-200 transition-colors underline-offset-4 hover:underline"
-              >
-                Agora não
-              </button>
-            </div>
-          )}
-
-          {/* Step 2: Email */}
+          {/* Step 1: Email */}
           {step === 'email' && (
             <LoginEmailStep
               email={email}
@@ -385,7 +269,7 @@ export default function AIToolsAuthModal({
             />
           )}
 
-          {/* Step 3: Password */}
+          {/* Step 2: Password */}
           {step === 'password' && (
             <div className="space-y-4">
               <LoginPasswordStep
@@ -406,7 +290,7 @@ export default function AIToolsAuthModal({
             </div>
           )}
 
-          {/* Step 4: Signup */}
+          {/* Step 3: Signup */}
           {step === 'signup' && (
             <SignupForm
               defaultEmail={verifiedEmail || email}
@@ -435,7 +319,7 @@ export default function AIToolsAuthModal({
             />
           )}
 
-          {/* Step 5: Verify Email */}
+          {/* Step 4: Verify Email */}
           {step === 'verify-email' && (
             <div className="text-center py-6 space-y-4">
               <div className="w-16 h-16 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
