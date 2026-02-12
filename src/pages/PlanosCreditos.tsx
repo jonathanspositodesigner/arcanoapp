@@ -14,27 +14,33 @@ const availableTools = [
     color: "from-purple-500 to-fuchsia-500"
   },
   {
-    name: "Forja de Selos 3D",
-    description: "Crie selos e emblemas 3D profissionais",
-    icon: Box,
-    color: "from-fuchsia-500 to-pink-500"
-  },
-  {
     name: "Mudar Roupa",
     description: "Troque a roupa de pessoas em fotos",
     icon: Shirt,
-    color: "from-pink-500 to-rose-500"
+    color: "from-fuchsia-500 to-pink-500"
   },
   {
     name: "Mudar Pose",
     description: "Altere a pose de pessoas em imagens",
     icon: PersonStanding,
+    color: "from-pink-500 to-rose-500"
+  },
+  {
+    name: "Upscaler de Vídeo",
+    description: "Melhore a qualidade dos seus vídeos com IA",
+    icon: Video,
     color: "from-rose-500 to-orange-500"
+  },
+  {
+    name: "Arcano Cloner",
+    description: "Crie clones com IA usando uma foto de referência",
+    icon: Star,
+    color: "from-orange-500 to-amber-500"
   }
 ];
 
 const comingSoonTools = [
-  { name: "Upscaler de Vídeo", icon: Video },
+  { name: "Forja de Selos 3D", icon: Box },
   { name: "Remoção de Fundo", icon: Eraser },
   { name: "Edição Automática", icon: Image },
   { name: "Remover Objeto", icon: Trash2 },
