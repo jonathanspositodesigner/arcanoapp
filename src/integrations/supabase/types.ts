@@ -3561,12 +3561,12 @@ export type Database = {
       get_ai_tools_cost_averages: {
         Args: never
         Returns: {
-          avg_credit_cost: number
           avg_rh_cost: number
+          avg_user_credit: number
           tool_name: string
-          total_credit_cost: number
-          total_jobs: number
+          total_completed: number
           total_rh_cost: number
+          total_user_credits: number
         }[]
       }
       get_ai_tools_usage:
