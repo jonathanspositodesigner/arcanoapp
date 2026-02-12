@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, MousePointerClick } from "lucide-react";
+import { CheckCircle2, MousePointerClick, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
-import { LoginEmailStep, LoginPasswordStep } from "@/components/auth";
+import { LoginEmailStep, LoginPasswordStep, SignupForm } from "@/components/auth";
 
 interface HomeAuthModalProps {
   open: boolean;
@@ -70,6 +70,27 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                 {t('auth.backToLogin')}
               </Button>
             </div>
+          ) : auth.state.step === 'signup' ? (
+            <>
+              <SignupForm
+                defaultEmail={auth.state.email}
+                onSubmit={auth.signup}
+                onBackToLogin={auth.goToLogin}
+                isLoading={auth.state.isLoading}
+                variant="default"
+                labels={{
+                  title: t('auth.createAccountTitle') || 'Criar Conta',
+                  email: t('auth.email'),
+                  emailPlaceholder: t('auth.emailPlaceholder'),
+                  password: t('auth.password'),
+                  passwordPlaceholder: t('auth.passwordPlaceholder'),
+                  confirmPassword: t('auth.confirmPassword') || 'Confirmar Senha',
+                  createAccount: t('auth.createAccountButton') || 'Criar Conta',
+                  creatingAccount: t('auth.loading'),
+                  backToLogin: t('auth.backToLogin') || 'Voltar ao Login',
+                }}
+              />
+            </>
           ) : (
             <>
               <div className="text-center mb-6">
@@ -117,7 +138,22 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                 />
               )}
 
-              <div className="mt-6 pt-4 border-t border-border">
+              <div className="mt-4 pt-4 border-t border-border/30">
+                <p className="text-sm text-muted-foreground text-center mb-2">
+                  {t('auth.noAccountYet') || 'Ainda não tem conta?'}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-primary/50 text-primary hover:bg-primary/10"
+                  onClick={auth.goToSignup}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  {t('auth.createAccount') || 'Criar Conta'}
+                </Button>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={onClose}
