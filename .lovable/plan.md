@@ -1,53 +1,84 @@
 
-## Substituir "DEBUG IA" por "API GOOGLE" no admin do PromptClub
 
-### O que muda
+## Forçar Update via botão admin + detecção automática no app
 
-O item "DEBUG IA" no menu lateral do admin PromptClub sera substituido por "API GOOGLE". A rota `/admin-prompts/debug-ia` sera substituida por `/admin-prompts/api-google`. A pagina de Debug IA sera removida e no lugar sera criada uma pagina de gerenciamento da API Google.
+### Como vai funcionar
 
-### Nova pagina: API Google
+1. Voce clica em **"Forçar Update"** no AdminHub
+2. O botao incrementa a versao no banco de dados (tabela `app_settings`, registro `app_version`) e salva um timestamp `force_update_at`
+3. Quando qualquer usuario abrir o app (pagina inicial), o `ForceUpdateModal` compara a versao do banco com o `APP_VERSION` do codigo
+4. Se forem diferentes, aparece um modal bonito dizendo "Nova versao disponivel!"
+5. O usuario clica em "Atualizar" e o app limpa cache, remove Service Workers e recarrega
 
-A pagina tera:
+### Mudancas tecnicas
 
-1. **Barra de gasto** - Mostra quanto ja foi gasto dos R$ 1.900,00 de creditos Google, com barra de progresso e porcentagem. O calculo e baseado nos jobs concluidos nas tabelas `image_generator_jobs` e `video_generator_jobs`:
-   - Nano Banana (model=normal): R$ 0,20 por imagem
-   - Nano Banana Pro (model=pro): R$ 0,69 por imagem
-   - Veo 3.1 Fast: R$ 0,78 x duracao_segundos por video
+#### 1. Atualizar o registro `app_version` no `app_settings`
+O registro ja existe no banco. Vamos padronizar o formato do `value` para incluir `latest_version` e `force_update_at`:
 
-2. **Campo para trocar a chave API** - Input para inserir nova chave Google Gemini, com botao de salvar que atualiza o secret `GOOGLE_GEMINI_API_KEY` via edge function dedicada
+```text
+{
+  "latest_version": "5.3.0",
+  "force_update_at": "2026-02-12T..."
+}
+```
 
-3. **Resumo de uso** - Cards mostrando quantidade de geracoes por tipo e custo total
+Isso sera feito via data update (INSERT tool), nao migration.
 
-### Passos tecnicos
+#### 2. Atualizar `AdminHub.tsx` - botao "Forçar Update"
+O botao deixa de enviar push notification e passa a:
+- Buscar a versao atual do `app_settings`
+- Incrementar o patch version (ex: 5.3.0 -> 5.3.1)
+- Salvar nova versao + timestamp no banco
+- Mostrar toast de confirmacao com a nova versao
 
-#### 1. Criar tabela `google_api_config` (migration)
-- `id`, `total_budget` (default 1900.00), `updated_at`
-- Armazena o budget total configuravel (R$ 1.900)
+#### 3. Reativar `ForceUpdateModal.tsx`
+- Criar hook inline que consulta `app_settings` onde `id = 'app_version'`
+- Comparar `latest_version` do banco com `APP_VERSION` hardcoded no codigo
+- Se forem diferentes, renderizar o modal de atualizacao
+- O modal tera botao "Atualizar Agora" e botao "Depois"
 
-#### 2. Criar edge function `admin-update-google-key`
-- Recebe a nova chave API
-- Verifica se o usuario e admin
-- Atualiza o secret `GOOGLE_GEMINI_API_KEY` via Supabase Management API (usando SUPABASE_ACCESS_TOKEN e VITE_SUPABASE_PROJECT_ID)
+#### 4. Criar `UpdateAvailableModal.tsx`
+- Modal com design escuro (estilo do app)
+- Icone de refresh, titulo "Nova versao disponivel!"
+- Texto explicando que ha uma atualizacao
+- Botao "Atualizar Agora" que executa a limpeza de cache e hard reload (mesma logica do `ForceUpdate.tsx`)
+- Botao "Depois" que fecha o modal (volta a aparecer no proximo reload)
 
-#### 3. Criar pagina `src/pages/admin/PromptsApiGoogle.tsx`
-- Card com barra de progresso do budget (R$ 1.900)
-- Calcula gasto total via query nas tabelas de jobs completados
-- Input mascarado para trocar a chave API
-- Cards resumo: total imagens (normal/pro), total videos, custo por tipo
+#### 5. Logica de atualizacao (performUpdate)
+Reutiliza a logica ja existente no `ForceUpdate.tsx`:
+- Limpa localStorage e sessionStorage
+- Deleta todos os caches do browser
+- Desregistra todos os Service Workers
+- Hard reload com cache-busting
 
-#### 4. Atualizar `AdminSidebarPlatform.tsx`
-- Trocar "DEBUG IA" por "API GOOGLE"
-- Trocar icone `Bug` por icone adequado (ex: `Key` ou `Cloud`)
-- Trocar path de `debug-ia` para `api-google`
+#### 6. Integrar no App
+O `ForceUpdateModal` ja esta importado no `App.tsx` (precisa confirmar). Se nao, adicionar no layout principal para rodar em todas as paginas.
 
-#### 5. Atualizar `App.tsx`
-- Remover import/rota do `PromptsDebugIA`
-- Adicionar import/rota do `PromptsApiGoogle` em `/admin-prompts/api-google`
-- Manter redirect de `/admin-prompts/debug-ia` para `/admin-prompts/api-google` (evitar links quebrados)
+### Fluxo completo
 
-### O que NAO muda
+```text
+Admin clica "Forçar Update"
+        |
+        v
+Incrementa versao no banco (5.3.0 -> 5.3.1)
+        |
+        v
+Usuario abre o app
+        |
+        v
+ForceUpdateModal consulta banco
+        |
+        v
+5.3.0 (codigo) != 5.3.1 (banco) -> mostra modal
+        |
+        v
+Usuario clica "Atualizar"
+        |
+        v
+Limpa cache + SW + hard reload
+```
 
-- Nenhuma edge function de geracao (generate-image, generate-video) sera alterada
-- Nenhuma outra pagina admin sera alterada
-- O contexto AIDebugContext continua existindo (pode ser usado por quem quiser, so perde a pagina de admin)
-- Todas as outras ferramentas continuam identicas
+### Importante
+- O `APP_VERSION` no codigo NAO precisa ser atualizado manualmente. A comparacao e feita contra o banco. Quando voce publicar uma nova versao do codigo, voce pode clicar "Forçar Update" de novo para que os usuarios que ainda estao na versao antiga recebam o aviso.
+- O botao de push notification sera substituido por essa logica mais simples e confiavel.
+
