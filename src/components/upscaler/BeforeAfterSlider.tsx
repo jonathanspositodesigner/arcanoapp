@@ -150,11 +150,11 @@ export const BeforeAfterSlider = ({
           </div>
         </div>
 
-        {/* Labels */}
-        <div className="absolute top-4 left-4 bg-black/80 text-white text-sm font-semibold px-4 py-2 rounded-full z-10">
+        {/* Labels - minimalista */}
+        <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm text-white/80 text-xs font-medium px-3 py-1 rounded-lg border border-white/10 z-10">
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-full z-10">
+        <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-fuchsia-400 text-xs font-medium px-3 py-1 rounded-lg border border-white/10 z-10">
           {t('tools:upscaler.beforeAfter.after')}
         </div>
 
