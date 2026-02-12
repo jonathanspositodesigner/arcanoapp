@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 import UpscalerTrialSection from "@/components/upscaler/trial/UpscalerTrialSection";
+import logoHorizontal from "@/assets/logo_horizontal.png";
 
 // Hero images - Desktop uses high-res, Mobile uses optimized 600x900 versions
 const upscalerHeroAntesDesktop = "/images/upscaler-hero-antes.webp";
@@ -969,6 +970,14 @@ const PlanosUpscalerCreditos = () => {
           afterImage={modalImages.after}
         />
       )}
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 py-8 px-4">
+        <div className="max-w-5xl mx-auto flex flex-col items-center gap-4">
+          <img src={logoHorizontal} alt="ArcanoApp" className="h-7 w-auto opacity-70" />
+          <p className="text-white/40 text-xs">© 2026 Arcano App. Todos os direitos reservados.</p>
+        </div>
+      </footer>
     </div>
   );
 };
