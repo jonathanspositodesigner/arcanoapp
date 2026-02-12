@@ -51,7 +51,7 @@ const comingSoonTools = [
 const creditPlans = [
   { 
     credits: "+1.500", 
-    description: "~25 imagens", 
+    description: "~25 upscalers", 
     price: "29,90",
     originalPrice: "39,90",
     savings: "25",
@@ -61,7 +61,7 @@ const creditPlans = [
   },
   { 
     credits: "+4.200", 
-    description: "~70 imagens", 
+    description: "~70 upscalers", 
     price: "39,90",
     originalPrice: "49,90",
     savings: "52",
@@ -72,7 +72,7 @@ const creditPlans = [
   },
   { 
     credits: "+10.800", 
-    description: "~180 imagens", 
+    description: "~180 upscalers", 
     price: "99,90",
     originalPrice: "149,90",
     savings: "54",
