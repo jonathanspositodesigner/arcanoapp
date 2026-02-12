@@ -486,7 +486,7 @@ const PlanosUpscalerCreditos = () => {
                 <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
                   <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
                     <Clock className="h-3.5 w-3.5 text-fuchsia-400" />
-                    <span>Resultados em segundos</span>
+                    <span>Mais rápido que um miojo</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
                     <MousePointerClick className="h-3.5 w-3.5 text-fuchsia-400" />
