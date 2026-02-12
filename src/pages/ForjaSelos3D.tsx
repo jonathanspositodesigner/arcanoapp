@@ -8,6 +8,8 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 import AppLayout from "@/components/layout/AppLayout";
+import AIToolsAuthModal from "@/components/ai-tools/AIToolsAuthModal";
+import { useAIToolsAuthModal } from "@/hooks/useAIToolsAuthModal";
 
 interface VideoLesson {
   titleKey: string;
@@ -51,6 +53,7 @@ const ForjaSelos3D = () => {
   const { t } = useTranslation('tools');
   const { user, isPremium, planType, isLoading } = usePremiumStatus();
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
+  const { showAuthModal, setShowAuthModal, handleAuthSuccess } = useAIToolsAuthModal({ user });
 
   const hasAccess = isPremium && planType === "arcano_unlimited";
 
@@ -117,6 +120,13 @@ const ForjaSelos3D = () => {
 
         {/* WhatsApp Support Button */}
         <WhatsAppSupportButton />
+
+        {/* Free Trial Auth Modal */}
+        <AIToolsAuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onAuthSuccess={handleAuthSuccess}
+        />
       </div>
     </AppLayout>
   );

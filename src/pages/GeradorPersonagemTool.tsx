@@ -30,6 +30,8 @@ import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecove
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
+import AIToolsAuthModal from '@/components/ai-tools/AIToolsAuthModal';
+import { useAIToolsAuthModal } from '@/hooks/useAIToolsAuthModal';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -45,6 +47,7 @@ const GeradorPersonagemTool: React.FC = () => {
   const navigate = useNavigate();
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
+  const { showAuthModal, setShowAuthModal, handleAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Gerador Avatar', 75);
   const refineCreditCost = getCreditCost('Refinar Avatar', 75);
@@ -805,6 +808,13 @@ const GeradorPersonagemTool: React.FC = () => {
       <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeJobId={activeJobId} activeStatus={activeStatus} onCancelJob={centralCancelJob} />
       <DownloadProgressOverlay isVisible={isDownloading} progress={downloadProgress} onCancel={cancelDownload} mediaType="image" locale="pt" />
       <NotificationPromptToast toolName="character-generator" />
+
+      {/* Free Trial Auth Modal */}
+      <AIToolsAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
     </AppLayout>
   );

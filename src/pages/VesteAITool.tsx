@@ -26,6 +26,8 @@ import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecove
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
+import AIToolsAuthModal from '@/components/ai-tools/AIToolsAuthModal';
+import { useAIToolsAuthModal } from '@/hooks/useAIToolsAuthModal';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -41,6 +43,7 @@ const VesteAITool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
+  const { showAuthModal, setShowAuthModal, handleAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Veste AI', 60);
   
@@ -745,6 +748,13 @@ const VesteAITool: React.FC = () => {
 
       {/* Notification prompt toast */}
       <NotificationPromptToast toolName="look" />
+
+      {/* Free Trial Auth Modal */}
+      <AIToolsAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
     </AppLayout>
   );
