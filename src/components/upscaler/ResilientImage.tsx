@@ -257,11 +257,12 @@ export const ResilientImage = ({
       <img
         src={currentSrc}
         alt={alt}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="w-full h-full object-cover"
         style={{
           objectFit,
           opacity: isLoaded ? 1 : 0,
-          transition: 'opacity 0.3s ease-in-out'
+          transition: 'opacity 0.3s ease-in-out',
+          display: 'block'
         }}
         onLoad={handleLoad}
         onError={handleError}
