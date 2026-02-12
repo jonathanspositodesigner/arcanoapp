@@ -103,7 +103,7 @@ const FullscreenModal = ({
       
       <div 
         ref={containerRef}
-        className="relative w-full max-w-4xl aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden cursor-ew-resize select-none"
+        className="relative w-full max-w-4xl aspect-[3/4] md:aspect-[4/3] rounded-2xl overflow-hidden cursor-ew-resize select-none"
         onClick={(e) => e.stopPropagation()}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
