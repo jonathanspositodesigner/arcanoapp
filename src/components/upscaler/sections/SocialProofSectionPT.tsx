@@ -13,8 +13,6 @@ import upscalerUser3Antes from "@/assets/upscaler-user3-antes.jpg";
 import upscalerUser3Depois from "@/assets/upscaler-user3-depois.jpg";
 import upscalerUser5Antes from "@/assets/upscaler-user5-antes.webp";
 import upscalerUser5Depois from "@/assets/upscaler-user5-depois.webp";
-import upscalerUser6Antes from "@/assets/upscaler-user6-antes.webp";
-import upscalerUser6Depois from "@/assets/upscaler-user6-depois.webp";
 
 interface SocialProofSectionPTProps {
   onZoomClick: (before: string, after: string) => void;
@@ -38,13 +36,6 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       name: "Ana Beatriz",
       handle: "@anab.designstudio",
       testimonial: "Eu usava outro upscaler que demorava horas e o resultado era meia boca. Com o Upscaler Arcano em menos de 1 minuto minhas fotos ficam perfeitas. Meus clientes notaram a diferença na hora!"
-    },
-    {
-      before: isMobile ? "/images/upscaler-user6-antes-mobile.webp" : upscalerUser6Antes,
-      after: isMobile ? "/images/upscaler-user6-depois-mobile.webp" : upscalerUser6Depois,
-      name: "Mariana Costa",
-      handle: "@mari.visualarts",
-      testimonial: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova. Chorei de emoção quando vi o antes e depois."
     },
     {
       before: isMobile ? "/images/upscaler-user1-antes-mobile.webp" : upscalerUser1Antes,
