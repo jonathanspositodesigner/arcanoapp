@@ -52,8 +52,8 @@ serve(async (req) => {
       });
     }
 
-    const validDurations = [5, 8];
-    const duration = validDurations.includes(duration_seconds) ? duration_seconds : 5;
+    const validDurations = [4, 6, 8];
+    const duration = validDurations.includes(duration_seconds) ? duration_seconds : 8;
     const ratio = ["16:9", "9:16"].includes(aspect_ratio) ? aspect_ratio : "16:9";
 
     // Get credit cost

@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const ASPECT_RATIOS = ['16:9', '9:16'] as const;
-const DURATIONS = [5, 8] as const;
+const DURATIONS = [4, 6, 8] as const;
 
 interface FrameImage {
   file: File;
@@ -37,7 +37,7 @@ const GerarVideoTool = () => {
 
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
-  const [duration, setDuration] = useState<number>(5);
+  const [duration, setDuration] = useState<number>(8);
   const [startFrame, setStartFrame] = useState<FrameImage | null>(null);
   const [endFrame, setEndFrame] = useState<FrameImage | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
