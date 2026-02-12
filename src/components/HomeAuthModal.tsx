@@ -140,7 +140,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
 
               <div className="mt-4 pt-4 border-t border-border/30">
                 <p className="text-sm text-muted-foreground text-center mb-2">
-                  {t('auth.noAccountYet') || 'Ainda não tem conta?'}
+                  Ainda não tem conta?
                 </p>
                 <Button
                   type="button"
@@ -149,7 +149,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                   onClick={auth.goToSignup}
                 >
                   <UserPlus className="h-4 w-4 mr-2" />
-                  {t('auth.createAccount') || 'Criar Conta'}
+                  Criar Conta
                 </Button>
               </div>
 
