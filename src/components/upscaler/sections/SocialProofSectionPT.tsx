@@ -58,7 +58,8 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       after: "/images/rodrigo-depois.webp",
       name: "Rodrigo Mélius",
       handle: "@melius.arquitetura",
-      testimonial: "Já usei topaz, magnific, nano banana e nenhuma outra ferramenta que testei até hoje conseguiu reproduzir meus projetos com a fidelidade que essa ferramenta faz! Alem do render sair em 4k ainda valoriza texturas e materiais e entrega um resultado impecável! Ta sendo muito útil por aqui"
+      testimonial: "Já usei topaz, magnific, nano banana e nenhuma outra ferramenta que testei até hoje conseguiu reproduzir meus projetos com a fidelidade que essa ferramenta faz! Alem do render sair em 4k ainda valoriza texturas e materiais e entrega um resultado impecável! Ta sendo muito útil por aqui",
+      avatar: "/images/rodrigo-avatar.png"
     }
   ];
 
