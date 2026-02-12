@@ -1,22 +1,44 @@
 
 
-## Plano: Substituir o BeforeAfterSlider pela estrutura exata do Hero
+## Plano: Usar HeroBeforeAfterSlider direto nos depoimentos
 
-Vou deletar todo o conteudo do `BeforeAfterSlider.tsx` e reescrever usando a mesma estrutura do `HeroBeforeAfterSlider.tsx` que funciona perfeitamente, mantendo apenas os props extras que o componente secundario precisa (zoom, aspect ratio, download).
+### Problema
+O `BeforeAfterSlider` passa por `LazyBeforeAfterSlider` que adiciona wrappers, logica de lazy loading e placeholders que podem estar quebrando o layout. O Hero funciona porque usa o `HeroBeforeAfterSlider` diretamente, sem nenhum wrapper.
 
-### O que muda
+### Solucao
 
-**Arquivo:** `src/components/upscaler/BeforeAfterSlider.tsx`
+**Arquivo:** `src/components/upscaler/sections/SocialProofSectionPT.tsx`
 
-- Deletar todo o componente atual
-- Copiar a estrutura exata do `HeroBeforeAfterSlider` (que funciona)
-- Manter os props extras: `onZoomClick`, `aspectRatio`, `size`, `onDownloadClick`, `downloadFileName`
-- Usar o aspect ratio via classe CSS (como o Hero faz) em vez de `style` inline com `getAspectStyle()`
-- Labels e slider identicos ao Hero
+1. Remover o card da Camila Santos (primeiro item do array `userResults`) completamente
+2. Remover imports das imagens `upscalerUser4Antes` e `upscalerUser4Depois`
+3. Trocar o `LazyBeforeAfterSlider` por `HeroBeforeAfterSlider` direto em todos os cards restantes
+4. Remover o import de `LazyBeforeAfterSlider`
+5. Adicionar import de `HeroBeforeAfterSlider`
 
 ### Detalhes tecnicos
 
-A diferenca principal e que o Hero usa aspect ratio via **classe CSS** (`aspect-[9/16] md:aspect-[4/3]`) diretamente no container, enquanto o BeforeAfterSlider usa uma funcao `getAspectStyle()` que aplica via `style` inline. Vou manter o aspect ratio customizavel mas aplicar da mesma forma que o Hero.
+No `TestimonialCard`, trocar:
 
-O componente resultante sera praticamente uma copia do Hero com os props adicionais de zoom, download e aspect ratio configuravel.
+```tsx
+// DE (wrapper com lazy loading que pode quebrar):
+<LazyBeforeAfterSlider
+  beforeImage={result.before}
+  afterImage={result.after}
+  aspectRatio={isMobile ? "3/4" : "4/3"}
+  locale="pt"
+  onZoomClick={() => onZoomClick(result.before, result.after)}
+  bare
+/>
+
+// PARA (componente que funciona, direto, sem wrapper):
+<HeroBeforeAfterSlider
+  beforeImage={result.before}
+  afterImage={result.after}
+  locale="pt"
+/>
+```
+
+O `HeroBeforeAfterSlider` ja tem aspect ratio fixo (`aspect-[9/16] md:aspect-[4/3]`), slider, labels - tudo funcionando. Sem wrappers, sem lazy loading, sem nada no meio pra quebrar.
+
+O zoom click sera removido temporariamente pois o Hero nao suporta essa prop, mas o slider vai funcionar igual ao do Hero.
 
