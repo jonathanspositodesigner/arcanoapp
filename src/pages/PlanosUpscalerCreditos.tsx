@@ -393,7 +393,7 @@ const PlanosUpscalerCreditos = () => {
                       <User className="h-3.5 w-3.5 text-white" />
                     </div>
                   </div>
-                  <span className="text-white/80 text-sm font-medium">+5.000 criadores já estão usando</span>
+                  <span className="text-white/80 text-sm font-medium">+5.000 profissionais já estão usando</span>
                 </div>
               </FadeIn>
 
