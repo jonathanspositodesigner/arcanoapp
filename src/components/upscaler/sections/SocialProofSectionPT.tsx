@@ -32,9 +32,10 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
     {
       before: isMobile ? "/images/upscaler-user2-antes-mobile.webp" : upscalerUser2Antes,
       after: isMobile ? "/images/upscaler-user2-depois-mobile.webp" : upscalerUser2Depois,
-      name: "Ana Beatriz",
-      handle: "@anab.designstudio",
-      testimonial: "Eu usava outro upscaler que demorava horas e o resultado era meia boca. Com o Upscaler Arcano em menos de 1 minuto minhas fotos ficam perfeitas. Meus clientes notaram a diferença na hora!"
+      name: "Clara Rodrigues",
+      handle: "@clararodriguescantora",
+      testimonial: "Estou usando a ferramenta de upscaler em todas as minhas fotos! Estou completamente apaixonada no resultado que ela entrega! Ja refiz meu presskit todo, vale muito a pena adquirir pessoal! 10/10 sem dúvidas",
+      avatar: "/images/clara-avatar.webp"
     },
     {
       before: "/images/mariana-antes.webp",
