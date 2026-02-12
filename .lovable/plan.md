@@ -1,63 +1,48 @@
 
 
-## Problema
+## Problema atual
 
-O saldo de creditos no topo da pagina nao atualiza imediatamente apos gerar uma imagem ou video porque existem **duas instancias separadas** do hook `useUpscalerCredits`:
+O `CreditsProvider` esta DENTRO do `AppLayout`. Porem, `GerarImagemTool` e `GerarVideoTool` chamam `useCredits()` no corpo do componente, **antes** de renderizar o `AppLayout`. Resultado: o hook nao encontra o Provider e retorna o fallback com `balance: 0`, causando o modal "Sem Creditos".
 
-1. Uma no `AppLayout` (que alimenta o badge de creditos no topo)
-2. Outra em cada pagina de ferramenta (GerarImagemTool, GerarVideoTool, etc.)
+```text
+GerarImagemTool       <-- useCredits() chamado AQUI (sem Provider!)
+  └── return <AppLayout>
+        └── <CreditsProvider>   <-- Provider so existe AQUI, abaixo
+```
 
-Quando a ferramenta chama `refetchCredits()`, so atualiza o estado **local da pagina** da ferramenta. O badge do topo depende da subscription de realtime do Postgres, que pode ter atraso ou falhar silenciosamente.
+As outras ferramentas (UpscalerArcano, VesteAI, ArcanoClonerTool, VideoUpscalerTool, PoseChangerTool, GeradorPersonagem, ProfileSettings, CreditHistory, BibliotecaPrompts, FerramentasIA) usam `useUpscalerCredits` diretamente com instancia local propria -- funcionam normalmente e **nao serao tocadas**.
 
 ## Solucao
 
-Criar um **contexto global de creditos** (`CreditsContext`) que compartilha uma unica instancia de `useUpscalerCredits` entre o AppLayout e todas as ferramentas. Assim, quando qualquer ferramenta chama `refetch`, o saldo atualiza em todos os lugares ao mesmo tempo.
+Mover o `CreditsProvider` para o `App.tsx`, envolvendo todas as rotas. Assim `useCredits()` funciona em qualquer pagina. **Nenhuma outra ferramenta sera alterada.**
 
-## Passos
+## Mudancas (apenas 2 arquivos)
 
-### 1. Criar `src/contexts/CreditsContext.tsx`
+### 1. App.tsx
 
-- Criar um React Context que encapsula o hook `useUpscalerCredits`
-- Expor `CreditsProvider` e `useCredits()`
-- O provider recebe o `userId` e instancia o hook uma unica vez
-- Todas as paginas e o AppTopBar leem do mesmo estado
+- Criar um componente interno `CreditsWrapper` que consome `useAuth()` (ja disponivel no contexto) e passa `user?.id` para o `CreditsProvider`
+- Envolver o conteudo DENTRO do `AuthProvider` com esse wrapper
+- Nenhuma rota muda, nenhum import de pagina muda
 
-### 2. Integrar o `CreditsProvider` no `AppLayout.tsx`
-
-- Envolver o conteudo do AppLayout com `<CreditsProvider userId={user?.id}>`
-- Remover a chamada direta de `useUpscalerCredits` do AppLayout
-- O AppTopBar passa a usar `useCredits()` do contexto
-
-### 3. Atualizar `AppTopBar.tsx`
-
-- Remover as props `credits` e `creditsLoading`
-- Consumir os creditos diretamente via `useCredits()`
-
-### 4. Atualizar as paginas de ferramentas
-
-- `GerarImagemTool.tsx` - trocar `useUpscalerCredits(user?.id)` por `useCredits()`
-- `GerarVideoTool.tsx` - mesma mudanca
-- As demais ferramentas que usam AppLayout tambem se beneficiam automaticamente
-
-### 5. Atualizar `CreditsPreviewPopover.tsx`
-
-- Remover as props `credits` e `creditsLoading` (virao do contexto via `useCredits()`)
-
----
-
-### Detalhes tecnicos
-
-**CreditsContext** expoe:
-```
-- balance (number)
-- breakdown ({ total, monthly, lifetime })
-- isLoading (boolean)  
-- refetch() 
-- consumeCredits()
-- checkBalance()
+```text
+AuthProvider
+  └── CreditsWrapper (NOVO - pega user do useAuth)
+        └── CreditsProvider userId={user?.id}
+              └── AIDebugProvider
+                    └── ... rotas (tudo igual)
 ```
 
-Como todas as ferramentas e o top bar compartilham a mesma instancia, quando `refetch()` e chamado apos uma geracao, o `setBalance()` interno atualiza o estado compartilhado, e o `useAnimatedNumber` no `CreditsPreviewPopover` detecta a mudanca e roda a animacao imediatamente.
+### 2. AppLayout.tsx
 
-A subscription de realtime continua ativa como fallback para atualizacoes vindas de outros dispositivos ou processos em background.
+- Remover o import e o wrapping de `CreditsProvider`
+- O AppLayout volta a ser apenas layout (sidebar + topbar + children)
+- Como o `CreditsProvider` ja esta acima, o `AppTopBar` e o `CreditsPreviewPopover` continuam funcionando via `useCredits()` sem nenhuma mudanca
+
+### O que NAO muda
+
+- Nenhuma outra pagina de ferramenta (Upscaler, VesteAI, Cloner, VideoUpscaler, PoseChanger, GeradorPersonagem) -- todas usam `useUpscalerCredits` local e continuam identicas
+- ProfileSettings, CreditHistory, BibliotecaPrompts, FerramentasIA -- mesma coisa, instancia local
+- Nenhuma edge function, nenhuma RPC, nenhuma tabela
+- AppTopBar, CreditsPreviewPopover -- ja usam `useCredits()`, continuam funcionando
+- GerarImagemTool e GerarVideoTool -- ja usam `useCredits()`, so que agora o Provider vai existir acima deles
 
