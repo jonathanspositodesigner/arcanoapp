@@ -120,6 +120,7 @@ const PlanosUpscalerArcano69 = lazy(() => import("./pages/PlanosUpscalerArcano69
 const PlanosUpscalerArcano69ES = lazy(() => import("./pages/PlanosUpscalerArcano69ES"));
 const PlanosUpscalerArcano590ES = lazy(() => import("./pages/PlanosUpscalerArcano590ES"));
 const PlanosForjaSelos3D = lazy(() => import("./pages/PlanosForjaSelos3D"));
+const PlanosUpscalerCreditos = lazy(() => import("./pages/PlanosUpscalerCreditos"));
 const UpscalerArcanoTool = lazy(() => import("./pages/UpscalerArcanoTool"));
 const PoseChangerTool = lazy(() => import("./pages/PoseChangerTool"));
 const VesteAITool = lazy(() => import("./pages/VesteAITool"));
@@ -289,6 +290,7 @@ const AppContent = () => {
           <Route path="/planos-upscaler-arcano-69-es" element={<PlanosUpscalerArcano69ES />} />
           <Route path="/planos-upscaler-arcano-590-es" element={<PlanosUpscalerArcano590ES />} />
           <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
+          <Route path="/planos-upscaler-creditos" element={<PlanosUpscalerCreditos />} />
           <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
           <Route path="/pose-changer-tool" element={<PoseChangerTool />} />
           <Route path="/veste-ai-tool" element={<VesteAITool />} />
