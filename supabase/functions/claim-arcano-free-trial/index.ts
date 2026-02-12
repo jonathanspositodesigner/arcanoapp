@@ -61,6 +61,21 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Check if email already used landing page trial
+    const { data: landingTrial } = await supabase
+      .from('landing_page_trials')
+      .select('id')
+      .eq('email', email)
+      .eq('code_verified', true)
+      .maybeSingle()
+
+    if (landingTrial) {
+      console.log(`[claim-arcano-free-trial] Landing trial already used by ${email}`)
+      return new Response(JSON.stringify({ already_claimed: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // ATOMIC: Try to insert the claim first using a unique constraint on email
     // This prevents race conditions where two concurrent requests both pass the check
     const { data: claimResult, error: claimError } = await supabase
