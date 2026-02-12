@@ -265,14 +265,14 @@ const GerarImagemTool = () => {
 
         {/* Bottom bar */}
         <div className="sticky bottom-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-purple-500/15 w-full">
-          <div className="max-w-3xl mx-auto px-3 py-3 space-y-2.5">
+          <div className="max-w-3xl mx-auto px-3 py-3 space-y-2">
             {/* Prompt input row */}
-            <div className="flex items-end gap-2">
+            <div className="flex items-center gap-2">
               {/* Attachment button */}
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isGenerating || referenceImages.length >= 5}
-                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40"
+                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40 self-end mb-0.5"
               >
                 <Paperclip className="h-4 w-4" />
                 {referenceImages.length > 0 && (
@@ -291,34 +291,32 @@ const GerarImagemTool = () => {
               />
 
               {/* Prompt textarea */}
-              <div className="flex-1 relative">
-                <textarea
-                  ref={textareaRef}
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Descreva a imagem que você quer gerar..."
-                  rows={2}
-                  className="w-full bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                  style={{ minHeight: '60px', maxHeight: '100px', overflow: 'auto' }}
-                  disabled={isGenerating}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = '60px';
-                    target.style.height = Math.min(target.scrollHeight, 100) + 'px';
-                  }}
-                />
-              </div>
+              <textarea
+                ref={textareaRef}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Descreva a imagem que você quer gerar..."
+                rows={2}
+                className="flex-1 bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                style={{ minHeight: '56px', maxHeight: '100px', overflow: 'auto' }}
+                disabled={isGenerating}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = '56px';
+                  target.style.height = Math.min(target.scrollHeight, 100) + 'px';
+                }}
+              />
             </div>
 
-            {/* Controls row */}
+            {/* Controls + Generate button row */}
             <div className="flex items-center gap-1.5">
               {/* Model dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
+                  <button className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
                     <span className="text-green-400 font-bold text-[10px]">G</span>
-                    <span className="font-medium">{modelLabel}</span>
-                    <ChevronDown className="h-3 w-3 text-purple-400" />
+                    <span className="font-medium truncate max-w-[90px]">{modelLabel}</span>
+                    <ChevronDown className="h-3 w-3 text-purple-400 flex-shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
@@ -340,10 +338,10 @@ const GerarImagemTool = () => {
               {/* Aspect ratio dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
+                  <button className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
                     <span>⬜</span>
                     <span className="font-medium">{aspectRatio}</span>
-                    <ChevronDown className="h-3 w-3 text-purple-400" />
+                    <ChevronDown className="h-3 w-3 text-purple-400 flex-shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
@@ -358,31 +356,33 @@ const GerarImagemTool = () => {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
 
-            {/* Generate button - full width on mobile */}
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !prompt.trim()}
-              size="sm"
-              className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-sm disabled:opacity-50 rounded-xl h-10"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                  Gerando...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-1.5" />
-                  Gerar Imagem
-                  <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                    <Coins className="w-3.5 h-3.5" />
-                    {currentCreditCost}
-                  </span>
-                </>
-              )}
-            </Button>
+              <div className="flex-1" />
+
+              {/* Generate button */}
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || !prompt.trim()}
+                size="sm"
+                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-8 shrink-0"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                    Gerando...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 mr-1" />
+                    Gerar
+                    <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
+                      <Coins className="w-3 h-3" />
+                      {currentCreditCost}
+                    </span>
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
