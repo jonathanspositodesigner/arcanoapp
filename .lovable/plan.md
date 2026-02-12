@@ -1,44 +1,66 @@
 
-
-# Plano: Bloquear free trial duplicado + PRO inativo no trial
+# Plano: Integrar Upscaler Real na Seção de Teste Gratuito
 
 ## Resumo
-Duas mudancas:
-1. Quem usou o teste gratuito da landing page (email na tabela `landing_page_trials`) sera impedido de resgatar os 300 creditos gratuitos no app.
-2. No mockup do upscaler da landing, o modo PRO aparece visivel mas desabilitado com indicacao de que e exclusivo para assinantes.
+Transformar o mockup estático da seção de teste gratuito em uma ferramenta funcional com as mesmas categorias e configurações do Upscaler Arcano Standard, incluindo seleção de enquadramento (Perto/Longe) para fotos de pessoas e compressão automática de imagens grandes.
 
----
+## Configuração dos Botões (Standard)
 
-## Detalhes Tecnicos
+Cada categoria usa um workflow diferente na API:
 
-### 1. Bloquear resgate de 300 creditos para emails da landing page trial
+| Categoria | Prompt Automático | Controles Extras |
+|-----------|-------------------|------------------|
+| **Pessoas** | Sim (portrait/full-body) | Escolha Perto/Longe, Resolução 2K |
+| **Comida/Objeto** | Nenhum | Slider de detalhe (0.70-1.00) |
+| **Foto Antiga** | Nenhum | Nenhum (apenas imagem) |
+| **Selo 3D** | Nenhum | Nenhum (apenas imagem) |
+| **Logo/Arte** | Nenhum | Nenhum (apenas imagem) |
 
-Dois pontos de verificacao precisam ser atualizados:
+Quando "Pessoas" estiver selecionado, aparece um sub-seletor com "De Perto" e "De Longe" (com ícones SVG), exatamente como no Upscaler principal.
 
-**a) `supabase/functions/check-free-trial-eligibility/index.ts`**
-- Apos checar `promo_claims` e `arcano_cloner_free_trials`, adicionar uma terceira verificacao na tabela `landing_page_trials`
-- Se o email existir com `code_verified = true`, retornar `eligible: false` com `reason: 'already_claimed'`
+## Compressão Automática de Imagens
 
-**b) `supabase/functions/claim-arcano-free-trial/index.ts`**
-- Antes de chamar a RPC `claim_arcano_free_trial_atomic`, verificar se o email do usuario autenticado existe na `landing_page_trials` com `code_verified = true`
-- Se existir, retornar `{ already_claimed: true }` impedindo o resgate
+Quando o usuário enviar uma imagem com dimensao maior que 2000x2000px:
+- Abrir o modal `ImageCompressionModal` (ja existe no projeto)
+- Mostrar dimensao original vs. limite
+- Comprimir para no maximo 1999px mantendo proporcao
+- Usar a funcao `compressToMaxDimension` que ja existe em `useImageOptimizer`
 
-### 2. PRO inativo no mockup do trial
+## Mudanças Técnicas
 
-**`src/components/upscaler/trial/UpscalerMockup.tsx`**
-- Manter o botao "PRO" visivel no header
-- Adicionar um icone de cadeado e tooltip/texto pequeno tipo "Exclusivo para assinantes"
-- Ao clicar no PRO (quando trial ativo), mostrar um mini aviso inline ou toast dizendo que o modo PRO e exclusivo para quem assina um plano
-- Garantir que o modo Standard permanece selecionado e funcional durante o trial
+### 1. `UpscalerMockup.tsx` - Refatoracao completa
+- Trocar as categorias mockup por categorias reais: `pessoas`, `comida`, `fotoAntiga`, `render3d`, `logo`
+- Adicionar sub-seletor Perto/Longe quando "Pessoas" estiver ativo
+- Adicionar slider de detalhe para Comida/Objeto (0.70-1.00)
+- Expor `selectedCategory` e `pessoasFraming` via callbacks/props
+- Integrar validacao de dimensao e modal de compressao na selecao de arquivo
+- Aceitar prop `onCompressionNeeded` para acionar o modal
 
-### 3. Arquivos a modificar
+### 2. `UpscalerTrialSection.tsx` - Integrar API real
+- Importar `ImageCompressionModal`, `getImageDimensions`, `MAX_AI_DIMENSION`, `compressToMaxDimension`
+- Adicionar estados: `selectedCategory`, `pessoasFraming`, `comidaDetailLevel`, `showCompressionModal`, `pendingFile`, `pendingDimensions`
+- No `handleFileSelect`: verificar dimensoes -> se maior que 2000px, mostrar `ImageCompressionModal`
+- No `handleGenerate`: montar o body da chamada `runninghub-upscaler/run` com os parametros corretos baseados na categoria:
+  - `category`: a categoria selecionada (ex: `pessoas_perto`, `comida`, `fotoAntiga`, `logo`, `render3d`)
+  - `version`: sempre `'standard'`
+  - `detailDenoise`: valor do slider para comida (0.85 padrao), ou 0.15 para pessoas
+  - `resolution`: 2048 para pessoas, `undefined` para workflows especiais
+  - `prompt`: prompt automatico para pessoas, `undefined` para workflows especiais
+  - `framingMode`: `'perto'` ou `'longe'` para pessoas, `undefined` para o resto
+- Manter `trial_mode: true` para que o backend saiba que e um teste
 
-| Arquivo | Acao |
-|---------|------|
-| `supabase/functions/check-free-trial-eligibility/index.ts` | Adicionar check na `landing_page_trials` |
-| `supabase/functions/claim-arcano-free-trial/index.ts` | Adicionar check na `landing_page_trials` |
-| `src/components/upscaler/trial/UpscalerMockup.tsx` | PRO visivel mas inativo com mensagem de exclusividade |
+### 3. Nenhuma alteracao no backend
+O Edge Function `runninghub-upscaler/run` ja suporta todos os parametros e categorias. Apenas o frontend precisa enviar os dados corretos.
 
-### 4. Sem mudancas no banco de dados
-A tabela `landing_page_trials` ja existe com os campos necessarios (`email`, `code_verified`). Nenhuma migration necessaria.
+## Fluxo do Usuário
 
+```text
+1. Usuário seleciona categoria (Pessoas, Comida, Foto Antiga, Selo 3D, Logo)
+2. Se "Pessoas" -> escolhe Perto ou Longe
+3. Se "Comida" -> ajusta slider de detalhe (opcional)
+4. Faz upload da foto
+5. Se foto > 2000px -> modal de compressão aparece -> comprime
+6. Clica "Melhorar Imagem"
+7. Sistema envia para API com parâmetros corretos da categoria
+8. Resultado aparece na tela
+```
