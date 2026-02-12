@@ -1,60 +1,74 @@
 
 
-# Diagnóstico: IMAGE_TRANSFER_ERROR (502) no Arcano Cloner
+# Recuperacao de 300 Creditos para 41 Usuarios
 
-## Causa Raiz
+## Situacao
 
-O erro ocorre na **etapa de upload da imagem do usuário para a API da RunningHub** (`https://www.runninghub.ai/task/openapi/upload`). O servidor da RunningHub retornou **502 Bad Gateway** em todas as 3 tentativas.
+41 usuarios completaram o fluxo de confirmacao de email (clicaram no link, token marcado como `used_at`), mas a chamada ao RPC `claim_arcano_free_trial_atomic` falhou silenciosamente dentro da edge function `confirm-email-free-trial`. Resultado: email confirmado, mas **zero creditos** e **zero registros** em `arcano_cloner_free_trials` ou `upscaler_credits`.
 
-Cronologia dos dois jobs com falha:
-1. Imagem baixada do Storage com sucesso
-2. Tentativa de upload para RunningHub: 502
-3. Retry 1 (500ms depois): 502
-4. Retry 2 (1000ms depois): 502
-5. Falha final apos 3 tentativas
+## Solucao em 2 partes
 
-## Causa: Instabilidade temporária do RunningHub
+### Parte 1: Edge Function `grant-recovery-credits`
 
-O 502 Bad Gateway indica que o servidor da RunningHub estava sobrecarregado ou em manutenção naquele momento. **Nao é um bug no nosso código.** As imagens estão comprimidas corretamente (JPEG, otimizadas pelo `optimizeForAI`).
+Uma edge function chamada uma unica vez que:
 
-## Problema Secundário: Retry insuficiente
+1. Busca os 41 usuarios afetados (tokens com `used_at` preenchido mas sem creditos)
+2. Para cada um, executa o mesmo RPC `claim_arcano_free_trial_atomic` que falhou antes
+3. Se o RPC falhar novamente, faz INSERT direto via `service_role` (bypass RLS):
+   - Insere em `arcano_cloner_free_trials` (para marcar como resgatado)
+   - Faz UPSERT em `upscaler_credits` com 300 monthly_balance
+   - Registra em `upscaler_credit_transactions`
+4. Envia email de notificacao para cada usuario informando que os creditos foram concedidos
+5. Retorna relatorio de sucesso/falha
 
-Os delays de retry atuais sao muito curtos:
-- Tentativa 1: espera 500ms
-- Tentativa 2: espera 1000ms  
-- Tentativa 3: espera 2000ms
-- Total: ~3.5 segundos
+### Parte 2: Template do Email de Notificacao
 
-Para um erro 502 (infraestrutura), isso é pouco tempo para recuperação.
+Email enviado via SendPulse com o mesmo design do email de confirmacao original:
+- Assunto: "Seus 300 creditos gratis ja estao na sua conta!"
+- Corpo: Informa que houve um problema tecnico e que os creditos foram adicionados
+- Botao: "Comecar a Usar" -> link para `/ferramentas-ia-aplicativo` com magic link para auto-login
+- Mesmo estilo visual (fundo escuro, gradiente roxo/rosa)
 
-## Solução Proposta
+### Protecoes Anti-Duplicata
 
-Aumentar a resiliência do retry na edge function `runninghub-arcano-cloner`:
+- Antes de conceder creditos, verifica se o usuario ja tem registro em `arcano_cloner_free_trials`
+- Se ja tiver, pula (nao da creditos duplicados)
+- UPSERT com `ON CONFLICT (user_id)` em `upscaler_credits`
 
-1. **Aumentar delays de retry** de `[500, 1000, 2000]` para `[2000, 5000, 10000]` (backoff exponencial mais agressivo)
-2. **Aumentar tentativas** de 3 para 4
-3. **Aplicar a mesma correção** nas outras ferramentas que usam o mesmo padrão (pose-changer, veste-ai, upscaler, character-generator) para consistência
+## Detalhes Tecnicos
 
-## Detalhes Técnicos
+### Arquivo criado
 
-Arquivo modificado: `supabase/functions/runninghub-arcano-cloner/index.ts`
+`supabase/functions/grant-recovery-credits/index.ts`
 
-Alteração na funcao `fetchWithRetry`:
+### Fluxo da Edge Function
+
 ```text
-// ANTES
-maxRetries: number = 3
-delays = [500, 1000, 2000]
-
-// DEPOIS  
-maxRetries: number = 4
-delays = [2000, 5000, 10000, 15000]
+POST /grant-recovery-credits (com auth header admin)
+  |
+  v
+[Busca 41 users: tokens used_at NOT NULL + sem upscaler_credits]
+  |
+  v
+[Para cada user:]
+  1. Tenta RPC claim_arcano_free_trial_atomic
+  2. Se falhar: INSERT direto com service_role
+  3. Gera magic link para auto-login
+  4. Envia email via SendPulse
+  |
+  v
+[Retorna JSON com resultados]
 ```
 
-Mesma alteração nos arquivos:
-- `supabase/functions/runninghub-pose-changer/index.ts`
-- `supabase/functions/runninghub-veste-ai/index.ts`
-- `supabase/functions/runninghub-upscaler/index.ts`
-- `supabase/functions/runninghub-character-generator/index.ts`
+### Correcao do bug original
 
-Tempo total de retry passa de ~3.5s para ~32s, dando tempo suficiente para o RunningHub se recuperar de instabilidades temporárias.
+Alem do envio, vou corrigir a `confirm-email-free-trial` para que, se o RPC falhar, faca um fallback com INSERT direto usando `service_role`. Assim novos usuarios nao terao o mesmo problema.
+
+### Apos aprovacao
+
+1. Crio a edge function `grant-recovery-credits`
+2. Corrijo `confirm-email-free-trial` com fallback
+3. Faco deploy
+4. Chamo a funcao uma vez para processar os 41 usuarios
+5. Todos recebem email + creditos
 
