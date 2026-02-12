@@ -436,7 +436,7 @@ const PlanosUpscalerCreditos = () => {
                   </div>
                   <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
                     <CreditCard className="h-3.5 w-3.5 text-fuchsia-400" />
-                    <span>Sem assinatura</span>
+                    <span>Fácil de usar</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
                     <Star className="h-3.5 w-3.5 text-fuchsia-400" />
