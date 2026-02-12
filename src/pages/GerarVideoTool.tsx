@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, Play } from 'lucide-react';
+import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
@@ -12,7 +11,12 @@ import AIToolsAuthModal from '@/components/ai-tools/AIToolsAuthModal';
 import { useAIToolsAuthModal } from '@/hooks/useAIToolsAuthModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
-import { AnimatedCreditsDisplay } from '@/components/upscaler/AnimatedCreditsDisplay';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const ASPECT_RATIOS = ['16:9', '9:16'] as const;
 const DURATIONS = [5, 8] as const;
@@ -27,7 +31,7 @@ interface FrameImage {
 const GerarVideoTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
+  const { balance: credits, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
   const { showAuthModal, setShowAuthModal, handleAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
   const { getCreditCost } = useAIToolSettings();
 
@@ -48,8 +52,9 @@ const GerarVideoTool = () => {
   const endFrameRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollingStartRef = useRef<number>(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const creditCost = getCreditCost('gerar_video', 150);
+  const creditCost = getCreditCost('gerar_video', 700);
 
   const handleFrameSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'start' | 'end') => {
     const file = e.target.files?.[0];
@@ -78,7 +83,6 @@ const GerarVideoTool = () => {
   const pollStatus = useCallback(async () => {
     if (!jobId) return;
 
-    // 10 minute timeout
     if (Date.now() - pollingStartRef.current > 600_000) {
       stopPolling();
       setErrorMessage('Tempo limite excedido. Tente novamente.');
@@ -116,7 +120,6 @@ const GerarVideoTool = () => {
         await refetchCredits();
         toast.error(data.error_message || 'Erro na geração do vídeo');
       }
-      // else still processing
     } catch (err) {
       console.error('[GerarVideo] Poll error:', err);
     }
@@ -124,7 +127,6 @@ const GerarVideoTool = () => {
 
   useEffect(() => {
     if (isPolling && jobId) {
-      // Initial delay of 5s, then every 10s
       const timeout = setTimeout(() => {
         pollStatus();
         pollingRef.current = setInterval(pollStatus, 10_000);
@@ -137,7 +139,6 @@ const GerarVideoTool = () => {
     }
   }, [isPolling, jobId, pollStatus]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
@@ -242,51 +243,14 @@ const GerarVideoTool = () => {
     setErrorMessage(null);
   };
 
-  const FrameUploadCard = ({ label, frame, onRemove, inputRef, type }: {
-    label: string;
-    frame: FrameImage | null;
-    onRemove: () => void;
-    inputRef: React.RefObject<HTMLInputElement>;
-    type: 'start' | 'end';
-  }) => (
-    <div className="space-y-1.5">
-      <label className="text-xs font-medium text-purple-300">{label}</label>
-      {frame ? (
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-purple-500/30">
-          <img src={frame.preview} alt={label} className="w-full h-full object-cover" />
-          <button
-            onClick={onRemove}
-            className="absolute top-2 right-2 bg-red-600 rounded-full p-1"
-          >
-            <X className="h-3 w-3 text-white" />
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => inputRef.current?.click()}
-          disabled={isGenerating}
-          className="w-full aspect-video rounded-xl border-2 border-dashed border-purple-500/40 flex flex-col items-center justify-center text-purple-400 hover:border-purple-400 hover:text-purple-300 transition-colors bg-black/20"
-        >
-          <Upload className="h-6 w-6 mb-1" />
-          <span className="text-[10px]">Clique para upload</span>
-        </button>
-      )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        onChange={(e) => handleFrameSelect(e, type)}
-        className="hidden"
-      />
-    </div>
-  );
+  const hasFrames = startFrame || endFrame;
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-[#0f0a15]/90 backdrop-blur-md border-b border-purple-500/20 px-4 py-3">
-          <div className="flex items-center justify-between max-w-2xl mx-auto">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
               <button onClick={goBack} className="text-purple-300 hover:text-white transition-colors">
                 <ArrowLeft className="h-5 w-5" />
@@ -299,139 +263,204 @@ const GerarVideoTool = () => {
                 <p className="text-[10px] text-purple-400">Veo 3.1 Fast • Google</p>
               </div>
             </div>
-            <AnimatedCreditsDisplay credits={credits} isLoading={creditsLoading} size="sm" />
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-          {/* Result */}
-          {resultUrl && (
-            <div className="space-y-3">
-              <div className="rounded-xl overflow-hidden border border-purple-500/30 bg-black/40">
-                <video
-                  src={resultUrl}
-                  controls
-                  autoPlay
-                  className="w-full h-auto"
-                />
+        {/* Main content area */}
+        <div className="flex-1 flex items-center justify-center p-4">
+          {resultUrl ? (
+            <div className="w-full max-w-2xl space-y-3">
+              <div className="rounded-2xl overflow-hidden border border-purple-500/20 bg-black/30 shadow-2xl">
+                <video src={resultUrl} controls autoPlay className="w-full h-auto" />
               </div>
-              <div className="flex gap-2">
-                <Button onClick={handleDownload} className="flex-1 bg-green-600 hover:bg-green-700 text-white">
-                  <Download className="h-4 w-4 mr-2" /> Baixar Vídeo
+              <div className="flex gap-2 justify-center">
+                <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
+                  <Download className="h-4 w-4 mr-2" /> Baixar
                 </Button>
-                <Button onClick={handleNewGeneration} variant="outline" className="flex-1 border-purple-500/50 text-purple-200 hover:bg-purple-500/20">
-                  <Video className="h-4 w-4 mr-2" /> Novo Vídeo
+                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
+                  <Video className="h-4 w-4 mr-2" /> Novo
                 </Button>
               </div>
             </div>
-          )}
-
-          {/* Error */}
-          {errorMessage && !resultUrl && (
-            <div className="p-4 rounded-xl border border-red-500/30 bg-red-900/20 text-red-300 text-sm">
-              {errorMessage}
-            </div>
-          )}
-
-          {/* Processing status */}
-          {isGenerating && !resultUrl && (
-            <div className="p-6 rounded-xl border border-purple-500/30 bg-purple-900/20 flex flex-col items-center gap-3">
-              <Loader2 className="h-10 w-10 text-fuchsia-400 animate-spin" />
+          ) : isGenerating ? (
+            <div className="flex flex-col items-center gap-4 text-purple-300">
+              <div className="w-20 h-20 rounded-full border-2 border-purple-500/30 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-fuchsia-400" />
+              </div>
               <div className="text-center">
-                <p className="text-white font-medium">Gerando vídeo...</p>
+                <p className="text-sm text-white font-medium">Gerando vídeo...</p>
                 <p className="text-xs text-purple-400 mt-1">Isso pode levar de 2 a 5 minutos</p>
               </div>
             </div>
+          ) : errorMessage ? (
+            <div className="max-w-md p-4 rounded-xl border border-red-500/30 bg-red-900/20 text-red-300 text-sm text-center">
+              {errorMessage}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3 text-purple-500/60">
+              <Video className="h-12 w-12" />
+              <p className="text-sm text-center">Digite um prompt e clique em Gerar Vídeo</p>
+            </div>
           )}
+        </div>
 
-          {/* Prompt */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-purple-300">Prompt</label>
-            <Textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Descreva o vídeo que você quer gerar..."
-              className="min-h-[100px] bg-black/30 border-purple-500/30 text-white placeholder:text-purple-500/50 resize-none"
-              disabled={isGenerating}
-            />
-          </div>
-
-          {/* Frames */}
-          <div className="grid grid-cols-2 gap-3">
-            <FrameUploadCard
-              label="Start Frame (opcional)"
-              frame={startFrame}
-              onRemove={() => setStartFrame(null)}
-              inputRef={startFrameRef as React.RefObject<HTMLInputElement>}
-              type="start"
-            />
-            <FrameUploadCard
-              label="End Frame (opcional)"
-              frame={endFrame}
-              onRemove={() => setEndFrame(null)}
-              inputRef={endFrameRef as React.RefObject<HTMLInputElement>}
-              type="end"
-            />
-          </div>
-
-          {/* Aspect Ratio & Duration */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-purple-300">Aspect Ratio</label>
-              <div className="flex gap-2">
-                {ASPECT_RATIOS.map(ratio => (
-                  <button
-                    key={ratio}
-                    onClick={() => setAspectRatio(ratio)}
-                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                      aspectRatio === ratio
-                        ? 'bg-fuchsia-600 text-white'
-                        : 'bg-purple-900/40 text-purple-300 border border-purple-500/30 hover:bg-purple-800/40'
-                    }`}
-                  >
-                    {ratio}
+        {/* Frame previews strip */}
+        {hasFrames && (
+          <div className="sticky bottom-[110px] z-20 px-4">
+            <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 backdrop-blur-md rounded-xl p-2 border border-purple-500/20">
+              {startFrame && (
+                <div className="relative w-16 h-10 rounded-lg overflow-hidden border border-purple-500/30 flex-shrink-0">
+                  <img src={startFrame.preview} alt="Start" className="w-full h-full object-cover" />
+                  <button onClick={() => setStartFrame(null)} className="absolute -top-1 -right-1 bg-red-600 rounded-full p-0.5">
+                    <X className="h-2.5 w-2.5 text-white" />
                   </button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-purple-300">Duração</label>
-              <div className="flex gap-2">
-                {DURATIONS.map(d => (
-                  <button
-                    key={d}
-                    onClick={() => setDuration(d)}
-                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                      duration === d
-                        ? 'bg-fuchsia-600 text-white'
-                        : 'bg-purple-900/40 text-purple-300 border border-purple-500/30 hover:bg-purple-800/40'
-                    }`}
-                  >
-                    {d}s
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center">Início</span>
+                </div>
+              )}
+              {endFrame && (
+                <div className="relative w-16 h-10 rounded-lg overflow-hidden border border-purple-500/30 flex-shrink-0">
+                  <img src={endFrame.preview} alt="End" className="w-full h-full object-cover" />
+                  <button onClick={() => setEndFrame(null)} className="absolute -top-1 -right-1 bg-red-600 rounded-full p-0.5">
+                    <X className="h-2.5 w-2.5 text-white" />
                   </button>
-                ))}
-              </div>
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center">Final</span>
+                </div>
+              )}
             </div>
           </div>
+        )}
 
-          {/* Generate button */}
-          <Button
-            onClick={handleGenerate}
-            disabled={isGenerating || !prompt.trim()}
-            className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-sm disabled:opacity-50"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Processando...
-              </>
-            ) : (
-              <>
-                <Video className="h-5 w-5 mr-2" />
-                Gerar Vídeo ({creditCost} créditos)
-              </>
-            )}
-          </Button>
+        {/* Bottom bar */}
+        <div className="sticky bottom-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-purple-500/15 w-full">
+          <div className="max-w-3xl mx-auto px-3 py-3 space-y-2.5">
+            {/* Prompt input row */}
+            <div className="flex items-end gap-2">
+              {/* Frame upload dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    disabled={isGenerating}
+                    className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40"
+                  >
+                    <ImagePlus className="h-4 w-4" />
+                    {hasFrames && (
+                      <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                        {(startFrame ? 1 : 0) + (endFrame ? 1 : 0)}
+                      </span>
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
+                  <DropdownMenuItem
+                    onClick={() => startFrameRef.current?.click()}
+                    className="text-xs text-purple-200"
+                  >
+                    {startFrame ? '✅ ' : ''}Start Frame (início)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => endFrameRef.current?.click()}
+                    className="text-xs text-purple-200"
+                  >
+                    {endFrame ? '✅ ' : ''}End Frame (final)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <input ref={startFrameRef} type="file" accept="image/*" onChange={(e) => handleFrameSelect(e, 'start')} className="hidden" />
+              <input ref={endFrameRef} type="file" accept="image/*" onChange={(e) => handleFrameSelect(e, 'end')} className="hidden" />
+
+              {/* Prompt textarea */}
+              <div className="flex-1">
+                <textarea
+                  ref={textareaRef}
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Descreva o vídeo que você quer gerar..."
+                  rows={1}
+                  className="w-full bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors"
+                  style={{ minHeight: '36px', maxHeight: '80px' }}
+                  disabled={isGenerating}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = '36px';
+                    target.style.height = Math.min(target.scrollHeight, 80) + 'px';
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Controls row */}
+            <div className="flex items-center gap-1.5">
+              {/* Aspect ratio dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
+                    <span>⬜</span>
+                    <span className="font-medium">{aspectRatio}</span>
+                    <ChevronDown className="h-3 w-3 text-purple-400" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
+                  {ASPECT_RATIOS.map(ratio => (
+                    <DropdownMenuItem
+                      key={ratio}
+                      onClick={() => setAspectRatio(ratio)}
+                      className={`text-xs ${aspectRatio === ratio ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
+                    >
+                      {ratio}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Duration dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
+                    <span>⏱</span>
+                    <span className="font-medium">{duration}s</span>
+                    <ChevronDown className="h-3 w-3 text-purple-400" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
+                  {DURATIONS.map(d => (
+                    <DropdownMenuItem
+                      key={d}
+                      onClick={() => setDuration(d)}
+                      className={`text-xs ${duration === d ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
+                    >
+                      {d} segundos
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <div className="flex-1" />
+
+              {/* Generate button */}
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || !prompt.trim()}
+                size="sm"
+                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-4 h-8"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    Gerando...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    Gerar Vídeo
+                    <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                      <Coins className="w-3.5 h-3.5" />
+                      {creditCost}
+                    </span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Modals */}
