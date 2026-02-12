@@ -10,9 +10,11 @@ interface HomeAuthModalProps {
   open: boolean;
   onClose: () => void;
   onAuthSuccess: () => void;
+  onSignupStart?: () => void;
+  onSignupEnd?: () => void;
 }
 
-const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => {
+const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEnd }: HomeAuthModalProps) => {
   const { t } = useTranslation('index');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupSuccessEmail, setSignupSuccessEmail] = useState("");
@@ -28,6 +30,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
       setSignupSuccessEmail(auth.state.email);
       setSignupSuccess(true);
       signupInProgressRef.current = false;
+      onSignupEnd?.();
     },
     onClose: () => {
       if (!signupInProgressRef.current && !signupSuccess) {
@@ -82,6 +85,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                 defaultEmail={auth.state.email}
                 onSubmit={async (data) => {
                   signupInProgressRef.current = true;
+                  onSignupStart?.();
                   await auth.signup(data);
                 }}
                 onBackToLogin={auth.goToLogin}
