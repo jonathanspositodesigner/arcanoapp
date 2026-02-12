@@ -591,6 +591,12 @@ const PlanosUpscalerCreditos = () => {
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
             <div className="max-w-lg mx-auto">
+              <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2 tracking-tight leading-tight">
+                Melhore agora mesmo suas <span className="text-fuchsia-400">imagens!</span>
+              </h2>
+              <p className="text-white/60 text-center text-sm md:text-base mb-8 md:mb-10 font-space-grotesk">
+                Escolha o plano que melhor te atende
+              </p>
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
                 <CardContent className="p-5 md:p-8 text-center">
                   {/* Badge de desconto */}
