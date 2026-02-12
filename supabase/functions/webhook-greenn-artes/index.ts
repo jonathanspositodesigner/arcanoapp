@@ -639,6 +639,37 @@ async function processCreditsWebhook(
     const newBalance = creditsResult?.[0]?.new_balance || creditsProduct.amount
     console.log(`   ├─ ✅ +${creditsProduct.amount} créditos adicionados (novo saldo: ${newBalance})`)
 
+    // Ativar Premium Pro automaticamente (não sobrescreve Unlimited)
+    const farFuture = '2099-12-31T23:59:59.000Z'
+    const { data: existingPremium } = await supabase.from('premium_users')
+      .select('plan_type, is_active')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    const shouldActivatePro = !existingPremium || 
+      !existingPremium.is_active || 
+      existingPremium.plan_type === 'arcano_basico' ||
+      existingPremium.plan_type === 'arcano_pro'
+
+    if (shouldActivatePro) {
+      const { error: premiumError } = await supabase.from('premium_users').upsert({
+        user_id: userId,
+        is_active: true,
+        plan_type: 'arcano_pro',
+        billing_period: 'lifetime',
+        subscribed_at: new Date().toISOString(),
+        expires_at: farFuture
+      }, { onConflict: 'user_id' })
+
+      if (premiumError) {
+        console.log(`   ├─ ⚠️ Erro ao ativar Premium Pro: ${premiumError.message}`)
+      } else {
+        console.log(`   ├─ ✅ Premium Pro ativado automaticamente`)
+      }
+    } else {
+      console.log(`   ├─ ℹ️ Plano ${existingPremium.plan_type} mantido (superior ao Pro)`)
+    }
+
     // Marcar sucesso ANTES do email
     await supabase.from('webhook_logs').update({ 
       result: 'success',
