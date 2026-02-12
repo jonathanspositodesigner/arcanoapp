@@ -334,7 +334,7 @@ const GerarVideoTool = () => {
         <div className="sticky bottom-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-purple-500/15 w-full">
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2.5">
             {/* Prompt input row */}
-            <div className="flex items-end gap-2">
+            <div className="flex items-center gap-2">
               {/* Frame upload dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
