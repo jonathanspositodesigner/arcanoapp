@@ -68,7 +68,15 @@ Deno.serve(async (req) => {
       .eq('email', normalizedEmail)
       .maybeSingle()
 
-    if (hasPromoClaim || freeTrial) {
+    // Check landing_page_trials (3-use landing trial)
+    const { data: landingTrial } = await supabase
+      .from('landing_page_trials')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .eq('code_verified', true)
+      .maybeSingle()
+
+    if (hasPromoClaim || freeTrial || landingTrial) {
       console.log(`[check-free-trial-eligibility] Already claimed: ${normalizedEmail}`)
       return new Response(JSON.stringify({ 
         eligible: false, 

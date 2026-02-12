@@ -1,5 +1,7 @@
-import { Upload, Wand2, Image, Type, Camera, Palette } from "lucide-react";
+import { Upload, Wand2, Image, Type, Camera, Palette, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useState } from "react";
 
 interface UpscalerMockupProps {
   isActive?: boolean;
@@ -28,8 +30,10 @@ export default function UpscalerMockup({
   onFileSelect,
 }: UpscalerMockupProps) {
   const previewUrl = uploadedFile ? URL.createObjectURL(uploadedFile) : null;
+  const [showProMessage, setShowProMessage] = useState(false);
 
   return (
+    <TooltipProvider>
     <div className="w-full max-w-2xl mx-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 border-b border-white/10 flex items-center gap-3">
@@ -41,11 +45,33 @@ export default function UpscalerMockup({
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30">
             Standard
           </span>
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 text-white/50 border border-white/10">
-            PRO
-          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 text-white/30 border border-white/10 flex items-center gap-1.5 cursor-not-allowed opacity-60"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowProMessage(true);
+                  setTimeout(() => setShowProMessage(false), 3000);
+                }}
+              >
+                <Lock className="w-3 h-3" />
+                PRO
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="bg-black/90 border-white/10 text-white/80 text-xs">
+              Exclusivo para assinantes
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
+
+      {/* PRO message */}
+      {showProMessage && (
+        <div className="mx-6 mt-3 px-4 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs text-center animate-in fade-in-0 slide-in-from-top-2">
+          🔒 O modo PRO é exclusivo para assinantes. Assine um plano para desbloquear!
+        </div>
+      )}
 
       {/* Categories */}
       <div className="px-6 py-3 border-b border-white/10 flex gap-3">
@@ -130,5 +156,6 @@ export default function UpscalerMockup({
         </Button>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
