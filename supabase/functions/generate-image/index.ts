@@ -144,7 +144,6 @@ serve(async (req) => {
         contents: [{ parts }],
         generationConfig: {
           responseModalities: ["IMAGE", "TEXT"],
-          responseMimeType: "image/png",
         },
       }),
     });
