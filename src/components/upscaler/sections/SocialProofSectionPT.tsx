@@ -38,6 +38,13 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       testimonial: "Eu usava outro upscaler que demorava horas e o resultado era meia boca. Com o Upscaler Arcano em menos de 1 minuto minhas fotos ficam perfeitas. Meus clientes notaram a diferença na hora!"
     },
     {
+      before: "/images/mariana-antes.webp",
+      after: "/images/mariana-depois.webp",
+      name: "Mariana Costa",
+      handle: "@mari.visualarts",
+      testimonial: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova. Chorei de emoção quando vi o antes e depois."
+    },
+    {
       before: isMobile ? "/images/upscaler-user1-antes-mobile.webp" : upscalerUser1Antes,
       after: isMobile ? "/images/upscaler-user1-depois-mobile.webp" : upscalerUser1Depois,
       name: "Wellington",
