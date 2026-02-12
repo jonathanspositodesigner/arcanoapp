@@ -28,12 +28,11 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
 
   const userResults = [
     {
-      before: isMobile ? "/images/upscaler-user1-antes-mobile.webp" : upscalerUser1Antes,
-      after: isMobile ? "/images/upscaler-user1-depois-mobile.webp" : upscalerUser1Depois,
-      name: "Wellington",
-      handle: "@wrproducoes",
-      testimonial: "Muito top o Upscaler do Jonathan, o melhor do mercado sem dúvidas! Tá salvando aqui nos trampos kkkkk já foi a fase de sofrer com foto ruim de cliente hoje jogo no upscaler e entrego as artes com muito mais qualidade!",
-      avatar: "/images/wellington-wrproducoes.png"
+      before: isMobile ? "/images/upscaler-user4-antes-mobile.webp" : upscalerUser4Antes,
+      after: isMobile ? "/images/upscaler-user4-depois-mobile.webp" : upscalerUser4Depois,
+      name: "Camila Santos",
+      handle: "@camilasantos.mkt",
+      testimonial: "Uso pra melhorar as fotos de produto dos meus clientes de e-commerce. A qualidade das imagens aumentou demais e as vendas acompanharam. Ferramenta indispensável!"
     },
     {
       before: isMobile ? "/images/upscaler-user2-antes-mobile.webp" : upscalerUser2Antes,
@@ -43,11 +42,19 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       testimonial: "Eu usava outro upscaler que demorava horas e o resultado era meia boca. Com o Upscaler Arcano em menos de 1 minuto minhas fotos ficam perfeitas. Meus clientes notaram a diferença na hora!"
     },
     {
-      before: isMobile ? "/images/upscaler-user4-antes-mobile.webp" : upscalerUser4Antes,
-      after: isMobile ? "/images/upscaler-user4-depois-mobile.webp" : upscalerUser4Depois,
-      name: "Camila Santos",
-      handle: "@camilasantos.mkt",
-      testimonial: "Uso pra melhorar as fotos de produto dos meus clientes de e-commerce. A qualidade das imagens aumentou demais e as vendas acompanharam. Ferramenta indispensável!"
+      before: isMobile ? "/images/upscaler-user6-antes-mobile.webp" : upscalerUser6Antes,
+      after: isMobile ? "/images/upscaler-user6-depois-mobile.webp" : upscalerUser6Depois,
+      name: "Mariana Costa",
+      handle: "@mari.visualarts",
+      testimonial: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova. Chorei de emoção quando vi o antes e depois."
+    },
+    {
+      before: isMobile ? "/images/upscaler-user1-antes-mobile.webp" : upscalerUser1Antes,
+      after: isMobile ? "/images/upscaler-user1-depois-mobile.webp" : upscalerUser1Depois,
+      name: "Wellington",
+      handle: "@wrproducoes",
+      testimonial: "Muito top o Upscaler do Jonathan, o melhor do mercado sem dúvidas! Tá salvando aqui nos trampos kkkkk já foi a fase de sofrer com foto ruim de cliente hoje jogo no upscaler e entrego as artes com muito mais qualidade!",
+      avatar: "/images/wellington-wrproducoes.png"
     },
     {
       before: isMobile ? "/images/upscaler-user5-antes-mobile.webp" : upscalerUser5Antes,
@@ -55,13 +62,6 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       name: "Lucas Ferreira",
       handle: "@lucasf.creative",
       testimonial: "Comecei a usar pra melhorar renders 3D e logos. O resultado é impressionante, parece que a imagem foi feita do zero em alta resolução. Recomendo demais pra qualquer designer."
-    },
-    {
-      before: isMobile ? "/images/upscaler-user6-antes-mobile.webp" : upscalerUser6Antes,
-      after: isMobile ? "/images/upscaler-user6-depois-mobile.webp" : upscalerUser6Depois,
-      name: "Mariana Costa",
-      handle: "@mari.visualarts",
-      testimonial: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova. Chorei de emoção quando vi o antes e depois."
     }
   ];
 
