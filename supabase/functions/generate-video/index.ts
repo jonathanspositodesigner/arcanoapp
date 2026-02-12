@@ -92,6 +92,7 @@ serve(async (req) => {
     const parameters: any = {
       aspectRatio: ratio,
       durationSeconds: duration,
+      resolution: "1080p",
       sampleCount: 1,
     };
 
