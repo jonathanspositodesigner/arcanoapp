@@ -336,6 +336,22 @@ serve(async (req) => {
     if (!videoBase64) {
       console.error("[poll-video] No video in response:", JSON.stringify(pollData).slice(0, 500));
 
+      // Extract specific rejection reason from Google's response
+      let errorMsg = "Nenhum vídeo gerado";
+      const generateVideoResponse = response?.generateVideoResponse;
+      if (generateVideoResponse?.raiMediaFilteredReasons?.length > 0) {
+        const reasons = generateVideoResponse.raiMediaFilteredReasons;
+        // Map common Google rejection messages to user-friendly Portuguese
+        const reasonText = reasons[0];
+        if (reasonText.includes("celebrity")) {
+          errorMsg = "A imagem contém uma celebridade ou pessoa pública. Remova a referência e tente novamente.";
+        } else if (reasonText.includes("child") || reasonText.includes("minor")) {
+          errorMsg = "Conteúdo bloqueado por segurança. Tente com outro prompt ou imagem.";
+        } else {
+          errorMsg = `Bloqueado pelo filtro de segurança: ${reasonText}`;
+        }
+      }
+
       await serviceClient.rpc("refund_upscaler_credits", {
         _user_id: userId,
         _amount: job.user_credit_cost || 150,
@@ -344,12 +360,12 @@ serve(async (req) => {
 
       await serviceClient.from("video_generator_jobs").update({
         status: "failed",
-        error_message: "Nenhum vídeo gerado",
+        error_message: errorMsg,
         credits_refunded: true,
         completed_at: new Date().toISOString(),
       }).eq("id", job_id);
 
-      return new Response(JSON.stringify({ status: "failed", error_message: "Nenhum vídeo gerado" }), {
+      return new Response(JSON.stringify({ status: "failed", error_message: errorMsg }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
