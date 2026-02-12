@@ -1,41 +1,82 @@
 
 
-# Corrigir aspecto 9:16 no hero mobile da pagina /planos-upscaler-creditos
+## O Problema
 
-## Problema encontrado
+O componente do Hero (`HeroBeforeAfterSlider`) funciona porque passa um `style` explicitamente para o `ResilientImage` com dimensoes forcadas:
 
-O componente `HeroBeforeAfterSlider` ja tem `aspect-[9/16]` no mobile, MAS a pagina `PlanosUpscalerCreditos.tsx` (linha 412) tem um **override CSS com !important** que forca `aspect-[5/3]`:
-
-```
-[&_.space-y-3>div:first-child]:!aspect-[5/3]
-```
-
-Isso sobrescreve a proporcao do componente. Alem disso, o `HeroPlaceholder.tsx` (que aparece antes do usuario clicar) tem `aspect-[2/3]` hardcoded.
-
-## Solucao
-
-### 1. `src/pages/PlanosUpscalerCreditos.tsx` (linha 412)
-
-Remover o override de aspect ratio no mobile e manter so no desktop:
-
-```
-De: [&_.space-y-3>div:first-child]:!aspect-[5/3]
-Para: md:[&_.space-y-3>div:first-child]:!aspect-[5/3]
+```tsx
+// Hero - FUNCIONA
+<ResilientImage 
+  src={afterImage} 
+  className="absolute inset-0"
+  style={{
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    objectPosition: 'center'
+  }}
+/>
 ```
 
-Isso permite que no mobile o componente use seu proprio `aspect-[9/16]`, e no desktop mantenha o `5/3`.
+Ja o `BeforeAfterSlider` (usado nos depoimentos) **nao** passa esse `style`:
 
-### 2. `src/components/upscaler/HeroPlaceholder.tsx` (linha 12)
-
-Mudar o aspect ratio do placeholder tambem para 9:16 no mobile:
-
+```tsx
+// Depoimentos - QUEBRADO
+<ResilientImage 
+  src={afterImage} 
+  className="absolute inset-0"
+  // SEM style! As imagens nao tem dimensoes forcadas
+/>
 ```
-De: aspect-[2/3]
-Para: aspect-[9/16] md:aspect-[2/3]
+
+O `style` prop e aplicado no `div` wrapper do `ResilientImage`, nao no `<img>` diretamente. Sem ele, o wrapper nao tem dimensoes explicitadas e as imagens ficam com tamanhos diferentes.
+
+## A Solucao
+
+Replicar exatamente o que o Hero faz: adicionar o prop `style` com `width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center'` nas duas chamadas de `ResilientImage` dentro do `BeforeAfterSlider.tsx`.
+
+## Mudanca
+
+**Arquivo:** `src/components/upscaler/BeforeAfterSlider.tsx`
+
+1. Na imagem "After" (linha ~112-122), adicionar o prop `style`:
+```tsx
+<ResilientImage 
+  src={afterImage} 
+  alt={locale === 'es' ? "Después" : "Depois"}
+  className="absolute inset-0"
+  style={{
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    objectPosition: 'center'
+  }}
+  timeout={8000}
+  compressOnFailure={true}
+  showDownloadOnFail={!!onDownloadClick}
+  onDownloadClick={onDownloadClick}
+  downloadFileName={downloadFileName}
+  locale={locale}
+/>
 ```
 
-## Arquivos a editar
+2. Na imagem "Before" (linha ~129-137), adicionar o mesmo prop `style`:
+```tsx
+<ResilientImage 
+  src={beforeImage} 
+  alt={locale === 'es' ? "Antes" : "Antes"}
+  className="absolute inset-0"
+  style={{
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    objectPosition: 'center'
+  }}
+  timeout={8000}
+  compressOnFailure={true}
+  showDownloadOnFail={false}
+  locale={locale}
+/>
+```
 
-1. **`src/pages/PlanosUpscalerCreditos.tsx`** - Remover override de aspect no mobile
-2. **`src/components/upscaler/HeroPlaceholder.tsx`** - Ajustar aspect ratio mobile para 9:16
-
+Isso e **exatamente** o que o Hero faz e resolve o problema das imagens com tamanhos diferentes.
