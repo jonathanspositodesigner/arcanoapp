@@ -1,74 +1,38 @@
 import { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
+import { forcePwaUpdate, UpdateStatus } from '@/utils/forcePwaUpdate';
 
-const LAST_FORCE_UPDATE_KEY = 'last_force_update';
+const PWA_VERSION_KEY = 'pwa_version';
 
 interface UpdateAvailableModalProps {
-  forceUpdateAt: string;
+  serverVersion: string;
 }
 
-const UpdateAvailableModal = ({ forceUpdateAt }: UpdateAvailableModalProps) => {
-  const [isUpdating, setIsUpdating] = useState(false);
+const UpdateAvailableModal = ({ serverVersion }: UpdateAvailableModalProps) => {
+  const [status, setStatus] = useState<UpdateStatus | 'idle'>('idle');
   const [dismissed, setDismissed] = useState(false);
 
   if (dismissed) return null;
 
+  const isUpdating = status !== 'idle';
+
   const performUpdate = async () => {
-    setIsUpdating(true);
-
+    // Save version to localStorage so the modal won't show again
     try {
-      // Save timestamp BEFORE clearing storage so the modal won't loop
-      // We need to set it in a way that survives the reload
-      const ackValue = forceUpdateAt;
+      localStorage.setItem(PWA_VERSION_KEY, serverVersion);
+    } catch (_) {}
 
-      // Clear storage except our acknowledgment key
-      try {
-        const keysToKeep = [LAST_FORCE_UPDATE_KEY];
-        const savedValues: Record<string, string> = {};
-        keysToKeep.forEach(key => {
-          const val = localStorage.getItem(key);
-          if (val) savedValues[key] = val;
-        });
+    await forcePwaUpdate({
+      onStatus: (s) => setStatus(s),
+    });
+  };
 
-        localStorage.clear();
-        sessionStorage.clear();
-
-        // Restore our key + set the new acknowledgment
-        localStorage.setItem(LAST_FORCE_UPDATE_KEY, ackValue);
-        Object.entries(savedValues).forEach(([k, v]) => {
-          if (k !== LAST_FORCE_UPDATE_KEY) localStorage.setItem(k, v);
-        });
-      } catch (e) {
-        console.warn('[Update] Storage clear warning:', e);
-        // Even if clear fails, try to set our key
-        try { localStorage.setItem(LAST_FORCE_UPDATE_KEY, ackValue); } catch (_) {}
-      }
-
-      // Delete all caches
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(name => caches.delete(name)));
-      }
-
-      // Unregister all Service Workers
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const registration of registrations) {
-          if (registration.waiting) {
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          }
-          await registration.unregister();
-        }
-      }
-
-      await new Promise(r => setTimeout(r, 500));
-
-      const bustParams = `?_force=${Date.now()}&_v=${Math.random().toString(36).substring(7)}`;
-      window.location.replace('/' + bustParams);
-    } catch (error) {
-      console.error('[Update] Error:', error);
-      try { localStorage.setItem(LAST_FORCE_UPDATE_KEY, forceUpdateAt); } catch (_) {}
-      window.location.href = '/?_recovery=' + Date.now();
+  const statusText = () => {
+    switch (status) {
+      case 'checking': return 'Verificando...';
+      case 'updating': return 'Atualizando...';
+      case 'reloading': return 'Recarregando...';
+      default: return 'Atualizar Agora';
     }
   };
 
@@ -94,7 +58,7 @@ const UpdateAvailableModal = ({ forceUpdateAt }: UpdateAvailableModalProps) => {
             disabled={isUpdating}
             className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold rounded-xl transition-all duration-200 disabled:opacity-50"
           >
-            {isUpdating ? 'Atualizando...' : 'Atualizar Agora'}
+            {statusText()}
           </button>
 
           <button

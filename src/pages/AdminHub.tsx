@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Music, FileText, Menu, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { APP_VERSION } from "@/components/ForceUpdateModal";
+// APP_VERSION removed - now using pwa_version from database
 import { toast } from "sonner";
 import AdminGoalsCard from "@/components/AdminGoalsCard";
 import WelcomeEmailsMonitor from "@/components/WelcomeEmailsMonitor";
@@ -69,22 +69,21 @@ const AdminHub = () => {
 
     setIsForcingUpdate(true);
     try {
-      const forceTimestamp = new Date().toISOString();
+      const now = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const newVersion = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
 
       const { error: updateError } = await supabase
         .from('app_settings')
         .update({
-          value: {
-            latest_version: APP_VERSION,
-            force_update_at: forceTimestamp
-          },
-          updated_at: forceTimestamp
+          value: { version: newVersion },
+          updated_at: now.toISOString()
         })
-        .eq('id', 'app_version');
+        .eq('id', 'pwa_version');
 
       if (updateError) throw updateError;
 
-      toast.success('Force update enviado! Usuários verão o aviso de atualização.');
+      toast.success(`Update global publicado! Versão: ${newVersion}`);
     } catch (error) {
       console.error('Error forcing update:', error);
       toast.error("Erro ao forçar atualização");

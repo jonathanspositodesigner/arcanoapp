@@ -1,6 +1,14 @@
-# Cache para assets com hash do Vite - 50 dias
+# index.html - sempre revalidar (iOS PWA cache fix)
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Service Worker - sempre revalidar
+/sw.js
+  Cache-Control: no-cache, must-revalidate
+
+# Cache para assets com hash do Vite - imutável
 /assets/*
-  Cache-Control: public, max-age=4320000, immutable
+  Cache-Control: public, max-age=31536000, immutable
 
 # Cache para imagens na pasta public/images - 30 dias
 /images/*

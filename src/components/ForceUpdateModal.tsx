@@ -1,35 +1,33 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import UpdateAvailableModal from './UpdateAvailableModal';
 
 export const APP_VERSION = '5.3.0';
 
-const LAST_FORCE_UPDATE_KEY = 'last_force_update';
+const PWA_VERSION_KEY = 'pwa_version';
 
 export const ForceUpdateModal = () => {
   const [showModal, setShowModal] = useState(false);
-  const [forceUpdateAt, setForceUpdateAt] = useState('');
+  const [serverVersion, setServerVersion] = useState('');
 
   useEffect(() => {
     const checkForUpdate = async () => {
       try {
-        const { data, error } = await supabase
-          .from('app_settings')
-          .select('value')
-          .eq('id', 'app_version')
-          .single();
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        if (!supabaseUrl) return;
 
-        if (error || !data) return;
+        const res = await fetch(`${supabaseUrl}/functions/v1/pwa-version`, {
+          headers: { 'Content-Type': 'application/json' },
+        });
 
-        const value = data.value as { force_update_at?: string } | null;
-        const dbTimestamp = value?.force_update_at;
+        if (!res.ok) return;
 
-        if (!dbTimestamp) return;
+        const { version } = await res.json();
+        if (!version || version === 'unknown') return;
 
-        const lastAcknowledged = localStorage.getItem(LAST_FORCE_UPDATE_KEY);
+        const localVersion = localStorage.getItem(PWA_VERSION_KEY);
 
-        if (!lastAcknowledged || new Date(dbTimestamp) > new Date(lastAcknowledged)) {
-          setForceUpdateAt(dbTimestamp);
+        if (!localVersion || localVersion !== version) {
+          setServerVersion(version);
           setShowModal(true);
         }
       } catch (e) {
@@ -42,7 +40,7 @@ export const ForceUpdateModal = () => {
 
   if (!showModal) return null;
 
-  return <UpdateAvailableModal forceUpdateAt={forceUpdateAt} />;
+  return <UpdateAvailableModal serverVersion={serverVersion} />;
 };
 
 export default ForceUpdateModal;
