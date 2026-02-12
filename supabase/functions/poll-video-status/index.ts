@@ -6,6 +6,53 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+async function callVeoApi(geminiKey: string, payload: any): Promise<{ ok: boolean; operationName?: string; error?: string }> {
+  const instance: any = { prompt: payload.prompt };
+
+  if (payload.start_frame?.base64 && payload.start_frame?.mimeType) {
+    instance.image = {
+      bytesBase64Encoded: payload.start_frame.base64,
+      mimeType: payload.start_frame.mimeType,
+    };
+  }
+  if (payload.end_frame?.base64 && payload.end_frame?.mimeType) {
+    instance.endImage = {
+      bytesBase64Encoded: payload.end_frame.base64,
+      mimeType: payload.end_frame.mimeType,
+    };
+  }
+
+  const parameters: any = {
+    aspectRatio: payload.aspect_ratio || "16:9",
+    durationSeconds: payload.duration || 8,
+    resolution: "1080p",
+    sampleCount: 1,
+  };
+
+  const veoUrl = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning`;
+
+  const veoResponse = await fetch(veoUrl, {
+    method: "POST",
+    headers: {
+      "x-goog-api-key": geminiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ instances: [instance], parameters }),
+  });
+
+  if (!veoResponse.ok) {
+    const errText = await veoResponse.text();
+    return { ok: false, error: errText };
+  }
+
+  const veoData = await veoResponse.json();
+  if (!veoData.name) {
+    return { ok: false, error: "No operation_name in response" };
+  }
+
+  return { ok: true, operationName: veoData.name };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -77,6 +124,127 @@ serve(async (req) => {
       });
     }
 
+    // ========== QUEUE LOGIC: Handle queued jobs ==========
+    if (job.status === "queued") {
+      const oneMinAgo = new Date(Date.now() - 60000).toISOString();
+      const { count: activeCount } = await serviceClient
+        .from("video_generator_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "processing")
+        .gte("started_at", oneMinAgo);
+
+      // Check if there's a free slot
+      if ((activeCount || 0) >= 2) {
+        // No slot - calculate position
+        const { count: ahead } = await serviceClient
+          .from("video_generator_jobs")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "queued")
+          .lt("created_at", job.created_at);
+
+        return new Response(JSON.stringify({
+          status: "queued",
+          position: (ahead || 0) + 1,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Slot available! Check if this job is next in line (FIFO)
+      const { data: nextInQueue } = await serviceClient
+        .from("video_generator_jobs")
+        .select("id")
+        .eq("status", "queued")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .single();
+
+      if (!nextInQueue || nextInQueue.id !== job.id) {
+        // Not this job's turn yet
+        const { count: ahead } = await serviceClient
+          .from("video_generator_jobs")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "queued")
+          .lt("created_at", job.created_at);
+
+        return new Response(JSON.stringify({
+          status: "queued",
+          position: (ahead || 0) + 1,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // It's this job's turn! Start it with Google API
+      const payload = job.job_payload as any;
+      if (!payload) {
+        // No payload saved - mark as failed
+        await serviceClient.rpc("refund_upscaler_credits", {
+          _user_id: userId,
+          _amount: job.user_credit_cost || 150,
+          _description: "Estorno: job sem payload",
+        });
+        await serviceClient.from("video_generator_jobs").update({
+          status: "failed",
+          error_message: "Dados do job não encontrados",
+          credits_refunded: true,
+          completed_at: new Date().toISOString(),
+        }).eq("id", job_id);
+
+        return new Response(JSON.stringify({
+          status: "failed",
+          error_message: "Dados do job não encontrados",
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      console.log(`[poll-video] Starting queued job ${job_id} for user ${userId}`);
+
+      const veoResult = await callVeoApi(GEMINI_API_KEY, payload);
+
+      if (!veoResult.ok) {
+        console.error(`[poll-video] Veo API error for queued job ${job_id}:`, veoResult.error);
+
+        await serviceClient.rpc("refund_upscaler_credits", {
+          _user_id: userId,
+          _amount: job.user_credit_cost || 150,
+          _description: "Estorno: erro Google API ao iniciar job da fila",
+        });
+        await serviceClient.from("video_generator_jobs").update({
+          status: "failed",
+          error_message: "Servidor ocupado. Tente novamente.",
+          credits_refunded: true,
+          completed_at: new Date().toISOString(),
+        }).eq("id", job_id);
+
+        return new Response(JSON.stringify({
+          status: "failed",
+          error_message: "Servidor ocupado. Tente novamente.",
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Success! Update job to processing
+      await serviceClient.from("video_generator_jobs").update({
+        status: "processing",
+        operation_name: veoResult.operationName,
+        started_at: new Date().toISOString(),
+        position: null,
+        job_payload: null, // Clear payload to free space
+      }).eq("id", job_id);
+
+      console.log(`[poll-video] Queued job ${job_id} started with operation ${veoResult.operationName}`);
+
+      return new Response(JSON.stringify({
+        status: "processing",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ========== EXISTING FLOW: Poll Google for processing jobs ==========
     if (!job.operation_name) {
       return new Response(JSON.stringify({ error: "Sem operation_name no job" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
