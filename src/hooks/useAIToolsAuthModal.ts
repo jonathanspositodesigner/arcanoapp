@@ -22,7 +22,6 @@ export function useAIToolsAuthModal({ user, refetchCredits }: UseAIToolsAuthModa
 
     const timer = setTimeout(() => {
       setShowAuthModal(true);
-      sessionStorage.setItem(SESSION_KEY, 'true');
     }, SHOW_DELAY_MS);
 
     return () => clearTimeout(timer);
@@ -37,6 +36,11 @@ export function useAIToolsAuthModal({ user, refetchCredits }: UseAIToolsAuthModa
       if (error) {
         console.error('[AIToolsAuth] Claim error:', error);
         return;
+      }
+
+      // Marcar sessionStorage DEPOIS do claim (sucesso ou já resgatado)
+      if (!error) {
+        sessionStorage.setItem(SESSION_KEY, 'true');
       }
 
       if (data?.success) {
