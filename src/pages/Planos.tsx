@@ -49,6 +49,8 @@ const Planos = () => {
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: 'Acesso às Ferramentas de IA', included: false, isAiTools: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: false },
+        { text: 'Geração de Vídeo com Veo 3', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -66,6 +68,8 @@ const Planos = () => {
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -84,6 +88,8 @@ const Planos = () => {
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true, hasDiscount: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true, hasDiscount: true },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
@@ -104,6 +110,8 @@ const Planos = () => {
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: 'Acesso às Ferramentas de IA', included: false, isAiTools: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: false },
+        { text: 'Geração de Vídeo com Veo 3', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -122,6 +130,8 @@ const Planos = () => {
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -141,6 +151,8 @@ const Planos = () => {
         { text: t('planos.features.immediateRelease'), included: true },
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true, hasDiscount: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true, hasDiscount: true },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
@@ -264,8 +276,13 @@ const Planos = () => {
                       ) : (
                         <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                       )}
-                      <span className={feature.included ? "text-purple-200" : "text-orange-500"}>
+                      <span className={`${feature.included ? "text-purple-200" : "text-orange-500"} flex items-center gap-1.5`}>
                         {feature.text}
+                        {(feature as any).hasDiscount && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 leading-none whitespace-nowrap">
+                            50% OFF
+                          </span>
+                        )}
                       </span>
                       {(feature as any).isAiTools && (
                         <ChevronDown className={`w-3.5 h-3.5 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-purple-400' : 'text-orange-500'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
