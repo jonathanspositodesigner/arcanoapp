@@ -42,7 +42,8 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       after: "/images/mariana-depois.webp",
       name: "Mariana Costa",
       handle: "@mari.visualarts",
-      testimonial: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova. Chorei de emoção quando vi o antes e depois."
+      testimonial: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova. Chorei de emoção quando vi o antes e depois.",
+      avatar: "/images/mariana-avatar.png"
     },
     {
       before: isMobile ? "/images/upscaler-user1-antes-mobile.webp" : upscalerUser1Antes,
