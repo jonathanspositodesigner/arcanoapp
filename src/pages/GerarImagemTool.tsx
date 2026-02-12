@@ -311,7 +311,7 @@ const GerarImagemTool = () => {
             </div>
 
             {/* Controls row */}
-            <div className="flex items-center gap-1.5 overflow-hidden">
+            <div className="flex items-center gap-1.5">
               {/* Model dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -358,34 +358,31 @@ const GerarImagemTool = () => {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-
-              {/* Spacer */}
-              <div className="flex-1 min-w-[4px]" />
-
-              {/* Generate button */}
-              <Button
-                onClick={handleGenerate}
-                disabled={isGenerating || !prompt.trim()}
-                size="sm"
-                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-2 h-8 min-w-0 shrink-0"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                    Gerando...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                    Gerar Imagem
-                    <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                      <Coins className="w-3.5 h-3.5" />
-                      {currentCreditCost}
-                    </span>
-                  </>
-                )}
-              </Button>
             </div>
+
+            {/* Generate button - full width on mobile */}
+            <Button
+              onClick={handleGenerate}
+              disabled={isGenerating || !prompt.trim()}
+              size="sm"
+              className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-sm disabled:opacity-50 rounded-xl h-10"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                  Gerando...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-1.5" />
+                  Gerar Imagem
+                  <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                    <Coins className="w-3.5 h-3.5" />
+                    {currentCreditCost}
+                  </span>
+                </>
+              )}
+            </Button>
           </div>
         </div>
 
