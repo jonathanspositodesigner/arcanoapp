@@ -124,10 +124,6 @@ const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userPro
           <img alt="PromptClub" onClick={() => navigate('/')} src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-7 cursor-pointer hover:opacity-80 transition-opacity" />
         </div>
         <div className="flex items-center gap-3">
-          <Button onClick={() => navigate("/")} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
-            <Home className="h-4 w-4 mr-2" />
-            Home
-          </Button>
           {user && (
             <Button onClick={() => setShowCreationsModal(true)} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
               <ImageIcon className="h-4 w-4 mr-2" />
