@@ -1,50 +1,58 @@
 
 
-# Adicionar botao "Criar Conta" e fluxo de signup no modal da Home
+# Corrigir modal que fecha durante signup
 
-## O que sera feito
+## Problema
 
-1. **Botao "Criar Conta"** adicionado abaixo dos steps de login (email e password), antes do link "Navegar sem login", com o mesmo visual da imagem de referencia (texto "Ainda nao tem conta?" + botao outline "Criar Conta" com icone)
+O modal fecha porque existem **dois pontos** que forcam o fechamento:
 
-2. **Step de signup** dentro do modal usando o componente `SignupForm` ja existente, com variant `default`, mostrando campos de email, nome, senha e confirmar senha
+1. **`src/pages/Index.tsx`** - Tem um listener `onAuthStateChange` que faz `setShowAuthModal(false)` toda vez que detecta um `SIGNED_IN`. Durante o signup, o Supabase cria uma sessao temporaria (dispara SIGNED_IN) antes do `signOut()`, e esse listener fecha o modal instantaneamente.
 
-3. **Tela de sucesso pos-cadastro** - ao clicar em "Criar Conta" no formulario, o modal NAO fecha. Em vez disso, exibe a tela de sucesso que ja existe no componente (com icone de check, mensagem pedindo para ir ao email confirmar a conta, mencionando para conferir o spam, e botao "Voltar ao Login")
+2. **`src/components/HomeAuthModal.tsx`** - O `Dialog` tem `onOpenChange` que chama `onClose()` direto, sem verificar se o signup esta em andamento.
 
-4. **Link de confirmacao** levara para a home (`/`) com o usuario ja logado, usando o mesmo fluxo de confirmacao de email do restante do site (SendPulse)
+## Solucao
 
-## Detalhes Tecnicos
+### 1. `src/pages/Index.tsx` (linhas 62-77)
 
-### Arquivo: `src/components/HomeAuthModal.tsx`
+Adicionar uma ref `signupInProgressRef` que e passada ou controlada para ignorar eventos de auth durante o signup. A forma mais simples: adicionar um estado `ignoreAuthEvents` e passa-lo ao modal, ou melhor, usar um ref compartilhado.
 
-**Alteracoes:**
+A abordagem mais limpa: no listener do `onAuthStateChange`, verificar se o modal esta aberto E se o step atual e de signup antes de fechar. Como o Index nao tem acesso ao step interno, a solucao e:
 
-1. Importar `SignupForm` do `@/components/auth`
-2. No bloco de login (steps `email` e `password`), adicionar antes do "Navegar sem login":
-   - Texto "Ainda nao tem conta?"
-   - Botao outline "Criar Conta" com icone `UserPlus`, chamando `auth.goToSignup()`
-3. Adicionar condicional para `auth.state.step === 'signup'`:
-   - Renderizar `SignupForm` com `defaultEmail={auth.state.email}`, `onSubmit={auth.signup}`, `onBackToLogin={auth.goToLogin}`, variant `default`
-   - Sem header grande (o header do modal ja tem titulo)
-4. Atualizar labels do `LoginEmailStep` para mostrar o botao de criar conta:
-   - Remover `noAccountYet: ''` e `createAccount: ''`
-   - Ou melhor: manter o botao separado fora do LoginEmailStep para controle visual
+- Criar um ref `skipNextAuthClose` no Index
+- Passar uma callback `onSignupStarted` ao `HomeAuthModal` que seta esse ref como `true`
+- No listener, se `skipNextAuthClose.current` for true, ignorar o evento e resetar o ref
 
-### Fluxo:
-```text
-[Modal abre] -> [Email step] -> [Clica "Criar Conta"]
-  -> [SignupForm aparece] -> [Preenche dados] -> [Clica "Criar Conta"]
-  -> [Modal permanece aberto, mostra tela de sucesso com mensagem de confirmacao]
-  -> [Usuario vai ao email, clica no link] -> [Redirecionado para / logado]
+**Alternativa mais simples (recomendada):** Mudar o listener para so fechar o modal no evento `SIGNED_IN` quando NAO houver um signup em progresso, usando um ref local no Index que e controlado via props do modal.
+
+Concretamente:
+- Adicionar `const signupRef = useRef(false)` no Index
+- No listener: `if (session?.user && !signupRef.current) { setShowAuthModal(false); }`
+- Passar `onSignupStart={() => signupRef.current = true}` e `onSignupEnd={() => signupRef.current = false}` ao HomeAuthModal
+- No HomeAuthModal, chamar `onSignupStart()` antes do `auth.signup()` e `onSignupEnd()` no `onSignupSuccess`
+
+### 2. `src/components/HomeAuthModal.tsx` (linha 42)
+
+Mudar o `onOpenChange` do Dialog para tambem verificar o ref de signup:
+
+```
+onOpenChange={(isOpen) => {
+  if (!isOpen && !signupInProgressRef.current && !signupSuccess) {
+    onClose();
+  }
+}}
 ```
 
-### Tela de sucesso (ja existe no componente):
-- Icone de check verde
-- Titulo: "Conta criada com sucesso!"
-- Mensagem: "Enviamos um email de confirmacao para:"
-- Email do usuario em destaque
-- Instrucao: "Clique no link do email para ativar sua conta"
-- Aviso: "Confira tambem sua caixa de spam"
-- Botao: "Voltar ao Login"
+Isso impede que clicar no X ou no overlay feche o modal durante o processo de signup.
 
-O `onSignupSuccess` callback do `useUnifiedAuth` ja esta configurado para setar `signupSuccess = true` e mostrar esta tela, entao nao precisa de logica adicional. O modal nao fecha porque o callback nao chama `onClose`.
+## Arquivos a editar
+
+1. **`src/pages/Index.tsx`** - Adicionar ref e passar callbacks de controle ao modal
+2. **`src/components/HomeAuthModal.tsx`** - Receber callbacks, proteger `onOpenChange`, e chamar as callbacks nos momentos certos
+
+## Resultado esperado
+
+- Usuario clica "Criar Conta", preenche dados, clica no botao
+- Modal permanece aberto
+- Tela de sucesso aparece com instrucoes para verificar email
+- Modal so fecha quando o usuario clicar explicitamente em "Navegar sem login" ou no X apos o processo terminar
 
