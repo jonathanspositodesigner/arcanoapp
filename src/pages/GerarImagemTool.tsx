@@ -203,7 +203,7 @@ const GerarImagemTool = () => {
         </div>
 
         {/* Main content area - image result centered */}
-        <div className="flex-1 flex items-center justify-center p-4 pb-40">
+        <div className="flex-1 flex items-center justify-center p-4">
           {resultBase64 ? (
             <div className="w-full max-w-2xl space-y-3">
               <div className="rounded-2xl overflow-hidden border border-purple-500/20 bg-black/30 shadow-2xl">
@@ -245,7 +245,7 @@ const GerarImagemTool = () => {
 
         {/* Reference images preview strip */}
         {referenceImages.length > 0 && (
-          <div className="fixed bottom-[120px] left-0 right-0 z-20 px-4">
+          <div className="sticky bottom-[110px] z-20 px-4">
             <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 backdrop-blur-md rounded-xl p-2 border border-purple-500/20">
               {referenceImages.map((img, idx) => (
                 <div key={idx} className="relative w-12 h-12 rounded-lg overflow-hidden border border-purple-500/30 flex-shrink-0">
@@ -264,7 +264,7 @@ const GerarImagemTool = () => {
         )}
 
         {/* Bottom bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-purple-500/15">
+        <div className="sticky bottom-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-purple-500/15 w-full">
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2.5">
             {/* Prompt input row */}
             <div className="flex items-end gap-2">
@@ -311,7 +311,7 @@ const GerarImagemTool = () => {
             </div>
 
             {/* Controls row */}
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap mb-2">
               {/* Model dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -366,14 +366,17 @@ const GerarImagemTool = () => {
               <Button
                 onClick={handleGenerate}
                 disabled={isGenerating || !prompt.trim()}
-                size="sm"
-                className="bg-[#c8ff00] hover:bg-[#b8ef00] text-black font-bold text-xs rounded-full px-4 h-8 disabled:opacity-40 shadow-lg shadow-[#c8ff00]/20"
+                className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-sm disabled:opacity-50"
               >
                 {isGenerating ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Gerando imagem...
+                  </>
                 ) : (
                   <>
-                    Gerar <Sparkles className="h-3.5 w-3.5 ml-1" />
+                    <Sparkles className="h-5 w-5 mr-2" />
+                    Gerar Imagem ({currentCreditCost} créditos)
                   </>
                 )}
               </Button>
