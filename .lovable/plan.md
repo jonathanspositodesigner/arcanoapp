@@ -1,57 +1,60 @@
 
-# Corrigir erro `balance_after` NOT NULL na RPC de Free Trial
 
-## Problema
+# Diagnóstico: IMAGE_TRANSFER_ERROR (502) no Arcano Cloner
 
-O erro agora e diferente do anterior. A RPC `claim_arcano_free_trial_atomic` faz um INSERT em `upscaler_credit_transactions` **sem incluir a coluna `balance_after`**, que e NOT NULL:
+## Causa Raiz
 
+O erro ocorre na **etapa de upload da imagem do usuário para a API da RunningHub** (`https://www.runninghub.ai/task/openapi/upload`). O servidor da RunningHub retornou **502 Bad Gateway** em todas as 3 tentativas.
+
+Cronologia dos dois jobs com falha:
+1. Imagem baixada do Storage com sucesso
+2. Tentativa de upload para RunningHub: 502
+3. Retry 1 (500ms depois): 502
+4. Retry 2 (1000ms depois): 502
+5. Falha final apos 3 tentativas
+
+## Causa: Instabilidade temporária do RunningHub
+
+O 502 Bad Gateway indica que o servidor da RunningHub estava sobrecarregado ou em manutenção naquele momento. **Nao é um bug no nosso código.** As imagens estão comprimidas corretamente (JPEG, otimizadas pelo `optimizeForAI`).
+
+## Problema Secundário: Retry insuficiente
+
+Os delays de retry atuais sao muito curtos:
+- Tentativa 1: espera 500ms
+- Tentativa 2: espera 1000ms  
+- Tentativa 3: espera 2000ms
+- Total: ~3.5 segundos
+
+Para um erro 502 (infraestrutura), isso é pouco tempo para recuperação.
+
+## Solução Proposta
+
+Aumentar a resiliência do retry na edge function `runninghub-arcano-cloner`:
+
+1. **Aumentar delays de retry** de `[500, 1000, 2000]` para `[2000, 5000, 10000]` (backoff exponencial mais agressivo)
+2. **Aumentar tentativas** de 3 para 4
+3. **Aplicar a mesma correção** nas outras ferramentas que usam o mesmo padrão (pose-changer, veste-ai, upscaler, character-generator) para consistência
+
+## Detalhes Técnicos
+
+Arquivo modificado: `supabase/functions/runninghub-arcano-cloner/index.ts`
+
+Alteração na funcao `fetchWithRetry`:
+```text
+// ANTES
+maxRetries: number = 3
+delays = [500, 1000, 2000]
+
+// DEPOIS  
+maxRetries: number = 4
+delays = [2000, 5000, 10000, 15000]
 ```
-null value in column "balance_after" of relation "upscaler_credit_transactions" violates not-null constraint
-```
 
-O credito e inserido em `upscaler_credits` com sucesso, mas a transacao de auditoria falha, e como tudo esta dentro de uma transacao, o Postgres faz rollback de tudo -- nenhum credito e salvo.
+Mesma alteração nos arquivos:
+- `supabase/functions/runninghub-pose-changer/index.ts`
+- `supabase/functions/runninghub-veste-ai/index.ts`
+- `supabase/functions/runninghub-upscaler/index.ts`
+- `supabase/functions/runninghub-character-generator/index.ts`
 
-## Correcao
+Tempo total de retry passa de ~3.5s para ~32s, dando tempo suficiente para o RunningHub se recuperar de instabilidades temporárias.
 
-Atualizar a RPC para calcular o `balance_after` apos o upsert em `upscaler_credits` e incluir esse valor no INSERT da transacao:
-
-```sql
-CREATE OR REPLACE FUNCTION claim_arcano_free_trial_atomic(...)
--- apos o upsert em upscaler_credits:
-DECLARE
-  v_balance_after integer;
-BEGIN
-  ...
-  -- upsert upscaler_credits (ja existente)
-  ...
-
-  -- Buscar o saldo atualizado
-  SELECT balance INTO v_balance_after
-  FROM upscaler_credits WHERE user_id = p_user_id;
-
-  -- INSERT com balance_after
-  INSERT INTO upscaler_credit_transactions
-    (user_id, amount, balance_after, transaction_type, credit_type, description)
-  VALUES
-    (p_user_id, v_credits, v_balance_after, 'bonus', 'monthly', '300 creditos gratis - Teste Gratis');
-  ...
-END;
-```
-
-## Limpeza pos-correcao
-
-Deletar novamente todos os registros de `lancadelivery@gmail.com` (user_id `88628b6a-e6ae-48d9-8c6d-57ac3e0695f9`) das tabelas:
-- `arcano_cloner_free_trials`
-- `upscaler_credits`
-- `upscaler_credit_transactions`
-- `email_confirmation_tokens`
-- `profiles`
-- `auth.users`
-
-Para permitir um teste 100% limpo do zero.
-
-## Detalhes tecnicos
-
-- Apenas 1 migration SQL (recriar a RPC com a coluna `balance_after`)
-- Nenhum arquivo frontend alterado
-- A variavel `v_balance_after` e lida **apos** o upsert, garantindo que reflete o saldo correto
