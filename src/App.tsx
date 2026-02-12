@@ -15,6 +15,7 @@ import "./lib/i18n"; // Initialize i18n
 // Critical pages - keep static for fast initial load
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ForceUpdateModal from "./components/ForceUpdateModal";
 
 // Lazy-loaded pages - loaded on demand
 const Promptverso = lazy(() => import("./pages/Promptverso"));
@@ -164,8 +165,8 @@ const AppContent = () => {
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <ForceUpdateModal />
        
-      
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/" element={<Index />} />

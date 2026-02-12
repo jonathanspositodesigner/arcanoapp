@@ -62,26 +62,47 @@ const AdminHub = () => {
   };
 
   const handleForceUpdate = async () => {
-    if (!confirm("Enviar notificação de ATUALIZAÇÃO FORÇADA para TODOS os dispositivos inscritos?")) {
+    if (!confirm("Forçar atualização para TODOS os usuários? Isso vai incrementar a versão do app.")) {
       return;
     }
 
     setIsForcingUpdate(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-push-notification', {
-        body: {
-          title: "🔄 Atualização Disponível",
-          body: "Clique para atualizar o app para a versão mais recente!",
-          url: "/force-update"
-        }
-      });
+      // Fetch current version from app_settings
+      const { data: setting, error: fetchError } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('id', 'app_version')
+        .single();
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
 
-      toast.success(`Notificação enviada para ${data?.sent || 0} dispositivos!`);
+      const currentValue = setting?.value as { latest_version?: string; force_update_at?: string } | null;
+      const currentVersion = currentValue?.latest_version || '5.3.0';
+
+      // Increment patch version (e.g., 5.3.0 -> 5.3.1)
+      const parts = currentVersion.split('.').map(Number);
+      parts[2] = (parts[2] || 0) + 1;
+      const newVersion = parts.join('.');
+
+      // Save new version + timestamp
+      const { error: updateError } = await supabase
+        .from('app_settings')
+        .update({
+          value: {
+            latest_version: newVersion,
+            force_update_at: new Date().toISOString()
+          },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', 'app_version');
+
+      if (updateError) throw updateError;
+
+      toast.success(`Versão atualizada para ${newVersion}! Usuários receberão aviso de atualização.`);
     } catch (error) {
       console.error('Error forcing update:', error);
-      toast.error("Erro ao enviar notificação de atualização");
+      toast.error("Erro ao forçar atualização");
     } finally {
       setIsForcingUpdate(false);
     }
