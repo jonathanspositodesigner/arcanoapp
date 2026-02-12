@@ -124,7 +124,15 @@ const AIToolsProfitTable = () => {
       const { data, error } = await supabase.rpc('get_ai_tools_cost_averages');
       
       if (error) throw error;
-      setToolsData(data || []);
+      const mapped = (data || []).map((d: any) => ({
+        tool_name: d.tool_name,
+        total_jobs: d.total_completed,
+        avg_rh_cost: d.avg_rh_cost,
+        avg_credit_cost: d.avg_user_credit,
+        total_rh_cost: d.total_rh_cost,
+        total_credit_cost: d.total_user_credits,
+      }));
+      setToolsData(mapped);
     } catch (error) {
       console.error("Error fetching tools data:", error);
       toast.error("Erro ao carregar dados de custo");
