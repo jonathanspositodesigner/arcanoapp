@@ -29,7 +29,7 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
   }, [user]);
 
   return (
-    <div className={`${fullScreen ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-[#0D0221]`}>
+    <div className={`${fullScreen ? 'lg:h-screen lg:overflow-hidden min-h-screen' : 'min-h-screen'} bg-[#0D0221]`}>
       <AppTopBar
         user={user}
         isPremium={isPremium}
@@ -45,7 +45,7 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
-        <main className={`flex-1 ${fullScreen ? 'h-[calc(100vh-57px)] overflow-hidden' : ''}`}>
+        <main className={`flex-1 ${fullScreen ? 'lg:h-[calc(100vh-57px)] lg:overflow-hidden' : ''}`}>
           {children}
         </main>
       </div>
