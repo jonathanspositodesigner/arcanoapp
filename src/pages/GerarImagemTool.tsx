@@ -31,7 +31,7 @@ interface ReferenceImage {
 
 const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
-  const { user } = usePremiumStatus();
+  const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   const { showAuthModal, setShowAuthModal, handleAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
   const { getCreditCost } = useAIToolSettings();
@@ -49,8 +49,9 @@ const GerarImagemTool = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const creditCostNormal = getCreditCost('gerar_imagem', 40);
-  const creditCostPro = getCreditCost('gerar_imagem_pro', 60);
+  const isUnlimited = planType === 'arcano_unlimited';
+  const creditCostNormal = isUnlimited ? getCreditCost('gerar_imagem', 40) : 80;
+  const creditCostPro = isUnlimited ? getCreditCost('gerar_imagem_pro', 60) : 100;
   const currentCreditCost = model === 'pro' ? creditCostPro : creditCostNormal;
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

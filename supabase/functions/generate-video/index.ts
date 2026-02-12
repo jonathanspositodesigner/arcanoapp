@@ -56,13 +56,28 @@ serve(async (req) => {
     const duration = validDurations.includes(duration_seconds) ? duration_seconds : 8;
     const ratio = ["16:9", "9:16"].includes(aspect_ratio) ? aspect_ratio : "16:9";
 
+    // Check if user is IA Unlimited
+    const { data: premiumData } = await serviceClient
+      .from("premium_users")
+      .select("plan_type")
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .maybeSingle();
+    const isUnlimited = premiumData?.plan_type === "arcano_unlimited";
+
     // Get credit cost
     const { data: settingsData } = await serviceClient
       .from("ai_tool_settings")
       .select("credit_cost")
       .eq("tool_name", "gerar_video")
       .single();
-    const creditCost = settingsData?.credit_cost ?? 150;
+
+    let creditCost: number;
+    if (isUnlimited) {
+      creditCost = settingsData?.credit_cost ?? 700;
+    } else {
+      creditCost = 1500;
+    }
 
     // Consume credits
     const { data: consumeResult } = await serviceClient.rpc("consume_upscaler_credits", {

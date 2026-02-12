@@ -58,13 +58,28 @@ serve(async (req) => {
     const geminiModel = isProModel ? "gemini-3-pro-image-preview" : "gemini-2.5-flash-image";
     const toolName = isProModel ? "gerar_imagem_pro" : "gerar_imagem";
 
-    // Get credit cost from settings
+    // Check if user is IA Unlimited
+    const { data: premiumData } = await serviceClient
+      .from("premium_users")
+      .select("plan_type")
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .maybeSingle();
+    const isUnlimited = premiumData?.plan_type === "arcano_unlimited";
+
+    // Get credit cost from settings (used for IA Unlimited)
     const { data: settingsData } = await serviceClient
       .from("ai_tool_settings")
       .select("credit_cost")
       .eq("tool_name", toolName)
       .single();
-    const creditCost = settingsData?.credit_cost ?? (isProModel ? 60 : 40);
+
+    let creditCost: number;
+    if (isUnlimited) {
+      creditCost = settingsData?.credit_cost ?? (isProModel ? 60 : 40);
+    } else {
+      creditCost = isProModel ? 100 : 80;
+    }
 
     // Consume credits
     const { data: consumeResult } = await serviceClient.rpc("consume_upscaler_credits", {
