@@ -1764,6 +1764,45 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_page_trials: {
+        Row: {
+          code: string
+          code_verified: boolean
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          name: string
+          uses_remaining: number
+          uses_total: number
+          verified_at: string | null
+        }
+        Insert: {
+          code: string
+          code_verified?: boolean
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          name: string
+          uses_remaining?: number
+          uses_total?: number
+          verified_at?: string | null
+        }
+        Update: {
+          code?: string
+          code_verified?: boolean
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          name?: string
+          uses_remaining?: number
+          uses_total?: number
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           device_type: string
