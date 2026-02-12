@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Coins, ArrowRight, TrendingUp, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
+import { useCredits } from "@/contexts/CreditsContext";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -18,19 +19,16 @@ interface Transaction {
 }
 
 interface CreditsPreviewPopoverProps {
-  credits: number;
-  creditsLoading: boolean;
   userId: string;
   variant?: "desktop" | "mobile";
 }
 
 const CreditsPreviewPopover = ({ 
-  credits, 
-  creditsLoading, 
   userId,
   variant = "desktop" 
 }: CreditsPreviewPopoverProps) => {
   const navigate = useNavigate();
+  const { balance: credits, isLoading: creditsLoading } = useCredits();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
