@@ -1199,7 +1199,8 @@ async function callRunningHubApi(
       
       return { taskId: data.taskId };
     } else {
-      const errorMsg = data.message || data.error || 'Failed to start job';
+      const isQueueLimit = data.errorCode === 421 || String(data.message || '').toLowerCase().includes('queue limit');
+      const errorMsg = isQueueLimit ? 'api queue limit reached' : (data.message || data.error || 'Failed to start job');
       
       // Buscar dados para reembolso
       const { data: job } = await supabase
