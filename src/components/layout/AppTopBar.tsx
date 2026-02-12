@@ -73,7 +73,7 @@ const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userPro
           </span>
           <div className="flex items-center gap-1">
             <Badge className="bg-purple-600 text-white">
-              {creditsLoading ? '...' : credits}
+              {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
             </Badge>
             <button
               onClick={() => navigate('/planos-creditos')}

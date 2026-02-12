@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Coins, ArrowRight, TrendingUp, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -33,6 +34,7 @@ const CreditsPreviewPopover = ({
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const { displayValue, isAnimating, direction } = useAnimatedNumber(credits, 600);
 
   useEffect(() => {
     if (open && userId) {
@@ -68,8 +70,10 @@ const CreditsPreviewPopover = ({
             }`}
           >
             <Coins className={`text-yellow-400 ${isDesktop ? "w-3.5 h-3.5" : "w-3 h-3"}`} />
-            <span className={isDesktop ? "font-medium" : ""}>
-              {creditsLoading ? '...' : credits}
+            <span className={`${isDesktop ? "font-medium" : ""} transition-colors duration-300 ${
+              direction === 'up' ? 'text-green-400' : direction === 'down' ? 'text-red-400' : ''
+            }`}>
+              {creditsLoading ? '...' : displayValue.toLocaleString('pt-BR')}
             </span>
           </Badge>
         </button>
