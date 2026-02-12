@@ -333,6 +333,9 @@ export default function AIToolsAuthModal({
                 <p className="text-xs text-purple-400 mt-2">
                   Clique no link do email para confirmar e receber seus 300 créditos automaticamente.
                 </p>
+                <p className="text-xs text-yellow-400/90 mt-2 bg-yellow-500/10 rounded-md px-3 py-2">
+                  ⚠️ Não encontrou? Confira também na pasta de <strong>Spam</strong> ou <strong>Lixo eletrônico</strong>.
+                </p>
               </div>
               <Button
                 variant="outline"
