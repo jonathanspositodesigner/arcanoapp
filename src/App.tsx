@@ -3,11 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import React, { lazy, Suspense } from "react";
 
 import { LocaleProvider } from "./contexts/LocaleContext";
 
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { CreditsProvider } from "./contexts/CreditsContext";
 import { AIDebugProvider } from "./contexts/AIDebugContext";
 import { AIJobProvider } from "./contexts/AIJobContext";
 import "./lib/i18n"; // Initialize i18n
@@ -312,18 +313,25 @@ const AppContent = () => {
   );
 };
 
+const CreditsWrapper = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  return <CreditsProvider userId={user?.id}>{children}</CreditsProvider>;
+};
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <LocaleProvider>
         <AuthProvider>
-          <AIDebugProvider>
-            <AIJobProvider>
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
-            </AIJobProvider>
-          </AIDebugProvider>
+          <CreditsWrapper>
+            <AIDebugProvider>
+              <AIJobProvider>
+                <BrowserRouter>
+                  <AppContent />
+                </BrowserRouter>
+              </AIJobProvider>
+            </AIDebugProvider>
+          </CreditsWrapper>
         </AuthProvider>
       </LocaleProvider>
     </QueryClientProvider>
