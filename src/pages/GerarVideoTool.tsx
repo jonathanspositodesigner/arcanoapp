@@ -30,7 +30,7 @@ interface FrameImage {
 
 const GerarVideoTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
-  const { user } = usePremiumStatus();
+  const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   const { showAuthModal, setShowAuthModal, handleAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
   const { getCreditCost } = useAIToolSettings();
@@ -56,7 +56,8 @@ const GerarVideoTool = () => {
   const pollingStartRef = useRef<number>(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const creditCost = getCreditCost('gerar_video', 700);
+  const isUnlimited = planType === 'arcano_unlimited';
+  const creditCost = isUnlimited ? getCreditCost('gerar_video', 700) : 1500;
 
   const handleFrameSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'start' | 'end') => {
     const file = e.target.files?.[0];
