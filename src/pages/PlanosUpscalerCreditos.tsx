@@ -399,7 +399,8 @@ const PlanosUpscalerCreditos = () => {
 
               {/* Título principal - Space Grotesk bold, menor */}
               <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 leading-[1.2]">
-                {t('tools:upscaler.hero.title1')}{' '}
+                {t('tools:upscaler.hero.title1')}
+                <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                   {t('tools:upscaler.hero.title2')}
                 </span>
