@@ -39,7 +39,7 @@ const GerarVideoTool = () => {
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
   const [duration, setDuration] = useState<number>(8);
   const [startFrame, setStartFrame] = useState<FrameImage | null>(null);
-  const [endFrame, setEndFrame] = useState<FrameImage | null>(null);
+  
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
   const [isQueued, setIsQueued] = useState(false);
@@ -51,7 +51,7 @@ const GerarVideoTool = () => {
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
 
   const startFrameRef = useRef<HTMLInputElement>(null);
-  const endFrameRef = useRef<HTMLInputElement>(null);
+  
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollingStartRef = useRef<number>(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -68,7 +68,6 @@ const GerarVideoTool = () => {
       const base64 = dataUrl.split(',')[1];
       const frame: FrameImage = { file, preview: dataUrl, base64, mimeType: file.type };
       if (type === 'start') setStartFrame(frame);
-      else setEndFrame(frame);
     };
     reader.readAsDataURL(file);
     e.target.value = '';
@@ -200,9 +199,6 @@ const GerarVideoTool = () => {
       if (startFrame) {
         body.start_frame = { base64: startFrame.base64, mimeType: startFrame.mimeType };
       }
-      if (endFrame) {
-        body.end_frame = { base64: endFrame.base64, mimeType: endFrame.mimeType };
-      }
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`, {
         method: 'POST',
@@ -264,7 +260,7 @@ const GerarVideoTool = () => {
     setQueuePosition(0);
   };
 
-  const hasFrames = startFrame || endFrame;
+  const hasFrames = !!startFrame;
 
   return (
     <AppLayout>
@@ -362,15 +358,6 @@ const GerarVideoTool = () => {
                   <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center">Início</span>
                 </div>
               )}
-              {endFrame && (
-                <div className="relative w-16 h-10 rounded-lg overflow-hidden border border-purple-500/30 flex-shrink-0">
-                  <img src={endFrame.preview} alt="End" className="w-full h-full object-cover" />
-                  <button onClick={() => setEndFrame(null)} className="absolute -top-1 -right-1 bg-red-600 rounded-full p-0.5">
-                    <X className="h-2.5 w-2.5 text-white" />
-                  </button>
-                  <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center">Final</span>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -390,7 +377,7 @@ const GerarVideoTool = () => {
                     <ImagePlus className="h-4 w-4" />
                     {hasFrames && (
                       <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                        {(startFrame ? 1 : 0) + (endFrame ? 1 : 0)}
+                        1
                       </span>
                     )}
                   </button>
@@ -402,16 +389,9 @@ const GerarVideoTool = () => {
                   >
                     {startFrame ? '✅ ' : ''}Start Frame (início)
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => endFrameRef.current?.click()}
-                    className="text-xs text-purple-200"
-                  >
-                    {endFrame ? '✅ ' : ''}End Frame (final)
-                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <input ref={startFrameRef} type="file" accept="image/*" onChange={(e) => handleFrameSelect(e, 'start')} className="hidden" />
-              <input ref={endFrameRef} type="file" accept="image/*" onChange={(e) => handleFrameSelect(e, 'end')} className="hidden" />
 
               {/* Prompt textarea */}
               <div className="flex-1">
