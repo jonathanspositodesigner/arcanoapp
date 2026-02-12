@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
-import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, ZoomIn } from 'lucide-react';
+import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, Paperclip, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
@@ -14,6 +13,12 @@ import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
 import { AnimatedCreditsDisplay } from '@/components/upscaler/AnimatedCreditsDisplay';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const ASPECT_RATIOS = ['1:1', '16:9', '9:16', '4:3', '3:4'] as const;
 
@@ -42,6 +47,7 @@ const GerarImagemTool = () => {
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const creditCostNormal = getCreditCost('gerar_imagem', 40);
   const creditCostPro = getCreditCost('gerar_imagem_pro', 60);
@@ -172,12 +178,14 @@ const GerarImagemTool = () => {
     setResultBase64(null);
   };
 
+  const modelLabel = model === 'pro' ? 'Nano Banana Pro' : 'Nano Banana';
+
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]">
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-[#0f0a15]/90 backdrop-blur-md border-b border-purple-500/20 px-4 py-3">
-          <div className="flex items-center justify-between max-w-2xl mx-auto">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
               <button onClick={goBack} className="text-purple-300 hover:text-white transition-colors">
                 <ArrowLeft className="h-5 w-5" />
@@ -190,17 +198,15 @@ const GerarImagemTool = () => {
                 <p className="text-[10px] text-purple-400">NanoBanana • Google Gemini</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <AnimatedCreditsDisplay credits={credits} isLoading={creditsLoading} size="sm" />
-            </div>
+            <AnimatedCreditsDisplay credits={credits} isLoading={creditsLoading} size="sm" />
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-          {/* Result */}
-          {resultBase64 && (
-            <div className="space-y-3">
-              <div className="rounded-xl overflow-hidden border border-purple-500/30 bg-black/40">
+        {/* Main content area - image result centered */}
+        <div className="flex-1 flex items-center justify-center p-4 pb-40">
+          {resultBase64 ? (
+            <div className="w-full max-w-2xl space-y-3">
+              <div className="rounded-2xl overflow-hidden border border-purple-500/20 bg-black/30 shadow-2xl">
                 <TransformWrapper>
                   <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
                     <img
@@ -211,134 +217,168 @@ const GerarImagemTool = () => {
                   </TransformComponent>
                 </TransformWrapper>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={handleDownload} className="flex-1 bg-green-600 hover:bg-green-700 text-white">
-                  <Download className="h-4 w-4 mr-2" /> Baixar Imagem
+              <div className="flex gap-2 justify-center">
+                <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
+                  <Download className="h-4 w-4 mr-2" /> Baixar
                 </Button>
-                <Button onClick={handleNewGeneration} variant="outline" className="flex-1 border-purple-500/50 text-purple-200 hover:bg-purple-500/20">
-                  <Sparkles className="h-4 w-4 mr-2" /> Nova Geração
+                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
+                  <Sparkles className="h-4 w-4 mr-2" /> Nova
                 </Button>
               </div>
             </div>
+          ) : isGenerating ? (
+            <div className="flex flex-col items-center gap-4 text-purple-300">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full border-2 border-purple-500/30 flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-fuchsia-400" />
+                </div>
+              </div>
+              <p className="text-sm">Gerando sua imagem...</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3 text-purple-500/60">
+              <Sparkles className="h-12 w-12" />
+              <p className="text-sm text-center">Digite um prompt e clique em Gerar</p>
+            </div>
           )}
+        </div>
 
-          {/* Model selector */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-purple-300">Modelo</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setModel('normal')}
-                className={`p-3 rounded-xl border text-left transition-all ${
-                  model === 'normal'
-                    ? 'border-fuchsia-500 bg-fuchsia-500/20 text-white'
-                    : 'border-purple-500/30 bg-black/20 text-purple-300 hover:border-purple-400/50'
-                }`}
-              >
-                <div className="text-sm font-semibold">🍌 NanoBanana</div>
-                <div className="text-[10px] text-purple-400 mt-0.5">Rápido • {creditCostNormal} créditos</div>
-              </button>
-              <button
-                onClick={() => setModel('pro')}
-                className={`p-3 rounded-xl border text-left transition-all ${
-                  model === 'pro'
-                    ? 'border-amber-500 bg-amber-500/20 text-white'
-                    : 'border-purple-500/30 bg-black/20 text-purple-300 hover:border-purple-400/50'
-                }`}
-              >
-                <div className="text-sm font-semibold">🍌 NanoBanana Pro</div>
-                <div className="text-[10px] text-purple-400 mt-0.5">Premium • {creditCostPro} créditos</div>
-              </button>
-            </div>
-          </div>
-
-          {/* Prompt */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-purple-300">Prompt</label>
-            <Textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Descreva a imagem que você quer gerar..."
-              className="min-h-[100px] bg-black/30 border-purple-500/30 text-white placeholder:text-purple-500/50 resize-none"
-              disabled={isGenerating}
-            />
-          </div>
-
-          {/* Reference Images */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-purple-300">Imagens de Referência (opcional)</label>
-              <span className="text-[10px] text-purple-500">{referenceImages.length}/5</span>
-            </div>
-            <div className="flex gap-2 flex-wrap">
+        {/* Reference images preview strip */}
+        {referenceImages.length > 0 && (
+          <div className="fixed bottom-[120px] left-0 right-0 z-20 px-4">
+            <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 backdrop-blur-md rounded-xl p-2 border border-purple-500/20">
               {referenceImages.map((img, idx) => (
-                <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-purple-500/30">
+                <div key={idx} className="relative w-12 h-12 rounded-lg overflow-hidden border border-purple-500/30 flex-shrink-0">
                   <img src={img.preview} alt="" className="w-full h-full object-cover" />
                   <button
                     onClick={() => removeReferenceImage(idx)}
                     className="absolute -top-1 -right-1 bg-red-600 rounded-full p-0.5"
                   >
-                    <X className="h-3 w-3 text-white" />
+                    <X className="h-2.5 w-2.5 text-white" />
                   </button>
                 </div>
               ))}
-              {referenceImages.length < 5 && (
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-16 h-16 rounded-lg border-2 border-dashed border-purple-500/40 flex items-center justify-center text-purple-400 hover:border-purple-400 hover:text-purple-300 transition-colors"
+              <span className="text-[10px] text-purple-400 ml-1">{referenceImages.length}/5</span>
+            </div>
+          </div>
+        )}
+
+        {/* Bottom bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-purple-500/15">
+          <div className="max-w-3xl mx-auto px-3 py-3 space-y-2.5">
+            {/* Prompt input row */}
+            <div className="flex items-end gap-2">
+              {/* Attachment button */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isGenerating || referenceImages.length >= 5}
+                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40"
+              >
+                <Paperclip className="h-4 w-4" />
+                {referenceImages.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                    {referenceImages.length}
+                  </span>
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+
+              {/* Prompt textarea */}
+              <div className="flex-1 relative">
+                <textarea
+                  ref={textareaRef}
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Descreva a imagem que você quer gerar..."
+                  rows={1}
+                  className="w-full bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors"
+                  style={{ minHeight: '36px', maxHeight: '80px' }}
                   disabled={isGenerating}
-                >
-                  <ImagePlus className="h-5 w-5" />
-                </button>
-              )}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = '36px';
+                    target.style.height = Math.min(target.scrollHeight, 80) + 'px';
+                  }}
+                />
+              </div>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-          </div>
 
-          {/* Aspect Ratio */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-purple-300">Aspect Ratio</label>
-            <div className="flex gap-2 flex-wrap">
-              {ASPECT_RATIOS.map(ratio => (
-                <button
-                  key={ratio}
-                  onClick={() => setAspectRatio(ratio)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    aspectRatio === ratio
-                      ? 'bg-fuchsia-600 text-white'
-                      : 'bg-purple-900/40 text-purple-300 border border-purple-500/30 hover:bg-purple-800/40'
-                  }`}
-                >
-                  {ratio}
-                </button>
-              ))}
+            {/* Controls row */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Model dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
+                    <span className="text-green-400 font-bold text-[10px]">G</span>
+                    <span className="font-medium">{modelLabel}</span>
+                    <ChevronDown className="h-3 w-3 text-purple-400" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
+                  <DropdownMenuItem
+                    onClick={() => setModel('normal')}
+                    className={`text-xs ${model === 'normal' ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
+                  >
+                    🍌 Nano Banana — {creditCostNormal} cr
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setModel('pro')}
+                    className={`text-xs ${model === 'pro' ? 'text-amber-300 bg-amber-500/10' : 'text-purple-200'}`}
+                  >
+                    🍌 Nano Banana Pro — {creditCostPro} cr
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Aspect ratio dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
+                    <span>⬜</span>
+                    <span className="font-medium">{aspectRatio}</span>
+                    <ChevronDown className="h-3 w-3 text-purple-400" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
+                  {ASPECT_RATIOS.map(ratio => (
+                    <DropdownMenuItem
+                      key={ratio}
+                      onClick={() => setAspectRatio(ratio)}
+                      className={`text-xs ${aspectRatio === ratio ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
+                    >
+                      {ratio}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Spacer */}
+              <div className="flex-1" />
+
+              {/* Generate button */}
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || !prompt.trim()}
+                size="sm"
+                className="bg-[#c8ff00] hover:bg-[#b8ef00] text-black font-bold text-xs rounded-full px-4 h-8 disabled:opacity-40 shadow-lg shadow-[#c8ff00]/20"
+              >
+                {isGenerating ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <>
+                    Gerar <Sparkles className="h-3.5 w-3.5 ml-1" />
+                  </>
+                )}
+              </Button>
             </div>
           </div>
-
-          {/* Generate button */}
-          <Button
-            onClick={handleGenerate}
-            disabled={isGenerating || !prompt.trim()}
-            className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-sm disabled:opacity-50"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Gerando imagem...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-5 w-5 mr-2" />
-                Gerar Imagem ({currentCreditCost} créditos)
-              </>
-            )}
-          </Button>
         </div>
 
         {/* Modals */}
