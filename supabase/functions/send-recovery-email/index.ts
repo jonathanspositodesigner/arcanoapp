@@ -159,7 +159,7 @@ serve(async (req) => {
         html: htmlBase64,
         text: "",
         subject: "🔐 Crie sua senha - Primeiro Acesso",
-        from: { name: "Vox Visual", email: "contato@voxvisual.com.br" },
+        from: { name: "Arcano App", email: "contato@voxvisual.com.br" },
         to: [{ name: normalizedEmail, email: normalizedEmail }],
       },
     };
