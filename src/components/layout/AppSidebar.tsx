@@ -29,13 +29,13 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
   ];
 
   const aiToolLinks = [
-    { name: "Upscaler Arcano V3", path: "/ferramentas-ia-aplicativo" },
-    { name: "Pose Changer", path: "/pose-changer-tool" },
-    { name: "Veste AI", path: "/veste-ai-tool" },
-    { name: "Arcano Cloner", path: "/arcano-cloner-tool" },
-    { name: "Forja Selos 3D", path: "/ferramentas-ia-aplicativo" },
-    { name: "Gerador de Avatar", path: "/gerador-avatar" },
-    { name: "Video Upscaler", path: "/video-upscaler-tool" },
+    { name: "Upscaler Arcano V3", path: "/ferramentas-ia-aplicativo", badge: null },
+    { name: "Pose Changer", path: "/pose-changer-tool", badge: null },
+    { name: "Veste AI", path: "/veste-ai-tool", badge: null },
+    { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: "Novo" },
+    { name: "Forja Selos 3D", path: "/ferramentas-ia-aplicativo", badge: null },
+    { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null },
+    { name: "Video Upscaler", path: "/video-upscaler-tool", badge: null },
   ];
 
   const handleLogout = async () => {
@@ -140,9 +140,12 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
                 <button
                   key={link.name}
                   onClick={() => handleNavAndClose(link.path)}
-                  className="w-full text-left text-[11px] text-purple-200 hover:text-white py-1.5 px-2.5 rounded-md hover:bg-purple-500/20 transition-colors"
+                  className="w-full flex items-center justify-between text-[11px] text-purple-200 hover:text-white py-1.5 px-2.5 rounded-md hover:bg-purple-500/20 transition-colors"
                 >
-                  {link.name}
+                  <span>{link.name}</span>
+                  {link.badge && (
+                    <span className="text-[9px] font-bold bg-green-500 text-white px-1.5 py-0.5 rounded-full leading-none">{link.badge}</span>
+                  )}
                 </button>
               ))}
             </div>
