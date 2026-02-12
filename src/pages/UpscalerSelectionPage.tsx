@@ -121,7 +121,7 @@ const UpscalerSelectionPage = () => {
                   Max 10 segundos
                 </span>
                 <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-fuchsia-500/20 text-fuchsia-200 text-xs sm:text-sm">
-                  150 créditos
+                  100 créditos
                 </span>
               </div>
 
