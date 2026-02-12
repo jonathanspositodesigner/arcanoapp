@@ -37,7 +37,7 @@ const GerarImagemTool = () => {
   const { getCreditCost } = useAIToolSettings();
 
   const [prompt, setPrompt] = useState('');
-  const [model, setModel] = useState<'normal' | 'pro'>('normal');
+  const [model, setModel] = useState<'normal' | 'pro'>('pro');
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
   const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
