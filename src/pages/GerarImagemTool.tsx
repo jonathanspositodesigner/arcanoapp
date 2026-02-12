@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
-import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
+import { useCredits } from '@/contexts/CreditsContext';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import AIToolsAuthModal from '@/components/ai-tools/AIToolsAuthModal';
@@ -32,7 +32,7 @@ interface ReferenceImage {
 const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
-  const { balance: credits, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
+  const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   const { showAuthModal, setShowAuthModal, handleAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
   const { getCreditCost } = useAIToolSettings();
 

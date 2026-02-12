@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { MyCreationsModal } from "@/components/ai-tools/creations";
 import CreditsPreviewPopover from "@/components/CreditsPreviewPopover";
+import { useCredits } from "@/contexts/CreditsContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,18 +19,17 @@ import {
 interface AppTopBarProps {
   user: any;
   isPremium: boolean;
-  credits: number;
-  creditsLoading: boolean;
   planType: string | null;
   userProfile?: { name?: string; phone?: string } | null;
   onLogout: () => void;
   onToggleSidebar?: () => void;
 }
 
-const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userProfile, onLogout, onToggleSidebar }: AppTopBarProps) => {
+const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleSidebar }: AppTopBarProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
   const [showCreationsModal, setShowCreationsModal] = useState(false);
+  const { balance: credits, isLoading: creditsLoading } = useCredits();
 
   const ProfileDropdown = ({ isMobile = false }: { isMobile?: boolean }) => (
     <DropdownMenu>
@@ -149,9 +149,7 @@ const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userPro
                 {t('header.becomePremium')}
               </Button>
               <div className="flex items-center gap-1">
-                <CreditsPreviewPopover
-                  credits={credits}
-                  creditsLoading={creditsLoading}
+              <CreditsPreviewPopover
                   userId={user?.id || ''}
                   variant="desktop"
                 />
@@ -173,9 +171,7 @@ const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userPro
                 {t('header.premiumActive')}
               </Badge>
               <div className="flex items-center gap-1">
-                <CreditsPreviewPopover
-                  credits={credits}
-                  creditsLoading={creditsLoading}
+              <CreditsPreviewPopover
                   userId={user?.id || ''}
                   variant="desktop"
                 />
@@ -216,8 +212,6 @@ const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userPro
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <CreditsPreviewPopover
-                credits={credits}
-                creditsLoading={creditsLoading}
                 userId={user?.id || ''}
                 variant="mobile"
               />
@@ -240,8 +234,6 @@ const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userPro
             </Badge>
             <div className="flex items-center gap-1">
               <CreditsPreviewPopover
-                credits={credits}
-                creditsLoading={creditsLoading}
                 userId={user?.id || ''}
                 variant="mobile"
               />
