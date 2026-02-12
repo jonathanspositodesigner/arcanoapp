@@ -75,10 +75,42 @@ serve(async (req) => {
   }
 
   try {
+    const body = await req.json().catch(() => ({}));
+    const sendCopyTo = body?.send_copy_to as string | undefined;
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Mode: send a copy of the email to a specific address (no credits)
+    if (sendCopyTo) {
+      console.log(`[grant-recovery] Sending email copy to: ${sendCopyTo}`);
+      const spToken = await getSendPulseToken();
+      const REDIRECT_URL = "https://arcanoapp.lovable.app/ferramentas-ia-aplicativo";
+      const htmlContent = buildRecoveryEmailHtml(REDIRECT_URL);
+      const htmlBase64 = btoa(unescape(encodeURIComponent(htmlContent)));
+      const emailPayload = {
+        email: {
+          html: htmlBase64,
+          text: "",
+          subject: "🎉 Seus 300 créditos grátis já estão na sua conta!",
+          from: { name: "Arcano App", email: "contato@voxvisual.com.br" },
+          to: [{ name: sendCopyTo, email: sendCopyTo }],
+        },
+      };
+      const sendResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${spToken}` },
+        body: JSON.stringify(emailPayload),
+      });
+      const sendResult = await sendResponse.text();
+      console.log(`[grant-recovery] Copy sent: ${sendResponse.status} - ${sendResult}`);
+      return new Response(JSON.stringify({ success: sendResponse.ok, detail: sendResult }), {
+        status: sendResponse.ok ? 200 : 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Find all users who confirmed email (used_at NOT NULL) but have NO credits
     const { data: tokens, error: tokensError } = await supabaseAdmin
