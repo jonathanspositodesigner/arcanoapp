@@ -18,7 +18,7 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
 }) => {
   return (
     <Card className={cn(
-      "relative overflow-hidden bg-purple-900/20 border-purple-500/30",
+      "relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-shrink-0",
       disabled && "opacity-50 cursor-not-allowed"
     )}>
       {/* Header - same as ImageUploadCard */}
@@ -29,10 +29,10 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
         </h3>
       </div>
 
-      {/* Content Area - matches ImageUploadCard sizing */}
+      {/* Content Area - fixed height matching ImageUploadCard */}
       <div
         className={cn(
-          "relative h-[120px] lg:h-[160px] transition-all",
+          "relative min-h-[120px] h-[120px] lg:min-h-[160px] lg:h-[160px] transition-all",
           !image && "cursor-pointer hover:bg-purple-500/10",
           disabled && "cursor-not-allowed"
         )}
