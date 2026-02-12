@@ -1,0 +1,1 @@
+ALTER TABLE video_generator_jobs ADD COLUMN IF NOT EXISTS job_payload jsonb;

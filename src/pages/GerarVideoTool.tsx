@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus } from 'lucide-react';
+import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,6 +42,8 @@ const GerarVideoTool = () => {
   const [endFrame, setEndFrame] = useState<FrameImage | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
+  const [isQueued, setIsQueued] = useState(false);
+  const [queuePosition, setQueuePosition] = useState(0);
   const [jobId, setJobId] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -78,6 +80,8 @@ const GerarVideoTool = () => {
       pollingRef.current = null;
     }
     setIsPolling(false);
+    setIsQueued(false);
+    setQueuePosition(0);
   }, []);
 
   const pollStatus = useCallback(async () => {
@@ -107,7 +111,13 @@ const GerarVideoTool = () => {
 
       const data = await response.json();
 
-      if (data.status === 'completed') {
+      if (data.status === 'queued') {
+        setIsQueued(true);
+        setQueuePosition(data.position || 1);
+      } else if (data.status === 'processing') {
+        setIsQueued(false);
+        setQueuePosition(0);
+      } else if (data.status === 'completed') {
         stopPolling();
         setResultUrl(data.output_url);
         setIsGenerating(false);
@@ -160,6 +170,8 @@ const GerarVideoTool = () => {
     setIsGenerating(true);
     setErrorMessage(null);
     setResultUrl(null);
+    setIsQueued(false);
+    setQueuePosition(0);
 
     try {
       const freshCredits = await checkBalance();
@@ -219,7 +231,14 @@ const GerarVideoTool = () => {
       setJobId(data.job_id);
       setIsPolling(true);
       pollingStartRef.current = Date.now();
-      toast.success('Geração de vídeo iniciada! Aguarde...');
+
+      if (data.queued) {
+        setIsQueued(true);
+        setQueuePosition(data.position || 1);
+        toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
+      } else {
+        toast.success('Geração de vídeo iniciada! Aguarde...');
+      }
     } catch (err) {
       console.error('[GerarVideo] Error:', err);
       toast.error('Erro ao gerar vídeo');
@@ -241,6 +260,8 @@ const GerarVideoTool = () => {
     setResultUrl(null);
     setJobId(null);
     setErrorMessage(null);
+    setIsQueued(false);
+    setQueuePosition(0);
   };
 
   const hasFrames = startFrame || endFrame;
@@ -285,16 +306,36 @@ const GerarVideoTool = () => {
           ) : isGenerating ? (
             <div className="flex flex-col items-center gap-4 text-purple-300">
               <div className="w-20 h-20 rounded-full border-2 border-purple-500/30 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-fuchsia-400" />
+                {isQueued ? (
+                  <Clock className="h-8 w-8 text-fuchsia-400 animate-pulse" />
+                ) : (
+                  <Loader2 className="h-8 w-8 animate-spin text-fuchsia-400" />
+                )}
               </div>
               <div className="text-center">
-                <p className="text-sm text-white font-medium">Gerando vídeo...</p>
-                <p className="text-xs text-purple-400 mt-1">Isso pode levar de 2 a 5 minutos</p>
+                {isQueued ? (
+                  <>
+                    <p className="text-sm text-white font-medium">Você está na fila</p>
+                    <p className="text-lg text-fuchsia-400 font-bold mt-1">Posição {queuePosition}</p>
+                    <p className="text-xs text-purple-400 mt-2">Sua geração será processada em breve</p>
+                    <p className="text-[10px] text-purple-500 mt-1">Limite: 2 vídeos simultâneos</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-white font-medium">Gerando vídeo...</p>
+                    <p className="text-xs text-purple-400 mt-1">Isso pode levar de 2 a 5 minutos</p>
+                  </>
+                )}
               </div>
             </div>
           ) : errorMessage ? (
-            <div className="max-w-md p-4 rounded-xl border border-red-500/30 bg-red-900/20 text-red-300 text-sm text-center">
-              {errorMessage}
+            <div className="max-w-md text-center space-y-3">
+              <div className="p-4 rounded-xl border border-red-500/30 bg-red-900/20 text-red-300 text-sm">
+                {errorMessage}
+              </div>
+              <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
+                Tentar novamente
+              </Button>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3 text-purple-500/60">
@@ -450,7 +491,7 @@ const GerarVideoTool = () => {
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                    Gerando...
+                    {isQueued ? 'Na fila...' : 'Gerando...'}
                   </>
                 ) : (
                   <>

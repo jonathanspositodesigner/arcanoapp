@@ -3149,6 +3149,7 @@ export type Database = {
           end_frame_url: string | null
           error_message: string | null
           id: string
+          job_payload: Json | null
           operation_name: string | null
           output_url: string | null
           prompt: string
@@ -3168,6 +3169,7 @@ export type Database = {
           end_frame_url?: string | null
           error_message?: string | null
           id?: string
+          job_payload?: Json | null
           operation_name?: string | null
           output_url?: string | null
           prompt: string
@@ -3187,6 +3189,7 @@ export type Database = {
           end_frame_url?: string | null
           error_message?: string | null
           id?: string
+          job_payload?: Json | null
           operation_name?: string | null
           output_url?: string | null
           prompt?: string

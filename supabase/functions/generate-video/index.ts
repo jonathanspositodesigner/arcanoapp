@@ -78,10 +78,80 @@ serve(async (req) => {
       });
     }
 
-    // Build Veo API request
+    // ========== QUEUE LOGIC: Check active slots (max 2 simultaneous) ==========
+    const oneMinAgo = new Date(Date.now() - 60000).toISOString();
+    const { count: activeCount } = await serviceClient
+      .from("video_generator_jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "processing")
+      .gte("started_at", oneMinAgo);
+
+    if ((activeCount || 0) >= 2) {
+      // No slots available - enqueue the job
+      const { count: queuedCount } = await serviceClient
+        .from("video_generator_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "queued");
+
+      const position = (queuedCount || 0) + 1;
+
+      // Save job as queued with full payload for later execution
+      const jobPayload: any = {
+        prompt: prompt.trim(),
+        aspect_ratio: ratio,
+        duration,
+      };
+      // Only save frame metadata flags (not full base64 to avoid huge payloads)
+      if (start_frame?.base64 && start_frame?.mimeType) {
+        jobPayload.start_frame = { base64: start_frame.base64, mimeType: start_frame.mimeType };
+      }
+      if (end_frame?.base64 && end_frame?.mimeType) {
+        jobPayload.end_frame = { base64: end_frame.base64, mimeType: end_frame.mimeType };
+      }
+
+      const { data: jobData, error: jobError } = await serviceClient
+        .from("video_generator_jobs")
+        .insert({
+          user_id: userId,
+          prompt: prompt.trim(),
+          aspect_ratio: ratio,
+          duration_seconds: duration,
+          status: "queued",
+          position,
+          user_credit_cost: creditCost,
+          credits_charged: true,
+          job_payload: jobPayload,
+        })
+        .select("id")
+        .single();
+
+      if (jobError) {
+        console.error("[generate-video] Queue insert error:", jobError);
+        await serviceClient.rpc("refund_upscaler_credits", {
+          _user_id: userId,
+          _amount: creditCost,
+          _description: "Estorno: erro ao enfileirar job de vídeo",
+        });
+        return new Response(JSON.stringify({ error: "Erro ao criar job" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      console.log(`[generate-video] Job ${jobData.id} queued at position ${position} for user ${userId}`);
+
+      return new Response(JSON.stringify({
+        success: true,
+        queued: true,
+        job_id: jobData.id,
+        position,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ========== SLOT AVAILABLE: Call Google API immediately (existing flow) ==========
     const instance: any = { prompt: prompt.trim() };
 
-    // Add reference images (start frame / end frame) 
     if (start_frame?.base64 && start_frame?.mimeType) {
       instance.image = {
         bytesBase64Encoded: start_frame.base64,
@@ -96,7 +166,6 @@ serve(async (req) => {
       sampleCount: 1,
     };
 
-    // End frame support (if available in API)
     if (end_frame?.base64 && end_frame?.mimeType) {
       instance.endImage = {
         bytesBase64Encoded: end_frame.base64,
@@ -152,7 +221,7 @@ serve(async (req) => {
       });
     }
 
-    // Create job
+    // Create job as processing
     const { data: jobData, error: jobError } = await serviceClient
       .from("video_generator_jobs")
       .insert({
