@@ -442,6 +442,11 @@ const Index = () => {
         onClose={() => setShowAuthModal(false)}
         onAuthSuccess={() => setShowAuthModal(false)}
       />
+
+      {/* App Version */}
+      <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-10">
+        <span className="text-[10px] text-muted-foreground/50 select-none">v2026-02-12-001</span>
+      </div>
     </div>
   );
 };
