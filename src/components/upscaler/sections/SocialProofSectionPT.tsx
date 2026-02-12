@@ -11,8 +11,6 @@ import upscalerUser2Antes from "@/assets/upscaler-user2-antes.jpg";
 import upscalerUser2Depois from "@/assets/upscaler-user2-depois.jpg";
 import upscalerUser3Antes from "@/assets/upscaler-user3-antes.jpg";
 import upscalerUser3Depois from "@/assets/upscaler-user3-depois.jpg";
-import upscalerUser5Antes from "@/assets/upscaler-user5-antes.webp";
-import upscalerUser5Depois from "@/assets/upscaler-user5-depois.webp";
 
 interface SocialProofSectionPTProps {
   onZoomClick: (before: string, after: string) => void;
@@ -51,13 +49,6 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       handle: "@wrproducoes",
       testimonial: "Muito top o Upscaler do Jonathan, o melhor do mercado sem dúvidas! Tá salvando aqui nos trampos kkkkk já foi a fase de sofrer com foto ruim de cliente hoje jogo no upscaler e entrego as artes com muito mais qualidade!",
       avatar: "/images/wellington-wrproducoes.png"
-    },
-    {
-      before: isMobile ? "/images/upscaler-user5-antes-mobile.webp" : upscalerUser5Antes,
-      after: isMobile ? "/images/upscaler-user5-depois-mobile.webp" : upscalerUser5Depois,
-      name: "Lucas Ferreira",
-      handle: "@lucasf.creative",
-      testimonial: "Comecei a usar pra melhorar renders 3D e logos. O resultado é impressionante, parece que a imagem foi feita do zero em alta resolução. Recomendo demais pra qualquer designer."
     }
   ];
 
