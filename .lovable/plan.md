@@ -1,48 +1,53 @@
 
+## Substituir "DEBUG IA" por "API GOOGLE" no admin do PromptClub
 
-## Problema atual
+### O que muda
 
-O `CreditsProvider` esta DENTRO do `AppLayout`. Porem, `GerarImagemTool` e `GerarVideoTool` chamam `useCredits()` no corpo do componente, **antes** de renderizar o `AppLayout`. Resultado: o hook nao encontra o Provider e retorna o fallback com `balance: 0`, causando o modal "Sem Creditos".
+O item "DEBUG IA" no menu lateral do admin PromptClub sera substituido por "API GOOGLE". A rota `/admin-prompts/debug-ia` sera substituida por `/admin-prompts/api-google`. A pagina de Debug IA sera removida e no lugar sera criada uma pagina de gerenciamento da API Google.
 
-```text
-GerarImagemTool       <-- useCredits() chamado AQUI (sem Provider!)
-  └── return <AppLayout>
-        └── <CreditsProvider>   <-- Provider so existe AQUI, abaixo
-```
+### Nova pagina: API Google
 
-As outras ferramentas (UpscalerArcano, VesteAI, ArcanoClonerTool, VideoUpscalerTool, PoseChangerTool, GeradorPersonagem, ProfileSettings, CreditHistory, BibliotecaPrompts, FerramentasIA) usam `useUpscalerCredits` diretamente com instancia local propria -- funcionam normalmente e **nao serao tocadas**.
+A pagina tera:
 
-## Solucao
+1. **Barra de gasto** - Mostra quanto ja foi gasto dos R$ 1.900,00 de creditos Google, com barra de progresso e porcentagem. O calculo e baseado nos jobs concluidos nas tabelas `image_generator_jobs` e `video_generator_jobs`:
+   - Nano Banana (model=normal): R$ 0,20 por imagem
+   - Nano Banana Pro (model=pro): R$ 0,69 por imagem
+   - Veo 3.1 Fast: R$ 0,78 x duracao_segundos por video
 
-Mover o `CreditsProvider` para o `App.tsx`, envolvendo todas as rotas. Assim `useCredits()` funciona em qualquer pagina. **Nenhuma outra ferramenta sera alterada.**
+2. **Campo para trocar a chave API** - Input para inserir nova chave Google Gemini, com botao de salvar que atualiza o secret `GOOGLE_GEMINI_API_KEY` via edge function dedicada
 
-## Mudancas (apenas 2 arquivos)
+3. **Resumo de uso** - Cards mostrando quantidade de geracoes por tipo e custo total
 
-### 1. App.tsx
+### Passos tecnicos
 
-- Criar um componente interno `CreditsWrapper` que consome `useAuth()` (ja disponivel no contexto) e passa `user?.id` para o `CreditsProvider`
-- Envolver o conteudo DENTRO do `AuthProvider` com esse wrapper
-- Nenhuma rota muda, nenhum import de pagina muda
+#### 1. Criar tabela `google_api_config` (migration)
+- `id`, `total_budget` (default 1900.00), `updated_at`
+- Armazena o budget total configuravel (R$ 1.900)
 
-```text
-AuthProvider
-  └── CreditsWrapper (NOVO - pega user do useAuth)
-        └── CreditsProvider userId={user?.id}
-              └── AIDebugProvider
-                    └── ... rotas (tudo igual)
-```
+#### 2. Criar edge function `admin-update-google-key`
+- Recebe a nova chave API
+- Verifica se o usuario e admin
+- Atualiza o secret `GOOGLE_GEMINI_API_KEY` via Supabase Management API (usando SUPABASE_ACCESS_TOKEN e VITE_SUPABASE_PROJECT_ID)
 
-### 2. AppLayout.tsx
+#### 3. Criar pagina `src/pages/admin/PromptsApiGoogle.tsx`
+- Card com barra de progresso do budget (R$ 1.900)
+- Calcula gasto total via query nas tabelas de jobs completados
+- Input mascarado para trocar a chave API
+- Cards resumo: total imagens (normal/pro), total videos, custo por tipo
 
-- Remover o import e o wrapping de `CreditsProvider`
-- O AppLayout volta a ser apenas layout (sidebar + topbar + children)
-- Como o `CreditsProvider` ja esta acima, o `AppTopBar` e o `CreditsPreviewPopover` continuam funcionando via `useCredits()` sem nenhuma mudanca
+#### 4. Atualizar `AdminSidebarPlatform.tsx`
+- Trocar "DEBUG IA" por "API GOOGLE"
+- Trocar icone `Bug` por icone adequado (ex: `Key` ou `Cloud`)
+- Trocar path de `debug-ia` para `api-google`
+
+#### 5. Atualizar `App.tsx`
+- Remover import/rota do `PromptsDebugIA`
+- Adicionar import/rota do `PromptsApiGoogle` em `/admin-prompts/api-google`
+- Manter redirect de `/admin-prompts/debug-ia` para `/admin-prompts/api-google` (evitar links quebrados)
 
 ### O que NAO muda
 
-- Nenhuma outra pagina de ferramenta (Upscaler, VesteAI, Cloner, VideoUpscaler, PoseChanger, GeradorPersonagem) -- todas usam `useUpscalerCredits` local e continuam identicas
-- ProfileSettings, CreditHistory, BibliotecaPrompts, FerramentasIA -- mesma coisa, instancia local
-- Nenhuma edge function, nenhuma RPC, nenhuma tabela
-- AppTopBar, CreditsPreviewPopover -- ja usam `useCredits()`, continuam funcionando
-- GerarImagemTool e GerarVideoTool -- ja usam `useCredits()`, so que agora o Provider vai existir acima deles
-
+- Nenhuma edge function de geracao (generate-image, generate-video) sera alterada
+- Nenhuma outra pagina admin sera alterada
+- O contexto AIDebugContext continua existindo (pode ser usado por quem quiser, so perde a pagina de admin)
+- Todas as outras ferramentas continuam identicas
