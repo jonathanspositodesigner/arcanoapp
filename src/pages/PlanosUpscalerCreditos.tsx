@@ -414,7 +414,7 @@ const PlanosUpscalerCreditos = () => {
 
               {/* Before/After Slider - ocupa quase toda a largura */}
               <FadeIn delay={400} duration={700}>
-                <div className="w-[95vw] md:w-[85vw] lg:w-[75vw] md:min-h-[500px] lg:min-h-[600px] mb-8 md:mb-10 [&_.space-y-3>div:first-child]:!aspect-auto [&_.space-y-3>div:first-child]:md:!h-[500px] [&_.space-y-3>div:first-child]:lg:!h-[600px]">
+                <div className="w-[95vw] md:w-[80vw] lg:w-[70vw] [&_.space-y-3>div:first-child]:!aspect-auto [&_.space-y-3>div:first-child]:md:!h-[420px] [&_.space-y-3>div:first-child]:lg:!h-[480px] mb-6 md:mb-8">
                   {isMobile && !heroRevealed ? (
                     <HeroPlaceholder
                       onReveal={() => setHeroRevealed(true)}
