@@ -63,15 +63,20 @@ const CreditsPreviewPopover = ({
         <button type="button" className="focus:outline-none">
           <Badge 
             variant="outline" 
-            className={`cursor-pointer hover:bg-purple-800/50 transition-colors ${
+            className={`cursor-pointer hover:bg-purple-800/50 transition-all duration-300 ${
               isDesktop 
                 ? "bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
                 : "bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1"
+            } ${
+              direction === 'up' ? 'border-green-400/60 bg-green-900/30 scale-110' : 
+              direction === 'down' ? 'border-red-400/60 bg-red-900/30 scale-110' : ''
             }`}
           >
-            <Coins className={`text-yellow-400 ${isDesktop ? "w-3.5 h-3.5" : "w-3 h-3"}`} />
+            <Coins className={`${isDesktop ? "w-3.5 h-3.5" : "w-3 h-3"} transition-colors duration-300 ${
+              direction === 'up' ? 'text-green-400' : direction === 'down' ? 'text-red-400' : 'text-yellow-400'
+            }`} />
             <span className={`${isDesktop ? "font-medium" : ""} transition-colors duration-300 ${
-              direction === 'up' ? 'text-green-400' : direction === 'down' ? 'text-red-400' : ''
+              direction === 'up' ? 'text-green-400 font-bold' : direction === 'down' ? 'text-red-400 font-bold' : ''
             }`}>
               {creditsLoading ? '...' : displayValue.toLocaleString('pt-BR')}
             </span>

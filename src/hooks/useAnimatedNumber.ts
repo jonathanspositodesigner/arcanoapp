@@ -80,7 +80,7 @@ export const useAnimatedNumber = (
         // Keep direction color visible briefly after animation ends
         directionTimeoutRef.current = setTimeout(() => {
           setDirection(null);
-        }, 600);
+        }, 1500);
       }
     };
 
