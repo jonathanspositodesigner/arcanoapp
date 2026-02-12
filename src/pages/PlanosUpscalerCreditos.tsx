@@ -392,9 +392,8 @@ const PlanosUpscalerCreditos = () => {
               </FadeIn>
 
               {/* Título principal */}
-              <h1 className="font-space-grotesk font-bold text-xl md:text-2xl lg:text-3xl text-white mb-3 md:mb-4 leading-[1.2]">
-                {t('tools:upscaler.hero.title1')}
-                <br />
+              <h1 className="font-space-grotesk font-bold text-[1.25rem] md:text-2xl lg:text-3xl text-white mb-3 md:mb-4 leading-[1.25]">
+                {t('tools:upscaler.hero.title1')}{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                   {t('tools:upscaler.hero.title2')}
                 </span>
@@ -402,7 +401,7 @@ const PlanosUpscalerCreditos = () => {
 
               {/* Subtítulo */}
               <FadeIn delay={300} duration={700}>
-                <p className="text-xs md:text-sm text-white/60 mb-4 md:mb-6 max-w-lg leading-relaxed">
+                <p className="text-xs md:text-sm text-white/60 mb-4 md:mb-6 max-w-lg leading-relaxed mx-auto">
                   {t('tools:upscaler.hero.subtitle')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
               </FadeIn>
