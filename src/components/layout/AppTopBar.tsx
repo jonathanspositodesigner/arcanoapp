@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Home, ImageIcon, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Phone, Coins } from "lucide-react";
+import { Home, ImageIcon, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Phone, Coins, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { MyCreationsModal } from "@/components/ai-tools/creations";
@@ -23,9 +23,10 @@ interface AppTopBarProps {
   planType: string | null;
   userProfile?: { name?: string; phone?: string } | null;
   onLogout: () => void;
+  onToggleSidebar?: () => void;
 }
 
-const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userProfile, onLogout }: AppTopBarProps) => {
+const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userProfile, onLogout, onToggleSidebar }: AppTopBarProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
   const [showCreationsModal, setShowCreationsModal] = useState(false);
@@ -199,10 +200,9 @@ const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userPro
       {/* Top Bar - Mobile */}
       <header className="lg:hidden bg-[#0D0221]/95 backdrop-blur-lg px-4 py-3 flex items-center justify-between shadow-lg border-b border-purple-500/20 sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <button onClick={() => navigate("/")} className="text-purple-300 hover:text-white p-1">
-            <Home className="h-5 w-5" />
+          <button onClick={onToggleSidebar} className="text-purple-300 hover:text-white p-1">
+            <Menu className="h-5 w-5" />
           </button>
-          <img alt="ArcanoApp" src="/lovable-uploads/87022a3f-e907-4bc8-83b0-3c6ef7ab69da.png" className="h-6" />
         </div>
         {!user && (
           <div className="flex items-center gap-2">
@@ -218,10 +218,6 @@ const AppTopBar = ({ user, isPremium, credits, creditsLoading, planType, userPro
         )}
         {user && !isPremium && (
           <div className="flex items-center gap-2">
-            <Button onClick={() => navigate("/planos")} size="sm" className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white text-xs">
-              <Star className="h-3 w-3 mr-1" fill="currentColor" />
-              Premium
-            </Button>
             <div className="flex items-center gap-1">
               <CreditsPreviewPopover
                 credits={credits}

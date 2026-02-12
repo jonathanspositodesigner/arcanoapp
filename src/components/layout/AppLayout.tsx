@@ -40,6 +40,7 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
         planType={planType}
         userProfile={userProfile}
         onLogout={logout}
+        onToggleSidebar={() => setSidebarOpen(prev => !prev)}
       />
       <div className="flex">
         <AppSidebar
