@@ -31,7 +31,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.photoImproved4K'),
       badge: t('tools:upscaler.beforeAfter.badges.photo'),
       badgeColor: "from-fuchsia-500 to-pink-500",
-      aspectRatio: "2/3"
+      aspectRatio: "1/1"
     },
     {
       before: isMobile ? "/images/upscaler-selo-antes-mobile.webp" : upscalerSeloAntes,
@@ -39,7 +39,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.seal3DHD'),
       badge: t('tools:upscaler.beforeAfter.badges.seals3D'),
       badgeColor: "from-purple-500 to-violet-600",
-      aspectRatio: "2/3"
+      aspectRatio: "1/1"
     },
     {
       before: isMobile ? "/images/upscaler-logo-antes-mobile.webp" : upscalerLogoAntes,
@@ -47,7 +47,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.logoHD'),
       badge: t('tools:upscaler.beforeAfter.badges.logo'),
       badgeColor: "from-blue-500 to-cyan-500",
-      aspectRatio: "2/3"
+      aspectRatio: "1/1"
     },
     {
       before: isMobile ? "/images/upscaler-produto-antes-mobile.webp" : upscalerProdutoAntes,
@@ -55,7 +55,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.mockupSharp'),
       badge: t('tools:upscaler.beforeAfter.badges.mockup'),
       badgeColor: "from-emerald-500 to-green-500",
-      aspectRatio: "2/3"
+      aspectRatio: "1/1"
     },
     {
       before: isMobile ? "/images/upscaler-antiga-antes-mobile.webp" : upscalerAntigaAntes,
@@ -63,7 +63,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.oldPhotoRestored'),
       badge: t('tools:upscaler.beforeAfter.badges.oldPhoto'),
       badgeColor: "from-amber-500 to-orange-500",
-      aspectRatio: "2/3"
+      aspectRatio: "1/1"
     },
     {
       before: isMobile ? "/images/upscaler-food-antes-mobile.webp" : upscalerFoodAntes,
@@ -71,7 +71,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.foodPhotos'),
       badge: t('tools:upscaler.beforeAfter.badges.food'),
       badgeColor: "from-red-500 to-orange-500",
-      aspectRatio: "2/3"
+      aspectRatio: "1/1"
     }
   ];
 
@@ -81,7 +81,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 via-purple-500/5 to-transparent pointer-events-none" />
       
       <div className="max-w-6xl mx-auto relative">
-        <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-3 md:mb-4 tracking-wide">
+        <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3 md:mb-4">
           {t('tools:upscaler.beforeAfter.title')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">{t('tools:upscaler.beforeAfter.anyImage')}</span>
         </h2>
         <p className="text-white/60 text-center text-sm md:text-lg mb-10 md:mb-14 max-w-2xl mx-auto">

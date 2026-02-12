@@ -456,7 +456,7 @@ const PlanosUpscalerCreditos = () => {
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-8 md:mb-12 tracking-wide">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-8 md:mb-12">
                   {t('tools:upscaler.pain.title')}
                 </h2>
               </AnimatedSection>
@@ -526,7 +526,7 @@ const PlanosUpscalerCreditos = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
                   {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
               </AnimatedSection>
@@ -555,7 +555,7 @@ const PlanosUpscalerCreditos = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
                   {t('tools:upscaler.howItWorks.title')} <span className="text-fuchsia-400">{t('tools:upscaler.howItWorks.subtitle')}</span>
                 </h2>
               </AnimatedSection>
@@ -605,7 +605,7 @@ const PlanosUpscalerCreditos = () => {
                     </div>
                   )}
 
-                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
+                  <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6">
                     {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
                   </h2>
 
@@ -669,7 +669,7 @@ const PlanosUpscalerCreditos = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
                   {t('tools:upscaler.benefits.title')} <span className="text-fuchsia-400">{t('tools:upscaler.benefits.subtitle')}</span>?
                 </h2>
               </AnimatedSection>
@@ -697,7 +697,7 @@ const PlanosUpscalerCreditos = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
                   {t('tools:upscaler.faq.title')} <span className="text-fuchsia-400">{t('tools:upscaler.faq.subtitle')}</span>
                 </h2>
               </AnimatedSection>
