@@ -42,13 +42,6 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       testimonial: "Eu usava outro upscaler que demorava horas e o resultado era meia boca. Com o Upscaler Arcano em menos de 1 minuto minhas fotos ficam perfeitas. Meus clientes notaram a diferença na hora!"
     },
     {
-      before: isMobile ? "/images/upscaler-user3-antes-mobile.webp" : upscalerUser3Antes,
-      after: isMobile ? "/images/upscaler-user3-depois-mobile.webp" : upscalerUser3Depois,
-      name: "Rafael Oliveira",
-      handle: "@rafaol.fotografia",
-      testimonial: "Trabalho com ensaios fotográficos e o Upscaler salvou várias fotos que eu achava que tinha perdido por causa de ruído e baixa resolução. Agora entrego tudo em 4K sem esforço."
-    },
-    {
       before: isMobile ? "/images/upscaler-user4-antes-mobile.webp" : upscalerUser4Antes,
       after: isMobile ? "/images/upscaler-user4-depois-mobile.webp" : upscalerUser4Depois,
       name: "Camila Santos",
