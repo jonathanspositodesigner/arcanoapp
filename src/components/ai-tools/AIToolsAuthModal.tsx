@@ -231,7 +231,7 @@ export default function AIToolsAuthModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-gradient-to-br from-[#1A0A2E] to-[#0D0221] border-purple-500/30 text-white p-0 max-w-md overflow-hidden [&>button]:text-purple-300 [&>button]:hover:text-white">
+      <DialogContent className="bg-gradient-to-br from-[#1A0A2E] to-[#0D0221] border-purple-500/30 text-white p-0 max-w-md overflow-hidden [&>button]:text-purple-300 [&>button]:hover:text-white" onInteractOutside={(e) => { if (step === 'verify-email') e.preventDefault(); }} onEscapeKeyDown={(e) => { if (step === 'verify-email') e.preventDefault(); }}>
         {/* Header */}
         <div className="bg-purple-500/10 border-b border-purple-500/20 p-6 text-center">
           <div className="w-16 h-16 mx-auto rounded-full bg-purple-500/20 flex items-center justify-center mb-3">
