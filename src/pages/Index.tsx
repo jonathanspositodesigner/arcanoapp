@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Check, Smartphone, Bell, ExternalLink, Clock } from "lucide-react";
@@ -50,6 +50,7 @@ const Index = () => {
   const isAppInstalled = useIsAppInstalled();
   const { subscribe } = usePushNotifications();
   const [showAuthModal, setShowAuthModal] = useState(true);
+  const signupInProgressRef = useRef(false);
   const { isPremium, isLoading: isPremiumLoading } = usePremiumStatus();
   const { user, userPacks, isLoading: isPacksLoading } = usePackAccess();
   const { isLatam } = useLocale();
@@ -62,7 +63,7 @@ const Index = () => {
   // Check if user is already logged in
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
+      if (session?.user && !signupInProgressRef.current) {
         setShowAuthModal(false);
       }
     });
@@ -441,6 +442,8 @@ const Index = () => {
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onAuthSuccess={() => setShowAuthModal(false)}
+        onSignupStart={() => { signupInProgressRef.current = true; }}
+        onSignupEnd={() => { signupInProgressRef.current = false; }}
       />
 
       {/* App Version */}
