@@ -376,8 +376,8 @@ const PlanosUpscalerCreditos = () => {
       ) : (
         <>
           {/* HERO SECTION - Layout com respiro */}
-          <section className="px-4 md:px-6 pt-16 md:pt-28 pb-12 md:pb-20 w-full">
-            <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+           <section className="px-4 md:px-6 pt-16 md:pt-24 pb-8 md:pb-14 w-full">
+            <div className="flex flex-col items-center text-center max-w-7xl mx-auto">
               
               {/* Social proof badge */}
               <FadeIn delay={100} duration={600}>
