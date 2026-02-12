@@ -7,6 +7,8 @@ import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
 import upscalerFotoDepois from "@/assets/upscaler-foto-depois.webp";
 import upscalerSeloAntes from "@/assets/upscaler-selo-antes.webp";
 import upscalerSeloDepois from "@/assets/upscaler-selo-depois.webp";
+import render3dAntes from "@/assets/render3d-antes.webp";
+import render3dDepois from "@/assets/render3d-depois.webp";
 import upscalerLogoAntes from "@/assets/upscaler-logo-antes.webp";
 import upscalerLogoDepois from "@/assets/upscaler-logo-depois.webp";
 import upscalerProdutoAntes from "@/assets/upscaler-produto-antes.webp";
@@ -34,10 +36,10 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       aspectRatio: "1/1"
     },
     {
-      before: isMobile ? "/images/upscaler-selo-antes-mobile.webp" : upscalerSeloAntes,
-      after: isMobile ? "/images/upscaler-selo-depois-mobile.webp" : upscalerSeloDepois,
-      label: t('tools:upscaler.beforeAfter.seal3DHD'),
-      badge: "Selos e Render 3D",
+      before: render3dAntes,
+      after: render3dDepois,
+      label: "Render 3D em alta definição",
+      badge: "Render 3D",
       badgeColor: "from-purple-500 to-violet-600",
       aspectRatio: "1/1"
     },
