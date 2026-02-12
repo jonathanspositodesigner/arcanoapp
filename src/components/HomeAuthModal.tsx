@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { X, CheckCircle2, MousePointerClick } from "lucide-react";
+import { CheckCircle2, MousePointerClick } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
-import { LoginEmailStep, LoginPasswordStep, SignupForm } from "@/components/auth";
+import { LoginEmailStep, LoginPasswordStep } from "@/components/auth";
 
 interface HomeAuthModalProps {
   open: boolean;
@@ -15,7 +14,6 @@ interface HomeAuthModalProps {
 
 const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => {
   const { t } = useTranslation('index');
-  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupSuccessEmail, setSignupSuccessEmail] = useState("");
 
@@ -33,24 +31,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
     t: (key: string) => t(`auth.${key}`) || t(key),
   });
 
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab as "login" | "signup");
-    if (tab === 'signup') {
-      auth.goToSignup();
-    } else {
-      auth.goToLogin();
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
-        <button
-          onClick={onClose}
-          className="absolute right-3 top-3 z-10 p-1.5 rounded-full bg-muted/50 hover:bg-muted transition-colors"
-        >
-          <X className="h-4 w-4 text-muted-foreground" />
-        </button>
 
         <div className="p-6 pt-8">
           {signupSuccess ? (
@@ -79,7 +63,6 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                 variant="outline" 
                 onClick={() => {
                   setSignupSuccess(false);
-                  setActiveTab("login");
                   auth.goToLogin();
                 }}
                 className="w-full"
@@ -98,78 +81,41 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess }: HomeAuthModalProps) => 
                 </p>
               </div>
 
-              <Tabs value={activeTab} onValueChange={handleTabChange}>
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
-                  <TabsTrigger value="signup">{t('auth.signup')}</TabsTrigger>
-                </TabsList>
+              {auth.state.step === 'email' && (
+                <LoginEmailStep
+                  email={auth.state.email}
+                  onEmailChange={auth.setEmail}
+                  onSubmit={auth.checkEmail}
+                  onSignupClick={() => {}}
+                  isLoading={auth.state.isLoading}
+                  labels={{
+                    email: t('auth.email'),
+                    emailPlaceholder: t('auth.emailPlaceholder'),
+                    continue: t('auth.continue') || 'Continuar',
+                    loading: t('auth.loading'),
+                    noAccountYet: '',
+                    createAccount: '',
+                  }}
+                />
+              )}
 
-                <TabsContent value="login">
-                  {auth.state.step === 'email' && (
-                    <LoginEmailStep
-                      email={auth.state.email}
-                      onEmailChange={auth.setEmail}
-                      onSubmit={auth.checkEmail}
-                      onSignupClick={() => handleTabChange('signup')}
-                      isLoading={auth.state.isLoading}
-                      labels={{
-                        email: t('auth.email'),
-                        emailPlaceholder: t('auth.emailPlaceholder'),
-                        continue: t('auth.continue') || 'Continuar',
-                        loading: t('auth.loading'),
-                        noAccountYet: '',
-                        createAccount: '',
-                      }}
-                    />
-                  )}
-
-                  {auth.state.step === 'password' && (
-                    <LoginPasswordStep
-                      email={auth.state.verifiedEmail}
-                      onSubmit={auth.loginWithPassword}
-                      onChangeEmail={auth.changeEmail}
-                      forgotPasswordUrl={auth.getForgotPasswordUrl()}
-                      isLoading={auth.state.isLoading}
-                      labels={{
-                        password: t('auth.password'),
-                        passwordPlaceholder: t('auth.passwordPlaceholder'),
-                        signIn: t('auth.loginButton'),
-                        signingIn: t('auth.loading'),
-                        forgotPassword: t('auth.forgotPassword'),
-                        changeEmail: t('auth.changeEmail') || 'Trocar',
-                      }}
-                    />
-                  )}
-                </TabsContent>
-
-                <TabsContent value="signup">
-                  <SignupForm
-                    defaultEmail={auth.state.email}
-                    onSubmit={auth.signup}
-                    onBackToLogin={() => handleTabChange('login')}
-                    isLoading={auth.state.isLoading}
-                    showNameField={true}
-                    showPhoneField={true}
-                    nameRequired={true}
-                    phoneRequired={true}
-                    labels={{
-                      email: t('auth.email'),
-                      emailPlaceholder: t('auth.emailPlaceholder'),
-                      name: t('auth.name'),
-                      namePlaceholder: t('auth.namePlaceholder'),
-                      phone: t('auth.phone'),
-                      phonePlaceholder: t('auth.phonePlaceholder'),
-                      password: t('auth.password'),
-                      passwordPlaceholder: t('auth.passwordPlaceholder'),
-                      confirmPassword: t('auth.confirmPassword'),
-                      confirmPasswordPlaceholder: t('auth.confirmPasswordPlaceholder'),
-                      createAccount: t('auth.signupButton'),
-                      creatingAccount: t('auth.loading'),
-                      backToLogin: '',
-                    }}
-                  />
-                </TabsContent>
-              </Tabs>
+              {auth.state.step === 'password' && (
+                <LoginPasswordStep
+                  email={auth.state.verifiedEmail}
+                  onSubmit={auth.loginWithPassword}
+                  onChangeEmail={auth.changeEmail}
+                  forgotPasswordUrl={auth.getForgotPasswordUrl()}
+                  isLoading={auth.state.isLoading}
+                  labels={{
+                    password: t('auth.password'),
+                    passwordPlaceholder: t('auth.passwordPlaceholder'),
+                    signIn: t('auth.loginButton'),
+                    signingIn: t('auth.loading'),
+                    forgotPassword: t('auth.forgotPassword'),
+                    changeEmail: t('auth.changeEmail') || 'Trocar',
+                  }}
+                />
+              )}
 
               <div className="mt-6 pt-4 border-t border-border">
                 <button

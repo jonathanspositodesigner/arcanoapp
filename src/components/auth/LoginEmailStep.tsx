@@ -102,20 +102,22 @@ export function LoginEmailStep({
         )}
       </Button>
 
-      <div className="text-center pt-4 border-t border-border/30">
-        <p className={`text-sm mb-2 ${styles.text}`}>
-          {labels.noAccountYet || 'Ainda não tem conta?'}
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          className={`w-full ${styles.signupButton}`}
-          onClick={onSignupClick}
-        >
-          <UserPlus className="h-4 w-4 mr-2" />
-          {labels.createAccount || 'Criar Conta'}
-        </Button>
-      </div>
+      {(labels.noAccountYet !== '' || labels.createAccount !== '') && (
+        <div className="text-center pt-4 border-t border-border/30">
+          <p className={`text-sm mb-2 ${styles.text}`}>
+            {labels.noAccountYet || 'Ainda não tem conta?'}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            className={`w-full ${styles.signupButton}`}
+            onClick={onSignupClick}
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            {labels.createAccount || 'Criar Conta'}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }
