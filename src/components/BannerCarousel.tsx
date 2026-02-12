@@ -79,10 +79,9 @@ const BannerCarousel = () => {
     setLoading(false);
   };
 
-  // Combine database banners with fixed video banner
+  // Only show database banners (no fixed video banner)
   const allItems: CarouselItem[] = [
     ...banners.map(b => ({ ...b, type: 'image' as const })),
-    upscalerVideoBanner
   ];
 
   const getImageUrl = (banner: Banner) => {

@@ -482,16 +482,6 @@ const BibliotecaArtes = () => {
           </Badge>
         </button>
 
-        <button onClick={() => {
-        navigate('/ferramentas-ia-aplicativo?from=artes');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-muted-foreground hover:bg-accent hover:text-foreground`}>
-          <Cpu className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.aiTools')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('ferramentas_ia').length}
-          </Badge>
-        </button>
 
         <button onClick={() => {
         changeSection('all-artes');
@@ -765,26 +755,16 @@ const BibliotecaArtes = () => {
             {!selectedPack && <BannerCarousel />}
 
 
-            {/* Ferramentas de IA + Install App - Compact Row */}
-            {!selectedPack && (
+            {/* Install App Button */}
+            {!selectedPack && !isAppInstalled && (
               <div className="flex flex-col sm:flex-row gap-2 my-4">
                 <button 
-                  onClick={() => navigate('/ferramentas-ia-aplicativo?from=artes')} 
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+                  onClick={() => navigate('/install-app')} 
+                  className="lg:hidden flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
                 >
-                  <Cpu className="h-4 w-4" />
-                  <span>Comprou Ferramenta de IA? Acesse aqui</span>
+                  <Smartphone className="h-4 w-4" />
+                  <span>Instalar App</span>
                 </button>
-                
-                {!isAppInstalled && (
-                  <button 
-                    onClick={() => navigate('/install-app')} 
-                    className="lg:hidden flex-1 bg-amber-500 hover:bg-amber-600 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
-                  >
-                    <Smartphone className="h-4 w-4" />
-                    <span>Instalar App</span>
-                  </button>
-                )}
               </div>
             )}
 
