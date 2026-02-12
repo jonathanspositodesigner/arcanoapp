@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import UpdateAvailableModal from './UpdateAvailableModal';
 
-// Current app version - update this when publishing new code
 export const APP_VERSION = '5.3.0';
 
+const LAST_FORCE_UPDATE_KEY = 'last_force_update';
+
 export const ForceUpdateModal = () => {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [latestVersion, setLatestVersion] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [forceUpdateAt, setForceUpdateAt] = useState('');
 
   useEffect(() => {
     const checkForUpdate = async () => {
@@ -20,12 +21,16 @@ export const ForceUpdateModal = () => {
 
         if (error || !data) return;
 
-        const value = data.value as { latest_version?: string; force_update_at?: string } | null;
-        const dbVersion = value?.latest_version;
+        const value = data.value as { force_update_at?: string } | null;
+        const dbTimestamp = value?.force_update_at;
 
-        if (dbVersion && dbVersion !== APP_VERSION) {
-          setLatestVersion(dbVersion);
-          setUpdateAvailable(true);
+        if (!dbTimestamp) return;
+
+        const lastAcknowledged = localStorage.getItem(LAST_FORCE_UPDATE_KEY);
+
+        if (!lastAcknowledged || new Date(dbTimestamp) > new Date(lastAcknowledged)) {
+          setForceUpdateAt(dbTimestamp);
+          setShowModal(true);
         }
       } catch (e) {
         console.warn('[ForceUpdateModal] Check failed:', e);
@@ -35,9 +40,9 @@ export const ForceUpdateModal = () => {
     checkForUpdate();
   }, []);
 
-  if (!updateAvailable) return null;
+  if (!showModal) return null;
 
-  return <UpdateAvailableModal latestVersion={latestVersion} />;
+  return <UpdateAvailableModal forceUpdateAt={forceUpdateAt} />;
 };
 
 export default ForceUpdateModal;
