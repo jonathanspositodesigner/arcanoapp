@@ -1,82 +1,22 @@
 
 
-## O Problema
+## Plano: Substituir o BeforeAfterSlider pela estrutura exata do Hero
 
-O componente do Hero (`HeroBeforeAfterSlider`) funciona porque passa um `style` explicitamente para o `ResilientImage` com dimensoes forcadas:
+Vou deletar todo o conteudo do `BeforeAfterSlider.tsx` e reescrever usando a mesma estrutura do `HeroBeforeAfterSlider.tsx` que funciona perfeitamente, mantendo apenas os props extras que o componente secundario precisa (zoom, aspect ratio, download).
 
-```tsx
-// Hero - FUNCIONA
-<ResilientImage 
-  src={afterImage} 
-  className="absolute inset-0"
-  style={{
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    objectPosition: 'center'
-  }}
-/>
-```
-
-Ja o `BeforeAfterSlider` (usado nos depoimentos) **nao** passa esse `style`:
-
-```tsx
-// Depoimentos - QUEBRADO
-<ResilientImage 
-  src={afterImage} 
-  className="absolute inset-0"
-  // SEM style! As imagens nao tem dimensoes forcadas
-/>
-```
-
-O `style` prop e aplicado no `div` wrapper do `ResilientImage`, nao no `<img>` diretamente. Sem ele, o wrapper nao tem dimensoes explicitadas e as imagens ficam com tamanhos diferentes.
-
-## A Solucao
-
-Replicar exatamente o que o Hero faz: adicionar o prop `style` com `width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center'` nas duas chamadas de `ResilientImage` dentro do `BeforeAfterSlider.tsx`.
-
-## Mudanca
+### O que muda
 
 **Arquivo:** `src/components/upscaler/BeforeAfterSlider.tsx`
 
-1. Na imagem "After" (linha ~112-122), adicionar o prop `style`:
-```tsx
-<ResilientImage 
-  src={afterImage} 
-  alt={locale === 'es' ? "Después" : "Depois"}
-  className="absolute inset-0"
-  style={{
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    objectPosition: 'center'
-  }}
-  timeout={8000}
-  compressOnFailure={true}
-  showDownloadOnFail={!!onDownloadClick}
-  onDownloadClick={onDownloadClick}
-  downloadFileName={downloadFileName}
-  locale={locale}
-/>
-```
+- Deletar todo o componente atual
+- Copiar a estrutura exata do `HeroBeforeAfterSlider` (que funciona)
+- Manter os props extras: `onZoomClick`, `aspectRatio`, `size`, `onDownloadClick`, `downloadFileName`
+- Usar o aspect ratio via classe CSS (como o Hero faz) em vez de `style` inline com `getAspectStyle()`
+- Labels e slider identicos ao Hero
 
-2. Na imagem "Before" (linha ~129-137), adicionar o mesmo prop `style`:
-```tsx
-<ResilientImage 
-  src={beforeImage} 
-  alt={locale === 'es' ? "Antes" : "Antes"}
-  className="absolute inset-0"
-  style={{
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    objectPosition: 'center'
-  }}
-  timeout={8000}
-  compressOnFailure={true}
-  showDownloadOnFail={false}
-  locale={locale}
-/>
-```
+### Detalhes tecnicos
 
-Isso e **exatamente** o que o Hero faz e resolve o problema das imagens com tamanhos diferentes.
+A diferenca principal e que o Hero usa aspect ratio via **classe CSS** (`aspect-[9/16] md:aspect-[4/3]`) diretamente no container, enquanto o BeforeAfterSlider usa uma funcao `getAspectStyle()` que aplica via `style` inline. Vou manter o aspect ratio customizavel mas aplicar da mesma forma que o Hero.
+
+O componente resultante sera praticamente uma copia do Hero com os props adicionais de zoom, download e aspect ratio configuravel.
+
