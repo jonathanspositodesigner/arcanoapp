@@ -29,11 +29,11 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
   ];
 
   const aiToolLinks = [
-    { name: "Upscaler Arcano V3", path: "/ferramentas-ia-aplicativo", badge: null },
+    { name: "Upscaler Arcano V3", path: "/upscaler-selection", badge: null },
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null },
     { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: "Novo" },
-    { name: "Forja Selos 3D", path: "/ferramentas-ia-aplicativo", badge: null },
+    { name: "Forja Selos 3D", path: "/ferramentas-ia-aplicativo", badge: "Em breve" },
     { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null },
     { name: "Video Upscaler", path: "/video-upscaler-tool", badge: null },
   ];
