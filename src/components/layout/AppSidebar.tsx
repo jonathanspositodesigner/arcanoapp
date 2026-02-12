@@ -50,14 +50,6 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
 
   return (
     <>
-      {/* Mobile Bottom Menu Button */}
-      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-        <Button onClick={() => setSidebarOpen(!sidebarOpen)} className="bg-purple-600 hover:bg-purple-700 text-white shadow-xl px-6 py-6 rounded-full">
-          <Menu className="h-6 w-6 mr-2" />
-          <span className="font-semibold">{t('mobileMenu.generateImage')}</span>
-        </Button>
-      </div>
-
       {/* Overlay */}
       {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />}
 
