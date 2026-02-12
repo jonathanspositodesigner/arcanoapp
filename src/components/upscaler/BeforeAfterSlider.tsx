@@ -15,10 +15,6 @@ interface BeforeAfterSliderProps {
   downloadFileName?: string;
 }
 
-/**
- * Standard BeforeAfterSlider for secondary images
- * Uses ResilientImage for robust loading with auto-retry and compression fallback
- */
 export const BeforeAfterSlider = ({ 
   beforeImage, 
   afterImage, 
@@ -88,18 +84,20 @@ export const BeforeAfterSlider = ({
     isHorizontalDrag.current = false;
   };
 
-  // Determine aspect ratio: custom > size-based default
-  const getAspectStyle = () => {
-    if (aspectRatio) return { aspectRatio };
-    return { aspectRatio: size === "large" ? "4/3" : "1/1" };
+  // Aspect ratio class - same approach as Hero
+  const getAspectClass = () => {
+    if (aspectRatio) {
+      const formatted = aspectRatio.replace('/', '/');
+      return `aspect-[${formatted}]`;
+    }
+    return size === "large" ? "aspect-[4/3]" : "aspect-square";
   };
 
   return (
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10"
-        style={getAspectStyle()}
+        className={`relative w-full ${getAspectClass()} rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10`}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -108,7 +106,7 @@ export const BeforeAfterSlider = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* After Image (background) - Using ResilientImage */}
+        {/* After Image (background) */}
         <ResilientImage 
           src={afterImage} 
           alt={locale === 'es' ? "Después" : "Depois"}
@@ -119,7 +117,7 @@ export const BeforeAfterSlider = ({
             objectFit: 'cover',
             objectPosition: 'center'
           }}
-          timeout={8000}
+          timeout={10000}
           compressOnFailure={true}
           showDownloadOnFail={!!onDownloadClick}
           onDownloadClick={onDownloadClick}
@@ -127,7 +125,7 @@ export const BeforeAfterSlider = ({
           locale={locale}
         />
         
-        {/* Before Image (clipped) - Using ResilientImage */}
+        {/* Before Image (clipped) */}
         <div 
           className="absolute inset-0 overflow-hidden"
           style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
@@ -142,16 +140,16 @@ export const BeforeAfterSlider = ({
               objectFit: 'cover',
               objectPosition: 'center'
             }}
-            timeout={8000}
+            timeout={10000}
             compressOnFailure={true}
             showDownloadOnFail={false}
             locale={locale}
           />
         </div>
 
-        {/* Slider line */}
+        {/* Slider line - identical to Hero */}
         <div 
-          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-10"
+          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
           style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
         >
           <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center">
@@ -162,11 +160,11 @@ export const BeforeAfterSlider = ({
           </div>
         </div>
 
-        {/* Labels - minimalista */}
-        <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm text-white/80 text-xs font-medium px-3 py-1 rounded-lg border border-white/10 z-10">
+        {/* Labels - identical to Hero */}
+        <div className="absolute top-4 left-4 bg-black/80 text-white text-sm font-semibold px-4 py-2 rounded-full">
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-fuchsia-400 text-xs font-medium px-3 py-1 rounded-lg border border-white/10 z-10">
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
           {t('tools:upscaler.beforeAfter.after')}
         </div>
 
