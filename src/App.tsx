@@ -133,6 +133,8 @@ const FerramentasIAAplicativo = lazy(() => import("./pages/FerramentasIAAplicati
 const ForceUpdate = lazy(() => import("./pages/ForceUpdate"));
 const ResgatarCreditos = lazy(() => import("./pages/ResgatarCreditos"));
 const TesteGratis = lazy(() => import("./pages/TesteGratis"));
+const GerarImagemTool = lazy(() => import("./pages/GerarImagemTool"));
+const GerarVideoTool = lazy(() => import("./pages/GerarVideoTool"));
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 
@@ -299,6 +301,8 @@ const AppContent = () => {
            <Route path="/force-update" element={<ForceUpdate />} />
            <Route path="/resgatar-creditos" element={<ResgatarCreditos />} />
            <Route path="/teste-gratis" element={<TesteGratis />} />
+           <Route path="/gerar-imagem" element={<GerarImagemTool />} />
+           <Route path="/gerar-video" element={<GerarVideoTool />} />
           
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
            <Route path="*" element={<NotFound />} />

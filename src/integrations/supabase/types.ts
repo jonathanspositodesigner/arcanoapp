@@ -1581,6 +1581,57 @@ export type Database = {
         }
         Relationships: []
       }
+      image_generator_jobs: {
+        Row: {
+          aspect_ratio: string
+          completed_at: string | null
+          created_at: string
+          credits_charged: boolean | null
+          credits_refunded: boolean | null
+          error_message: string | null
+          id: string
+          model: string
+          output_url: string | null
+          prompt: string
+          reference_images: Json | null
+          status: string
+          user_credit_cost: number | null
+          user_id: string
+        }
+        Insert: {
+          aspect_ratio?: string
+          completed_at?: string | null
+          created_at?: string
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
+          error_message?: string | null
+          id?: string
+          model?: string
+          output_url?: string | null
+          prompt: string
+          reference_images?: Json | null
+          status?: string
+          user_credit_cost?: number | null
+          user_id: string
+        }
+        Update: {
+          aspect_ratio?: string
+          completed_at?: string | null
+          created_at?: string
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
+          error_message?: string | null
+          id?: string
+          model?: string
+          output_url?: string | null
+          prompt?: string
+          reference_images?: Json | null
+          status?: string
+          user_credit_cost?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       import_jobs: {
         Row: {
           completed_at: string | null
@@ -3086,6 +3137,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      video_generator_jobs: {
+        Row: {
+          aspect_ratio: string
+          completed_at: string | null
+          created_at: string
+          credits_charged: boolean | null
+          credits_refunded: boolean | null
+          duration_seconds: number
+          end_frame_url: string | null
+          error_message: string | null
+          id: string
+          operation_name: string | null
+          output_url: string | null
+          prompt: string
+          start_frame_url: string | null
+          started_at: string | null
+          status: string
+          user_credit_cost: number | null
+          user_id: string
+        }
+        Insert: {
+          aspect_ratio?: string
+          completed_at?: string | null
+          created_at?: string
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
+          duration_seconds?: number
+          end_frame_url?: string | null
+          error_message?: string | null
+          id?: string
+          operation_name?: string | null
+          output_url?: string | null
+          prompt: string
+          start_frame_url?: string | null
+          started_at?: string | null
+          status?: string
+          user_credit_cost?: number | null
+          user_id: string
+        }
+        Update: {
+          aspect_ratio?: string
+          completed_at?: string | null
+          created_at?: string
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
+          duration_seconds?: number
+          end_frame_url?: string | null
+          error_message?: string | null
+          id?: string
+          operation_name?: string | null
+          output_url?: string | null
+          prompt?: string
+          start_frame_url?: string | null
+          started_at?: string | null
+          status?: string
+          user_credit_cost?: number | null
+          user_id?: string
+        }
+        Relationships: []
       }
       video_upscaler_jobs: {
         Row: {
