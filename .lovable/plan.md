@@ -1,37 +1,46 @@
 
+# Simplificar o Modal de Free Trial + Corrigir créditos do usuário
 
-## Plano: Mensagem amigavel para erro de fila cheia (erro 421)
+## Problema identificado
 
-### Problema
-Quando a API do servidor retorna erro 421 ("api queue limit reached"), a mensagem crua aparece pro usuario sem explicacao. Precisa mostrar uma mensagem clara dizendo que o servidor ta ocupado.
+1. O usuário `edemar.seemg@gmail.com` criou conta e verificou email, mas **nunca recebeu os 300 créditos**. A edge function `claim-arcano-free-trial` nunca foi chamada para ele.
 
-### Solucao
+2. **Causa raiz**: O modal começa com um passo "Criar conta no RunningHub" com timer de 15 segundos. Isso confunde os usuarios que nao entendem o que e RunningHub e desistem ou se perdem no fluxo.
 
-**1. Arquivo `src/utils/errorMessages.ts`**
-- Adicionar um novo bloco de deteccao para erros de fila cheia/limite de API
-- Detectar as strings: `queue limit`, `queue full`, `too many requests`, `rate limit`, `429`, `421`
-- Mensagem amigavel: **"Servidor ocupado no momento"**
-- Solucao: **"A fila de processamento esta cheia. Aguarde 2-3 minutos e tente novamente."**
-- Posicionar ANTES do bloco generico de erros de conexao para garantir prioridade
+3. Alem disso, se o usuario cria conta, sai pra verificar email, e depois faz login normalmente (fora do modal), o callback `handleAuthSuccess` do modal nao executa, entao o claim nunca acontece.
 
-**2. Arquivo `supabase/functions/runninghub-queue-manager/index.ts`**
-- Na funcao `callRunningHubApi` (linha 1202), melhorar a mensagem de erro quando detectar `errorCode` 421 ou mensagem de queue limit
-- Salvar no banco: `"api queue limit reached"` de forma padronizada para o frontend mapear corretamente
+## Plano
+
+### 1. Creditar manualmente os 300 creditos para o usuario
+
+Executar a RPC `add_lifetime_credits` para o usuario `2a9a0b2d-75ef-4cb5-9f01-98d1b2789a30` com 300 creditos e registrar na tabela `arcano_cloner_free_trials` para que nao possa reclamar novamente.
+
+### 2. Remover o passo RunningHub do modal
+
+No arquivo `src/components/ai-tools/AIToolsAuthModal.tsx`:
+
+- Remover o step `'runninghub'` completamente
+- O modal agora inicia direto no step `'email'`
+- Remover toda a logica de countdown, referral URL do RunningHub
+- Remover imports nao utilizados (`ExternalLink`, `Check`)
+- Manter os steps: `email` -> `password` ou `signup` -> `verify-email`
+
+### 3. Ajustar o header do modal
+
+- Remover a mensagem sobre RunningHub
+- Manter o texto "Ganhe 300 creditos gratis!" e "Faca login ou crie sua conta para comecar"
 
 ### Detalhes tecnicos
 
-No `errorMessages.ts`, o novo bloco ficara assim:
-```typescript
-// Fila cheia / limite de API (erro 421)
-if (error.includes('queue limit') || error.includes('queue full') || 
-    error.includes('too many requests') || error.includes('rate limit') || 
-    error.includes('429') || error.includes('421')) {
-  return {
-    message: 'Servidor ocupado no momento',
-    solution: 'A fila de processamento esta cheia. Aguarde 2-3 minutos e tente novamente.'
-  };
-}
-```
+**Arquivo**: `src/components/ai-tools/AIToolsAuthModal.tsx`
+- Tipo `ModalStep`: remover `'runninghub'`, manter `'email' | 'password' | 'signup' | 'verify-email'`
+- Estado inicial do step: `'email'` em vez de `'runninghub'`
+- Remover constantes `RUNNINGHUB_REFERRAL_URL`, `COUNTDOWN_SECONDS`
+- Remover estados `countdown`, `countdownActive`
+- Remover funcao `handleOpenRunningHub`
+- Remover todo o bloco de renderizacao do step `'runninghub'` (linhas 286-367)
+- Remover useEffect do countdown timer
+- Atualizar subtitle do header para sempre mostrar "Faca login ou crie sua conta"
+- Remover texto "Conta gratuita no RunningHub" dos beneficios
 
-No `callRunningHubApi`, quando nao tem `taskId`, verificar se `data.errorCode` e 421 e padronizar a mensagem de erro salva no banco para `"api queue limit reached"`.
-
+**Migracao SQL**: Inserir registro em `arcano_cloner_free_trials` e creditar 300 para o usuario edemar.
