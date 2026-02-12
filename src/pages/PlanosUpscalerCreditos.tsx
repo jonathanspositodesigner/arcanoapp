@@ -392,7 +392,7 @@ const PlanosUpscalerCreditos = () => {
               </FadeIn>
 
               {/* Título principal */}
-              <h1 className="font-space-grotesk font-bold text-[1.25rem] md:text-2xl lg:text-3xl text-white mb-3 md:mb-4 leading-[1.25]">
+              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.25]">
                 {t('tools:upscaler.hero.title1')}{' '}
                 <br className="hidden md:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
