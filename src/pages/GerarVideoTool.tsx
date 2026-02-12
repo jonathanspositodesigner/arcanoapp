@@ -326,9 +326,19 @@ const GerarVideoTool = () => {
             </div>
           ) : errorMessage ? (
             <div className="max-w-md text-center space-y-3">
-              <div className="p-4 rounded-xl border border-red-500/30 bg-red-900/20 text-red-300 text-sm">
-                {errorMessage}
-              </div>
+              {errorMessage.includes('celebridade') || errorMessage.includes('pessoa pública') || errorMessage.includes('filtro de segurança') ? (
+                <div className="p-5 rounded-xl border border-orange-500/40 bg-orange-900/20 space-y-2">
+                  <div className="flex items-center justify-center gap-2 text-orange-400 font-semibold text-base">
+                    <span>⚠️</span> Conteúdo bloqueado
+                  </div>
+                  <p className="text-orange-300/90 text-sm leading-relaxed">{errorMessage}</p>
+                  <p className="text-orange-400/60 text-xs">Seus créditos foram estornados automaticamente.</p>
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl border border-red-500/30 bg-red-900/20 text-red-300 text-sm">
+                  {errorMessage}
+                </div>
+              )}
               <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
                 Tentar novamente
               </Button>
