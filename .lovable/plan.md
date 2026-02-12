@@ -1,111 +1,100 @@
 
+# Modal de Free Trial Global para Ferramentas de IA
 
-## Redesign: Sidebar + Header padronizado + Fonte Space Grotesk
+## Resumo
+Transformar o modal de free trial (atualmente exclusivo do Arcano Cloner) em um componente global que aparece em todas as ferramentas de IA, com um novo passo inicial pedindo criacao de conta na RunningHub antes do login/cadastro.
 
-### Resumo
-
-Extrair o sidebar e header que ja existem na Biblioteca de Prompts para componentes reutilizaveis, e aplicar em todas as paginas da biblioteca e ferramentas de IA. Trocar a fonte global para Space Grotesk.
-
----
-
-### Fase 1: Fonte Space Grotesk (global)
-
-**Arquivos**: `index.html`, `src/index.css`
-
-- Substituir `Poppins:wght@400;500;600;700;800` por `Space+Grotesk:wght@300;400;500;600;700`
-- Atualizar `font-family` no CSS de `'Poppins'` para `'Space Grotesk'`
-- Manter `Bebas Neue` que ja existe
-
----
-
-### Fase 2: Extrair componentes reutilizaveis da BibliotecaPrompts
-
-Criar 3 componentes novos que sao uma copia exata dos elementos que ja existem na BibliotecaPrompts:
-
-#### `src/components/layout/AppSidebar.tsx`
-Extrair o sidebar da BibliotecaPrompts (linhas 640-730) -- contendo os **mesmos botoes** que ja existem:
-- Instalar App
-- Premium Ativo / Seja Premium / Login
-- **Gere com IA** (titulo)
-- Ferramentas de IA (botao destacado)
-- Gerar no ChatGPT
-- Gerar no Nano Banana
-- Gerar no Whisk
-- Gerar no Flux 2
-- Gerar Video no VEO 3
-- Entrar no grupo do WhatsApp
-
-Props: recebe `user`, `isPremium`, `sidebarOpen`, `setSidebarOpen` (para controle mobile).
-
-#### `src/components/layout/AppTopBar.tsx`
-Extrair os headers desktop e mobile da BibliotecaPrompts (linhas 485-625) -- contendo:
-- Logo
-- Home button
-- Area do Parceiro
-- Login / Premium / Badge Premium Ativo
-- Creditos + botao comprar
-- ProfileDropdown (perfil do usuario)
-
-Props: recebe `user`, `isPremium`, `credits`, `creditsLoading`, `planType`.
-
-#### `src/components/layout/AppLayout.tsx`
-Wrapper que combina AppSidebar + AppTopBar + conteudo:
+## Novo Fluxo do Modal
 
 ```text
-+----------------------------------------------------------+
-| [TopBar: logo | home | parceiro | premium | creditos]    |
-+-------------------+--------------------------------------+
-|                   |                                      |
-|   SIDEBAR         |       {children}                     |
-|   (mesmos botoes  |                                      |
-|    da biblioteca) |                                      |
-|                   |                                      |
-+-------------------+--------------------------------------+
++----------------------------------+
+| Passo 1: RunningHub (NOVO)       |
+| "Ganhe 300 creditos gratis!"     |
+| [Criar conta no RunningHub]      |
+|          |                       |
+|    (countdown 15s)               |
+|          |                       |
+| [Ja criei minha conta]           |
++----------------------------------+
+            |
+            v
++----------------------------------+
+| Passo 2: Email (existente)       |
+| "Faca login ou crie sua conta"   |
+| [Campo de email + Continuar]     |
++----------------------------------+
+            |
+            v
++----------------------------------+
+| Passo 3: Senha/Cadastro/Verify   |
+| (fluxo atual do AuthModal)       |
++----------------------------------+
 ```
 
-No mobile: sidebar vira drawer (mesmo comportamento atual da biblioteca).
+## Mudancas
 
----
+### 1. Renomear e Generalizar o ArcanoClonerAuthModal
+- Renomear para `AIToolsAuthModal` (ou manter o arquivo e criar um wrapper)
+- Adicionar novo step `'runninghub'` como passo inicial (antes de `'email'`)
+- O step `'runninghub'` tera:
+  - Icone animado + titulo "Ganhe 300 creditos gratis!"
+  - Beneficios listados (conta gratuita, creditos, etc.)
+  - Botao "Criar conta no RunningHub" que abre o link de referral
+  - Countdown de 15 segundos apos clicar
+  - Botao "Ja criei minha conta" apos countdown (avanca para step `'email'`)
+  - Botao "Agora nao" para fechar
+- Tipo de step atualizado: `'runninghub' | 'email' | 'password' | 'signup' | 'verify-email'`
 
-### Fase 3: Aplicar nas paginas
+### 2. Controle de Visibilidade (sessionStorage)
+- Usar uma chave `ai_tools_free_trial_modal_shown` no sessionStorage para nao mostrar repetidamente na mesma sessao
+- O modal aparece automaticamente apos ~2 segundos se:
+  - Usuario NAO esta logado (`!user`)
+  - Modal ainda nao foi exibido na sessao atual
 
-Cada pagina abaixo sera envolvida pelo `AppLayout`, removendo o header/sidebar proprio que ja tem:
+### 3. Integrar em Todas as Ferramentas de IA
+Adicionar o modal nas seguintes paginas (mesmo padrao do Arcano Cloner):
+- `UpscalerArcanoTool.tsx`
+- `VideoUpscalerTool.tsx`
+- `VesteAITool.tsx`
+- `PoseChangerTool.tsx`
+- `GeradorPersonagemTool.tsx`
+- `ForjaSelos3D.tsx`
 
-| Pagina | Arquivo | O que muda |
-|--------|---------|------------|
-| Biblioteca de Prompts | `BibliotecaPrompts.tsx` | Substituir sidebar e header inline pelo AppLayout |
-| Ferramentas IA | `FerramentasIAAplicativo.tsx` | Remover ToolsHeader, usar AppLayout |
-| Upscaler Arcano | `UpscalerArcanoTool.tsx` | Remover ToolsHeader, usar AppLayout |
-| Arcano Cloner | `ArcanoClonerTool.tsx` | Remover ToolsHeader, usar AppLayout |
-| Veste AI | `VesteAITool.tsx` | Remover ToolsHeader, usar AppLayout |
-| Pose Changer | `PoseChangerTool.tsx` | Remover ToolsHeader, usar AppLayout |
-| Gerador Personagem | `GeradorPersonagemTool.tsx` | Remover ToolsHeader, usar AppLayout |
-| Video Upscaler | `VideoUpscalerTool.tsx` | Remover ToolsHeader, usar AppLayout |
-| Forja Selos 3D | `ForjaSelos3D.tsx` | Remover ToolsHeader, usar AppLayout |
-| Selecao de versao Upscaler | `UpscalerArcanoVersionSelect.tsx` | Remover ToolsHeader, usar AppLayout |
-| Planos Creditos | `PlanosCreditos.tsx` | Remover ToolsHeader, usar AppLayout |
-| Historico Creditos | `CreditHistory.tsx` | Usar AppLayout |
-| Configuracoes Perfil | `ProfileSettings.tsx` | Usar AppLayout |
-| Mudar Pose (aulas) | `MudarPose.tsx` | Remover ToolsHeader, usar AppLayout |
-| Mudar Roupa (aulas) | `MudarRoupa.tsx` | Remover ToolsHeader, usar AppLayout |
-| Aulas por versao | `ToolVersionLessons.tsx` | Remover ToolsHeader, usar AppLayout |
+Em cada pagina:
+- Importar `AIToolsAuthModal`
+- Adicionar state `showAuthModal`
+- Adicionar useEffect para mostrar modal apos 2s se `!user`
+- Adicionar handler `handleAuthSuccess` que fecha o modal e chama `claim-arcano-free-trial`
+- Renderizar `<AIToolsAuthModal />` no JSX
 
-O `ToolsHeader` existente **nao sera deletado** (pode haver paginas de artes que o usem), mas todas essas paginas deixarao de usa-lo.
+### 4. Atualizar o ArcanoClonerTool.tsx
+- Trocar o import do `ArcanoClonerAuthModal` pelo novo `AIToolsAuthModal`
+- Remover a condicao `cameFromLibrary` - agora aparece sempre que `!user`
+- Manter o handler `handleAuthSuccess` existente
 
----
+## Detalhes Tecnicos
 
-### Ordem de implementacao
+### Novo componente: `src/components/ai-tools/AIToolsAuthModal.tsx`
+- Baseado no `ArcanoClonerAuthModal` existente
+- Step inicial `'runninghub'` reutiliza a logica visual do `RunningHubBonusModal` (countdown, link referral, etc.)
+- Props: `isOpen`, `onClose`, `onAuthSuccess`
+- Constantes: `RUNNINGHUB_REFERRAL_URL`, `COUNTDOWN_SECONDS = 15`
 
-Devido ao tamanho (16+ paginas), sera feito em **3 mensagens**:
+### Logica de exibicao por pagina (hook ou inline)
+Cada pagina de ferramenta adicionara:
+```text
+const [showAuthModal, setShowAuthModal] = useState(false);
 
-1. **Mensagem 1**: Fonte Space Grotesk + criar AppSidebar, AppTopBar, AppLayout + aplicar na BibliotecaPrompts
-2. **Mensagem 2**: Aplicar em FerramentasIAAplicativo, PlanosCreditos, CreditHistory, ProfileSettings, ForjaSelos3D, UpscalerArcanoVersionSelect, MudarPose, MudarRoupa, ToolVersionLessons
-3. **Mensagem 3**: Aplicar nas ferramentas de IA (Upscaler, Cloner, Veste, Pose, Video, Gerador)
+useEffect - se !user e !sessionStorage tem chave, mostra apos 2s
+handleAuthSuccess - fecha modal + chama claim-arcano-free-trial + refetchCredits
+```
 
----
-
-### Riscos e cuidados
-
-- A troca de fonte e **global** -- afeta todas as paginas do site (landing pages, artes, musicos, etc). Isso foi solicitado pelo usuario.
-- As ferramentas de IA (Upscaler, Cloner, etc) usam `h-screen overflow-hidden` para layout de tela cheia. O AppLayout precisara de um modo compacto para essas paginas.
-- Os botoes da sidebar sao **exatamente os mesmos** que ja existem na Biblioteca de Prompts. Nenhum botao novo sera adicionado -- configuracao futura fica por conta do usuario.
+### Arquivos modificados
+1. **Novo**: `src/components/ai-tools/AIToolsAuthModal.tsx`
+2. **Modificado**: `src/pages/ArcanoClonerTool.tsx` - trocar para novo modal
+3. **Modificado**: `src/pages/UpscalerArcanoTool.tsx` - adicionar modal
+4. **Modificado**: `src/pages/VideoUpscalerTool.tsx` - adicionar modal
+5. **Modificado**: `src/pages/VesteAITool.tsx` - adicionar modal
+6. **Modificado**: `src/pages/PoseChangerTool.tsx` - adicionar modal
+7. **Modificado**: `src/pages/GeradorPersonagemTool.tsx` - adicionar modal
+8. **Modificado**: `src/pages/ForjaSelos3D.tsx` - adicionar modal
