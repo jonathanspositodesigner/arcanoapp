@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X, ChevronDown, BookOpen, Settings, LogOut, Coins, Wand2 } from "lucide-react";
+import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X, ChevronDown, BookOpen, Settings, LogOut, Coins, Wand2, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -68,6 +68,17 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
 
         {/* Top section */}
         <div className="space-y-2 flex-1 overflow-y-auto">
+          {/* Home Button */}
+          <button
+            onClick={() => handleNavAndClose("/")}
+            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+          >
+            <Home className="h-3.5 w-3.5 mr-1.5" />
+            Home
+          </button>
+
+          <div className="border-t border-purple-400/30" />
+
           {/* Install App Button */}
           <Button onClick={() => handleNavAndClose("/install-app")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-medium text-[11px] flex items-center justify-between">
             <span className="flex items-center">
