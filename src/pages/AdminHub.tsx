@@ -63,30 +63,27 @@ const AdminHub = () => {
   };
 
   const handleForceUpdate = async () => {
-    if (!confirm("Forçar atualização para TODOS os usuários?")) {
+    if (!confirm("Enviar push de atualização para TODOS os dispositivos?")) {
       return;
     }
 
     setIsForcingUpdate(true);
     try {
-      const now = new Date();
-      const pad = (n: number) => String(n).padStart(2, '0');
-      const newVersion = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+      const { data, error } = await supabase.functions.invoke("send-push-notification", {
+        body: {
+          title: "🔄 Atualização Disponível",
+          body: "Uma nova versão do ArcanoApp está disponível. Toque para atualizar.",
+          url: "/force-update"
+        }
+      });
 
-      const { error: updateError } = await supabase
-        .from('app_settings')
-        .update({
-          value: { version: newVersion },
-          updated_at: now.toISOString()
-        })
-        .eq('id', 'pwa_version');
+      if (error) throw error;
 
-      if (updateError) throw updateError;
-
-      toast.success(`Update global publicado! Versão: ${newVersion}`);
+      const sent = data?.sent || 0;
+      toast.success(`Push enviado para ${sent} dispositivo(s)!`);
     } catch (error) {
-      console.error('Error forcing update:', error);
-      toast.error("Erro ao forçar atualização");
+      console.error('Error sending update push:', error);
+      toast.error("Erro ao enviar push de atualização");
     } finally {
       setIsForcingUpdate(false);
     }
@@ -211,7 +208,7 @@ const AdminHub = () => {
           className="gap-2 shadow-lg"
         >
           <RefreshCw className={`h-4 w-4 ${isForcingUpdate ? 'animate-spin' : ''}`} />
-          {isForcingUpdate ? 'Enviando...' : 'Forçar Update Global'}
+          {isForcingUpdate ? 'Enviando...' : 'Push Update Global'}
         </Button>
       </div>
 
@@ -227,7 +224,7 @@ const AdminHub = () => {
             className="gap-1"
           >
             <RefreshCw className={`h-4 w-4 ${isForcingUpdate ? 'animate-spin' : ''}`} />
-            {isForcingUpdate ? 'Enviando...' : 'Forçar Update'}
+            {isForcingUpdate ? 'Enviando...' : 'Push Update'}
           </Button>
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
