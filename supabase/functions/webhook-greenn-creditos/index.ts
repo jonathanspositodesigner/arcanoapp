@@ -468,6 +468,37 @@ async function processGreennCreditosWebhook(
 
     console.log(`   ├─ [${requestId}] ✅ Créditos adicionados! Novo saldo: ${creditResult?.[0]?.new_balance || 'N/A'}`)
 
+    // Ativar Premium Pro automaticamente (não sobrescreve Unlimited)
+    const farFuture = '2099-12-31T23:59:59.000Z'
+    const { data: existingPremium } = await supabase.from('premium_users')
+      .select('plan_type, is_active')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    const shouldActivatePro = !existingPremium || 
+      !existingPremium.is_active || 
+      existingPremium.plan_type === 'arcano_basico' ||
+      existingPremium.plan_type === 'arcano_pro'
+
+    if (shouldActivatePro) {
+      const { error: premiumError } = await supabase.from('premium_users').upsert({
+        user_id: userId,
+        is_active: true,
+        plan_type: 'arcano_pro',
+        billing_period: 'lifetime',
+        subscribed_at: new Date().toISOString(),
+        expires_at: farFuture
+      }, { onConflict: 'user_id' })
+
+      if (premiumError) {
+        console.log(`   ├─ [${requestId}] ⚠️ Erro ao ativar Premium Pro: ${premiumError.message}`)
+      } else {
+        console.log(`   ├─ [${requestId}] ✅ Premium Pro ativado automaticamente`)
+      }
+    } else {
+      console.log(`   ├─ [${requestId}] ℹ️ Plano ${existingPremium.plan_type} mantido (superior ao Pro)`)
+    }
+
     // Enviar email de boas-vindas (apenas para novos usuários)
     await sendWelcomeEmail(supabase, email, clientName, creditAmount, isNewUser, requestId, userLocale)
 
