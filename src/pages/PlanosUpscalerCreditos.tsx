@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool } from "lucide-react";
+import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
@@ -195,14 +195,27 @@ const PlanosUpscalerCreditos = () => {
   const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
   const [heroRevealed, setHeroRevealed] = useState(false);
 
-  // Countdown timer - 30 minutes with localStorage persistence
+  // Expandable AI tools state
+  const [expandedAiTools, setExpandedAiTools] = useState<Record<string, boolean>>({});
+
+  const aiToolsList = [
+    "Arcano Cloner",
+    "IA que muda a roupa",
+    "IA que muda pose",
+    "Upscale Arcano v2.0",
+    "Forja de Selos 3D",
+    "Gerador de Personagens",
+    "E muito mais..."
+  ];
+
+  // Countdown timer - 1 hour with localStorage persistence
   const [timeLeft, setTimeLeft] = useState(() => {
     const saved = localStorage.getItem('planos-upscaler-countdown');
     if (saved) {
       const remaining = parseInt(saved, 10) - Date.now();
       if (remaining > 0) return remaining;
     }
-    const initial = 30 * 60 * 1000;
+    const initial = 60 * 60 * 1000;
     localStorage.setItem('planos-upscaler-countdown', String(Date.now() + initial));
     return initial;
   });
@@ -211,7 +224,7 @@ const PlanosUpscalerCreditos = () => {
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1000) {
-          const newTime = 30 * 60 * 1000;
+          const newTime = 60 * 60 * 1000;
           localStorage.setItem('planos-upscaler-countdown', String(Date.now() + newTime));
           return newTime;
         }
@@ -223,9 +236,11 @@ const PlanosUpscalerCreditos = () => {
 
   const formatCountdown = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
     return {
+      hours: String(hours).padStart(2, '0'),
       minutes: String(minutes).padStart(2, '0'),
       seconds: String(seconds).padStart(2, '0')
     };
@@ -645,6 +660,10 @@ const PlanosUpscalerCreditos = () => {
                   <Clock className="w-3 h-3 text-red-500" />
                   <div className="flex items-center gap-0.5">
                     <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
+                      <span className="text-red-400 font-mono font-bold text-xs">{countdown.hours}</span>
+                    </div>
+                    <span className="text-red-400 font-bold text-xs">:</span>
+                    <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
                       <span className="text-red-400 font-mono font-bold text-xs">{countdown.minutes}</span>
                     </div>
                     <span className="text-red-400 font-bold text-xs">:</span>
@@ -701,6 +720,36 @@ const PlanosUpscalerCreditos = () => {
                         <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
                       </li>
+
+                      {/* Bonus section */}
+                      <li className="pt-2 border-t border-purple-500/20 mt-2">
+                        <p className="text-[10px] text-purple-400 uppercase tracking-wide mb-1.5">Bônus</p>
+                      </li>
+                      <li>
+                        <div 
+                          className="flex items-start gap-1.5 text-xs cursor-pointer select-none"
+                          onClick={() => setExpandedAiTools(prev => ({ ...prev, starter: !prev.starter }))}
+                        >
+                          <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                          <span className="text-purple-200 flex items-center gap-1.5">
+                            Acesso à todas Ferramentas de IA
+                          </span>
+                          <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.starter ? 'rotate-180' : ''}`} />
+                        </div>
+                        {expandedAiTools.starter && (
+                          <ul className="ml-5 mt-1 space-y-0.5">
+                            {aiToolsList.map((tool, tIndex) => (
+                              <li key={tIndex} className={`text-[10px] ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
+                                • {tool}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <X className="w-3 h-3 text-orange-500 shrink-0 mt-0.5" />
+                        <span className="text-orange-500">Fila prioritária nos upscalers</span>
+                      </li>
                     </ul>
                   </Card>
                 </div>
@@ -747,6 +796,36 @@ const PlanosUpscalerCreditos = () => {
                         <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
                       </li>
+
+                      {/* Bonus section */}
+                      <li className="pt-2 border-t border-purple-500/20 mt-2">
+                        <p className="text-[10px] text-purple-400 uppercase tracking-wide mb-1.5">Bônus</p>
+                      </li>
+                      <li>
+                        <div 
+                          className="flex items-start gap-1.5 text-xs cursor-pointer select-none"
+                          onClick={() => setExpandedAiTools(prev => ({ ...prev, pro: !prev.pro }))}
+                        >
+                          <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                          <span className="text-purple-200 flex items-center gap-1.5">
+                            Acesso à todas Ferramentas de IA
+                          </span>
+                          <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.pro ? 'rotate-180' : ''}`} />
+                        </div>
+                        {expandedAiTools.pro && (
+                          <ul className="ml-5 mt-1 space-y-0.5">
+                            {aiToolsList.map((tool, tIndex) => (
+                              <li key={tIndex} className={`text-[10px] ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
+                                • {tool}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Fila prioritária nos upscalers</span>
+                      </li>
                     </ul>
                   </Card>
                 </div>
@@ -792,6 +871,36 @@ const PlanosUpscalerCreditos = () => {
                       <li className="flex items-start gap-1.5 text-xs">
                         <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
                         <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
+                      </li>
+
+                      {/* Bonus section */}
+                      <li className="pt-2 border-t border-purple-500/20 mt-2">
+                        <p className="text-[10px] text-purple-400 uppercase tracking-wide mb-1.5">Bônus</p>
+                      </li>
+                      <li>
+                        <div 
+                          className="flex items-start gap-1.5 text-xs cursor-pointer select-none"
+                          onClick={() => setExpandedAiTools(prev => ({ ...prev, studio: !prev.studio }))}
+                        >
+                          <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                          <span className="text-purple-200 flex items-center gap-1.5">
+                            Acesso à todas Ferramentas de IA
+                          </span>
+                          <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.studio ? 'rotate-180' : ''}`} />
+                        </div>
+                        {expandedAiTools.studio && (
+                          <ul className="ml-5 mt-1 space-y-0.5">
+                            {aiToolsList.map((tool, tIndex) => (
+                              <li key={tIndex} className={`text-[10px] ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
+                                • {tool}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                      <li className="flex items-start gap-1.5 text-xs">
+                        <Check className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
+                        <span className="text-purple-200">Fila prioritária nos upscalers</span>
                       </li>
                     </ul>
                   </Card>
