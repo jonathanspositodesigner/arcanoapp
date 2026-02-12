@@ -387,7 +387,7 @@ const PlanosUpscalerCreditos = () => {
                     <img src="/images/social-proof-2.png" alt="" className="w-7 h-7 rounded-full border-2 border-[#0f0a15] object-cover" />
                     <img src="/images/social-proof-3.png" alt="" className="w-7 h-7 rounded-full border-2 border-[#0f0a15] object-cover" />
                   </div>
-                  <span className="text-white/80 text-sm font-medium">+100.000 profissionais já estão usando</span>
+                  <span className="text-white/80 text-sm font-medium">+5.000 profissionais já estão usando</span>
                 </div>
               </FadeIn>
 
