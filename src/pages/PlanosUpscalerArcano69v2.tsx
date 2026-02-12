@@ -399,9 +399,17 @@ const PlanosUpscalerArcano69v2 = () => {
               </div>
               
               <FadeIn delay={400} duration={700}>
-                <p className="text-base md:text-lg lg:text-xl text-white/70 mb-6 md:mb-8 max-w-2xl">
+                <p className="text-base md:text-lg lg:text-xl text-white/70 mb-4 md:mb-6 max-w-2xl">
                   {t('tools:upscaler.hero.subtitle')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
+              </FadeIn>
+
+              <FadeIn delay={500} duration={700}>
+                <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-2xl px-6 py-3 mb-6 md:mb-8 max-w-xl">
+                  <p className="text-red-400 font-bold text-sm md:text-base flex items-center justify-center gap-2">
+                    🔥 Últimos dias de venda do Upscaler na versão vitalícia
+                  </p>
+                </div>
               </FadeIn>
 
               {/* Scroll Indicator */}
