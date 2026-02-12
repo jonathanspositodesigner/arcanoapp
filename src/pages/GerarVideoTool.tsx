@@ -283,6 +283,14 @@ const GerarVideoTool = () => {
           </div>
         </div>
 
+        {/* Beta warning */}
+        <div className="mx-4 mt-3 mb-0 max-w-4xl self-center w-full">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 text-xs">
+            <span className="text-yellow-400 text-sm">⚠️</span>
+            <span>Ferramenta em fase de teste — podem ocorrer erros ou resultados inesperados.</span>
+          </div>
+        </div>
+
         {/* Main content area */}
         <div className="flex-1 flex items-center justify-center p-4">
           {resultUrl ? (
