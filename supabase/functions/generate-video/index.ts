@@ -166,12 +166,8 @@ serve(async (req) => {
       sampleCount: 1,
     };
 
-    if (end_frame?.base64 && end_frame?.mimeType) {
-      instance.endImage = {
-        bytesBase64Encoded: end_frame.base64,
-        mimeType: end_frame.mimeType,
-      };
-    }
+    // Note: endImage is NOT supported by veo-3.1-generate-preview model
+    // Only start_frame (image) is supported
 
     const veoUrl = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning`;
 
