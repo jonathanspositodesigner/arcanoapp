@@ -33,6 +33,8 @@ import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecove
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
+import AIToolsAuthModal from '@/components/ai-tools/AIToolsAuthModal';
+import { useAIToolsAuthModal } from '@/hooks/useAIToolsAuthModal';
 
 // Max dimension for mobile slider preview optimization
 const SLIDER_PREVIEW_MAX_PX = 1500;
@@ -64,6 +66,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
+  const { showAuthModal, setShowAuthModal, handleAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
   const isMobile = useIsMobile();
   const { getCreditCost } = useAIToolSettings();
   
@@ -1542,6 +1545,13 @@ const UpscalerArcanoTool: React.FC = () => {
 
       {/* Notification Prompt Toast */}
       <NotificationPromptToast toolName="upscale" />
+
+      {/* Free Trial Auth Modal */}
+      <AIToolsAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </AppLayout>
   );
 };
