@@ -559,7 +559,7 @@ const GeradorPersonagemTool: React.FC = () => {
 
   return (
     <AppLayout fullScreen>
-      <div className="h-full overflow-hidden bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
+      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
 
       {isProcessing && (
         <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
