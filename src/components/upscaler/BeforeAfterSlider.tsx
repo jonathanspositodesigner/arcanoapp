@@ -113,6 +113,12 @@ export const BeforeAfterSlider = ({
           src={afterImage} 
           alt={locale === 'es' ? "Después" : "Depois"}
           className="absolute inset-0"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center'
+          }}
           timeout={8000}
           compressOnFailure={true}
           showDownloadOnFail={!!onDownloadClick}
@@ -130,6 +136,12 @@ export const BeforeAfterSlider = ({
             src={beforeImage} 
             alt={locale === 'es' ? "Antes" : "Antes"}
             className="absolute inset-0"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center'
+            }}
             timeout={8000}
             compressOnFailure={true}
             showDownloadOnFail={false}
