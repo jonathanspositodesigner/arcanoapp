@@ -257,7 +257,7 @@ export const ResilientImage = ({
       <img
         src={currentSrc}
         alt={alt}
-        className="w-full h-full"
+        className="absolute inset-0 w-full h-full object-cover"
         style={{
           objectFit,
           opacity: isLoaded ? 1 : 0,
