@@ -860,7 +860,7 @@ const PlanosUpscalerCreditos = () => {
                         <Sparkles className="w-3.5 h-3.5" />
                         160 upscalers
                       </span>
-                      <span className="text-[11px] text-purple-400 mt-1">10.800 créditos</span>
+                      <span className="text-[11px] text-purple-400 mt-1">15.000 créditos</span>
                     </div>
                     <ul className="space-y-2.5 flex-1">
                       <li className="flex items-start gap-2 text-sm">
