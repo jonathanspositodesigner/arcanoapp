@@ -565,8 +565,14 @@ const GeradorPersonagemTool: React.FC = () => {
         </div>
       )}
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 lg:h-full">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
+        {/* Tool intro - full width centered */}
+        <div className="text-center py-3">
+          <h1 className="text-2xl lg:text-3xl font-bold text-white">Gerador de Avatar</h1>
+          <p className="text-sm text-purple-300 mt-1 max-w-lg mx-auto">Crie avatares de alta fidelidade a partir das suas fotos. Envie 4 ângulos diferentes e a IA gera seu personagem.</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 flex-1 lg:min-h-0">
           
           {/* Left Side - Inputs */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
