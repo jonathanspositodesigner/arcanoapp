@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, Paperclip, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, Paperclip, ChevronDown, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -311,7 +311,7 @@ const GerarImagemTool = () => {
             </div>
 
             {/* Controls row */}
-            <div className="flex items-center gap-1.5 flex-wrap mb-2">
+            <div className="flex items-center gap-1.5">
               {/* Model dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -366,17 +366,22 @@ const GerarImagemTool = () => {
               <Button
                 onClick={handleGenerate}
                 disabled={isGenerating || !prompt.trim()}
-                className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-sm disabled:opacity-50"
+                size="sm"
+                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-4 h-8"
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Gerando imagem...
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    Gerando...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-5 w-5 mr-2" />
-                    Gerar Imagem ({currentCreditCost} créditos)
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    Gerar Imagem
+                    <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                      <Coins className="w-3.5 h-3.5" />
+                      {currentCreditCost}
+                    </span>
                   </>
                 )}
               </Button>
