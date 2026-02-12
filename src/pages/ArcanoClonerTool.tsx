@@ -609,6 +609,12 @@ const ArcanoClonerTool: React.FC = () => {
           
           {/* Left Side - Inputs (2/7 on desktop) */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
+            {/* Tool intro */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-base font-bold text-white">Arcano Cloner</h1>
+              <p className="text-[11px] text-purple-300 mt-0.5">Transforme sua foto usando qualquer imagem como referência. A IA clona o estilo, pose e cenário na sua pessoa.</p>
+            </div>
+
             {/* User Image - Character/Photo Switch */}
             <PersonInputSwitch
               image={userImage}
