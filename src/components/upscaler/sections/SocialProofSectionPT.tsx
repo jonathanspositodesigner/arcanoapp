@@ -72,11 +72,10 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
   ];
 
   const TestimonialCard = ({ result, index }: { result: typeof userResults[0]; index: number }) => (
-    <div className="overflow-hidden">
-      {/* Mobile: empilhado / Desktop: lado a lado com borda */}
-      <div className="flex flex-col md:flex-row md:bg-white/5 md:border md:border-white/10 md:rounded-2xl md:overflow-hidden md:hover:border-fuchsia-500/30 md:transition-all md:duration-300">
-        {/* Slider antes/depois - sem wrapper extra no mobile */}
-        <div className="md:w-1/2 md:flex-shrink-0 [&>div>.absolute]:hidden [&>div>div>.relative]:!rounded-xl md:[&>div>div>.relative]:!rounded-none">
+    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300">
+      <div className="flex flex-col md:flex-row">
+        {/* Slider antes/depois - sem borda/container próprio */}
+        <div className="md:w-1/2 md:flex-shrink-0 [&>div]:!bg-transparent [&>div]:!border-0 [&>div]:!rounded-none [&>div]:!p-0 [&>div>div]:!bg-transparent [&>div>div]:!border-0 [&>div>div]:!rounded-none [&>div>div]:!p-0 [&>div>.absolute]:!hidden">
           <LazyBeforeAfterSlider
             beforeImage={result.before}
             afterImage={result.after}
@@ -86,9 +85,8 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
           />
         </div>
         
-        {/* Depoimento */}
-        <div className="px-1 py-4 md:p-6 flex flex-col justify-center md:w-1/2">
-          {/* Nome e @ - vem ANTES do depoimento */}
+        {/* Nome, @ e Depoimento */}
+        <div className="px-5 py-4 md:p-6 flex flex-col justify-center md:w-1/2">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center flex-shrink-0">
               <User className="w-5 h-5 text-fuchsia-400" />
