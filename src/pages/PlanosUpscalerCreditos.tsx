@@ -686,7 +686,7 @@ const PlanosUpscalerCreditos = () => {
                   <Card className="relative p-6 flex flex-col rounded-xl bg-[#1A0A2E] border border-purple-500/20 w-full h-full">
                     <div className="text-center mb-4 min-h-[52px] flex flex-col items-center justify-center">
                       <h3 className="text-lg font-bold text-white">Starter</h3>
-                      <p className="text-[11px] text-purple-400 mt-0.5">Pra quem quer testar</p>
+                      <p className="text-[11px] text-purple-400 mt-0.5">Pra quem quer testar a ferramenta sem compromisso</p>
                     </div>
                     <div className="text-center mb-3 h-[75px] flex flex-col justify-center">
                       <div className="flex items-baseline justify-center gap-1">
