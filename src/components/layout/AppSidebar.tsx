@@ -33,7 +33,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
     { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: "Novo", badgeColor: "bg-green-500", disabled: false },
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
-    { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null, badgeColor: null, disabled: false },
+    { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-purple-400/30", textColor: "text-purple-300", disabled: true },
   ];
 
   const handleLogout = async () => {
@@ -146,7 +146,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
                 >
                   <span>{link.name}</span>
                   {link.badge && (
-                    <span className={`text-[9px] font-bold ${link.badgeColor} text-white px-1.5 py-0.5 rounded-full leading-none`}>{link.badge}</span>
+                    <span className={`text-[9px] font-bold ${link.badgeColor} ${link.textColor || 'text-white'} px-1.5 py-0.5 rounded-full leading-none`}>{link.badge}</span>
                   )}
                 </button>
               ))}
