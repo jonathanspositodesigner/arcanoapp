@@ -34,7 +34,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null, badgeColor: null, disabled: false },
-    { name: "Video Upscaler", path: "/video-upscaler-tool", badge: null, badgeColor: null, disabled: false },
+    
     { name: "Forja Selos 3D", path: "", badge: "Em breve", badgeColor: "bg-amber-500", disabled: true },
   ];
 
