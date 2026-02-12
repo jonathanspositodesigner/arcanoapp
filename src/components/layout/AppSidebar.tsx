@@ -29,13 +29,13 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
   ];
 
   const aiToolLinks = [
-    { name: "Upscaler Arcano V3", path: "/upscaler-selection", badge: null, badgeColor: null },
-    { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: "Novo", badgeColor: "bg-green-500" },
-    { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null },
-    { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null },
-    { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null, badgeColor: null },
-    { name: "Video Upscaler", path: "/video-upscaler-tool", badge: null, badgeColor: null },
-    { name: "Forja Selos 3D", path: "/ferramentas-ia-aplicativo", badge: "Em breve", badgeColor: "bg-amber-500" },
+    { name: "Upscaler Arcano V3", path: "/upscaler-selection", badge: null, badgeColor: null, disabled: false },
+    { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: "Novo", badgeColor: "bg-green-500", disabled: false },
+    { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
+    { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
+    { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null, badgeColor: null, disabled: false },
+    { name: "Video Upscaler", path: "/video-upscaler-tool", badge: null, badgeColor: null, disabled: false },
+    { name: "Forja Selos 3D", path: "", badge: "Em breve", badgeColor: "bg-amber-500", disabled: true },
   ];
 
   const handleLogout = async () => {
@@ -142,8 +142,9 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
               {aiToolLinks.map(link => (
                 <button
                   key={link.name}
-                  onClick={() => handleNavAndClose(link.path)}
-                  className="w-full flex items-center justify-between text-[11px] text-purple-200 hover:text-white py-1.5 px-2.5 rounded-md hover:bg-purple-500/20 transition-colors"
+                  onClick={() => !link.disabled && handleNavAndClose(link.path)}
+                  disabled={link.disabled}
+                  className={`w-full flex items-center justify-between text-[11px] py-1.5 px-2.5 rounded-md transition-colors ${link.disabled ? 'text-purple-400/50 cursor-not-allowed' : 'text-purple-200 hover:text-white hover:bg-purple-500/20'}`}
                 >
                   <span>{link.name}</span>
                   {link.badge && (
