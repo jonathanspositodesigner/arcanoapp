@@ -83,9 +83,9 @@ export const LazyBeforeAfterSlider = ({
       <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
       <div className="relative bg-white/5 border border-white/10 rounded-3xl p-4 hover:border-fuchsia-500/30 transition-all duration-300 hover:transform hover:scale-[1.02]">
-        {/* Badge */}
+        {/* Badge - minimalista */}
         {badge && (
-          <div className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r ${badgeColor} text-white border-0 rounded-full px-4 py-1 font-semibold shadow-lg text-xs`}>
+          <div className="absolute top-3 left-3 z-10 bg-black/50 backdrop-blur-sm text-fuchsia-400 border border-white/10 rounded-lg px-3 py-1 text-xs font-medium">
             {badge}
           </div>
         )}
