@@ -397,24 +397,24 @@ const PlanosUpscalerCreditos = () => {
                 </div>
               </FadeIn>
 
-              {/* Título principal com mais respiro */}
-              <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-6 md:mb-8 leading-[1.1] tracking-wide">
+              {/* Título principal - Space Grotesk bold, menor */}
+              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 leading-[1.2]">
                 {t('tools:upscaler.hero.title1')}{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                   {t('tools:upscaler.hero.title2')}
                 </span>
               </h1>
 
-              {/* Subtítulo com mais espaço */}
+              {/* Subtítulo menor */}
               <FadeIn delay={300} duration={700}>
-                <p className="text-base md:text-lg lg:text-xl text-white/60 mb-8 md:mb-10 max-w-2xl leading-relaxed">
+                <p className="text-sm md:text-base text-white/60 mb-6 md:mb-8 max-w-xl leading-relaxed">
                   {t('tools:upscaler.hero.subtitle')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
               </FadeIn>
 
-              {/* Before/After Slider com tamanho contido */}
+              {/* Before/After Slider - MAIOR, mais destaque */}
               <FadeIn delay={400} duration={700}>
-                <div className="w-full max-w-[90vw] md:max-w-2xl mb-8 md:mb-10">
+                <div className="w-full max-w-[95vw] md:max-w-3xl lg:max-w-4xl mb-8 md:mb-10">
                   {isMobile && !heroRevealed ? (
                     <HeroPlaceholder
                       onReveal={() => setHeroRevealed(true)}
@@ -429,15 +429,6 @@ const PlanosUpscalerCreditos = () => {
                       locale="pt"
                     />
                   )}
-                </div>
-              </FadeIn>
-
-              {/* Urgência */}
-              <FadeIn delay={500} duration={700}>
-                <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-2xl px-6 py-3 mb-8 md:mb-10 max-w-xl">
-                  <p className="text-red-400 font-bold text-sm md:text-base flex items-center justify-center gap-2">
-                    🔥 Últimos dias de venda do Upscaler na versão vitalícia
-                  </p>
                 </div>
               </FadeIn>
 
