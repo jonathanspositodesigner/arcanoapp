@@ -1,44 +1,46 @@
 
+# Reformulacao da Secao de Precos - PlanosUpscalerCreditos
 
-## Plano: Usar HeroBeforeAfterSlider direto nos depoimentos
+## Resumo
+Substituir a secao atual de preco unico (card com 69% OFF) por um grid de 3 planos no mesmo estilo visual da pagina /planos-2, adaptado para pagamento unico com creditos de upscaler.
 
-### Problema
-O `BeforeAfterSlider` passa por `LazyBeforeAfterSlider` que adiciona wrappers, logica de lazy loading e placeholders que podem estar quebrando o layout. O Hero funciona porque usa o `HeroBeforeAfterSlider` diretamente, sem nenhum wrapper.
+## O que muda
 
-### Solucao
+### Estrutura dos Planos (3 cards lado a lado)
 
-**Arquivo:** `src/components/upscaler/sections/SocialProofSectionPT.tsx`
+| | Starter | Pro | Studio |
+|---|---|---|---|
+| Preco | R$ 29,90 | R$ 39,90 | R$ 99,90 |
+| Tipo | Pagamento unico | Pagamento unico | Pagamento unico |
+| Creditos | 1.800 creditos | 5.000 creditos | 10.800 creditos |
+| Equivalente | ~30 upscalers | ~83 upscalers | ~160 upscalers |
+| Badge | - | MAIS VENDIDO | MELHOR CUSTO/BENEFICIO |
 
-1. Remover o card da Camila Santos (primeiro item do array `userResults`) completamente
-2. Remover imports das imagens `upscalerUser4Antes` e `upscalerUser4Depois`
-3. Trocar o `LazyBeforeAfterSlider` por `HeroBeforeAfterSlider` direto em todos os cards restantes
-4. Remover o import de `LazyBeforeAfterSlider`
-5. Adicionar import de `HeroBeforeAfterSlider`
+### Features de cada plano (iguais para todos)
+- Atualizacoes constantes na ferramenta
+- Liberacao imediata
+- Suporte exclusivo via WhatsApp
 
-### Detalhes tecnicos
+### O que sera removido
+- Toggle Mensal/Anual Parcelado (nao se aplica, pagamento unico)
+- Plano "IA Unlimited" (nao existira)
+- Features removidas: prompts premium, acesso a conteudo premium, acesso a ferramentas de IA, geracao de imagem com NanoBanana, geracao de video com Veo 3, fila prioritaria
+- Card unico atual com preco de 69% OFF
 
-No `TestimonialCard`, trocar:
+### O que sera mantido
+- Timer de contagem regressiva de 30 minutos (localStorage para persistencia)
+- Titulo "Melhore agora mesmo suas imagens!" e subtitulo
+- Mesmo estilo visual escuro (bg `#1A0A2E` / `#0D0221`)
 
-```tsx
-// DE (wrapper com lazy loading que pode quebrar):
-<LazyBeforeAfterSlider
-  beforeImage={result.before}
-  afterImage={result.after}
-  aspectRatio={isMobile ? "3/4" : "4/3"}
-  locale="pt"
-  onZoomClick={() => onZoomClick(result.before, result.after)}
-  bare
-/>
+## Detalhes Tecnicos
 
-// PARA (componente que funciona, direto, sem wrapper):
-<HeroBeforeAfterSlider
-  beforeImage={result.before}
-  afterImage={result.after}
-  locale="pt"
-/>
-```
+### Arquivo modificado
+- `src/pages/PlanosUpscalerCreditos.tsx` - Secao "SECAO DE PRECO E CTA"
 
-O `HeroBeforeAfterSlider` ja tem aspect ratio fixo (`aspect-[9/16] md:aspect-[4/3]`), slider, labels - tudo funcionando. Sem wrappers, sem lazy loading, sem nada no meio pra quebrar.
-
-O zoom click sera removido temporariamente pois o Hero nao suporta essa prop, mas o slider vai funcionar igual ao do Hero.
-
+### Implementacao
+1. Adicionar estado para countdown de 30 minutos com localStorage (chave propria, ex: `planos-upscaler-countdown`)
+2. Remover o card unico atual e substituir por um grid `grid-cols-1 lg:grid-cols-3` com 3 cards
+3. Cada card segue o layout do Planos2: nome, preco (sem "/mes", apenas pagamento unico), botao "Comprar", badge de creditos, lista de features com checks
+4. Pro tera borda lime/verde com badge "MAIS VENDIDO", Studio tera borda roxa com badge "MELHOR CUSTO/BENEFICIO"
+5. Manter URLs de pagamento existentes ou placeholders para atualizacao posterior
+6. Badge de creditos mostra o total + equivalente em upscalers abaixo
