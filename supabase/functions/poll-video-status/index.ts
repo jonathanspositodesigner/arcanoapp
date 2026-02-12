@@ -319,29 +319,43 @@ serve(async (req) => {
     }
 
     // Extract video from response
-    let videoBase64: string | null = null;
+    let videoBytes: Uint8Array | null = null;
     let videoMimeType = "video/mp4";
 
     const response = pollData.response;
-    if (response?.generatedSamples) {
-      for (const sample of response.generatedSamples) {
+    const generateVideoResponse = response?.generateVideoResponse;
+    const samples = generateVideoResponse?.generatedSamples || response?.generatedSamples;
+
+    if (samples) {
+      for (const sample of samples) {
         if (sample.video?.bytesBase64Encoded) {
-          videoBase64 = sample.video.bytesBase64Encoded;
+          // Base64-encoded video
+          videoBytes = Uint8Array.from(atob(sample.video.bytesBase64Encoded), (c) => c.charCodeAt(0));
           videoMimeType = sample.video.mimeType || "video/mp4";
+          break;
+        } else if (sample.video?.uri) {
+          // URI-based video - download it
+          console.log(`[poll-video] Downloading video from URI for job ${job_id}`);
+          const dlResponse = await fetch(`${sample.video.uri}&key=${GEMINI_API_KEY}`);
+          if (dlResponse.ok) {
+            const arrayBuf = await dlResponse.arrayBuffer();
+            videoBytes = new Uint8Array(arrayBuf);
+            videoMimeType = dlResponse.headers.get("content-type") || "video/mp4";
+          } else {
+            console.error(`[poll-video] Failed to download video: ${dlResponse.status}`);
+          }
           break;
         }
       }
     }
 
-    if (!videoBase64) {
+    if (!videoBytes) {
       console.error("[poll-video] No video in response:", JSON.stringify(pollData).slice(0, 500));
 
       // Extract specific rejection reason from Google's response
       let errorMsg = "Nenhum vídeo gerado";
-      const generateVideoResponse = response?.generateVideoResponse;
       if (generateVideoResponse?.raiMediaFilteredReasons?.length > 0) {
         const reasons = generateVideoResponse.raiMediaFilteredReasons;
-        // Map common Google rejection messages to user-friendly Portuguese
         const reasonText = reasons[0];
         if (reasonText.includes("celebrity")) {
           errorMsg = "A imagem contém uma celebridade ou pessoa pública. Remova a referência e tente novamente.";
@@ -372,7 +386,6 @@ serve(async (req) => {
 
     // Upload to storage
     const storagePath = `video-generator/${userId}/${job_id}.mp4`;
-    const videoBytes = Uint8Array.from(atob(videoBase64), (c) => c.charCodeAt(0));
 
     const { error: uploadError } = await serviceClient.storage
       .from("artes-cloudinary")
