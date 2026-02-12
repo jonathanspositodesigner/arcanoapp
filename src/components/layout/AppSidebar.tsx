@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X, ChevronDown, BookOpen, Settings, LogOut, Coins, Wand2, Home } from "lucide-react";
+import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X, ChevronDown, BookOpen, Settings, LogOut, Coins, Wand2, Home, ImagePlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,8 +34,6 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null, badgeColor: null, disabled: false },
-    { name: "Gerar Imagem", path: "/gerar-imagem", badge: "Preço Promo", badgeColor: "bg-gradient-to-r from-red-500 to-pink-500", disabled: false },
-    { name: "Gerar Vídeo", path: "/gerar-video", badge: "Preço Promo", badgeColor: "bg-gradient-to-r from-red-500 to-pink-500", disabled: false },
   ];
 
   const handleLogout = async () => {
@@ -168,6 +166,24 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
           >
             <BookOpen className="h-3.5 w-3.5 mr-1.5" />
             PromptClub
+          </button>
+
+          {/* Gerar Imagem */}
+          <button
+            onClick={() => handleNavAndClose("/gerar-imagem")}
+            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+          >
+            <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
+            Gerar Imagem
+          </button>
+
+          {/* Gerar Vídeo */}
+          <button
+            onClick={() => handleNavAndClose("/gerar-video")}
+            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+          >
+            <Video className="h-3.5 w-3.5 mr-1.5" />
+            Gerar Vídeo
           </button>
 
           {/* Sites de IA - Hidden for now, links preserved in externalLinks array above */}
