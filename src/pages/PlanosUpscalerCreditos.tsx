@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool } from "lucide-react";
+import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
@@ -435,7 +435,7 @@ const PlanosUpscalerCreditos = () => {
                     <span>Resultados em segundos</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                    <CreditCard className="h-3.5 w-3.5 text-fuchsia-400" />
+                    <MousePointerClick className="h-3.5 w-3.5 text-fuchsia-400" />
                     <span>Fácil de usar</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
