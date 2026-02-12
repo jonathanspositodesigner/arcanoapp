@@ -18,7 +18,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
   const { t } = useTranslation('prompts');
   const { logout } = useAuth();
   const [aiSitesOpen, setAiSitesOpen] = useState(false);
-  const [aiToolsOpen, setAiToolsOpen] = useState(false);
+  const [aiToolsOpen, setAiToolsOpen] = useState(true);
 
   const externalLinks = [
     { name: t('sidebar.generateInChatGPT'), url: "https://chatgpt.com/", icon: Sparkles },
