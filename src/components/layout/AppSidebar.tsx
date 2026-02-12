@@ -29,13 +29,13 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
   ];
 
   const aiToolLinks = [
-    { name: "Upscaler Arcano V3", path: "/upscaler-selection", badge: null },
-    { name: "Pose Changer", path: "/pose-changer-tool", badge: null },
-    { name: "Veste AI", path: "/veste-ai-tool", badge: null },
-    { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: "Novo" },
-    { name: "Forja Selos 3D", path: "/ferramentas-ia-aplicativo", badge: "Em breve" },
-    { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null },
-    { name: "Video Upscaler", path: "/video-upscaler-tool", badge: null },
+    { name: "Upscaler Arcano V3", path: "/upscaler-selection", badge: null, badgeColor: null },
+    { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: "Novo", badgeColor: "bg-green-500" },
+    { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null },
+    { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null },
+    { name: "Gerador de Avatar", path: "/gerador-avatar", badge: null, badgeColor: null },
+    { name: "Video Upscaler", path: "/video-upscaler-tool", badge: null, badgeColor: null },
+    { name: "Forja Selos 3D", path: "/ferramentas-ia-aplicativo", badge: "Em breve", badgeColor: "bg-amber-500" },
   ];
 
   const handleLogout = async () => {
@@ -147,7 +147,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
                 >
                   <span>{link.name}</span>
                   {link.badge && (
-                    <span className="text-[9px] font-bold bg-green-500 text-white px-1.5 py-0.5 rounded-full leading-none">{link.badge}</span>
+                    <span className={`text-[9px] font-bold ${link.badgeColor} text-white px-1.5 py-0.5 rounded-full leading-none`}>{link.badge}</span>
                   )}
                 </button>
               ))}
