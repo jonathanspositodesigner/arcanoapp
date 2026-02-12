@@ -75,7 +75,7 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
     <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300">
       <div className="flex flex-col md:flex-row">
         {/* Slider antes/depois - sem borda/container próprio */}
-        <div className="md:w-1/2 md:flex-shrink-0 [&>div]:!bg-transparent [&>div]:!border-0 [&>div]:!rounded-none [&>div]:!p-0 [&>div>div]:!bg-transparent [&>div>div]:!border-0 [&>div>div]:!rounded-none [&>div>div]:!p-0 [&>div>.absolute]:!hidden">
+        <div className="p-3 md:p-0 md:w-1/2 md:flex-shrink-0 [&>div]:!bg-transparent [&>div]:!border-0 [&>div]:!rounded-none [&>div]:!p-0 [&>div>div]:!bg-transparent [&>div>div]:!border-0 [&>div>div]:!rounded-none [&>div>div]:!p-0 [&>div>.absolute]:!hidden">
           <LazyBeforeAfterSlider
             beforeImage={result.before}
             afterImage={result.after}
