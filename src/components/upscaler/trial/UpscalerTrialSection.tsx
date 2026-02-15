@@ -228,17 +228,25 @@ export default function UpscalerTrialSection() {
       // 3. Create job in upscaler_jobs table
       const effectiveCategory = isLongeMode ? 'pessoas_longe' : selectedCategory;
       const framingMode = isLongeMode ? 'longe' : (isPessoas ? 'perto' : undefined);
+      const detailDenoise = isComidaMode 
+        ? comidaDetailLevel 
+        : (isSpecialWorkflow ? undefined : 0.15);
+      const prompt = isSpecialWorkflow ? undefined : PROMPT_CATEGORIES[effectiveCategory as PromptCategory];
+      const inputFileName = storagePath.split('/').pop() || null;
 
       const { data: job, error: jobError } = await supabase
         .from('upscaler_jobs')
         .insert({
           session_id: sessionIdRef.current,
           status: 'pending',
-          user_id: null, // Trial user - no auth
+          user_id: '00000000-0000-0000-0000-000000000000', // TRIAL_USER_ID - matches Edge Function
           category: effectiveCategory,
           version: 'standard',
           resolution: isSpecialWorkflow ? null : 2048,
           framing_mode: framingMode || null,
+          detail_denoise: detailDenoise ?? null,
+          prompt: prompt ?? null,
+          input_file_name: inputFileName,
         } as any)
         .select('id')
         .single();
@@ -267,7 +275,7 @@ export default function UpscalerTrialSection() {
           imageUrl: imageUrl,
           version: 'standard',
           userId: null,
-          creditCost: 60,
+          creditCost: 0, // Trial mode - backend ignores this
           category: effectiveCategory,
           trial_mode: true,
           // Conditional parameters - exact logic from UpscalerArcanoTool.tsx
