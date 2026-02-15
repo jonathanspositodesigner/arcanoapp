@@ -236,7 +236,7 @@ export default function UpscalerTrialSection() {
           user_id: null,
           category: effectiveCategory,
           version: 'standard',
-          resolution: isSpecialWorkflow ? null : 2048,
+          resolution: isSpecialWorkflow ? null : 4096,
           framing_mode: framingMode || null,
           detail_denoise: detailDenoise ?? null,
           prompt: prompt ?? null,
@@ -275,7 +275,7 @@ export default function UpscalerTrialSection() {
           detailDenoise: isComidaMode 
             ? comidaDetailLevel 
             : (isSpecialWorkflow ? undefined : 0.15),
-          resolution: isSpecialWorkflow ? undefined : 2048,
+          resolution: isSpecialWorkflow ? undefined : 4096,
           prompt: isSpecialWorkflow ? undefined : PROMPT_CATEGORIES[effectiveCategory as PromptCategory],
           framingMode: isSpecialWorkflow ? undefined : framingMode,
         },
