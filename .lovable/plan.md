@@ -1,24 +1,17 @@
 
-
-# Correção: Erro "foreign key constraint" ao criar processamento
+# Correção: Resolução do teste gratuito de 2K para 4K
 
 ## Problema
-
-O erro no banco de dados é claro:
-
-```
-insert or update on table "upscaler_jobs" violates foreign key constraint "upscaler_jobs_user_id_fkey"
-```
-
-O código está usando um UUID falso (`'00000000-0000-0000-0000-000000000000'`) como `user_id` na linha 236 do `UpscalerTrialSection.tsx`. Esse UUID não existe na tabela de usuários, então o banco rejeita a inserção.
-
-A coluna `user_id` na tabela `upscaler_jobs` aceita `NULL` -- então a correção é simplesmente usar `null`.
+O upscaler do teste gratuito está hardcoded para enviar resolução `2048` (2K). Precisa enviar `4096` (4K).
 
 ## Correção
 
 ### Arquivo: `src/components/upscaler/trial/UpscalerTrialSection.tsx`
 
-- Linha 236: Trocar `user_id: '00000000-0000-0000-0000-000000000000'` por `user_id: null`
+Duas alterações simples:
 
-Essa é uma correção de uma linha. O `trial_mode: true` já é enviado para a Edge Function, que ignora validação de UUID quando esse flag está ativo.
+1. **Linha 239** (insert no banco `upscaler_jobs`): Trocar `resolution: isSpecialWorkflow ? null : 2048` por `resolution: isSpecialWorkflow ? null : 4096`
 
+2. **Linha 278** (chamada da Edge Function `runninghub-upscaler/run`): Trocar `resolution: isSpecialWorkflow ? undefined : 2048` por `resolution: isSpecialWorkflow ? undefined : 4096`
+
+Isso faz o teste gratuito usar a mesma resolução 4K do app principal.
