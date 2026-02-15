@@ -703,7 +703,7 @@ const PlanosUpscalerCreditos = () => {
                       <p className="text-purple-400 text-sm mt-1">Pagamento único</p>
                     </div>
                     <Button 
-                      onClick={handlePurchase}
+                      onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/rnq543f/offer/0RpIQa"), "_blank")}
                       className="w-full mb-4 text-base h-11 bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"
                     >
                       Comprar
@@ -781,7 +781,7 @@ const PlanosUpscalerCreditos = () => {
                       <p className="text-purple-400 text-sm mt-1">Pagamento único</p>
                     </div>
                     <Button 
-                      onClick={handlePurchase}
+                      onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/sauzz2n/offer/2hn2nR"), "_blank")}
                       className="w-full mb-4 text-base h-11 bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold"
                     >
                       Comprar
@@ -859,7 +859,7 @@ const PlanosUpscalerCreditos = () => {
                       <p className="text-purple-400 text-sm mt-1">Pagamento único</p>
                     </div>
                     <Button 
-                      onClick={handlePurchase}
+                      onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/fz9ce38/offer/SQCSxN"), "_blank")}
                       className="w-full mb-4 text-base h-11 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold"
                     >
                       Comprar
