@@ -54,10 +54,17 @@ const CREDITS_PRODUCT_MAPPING: Record<number, { amount: number; name: string }> 
   156946: { amount: 1500, name: 'Pacote +1.500 Créditos' },
   156948: { amount: 4200, name: 'Pacote +4.200 Créditos' },
   156952: { amount: 10800, name: 'Pacote +10.800 Créditos' },
-  // Créditos + Ferramentas (App)
-  156954: { amount: 1500, name: 'Pacote Créditos App +1.500' },
-  156957: { amount: 4200, name: 'Pacote Créditos App +4.200' },
-  156960: { amount: 10800, name: 'Pacote Créditos App +10.800' }
+  // Upscaler Arcano - Planos
+  156954: { amount: 1800, name: 'Upscaler Arcano - Plano Starter' },
+  156957: { amount: 4200, name: 'Upscaler Arcano - Plano Pro' },
+  156960: { amount: 12000, name: 'Upscaler Arcano - Plano Studio' }
+}
+
+// Mapeamento de planos Upscaler Arcano (para email personalizado)
+const UPSCALER_PLAN_NAMES: Record<number, string> = {
+  156954: 'Starter',
+  156957: 'Pro',
+  156960: 'Studio'
 }
 
 // Textos de email por idioma
@@ -416,7 +423,8 @@ async function sendCreditsWelcomeEmail(
   name: string, 
   creditsAmount: number, 
   requestId: string, 
-  locale: 'pt' | 'es' = 'pt'
+  locale: 'pt' | 'es' = 'pt',
+  productId?: number
 ): Promise<void> {
   const t = emailTexts[locale]
   
@@ -426,6 +434,10 @@ async function sendCreditsWelcomeEmail(
   const dedupKey = `${email}|creditos-${creditsAmount}|${dedupMinute}`
   const trackingId = crypto.randomUUID()
   
+  // Detectar se é produto Upscaler Arcano
+  const upscalerPlanName = productId ? UPSCALER_PLAN_NAMES[productId] : null
+  const isUpscaler = !!upscalerPlanName
+  
   try {
     // Tentar INSERT primeiro (atômico)
     const { data: inserted, error: insertError } = await supabase
@@ -434,10 +446,12 @@ async function sendCreditsWelcomeEmail(
         email,
         name,
         platform: 'creditos',
-        product_info: `+${creditsAmount.toLocaleString('pt-BR')} Créditos`,
+        product_info: isUpscaler 
+          ? `Upscaler Arcano - Plano ${upscalerPlanName} (+${creditsAmount.toLocaleString('pt-BR')} Créditos)`
+          : `+${creditsAmount.toLocaleString('pt-BR')} Créditos`,
         status: 'pending',
         tracking_id: trackingId,
-        template_used: 'creditos',
+        template_used: isUpscaler ? 'upscaler_arcano' : 'creditos',
         locale,
         dedup_key: dedupKey
       })
@@ -455,7 +469,7 @@ async function sendCreditsWelcomeEmail(
     }
     
     const logId = inserted.id
-    console.log(`   ├─ [${requestId}] 🔒 Lock obtido para email de créditos`)
+    console.log(`   ├─ [${requestId}] 🔒 Lock obtido para email de créditos${isUpscaler ? ` (Upscaler ${upscalerPlanName})` : ''}`)
     
     const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
     const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
@@ -481,31 +495,83 @@ async function sendCreditsWelcomeEmail(
     const { access_token } = await tokenResponse.json()
 
     const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
-    const platformUrl = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia'
-    const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
-
     const creditsFormatted = creditsAmount.toLocaleString('pt-BR')
-    const heading = locale === 'es' ? '¡Tus Créditos fueron Añadidos!' : 'Seus Créditos foram Adicionados!'
-    const intro = locale === 'es' 
-      ? `¡Tu compra de <strong>+${creditsFormatted} créditos</strong> fue confirmada y ya está disponible en tu cuenta!`
-      : `Sua compra de <strong>+${creditsFormatted} créditos</strong> foi confirmada e já está disponível na sua conta!`
-    const buttonText = locale === 'es' ? 'Acceder a las Herramientas' : 'Acessar Ferramentas'
-    const toolsInfo = locale === 'es' 
-      ? 'Usa tus créditos en nuestras herramientas de IA: Upscaler Arcano, Forja de Sellos 3D, y más!'
-      : 'Use seus créditos em nossas ferramentas de IA: Upscaler Arcano, Forja de Selos 3D, e mais!'
-    const footer = locale === 'es' ? '¿Dudas? Responde este email!' : 'Dúvidas? Responda este email!'
-
-    const creditsHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;background:#f4f4f4;padding:20px}.container{max-width:600px;margin:0 auto;background:white;padding:40px;border-radius:12px}h1{color:#d4af37;text-align:center}.cta-button{display:block;background:#d4af37;color:white;text-align:center;padding:16px;border-radius:8px;text-decoration:none;margin:20px 0}.credits-box{background:linear-gradient(135deg,#fefce8 0%,#fef3c7 100%);padding:24px;border-radius:12px;margin:20px 0;text-align:center;border:2px solid #d4af37}.credits-amount{font-size:36px;font-weight:bold;color:#d4af37}.credentials{background:#f0fdf4;padding:20px;border-radius:8px;margin:20px 0}</style></head><body><div class="container"><h1>🎫 ${heading}</h1><p>${t.greeting}${name ? ` <strong>${name}</strong>` : ''}!</p><p>${intro}</p><div class="credits-box"><div class="credits-amount">+${creditsFormatted}</div><div style="color:#666;margin-top:8px">${locale === 'es' ? 'créditos añadidos' : 'créditos adicionados'}</div></div><p style="text-align:center;color:#666">${toolsInfo}</p><div class="credentials"><h3>${t.accessData}</h3><p><strong>${t.email}:</strong> ${email}</p><p><strong>${t.password}:</strong> ${email}</p><p>⚠️ ${t.securityWarning}</p></div><a href="${clickTrackingUrl}" class="cta-button">🚀 ${buttonText}</a><p style="text-align:center;color:#666">${t.clickButtonCreditos}</p><p style="text-align:center;color:#666;font-size:12px">${footer}</p></div><img src="${trackingBaseUrl}?id=${trackingId}&action=open" width="1" height="1" style="display:none"/></body></html>`
+    
+    let emailHtml: string
+    let emailSubject: string
+    let senderName: string
+    
+    if (isUpscaler) {
+      // ========================================
+      // TEMPLATE UPSCALER ARCANO
+      // ========================================
+      const platformUrl = 'https://arcanolab.voxvisual.com.br/'
+      const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
+      
+      emailSubject = `Upscaler Arcano - Plano ${upscalerPlanName} | +${creditsFormatted} Créditos Adicionados!`
+      senderName = 'Arcano App'
+      
+      emailHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+body{font-family:sans-serif;background:#1a1a2e;padding:20px}
+.container{max-width:600px;margin:0 auto;background:linear-gradient(180deg,#16213e 0%,#1a1a2e 100%);padding:40px;border-radius:16px;border:1px solid rgba(139,92,246,0.3)}
+h1{background:linear-gradient(135deg,#a78bfa,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;font-size:28px;margin-bottom:4px}
+.plan-badge{text-align:center;color:#c4b5fd;font-size:18px;margin-bottom:24px}
+.credits-box{background:linear-gradient(135deg,#7c3aed 0%,#ec4899 100%);padding:30px;border-radius:16px;text-align:center;margin:24px 0}
+.credits-amount{font-size:48px;font-weight:bold;color:#fff}
+.credits-label{color:rgba(255,255,255,0.9);margin-top:8px;font-size:16px}
+.tools-info{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);padding:16px;border-radius:12px;margin:20px 0;color:#c4b5fd;text-align:center}
+.credentials{background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;margin:20px 0;border:1px solid rgba(255,255,255,0.1)}
+.credentials h3{color:#a78bfa;margin-top:0}
+.credentials p{color:#e2e8f0;margin:8px 0}
+.cta-button{display:block;background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;text-align:center;padding:18px;border-radius:12px;text-decoration:none;margin:24px 0;font-weight:bold;font-size:18px}
+.footer{text-align:center;color:#64748b;font-size:12px;margin-top:24px}
+p{color:#cbd5e1}
+</style></head><body><div class="container">
+<h1>UPSCALER ARCANO</h1>
+<div class="plan-badge">Plano ${upscalerPlanName}</div>
+<p>${t.greeting}${name ? ` <strong style="color:#e2e8f0">${name}</strong>` : ''}!</p>
+<p>Sua compra do <strong style="color:#a78bfa">Upscaler Arcano - Plano ${upscalerPlanName}</strong> foi confirmada com sucesso!</p>
+<div class="credits-box"><div class="credits-amount">+${creditsFormatted}</div><div class="credits-label">créditos adicionados à sua conta</div></div>
+<div class="tools-info">Use seus créditos nas ferramentas de IA: Upscaler Arcano, Forja de Selos 3D, e mais!</div>
+<div class="credentials"><h3>${t.accessData}</h3><p><strong>${t.email}:</strong> ${email}</p><p><strong>${t.password}:</strong> ${email}</p><p>⚠️ <span style="color:#fbbf24">${t.securityWarning}</span></p></div>
+<a href="${clickTrackingUrl}" class="cta-button">🚀 ACESSAR MINHA CONTA</a>
+<p style="text-align:center;color:#94a3b8">Clique no botão acima para fazer seu primeiro login!</p>
+<div class="footer">Dúvidas? Responda este email!<br>© Arcano App</div>
+</div><img src="${trackingBaseUrl}?id=${trackingId}&action=open" width="1" height="1" style="display:none"/></body></html>`
+    } else {
+      // ========================================
+      // TEMPLATE GENÉRICO DE CRÉDITOS (existente)
+      // ========================================
+      const platformUrl = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia'
+      const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
+      
+      const heading = locale === 'es' ? '¡Tus Créditos fueron Añadidos!' : 'Seus Créditos foram Adicionados!'
+      const intro = locale === 'es' 
+        ? `¡Tu compra de <strong>+${creditsFormatted} créditos</strong> fue confirmada y ya está disponible en tu cuenta!`
+        : `Sua compra de <strong>+${creditsFormatted} créditos</strong> foi confirmada e já está disponível na sua conta!`
+      const buttonText = locale === 'es' ? 'Acceder a las Herramientas' : 'Acessar Ferramentas'
+      const toolsInfo = locale === 'es' 
+        ? 'Usa tus créditos en nuestras herramientas de IA: Upscaler Arcano, Forja de Sellos 3D, y más!'
+        : 'Use seus créditos em nossas ferramentas de IA: Upscaler Arcano, Forja de Selos 3D, e mais!'
+      const footer = locale === 'es' ? '¿Dudas? Responde este email!' : 'Dúvidas? Responda este email!'
+      
+      emailSubject = `🎫 +${creditsFormatted} Créditos Adicionados à sua Conta!`
+      senderName = 'Ferramentas IA Arcanas'
+      
+      emailHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;background:#f4f4f4;padding:20px}.container{max-width:600px;margin:0 auto;background:white;padding:40px;border-radius:12px}h1{color:#d4af37;text-align:center}.cta-button{display:block;background:#d4af37;color:white;text-align:center;padding:16px;border-radius:8px;text-decoration:none;margin:20px 0}.credits-box{background:linear-gradient(135deg,#fefce8 0%,#fef3c7 100%);padding:24px;border-radius:12px;margin:20px 0;text-align:center;border:2px solid #d4af37}.credits-amount{font-size:36px;font-weight:bold;color:#d4af37}.credentials{background:#f0fdf4;padding:20px;border-radius:8px;margin:20px 0}</style></head><body><div class="container"><h1>🎫 ${heading}</h1><p>${t.greeting}${name ? ` <strong>${name}</strong>` : ''}!</p><p>${intro}</p><div class="credits-box"><div class="credits-amount">+${creditsFormatted}</div><div style="color:#666;margin-top:8px">${locale === 'es' ? 'créditos añadidos' : 'créditos adicionados'}</div></div><p style="text-align:center;color:#666">${toolsInfo}</p><div class="credentials"><h3>${t.accessData}</h3><p><strong>${t.email}:</strong> ${email}</p><p><strong>${t.password}:</strong> ${email}</p><p>⚠️ ${t.securityWarning}</p></div><a href="${clickTrackingUrl}" class="cta-button">🚀 ${buttonText}</a><p style="text-align:center;color:#666">${t.clickButtonCreditos}</p><p style="text-align:center;color:#666;font-size:12px">${footer}</p></div><img src="${trackingBaseUrl}?id=${trackingId}&action=open" width="1" height="1" style="display:none"/></body></html>`
+    }
 
     const emailResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${access_token}` },
       body: JSON.stringify({
         email: {
-          html: btoa(unescape(encodeURIComponent(creditsHtml))),
-          text: `${heading} - +${creditsFormatted} créditos adicionados! Email: ${email}, Senha: ${email}`,
-          subject: `🎫 +${creditsFormatted} Créditos Adicionados à sua Conta!`,
-          from: { name: 'Ferramentas IA Arcanas', email: 'contato@voxvisual.com.br' },
+          html: btoa(unescape(encodeURIComponent(emailHtml))),
+          text: isUpscaler 
+            ? `Upscaler Arcano - Plano ${upscalerPlanName} - +${creditsFormatted} créditos! Email: ${email}, Senha: ${email}`
+            : `+${creditsFormatted} créditos adicionados! Email: ${email}, Senha: ${email}`,
+          subject: emailSubject,
+          from: { name: senderName, email: 'contato@voxvisual.com.br' },
           to: [{ email, name: name || "" }],
         },
       }),
@@ -516,10 +582,10 @@ async function sendCreditsWelcomeEmail(
     await supabase.from('welcome_email_logs').update({
       status: result.result === true ? 'sent' : 'failed',
       error_message: result.result !== true ? JSON.stringify(result) : null,
-      email_content: creditsHtml
+      email_content: emailHtml
     }).eq('id', logId)
     
-    console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email de créditos enviado' : '❌ Falha no email de créditos'}`)
+    console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email de créditos enviado' : '❌ Falha no email de créditos'}${isUpscaler ? ` (Upscaler ${upscalerPlanName})` : ''}`)
   } catch (error) {
     console.log(`   ├─ [${requestId}] ❌ Erro email créditos: ${error}`)
     try {
@@ -679,7 +745,7 @@ async function processCreditsWebhook(
 
     // Enviar email de boas-vindas (não bloqueia)
     try {
-      await sendCreditsWelcomeEmail(supabase, email, clientName, creditsProduct.amount, requestId, userLocale)
+      await sendCreditsWelcomeEmail(supabase, email, clientName, creditsProduct.amount, requestId, userLocale, productId)
     } catch (e) {
       console.log(`   ├─ ⚠️ Falha no email (créditos já liberados)`)
     }

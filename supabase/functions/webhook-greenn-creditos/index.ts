@@ -21,7 +21,11 @@ const corsHeaders = {
 const PRODUCT_CREDITS: Record<number, number> = {
   156946: 1500,   // Pacote +1.500 (R$ 29,90)
   156948: 4200,   // Pacote +4.200 (R$ 39,90)
-  156952: 10800   // Pacote +10.800 (R$ 99,90)
+  156952: 10800,  // Pacote +10.800 (R$ 99,90)
+  // Upscaler Arcano - Planos
+  156954: 1800,   // Upscaler Arcano - Plano Starter (R$ 29,90)
+  156957: 4200,   // Upscaler Arcano - Plano Pro (R$ 39,90)
+  156960: 12000   // Upscaler Arcano - Plano Studio (R$ 99,90)
 }
 
 // Textos de email por idioma
