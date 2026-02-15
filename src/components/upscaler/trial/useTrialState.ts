@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type TrialPhase = "locked" | "signup" | "active" | "finished";
 
@@ -29,19 +30,29 @@ export function useTrialState() {
   const [email, setEmail] = useState("");
   const [usesRemaining, setUsesRemaining] = useState(3);
 
-  // Restore from localStorage on mount
+  // Restore from localStorage on mount, then sync with backend
   useEffect(() => {
     const saved = loadState();
-    if (saved) {
-      setEmail(saved.email);
-      if (saved.verified && saved.usesRemaining > 0) {
-        setPhase("active");
-        setUsesRemaining(saved.usesRemaining);
-      } else if (saved.verified && saved.usesRemaining <= 0) {
-        setPhase("finished");
-        setUsesRemaining(0);
+    if (!saved || !saved.verified) return;
+
+    setEmail(saved.email);
+    // Temporarily use localStorage values
+    setPhase(saved.usesRemaining > 0 ? "active" : "finished");
+    setUsesRemaining(saved.usesRemaining);
+
+    // Sync with backend: "send" endpoint returns real uses_remaining for verified users
+    supabase.functions.invoke("landing-trial-code/send", {
+      body: { email: saved.email, name: "sync" },
+    }).then(({ data }) => {
+      if (data?.already_verified) {
+        const serverUses = data.uses_remaining ?? 0;
+        setUsesRemaining(serverUses);
+        saveState({ email: saved.email, verified: true, usesRemaining: serverUses });
+        setPhase(serverUses > 0 ? "active" : "finished");
       }
-    }
+    }).catch(() => {
+      // Fallback to localStorage values (already set above)
+    });
   }, []);
 
   const openSignup = useCallback(() => setPhase("signup"), []);
