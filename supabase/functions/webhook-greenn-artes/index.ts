@@ -608,6 +608,7 @@ async function processCreditsWebhook(
   const clientName = payload.client?.name || ''
   const clientPhone = payload.client?.phone?.replace(/\D/g, '') || ''
   const userLocale = extractLocale(payload)
+  const productId = payload.product?.id
 
   console.log(`\n🎫 [${requestId}] PROCESSANDO CRÉDITOS: +${creditsProduct.amount}`)
   console.log(`   ├─ Email: ${email}`)
