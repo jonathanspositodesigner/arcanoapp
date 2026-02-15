@@ -42,8 +42,10 @@ export const BeforeAfterSlider = ({
     setSliderPosition(percentage);
   };
 
-  const handleMouseDown = () => {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
     isDragging.current = true;
+    handleMove(e.clientX);
   };
 
   const handleMouseUp = () => {
@@ -94,6 +96,7 @@ export const BeforeAfterSlider = ({
       <div 
         ref={containerRef}
         className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10"
+        onDragStart={(e) => e.preventDefault()}
         style={{ aspectRatio: getAspectRatio() }}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
@@ -107,7 +110,7 @@ export const BeforeAfterSlider = ({
         <ResilientImage 
           src={afterImage} 
           alt={locale === 'es' ? "Después" : "Depois"}
-          className="absolute inset-0"
+          className="absolute inset-0 pointer-events-none"
           style={{
             width: '100%',
             height: '100%',
@@ -130,7 +133,7 @@ export const BeforeAfterSlider = ({
           <ResilientImage 
             src={beforeImage} 
             alt={locale === 'es' ? "Antes" : "Antes"}
-            className="absolute inset-0"
+            className="absolute inset-0 pointer-events-none"
             style={{
               width: '100%',
               height: '100%',
