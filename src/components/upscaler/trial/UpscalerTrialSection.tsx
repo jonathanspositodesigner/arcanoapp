@@ -81,7 +81,6 @@ export default function UpscalerTrialSection() {
       setStatus('completed');
       setProgress(100);
       setJobId(null);
-      consumeUse();
       endSubmit();
       toast.success("Imagem melhorada com sucesso!");
     } else if (update.status === 'failed' || update.status === 'cancelled') {
@@ -194,6 +193,9 @@ export default function UpscalerTrialSection() {
         endSubmit();
         return;
       }
+
+      // Sync local trial counter immediately after backend confirms consumption
+      consumeUse();
 
       // 2. Upload processed file to storage
       setProgress(20);
