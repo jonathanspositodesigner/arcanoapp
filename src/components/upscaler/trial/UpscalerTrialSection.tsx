@@ -233,7 +233,7 @@ export default function UpscalerTrialSection() {
         .insert({
           session_id: sessionIdRef.current,
           status: 'pending',
-          user_id: '00000000-0000-0000-0000-000000000000',
+          user_id: null,
           category: effectiveCategory,
           version: 'standard',
           resolution: isSpecialWorkflow ? null : 2048,
