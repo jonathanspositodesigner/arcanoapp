@@ -1,9 +1,10 @@
 import { useState, useRef } from "react";
-import { Upload, Wand2, Lock, Sparkles, Loader2 } from "lucide-react";
+import { Upload, Wand2, Lock, Sparkles, Loader2, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Slider } from "@/components/ui/slider";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 type PromptCategory = 'pessoas_perto' | 'pessoas_longe' | 'comida' | 'fotoAntiga' | 'logo' | 'render3d';
 type PessoasFraming = 'perto' | 'longe';
@@ -272,57 +273,90 @@ export default function UpscalerMockup({
       <div className="p-6">
         {/* COMPLETED: Before/After Slider */}
         {status === 'completed' && resultUrl && inputPreviewUrl ? (
-          <div 
-            ref={sliderContainerRef}
-            className="relative w-full rounded-xl overflow-hidden cursor-ew-resize select-none border-2 border-fuchsia-500/30"
-            style={{ aspectRatio: '4/3' }}
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onMouseMove={handleMouseMove}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {/* After Image (background - result) */}
-            <img 
-              src={resultUrl} 
-              alt="Depois"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            
-            {/* Before Image (clipped - original) */}
-            <div 
-              className="absolute inset-0 overflow-hidden"
-              style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+          <div className="relative">
+            <TransformWrapper
+              initialScale={1}
+              minScale={1}
+              maxScale={5}
+              centerOnInit
+              wheel={{ step: 0.2 }}
+              panning={{ disabled: false }}
+              doubleClick={{ mode: "toggle", step: 2 }}
             >
-              <img 
-                src={inputPreviewUrl} 
-                alt="Antes"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </div>
+              {({ zoomIn, zoomOut, resetTransform }) => (
+                <>
+                  {/* Zoom controls */}
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 border border-white/10">
+                    <button onClick={() => zoomOut()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => zoomIn()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+                    <div className="w-px h-4 bg-white/20 mx-0.5" />
+                    <button onClick={() => resetTransform()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
 
-            {/* Slider line */}
-            <div 
-              className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
-              style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
-            >
-              <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center">
-                <div className="flex gap-0.5">
-                  <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                  <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                </div>
-              </div>
-            </div>
+                  <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
+                    <div 
+                      ref={sliderContainerRef}
+                      className="relative w-full rounded-xl overflow-hidden cursor-ew-resize select-none border-2 border-fuchsia-500/30"
+                      style={{ aspectRatio: '4/3' }}
+                      onMouseDown={handleMouseDown}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseUp}
+                      onMouseMove={handleMouseMove}
+                      onTouchStart={handleTouchStart}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
+                    >
+                      {/* After Image (background - result) */}
+                      <img 
+                        src={resultUrl} 
+                        alt="Depois"
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                      
+                      {/* Before Image (clipped - original) */}
+                      <div 
+                        className="absolute inset-0 overflow-hidden"
+                        style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+                      >
+                        <img 
+                          src={inputPreviewUrl} 
+                          alt="Antes"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      </div>
 
-            {/* Labels */}
-            <div className="absolute top-3 left-3 bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-              Antes
-            </div>
-            <div className="absolute top-3 right-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-              Depois
-            </div>
+                      {/* Slider line */}
+                      <div 
+                        className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
+                        style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
+                      >
+                        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center">
+                          <div className="flex gap-0.5">
+                            <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                            <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Labels */}
+                      <div className="absolute top-3 left-3 bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                        Antes
+                      </div>
+                      <div className="absolute top-3 right-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                        Depois
+                      </div>
+                    </div>
+                  </TransformComponent>
+                </>
+              )}
+            </TransformWrapper>
+            <p className="text-center text-[10px] text-purple-300/40 mt-2">Pinça ou scroll para dar zoom • Clique duplo para alternar</p>
           </div>
         ) : (status === 'uploading' || status === 'processing') ? (
           /* PROCESSING: Progress indicator */
