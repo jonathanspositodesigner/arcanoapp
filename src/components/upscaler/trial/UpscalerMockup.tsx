@@ -1,12 +1,13 @@
-import { Upload, Wand2, Lock, Sparkles } from "lucide-react";
+import { useState, useRef } from "react";
+import { Upload, Wand2, Lock, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Slider } from "@/components/ui/slider";
-import { useState } from "react";
 
 type PromptCategory = 'pessoas_perto' | 'pessoas_longe' | 'comida' | 'fotoAntiga' | 'logo' | 'render3d';
 type PessoasFraming = 'perto' | 'longe';
+type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'failed';
 
 interface UpscalerMockupProps {
   isActive?: boolean;
@@ -14,6 +15,7 @@ interface UpscalerMockupProps {
   onGenerate?: () => void;
   isProcessing?: boolean;
   resultUrl?: string | null;
+  inputPreviewUrl?: string | null;
   uploadedFile?: File | null;
   onFileSelect?: (file: File) => void;
   // Category controls
@@ -23,8 +25,9 @@ interface UpscalerMockupProps {
   onCategoryChange?: (category: PromptCategory) => void;
   onFramingChange?: (framing: PessoasFraming) => void;
   onDetailLevelChange?: (level: number) => void;
-  // Status
-  statusText?: string;
+  // Progress
+  progress?: number;
+  status?: ProcessingStatus;
 }
 
 export default function UpscalerMockup({
@@ -33,6 +36,7 @@ export default function UpscalerMockup({
   onGenerate,
   isProcessing = false,
   resultUrl,
+  inputPreviewUrl,
   uploadedFile,
   onFileSelect,
   selectedCategory = 'pessoas_perto',
@@ -41,10 +45,18 @@ export default function UpscalerMockup({
   onCategoryChange,
   onFramingChange,
   onDetailLevelChange,
-  statusText,
+  progress = 0,
+  status = 'idle',
 }: UpscalerMockupProps) {
   const previewUrl = uploadedFile ? URL.createObjectURL(uploadedFile) : null;
   const [showProMessage, setShowProMessage] = useState(false);
+  
+  // Before/After slider state
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const sliderContainerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const isHorizontalDrag = useRef(false);
 
   const displayCategory = selectedCategory.startsWith('pessoas') ? 'pessoas' : selectedCategory;
   const isPessoas = selectedCategory.startsWith('pessoas');
@@ -63,6 +75,39 @@ export default function UpscalerMockup({
     if (!value || !onFramingChange || !onCategoryChange) return;
     onFramingChange(value as PessoasFraming);
     onCategoryChange(`pessoas_${value}` as PromptCategory);
+  };
+
+  // Before/After slider handlers
+  const handleSliderMove = (clientX: number) => {
+    if (!sliderContainerRef.current) return;
+    const rect = sliderContainerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setSliderPosition(percentage);
+  };
+
+  const handleMouseDown = () => { isDragging.current = true; };
+  const handleMouseUp = () => { isDragging.current = false; };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging.current) handleSliderMove(e.clientX);
+  };
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    isHorizontalDrag.current = false;
+    isDragging.current = true;
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+    if (deltaX > deltaY && deltaX > 10) isHorizontalDrag.current = true;
+    if (isHorizontalDrag.current) e.preventDefault();
+    handleSliderMove(touch.clientX);
+  };
+  const handleTouchEnd = () => {
+    isDragging.current = false;
+    isHorizontalDrag.current = false;
   };
 
   return (
@@ -106,7 +151,7 @@ export default function UpscalerMockup({
         </div>
       )}
 
-      {/* Category Selector - Exactly like UpscalerArcanoTool.tsx */}
+      {/* Category Selector */}
       <div className="px-6 py-3 border-b border-white/10">
         <ToggleGroup 
           type="single" 
@@ -150,7 +195,7 @@ export default function UpscalerMockup({
           </div>
         </ToggleGroup>
 
-        {/* Pessoas Framing Selector - De Perto / De Longe */}
+        {/* Pessoas Framing Selector */}
         {isPessoas && isActive && (
           <div className="mt-3 pt-3 border-t border-white/10">
             <ToggleGroup 
@@ -197,7 +242,7 @@ export default function UpscalerMockup({
           </div>
         )}
 
-        {/* Comida/Objeto Detail Level Slider (0.70 to 1.00) */}
+        {/* Comida/Objeto Detail Level Slider */}
         {isComida && isActive && (
           <div className="mt-3 pt-3 border-t border-white/10">
             <div className="flex items-center justify-between mb-1">
@@ -223,20 +268,90 @@ export default function UpscalerMockup({
         )}
       </div>
 
-      {/* Upload area */}
+      {/* Main content area */}
       <div className="p-6">
-        {resultUrl ? (
-          <div className="relative rounded-xl overflow-hidden border border-fuchsia-500/30">
-            <img src={resultUrl} alt="Resultado" className="w-full h-64 object-contain bg-black/50" />
-            <div className="absolute top-2 right-2 px-2 py-1 rounded-md bg-green-500/20 text-green-300 text-xs font-medium border border-green-500/30">
-              ✓ Melhorada
+        {/* COMPLETED: Before/After Slider */}
+        {status === 'completed' && resultUrl && inputPreviewUrl ? (
+          <div 
+            ref={sliderContainerRef}
+            className="relative w-full rounded-xl overflow-hidden cursor-ew-resize select-none border-2 border-fuchsia-500/30"
+            style={{ aspectRatio: '4/3' }}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* After Image (background - result) */}
+            <img 
+              src={resultUrl} 
+              alt="Depois"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            
+            {/* Before Image (clipped - original) */}
+            <div 
+              className="absolute inset-0 overflow-hidden"
+              style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+            >
+              <img 
+                src={inputPreviewUrl} 
+                alt="Antes"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Slider line */}
+            <div 
+              className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
+              style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
+            >
+              <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center">
+                <div className="flex gap-0.5">
+                  <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                  <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                </div>
+              </div>
+            </div>
+
+            {/* Labels */}
+            <div className="absolute top-3 left-3 bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+              Antes
+            </div>
+            <div className="absolute top-3 right-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+              Depois
             </div>
           </div>
+        ) : (status === 'uploading' || status === 'processing') ? (
+          /* PROCESSING: Progress indicator */
+          <div className="flex flex-col items-center justify-center gap-4 h-64 rounded-xl border-2 border-fuchsia-500/20 bg-black/30">
+            <Loader2 className="w-12 h-12 text-fuchsia-400 animate-spin" />
+            <div className="text-center">
+              <p className="text-lg font-medium text-white">
+                {status === 'uploading' ? 'Enviando imagem...' : 'Processando...'}
+              </p>
+              <p className="text-sm text-purple-300/70">
+                Isso pode levar até 2 minutos
+              </p>
+            </div>
+            {/* Progress bar */}
+            <div className="w-48 h-2 bg-purple-900/50 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-fuchsia-500 to-purple-500 transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <span className="text-xs text-purple-300/50">{Math.round(progress)}%</span>
+          </div>
         ) : previewUrl ? (
+          /* PREVIEW: Show uploaded image */
           <div className="relative rounded-xl overflow-hidden border border-fuchsia-500/30">
             <img src={previewUrl} alt="Preview" className="w-full h-64 object-contain bg-black/50" />
           </div>
         ) : (
+          /* EMPTY: Upload area */
           <label
             className={`flex flex-col items-center justify-center gap-4 h-64 border-2 border-dashed border-white/20 rounded-xl bg-white/5 transition-colors ${
               isActive ? "hover:border-fuchsia-500/50 hover:bg-white/10 cursor-pointer" : "cursor-default"
@@ -257,7 +372,6 @@ export default function UpscalerMockup({
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) onFileSelect(file);
-                  // Reset input so same file can be selected again
                   e.target.value = '';
                 }}
               />
@@ -276,7 +390,12 @@ export default function UpscalerMockup({
           {isProcessing ? (
             <span className="flex items-center gap-2">
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              {statusText || 'Processando...'}
+              {status === 'uploading' ? 'Enviando...' : `Processando... ${Math.round(progress)}%`}
+            </span>
+          ) : resultUrl ? (
+            <span className="flex items-center gap-2">
+              <Upload className="w-5 h-5" />
+              Testar outra imagem
             </span>
           ) : (
             <span className="flex items-center gap-2">

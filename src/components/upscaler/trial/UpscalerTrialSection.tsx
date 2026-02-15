@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Sparkles, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ const PROMPT_CATEGORIES = {
 
 type PromptCategory = keyof typeof PROMPT_CATEGORIES;
 type PessoasFraming = 'perto' | 'longe';
+type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'failed';
 
 export default function UpscalerTrialSection() {
   const { phase, email, usesRemaining, openSignup, closeSignup, onVerified, consumeUse } = useTrialState();
@@ -32,6 +33,7 @@ export default function UpscalerTrialSection() {
   // Image state
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [processedFile, setProcessedFile] = useState<File | null>(null);
+  const [inputPreviewUrl, setInputPreviewUrl] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   
   // Category state
@@ -46,8 +48,8 @@ export default function UpscalerTrialSection() {
   
   // Job tracking state
   const [jobId, setJobId] = useState<string | null>(null);
-  const [statusText, setStatusText] = useState<string>('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [status, setStatus] = useState<ProcessingStatus>('idle');
+  const [progress, setProgress] = useState(0);
   
   const sessionIdRef = useRef(`trial_${Date.now()}`);
 
@@ -57,31 +59,55 @@ export default function UpscalerTrialSection() {
   const isComidaMode = selectedCategory === 'comida';
   const isLongeMode = pessoasFraming === 'longe' && isPessoas;
 
+  // Progress animation while processing (same as original tool)
+  useEffect(() => {
+    if (status !== 'processing') return;
+    
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + 1;
+      });
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [status]);
+
+  // Stable callback for job status sync - using ref to avoid recreation
+  const statusCallbackRef = useRef<(update: any) => void>();
+  statusCallbackRef.current = (update: any) => {
+    if (update.status === 'completed' && update.outputUrl) {
+      setResultUrl(update.outputUrl);
+      setStatus('completed');
+      setProgress(100);
+      setJobId(null);
+      consumeUse();
+      endSubmit();
+      toast.success("Imagem melhorada com sucesso!");
+    } else if (update.status === 'failed' || update.status === 'cancelled') {
+      setStatus('failed');
+      setProgress(0);
+      setJobId(null);
+      endSubmit();
+      const errorInfo = getAIErrorMessage(update.errorMessage || null);
+      toast.error(errorInfo.message, { description: errorInfo.solution });
+    } else if (update.status === 'queued') {
+      setProgress(prev => Math.min(prev + 5, 90));
+    } else if (update.status === 'running') {
+      setProgress(prev => Math.min(prev + 5, 90));
+    }
+  };
+  
+  const stableOnStatusChange = useCallback((update: any) => {
+    statusCallbackRef.current?.(update);
+  }, []);
+
   // Job status sync via Realtime + polling
   useJobStatusSync({
     jobId,
     toolType: 'upscaler',
-    enabled: isProcessing && !!jobId,
-    onStatusChange: (update) => {
-      if (update.status === 'completed' && update.outputUrl) {
-        setResultUrl(update.outputUrl);
-        setIsProcessing(false);
-        setJobId(null);
-        consumeUse();
-        endSubmit();
-        toast.success("Imagem melhorada com sucesso!");
-      } else if (update.status === 'failed' || update.status === 'cancelled') {
-        setIsProcessing(false);
-        setJobId(null);
-        endSubmit();
-        const errorInfo = getAIErrorMessage(update.errorMessage || null);
-        toast.error(errorInfo.message, { description: errorInfo.solution });
-      } else if (update.status === 'queued') {
-        setStatusText(`Na fila${update.position ? ` (posição ${update.position})` : ''}...`);
-      } else if (update.status === 'running') {
-        setStatusText('Processando...');
-      }
-    },
+    enabled: (status === 'processing' || status === 'uploading') && !!jobId,
+    onStatusChange: stableOnStatusChange,
   });
 
   const scrollToPricing = () => {
@@ -96,7 +122,12 @@ export default function UpscalerTrialSection() {
       const optimizationResult = await optimizeForAI(file);
       setProcessedFile(optimizationResult.file);
       setUploadedFile(optimizationResult.file);
+      // Store a preview URL of the input for the before/after slider
+      const url = URL.createObjectURL(optimizationResult.file);
+      setInputPreviewUrl(url);
       setResultUrl(null);
+      setStatus('idle');
+      setProgress(0);
     } catch (error) {
       console.error('[TrialUpscaler] Optimization error:', error);
       toast.error('Erro ao otimizar imagem');
@@ -147,8 +178,8 @@ export default function UpscalerTrialSection() {
     if (!processedFile || !email) return;
     if (!startSubmit()) return;
 
-    setIsProcessing(true);
-    setStatusText('Enviando...');
+    setStatus('uploading');
+    setProgress(10);
 
     try {
       // 1. Consume a trial use via landing-trial-code/consume
@@ -158,13 +189,14 @@ export default function UpscalerTrialSection() {
 
       if (consumeErr || consumeData?.error) {
         toast.error(consumeData?.error || "Erro ao consumir teste");
-        setIsProcessing(false);
+        setStatus('idle');
+        setProgress(0);
         endSubmit();
         return;
       }
 
       // 2. Upload processed file to storage
-      setStatusText('Enviando imagem...');
+      setProgress(20);
       const tempId = crypto.randomUUID();
       const emailHash = email.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 20);
       const storagePath = `upscaler/trial_${emailHash}/${tempId}.jpg`;
@@ -179,7 +211,8 @@ export default function UpscalerTrialSection() {
       if (uploadError) {
         console.error('[TrialUpscaler] Upload error:', uploadError);
         toast.error("Erro ao enviar imagem");
-        setIsProcessing(false);
+        setStatus('idle');
+        setProgress(0);
         endSubmit();
         return;
       }
@@ -190,9 +223,9 @@ export default function UpscalerTrialSection() {
 
       const imageUrl = publicUrlData.publicUrl;
       console.log('[TrialUpscaler] Image uploaded:', imageUrl);
+      setProgress(35);
 
       // 3. Create job in upscaler_jobs table
-      setStatusText('Iniciando processamento...');
       const effectiveCategory = isLongeMode ? 'pessoas_longe' : selectedCategory;
       const framingMode = isLongeMode ? 'longe' : (isPessoas ? 'perto' : undefined);
 
@@ -213,7 +246,8 @@ export default function UpscalerTrialSection() {
       if (jobError || !job) {
         console.error('[TrialUpscaler] Job creation error:', jobError);
         toast.error('Erro ao criar processamento');
-        setIsProcessing(false);
+        setStatus('idle');
+        setProgress(0);
         endSubmit();
         return;
       }
@@ -221,8 +255,12 @@ export default function UpscalerTrialSection() {
       const createdJobId = (job as any).id;
       console.log('[TrialUpscaler] Job created:', createdJobId);
       setJobId(createdJobId);
+      setProgress(45);
 
       // 4. Call edge function with exact parameters from original
+      setStatus('processing');
+      setProgress(50);
+
       const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-upscaler/run', {
         body: {
           jobId: createdJobId,
@@ -246,16 +284,17 @@ export default function UpscalerTrialSection() {
         console.error('[TrialUpscaler] Edge function error:', fnError);
         const errorInfo = getAIErrorMessage(fnError.message || null);
         toast.error(errorInfo.message, { description: errorInfo.solution });
-        setIsProcessing(false);
+        setStatus('failed');
+        setProgress(0);
         setJobId(null);
         endSubmit();
         return;
       }
 
       if (response?.code === 'INSUFFICIENT_CREDITS') {
-        // Should not happen in trial mode but handle gracefully
         toast.error('Erro no processamento. Tente novamente.');
-        setIsProcessing(false);
+        setStatus('failed');
+        setProgress(0);
         setJobId(null);
         endSubmit();
         return;
@@ -264,32 +303,39 @@ export default function UpscalerTrialSection() {
       if (!response?.success && response?.error) {
         const errorInfo = getAIErrorMessage(response.error);
         toast.error(errorInfo.message, { description: errorInfo.solution });
-        setIsProcessing(false);
+        setStatus('failed');
+        setProgress(0);
         setJobId(null);
         endSubmit();
         return;
       }
 
       // Job started! useJobStatusSync will handle the rest
-      setStatusText(response?.queued ? `Na fila (posição ${response?.position || '?'})...` : 'Processando...');
       console.log('[TrialUpscaler] Edge function response:', response);
 
     } catch (err: any) {
       console.error('[TrialUpscaler] Generate error:', err);
       const errorInfo = getAIErrorMessage(err?.message || null);
       toast.error(errorInfo.message, { description: errorInfo.solution });
-      setIsProcessing(false);
+      setStatus('failed');
+      setProgress(0);
       setJobId(null);
       endSubmit();
     }
   }, [processedFile, email, selectedCategory, pessoasFraming, comidaDetailLevel, isLongeMode, isPessoas, isSpecialWorkflow, isComidaMode, startSubmit, endSubmit, consumeUse]);
 
   const handleNewUpload = () => {
+    // Clean up old preview URL
+    if (inputPreviewUrl) {
+      URL.revokeObjectURL(inputPreviewUrl);
+    }
     setUploadedFile(null);
     setProcessedFile(null);
+    setInputPreviewUrl(null);
     setResultUrl(null);
     setJobId(null);
-    setStatusText('');
+    setStatus('idle');
+    setProgress(0);
   };
 
   return (
@@ -355,8 +401,9 @@ export default function UpscalerTrialSection() {
                 isActive
                 usesRemaining={usesRemaining}
                 onGenerate={resultUrl ? handleNewUpload : handleGenerate}
-                isProcessing={isProcessing || isSubmitting}
+                isProcessing={status === 'uploading' || status === 'processing'}
                 resultUrl={resultUrl}
+                inputPreviewUrl={inputPreviewUrl}
                 uploadedFile={uploadedFile}
                 onFileSelect={handleFileSelect}
                 selectedCategory={selectedCategory}
@@ -365,7 +412,8 @@ export default function UpscalerTrialSection() {
                 onCategoryChange={setSelectedCategory}
                 onFramingChange={setPessoasFraming}
                 onDetailLevelChange={setComidaDetailLevel}
-                statusText={statusText}
+                progress={progress}
+                status={status}
               />
               {resultUrl && (
                 <div className="text-center mt-4">
