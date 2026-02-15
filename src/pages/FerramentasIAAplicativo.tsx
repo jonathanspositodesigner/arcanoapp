@@ -75,10 +75,10 @@ const FerramentasIAAplicativo = () => {
         .order("display_order", { ascending: true });
 
       if (!error && data) {
-        // Add static Arcano Cloner tool (not in database yet)
+        // Add static Arcano Studio tool (not in database yet)
         const arcanoClonerTool: ToolData = {
           id: 'arcano-cloner-static',
-          name: 'Arcano Cloner',
+          name: 'Arcano Studio',
           slug: 'arcano-cloner',
           cover_url: arcanoClonerCover,
           price_vitalicio: null,
@@ -129,7 +129,7 @@ const FerramentasIAAplicativo = () => {
     "upscaller-arcano-video": "Upscaler Arcano V3 (vídeo)",
     "ia-muda-pose": "Pose Changer",
     "ia-muda-roupa": "Veste AI",
-    "arcano-cloner": "Arcano Cloner",
+    "arcano-cloner": "Arcano Studio",
   };
 
   const getPurchaseRoute = (tool: ToolData) => {

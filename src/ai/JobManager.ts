@@ -80,7 +80,7 @@ const TOOL_NAMES: Record<string, ToolType> = {
   'Video Upscaler': 'video_upscaler',
   'Pose Changer': 'pose_changer',
   'Veste AI': 'veste_ai',
-  'Arcano Cloner': 'arcano_cloner',
+  'Arcano Studio': 'arcano_cloner',
   'Gerador Avatar': 'character_generator',
 };
 

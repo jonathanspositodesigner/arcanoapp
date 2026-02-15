@@ -49,7 +49,7 @@ const ArcanoClonerTool: React.FC = () => {
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
   const { getCreditCost } = useAIToolSettings();
-  const creditCost = getCreditCost('Arcano Cloner', 80);
+  const creditCost = getCreditCost('Arcano Studio', 80);
   
   // Contexto global de jobs
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
@@ -200,7 +200,7 @@ const ArcanoClonerTool: React.FC = () => {
   // Register job in global context
   useEffect(() => {
     if (jobId) {
-      registerJob(jobId, 'Arcano Cloner', 'pending');
+      registerJob(jobId, 'Arcano Studio', 'pending');
     }
   }, [jobId, registerJob]);
 
@@ -413,7 +413,7 @@ const ArcanoClonerTool: React.FC = () => {
       }
 
       setJobId(job.id);
-      registerJob(job.id, 'Arcano Cloner', 'pending');
+      registerJob(job.id, 'Arcano Studio', 'pending');
       console.log('[ArcanoCloner] Job created:', job.id);
 
       // Step 4: Call edge function to start processing
@@ -577,7 +577,7 @@ const ArcanoClonerTool: React.FC = () => {
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
         {/* Tool intro - full width centered */}
         <div className="text-center py-3">
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">Arcano Cloner</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-white">Arcano Studio</h1>
           <p className="text-sm text-purple-300 mt-1 max-w-lg mx-auto">Transforme sua foto usando qualquer imagem como referência. A IA clona o estilo, pose e cenário na sua pessoa.</p>
         </div>
 
