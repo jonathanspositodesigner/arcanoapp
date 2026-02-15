@@ -27,7 +27,7 @@ type PessoasFraming = 'perto' | 'longe';
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'failed';
 
 export default function UpscalerTrialSection() {
-  const { phase, email, usesRemaining, openSignup, closeSignup, onVerified, consumeUse } = useTrialState();
+  const { phase, email, usesRemaining, openSignup, closeSignup, onVerified, consumeUse, finishTrial } = useTrialState();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   
   // Image state
@@ -83,6 +83,10 @@ export default function UpscalerTrialSection() {
       setJobId(null);
       endSubmit();
       toast.success("Imagem melhorada com sucesso!");
+      // If no uses remaining, finish trial after delay so user sees result
+      if (usesRemaining <= 0) {
+        setTimeout(() => finishTrial(), 5000);
+      }
     } else if (update.status === 'failed' || update.status === 'cancelled') {
       setStatus('failed');
       setProgress(0);
@@ -90,6 +94,10 @@ export default function UpscalerTrialSection() {
       endSubmit();
       const errorInfo = getAIErrorMessage(update.errorMessage || null);
       toast.error(errorInfo.message, { description: errorInfo.solution });
+      // If no uses remaining, finish trial immediately
+      if (usesRemaining <= 0) {
+        finishTrial();
+      }
     } else if (update.status === 'queued') {
       setProgress(prev => Math.min(prev + 5, 90));
     } else if (update.status === 'running') {
