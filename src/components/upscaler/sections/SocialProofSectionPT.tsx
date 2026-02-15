@@ -17,6 +17,47 @@ interface SocialProofSectionPTProps {
   isMobile?: boolean;
 }
 
+interface UserResult {
+  before: string;
+  after: string;
+  name: string;
+  handle: string;
+  testimonial: string;
+  avatar: string;
+}
+
+const TestimonialCard = ({ result }: { result: UserResult }) => (
+  <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300">
+    <div className="flex flex-col md:flex-row">
+      <div className="p-3 md:p-6 md:w-1/2 md:flex-shrink-0">
+        <HeroBeforeAfterSlider
+          beforeImage={result.before}
+          afterImage={result.after}
+          locale="pt"
+        />
+      </div>
+      <div className="px-5 py-4 md:p-6 md:pt-8 flex flex-col justify-center md:justify-start md:w-1/2">
+        <div className="flex items-center gap-3 mb-4">
+          {result.avatar ? (
+            <img src={result.avatar} alt={result.name} className="w-10 h-10 rounded-full border border-white/10 object-cover flex-shrink-0" />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-fuchsia-400" />
+            </div>
+          )}
+          <div>
+            <p className="font-space-grotesk font-semibold text-white text-sm">{result.name}</p>
+            <p className="text-fuchsia-400/70 text-xs">{result.handle}</p>
+          </div>
+        </div>
+        <p className="font-space-grotesk text-white/80 text-sm md:text-base leading-relaxed">
+          {result.testimonial}
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
 export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialProofSectionPTProps) => {
   const { t } = useTranslation();
 
@@ -63,40 +104,8 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
     }
   ];
 
-  const TestimonialCard = ({ result, index }: { result: typeof userResults[0]; index: number }) => (
-    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300">
-      <div className="flex flex-col md:flex-row">
-        {/* Slider antes/depois - sem borda/container próprio */}
-        <div className="p-3 md:p-6 md:w-1/2 md:flex-shrink-0">
-          <HeroBeforeAfterSlider
-            beforeImage={result.before}
-            afterImage={result.after}
-            locale="pt"
-          />
-        </div>
-        
-        {/* Nome, @ e Depoimento */}
-        <div className="px-5 py-4 md:p-6 md:pt-8 flex flex-col justify-center md:justify-start md:w-1/2">
-          <div className="flex items-center gap-3 mb-4">
-            {result.avatar ? (
-              <img src={result.avatar} alt={result.name} className="w-10 h-10 rounded-full border border-white/10 object-cover flex-shrink-0" />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center flex-shrink-0">
-                <User className="w-5 h-5 text-fuchsia-400" />
-              </div>
-            )}
-            <div>
-              <p className="font-space-grotesk font-semibold text-white text-sm">{result.name}</p>
-              <p className="text-fuchsia-400/70 text-xs">{result.handle}</p>
-            </div>
-          </div>
-          <p className="font-space-grotesk text-white/80 text-sm md:text-base leading-relaxed">
-            {result.testimonial}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+
+
 
   return (
     <AnimatedSection className="px-4 py-20 bg-black/30">
@@ -117,7 +126,7 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
             <CarouselContent>
               {userResults.map((result, index) => (
                 <CarouselItem key={index}>
-                  <TestimonialCard result={result} index={index} />
+                  <TestimonialCard result={result} />
                 </CarouselItem>
               ))}
             </CarouselContent>
@@ -129,7 +138,7 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
         {/* Versão DESKTOP - Stack vertical */}
         <StaggeredAnimation className="hidden md:flex flex-col gap-8" staggerDelay={150}>
           {userResults.map((result, index) => (
-            <TestimonialCard key={index} result={result} index={index} />
+            <TestimonialCard key={index} result={result} />
           ))}
         </StaggeredAnimation>
       </div>
