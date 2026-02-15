@@ -104,12 +104,12 @@ serve(async (req) => {
 
       if (existing) {
         // If already verified and has uses, just return success
-        if (existing.code_verified && existing.uses_remaining > 0) {
+      if (existing.code_verified && existing.uses_remaining > 0) {
           return new Response(JSON.stringify({ already_verified: true, uses_remaining: existing.uses_remaining }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
         // If already verified but no uses left
         if (existing.code_verified && existing.uses_remaining <= 0) {
-          return new Response(JSON.stringify({ error: "Teste já concluído para este email" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          return new Response(JSON.stringify({ already_verified: true, uses_remaining: 0, finished: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
         // Rate limit check
         const createdAt = new Date(existing.created_at).getTime();
