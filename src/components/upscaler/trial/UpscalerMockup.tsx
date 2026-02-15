@@ -52,6 +52,10 @@ export default function UpscalerMockup({
   const previewUrl = uploadedFile ? URL.createObjectURL(uploadedFile) : null;
   const [showProMessage, setShowProMessage] = useState(false);
   
+  // Resolution tracking
+  const [beforeRes, setBeforeRes] = useState<{ w: number; h: number } | null>(null);
+  const [afterRes, setAfterRes] = useState<{ w: number; h: number } | null>(null);
+  
   // Before/After slider state
   const [sliderPosition, setSliderPosition] = useState(50);
   const sliderContainerRef = useRef<HTMLDivElement>(null);
@@ -317,6 +321,10 @@ export default function UpscalerMockup({
                         src={resultUrl} 
                         alt="Depois"
                         className="absolute inset-0 w-full h-full object-cover"
+                        onLoad={(e) => {
+                          const img = e.currentTarget;
+                          setAfterRes({ w: img.naturalWidth, h: img.naturalHeight });
+                        }}
                       />
                       
                       {/* Before Image (clipped - original) */}
@@ -328,6 +336,10 @@ export default function UpscalerMockup({
                           src={inputPreviewUrl} 
                           alt="Antes"
                           className="absolute inset-0 w-full h-full object-cover"
+                          onLoad={(e) => {
+                            const img = e.currentTarget;
+                            setBeforeRes({ w: img.naturalWidth, h: img.naturalHeight });
+                          }}
                         />
                       </div>
 
@@ -356,6 +368,29 @@ export default function UpscalerMockup({
                 </>
               )}
             </TransformWrapper>
+            {/* Resolution comparison */}
+            {beforeRes && afterRes && (
+              <div className="mt-3 flex items-center justify-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                  <span className="text-[10px] text-white/40 uppercase tracking-wider">Antes</span>
+                  <span className="text-xs font-mono text-white/60">{beforeRes.w}×{beforeRes.h}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <svg width="20" height="12" viewBox="0 0 20 12" fill="none" className="text-fuchsia-400">
+                    <path d="M13 1l5 5m0 0l-5 5m5-5H2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/30">
+                  <span className="text-[10px] text-fuchsia-300 uppercase tracking-wider">Depois</span>
+                  <span className="text-xs font-mono text-fuchsia-300 font-semibold">{afterRes.w}×{afterRes.h}</span>
+                  {afterRes.w * afterRes.h > beforeRes.w * beforeRes.h && (
+                    <span className="text-[10px] font-bold text-emerald-400">
+                      +{Math.round(((afterRes.w * afterRes.h) / (beforeRes.w * beforeRes.h) - 1) * 100)}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
             <p className="text-center text-[10px] text-purple-300/40 mt-2">Pinça ou scroll para dar zoom • Clique duplo para alternar</p>
           </div>
         ) : (status === 'uploading' || status === 'processing') ? (
