@@ -58,10 +58,11 @@ export function useTrialState() {
     const newRemaining = Math.max(0, usesRemaining - 1);
     setUsesRemaining(newRemaining);
     saveState({ email, verified: true, usesRemaining: newRemaining });
-    if (newRemaining <= 0) {
-      setPhase("finished");
-    }
   }, [usesRemaining, email]);
 
-  return { phase, email, usesRemaining, openSignup, closeSignup, onVerified, consumeUse };
+  const finishTrial = useCallback(() => {
+    setPhase("finished");
+  }, []);
+
+  return { phase, email, usesRemaining, openSignup, closeSignup, onVerified, consumeUse, finishTrial };
 }
