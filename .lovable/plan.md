@@ -1,137 +1,94 @@
 
+# Relatorio: Diferenças entre o Upscaler Original e o Teste Gratuito
 
-# Plano: Integrar Upscaler Standard Real na Secao de Teste Gratuito
+## Status Geral
 
-## Problema Atual
+A integração está **quase correta**, mas existem alguns problemas que podem causar falhas ou comportamento inesperado.
 
-O codigo atual do trial esta **completamente errado** em relacao a API:
-- Envia `image_url`, `mode`, `category: "photo"` -- parametros que **nao existem** na Edge Function
-- A Edge Function espera: `jobId`, `imageUrl`, `version`, `userId`, `creditCost`, `category` (valores como `pessoas_perto`, `comida`, etc.)
-- A compressao atual usa `maxWidthOrHeight: 4096` e `maxSizeMB: 4` -- esta errado, o correto e **JPEG, 1536px, 2MB** via `optimizeForAI()`
-- Nao cria job na tabela `upscaler_jobs` antes de chamar a API
-- O polling chama `runninghub-upscaler/run` com `action: "status"` -- endpoint que **nao existe**
+---
 
-## Configuracao Exata dos Botoes (Standard) - Extraido do Codigo
+## Problemas Encontrados
 
-Cada categoria chama um **WebApp ID diferente** no backend:
+### 1. CRITICO - Job insert com `user_id: null` vs Edge Function com `TRIAL_USER_ID`
 
-| Categoria | WebApp ID | `detailDenoise` | `resolution` | `prompt` | `framingMode` |
-|-----------|-----------|-----------------|--------------|----------|---------------|
-| Pessoas (Perto) | `2017030861371219969` | 0.15 (fixo) | 2048 | Prompt automatico portrait | `perto` |
-| Pessoas (Longe) | `2020634325636616194` | 0.15 (fixo) | 2048 | Prompt automatico full-body | `longe` |
-| Comida/Objeto | `2015855359243587585` | Slider 0.70-1.00 (padrao 0.85) | `undefined` | `undefined` | `undefined` |
-| Foto Antiga | `2018913880214343681` | `undefined` | `undefined` | `undefined` | `undefined` |
-| Logo/Arte | `2019239272464785409` | `undefined` | `undefined` | `undefined` | `undefined` |
-| Selo 3D | `2019234965992509442` | `undefined` | `undefined` | `undefined` | `undefined` |
+**Original:** Insere job com `user_id: user.id` (UUID real do usuario)
+**Trial:** Insere job com `user_id: null`
 
-Controles visiveis no Standard:
-- **Pessoas**: Sub-seletor "De Perto" / "De Longe" (com SVGs)
-- **Comida/Objeto**: Slider "Nivel de Detalhes" (0.70 a 1.00, padrao 0.85)
-- **Foto Antiga, Logo, Selo 3D**: Nenhum controle extra
+Porem o Edge Function define `effectiveUserId = TRIAL_USER_ID` (`00000000-0000-0000-0000-000000000000`) para o trial. Se a Edge Function ou o webhook tentarem atualizar o job filtrando por `user_id`, pode haver inconsistencia. O job foi criado com `null`, mas o backend espera o UUID fixo de trial.
 
-## Compressao Correta (Extraida de `useImageOptimizer.ts`)
+**Correcao:** Inserir com `user_id: '00000000-0000-0000-0000-000000000000'` (o mesmo TRIAL_USER_ID da Edge Function).
 
-```text
-AI_OPTIMIZATION_CONFIG = {
-  maxSizeMB: 2,
-  maxWidthOrHeight: 1536,    // JPEG, NAO WebP
-  fileType: 'image/jpeg',
-  initialQuality: 0.9
-}
-```
+### 2. MEDIO - Campos faltando no insert do job
 
-Fluxo de compressao:
-1. Se imagem > 2000px em qualquer dimensao -> abre `ImageCompressionModal` para confirmar
-2. SEMPRE chama `optimizeForAI()` que converte para **JPEG, 1536px max, 2MB max**
+**Original insere:**
+- `detail_denoise`: valor do slider
+- `prompt`: texto do prompt
+- `input_file_name`: nome do arquivo
 
-## Mudancas Tecnicas
+**Trial insere:**
+- Nenhum desses campos
 
-### 1. `UpscalerMockup.tsx` - Refatoracao completa
+Isso impacta o mecanismo de **fallback automatico "De Longe -> Perto"**, que depende do campo `category`, `version`, e `resolution` gravados no job para tentar novamente com outro workflow. Os campos `category`, `version` e `resolution` estao presentes, entao o fallback deve funcionar. Mas `detail_denoise` e `prompt` faltando podem causar problemas se o webhook precisar deles.
 
-Substituir as 4 categorias mockup pelas 5 categorias reais:
-- Layout em 2 linhas: `[Pessoas, Comida/Objeto, Foto Antiga]` + `[Selo 3D, Logo/Arte]`
-- Quando "Pessoas" selecionado: sub-seletor Perto/Longe com SVGs identicos (copiados linha a linha do `UpscalerArcanoTool.tsx` linhas 929-953)
-- Quando "Comida/Objeto" selecionado: slider 0.70-1.00 com labels "Mais Fiel" / "Mais Criativo"
-- Props novas: `selectedCategory`, `pessoasFraming`, `comidaDetailLevel`, `onCategoryChange`, `onFramingChange`, `onDetailLevelChange`
+**Correcao:** Adicionar `detail_denoise`, `prompt` e `input_file_name` ao insert.
 
-### 2. `UpscalerTrialSection.tsx` - Reescrever integracao
+### 3. MENOR - `creditCost: 60` fixo (deveria ser 0 ou nao enviado)
 
-**Novos estados:**
-- `selectedCategory` (default: `pessoas`)
-- `pessoasFraming` (default: `perto`)
-- `comidaDetailLevel` (default: 0.85)
-- `showCompressionModal`, `pendingFile`, `pendingDimensions`
+**Original:** `creditCost` varia (50 para Logo, 60 para Standard, 80 para Pro)
+**Trial:** Sempre envia `60`
 
-**Fluxo de selecao de arquivo (igual ao original):**
-1. Validar tipo (image/*) e tamanho (max 10MB)
-2. `getImageDimensions()` -> se > 2000px, abrir `ImageCompressionModal`
-3. Apos compressao ou se ok -> chamar `optimizeForAI()` (JPEG 1536px 2MB)
-4. Guardar arquivo processado em state
+Como `trial_mode: true` faz o backend pular a validacao de `creditCost`, isso nao causa erro. Mas para Logo deveria ser 50 por consistencia.
 
-**Fluxo de processamento (`handleGenerate`):**
-1. Consumir uso do trial via `landing-trial-code/consume`
-2. Upload do arquivo comprimido para `artes-cloudinary` bucket (path: `upscaler/trial_{email_hash}/{uuid}.webp`)
-3. Obter URL publica
-4. Criar job na tabela `upscaler_jobs` com campos: `session_id`, `status: 'pending'`, `user_id` (null ou trial), `category`, `version: 'standard'`, `resolution`, `framing_mode`
-5. Chamar `runninghub-upscaler/run` com parametros exatos:
+**Correcao:** Nenhuma necessaria (backend ignora), mas por clareza, pode-se enviar `creditCost: 0` no trial.
 
-```text
-body = {
-  jobId: job.id,
-  imageUrl: publicUrl,
-  version: 'standard',
-  userId: trialUserId,
-  creditCost: 60,
-  category: effectiveCategory,
-  detailDenoise: isComida ? comidaDetailLevel : (isPessoas ? 0.15 : undefined),
-  resolution: isSpecialWorkflow ? undefined : 2048,
-  prompt: isSpecialWorkflow ? undefined : PROMPT_CATEGORIES[effectiveCategory],
-  framingMode: isSpecialWorkflow ? undefined : (isPessoas ? pessoasFraming : undefined),
-}
-```
+### 4. MENOR - `consumeUse()` chamado no callback de sucesso
 
-6. Usar `useJobStatusSync` para acompanhar resultado via Realtime + polling (mesmo hook do original)
+No trial, `consumeUse()` e chamado quando o job completa (no `statusCallbackRef`). Mas o uso do trial ja foi consumido no passo 1 (`landing-trial-code/consume`). Isso significa que `consumeUse()` esta decrementando o contador local uma segunda vez?
 
-**Controle de erros (identico ao original):**
-- `useProcessingButton` para prevenir cliques duplos
-- Timeout de 10 minutos via `useJobStatusSync`
-- Tratamento de falhas com `getAIErrorMessage()`
-- Toast de erro amigavel em cada passo
+**Verificar:** Se `consumeUse()` faz uma chamada ao backend ou apenas decrementa state local. Se for state local, esta correto (sincroniza a UI com o backend). Se chamar o backend novamente, esta consumindo 2 usos por processamento.
 
-### 3. Questao do userId para trial
+### 5. OK - Parametros da API estao corretos
 
-O backend exige `userId` como UUID valido. Para o trial sem autenticacao, precisamos de uma das abordagens:
-- Usar um UUID fixo de "trial user" que sera definido como constante
-- OU criar um usuario anonimo temporario
+Os parametros enviados para cada categoria estao corretos e seguem a mesma logica do original:
+- `detailDenoise`: 0.15 para pessoas (fixo Standard), slider para comida, undefined para especiais -- OK
+- `resolution`: 2048 para pessoas, undefined para especiais -- OK
+- `prompt`: prompt automatico para pessoas, undefined para especiais -- OK
+- `framingMode`: perto/longe para pessoas, undefined para especiais -- OK
+- `version: 'standard'` -- OK
+- `trial_mode: true` -- OK
 
-A abordagem mais segura e usar um UUID fixo que o backend reconheca como trial, ja que o `landing-trial-code/consume` ja controla os usos. O `creditCost` sera enviado como 0 (ou adaptar o backend para aceitar `trial_mode: true` e pular a cobranca de creditos).
+### 6. OK - Compressao correta
 
-**ATENCAO:** O backend valida `userId` como UUID e cobra creditos via `consume_upscaler_credits`. Para o trial, precisaremos verificar se o Edge Function ja tem suporte a `trial_mode` ou se precisaremos adicionar essa logica. Se nao tiver, adicionaremos uma verificacao no inicio do `handleRun` que pula a cobranca de creditos quando `trial_mode: true`.
+O fluxo de compressao esta correto:
+1. Se > 2000px -> `ImageCompressionModal`
+2. Sempre -> `optimizeForAI()` (JPEG, 1536px, 2MB)
 
-### 4. Ajuste no Backend (se necessario)
+### 7. OK - Categorias e controles da UI
 
-Verificar se `runninghub-upscaler/run` aceita `trial_mode`. Se nao aceitar, adicionar:
-- Antes da validacao de `userId`: se `trial_mode === true`, usar UUID fixo de trial
-- Antes de `consume_upscaler_credits`: se `trial_mode === true`, pular cobranca
+As 5 categorias, o sub-seletor Perto/Longe, e o slider de Comida/Objeto estao implementados corretamente.
 
-### 5. RLS / Storage
+### 8. OK - `useJobStatusSync` e tratamento de erros
 
-O upload vai para `artes-cloudinary` bucket que ja tem politica universal para `{tool}/{user_id}/file`. Para trial sem auth, pode ser necessario usar o bucket `upscaler-uploads` que ja existe e esta sendo usado pelo trial atual, ou adaptar o upload para usar service role no backend.
+O hook de sincronizacao esta corretamente configurado com callback estabilizado via `useRef`.
 
-## Fluxo Completo do Usuario
+---
 
-```text
-1. Seleciona categoria (Pessoas, Comida, Foto Antiga, Selo 3D, Logo)
-2. Se "Pessoas" -> escolhe "De Perto" ou "De Longe" (SVGs)
-3. Se "Comida" -> ajusta slider de detalhe 0.70-1.00 (opcional)
-4. Faz upload da foto
-5. Se foto > 2000px -> modal de compressao (ImageCompressionModal)
-6. optimizeForAI() comprime para JPEG 1536px max automaticamente
-7. Clica "Melhorar Imagem"
-8. Consome 1 uso do trial
-9. Upload para storage
-10. Cria job na tabela
-11. Chama runninghub-upscaler/run com parametros corretos da categoria
-12. useJobStatusSync acompanha via Realtime
-13. Resultado aparece na tela
-```
+## Correcoes Necessarias
+
+1. **Trocar `user_id: null` por `user_id: '00000000-0000-0000-0000-000000000000'`** no insert do job (alinhar com o TRIAL_USER_ID do backend)
+2. **Adicionar `detail_denoise`, `prompt` e `input_file_name`** ao insert do job para compatibilidade com o fallback De Longe
+3. **Verificar se `consumeUse()` esta duplicando** o consumo de testes
+
+### Detalhes Tecnicos das Correcoes
+
+**Arquivo:** `src/components/upscaler/trial/UpscalerTrialSection.tsx`
+
+**Correcao 1 - Job insert (linhas 232-244):**
+Adicionar ao insert:
+- `user_id: '00000000-0000-0000-0000-000000000000'` (ao inves de null)
+- `detail_denoise: detailDenoise calculado`
+- `prompt: prompt calculado`
+- `input_file_name: storagePath.split('/').pop()`
+
+**Correcao 2 - consumeUse():**
+Verificar o hook `useTrialState` para confirmar se `consumeUse()` faz chamada ao backend ou apenas decrementa o state. Se for apenas state local, manter. Se chamar backend, remover do callback de sucesso (ja foi consumido no passo 1).
