@@ -189,23 +189,7 @@ export default function UpscalerTrialSection() {
     setProgress(10);
 
     try {
-      // 1. Consume a trial use via landing-trial-code/consume
-      const { data: consumeData, error: consumeErr } = await supabase.functions.invoke("landing-trial-code/consume", {
-        body: { email },
-      });
-
-      if (consumeErr || consumeData?.error) {
-        toast.error(consumeData?.error || "Erro ao consumir teste");
-        setStatus('idle');
-        setProgress(0);
-        endSubmit();
-        return;
-      }
-
-      // Sync local trial counter immediately after backend confirms consumption
-      consumeUse();
-
-      // 2. Upload processed file to storage
+      // 1. Upload processed file to storage
       setProgress(20);
       const tempId = crypto.randomUUID();
       const emailHash = email.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 20);
@@ -235,7 +219,7 @@ export default function UpscalerTrialSection() {
       console.log('[TrialUpscaler] Image uploaded:', imageUrl);
       setProgress(35);
 
-      // 3. Create job in upscaler_jobs table
+      // 2. Create job in upscaler_jobs table
       const effectiveCategory = isLongeMode ? 'pessoas_longe' : selectedCategory;
       const framingMode = isLongeMode ? 'longe' : (isPessoas ? 'perto' : undefined);
       const detailDenoise = isComidaMode 
@@ -249,7 +233,7 @@ export default function UpscalerTrialSection() {
         .insert({
           session_id: sessionIdRef.current,
           status: 'pending',
-          user_id: '00000000-0000-0000-0000-000000000000', // TRIAL_USER_ID - matches Edge Function
+          user_id: '00000000-0000-0000-0000-000000000000',
           category: effectiveCategory,
           version: 'standard',
           resolution: isSpecialWorkflow ? null : 2048,
@@ -275,7 +259,7 @@ export default function UpscalerTrialSection() {
       setJobId(createdJobId);
       setProgress(45);
 
-      // 4. Call edge function with exact parameters from original
+      // 3. Call edge function
       setStatus('processing');
       setProgress(50);
 
@@ -285,10 +269,9 @@ export default function UpscalerTrialSection() {
           imageUrl: imageUrl,
           version: 'standard',
           userId: null,
-          creditCost: 0, // Trial mode - backend ignores this
+          creditCost: 0,
           category: effectiveCategory,
           trial_mode: true,
-          // Conditional parameters - exact logic from UpscalerArcanoTool.tsx
           detailDenoise: isComidaMode 
             ? comidaDetailLevel 
             : (isSpecialWorkflow ? undefined : 0.15),
@@ -328,8 +311,18 @@ export default function UpscalerTrialSection() {
         return;
       }
 
-      // Job started! useJobStatusSync will handle the rest
+      // 4. Job started successfully! NOW consume the trial use
       console.log('[TrialUpscaler] Edge function response:', response);
+      
+      const { data: consumeData, error: consumeErr } = await supabase.functions.invoke("landing-trial-code/consume", {
+        body: { email },
+      });
+
+      if (!consumeErr && !consumeData?.error) {
+        consumeUse();
+      } else {
+        console.error('[TrialUpscaler] Consume error (job already started):', consumeData?.error);
+      }
 
     } catch (err: any) {
       console.error('[TrialUpscaler] Generate error:', err);
