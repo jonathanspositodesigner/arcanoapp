@@ -1,42 +1,24 @@
 
 
-# Correção: Último teste sendo bloqueado antes de completar
+# Correção: Erro "foreign key constraint" ao criar processamento
 
-## Problema Encontrado
+## Problema
 
-Quando o usuário usa o **3o e último teste**, a seguinte sequência acontece:
+O erro no banco de dados é claro:
 
-1. Backend consome o uso (1 restante vai para 0)
-2. `consumeUse()` atualiza o estado local para 0
-3. `consumeUse()` detecta que `usesRemaining <= 0` e muda a fase para `"finished"`
-4. A UI imediatamente renderiza a tela de "Teste Concluído!" com blur
-5. O job que estava processando desaparece -- o usuário nunca vê o resultado
+```
+insert or update on table "upscaler_jobs" violates foreign key constraint "upscaler_jobs_user_id_fkey"
+```
 
-## Solução
+O código está usando um UUID falso (`'00000000-0000-0000-0000-000000000000'`) como `user_id` na linha 236 do `UpscalerTrialSection.tsx`. Esse UUID não existe na tabela de usuários, então o banco rejeita a inserção.
 
-Separar a lógica de "decrementar contador" da lógica de "encerrar trial":
+A coluna `user_id` na tabela `upscaler_jobs` aceita `NULL` -- então a correção é simplesmente usar `null`.
 
-1. **`useTrialState.ts`**: Remover a mudança automática de fase para `"finished"` dentro do `consumeUse()`. Criar uma nova função `finishTrial()` para ser chamada explicitamente.
+## Correção
 
-2. **`UpscalerTrialSection.tsx`**: Chamar `finishTrial()` somente quando:
-   - O job **completar** com sucesso E não houver mais usos restantes
-   - O job **falhar** E não houver mais usos restantes
+### Arquivo: `src/components/upscaler/trial/UpscalerTrialSection.tsx`
 
-Isso garante que o último resultado sempre será exibido antes de mostrar a tela de encerramento.
+- Linha 236: Trocar `user_id: '00000000-0000-0000-0000-000000000000'` por `user_id: null`
 
-## Detalhes Técnicos
-
-### Arquivo 1: `src/components/upscaler/trial/useTrialState.ts`
-
-- Modificar `consumeUse()` para apenas decrementar o contador sem mudar a fase
-- Adicionar nova função `finishTrial()` que seta `phase = "finished"`
-- Exportar `finishTrial` no retorno do hook
-
-### Arquivo 2: `src/components/upscaler/trial/UpscalerTrialSection.tsx`
-
-- Importar `finishTrial` do hook
-- No callback de status (`statusCallbackRef`):
-  - Quando `completed`: se `usesRemaining <= 1` (pois já foi decrementado), chamar `finishTrial()` após um delay de 5 segundos para o usuário ver o resultado
-  - Quando `failed`: se `usesRemaining <= 0`, chamar `finishTrial()` imediatamente
-- Manter `consumeUse()` onde está (após confirmação do backend), mas sem efeito colateral de encerrar
+Essa é uma correção de uma linha. O `trial_mode: true` já é enviado para a Edge Function, que ignora validação de UUID quando esse flag está ativo.
 
