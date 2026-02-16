@@ -144,7 +144,7 @@ const PlanosArcanoCloner = () => {
 
         {/* Layer 2: Purple glow behind person */}
         <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-          <div className="w-[300px] h-[400px] md:w-[500px] md:h-[600px] bg-fuchsia-600/40 blur-[120px] md:blur-[150px] rounded-full" />
+          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-fuchsia-600/50 blur-[150px] md:blur-[200px] rounded-full" />
         </div>
 
         {/* Layer 3: Hero PNG image - LARGE, centered */}
@@ -165,22 +165,19 @@ const PlanosArcanoCloner = () => {
           <div className="mt-auto flex flex-col items-center">
             {/* Social proof badge */}
             <FadeIn delay={100} duration={600}>
-              <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6">
-                <div className="flex -space-x-2">
-                  <img src="/images/social-proof-1.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-                  <img src="/images/social-proof-2.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-                  <img src="/images/social-proof-3.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+              <div className="inline-flex items-center gap-1.5 bg-white/[0.07] border border-white/10 rounded-full px-2.5 py-1 mb-4 md:mb-5 scale-[0.7] origin-center">
+                <div className="flex -space-x-1.5">
+                  <img src="/images/social-proof-1.png" alt="" className="w-5 h-5 rounded-full border-[1.5px] border-[#0f0a15] object-cover" />
+                  <img src="/images/social-proof-2.png" alt="" className="w-5 h-5 rounded-full border-[1.5px] border-[#0f0a15] object-cover" />
+                  <img src="/images/social-proof-3.png" alt="" className="w-5 h-5 rounded-full border-[1.5px] border-[#0f0a15] object-cover" />
                 </div>
-                <span className="text-white/80 text-xs font-medium">+5.000 pessoas já estão usando</span>
+                <span className="text-white/80 text-[10px] font-medium">+5.000 pessoas já estão usando</span>
               </div>
             </FadeIn>
 
             {/* Headline */}
-            <h1 className="font-space-grotesk font-bold text-xl md:text-2xl lg:text-3xl text-white mb-3 md:mb-4 leading-[1.2]">
-              Crie ensaios fotográficos{" "}
-              <br className="hidden md:block" />
-              profissionais com IA{" "}
-              <br />
+            <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.2]">
+              Crie ensaios fotográficos profissionais com IA{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                 sem prompt, sem complicação
               </span>
