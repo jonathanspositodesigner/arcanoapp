@@ -90,12 +90,12 @@ const PlanosArcanoCloner = () => {
   };
 
   const galleryItems = [
-    { imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80" },
-    { imageUrl: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=80" },
-    { imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80" },
-    { imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80" },
-    { imageUrl: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&q=80" },
-    { imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80" },
+    { imageUrl: "/images/gallery/gallery-1.webp" },
+    { imageUrl: "/images/gallery/gallery-2.webp" },
+    { imageUrl: "/images/gallery/gallery-3.webp" },
+    { imageUrl: "/images/gallery/gallery-4.webp" },
+    { imageUrl: "/images/gallery/gallery-5.webp" },
+    { imageUrl: "/images/gallery/gallery-6.webp" },
   ];
 
   const steps = [

@@ -11,7 +11,7 @@ interface ExpandingGalleryProps {
 }
 
 const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
-  const [activeIndex, setActiveIndex] = useState(Math.floor(items.length / 2));
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const handlePrev = () => {
     setActiveIndex((prev) => (prev > 0 ? prev - 1 : items.length - 1));
