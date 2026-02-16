@@ -185,6 +185,10 @@ export default {
             boxShadow: "0 0 40px rgba(168, 85, 247, 0.6)",
           },
         },
+        "marquee-scroll": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -199,6 +203,7 @@ export default {
         "float": "float 3s ease-in-out infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "shimmer": "shimmer 2s ease-in-out infinite",
+        "marquee-scroll": "marquee-scroll 30s linear infinite",
       },
     },
   },

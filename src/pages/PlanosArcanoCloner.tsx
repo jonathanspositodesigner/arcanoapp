@@ -3,11 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowRight, Shield, Clock, Star, Zap, Upload, Image, Sparkles, Camera, MousePointerClick, BookOpen, Gift, Play, Maximize, ChevronDown } from "lucide-react";
+import { Check, ArrowRight, Shield, Clock, Star, Zap, Upload, Image, Sparkles, Camera, MousePointerClick, BookOpen, Gift, Play, Maximize, ChevronDown, Video } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { HeroBeforeAfterSlider } from "@/components/upscaler";
 import logoHorizontal from "@/assets/logo_horizontal.png";
+
+const UPSCALER_BEFORE_IMAGE_DESKTOP = "/images/upscaler-hero-antes.webp";
+const UPSCALER_AFTER_IMAGE_DESKTOP = "/images/upscaler-hero-depois.webp";
+const UPSCALER_BEFORE_IMAGE_MOBILE = "/images/upscaler-hero-antes-mobile.webp";
+const UPSCALER_AFTER_IMAGE_MOBILE = "/images/upscaler-hero-depois-mobile.webp";
 
 const CHECKOUT_URL = "https://example.com/checkout-placeholder";
 
@@ -118,7 +124,7 @@ const PlanosArcanoCloner = () => {
   const includedItems = [
     "56 fotos (4.500 créditos)",
     "Biblioteca com +300 referências profissionais",
-    "Mini curso de apresentação da ferramenta",
+    "Curso de apresentação da ferramenta",
     "Upscaler gratuito para melhorar imagens",
     "Acesso a todas as ferramentas de IA",
     "Suporte exclusivo via WhatsApp",
@@ -297,75 +303,148 @@ const PlanosArcanoCloner = () => {
         </div>
       </AnimatedSection>
 
-      {/* ==================== BONUS SECTION ==================== */}
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+      {/* ==================== BONUS HEADER ==================== */}
+      <AnimatedSection className="px-4 pt-16 md:pt-20 pb-6 bg-black/30">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
               E tem <span className="text-fuchsia-400">bônus</span> 🎁
             </h2>
-            <p className="text-white/50 text-center text-sm mb-10">Ao adquirir o Arcano Cloner, você leva de bônus:</p>
+            <p className="text-white/50 text-center text-sm mb-2">Ao adquirir o Arcano Cloner, você leva de bônus:</p>
           </AnimatedSection>
-
-          <StaggeredAnimation className="grid grid-cols-1 md:grid-cols-3 gap-6" staggerDelay={150}>
-            <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/50 transition-all duration-300">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
-                <BookOpen className="h-8 w-8 text-fuchsia-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-3">+300 Referências Profissionais</h3>
-              <p className="text-white/60">Biblioteca completa com fotos de referência prontas para usar na geração de imagens.</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/50 transition-all duration-300">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
-                <Play className="h-8 w-8 text-fuchsia-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-3">Mini Curso de Apresentação</h3>
-              <p className="text-white/60">Vídeos explicativos para você dominar a ferramenta em minutos.</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/50 transition-all duration-300">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
-                <Maximize className="h-8 w-8 text-fuchsia-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-3">Upscaler Gratuito</h3>
-              <p className="text-white/60">Melhore a qualidade e resolução das imagens geradas com nosso upscaler incluso.</p>
-            </div>
-          </StaggeredAnimation>
         </div>
       </AnimatedSection>
 
-      {/* ==================== UPSCALER BEFORE/AFTER ==================== */}
-      <AnimatedSection className="px-4 py-16 md:py-20">
-        <div className="max-w-4xl mx-auto">
-          <AnimatedSection as="div" delay={100}>
-            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-1.5 mb-4 mx-auto flex justify-center">
-              <Gift className="h-4 w-4 text-fuchsia-400" />
-              <span className="text-fuchsia-300 text-sm font-semibold">BÔNUS</span>
+      {/* ==================== BONUS 1: +300 REFERÊNCIAS ==================== */}
+      <AnimatedSection className="px-4 py-10 md:py-14 bg-black/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-1.5 mb-4">
+              <BookOpen className="h-4 w-4 text-fuchsia-400" />
+              <span className="text-fuchsia-300 text-sm font-semibold">BÔNUS 01</span>
             </div>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white text-center mb-3">
-              Upscaler gratuito para{" "}
-              <span className="text-fuchsia-400">suas imagens</span>
-            </h2>
-            <p className="text-white/50 text-center text-sm mb-10">Melhore a qualidade de qualquer imagem com nosso upscaler de IA incluso</p>
-          </AnimatedSection>
+            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
+              +300 Referências <span className="text-fuchsia-400">Profissionais</span>
+            </h3>
+            <p className="text-white/50 text-sm max-w-lg mx-auto">Biblioteca completa com fotos de referência prontas para usar na geração de imagens</p>
+          </div>
 
-          {/* Before/After Placeholder */}
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-white/5">
-            <div className="grid grid-cols-2 gap-0">
-              <div className="aspect-square bg-gradient-to-br from-gray-700/30 to-gray-900/30 flex flex-col items-center justify-center relative">
-                <Image className="h-16 w-16 text-white/15 mb-3" />
-                <span className="text-white/40 text-sm">Imagem Antes</span>
-                <div className="absolute top-3 left-3 bg-black/60 text-white text-xs font-semibold px-3 py-1 rounded-full">Antes</div>
-              </div>
-              <div className="aspect-square bg-gradient-to-br from-fuchsia-600/20 to-purple-800/20 flex flex-col items-center justify-center relative">
-                <Image className="h-16 w-16 text-white/15 mb-3" />
-                <span className="text-white/40 text-sm">Imagem Depois</span>
-                <div className="absolute top-3 right-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Depois</div>
+          {/* Infinite marquee carousel */}
+          <div className="relative overflow-hidden">
+            {/* Fade edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
+
+            <div className="flex gap-4 animate-marquee-scroll">
+              {/* Duplicate items for infinite scroll */}
+              {[...Array(2)].map((_, setIndex) => (
+                <div key={setIndex} className="flex gap-4 shrink-0">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                      key={`${setIndex}-${i}`}
+                      className="w-[140px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl bg-gradient-to-br from-fuchsia-600/20 via-purple-700/15 to-indigo-800/20 border border-purple-500/20 overflow-hidden flex items-center justify-center"
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <Camera className="h-8 w-8 text-white/15" />
+                        <span className="text-white/20 text-xs">Ref {i + 1}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </AnimatedSection>
+
+      {/* ==================== BONUS 2: CURSO ==================== */}
+      <AnimatedSection className="px-4 py-10 md:py-14 bg-black/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-1.5 mb-4">
+              <Play className="h-4 w-4 text-fuchsia-400" />
+              <span className="text-fuchsia-300 text-sm font-semibold">BÔNUS 02</span>
+            </div>
+            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
+              Curso de <span className="text-fuchsia-400">Apresentação</span>
+            </h3>
+            <p className="text-white/50 text-sm max-w-lg mx-auto">Vídeos explicativos para você dominar a ferramenta em minutos</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+            {/* Lesson cards */}
+            <div className="space-y-4">
+              {[
+                {
+                  badge: "Aula 01",
+                  title: "Introdução ao Arcano Cloner",
+                  topics: ["Como acessar a ferramenta", "Visão geral do painel", "Primeiros passos"]
+                },
+                {
+                  badge: "Aula 02",
+                  title: "Gerando sua primeira foto",
+                  topics: ["Enviando sua foto", "Escolhendo referência", "Ajustando configurações"]
+                },
+                {
+                  badge: "Aula 03",
+                  title: "Dicas para melhores resultados",
+                  topics: ["Fotos ideais para envio", "Usando o Upscaler", "Truques avançados"]
+                }
+              ].map((lesson, index) => (
+                <div key={index} className="bg-white/5 border border-white/10 rounded-2xl p-5 md:p-6 hover:border-fuchsia-500/30 transition-all duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/30 flex items-center justify-center shrink-0">
+                      <Video className="h-5 w-5 text-fuchsia-400" />
+                    </div>
+                    <div className="flex-1">
+                      <span className="inline-block text-xs font-semibold text-fuchsia-400 bg-fuchsia-500/10 px-2.5 py-0.5 rounded-full mb-2">{lesson.badge}</span>
+                      <h4 className="text-white font-semibold text-base mb-2">{lesson.title}</h4>
+                      <ul className="space-y-1">
+                        {lesson.topics.map((topic, ti) => (
+                          <li key={ti} className="flex items-center gap-2 text-white/50 text-sm">
+                            <div className="w-1 h-1 rounded-full bg-fuchsia-400 shrink-0" />
+                            {topic}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Course preview placeholder */}
+            <div className="aspect-[4/3] lg:aspect-auto rounded-2xl bg-gradient-to-br from-fuchsia-600/15 via-purple-700/10 to-indigo-800/15 border border-purple-500/30 overflow-hidden flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-16 h-16 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30 flex items-center justify-center">
+                  <Play className="h-8 w-8 text-fuchsia-400 ml-1" />
+                </div>
+                <span className="text-white/30 text-sm">Preview do Curso</span>
               </div>
             </div>
           </div>
-          <p className="text-white/40 text-xs text-center mt-3">* Imagens ilustrativas — substitua pelas suas comparações reais</p>
+        </div>
+      </AnimatedSection>
+
+      {/* ==================== BONUS 3: UPSCALER GRATUITO ==================== */}
+      <AnimatedSection className="px-4 py-10 md:py-14 pb-16 md:pb-20 bg-black/30">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-1.5 mb-4">
+              <Gift className="h-4 w-4 text-fuchsia-400" />
+              <span className="text-fuchsia-300 text-sm font-semibold">BÔNUS 03</span>
+            </div>
+            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
+              Upscaler gratuito para <span className="text-fuchsia-400">suas imagens</span>
+            </h3>
+            <p className="text-white/50 text-sm max-w-lg mx-auto">Melhore a qualidade de qualquer imagem com nosso upscaler de IA incluso</p>
+          </div>
+
+          <HeroBeforeAfterSlider
+            beforeImage={isMobile ? UPSCALER_BEFORE_IMAGE_MOBILE : UPSCALER_BEFORE_IMAGE_DESKTOP}
+            afterImage={isMobile ? UPSCALER_AFTER_IMAGE_MOBILE : UPSCALER_AFTER_IMAGE_DESKTOP}
+            locale="pt"
+          />
         </div>
       </AnimatedSection>
 
