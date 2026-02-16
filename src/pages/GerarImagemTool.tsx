@@ -226,14 +226,6 @@ const GerarImagemTool = () => {
                   </TransformComponent>
                 </TransformWrapper>
               </div>
-              <div className="flex gap-2 justify-center">
-                <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
-                  <Download className="h-4 w-4 mr-2" /> Baixar
-                </Button>
-                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
-                  <Sparkles className="h-4 w-4 mr-2" /> Nova
-                </Button>
-              </div>
             </div>
           ) : isGenerating ? (
             <div className="flex flex-col items-center gap-4 text-purple-300">
@@ -369,6 +361,25 @@ const GerarImagemTool = () => {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {resultBase64 && (
+                <>
+                  <button
+                    onClick={handleDownload}
+                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-600/80 border border-green-500/40 text-xs text-white hover:bg-green-600 transition-colors"
+                  >
+                    <Download className="h-3 w-3" />
+                    <span className="font-medium">Baixar</span>
+                  </button>
+                  <button
+                    onClick={handleNewGeneration}
+                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span className="font-medium">Nova</span>
+                  </button>
+                </>
+              )}
 
               <div className="flex-1" />
 
