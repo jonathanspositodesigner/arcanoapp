@@ -673,7 +673,7 @@ const GeradorPersonagemTool: React.FC = () => {
             {/* Saved Characters Panel */}
             <SavedCharactersPanel userId={user?.id} refreshTrigger={savedRefreshTrigger} />
 
-            {/* Arcano Studio Shortcut */}
+            {/* Arcano Cloner Shortcut */}
             <button
               type="button"
               onClick={() => navigate('/arcano-cloner-tool')}
@@ -682,7 +682,7 @@ const GeradorPersonagemTool: React.FC = () => {
               <div className="flex items-center gap-2.5 min-w-0">
                 <Sparkles className="w-4 h-4 text-fuchsia-400 flex-shrink-0" />
                 <div className="text-left min-w-0">
-                  <p className="text-xs font-semibold text-white">Arcano Studio</p>
+                  <p className="text-xs font-semibold text-white">Arcano Cloner</p>
                   <p className="text-[10px] text-purple-300/80 leading-tight">Use seu avatar para gerar imagens</p>
                 </div>
               </div>

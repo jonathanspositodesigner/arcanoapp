@@ -587,7 +587,7 @@ const AIToolsProfitTable = () => {
             <div className="space-y-2">
               <Label>Nome da Ferramenta</Label>
               <Input
-                placeholder="Ex: Arcano Studio"
+                placeholder="Ex: Arcano Cloner"
                 value={newTool.name}
                 onChange={(e) => setNewTool(prev => ({ ...prev, name: e.target.value }))}
               />
